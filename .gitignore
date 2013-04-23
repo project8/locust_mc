@@ -1,0 +1,12 @@
+#general:
+*.swp
+*.o
+*.so
+*.a
+*.dylib
+
+#executables
+generate_data
+
+*.egg
+*.mcinfo
