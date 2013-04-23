@@ -82,11 +82,11 @@ public:
     double dfdt; //in Hz/s
     double power; //power radiated into chirp in Watts
     //not actually used, but relevant to calculating above parameters
-    double start_energy; //in eV
+   // double start_energy; //in eV
 };
 
 ChirpEvent *events; //array of events to add
-int nevents=0; //how many events are there
+int nevents=10; //how many events are there
 double on_time=0; //progress in generation in seconds
 
 double record_time=((double)record_size)/sampling_rate; //length of one record in seconds
@@ -103,8 +103,21 @@ void yajl_gen_integer_forreals(yajl_gen gen,int num);
 int load_transfer_functions(const char *fname);
 float interpolate_transferfunction(float *freqs,float *vals,int len,float f);
 
+double getJsonDouble(yajl_val node,const char *key);
+string getJsonString(yajl_val node,const char *key);
+int load_config_file(const char *fname);
+
 int main(int argc,char *argv[])
 {
+    if(argc<2) {
+	printf("usage: generate_data configfile\n");
+	return -1;
+    }
+    //load the config file
+    if(load_config_file(argv[1])) {
+	printf("error reading config file");
+	return -1;
+    }
     //allocate working space 
     Anoise_f=(fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex)*fft_size);
     Bnoise_f=(fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex)*fft_size);
@@ -141,12 +154,14 @@ int main(int argc,char *argv[])
     make_json_string_entry(mcinfo_json,"mc_id",mcname);
     make_json_numeric_entry(mcinfo_json,"system_temperature",90);
     make_json_string_entry(mcinfo_json,"noise_model","full_receiver_model_minus_lf_mixing");
-    make_json_string_entry(mcinfo_json,"receiver_assumptions","TODO");
+    make_json_string_entry(mcinfo_json,"receiver_assumptions","amplifiers correlated");
+    make_json_string_entry(mcinfo_json,"egg_name",eggname.c_str());
     make_json_numeric_entry(mcinfo_json,"lf_mixing_frequency",lf_mixing_frequency);
     make_json_numeric_entry(mcinfo_json,"hf_mixing_frequency",hf_mixing_frequency);
 
     //place some events
-    nevents=5; //TODO this should be in a config file or something
+    /*  //this is depricated.  Events are provided in config file now
+    nevents=5;
     events=new ChirpEvent[nevents];
     for(int i=0;i<nevents;i++) {
 	events[i].start_time=getUniformRand(record_time*((float)nrecords));
@@ -156,6 +171,7 @@ int main(int argc,char *argv[])
 	events[i].power=1e-15;
 	events[i].dfdt=events[i].start_frequency*events[i].power*JoulesToEv/emass;
     }
+    */
 
     //record event info in json file
     yajl_gen_string(mcinfo_json,(unsigned char*)("events"),strlen("events"));
@@ -179,7 +195,7 @@ int main(int argc,char *argv[])
 	yajl_gen_integer(mcinfo_json,endsamp);
 	yajl_gen_array_close(mcinfo_json);
 	//record start energy
-	make_json_numeric_entry(mcinfo_json,"start_energy",events[i].start_energy);
+	//make_json_numeric_entry(mcinfo_json,"start_energy",events[i].start_energy);
 	make_json_numeric_entry(mcinfo_json,"start_frequency",events[i].start_frequency);
 	make_json_numeric_entry(mcinfo_json,"power",events[i].power);
 	make_json_numeric_entry(mcinfo_json,"dfdt",events[i].dfdt);
@@ -383,7 +399,7 @@ void make_json_integer_entry(yajl_gen gen,const char *key,int value)
 void yajl_gen_number_forreals(yajl_gen gen,double num)
 {
     char buffer[256];
-    sprintf(buffer,"%f",num);
+    sprintf(buffer,"%g",num);
     yajl_gen_number(gen,buffer,strlen(buffer));
 }
 
@@ -454,4 +470,83 @@ float interpolate_transferfunction(float *freqs,float *vals,int len,float f)
     }
     cerr << "interpolation failed" << endl;
     return nanf("bad programmer");
+}
+
+int load_config_file(const char *fname) {
+    //I just copied this from the yajl example
+    //it loads the transfer function in json form and then interpolates around
+    //the desired bandwidth
+    FILE *file=fopen(fname,"r");
+    char errbuf[1024];
+    static unsigned char fileData[65536];
+    fileData[0] = errbuf[0] = 0;
+    size_t rd = fread((void *) fileData, 1, sizeof(fileData) - 1, file);
+    if (rd == 0 && !feof(stdin)) {
+        fprintf(stderr, "error encountered on file read\n");
+        return 1;
+    } else if (rd >= sizeof(fileData) - 1) {
+        fprintf(stderr, "config file too big\n");
+        return 1;
+    }
+    yajl_val node;
+    node = yajl_tree_parse((const char *) fileData, errbuf, sizeof(errbuf));
+    if (node == NULL) {
+        fprintf(stderr, "parse_error: ");
+        if (strlen(errbuf)) fprintf(stderr, " %s", errbuf);
+        else fprintf(stderr, "unknown error");
+        fprintf(stderr, "\n");
+        return 1;
+    }
+    T_A=getJsonDouble(node,"receiver1_noise_temperature");
+    T_B=getJsonDouble(node,"amp1_noise_temperature");
+    T_C=getJsonDouble(node,"amp2_noise_temperature");
+    T_D=getJsonDouble(node,"receiver2_noise_temperature");
+    BField=getJsonDouble(node,"BField");
+    lwg=getJsonDouble(node,"waveguide_length");
+    dl=getJsonDouble(node,"phase_delay_length");
+    hf_mixing_frequency=getJsonDouble(node,"hf_mixing_frequency");
+    lf_mixing_frequency=getJsonDouble(node,"lf_mixing_frequency");
+    total_mixing_frequency=hf_mixing_frequency+lf_mixing_frequency;
+    double total_duration=getJsonDouble(node,"datafile_duration");
+    nrecords=(int)(ceil(total_duration/record_time));
+    eggname=getJsonString(node,"egg_outfile_name");
+    mcinfoname=getJsonString(node,"mcinfo_outfile_name");
+    //load the events
+    const char *eventpath[]={"events",(const char *)0};
+    yajl_val yevents=yajl_tree_get(node,eventpath,yajl_t_array);
+    nevents=yevents->u.array.len;
+    events=new ChirpEvent[nevents];
+    for(int i=0;i<nevents;i++) {
+	events[i].start_time=getJsonDouble(yevents->u.array.values[i],"start_time");
+	events[i].duration=getJsonDouble(yevents->u.array.values[i],"duration");
+	events[i].start_frequency=getJsonDouble(yevents->u.array.values[i],"start_frequency");
+	events[i].dfdt=getJsonDouble(yevents->u.array.values[i],"dfdt");
+	events[i].power=getJsonDouble(yevents->u.array.values[i],"power");
+    }
+
+    return 0;
+}
+
+double getJsonDouble(yajl_val node,const char *key)
+{
+    //const char *freqpath[]={"hf_frequencies",(const char*)0};
+    const char *path[]={key,(const char*)0};
+    yajl_val val=yajl_tree_get(node,path,yajl_t_number);
+    if(val==NULL) {
+	cerr << "error getting json double " << key << endl;
+	return 0;
+    }
+    return val->u.number.d;
+}
+
+string getJsonString(yajl_val node,const char *key)
+{
+    //const char *freqpath[]={"hf_frequencies",(const char*)0};
+    const char *path[]={key,(const char*)0};
+    yajl_val val=yajl_tree_get(node,path,yajl_t_string);
+    if(val==NULL) {
+	cerr << "error getting json string " << key << endl;
+	return "";
+    }
+    return string(val->u.string);
 }
