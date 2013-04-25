@@ -274,8 +274,11 @@ void generate_record(unsigned char *dataptr)
     for(int i=0;i<record_size;i++) {
 	signal_t[i]=0;
     }
+    printf("on time %g to %g\n",on_time,on_time+record_time);
     for(int k=0;k<nevents;k++) {
-	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
+//	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
+	if((events[k].start_time<(on_time+record_time))&&((events[k].start_time+events[k].duration)>(on_time))) { //this event is in my range
+        printf("creating event\n");
 	    signal_present=true;
 	    double vmax=sqrt(events[k].power*R);
 	    long start_sample=(events[k].start_time-on_time)*sampling_rate;
@@ -286,8 +289,8 @@ void generate_record(unsigned char *dataptr)
 	    for(int i=start_sample;i<=stop_sample;i++) {
 		double t=on_time+((double)i)/sampling_rate;
 		double dt=t-events[k].start_time;
-		double phase=events[k].start_frequency*dt+events[k].dfdt*dt*dt-total_mixing_frequency*dt;
-		signal_t[i]+=fftnorm*vmax*cos(phase);
+		double phase=(events[k].start_frequency-total_mixing_frequency)*dt+events[k].dfdt*dt*dt;
+		signal_t[i]+=fftnorm*vmax*cos(2.0*M_PI*phase);
 	    }
 	}
     }
