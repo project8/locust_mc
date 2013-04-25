@@ -268,15 +268,17 @@ void generate_record(unsigned char *dataptr)
 	channel2_f[i]=Dnoise_f[i]+Cnoise_f[i]+Bnoise_f[i]*wg_e;
     }
 
-    printf("total mixing frequency %g\n",total_mixing_frequency);
     //--inject signal--
     //first make signal in time space
     bool signal_present=false;
     for(int i=0;i<record_size;i++) {
 	signal_t[i]=0;
     }
+    printf("on time %g to %g\n",on_time,on_time+record_time);
     for(int k=0;k<nevents;k++) {
-	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
+//	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
+	if((events[k].start_time<(on_time+record_time))&&((events[k].start_time+events[k].duration)>(on_time))) { //this event is in my range
+        printf("creating event\n");
 	    signal_present=true;
 	    double vmax=sqrt(events[k].power*R);
 	    long start_sample=(events[k].start_time-on_time)*sampling_rate;
@@ -284,8 +286,6 @@ void generate_record(unsigned char *dataptr)
 	    long stop_sample=(events[k].start_time+events[k].duration-on_time)*sampling_rate;
 	    if(stop_sample>=record_size) stop_sample=record_size-1;
 	    double  fftnorm=1/((double)record_size);
-        printf("event start %g\n",events[k].start_frequency);
-        printf("event dfdt %g\n",events[k].dfdt);
 	    for(int i=start_sample;i<=stop_sample;i++) {
 		double t=on_time+((double)i)/sampling_rate;
 		double dt=t-events[k].start_time;

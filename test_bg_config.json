@@ -1,0 +1,17 @@
+{
+    "amp1_noise_temperature": 30,
+    "amp2_noise_temperature": 30,
+    "receiver1_noise_temperature": 30,
+    "receiver2_noise_temperature": 30,
+    "BField": 0.9,
+    "waveguide_length": 20,
+    "phase_delay_length": 5,
+    "hf_mixing_frequency": 24.2e9,
+    "lf_mixing_frequency": 500e6,
+    "datafile_duration": 0.02,
+    "egg_outfile_name": "test_bg.egg",
+    "mcinfo_outfile_name": "test_bg.mcinfo",
+    "number_of_events": 10,
+    "events": [
+    ]
+}
