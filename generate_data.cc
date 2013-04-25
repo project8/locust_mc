@@ -268,6 +268,7 @@ void generate_record(unsigned char *dataptr)
 	channel2_f[i]=Dnoise_f[i]+Cnoise_f[i]+Bnoise_f[i]*wg_e;
     }
 
+    printf("total mixing frequency %g\n",total_mixing_frequency);
     //--inject signal--
     //first make signal in time space
     bool signal_present=false;
@@ -283,11 +284,13 @@ void generate_record(unsigned char *dataptr)
 	    long stop_sample=(events[k].start_time+events[k].duration-on_time)*sampling_rate;
 	    if(stop_sample>=record_size) stop_sample=record_size-1;
 	    double  fftnorm=1/((double)record_size);
+        printf("event start %g\n",events[k].start_frequency);
+        printf("event dfdt %g\n",events[k].dfdt);
 	    for(int i=start_sample;i<=stop_sample;i++) {
 		double t=on_time+((double)i)/sampling_rate;
 		double dt=t-events[k].start_time;
-		double phase=events[k].start_frequency*dt+events[k].dfdt*dt*dt-total_mixing_frequency*dt;
-		signal_t[i]+=fftnorm*vmax*cos(phase);
+		double phase=(events[k].start_frequency-total_mixing_frequency)*dt+events[k].dfdt*dt*dt;
+		signal_t[i]+=fftnorm*vmax*cos(2.0*M_PI*phase);
 	    }
 	}
     }

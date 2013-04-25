@@ -1,0 +1,24 @@
+{
+    "amp1_noise_temperature": 30,
+    "amp2_noise_temperature": 30,
+    "receiver1_noise_temperature": 30,
+    "receiver2_noise_temperature": 30,
+    "BField": 0.9,
+    "waveguide_length": 20,
+    "phase_delay_length": 7,
+    "hf_mixing_frequency": 24.2e9,
+    "lf_mixing_frequency": 500e6,
+    "datafile_duration": 0.02,
+    "egg_outfile_name": "tone.egg",
+    "mcinfo_outfile_name": "tone.mcinfo",
+    "number_of_events": 10,
+    "events": [
+	{
+	    "start_time": 0,
+	    "duration": 10,
+	    "start_frequency": 24.750e9,
+	    "dfdt": 0,
+	    "power": 1e-15
+	}
+    ]
+}
