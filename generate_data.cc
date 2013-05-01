@@ -483,7 +483,7 @@ int load_config_file(const char *fname) {
     //the desired bandwidth
     FILE *file=fopen(fname,"r");
     char errbuf[1024];
-    static unsigned char fileData[65536];
+    static unsigned char fileData[65536*16];
     fileData[0] = errbuf[0] = 0;
     size_t rd = fread((void *) fileData, 1, sizeof(fileData) - 1, file);
     if (rd == 0 && !feof(stdin)) {

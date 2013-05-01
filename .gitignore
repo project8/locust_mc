@@ -4,9 +4,11 @@
 *.so
 *.a
 *.dylib
+*.pyc
 
 #executables
 generate_data
 
+#output files
 *.egg
 *.mcinfo
