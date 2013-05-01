@@ -67,6 +67,7 @@ string eggname="test.egg"; //output egg file name
 string mcinfoname="test.mcinfo"; //output mcinfo name
 
 //transfer function
+string transfer_function_fname="receiver_transfer_functions.json";
 float *hf_frequencies; //frequencies used for transfer function
 float *hf_full_transferfunction_ch1; //transfer function NOT IN DB
 float *hf_full_transferfunction_ch2;
@@ -135,7 +136,7 @@ int main(int argc,char *argv[])
     channel2_plan=fftwf_plan_dft_c2r_1d(record_size,channel2_f,channel2,fft_flags);
     signal_plan=fftwf_plan_dft_r2c_1d(record_size,signal_t,signal_f,fft_flags);
     //Load Receiver Transfer Function
-    load_transfer_functions("receiver_transfer_functions.json");
+    load_transfer_functions(transfer_function_fname.c_str());
     //
     //Prep egg file
     Monarch *egg=Monarch::OpenForWriting(eggname.c_str());
@@ -500,7 +501,8 @@ int load_config_file(const char *fname) {
         else fprintf(stderr, "unknown error");
         fprintf(stderr, "\n");
         return 1;
-    }
+        }
+    transfer_function_fname=getJsonString(node,"transfer_function_filename");
     T_A=getJsonDouble(node,"receiver1_noise_temperature");
     T_B=getJsonDouble(node,"amp1_noise_temperature");
     T_C=getJsonDouble(node,"amp2_noise_temperature");
