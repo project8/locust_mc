@@ -152,6 +152,7 @@ int main(int argc,char *argv[])
     yajl_gen_config(mcinfo_json, yajl_gen_beautify, 1);
     yajl_gen_map_open(mcinfo_json);
     make_json_string_entry(mcinfo_json,"mc_id",mcname);
+    make_json_integer_entry(mcinfo_json,"record_size",record_size);
     make_json_numeric_entry(mcinfo_json,"system_temperature",90);
     make_json_string_entry(mcinfo_json,"noise_model","full_receiver_model_minus_lf_mixing");
     make_json_string_entry(mcinfo_json,"receiver_assumptions","amplifiers correlated");
