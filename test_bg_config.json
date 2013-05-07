@@ -1,4 +1,5 @@
 {
+    "transfer_function_filename": "receiver_transfer_functions.json",
     "amp1_noise_temperature": 30,
     "amp2_noise_temperature": 30,
     "receiver1_noise_temperature": 30,
