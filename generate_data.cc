@@ -146,14 +146,16 @@ int main(int argc,char *argv[])
     header->SetAcqTime((float)(record_size/sampling_rate)*nrecords);
     header->SetAcqMode(sTwoChannel);
     if(!egg->WriteHeader()) {
-	cerr << "failed to write header" << endl;
+	    cerr << "failed to write header" << endl;
     }
     //prep mcinfo file
     yajl_gen mcinfo_json=yajl_gen_alloc(NULL);
     yajl_gen_config(mcinfo_json, yajl_gen_beautify, 1);
     yajl_gen_map_open(mcinfo_json);
     make_json_string_entry(mcinfo_json,"mc_id",mcname);
-    make_json_integer_entry(mcinfo_json,"record_size",record_size);
+    make_json_integer_entry(mcinfo_json,"record_size",header->GetRecordSize());
+    //make_json_integer_entry(mcinfo_json,"records_simulated",);
+    make_json_numeric_entry(mcinfo_json,"acquisition_rate",header->GetAcqRate());
     make_json_numeric_entry(mcinfo_json,"system_temperature",90);
     make_json_string_entry(mcinfo_json,"noise_model","full_receiver_model_minus_lf_mixing");
     make_json_string_entry(mcinfo_json,"receiver_assumptions","amplifiers correlated");
@@ -179,41 +181,43 @@ int main(int argc,char *argv[])
     yajl_gen_string(mcinfo_json,(unsigned char*)("events"),strlen("events"));
     yajl_gen_array_open(mcinfo_json);
     for(int i=0;i<nevents;i++) {
-	//record support
-	int startrecord=(int)(events[i].start_time/record_time);
-	int startsamp=(int)((events[i].start_time-((double)startrecord)*record_time)*sampling_rate);
-	int endrecord=(int)((events[i].start_time+events[i].duration)/record_time);
-	int endsamp=(int)((events[i].start_time+events[i].duration-((double)endrecord)*record_time)*sampling_rate);
-	if(endrecord>nrecords) {
-	    endrecord=nrecords-1;
-	    endsamp=record_size-1;
-	}
-	yajl_gen_map_open(mcinfo_json);
-	yajl_gen_string(mcinfo_json,(unsigned char*)("support"),strlen("support"));
-	yajl_gen_array_open(mcinfo_json);
-	yajl_gen_integer(mcinfo_json,startrecord);
-	yajl_gen_integer(mcinfo_json,startsamp);
-	yajl_gen_integer(mcinfo_json,endrecord);
-	yajl_gen_integer(mcinfo_json,endsamp);
-	yajl_gen_array_close(mcinfo_json);
-	//record start energy
-	//make_json_numeric_entry(mcinfo_json,"start_energy",events[i].start_energy);
-	make_json_numeric_entry(mcinfo_json,"start_frequency",events[i].start_frequency);
-	make_json_numeric_entry(mcinfo_json,"power",events[i].power);
-	make_json_numeric_entry(mcinfo_json,"dfdt",events[i].dfdt);
-	make_json_numeric_entry(mcinfo_json,"duration",events[i].duration);
-	yajl_gen_map_close(mcinfo_json);
+    	//record support
+    	int startrecord=(int)(events[i].start_time/record_time);
+    	int startsamp=(int)((events[i].start_time-((double)startrecord)*record_time)*sampling_rate);
+    	int endrecord=(int)((events[i].start_time+events[i].duration)/record_time);
+    	int endsamp=(int)((events[i].start_time+events[i].duration-((double)endrecord)*record_time)*sampling_rate);
+    	if(endrecord>nrecords) {
+    	    endrecord=nrecords-1;
+    	    endsamp=record_size-1;
+    	}
+    	yajl_gen_map_open(mcinfo_json);
+    	yajl_gen_string(mcinfo_json,(unsigned char*)("support"),strlen("support"));
+    	yajl_gen_array_open(mcinfo_json);
+    	yajl_gen_integer(mcinfo_json,startrecord);
+    	yajl_gen_integer(mcinfo_json,startsamp);
+    	yajl_gen_integer(mcinfo_json,endrecord);
+    	yajl_gen_integer(mcinfo_json,endsamp);
+    	yajl_gen_array_close(mcinfo_json);
+    	//record start energy
+    	//make_json_numeric_entry(mcinfo_json,"start_energy",events[i].start_energy);
+    	make_json_numeric_entry(mcinfo_json,"start_frequency",events[i].start_frequency);
+    	make_json_numeric_entry(mcinfo_json,"power",events[i].power);
+    	make_json_numeric_entry(mcinfo_json,"dfdt",events[i].dfdt);
+    	make_json_numeric_entry(mcinfo_json,"duration",events[i].duration);
+    	yajl_gen_map_close(mcinfo_json);
     }
     yajl_gen_array_close(mcinfo_json);
 
     //generate monte carlo
     for(int onrecord=0;onrecord<nrecords;onrecord++) {
-	MonarchRecord *r=egg->GetRecordInterleaved();
-	generate_record(r->fDataPtr);
-	if(!egg->WriteRecord()) {
-	    cerr << "failed to write record" << endl;
-    	}
+    	MonarchRecord *r=egg->GetRecordInterleaved();
+    	generate_record(r->fDataPtr);
+    	if(!egg->WriteRecord()) {
+    	    cerr << "failed to write record" << endl;
+        	}
     }
+    make_json_integer_entry(mcinfo_json,"records_simulated",nrecords);
+    
     //save egg
     egg->Close();
     //save mcinfo
