@@ -8,6 +8,7 @@
 
 #executables
 generate_data
+check_egg_digitization
 
 #output files
 *.egg
