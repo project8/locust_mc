@@ -44,7 +44,7 @@ def generate_configs(file_prefix=False, num_events=100, duration=1e-4, dfdt=1e8,
     json.dump(out_dict, outfile, indent=4)
 
 if __name__ == '__main__':
-    durrations = [200, 100, 50]
+    durrations = [200e-6, 100e-6, 50e-6]
     powers = [1e-15, 8e-16, 6e-16, 4e-16, 2e-16, 1e-16]
     chrates = [1e8, 3e8]
     for chrate in chrates:
