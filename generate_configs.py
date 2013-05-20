@@ -1,13 +1,15 @@
 import json
 
-def generate_configs(file_prefix=False, num_events=100, duration=1e-4, dfdt=1e8, power=1e-15):
+def generate_configs(file_prefix=False, num_events=100, duration=1e-4, dfdt=1e8, power=1e-15, spacing=8e-5):
     '''
         generate a config json file for locust input
 
         <num_events> is number of chirps
-        <duration> is time length of each chirp
-        <dfdt> is the chirp rate
+        <duration> is time length of each chirp [s]
+        <dfdt> is the chirp rate [Hz/s]
         <power> is the signal power
+        <spacing> is the time between the end of one chirp and the start of 
+                  the next. [s]
     '''
     sampling_rate = 200e6
     if not file_prefix:
@@ -26,20 +28,22 @@ def generate_configs(file_prefix=False, num_events=100, duration=1e-4, dfdt=1e8,
         "phase_delay_length": 5,
         "hf_mixing_frequency": 24.2e9,
         "lf_mixing_frequency": 500e6,
-        "datafile_duration": num_events * 1e-4 + 5 * duration,
+        "datafile_duration": num_events * (duration + spacing) + spacing,
         "egg_outfile_name": file_prefix + ".egg",
         "mcinfo_outfile_name": file_prefix + ".mcinfo",
         "number_of_events": num_events,
         "events": []
     }
-    for start in range(1, num_events+1):
+    event_time = spacing
+    for start in range(num_events):
         out_dict['events'].append({
-            "start_time": start*1e-4,
+            "start_time": event_time,
             "duration": duration,
             "start_frequency": 24.750e9,
             "dfdt": dfdt,
             "power": power
             })
+        event_time += duration + spacing
     print(json.dumps(out_dict, indent=4))
     json.dump(out_dict, outfile, indent=4)
 
