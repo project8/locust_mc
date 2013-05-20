@@ -28,7 +28,7 @@ def generate_configs(file_prefix=False, num_events=100, duration=1e-4, dfdt=1e8,
         "phase_delay_length": 5,
         "hf_mixing_frequency": 24.2e9,
         "lf_mixing_frequency": 500e6,
-        "datafile_duration": num_events * (duration + spacing) + spacing
+        "datafile_duration": num_events * (duration + spacing) + spacing,
         "egg_outfile_name": file_prefix + ".egg",
         "mcinfo_outfile_name": file_prefix + ".mcinfo",
         "number_of_events": num_events,
