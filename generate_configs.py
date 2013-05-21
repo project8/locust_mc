@@ -44,7 +44,6 @@ def generate_configs(file_prefix=False, num_events=100, duration=1e-4, dfdt=1e8,
             "power": power
             })
         event_time += duration + spacing
-    print(json.dumps(out_dict, indent=4))
     json.dump(out_dict, outfile, indent=4)
 
 if __name__ == '__main__':
