@@ -1,0 +1,17 @@
+{
+    "waveguide_setup": "SINGLEAMP",
+    "transfer_function_filename": "receiver_transfer_functions.json",
+    "amp1_noise_temperature": 15,
+    "receiver1_noise_temperature": 5,
+    "BField": 0.9,
+    "waveguide_length": 147.19,
+    "distance_to_short": 5,
+    "hf_mixing_frequency": 24.2e9,
+    "lf_mixing_frequency": 500e6,
+    "datafile_duration": 0.02,
+    "egg_outfile_name": "test_bg.egg",
+    "mcinfo_outfile_name": "test_bg.mcinfo",
+    "number_of_events": 10,
+    "events": [
+    ]
+}
