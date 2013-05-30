@@ -19,9 +19,9 @@ int main(int argc,char *argv[])
     const MonarchRecord *event;
 //    sampling_rate_mhz=eggheader->GetAcqRate();
     while(egg->ReadRecord()) {
-	event=egg->GetRecordOne();
+	event=egg->GetRecordSeparateOne();
       	for(int i=0;i<eggheader->GetRecordSize();i++) {
-	    histogram[event->fDataPtr[i]]+=1;
+	    histogram[event->fData[i]]+=1;
 	}
     }
     for(int i=0;i<256;i++) {

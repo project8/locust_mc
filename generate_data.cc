@@ -141,13 +141,14 @@ int main(int argc,char *argv[])
     //Prep egg file
     Monarch *egg=Monarch::OpenForWriting(eggname.c_str());
     MonarchHeader *header=egg->GetHeader();
-    header->SetAcqRate(sampling_rate/1e6);
+    header->SetAcquisitionRate(sampling_rate/1e6);
     header->SetRecordSize(record_size);
-    header->SetAcqTime((float)(record_size/sampling_rate)*nrecords);
-    header->SetAcqMode(sTwoChannel);
-    if(!egg->WriteHeader()) {
-	    cerr << "failed to write header" << endl;
-    }
+    header->SetRunDuration((float)(record_size/sampling_rate)*nrecords);
+    header->SetAcquisitionMode(sTwoChannel);
+    egg->WriteHeader();
+    //if(!egg->WriteHeader()) {
+	//    cerr << "failed to write header" << endl;
+    //}
     //prep mcinfo file
     yajl_gen mcinfo_json=yajl_gen_alloc(NULL);
     yajl_gen_config(mcinfo_json, yajl_gen_beautify, 1);
@@ -155,7 +156,7 @@ int main(int argc,char *argv[])
     make_json_string_entry(mcinfo_json,"mc_id",mcname);
     make_json_integer_entry(mcinfo_json,"record_size",header->GetRecordSize());
     //make_json_integer_entry(mcinfo_json,"records_simulated",);
-    make_json_numeric_entry(mcinfo_json,"acquisition_rate",header->GetAcqRate());
+    make_json_numeric_entry(mcinfo_json,"acquisition_rate",header->GetAcquisitionRate());
     make_json_numeric_entry(mcinfo_json,"system_temperature",90);
     make_json_string_entry(mcinfo_json,"noise_model","full_receiver_model_minus_lf_mixing");
     make_json_string_entry(mcinfo_json,"receiver_assumptions","amplifiers correlated");
@@ -211,7 +212,7 @@ int main(int argc,char *argv[])
     //generate monte carlo
     for(int onrecord=0;onrecord<nrecords;onrecord++) {
     	MonarchRecord *r=egg->GetRecordInterleaved();
-    	generate_record(r->fDataPtr);
+    	generate_record(r->fData);
     	if(!egg->WriteRecord()) {
     	    cerr << "failed to write record" << endl;
         	}
