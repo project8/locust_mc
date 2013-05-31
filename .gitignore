@@ -6,6 +6,9 @@
 *.dylib
 *.pyc
 
+#json files
+*.json
+
 #executables
 generate_data
 check_egg_digitization
