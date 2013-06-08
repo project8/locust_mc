@@ -19,11 +19,22 @@ double ecyclo=1.758820e11; //electron cyclotron frequency in rad/s
 double emass=510998.9; //electron mass in eV
 double JoulesToEv=1/1.6e-19; // eV/J
 
+//     for setup DOUBLEAMP
 // Waveguide is set up like this
 // --<A|---<B>-----<C>----|D>-----
 // ------------lwg--------------dl
 // Where A,B,C,D are noise sources
 // lwg and dl are the waveguide length and extra cable length
+//
+//     for setup SINGLEAMP
+// Waveguide is set up like this
+// --<A|---<B>----lwg-----trapregion----dl------REFLECTION
+// where A is the noise of the amp that is not transmitted both ways
+// B is the noise of the amp that is transmitted both directions
+// lwg is the length of waveguide from the amplifier to the trapping region
+// dl is the length of waveguide from the trap region to the short at the bottom
+// there is a 100% reflective short at the bottom
+// amplifier impedance mismatch is neglected
 
 float c_wg=c*sqrt(1-pow(c/(2.0*0.42*2.54*26e9),2.0)); //speed of light in waveguide in cm/s
 float c_cable=0.6*c; //speed of light in cables in cm/s (this is a guess)
@@ -59,6 +70,7 @@ float lf_mixing_frequency=500e6;  //low frequency oscillator in Hz
 float total_mixing_frequency=hf_mixing_frequency+lf_mixing_frequency; //sum of local oscillator freqencies, in Hz
 float sampling_rate=200e6; //digitizer sampling rate in Hz
 float frequency_bin_width=sampling_rate/((float)record_size); //how big one bin is, in Hz
+string waveguide_setup="DOUBLEAMP";
 
 int nrecords=10; //how many records to generate
 double expected_event_rate=100;  //expected event rate in hz
@@ -95,7 +107,8 @@ double record_time=((double)record_size)/sampling_rate; //length of one record i
 float getGaussianRand(float mean,float sigma);
 float getUniformRand(float range);
 float getExponentialRand(float scale);
-void generate_record(unsigned char *dataptr);
+void generate_record_singleamp(unsigned char *dataptr);
+void generate_record_doubleamp(unsigned char *dataptr);
 void make_json_string_entry(yajl_gen gen,const char *key,const char *value);
 void make_json_numeric_entry(yajl_gen gen,const char *key,double value);
 void make_json_integer_entry(yajl_gen gen,const char *key,int value);
@@ -144,7 +157,14 @@ int main(int argc,char *argv[])
     header->SetAcqRate(sampling_rate/1e6);
     header->SetRecordSize(record_size);
     header->SetAcqTime((float)(record_size/sampling_rate)*nrecords);
-    header->SetAcqMode(sTwoChannel);
+    if(waveguide_setup=="DOUBLEAMP") {
+        header->SetAcqMode(sTwoChannel);
+    } else if(waveguide_setup=="SINGLEAMP") {
+        header->SetAcqMode(sOneChannel);
+    } else {
+        cerr << "invalid waveguide setup: " << waveguide_setup << " should be DOUBLEAMP or SINGLEAMP" << endl;
+        return -1;
+    }
     if(!egg->WriteHeader()) {
 	    cerr << "failed to write header" << endl;
     }
@@ -211,7 +231,11 @@ int main(int argc,char *argv[])
     //generate monte carlo
     for(int onrecord=0;onrecord<nrecords;onrecord++) {
     	MonarchRecord *r=egg->GetRecordInterleaved();
-    	generate_record(r->fDataPtr);
+        if(waveguide_setup=="DOUBLAMP") {
+        	generate_record_doubleamp(r->fDataPtr);
+        } else {
+        	generate_record_singleamp(r->fDataPtr);
+        }
     	if(!egg->WriteRecord()) {
     	    cerr << "failed to write record" << endl;
         	}
@@ -247,7 +271,105 @@ int main(int argc,char *argv[])
 }
 
 //assumes an interleaved data pointer
-void generate_record(unsigned char *dataptr) 
+void generate_record_singleamp(unsigned char *dataptr) 
+{
+    float R=50; //cable impedence, ohms (so I can turn power into volts)
+    float sigma_a=sqrt(R*kB*T_A/2.0);
+    float sigma_b=sqrt(R*kB*T_B/2.0);
+
+    float total_length=2.0*(lwg+dl); //total length from amp to bottom and back
+
+    //generate frequency space noise 
+    for(int k=0;k<fft_size;k++) {
+	Anoise_f[k]=getGaussianRand(0,sigma_a)+I*getGaussianRand(0,sigma_a);
+	Bnoise_f[k]=getGaussianRand(0,sigma_b)+I*getGaussianRand(0,sigma_b);
+    }
+
+    //combine noise sources
+    //Add A+B+Ce^ilwg and (D+C+Be^ilwg)e^idl
+    for(int i=0;i<fft_size;i++) {
+	float f=total_mixing_frequency+frequency_bin_width*((float)i);
+	float wg_phase=2*M_PI*f*total_length/c_wg;
+	complex float wg_e=cexp(I*wg_phase);
+	channel1_f[i]=Anoise_f[i]+Bnoise_f[i]+Bnoise_f[i]*wg_e;
+    }
+
+    //--inject signal--
+    //first make signal in time space
+    bool signal_present=false;
+    for(int i=0;i<record_size;i++) {
+	signal_t[i]=0;
+    }
+    printf("on time %g to %g\n",on_time,on_time+record_time);
+    for(int k=0;k<nevents;k++) {
+//	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
+	if((events[k].start_time<(on_time+record_time))&&((events[k].start_time+events[k].duration)>(on_time))) { //this event is in my range
+        printf("creating event\n");
+	    signal_present=true;
+	    double vmax=sqrt(events[k].power*R);
+	    long start_sample=(events[k].start_time-on_time)*sampling_rate;
+	    if(start_sample<0) start_sample=0;
+	    long stop_sample=(events[k].start_time+events[k].duration-on_time)*sampling_rate;
+	    if(stop_sample>=record_size) stop_sample=record_size-1;
+	    double  fftnorm=1/((double)record_size);
+	    for(int i=start_sample;i<=stop_sample;i++) {
+		double t=on_time+((double)i)/sampling_rate;
+		double dt=t-events[k].start_time;
+		double phase=(events[k].start_frequency-total_mixing_frequency)*dt+events[k].dfdt*dt*dt;
+		signal_t[i]+=fftnorm*vmax*cos(2.0*M_PI*phase);
+	    }
+	}
+    }
+    //now turn signal into frequency space
+    if(signal_present) {
+	fftwf_execute(signal_plan);
+	for(int i=0;i<fft_size;i++) {
+    	float f=total_mixing_frequency+frequency_bin_width*((float)i);
+    	float wg_phase=2*M_PI*f*2.0*dl/c_wg;
+	    complex float wg_e=cexp(I*wg_phase);
+	    channel1_f[i]+=0.5*signal_f[i]+0.5*wg_e*signal_f[i];
+//	    channel2_f[i]+=0.5*signal_f[i];
+	}
+    }
+
+    //cable delays don't matter, ignore
+    //
+    //apply high frequency transfer function
+    for(int i=0;i<fft_size;i++) {
+	channel1_f[i]*=hf_transferfunction_ch1[i];
+	//channel2_f[i]*=hf_transferfunction_ch2[i];
+    }
+
+    //TODO apply low frequency receiver chain transfer function
+    for(int i=0;i<fft_size;i++) {
+	//this applies uniform 70 dB gain
+	//as a stopgap measure until real gain is known
+	channel1_f[i]*=1e7;
+//	channel2_f[i]*=1e7;
+    }
+
+    //fft to construct the time series again
+    fftwf_execute(channel1_plan);
+
+    //discretize
+    float fft_scale=1/((float)record_size);
+    for(int i=0;i<record_size;i++) {
+	float x1=256*(fft_scale*channel1[i]/digitizer_fullscale+digitizer_fullscale);
+	float x2=256*(fft_scale*channel2[i]/digitizer_fullscale+digitizer_fullscale);
+	//clipping to 8 bits
+	if(x1>255) x1=255;
+	if(x2>255) x2=255;
+	if(x1<0) x1=0;
+	if(x2<0) x2=0;
+    //don't skip every other one, we're only saving one channel
+	dataptr[i]=(unsigned char)x1;
+//	dataptr[2*i+1]=(unsigned char)x2;
+    }
+    //update time in seconds
+    on_time+=record_time;
+}
+
+void generate_record_doubleamp(unsigned char *dataptr) 
 {
     float R=50; //cable impedence, ohms (so I can turn power into volts)
     float sigma_a=sqrt(R*kB*T_A/2.0);
@@ -506,14 +628,22 @@ int load_config_file(const char *fname) {
         fprintf(stderr, "\n");
         return 1;
         }
+    waveguide_setup=getJsonString(node,"waveguide_setup");
     transfer_function_fname=getJsonString(node,"transfer_function_filename");
-    T_A=getJsonDouble(node,"receiver1_noise_temperature");
-    T_B=getJsonDouble(node,"amp1_noise_temperature");
-    T_C=getJsonDouble(node,"amp2_noise_temperature");
-    T_D=getJsonDouble(node,"receiver2_noise_temperature");
+    if(waveguide_setup=="DOUBLEAMP") {
+        T_A=getJsonDouble(node,"receiver1_noise_temperature");
+        T_B=getJsonDouble(node,"amp1_noise_temperature");
+        T_C=getJsonDouble(node,"amp2_noise_temperature");
+        T_D=getJsonDouble(node,"receiver2_noise_temperature");
+        lwg=getJsonDouble(node,"waveguide_length");
+        dl=getJsonDouble(node,"phase_delay_length");
+    } else if (waveguide_setup=="SINGLEAMP") {
+        T_A=getJsonDouble(node,"receiver1_noise_temperature");
+        T_B=getJsonDouble(node,"amp1_noise_temperature");
+        lwg=getJsonDouble(node,"waveguide_length");
+        dl=getJsonDouble(node,"distance_to_short");
+    }
     BField=getJsonDouble(node,"BField");
-    lwg=getJsonDouble(node,"waveguide_length");
-    dl=getJsonDouble(node,"phase_delay_length");
     hf_mixing_frequency=getJsonDouble(node,"hf_mixing_frequency");
     lf_mixing_frequency=getJsonDouble(node,"lf_mixing_frequency");
     total_mixing_frequency=hf_mixing_frequency+lf_mixing_frequency;

@@ -9,8 +9,8 @@
     "hf_mixing_frequency": 24.2e9,
     "lf_mixing_frequency": 500e6,
     "datafile_duration": 0.02,
-    "egg_outfile_name": "tone.egg",
-    "mcinfo_outfile_name": "tone.mcinfo",
+    "egg_outfile_name": "tone_single.egg",
+    "mcinfo_outfile_name": "tone_single.mcinfo",
     "number_of_events": 10,
     "events": [
 	{
