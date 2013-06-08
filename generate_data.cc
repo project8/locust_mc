@@ -154,20 +154,18 @@ int main(int argc,char *argv[])
     //Prep egg file
     Monarch *egg=Monarch::OpenForWriting(eggname.c_str());
     MonarchHeader *header=egg->GetHeader();
-    header->SetAcqRate(sampling_rate/1e6);
+    header->SetAcquisitionRate(sampling_rate/1e6);
     header->SetRecordSize(record_size);
-    header->SetAcqTime((float)(record_size/sampling_rate)*nrecords);
+//    header->SetAcquisitionTime((float)(record_size/sampling_rate)*nrecords);
     if(waveguide_setup=="DOUBLEAMP") {
-        header->SetAcqMode(sTwoChannel);
+        header->SetAcquisitionMode(sTwoChannel);
     } else if(waveguide_setup=="SINGLEAMP") {
-        header->SetAcqMode(sOneChannel);
+        header->SetAcquisitionMode(sOneChannel);
     } else {
         cerr << "invalid waveguide setup: " << waveguide_setup << " should be DOUBLEAMP or SINGLEAMP" << endl;
         return -1;
     }
-    if(!egg->WriteHeader()) {
-	    cerr << "failed to write header" << endl;
-    }
+    egg->WriteHeader();
     //prep mcinfo file
     yajl_gen mcinfo_json=yajl_gen_alloc(NULL);
     yajl_gen_config(mcinfo_json, yajl_gen_beautify, 1);
@@ -175,7 +173,7 @@ int main(int argc,char *argv[])
     make_json_string_entry(mcinfo_json,"mc_id",mcname);
     make_json_integer_entry(mcinfo_json,"record_size",header->GetRecordSize());
     //make_json_integer_entry(mcinfo_json,"records_simulated",);
-    make_json_numeric_entry(mcinfo_json,"acquisition_rate",header->GetAcqRate());
+    make_json_numeric_entry(mcinfo_json,"acquisition_rate",header->GetAcquisitionRate());
     make_json_numeric_entry(mcinfo_json,"system_temperature",90);
     make_json_string_entry(mcinfo_json,"noise_model","full_receiver_model_minus_lf_mixing");
     make_json_string_entry(mcinfo_json,"receiver_assumptions","amplifiers correlated");
@@ -232,9 +230,9 @@ int main(int argc,char *argv[])
     for(int onrecord=0;onrecord<nrecords;onrecord++) {
     	MonarchRecord *r=egg->GetRecordInterleaved();
         if(waveguide_setup=="DOUBLAMP") {
-        	generate_record_doubleamp(r->fDataPtr);
+        	generate_record_doubleamp(r->fData);
         } else {
-        	generate_record_singleamp(r->fDataPtr);
+        	generate_record_singleamp(r->fData);
         }
     	if(!egg->WriteRecord()) {
     	    cerr << "failed to write record" << endl;

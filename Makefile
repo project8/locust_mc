@@ -1,4 +1,5 @@
-MONARCHLOC := /home/laroque/Repos/katydid/cbuild/Monarch
+#MONARCHLOC := /home/laroque/Repos/monarch/cbuild
+MONARCHLOC := /home/grybka/projects/p8/monarch/cbuild
 CFLAGS := -Wall -I $(MONARCHLOC)/include -g
 #CFLAGS := -Wall -I $(MONARCHLOC)/include -O3
 LIBS := -L$(MONARCHLOC)/lib -lMonarchCore -lfftw3f -lfftw3f_threads -lpthread -lm -lprotobuf -lyajl
