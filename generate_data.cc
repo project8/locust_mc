@@ -229,10 +229,11 @@ int main(int argc,char *argv[])
 
     //generate monte carlo
     for(int onrecord=0;onrecord<nrecords;onrecord++) {
-    	MonarchRecord *r=egg->GetRecordInterleaved();
         if(waveguide_setup=="DOUBLAMP") {
+    	    MonarchRecord *r=egg->GetRecordInterleaved();
         	generate_record_doubleamp(r->fData);
         } else {
+    	    MonarchRecord *r=egg->GetRecordSeparateOne();
         	generate_record_singleamp(r->fData);
         }
     	if(!egg->WriteRecord()) {
