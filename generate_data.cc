@@ -156,6 +156,7 @@ int main(int argc,char *argv[])
     MonarchHeader *header=egg->GetHeader();
     header->SetAcquisitionRate(sampling_rate/1e6);
     header->SetRecordSize(record_size);
+    header->SetRunDuration(uint(nrecords*record_time));
 //    header->SetAcquisitionTime((float)(record_size/sampling_rate)*nrecords);
     if(waveguide_setup=="DOUBLEAMP") {
         header->SetAcquisitionMode(sTwoChannel);
