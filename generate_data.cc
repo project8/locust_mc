@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string.h>
+#include "ReceiverTransferFunctions.hh"
 #include <yajl/yajl_gen.h>
 #include <yajl/yajl_tree.h>
 using namespace std;
@@ -79,13 +80,19 @@ string eggname="test.egg"; //output egg file name
 string mcinfoname="test.mcinfo"; //output mcinfo name
 
 //transfer function
+
 string transfer_function_fname="receiver_transfer_functions.json";
+ReceiverTransferFunctions tfuncs;
+TransferFunction hf_transferfunction_ch1; //high frequency transfer function interpolated into current band
+TransferFunction hf_transferfunction_ch2; //high frequency transfer function interpolated into current band
+/*
 float *hf_frequencies; //frequencies used for transfer function
 float *hf_full_transferfunction_ch1; //transfer function NOT IN DB
 float *hf_full_transferfunction_ch2;
 int hf_arraycount; //size of big transfer function arrays
 float *hf_transferfunction_ch1; //high frequency transfer function interpolated into current band
 float *hf_transferfunction_ch2; //high frequency transfer function interpolated into current band
+*/
 
 class ChirpEvent {
 public:
@@ -140,8 +147,8 @@ int main(int argc,char *argv[])
     channel1_f=(fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex)*fft_size);
     channel2_f=(fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex)*fft_size);
     signal_f=(fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex)*fft_size);
-    hf_transferfunction_ch1=new float[fft_size];
-    hf_transferfunction_ch2=new float[fft_size];
+//    hf_transferfunction_ch1=new float[fft_size];
+//    hf_transferfunction_ch2=new float[fft_size];
     channel1=(float*)fftwf_malloc(sizeof(float)*record_size);
     channel2=(float*)fftwf_malloc(sizeof(float)*record_size);
     signal_t=(float*)fftwf_malloc(sizeof(float)*record_size);
@@ -229,7 +236,7 @@ int main(int argc,char *argv[])
 
     //generate monte carlo
     for(int onrecord=0;onrecord<nrecords;onrecord++) {
-        if(waveguide_setup=="DOUBLAMP") {
+        if(waveguide_setup=="DOUBLEAMP") {
     	    MonarchRecord *r=egg->GetRecordInterleaved();
         	generate_record_doubleamp(r->fData);
         } else {
@@ -334,19 +341,21 @@ void generate_record_singleamp(unsigned char *dataptr)
 
     //cable delays don't matter, ignore
     //
-    //apply high frequency transfer function
+    //apply high and low frequency transfer function
     for(int i=0;i<fft_size;i++) {
-	channel1_f[i]*=hf_transferfunction_ch1[i];
+	  channel1_f[i]*=hf_transferfunction_ch1.data[i];
 	//channel2_f[i]*=hf_transferfunction_ch2[i];
     }
 
     //TODO apply low frequency receiver chain transfer function
+    
     for(int i=0;i<fft_size;i++) {
-	//this applies uniform 70 dB gain
+	//this applies uniform gain
 	//as a stopgap measure until real gain is known
-	channel1_f[i]*=1e7;
+	channel1_f[i]*=4e13;
 //	channel2_f[i]*=1e7;
     }
+   
 
     //fft to construct the time series again
     fftwf_execute(channel1_plan);
@@ -376,6 +385,10 @@ void generate_record_doubleamp(unsigned char *dataptr)
     float sigma_b=sqrt(R*kB*T_B/2.0);
     float sigma_c=sqrt(R*kB*T_C/2.0);
     float sigma_d=sqrt(R*kB*T_D/2.0);
+    cerr << "sigma_a " << sigma_a << endl;
+    cerr << "sigma_b " << sigma_b << endl;
+    cerr << "sigma_c " << sigma_c << endl;
+    cerr << "sigma_d " << sigma_d << endl;
 
 
     //generate frequency space noise 
@@ -439,11 +452,13 @@ void generate_record_doubleamp(unsigned char *dataptr)
 	channel2_f[i]=channel2_f[i]*cable_e;
     }
 
-    //apply high frequency transfer function
+    //apply high and low frequency transfer function
+    /*
     for(int i=0;i<fft_size;i++) {
-	channel1_f[i]*=hf_transferfunction_ch1[i];
-	channel2_f[i]*=hf_transferfunction_ch2[i];
+	channel1_f[i]*=hf_transferfunction_ch1.data[i];
+	channel2_f[i]*=hf_transferfunction_ch2.data[i];
     }
+    */
 
     //TODO apply low frequency receiver chain transfer function
     for(int i=0;i<fft_size;i++) {
@@ -536,6 +551,10 @@ void yajl_gen_number_forreals(yajl_gen gen,double num)
 
 int load_transfer_functions(const char *fname)
 {
+    tfuncs.load_from_json(string(fname));
+    hf_transferfunction_ch1=tfuncs.getTransferFunction(lf_mixing_frequency/1e6,sampling_rate/2/1e6,record_size/2);
+    hf_transferfunction_ch2=tfuncs.getTransferFunction(lf_mixing_frequency/1e6,sampling_rate/2/1e6,record_size/2);
+    /*
     //I just copied this from the yajl example
     //it loads the transfer function in json form and then interpolates around
     //the desired bandwidth
@@ -559,7 +578,7 @@ int load_transfer_functions(const char *fname)
         else fprintf(stderr, "unknown error");
         fprintf(stderr, "\n");
         return 1;
-    }
+    }   
     const char *freqpath[]={"hf_frequencies",(const char*)0};
     const char *hf1path[]={"hf_transfer_channel1",(const char*)0};
     const char *hf2path[]={"hf_transfer_channel2",(const char*)0};
@@ -582,6 +601,7 @@ int load_transfer_functions(const char *fname)
 	hf_transferfunction_ch1[i]=interpolate_transferfunction(hf_frequencies,hf_full_transferfunction_ch1,hf_arraycount,f);
 	hf_transferfunction_ch2[i]=interpolate_transferfunction(hf_frequencies,hf_full_transferfunction_ch2,hf_arraycount,f);
     }
+    */
     return 0;
 }
 

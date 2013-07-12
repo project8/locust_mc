@@ -8,9 +8,12 @@ LDFLAGS = -Wl,-rpath,$(MONARCHLOC)/lib
 all: generate_data check_egg_digitization
 .PHONY : all
 
-generate_data: generate_data.cc
+generate_data: generate_data.cc ReceiverTransferFunctions.o
 	g++ $(CFLAGS) -c generate_data.cc -o generate_data.o
-	g++ $(CFLAGS) $(LDFLAGS) -o generate_data $(LIBS) generate_data.o
+	g++ $(CFLAGS) $(LDFLAGS) -o generate_data $(LIBS) generate_data.o ReceiverTransferFunctions.o
+
+ReceiverTransferFunctions.o: ReceiverTransferFunctions.cc
+	g++ $(CFLAGS) -c -o ReceiverTransferFunctions.o ReceiverTransferFunctions.cc
 
 check_egg_digitization: check_egg_digitization.cc
 	g++ $(CFLAGS) -c check_egg_digitization.cc -o check_egg_digitization.o
@@ -18,6 +21,7 @@ check_egg_digitization: check_egg_digitization.cc
 
 .PHONY : clean
 clean:
+	rm -f ReceiverTransferFunctions.o
 	rm -f generate_data
 	rm -f generate_data.o
 	rm -f check_egg_digitization.o
