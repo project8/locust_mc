@@ -1,0 +1,3 @@
+[submodule "monarch"]
+	path = monarch
+	url = git://github.com/project8/monarch.git
