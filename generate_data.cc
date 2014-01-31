@@ -65,6 +65,7 @@ fftw_plan channel1_plan; //for fftw
 fftw_plan channel2_plan; //for fftw
 fftw_plan signal_plan; //for fftw
 unsigned fft_flags=FFTW_ESTIMATE;
+double gain = 9.3e13;
 
 double hf_mixing_frequency=24.2e9; //high frequency oscillator in Hz
 double lf_mixing_frequency=500e6;  //low frequency oscillator in Hz
@@ -76,8 +77,8 @@ string waveguide_setup="DOUBLEAMP";
 int nrecords=10; //how many records to generate
 double expected_event_rate=100;  //expected event rate in hz
 
-string eggname="test.egg"; //output egg file name
-string mcinfoname="test.mcinfo"; //output mcinfo name
+string eggname="test_3200smprate.egg"; //output egg file name
+string mcinfoname="test_3200smprate.mcinfo"; //output mcinfo name
 
 //transfer function
 
@@ -352,7 +353,7 @@ void generate_record_singleamp(unsigned char *dataptr)
     for(int i=0;i<fft_size;i++) {
 	//this applies uniform gain
 	//as a stopgap measure until real gain is known
-	channel1_f[i]*=4e13;
+	channel1_f[i]*=gain;
 //	channel2_f[i]*=1e7;
     }
    
