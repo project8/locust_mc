@@ -62,12 +62,12 @@ include_directories (${FFTW_INCLUDE_DIR})
 # executables #
 ###############
 
-pbuilder_install_headers(${CMAKE_CURRENT_SOURCE_DIR}/ReceiverTransferFunctions.hh)
+pbuilder_install_headers(${CMAKE_CURRENT_SOURCE_DIR}/Source/ReceiverTransferFunctions.hh)
 
-add_executable( generate_data ${CMAKE_CURRENT_SOURCE_DIR}/generate_data.cc  ${CMAKE_CURRENT_SOURCE_DIR}/ReceiverTransferFunctions.cc )
+add_executable( generate_data ${CMAKE_CURRENT_SOURCE_DIR}/Source/generate_data.cc  ${CMAKE_CURRENT_SOURCE_DIR}/Source/ReceiverTransferFunctions.cc )
 target_link_libraries( generate_data ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( generate_data )
 
-add_executable( check_egg_digitization ${CMAKE_CURRENT_SOURCE_DIR}/check_egg_digitization.cc )
+add_executable( check_egg_digitization ${CMAKE_CURRENT_SOURCE_DIR}/Source/check_egg_digitization.cc )
 target_link_libraries( check_egg_digitization ${EXTERNAL_LIBRARIES} )
 pbuilder_install_executables( check_egg_digitization )
