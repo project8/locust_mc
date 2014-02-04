@@ -1,0 +1,33 @@
+#ifndef MCLEXCEPTION_HH_
+#define MCLEXCEPTION_HH_
+
+#include <sstream>
+#include <Exception>
+
+namespace locust
+{
+
+    class Exception :
+        public std::exception
+    {
+        public:
+            Exception();
+            Exception( const Exception& );
+            ~Exception() throw ();
+
+            template< class x_streamable >
+            Exception& operator<<( const x_streamable& aFragment )
+            {
+                fException << aFragment;
+                return *this;
+            }
+
+            virtual const char* what() const throw();
+
+        private:
+            std::stringstream fException;
+    };
+
+}
+
+#endif
