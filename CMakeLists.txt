@@ -19,6 +19,14 @@ include_directories( ${PROJECT_SOURCE_DIR} )
 
 pbuilder_add_ext_libraries( "m" )
 
+include_directories( ${PROJECT_SOURCE_DIR}/RapidJSON )
+
+include_directories( ${PROJECT_SOURCE_DIR}/MTwist )
+set( MTWIST_SOURCE_FILES
+    ${PROJECT_SOURCE_DIR}/MTwist/mtwist.c
+    ${PROJECT_SOURCE_DIR}/MTwist/randistrs.c
+)
+
 add_subdirectory( monarch )
 pbuilder_add_ext_libraries( ${Monarch_LIBRARIES} )
 # add to the RPATH to be used when installing, but only if it's not a system directory
@@ -56,6 +64,28 @@ endif (NOT FFTW_THREADS_FOUND)
         remove_definitions (-DFFTW_NTHREADS=${FFTW_NTHREADS})
     endif (FFTW_THREADS_FOUND AND NOT Katydid_SINGLETHREADED)
 include_directories (${FFTW_INCLUDE_DIR})
+
+
+###########
+# library #
+###########
+
+set( LOCUST_MC_SOURCE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCConfigurator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDefaultConfig.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCException.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCLogger.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParam.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParser.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSignal.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSingleAmpSim.cc
+)
+
+add_library( LocustMC ${LOCUST_MC_SOURCE_FILES} )
+target_link_libraries( LocustMC ${EXTERNAL_LIBRARIES} )
+
+pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
+pbuilder_install_libraries( LocustMC )
 
 
 ###############
