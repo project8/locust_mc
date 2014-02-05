@@ -11,6 +11,8 @@
 #include "LMCParam.hh"
 #include "LMCSignal.hh"
 
+#include "RandomLib/Random.hpp"
+
 namespace locust
 {
 
@@ -28,6 +30,9 @@ namespace locust
             Signal::State GetRequiredSignalState() const;
             void SetRequiredSignalState( Signal::State state );
 
+            void SetRNG( RandomLib::Random* aRNG );
+            RandomLib::Random* GetRNG() const;
+
             const Generator* GetNextGenerator() const;
             void SetNextGenerator( const Generator* aGenerator );
 
@@ -35,6 +40,8 @@ namespace locust
             virtual void Generate( Signal* aSignal ) const = 0;
 
             Signal::State fRequiredSignalState;
+
+            RandomLib::Random* fRNG;
 
             const Generator* fNext;
     };

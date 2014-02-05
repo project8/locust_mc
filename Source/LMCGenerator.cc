@@ -14,6 +14,7 @@ namespace locust
 
     Generator::Generator() :
             fRequiredSignalState( Signal::kTime ),
+            fRNG( NULL ),
             fNext( NULL )
     {
     }
@@ -47,6 +48,17 @@ namespace locust
     {
         fRequiredSignalState = state;
         return;
+    }
+
+    void Generator::SetRNG( RandomLib::Random* aRNG )
+    {
+        fRNG = aRNG;
+        return;
+    }
+
+    RandomLib::Random* Generator::GetRNG() const
+    {
+        return fRNG;
     }
 
     const Generator* Generator::GetNextGenerator() const

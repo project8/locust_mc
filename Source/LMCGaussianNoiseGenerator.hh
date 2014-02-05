@@ -10,6 +10,8 @@
 
 #include "LMCGenerator.hh"
 
+#include "RandomLib/NormalDistribution.hpp"
+
 namespace locust
 {
 
@@ -28,6 +30,8 @@ namespace locust
             void Generate( Signal* aSignal ) const;
 
             double fSigma;
+
+            RandomLib::NormalDistribution< double > fNormDist;
     };
 
 } /* namespace locust */

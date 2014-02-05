@@ -12,8 +12,10 @@ namespace locust
 
     GaussianNoiseGenerator::GaussianNoiseGenerator() :
             Generator(),
-            fSigma( 1. )
+            fSigma( 1. ),
+            fNormDist()
     {
+        fRequiredSignalState = Signal::kTime;
     }
 
     GaussianNoiseGenerator::~GaussianNoiseGenerator()
@@ -44,8 +46,9 @@ namespace locust
     {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-
+            aSignal->SignalTime( index ) = fNormDist( *fRNG, 0., fSigma );
         }
+        return;
     }
 
 } /* namespace locust */
