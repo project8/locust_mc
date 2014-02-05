@@ -16,9 +16,9 @@
 
 # Build
 Build/
-Build/*
+Build*/
 build/
-build/*
+build*/
 cbuild*/
 Install/
 Install/*
