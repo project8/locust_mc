@@ -122,7 +122,7 @@ namespace locust
     {
         for( unsigned index = 0; index < fTimeSize; ++index )
         {
-            fSignalTime[index] += aSignal[index] * aScale;
+            fSignalTime[index] += aSignal.fSignalTime[index] * aScale;
         }
         return;
     }
@@ -130,7 +130,7 @@ namespace locust
     {
         for( unsigned index = 0; index < fTimeSize; ++index )
         {
-            fSignalTime[index] -= aSignal[index] * aScale;
+            fSignalTime[index] -= aSignal.fSignalTime[index] * aScale;
         }
         return;
     }
@@ -138,7 +138,7 @@ namespace locust
     {
         for( unsigned index = 0; index < fTimeSize; ++index )
         {
-            fSignalTime[index] *= aSignal[index];
+            fSignalTime[index] *= aSignal.fSignalTime[index];
         }
         return;
     }
@@ -146,7 +146,7 @@ namespace locust
     {
         for( unsigned index = 0; index < fTimeSize; ++index )
         {
-            fSignalTime[index] /= aSignal[index];
+            fSignalTime[index] /= aSignal.fSignalTime[index];
         }
         return;
     }

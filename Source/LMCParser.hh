@@ -1,9 +1,9 @@
 #ifndef MT_PARSER_HH_
 #define MT_PARSER_HH_
 
-#include "MCLParam.hh"
+#include "LMCParam.hh"
 
-#include "MCLException.hh"
+#include "LMCException.hh"
 
 #include <map>
 #include <string>

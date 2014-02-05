@@ -1,12 +1,14 @@
 /*
- * MCLParam.hh
+ * LMCParam.hh
  *
  *  Created on: Jan 14, 2014
  *      Author: nsoblath
  */
 
-#ifndef MCLPARAM_HH_
-#define MCLPARAM_HH_
+#ifndef LMCPARAM_HH_
+#define LMCPARAM_HH_
+
+#include "LMCException.hh"
 
 #include "document.h"
 
@@ -59,11 +61,12 @@ namespace locust
 
             virtual Param* clone() const;
 
+            virtual bool is_null() const;
             virtual bool is_value() const;
 
             const std::string& get() const;
             template< typename XValType >
-            XValType get();
+            XValType get() const;
 
             template< typename XStreamableType >
             ParamValue& operator<<( const XStreamableType& a_streamable );
@@ -72,6 +75,7 @@ namespace locust
 
         protected:
             std::stringstream f_value_str;
+            mutable std::stringstream f_value_str_buffer;
             mutable std::string f_value_buffer;
 
     };
@@ -79,16 +83,19 @@ namespace locust
     template< typename XStreamableType >
     ParamValue::ParamValue( XStreamableType a_streamable ) :
             Param(),
-            f_value_str()
+            f_value_str(),
+            f_value_str_buffer(),
+            f_value_buffer()
     {
         (*this) << a_streamable;
     }
 
     template< typename XValType >
-    XValType ParamValue::get()
+    XValType ParamValue::get() const
     {
         XValType t_return;
-        f_value_str >> t_return;
+        f_value_str_buffer << f_value_str.rdbuf();
+        f_value_str_buffer >> t_return;
         return t_return;
     }
 
@@ -118,6 +125,7 @@ namespace locust
 
             virtual Param* clone() const;
 
+            virtual bool is_null() const;
             virtual bool is_array() const;
 
             unsigned size() const;
@@ -126,6 +134,22 @@ namespace locust
             /// sets the size of the array
             /// if smaller than the current size, extra elements are deleted
             void resize( unsigned a_size );
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            const std::string& get_value( unsigned a_index ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( unsigned a_index ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            const std::string& get_value( unsigned a_index, const std::string& a_default ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( unsigned a_index, XValType a_default ) const;
 
             /// Returns a pointer to the Param corresponding to a_name.
             /// Returns NULL if a_name is not present.
@@ -200,6 +224,23 @@ namespace locust
             contents f_contents;
     };
 
+    template< typename XValType >
+    XValType ParamArray::get_value( unsigned a_index ) const
+    {
+        const ParamValue* value = value_at( a_index );
+        if( value == NULL ) throw Exception() << "No value at <" << a_index << "> is present at this node";
+        return value->get< XValType >();
+    }
+
+    template< typename XValType >
+    XValType ParamArray::get_value( unsigned a_index, XValType a_default ) const
+    {
+        const ParamValue* value = value_at( a_index );
+        if( value == NULL ) return a_default;
+        return value->get< XValType >();
+    }
+
+
     class ParamNode : public Param
     {
         public:
@@ -214,10 +255,27 @@ namespace locust
 
             virtual Param* clone() const;
 
+            virtual bool is_null() const;
             virtual bool is_node() const;
 
             bool has( const std::string& a_name ) const;
             unsigned count( const std::string& a_name ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            const std::string& get_value( const std::string& a_name ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Throws an exception if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( const std::string& a_name ) const;
+
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            const std::string& get_value( const std::string& a_name, const std::string& a_default ) const;
+            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
+            /// Returns a_default if a_name is not present or is not of type ParamValue
+            template< typename XValType >
+            XValType get_value( const std::string& a_name, XValType a_default ) const;
 
             /// Returns a pointer to the Param corresponding to a_name.
             /// Returns NULL if a_name is not present.
@@ -273,6 +331,23 @@ namespace locust
 
     };
 
+    template< typename XValType >
+    XValType ParamNode::get_value( const std::string& a_name ) const
+    {
+        const ParamValue* value = value_at( a_name );
+        if( value == NULL ) throw Exception() << "No value with name <" << a_name << "> is present at this node";
+        return value->get< XValType >();
+    }
+
+    template< typename XValType >
+    XValType ParamNode::get_value( const std::string& a_name, XValType a_default ) const
+    {
+        const ParamValue* value = value_at( a_name );
+        if( value == NULL ) return a_default;
+        return value->get< XValType >();
+    }
+
+
 
 
     std::ostream& operator<<(std::ostream& out, const Param& value);
@@ -300,4 +375,4 @@ namespace locust
 
 } /* namespace locust */
 
-#endif /* MCLPARAM_HH_ */
+#endif /* LMCPARAM_HH_ */

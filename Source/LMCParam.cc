@@ -7,8 +7,7 @@
 
 #include "LMCParam.hh"
 
-#include "LMCException.hh"
-#include "LLMCogger.hh"
+#include "LMCLogger.hh"
 
 #include <sstream>
 using std::string;
@@ -113,7 +112,9 @@ namespace locust
 
     ParamValue::ParamValue() :
             Param(),
-            f_value_str()
+            f_value_str(),
+            f_value_str_buffer(),
+            f_value_buffer()
     {
     }
 
@@ -131,6 +132,11 @@ namespace locust
     Param* ParamValue::clone() const
     {
         return new ParamValue( *this );
+    }
+
+    bool ParamValue::is_null() const
+    {
+        return false;
     }
 
     bool ParamValue::is_value() const
@@ -182,6 +188,11 @@ namespace locust
         return new ParamArray( *this );
     }
 
+    bool ParamArray::is_null() const
+    {
+        return false;
+    }
+
     bool ParamArray::is_array() const
     {
         return true;
@@ -196,8 +207,6 @@ namespace locust
         return f_contents.empty();
     }
 
-    /// sets the size of the array
-    /// if smaller than the current size, extra elements are deleted
     void ParamArray::resize( unsigned a_size )
     {
         unsigned curr_size = f_contents.size();
@@ -209,8 +218,20 @@ namespace locust
         return;
     }
 
-    /// Returns a pointer to the Param corresponding to a_name.
-    /// Returns NULL if a_name is not present.
+    const std::string& ParamArray::get_value( unsigned a_index ) const
+    {
+        const ParamValue* value = value_at( a_index );
+        if( value == NULL ) throw Exception() << "No value at <" << a_index << "> is present at this node";
+        return value->get();
+    }
+
+    const std::string& ParamArray::get_value( unsigned a_index, const std::string& a_default ) const
+    {
+        const ParamValue* value = value_at( a_index );
+        if( value == NULL ) return a_default;
+        return value->get();
+    }
+
     const Param* ParamArray::at( unsigned a_index ) const
     {
         if( a_index >= f_contents.size() ) return NULL;
@@ -386,7 +407,7 @@ namespace locust
 
 
     //************************************
-    //***********  OBJECT  ***************
+    //***********  NODE  *****************
     //************************************
 
     ParamNode::ParamNode() :
@@ -418,6 +439,11 @@ namespace locust
         return new ParamNode( *this );
     }
 
+    bool ParamNode::is_null() const
+    {
+        return false;
+    }
+
     bool ParamNode::is_node() const
     {
         return true;
@@ -431,6 +457,20 @@ namespace locust
     unsigned ParamNode::count( const std::string& a_name ) const
     {
         return f_contents.count( a_name );
+    }
+
+    const std::string& ParamNode::get_value( const std::string& a_name ) const
+    {
+        const ParamValue* value = value_at( a_name );
+        if( value == NULL ) throw Exception() << "No value with name <" << a_name << "> is present at this node";
+        return value->get();
+    }
+
+    const std::string& ParamNode::get_value( const std::string& a_name, const std::string& a_default ) const
+    {
+        const ParamValue* value = value_at( a_name );
+        if( value == NULL ) return a_default;
+        return value->get();
     }
 
     const Param* ParamNode::at( const std::string& a_name ) const

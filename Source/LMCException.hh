@@ -1,5 +1,5 @@
-#ifndef MCLEXCEPTION_HH_
-#define MCLEXCEPTION_HH_
+#ifndef LMCEXCEPTION_HH_
+#define LMCEXCEPTION_HH_
 
 #include <sstream>
 #include <Exception>
