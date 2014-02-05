@@ -1,0 +1,7 @@
+In CMakeLists.txt, commented out lines 234-240 to avoid a conflict with my installed boost libraries.
+The universal RandomLib library did not match the x86_64 boost libraries.
+  -- N Oblath, 3/4/2014
+ 
+ In cmake/randomlib-config.cmake.in, removed the inclusion of randomlib-depends.cmake on line 32.
+ For the purpose of an included build, the library target defined in that file conflicted with the existing library target.
+  -- N Oblath, 3/5/2014
