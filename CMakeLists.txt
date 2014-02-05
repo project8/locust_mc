@@ -22,7 +22,10 @@ pbuilder_add_ext_libraries( "m" )
 include_directories( ${PROJECT_SOURCE_DIR}/RapidJSON )
 
 add_subdirectory( RandomLib )
-include_directories( ${PROJECT_SOURCE_DIR}/RandomLib/include )
+include( ${CMAKE_BINARY_DIR}/RandomLib/randomlib-config.cmake )
+include_directories( ${RandomLib_INCLUDE_DIRS} )
+link_directories( ${RandomLib_LIBRARY_DIRS} )
+pbuilder_add_ext_libraries( ${RandomLib_LIBRARIES} )
 
 #include_directories( ${PROJECT_SOURCE_DIR}/MTwist )
 #set( MTWIST_SOURCE_FILES

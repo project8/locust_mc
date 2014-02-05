@@ -29,7 +29,7 @@ else ()
 endif ()
 
 # Read in the exported definition of the library
-include ("${_DIR}/randomlib-depends.cmake")
+#include ("${_DIR}/randomlib-depends.cmake")
 set (RandomLib_LIBRARIES Random)
 
 # RandomLib_FOUND is set to 1 automatically
