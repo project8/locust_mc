@@ -246,6 +246,16 @@ namespace locust
         return fSignalTime;
     }
 
+    double Signal::SignalTime( unsigned anIndex ) const
+    {
+        return fSignalTime[ anIndex ];
+    }
+
+    double& Signal::SignalTime( unsigned anIndex )
+    {
+        return fSignalTime[ anIndex ];
+    }
+
     const fftw_complex* Signal::SignalFreq() const
     {
         return fSignalFreq;
@@ -256,5 +266,14 @@ namespace locust
         return fSignalFreq;
     }
 
+    const fftw_complex& Signal::SignalFreq( unsigned anIndex ) const
+    {
+        return fSignalFreq[ anIndex ];
+    }
+
+    fftw_complex& Signal::SignalFreq( unsigned anIndex )
+    {
+        return fSignalFreq[ anIndex ];
+    }
 
 } /* namespace locust */

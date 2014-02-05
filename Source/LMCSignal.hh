@@ -46,8 +46,14 @@ namespace locust
             const double* SignalTime() const;
             double* SignalTime();
 
+            double SignalTime( unsigned anIndex ) const;
+            double& SignalTime( unsigned anIndex );
+
             const fftw_complex* SignalFreq() const;
             fftw_complex* SignalFreq();
+
+            const fftw_complex& SignalFreq( unsigned anIndex ) const;
+            fftw_complex& SignalFreq( unsigned anIndex );
 
         private:
             bool ToTime();
