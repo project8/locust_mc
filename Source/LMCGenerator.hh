@@ -19,13 +19,16 @@ namespace locust
     class Generator
     {
         public:
-            Generator();
+            Generator( const std::string& aName = "generic-generator" );
             virtual ~Generator();
 
             virtual void Configure( const ParamNode* aNode ) = 0;
 
-            void Run( unsigned aTimeSize ) const;
+            Signal* Run( unsigned aTimeSize ) const;
             void Run( Signal* aSignal ) const;
+
+            const std::string& GetName() const;
+            void SetName( const std::string& aName );
 
             Signal::State GetRequiredSignalState() const;
             void SetRequiredSignalState( Signal::State state );
@@ -33,17 +36,19 @@ namespace locust
             void SetRNG( RandomLib::Random* aRNG );
             RandomLib::Random* GetRNG() const;
 
-            const Generator* GetNextGenerator() const;
-            void SetNextGenerator( const Generator* aGenerator );
+            Generator* GetNextGenerator() const;
+            void SetNextGenerator( Generator* aGenerator );
 
         protected:
             virtual void Generate( Signal* aSignal ) const = 0;
+
+            std::string fName;
 
             Signal::State fRequiredSignalState;
 
             RandomLib::Random* fRNG;
 
-            const Generator* fNext;
+            Generator* fNext;
     };
 
 } /* namespace locust */

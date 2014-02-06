@@ -7,11 +7,14 @@
 
 #include "LMCGaussianNoiseGenerator.hh"
 
+#include "LMCFactory.hh"
+
 namespace locust
 {
+    static Registrar< Generator, GaussianNoiseGenerator > sGNGeneratorReg( "gaussian-noise" );
 
-    GaussianNoiseGenerator::GaussianNoiseGenerator() :
-            Generator(),
+    GaussianNoiseGenerator::GaussianNoiseGenerator( const std::string& aName ) :
+            Generator( aName ),
             fSigma( 1. ),
             fNormDist()
     {
@@ -46,7 +49,7 @@ namespace locust
     {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTime( index ) = fNormDist( *fRNG, 0., fSigma );
+            aSignal->SignalTime( index ) += fNormDist( *fRNG, 0., fSigma );
         }
         return;
     }

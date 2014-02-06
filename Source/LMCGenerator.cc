@@ -12,7 +12,8 @@
 namespace locust
 {
 
-    Generator::Generator() :
+    Generator::Generator( const std::string& aName ) :
+            fName( aName ),
             fRequiredSignalState( Signal::kTime ),
             fRNG( NULL ),
             fNext( NULL )
@@ -23,12 +24,12 @@ namespace locust
     {
     }
 
-    void Generator::Run( unsigned aTimeSize ) const
+    Signal* Generator::Run( unsigned aTimeSize ) const
     {
         Signal* newSignal = new Signal();
         newSignal->Initialize( aTimeSize );
         Run( newSignal );
-        return;
+        return newSignal;
     }
 
     void Generator::Run( Signal* aSignal ) const
@@ -36,6 +37,17 @@ namespace locust
         aSignal->ToState( fRequiredSignalState );
         Generate( aSignal );
         if( fNext != NULL ) fNext->Run( aSignal );
+        return;
+    }
+
+    const std::string& Generator::GetName() const
+    {
+        return fName;
+    }
+
+    void Generator::SetName( const std::string& aName )
+    {
+        fName = aName;
         return;
     }
 
@@ -61,12 +73,12 @@ namespace locust
         return fRNG;
     }
 
-    const Generator* Generator::GetNextGenerator() const
+    Generator* Generator::GetNextGenerator() const
     {
         return fNext;
     }
 
-    void Generator::SetNextGenerator( const Generator* aGenerator )
+    void Generator::SetNextGenerator( Generator* aGenerator )
     {
         fNext = aGenerator;
         return;

@@ -18,7 +18,7 @@ namespace locust
     class GaussianNoiseGenerator : public Generator
     {
         public:
-            GaussianNoiseGenerator();
+            GaussianNoiseGenerator( const std::string& aName = "gaussian-noise" );
             virtual ~GaussianNoiseGenerator();
 
             void Configure( const ParamNode* aNode );
