@@ -255,8 +255,8 @@ include_directories ("${PROJECT_BINARY_DIR}/include" include)
 # The list of subdirectories to process
 add_subdirectory (src)
 add_subdirectory (include/RandomLib)
-add_subdirectory (examples)
-add_subdirectory (doc)
+#add_subdirectory (examples)
+#add_subdirectory (doc)
 add_subdirectory (cmake)
 
 # Packaging support; we deal with

@@ -25,7 +25,7 @@ endif ()
 install (TARGETS Random
   EXPORT depends
   RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib${LIB_SUFFIX}
+  LIBRARY DESTINATION ${LIB_INSTALL_DIR}
   ARCHIVE DESTINATION lib${LIB_SUFFIX})
 
 if (MSVC)
@@ -39,3 +39,6 @@ endif()
 
 # Put all the library into a folder in the IDE
 set_property (TARGET Random PROPERTY FOLDER library)
+
+set_property (GLOBAL APPEND PROPERTY RandomLib_LIBRARIES Random)
+set_target_properties (Random PROPERTIES INSTALL_NAME_DIR ${LIB_INSTALL_DIR})
