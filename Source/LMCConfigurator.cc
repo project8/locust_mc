@@ -47,7 +47,7 @@ namespace locust
                 ParamNode* t_config_from_file = ParamInputJSON::read_file( t_config_filename );
                 if( t_config_from_file == NULL )
                 {
-                    throw Exception() << "[Configurator] error parsing config file";
+                    throw Exception() << "error parsing config file";
                 }
                 f_master_config->merge( t_config_from_file );
                 delete t_config_from_file;
