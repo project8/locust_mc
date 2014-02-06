@@ -24,7 +24,7 @@ using std::string;
 
 namespace locust
 {
-    LMCLOGGER( mtlog, "Param" );
+    LMCLOGGER( lmclog, "Param" );
 
     unsigned Param::s_indent_level = 0;
 
@@ -85,19 +85,19 @@ namespace locust
 
     const ParamValue& Param::as_value() const
     {
-        const ParamValue* t_cast_ptr = static_cast< const ParamValue* >( this );
+        const ParamValue* t_cast_ptr = dynamic_cast< const ParamValue* >( this );
         return *t_cast_ptr;
     }
 
     const ParamArray& Param::as_array() const
     {
-        const ParamArray* t_cast_ptr = static_cast< const ParamArray* >( this );
+        const ParamArray* t_cast_ptr = dynamic_cast< const ParamArray* >( this );
         return *t_cast_ptr;
     }
 
     const ParamNode& Param::as_node() const
     {
-        const ParamNode* t_cast_ptr = static_cast< const ParamNode* >( this );
+        const ParamNode* t_cast_ptr = dynamic_cast< const ParamNode* >( this );
         return *t_cast_ptr;
     }
 
@@ -535,6 +535,7 @@ namespace locust
 
     const ParamNode* ParamNode::node_at( const std::string& a_name ) const
     {
+
         const_iterator it = f_contents.find( a_name );
         if( it == f_contents.end() )
         {
@@ -714,7 +715,7 @@ namespace locust
         FILE* t_config_file = fopen( a_filename.c_str(), "r" );
         if( t_config_file == NULL )
         {
-            LMCERROR( mtlog, "file <" << a_filename << "> did not open" );
+            LMCERROR( lmclog, "file <" << a_filename << "> did not open" );
             return NULL;
         }
         rapidjson::FileStream t_file_stream( t_config_file );
@@ -722,7 +723,35 @@ namespace locust
         rapidjson::Document t_config_doc;
         if( t_config_doc.ParseStream<0>( t_file_stream ).HasParseError() )
         {
-            LMCERROR( "error parsing config file:\n" << t_config_doc.GetParseError() );
+            unsigned errorPos = t_config_doc.GetErrorOffset();
+            rewind( t_config_file );
+            unsigned iChar, newlineCount = 1, lastNewlinePos = 0;
+            int thisChar;
+            for( iChar = 0; iChar != errorPos; ++iChar )
+            {
+                thisChar = fgetc( t_config_file );
+                if( thisChar == EOF )
+                {
+                    break;
+                }
+                if( thisChar == '\n' || thisChar == '\r' )
+                {
+                    newlineCount++;
+                    lastNewlinePos = iChar + 1;
+                }
+            }
+            if( iChar == errorPos )
+            {
+                LMCERROR( lmclog, "error parsing config file :\n" <<
+                        '\t' << t_config_doc.GetParseError() << '\n' <<
+                        "\tThe error was reported at line " << newlineCount << ", character " << errorPos - lastNewlinePos );
+            }
+            else
+            {
+                LMCERROR( lmclog, "error parsing config file :\n" <<
+                        '\t' << t_config_doc.GetParseError() <<
+                        "\tend of file reached before error location was found" );
+            }
             fclose( t_config_file );
             return NULL;
         }
@@ -736,7 +765,7 @@ namespace locust
         rapidjson::Document t_config_doc;
         if( t_config_doc.Parse<0>( a_json_string.c_str() ).HasParseError() )
         {
-            LMCERROR( mtlog, "error parsing string:\n" << t_config_doc.GetParseError() );
+            LMCERROR( lmclog, "error parsing string:\n" << t_config_doc.GetParseError() );
             return NULL;
         }
         return ParamInputJSON::read_document( t_config_doc );
@@ -824,7 +853,7 @@ namespace locust
             (*t_config_value) << a_value.GetDouble();
             return t_config_value;
         }
-        LMCWARN( mtlog, "(config_reader_json) unknown type; returning null value" );
+        LMCWARN( lmclog, "unknown type; returning null value" );
         return new Param();
     }
 
