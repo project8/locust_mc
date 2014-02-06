@@ -1,7 +1,11 @@
-In CMakeLists.txt, commented out lines 234-240 to avoid a conflict with my installed boost libraries.
-The universal RandomLib library did not match the x86_64 boost libraries.
+In CMakeLists.txt, commented out lines 234-40 to avoid a conflict with my installed boost libraries.
+    The universal RandomLib library did not match the x86_64 boost libraries.
   -- N Oblath, 3/4/2014
  
- In cmake/randomlib-config.cmake.in, removed the inclusion of randomlib-depends.cmake on line 32.
- For the purpose of an included build, the library target defined in that file conflicted with the existing library target.
+In cmake/randomlib-config.cmake.in, removed the inclusion of randomlib-depends.cmake on line 32.
+    For the purpose of an included build, the library target defined in that file conflicted with the existing library target.
+In CMakeLists.txt, commented out lines 258-9, as the executables and documentation aren't needed.
+In src/CMakeLists.txt, changed the library install directory to ${LIB_INSTALL_DIR} (line 28).
+In include/RandomLib/CMakeLists.txt, changed the include install directory to ${INCLUDE_INSTALL_DIR} (line 4)
+In include/RandomLib/CMakeLists.txt, added some properties for libRand so that its location is maintained when the library is installed (lines 43-4)
   -- N Oblath, 3/5/2014
