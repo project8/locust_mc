@@ -26,6 +26,14 @@ include( ${CMAKE_BINARY_DIR}/RandomLib/randomlib-config.cmake )
 include_directories( ${RandomLib_INCLUDE_DIRS} )
 link_directories( ${RandomLib_LIBRARY_DIRS} )
 pbuilder_add_ext_libraries( ${RandomLib_LIBRARIES} )
+message( STATUS "randomlib library dirs: ${RandomLib_LIBRARY_DIRS}" )
+# add to the RPATH to be used when installing, but only if it's not a system directory
+list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${RandomLib_LIBRARY_DIRS}" isSystemDir )
+message( STATUS "is system dir: ${isSystemDir}" )
+if( "${isSystemDir}" STREQUAL "-1" )
+   message( STATUS "appending to rpath" )
+   list( APPEND CMAKE_INSTALL_RPATH ${RandomLib_LIBRARY_DIRS} )
+endif( "${isSystemDir}" STREQUAL "-1" )
 
 #include_directories( ${PROJECT_SOURCE_DIR}/MTwist )
 #set( MTWIST_SOURCE_FILES
@@ -76,13 +84,18 @@ set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCConfigurator.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCConstants.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDefaultConfig.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDestroyer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCException.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCFactory.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGaussianNoiseGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGenerator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGeneratorToolbox.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCLogger.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParam.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParser.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSignal.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSimulationController.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSingleton.hh
     #${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSingleAmpSim.hh
 )
 
@@ -92,10 +105,12 @@ set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCException.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGaussianNoiseGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGenerator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGeneratorToolbox.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCLogger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParam.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParser.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSignal.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSimulationController.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSingleAmpSim.cc
 )
 
@@ -110,6 +125,10 @@ pbuilder_install_libraries( LocustMC )
 # executables #
 ###############
 
+add_executable( LocustSim ${CMAKE_CURRENT_SOURCE_DIR}/Source/LocustSim.cc )
+target_link_libraries( LocustSim LocustMC ${EXTERNAL_LIBRARIES} )
+pbuilder_install_executables( LocustSim )
+
 #pbuilder_install_headers(${CMAKE_CURRENT_SOURCE_DIR}/Source/ReceiverTransferFunctions.hh)
 
 #add_executable( generate_data ${CMAKE_CURRENT_SOURCE_DIR}/Source/generate_data.cc  ${CMAKE_CURRENT_SOURCE_DIR}/Source/ReceiverTransferFunctions.cc )
@@ -121,6 +140,8 @@ pbuilder_install_libraries( LocustMC )
 #pbuilder_install_executables( check_egg_digitization )
 
 pbuilder_install_config (
+    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_new_config.json
+
     ${CMAKE_CURRENT_SOURCE_DIR}/Config/receiver_transfer_functions.json
     ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_config.json
     ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_single_config.json
