@@ -16,11 +16,9 @@ namespace locust
     LMCLOGGER( lmclog, "SimulationController" );
 
     SimulationController::SimulationController() :
-            fNRecords( 1 ),
-            fDuration( 0.021 ),
-            fRecordSize( 4194304 ),
-            fBinWidth( 5.e9 ),
-            fFirstGenerator( NULL )
+            fFirstGenerator( NULL ),
+            fRunLengthCalc(),
+            fEggWriter()
     {
     }
 
@@ -28,76 +26,25 @@ namespace locust
     {
     }
 
-    void SimulationController::Configure( const ParamNode* aNode )
+    bool SimulationController::Configure( const ParamNode* aNode )
     {
-        if( aNode == NULL ) return;
+        if( aNode == NULL ) return true;
 
-        // NOTE: fBinWidth, fRecordSize, and fNRecords are set before setting the duration on purpose.
-        // The former three all modify the duration.
+        // configure the run-length calculator
+        if( ! fRunLengthCalc.Configure( aNode ) )
+        {
+            LMCERROR( lmclog, "Error configuring the run length calculator" );
+            return false;
+        }
 
-        if( aNode->has( "digitizer-rate" ) )
-            SetBinWidth( 1. / aNode->get_value< double >( "digitizer-rate" ) );
-        else if( aNode->has( "bin-width" ) )
-            SetBinWidth( aNode->get_value< double >( "bin-width" ) );
+        // configure the egg writer
+        if( ! fEggWriter.Configure( aNode ) )
+        {
+            LMCERROR( lmclog, "Error configuring the egg writer" );
+            return false;
+        }
 
-        if( aNode->has( "record-size" ) )
-            SetRecordSize( aNode->get_value< unsigned >( "record-size" ) );
-
-        if( aNode->has( "n-records" ) )
-            SetNRecords( aNode->get_value< unsigned >( "n-records" ) );
-
-        if( aNode->has( "duration" ) )
-            SetDuration( aNode->get_value< double >( "duration" ) );
-
-        return;
-    }
-
-    unsigned SimulationController::GetNRecords() const
-    {
-        return fNRecords;
-    }
-
-    void SimulationController::SetNRecords( unsigned recs )
-    {
-        fNRecords = recs;
-        fDuration = fNRecords * fBinWidth * fRecordSize;
-        return;
-    }
-
-    double SimulationController::GetDuration() const
-    {
-        return fDuration;
-    }
-
-    void SimulationController::SetDuration( double duration )
-    {
-        fNRecords = duration / double(fBinWidth * fRecordSize);
-        fDuration = fNRecords * fBinWidth * fRecordSize;
-        return;
-    }
-
-    unsigned SimulationController::GetRecordSize() const
-    {
-        return fRecordSize;
-    }
-
-    void SimulationController::SetRecordSize( unsigned size )
-    {
-        fRecordSize = size;
-        fDuration = fNRecords * fBinWidth * fRecordSize;
-        return;
-    }
-
-    double SimulationController::GetBinWidth() const
-    {
-        return fBinWidth;
-    }
-
-    void SimulationController::SetBinWidth( double bw )
-    {
-        fBinWidth = bw;
-        fDuration = fNRecords * fBinWidth * fRecordSize;
-        return;
+        return true;
     }
 
     void SimulationController::SetFirstGenerator( const Generator* firstGen )
@@ -106,18 +53,52 @@ namespace locust
         return;
     }
 
-    void SimulationController::Run() const
+    bool SimulationController::Prepare()
+    {
+        LMCINFO( lmclog, "Preparing for run" );
+
+        if( ! fRunLengthCalc.VisitGenerators() )
+        {
+            LMCERROR( lmclog, "Error while the run-length calculator was visiting generators" );
+            return false;
+        }
+
+        // do the final determination of the run length
+        if( ! fRunLengthCalc.CalculateRunLength() )
+        {
+            LMCERROR( lmclog, "Error while the run-length calculator was calculating the run length" );
+            return false;
+        }
+
+        // overwrite the run duration in the egg writer, then prepare the egg file
+        fEggWriter.SetDuration( fRunLengthCalc.GetDuration() );
+        if( ! fEggWriter.PrepareEgg() )
+        {
+            LMCERROR( lmclog, "Error preparing the egg file" );
+            return false;
+        }
+
+        return true;
+    }
+
+    bool SimulationController::Run() const
     {
         if( fFirstGenerator == NULL )
         {
             LMCWARN( lmclog, "First generator is not present" );
-            return;
+            return false;
         }
 
-        for( unsigned record = 0; record < fNRecords; ++record )
+        unsigned nRecords = fRunLengthCalc.GetNRecords();
+        unsigned recordSize = fRunLengthCalc.GetRecordSize();
+
+        LMCINFO( lmclog, "Commencing the run" );
+
+        for( unsigned record = 0; record < nRecords; ++record )
         {
             LMCINFO( lmclog, "Simulating record " << record );
-            Signal* simulatedSignal = fFirstGenerator->Run( fRecordSize );
+            Signal* simulatedSignal = fFirstGenerator->Run( recordSize );
+            // TODO: write singal to egg file here!
             for( unsigned index = 0; index < 100; ++index )
             {
                 LMCWARN( lmclog, simulatedSignal->SignalTime( index ) );
@@ -126,9 +107,20 @@ namespace locust
             delete simulatedSignal;
         }
 
-        return;
+        return true;
     }
 
+    bool SimulationController::Finalize()
+    {
+        LMCINFO( lmclog, "Finalizing the run" );
 
+        if(! fEggWriter.FinalizeEgg() )
+        {
+            LMCERROR( lmclog, "Error while finalizing the egg file" );
+            return false;
+        }
+
+        return true;
+    }
 
 } /* namespace locust */

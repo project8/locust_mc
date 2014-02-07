@@ -8,6 +8,9 @@
 #ifndef LMCSIMULATIONCONTROLLER_HH_
 #define LMCSIMULATIONCONTROLLER_HH_
 
+#include "LMCEggWriter.hh"
+#include "LMCRunLengthCalculator.hh"
+
 namespace locust
 {
     class Generator;
@@ -19,36 +22,22 @@ namespace locust
             SimulationController();
             virtual ~SimulationController();
 
-            void Configure( const ParamNode* aNode );
+            bool Configure( const ParamNode* aNode );
 
-            unsigned GetNRecords() const;
-            /// Set the number of records; also modifies the duration
-            void SetNRecords( unsigned recs );
+            bool Prepare();
 
-            double GetDuration() const;
-            /// Set the duration: rounds down to an integer number of records, and sets the duration accordingly
-            void SetDuration( double duration );
+            bool Run() const;
 
-            unsigned GetRecordSize() const;
-            /// Set the record size; also modifies the duration
-            void SetRecordSize( unsigned size );
-
-            double GetBinWidth() const;
-            /// Set the bin width; also modifies the duration
-            void SetBinWidth( double bw );
+            bool Finalize();
 
             void SetFirstGenerator( const Generator* firstGen );
 
-            void Run() const;
-
         private:
-            unsigned fNRecords;
-            double fDuration; // sec
-
-            unsigned fRecordSize;
-            double fBinWidth; // sec
-
             const Generator* fFirstGenerator;
+
+            RunLengthCalculator fRunLengthCalc;
+
+            EggWriter fEggWriter;
     };
 
 } /* namespace locust */
