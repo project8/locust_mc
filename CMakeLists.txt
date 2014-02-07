@@ -85,6 +85,7 @@ set( LOCUST_MC_HEADER_FILES
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCConstants.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDefaultConfig.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDestroyer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCEggWriter.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCException.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCFactory.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGaussianNoiseGenerator.hh
@@ -93,15 +94,18 @@ set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCLogger.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParam.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParser.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCRunLengthCalculator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSignal.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSimulationController.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSingleton.hh
     #${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSingleAmpSim.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCVisitor.hh
 )
 
 set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCConfigurator.cc
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDefaultConfig.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCEggWriter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCException.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGaussianNoiseGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGenerator.cc
@@ -109,9 +113,11 @@ set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCLogger.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParam.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCParser.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCRunLengthCalculator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSignal.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSimulationController.cc
     #${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCSingleAmpSim.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCVisitor.cc
 )
 
 add_library( LocustMC ${LOCUST_MC_SOURCE_FILES} )
