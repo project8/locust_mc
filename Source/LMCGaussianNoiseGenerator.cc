@@ -34,6 +34,12 @@ namespace locust
         return;
     }
 
+    void GaussianNoiseGenerator::Accept( GeneratorVisitor* aVisitor )
+    {
+        aVisitor->Visit( this );
+        return;
+    }
+
     double GaussianNoiseGenerator::GetSigma() const
     {
         return fSigma;

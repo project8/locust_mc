@@ -8,6 +8,7 @@
 #ifndef LMCGENERATOR_HH_
 #define LMCGENERATOR_HH_
 
+#include "LMCVisitor.hh"
 #include "LMCParam.hh"
 #include "LMCSignal.hh"
 
@@ -23,6 +24,8 @@ namespace locust
             virtual ~Generator();
 
             virtual void Configure( const ParamNode* aNode ) = 0;
+
+            virtual void Accept( GeneratorVisitor* aVisitor ) = 0;
 
             Signal* Run( unsigned aTimeSize ) const;
             void Run( Signal* aSignal ) const;

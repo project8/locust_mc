@@ -23,6 +23,8 @@ namespace locust
 
             void Configure( const ParamNode* aNode );
 
+            void Accept( GeneratorVisitor* aVisitor );
+
             double GetSigma() const;
             void SetSigma( double aSigma );
 
