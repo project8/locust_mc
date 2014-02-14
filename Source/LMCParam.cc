@@ -112,17 +112,14 @@ namespace locust
 
     ParamValue::ParamValue() :
             Param(),
-            f_value_str(),
-            f_value_str_buffer(),
-            f_value_buffer()
+            f_value()
     {
     }
 
     ParamValue::ParamValue( const ParamValue& orig ) :
             Param( orig ),
-            f_value_str()
+            f_value( orig.f_value )
     {
-        f_value_str << orig.f_value_str.str();
     }
 
     ParamValue::~ParamValue()
@@ -146,13 +143,12 @@ namespace locust
 
     const string& ParamValue::get() const
     {
-        f_value_buffer = f_value_str.str();
-        return f_value_buffer;
+        return f_value;
     }
 
     std::string ParamValue::to_string() const
     {
-        return string(f_value_str.str());
+        return string( f_value );
     }
 
     //************************************

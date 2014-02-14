@@ -74,18 +74,14 @@ namespace locust
             virtual std::string to_string() const;
 
         protected:
-            std::stringstream f_value_str;
-            mutable std::stringstream f_value_str_buffer;
-            mutable std::string f_value_buffer;
+            std::string f_value;
 
     };
 
     template< typename XStreamableType >
     ParamValue::ParamValue( XStreamableType a_streamable ) :
             Param(),
-            f_value_str(),
-            f_value_str_buffer(),
-            f_value_buffer()
+            f_value()
     {
         (*this) << a_streamable;
     }
@@ -94,16 +90,18 @@ namespace locust
     XValType ParamValue::get() const
     {
         XValType t_return;
-        f_value_str_buffer << f_value_str.rdbuf();
-        f_value_str_buffer >> t_return;
+        stringstream t_buffer;
+        t_buffer << f_value;
+        t_buffer >> t_return;
         return t_return;
     }
 
     template< typename XStreamableType >
     ParamValue& ParamValue::operator<<( const XStreamableType& a_streamable )
     {
-        f_value_str.str("");
-        f_value_str << a_streamable;
+        std::stringstream t_buffer;
+        t_buffer << a_streamable;
+        f_value = t_buffer.str();
         return *this;
     }
 
