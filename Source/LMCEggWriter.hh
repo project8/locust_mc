@@ -71,9 +71,10 @@ namespace locust
             unsigned fBitDepth;
             unsigned fDataTypeSize;
 
-            double fAcquisitionRate;
-            double fDuration;
+            double fAcquisitionRate; // MHz
+            double fDuration; // s
             unsigned fRecordSize;
+            monarch::TimeType fRecordLength; // ns
 
         public:
             bool PrepareEgg();
@@ -84,10 +85,18 @@ namespace locust
 
             monarch::Monarch* GetMonarch() const;
 
+            void IncrementAcquisitionId();
+
         private:
             monarch::Monarch* fMonarch;
 
             monarch::MonarchRecordBytes* fRecord;
+
+            monarch::AcquisitionIdType fAcquisitionId;
+            monarch::RecordIdType fRecordCounter;
+            monarch::TimeType fRecordTime;
+
+            uint64_t fRecordNBytes;
 
     };
 

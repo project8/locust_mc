@@ -9,6 +9,7 @@
 
 #include "LMCLogger.hh"
 #include "LMCParam.hh"
+#include "LMCSignal.hh"
 
 namespace locust
 {
@@ -25,8 +26,13 @@ namespace locust
             fAcquisitionRate( 1. ),
             fDuration( 1. ),
             fRecordSize( 1 ),
+            fRecordLength( 1 ),
             fMonarch( NULL ),
-            fRecord( NULL )
+            fRecord( NULL ),
+            fAcquisitionId( 0 ),
+            fRecordCounter( 0 ),
+            fRecordTime( 0. ),
+            fRecordNBytes( 0 )
     {
     }
 
@@ -84,7 +90,16 @@ namespace locust
         header->SetRunSource( monarch::sSourceSimulation );
         header->SetFormatMode( monarch::sFormatSingle );
 
+        // TODO: information from digitizer loaded into header
+
         fRecord = fMonarch->GetRecordSeparateOne();
+
+        fAcquisitionId = 0;
+        fRecordCounter = 0;
+        fRecordTime = 0;
+        fRecordLength = ( double )fRecordSize / ( 1.e3 * fAcquisitionRate );
+
+        fRecordNBytes = header->GetDataTypeSize() * fRecordSize;
 
         fState = kPrepared;
         return true;
@@ -99,7 +114,19 @@ namespace locust
         }
         fState = kWriting;
 
-        // TODO: fill in record from signal
+        fRecord->fAcquisitionId = fAcquisitionId;
+        fRecord->fRecordId = fRecordCounter;
+        fRecord->fTime = fRecordTime;
+
+        if( aSignal->GetState() != Signal::kTime )
+        {
+            LMCERROR( lmclog, "Signal is not in the time domain; no record was written" );
+            return false;
+        }
+        ::memcpy( fRecord->fData, reinterpret_cast< const byte_type* >( aSignal->SignalDigital() ), fRecordNBytes );
+
+        ++fRecordCounter;
+        fRecordTime += fRecordLength;
 
         return fMonarch->WriteRecord();
     }
@@ -236,6 +263,12 @@ namespace locust
     void EggWriter::SetRecordSize( unsigned size )
     {
         fRecordSize = size;
+        return;
+    }
+
+    void EggWriter::IncrementAcquisitionId()
+    {
+        ++fAcquisitionId;
         return;
     }
 

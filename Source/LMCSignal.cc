@@ -17,8 +17,10 @@ namespace locust
             fState( kNotInitialized ),
             fTimeSize( 0 ),
             fFreqSize( 0 ),
+            fDigitalSize( 0 ),
             fSignalTime( NULL ),
             fSignalFreq( NULL ),
+            fSignalDigital( NULL ),
             fPlanToFreq(),
             fPlanToTime()
     {
@@ -53,12 +55,18 @@ namespace locust
     {
         delete [] fSignalTime;
         fftw_free( fSignalFreq );
+        delete [] fSignalDigital;
+
+        fSignalTime = NULL;
+        fSignalFreq = NULL;
+        fSignalDigital = NULL;
 
         fftw_destroy_plan( fPlanToFreq );
         fftw_destroy_plan( fPlanToTime );
 
         fTimeSize = 0;
         fFreqSize = 0;
+        fDigitalSize = 0;
 
         fState = kNotInitialized;
 
@@ -67,15 +75,29 @@ namespace locust
 
     void Signal::ResetValues()
     {
-        for( unsigned index = 0; index < fTimeSize; ++index )
+        if( fSignalTime != NULL )
         {
-            fSignalTime[index] = 0.;
+            for( unsigned index = 0; index < fTimeSize; ++index )
+            {
+                fSignalTime[index] = 0.;
+            }
         }
 
-        for( unsigned index = 0; index < fFreqSize; ++index )
+        if( fSignalFreq != NULL )
         {
-            fSignalFreq[index][0] = 0.;
-            fSignalFreq[index][1] = 0.;
+            for( unsigned index = 0; index < fFreqSize; ++index )
+            {
+                fSignalFreq[index][0] = 0.;
+                fSignalFreq[index][1] = 0.;
+            }
+        }
+
+        if( fSignalDigital != NULL )
+        {
+            for( unsigned index = 0; index < fDigitalSize; ++index )
+            {
+                fSignalDigital[index] = 0;
+            }
         }
 
         return;
@@ -205,6 +227,11 @@ namespace locust
         return fFreqSize;
     }
 
+    unsigned Signal::DigitalSize() const
+    {
+        return fDigitalSize;
+    }
+
     bool Signal::ToState( Signal::State aState )
     {
         if( fState == kNotInitialized )
@@ -213,8 +240,13 @@ namespace locust
             return false;
         }
         if( fState == aState ) return true;
-        if( aState == kTime ) return ToTime();
-        if( aState == kFreq ) return ToFreq();
+        if( aState == kTime ) return FFTToTime();
+        if( aState == kFreq ) return FFTToFreq();
+        if( aState == kDigital )
+        {
+            LMCERROR( lmclog, "Please use Signal::ToDigital to convert to a digital signal" );
+            return false;
+        }
         LMCERROR( lmclog, "Unknown state requested: " << aState );
         return false;
     }
@@ -226,13 +258,34 @@ namespace locust
 
     bool Signal::ToTime()
     {
-        fftw_execute( fPlanToTime );
-        return true;
+        return ToState( kTime );
     }
 
     bool Signal::ToFreq()
     {
+        return ToState( kFreq );
+    }
+
+    bool Signal::ToDigital( uint64_t* anArray, unsigned aDigSize )
+    {
+        delete fSignalDigital;
+        fSignalDigital = anArray;
+        fDigitalSize = aDigSize;
+        fState = kDigital;
+        return true;
+    }
+
+    bool Signal::FFTToTime()
+    {
+        fftw_execute( fPlanToTime );
+        fState = kTime;
+        return true;
+    }
+
+    bool Signal::FFTToFreq()
+    {
         fftw_execute( fPlanToFreq );
+        fState = kFreq;
         return false;
     }
 
@@ -274,6 +327,26 @@ namespace locust
     fftw_complex& Signal::SignalFreq( unsigned anIndex )
     {
         return fSignalFreq[ anIndex ];
+    }
+
+    const uint64_t* Signal::SignalDigital() const
+    {
+        return fSignalDigital;
+    }
+
+    uint64_t* Signal::SignalDigital()
+    {
+        return fSignalDigital;
+    }
+
+    uint64_t Signal::SignalDigital( unsigned anIndex ) const
+    {
+        return fSignalDigital[ anIndex ];
+    }
+
+    uint64_t& Signal::SignalDigital( unsigned anIndex )
+    {
+        return fSignalDigital[ anIndex ];
     }
 
 } /* namespace locust */

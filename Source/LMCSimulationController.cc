@@ -102,6 +102,13 @@ namespace locust
             {
                 LMCWARN( lmclog, simulatedSignal->SignalTime( index ) );
             }
+
+            if( ! simulatedSignal->ToState( Signal::kDigital ) )
+            {
+                LMCERROR( lmclog, "Please digitize the signal before attempting to write to an egg file" );
+                delete simulatedSignal;
+                return false;
+            }
             if( ! fEggWriter.WriteRecord( simulatedSignal ) )
             {
                 LMCERROR( lmclog, "Something went wrong while writing record " << index );
