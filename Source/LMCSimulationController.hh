@@ -26,7 +26,7 @@ namespace locust
 
             bool Prepare();
 
-            bool Run() const;
+            bool Run();
 
             bool Finalize();
 

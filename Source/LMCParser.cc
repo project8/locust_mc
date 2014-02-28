@@ -6,14 +6,14 @@ namespace locust
     Parser::Parser( int an_argc, char** an_argv ) :
             ParamNode()
     {
-        parse(an_argc, an_argv);
+        Parse(an_argc, an_argv);
     }
 
     Parser::~Parser()
     {
     }
 
-    void Parser::parse( int an_argc, char** an_argv )
+    void Parser::Parse( int an_argc, char** an_argv )
     {
         for( int t_index = 1; t_index < an_argc; t_index++ )
         {
@@ -29,7 +29,7 @@ namespace locust
 
                 //std::cout << "(Parser) adding < " << t_name << "<" << t_type << "> > = <" << new_value.value() << ">" << std::endl;
 
-                this->replace( t_name, new_value );
+                this->Replace( t_name, new_value );
 
                 continue;
             }

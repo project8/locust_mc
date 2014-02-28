@@ -21,23 +21,25 @@ namespace locust
 
         add( "", tValue <<  );
 
-        add( "port", tValue << 98342 );
+        add( "", tValue <<  );
 
-        add( "host", tValue << "localhost" );
+        //add( "port", tValue << 98342 );
 
-        add( "client-port", tValue << 98343 );
+        //add( "host", tValue << "localhost" );
 
-        add( "client-host", tValue << "localhost" );
+        //add( "client-port", tValue << 98343 );
 
-        add( "file", tValue << "mantis_client_out.egg" );
+        //add( "client-host", tValue << "localhost" );
 
-        add( "rate", tValue << 250.0 );
+        //add( "file", tValue << "mantis_client_out.egg" );
 
-        add( "duration", tValue << 1000 );
+        //add( "rate", tValue << 250.0 );
 
-        add( "mode", tValue << 0 );
+        //add( "duration", tValue << 1000 );
 
-        add( "file-writer", tValue << "server" );
+        //add( "mode", tValue << 0 );
+
+        //add( "file-writer", tValue << "server" );
     }
 
     DefaultConfig::~DefaultConfig()

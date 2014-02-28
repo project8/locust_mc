@@ -7,7 +7,9 @@
 
 #include "LMCRunLengthCalculator.hh"
 
+#include "LMCGenerator.hh"
 #include "LMCLogger.hh"
+#include "LMCParam.hh"
 
 namespace locust
 {
@@ -38,20 +40,20 @@ namespace locust
 
         // first, configure items that will affect the method for calculating the run length
 
-        if( aNode->has( "n-records" ) )
-            SetNRecords( aNode->get_value< unsigned >( "n-records" ) );
+        if( aNode->Has( "n-records" ) )
+            SetNRecords( aNode->GetValue< unsigned >( "n-records" ) );
 
-        if( aNode->has( "duration" ) )
-            SetDuration( aNode->get_value< double >( "duration" ) );
+        if( aNode->Has( "duration" ) )
+            SetDuration( aNode->GetValue< double >( "duration" ) );
 
         // next, configure items that are needed no matter what.
 
-        SetRecordSize( aNode->get_value< unsigned >( "record-size" ) );
+        SetRecordSize( aNode->GetValue< unsigned >( "record-size" ) );
 
-        if( aNode->has( "acquisition-rate" ) )
-            SetAcquisitionRate( aNode->get_value< double >( "acquisition-rate" ) );
-        if( aNode->has( "bin-width" ) )
-            SetBinWidth( aNode->get_value< double >( "bin-width" ) );
+        if( aNode->Has( "acquisition-rate" ) )
+            SetAcquisitionRate( aNode->GetValue< double >( "acquisition-rate" ) );
+        if( aNode->Has( "bin-width" ) )
+            SetBinWidth( aNode->GetValue< double >( "bin-width" ) );
 
         return true;
     }
@@ -60,11 +62,11 @@ namespace locust
     {
         if( fFirstGenerator == NULL )
         {
-            LMCWARN( lmclog, "First generator has not been set" );
+            LMCWARN( lmclog, "First generator Has not been set" );
             return false;
         }
 
-        Generator* nextGenerator = fFirstGenerator;
+        const Generator* nextGenerator = fFirstGenerator;
         while( nextGenerator != NULL )
         {
             nextGenerator->Accept( this );

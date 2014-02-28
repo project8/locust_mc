@@ -24,9 +24,9 @@ using std::string;
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "Param" );
+    LMCLOGGER( plog, "Param" );
 
-    unsigned Param::s_indent_level = 0;
+    unsigned Param::sIndentLevel = 0;
 
     Param::Param()
     {
@@ -40,68 +40,98 @@ namespace locust
     {
     }
 
-    Param* Param::clone() const
+    Param* Param::Clone() const
     {
         return new Param( *this );
     }
 
-    bool Param::is_null() const
+    bool Param::IsNull() const
     {
         return true;
     }
 
-    bool Param::is_value() const
+    bool Param::IsValue() const
     {
         return false;
     }
 
-    bool Param::is_array() const
+    bool Param::IsArray() const
     {
         return false;
     }
 
-    bool Param::is_node() const
+    bool Param::IsNode() const
     {
         return false;
     }
 
-    ParamValue& Param::as_value()
+    ParamValue& Param::AsValue()
     {
         ParamValue* t_cast_ptr = static_cast< ParamValue* >( this );
         return *t_cast_ptr;
     }
 
-    ParamArray& Param::as_array()
+    ParamArray& Param::AsArray()
     {
         ParamArray* t_cast_ptr = static_cast< ParamArray* >( this );
         return *t_cast_ptr;
     }
 
-    ParamNode& Param::as_node()
+    ParamNode& Param::AsNode()
     {
         ParamNode* t_cast_ptr = static_cast< ParamNode* >( this );
         return *t_cast_ptr;
     }
 
-    const ParamValue& Param::as_value() const
+    const ParamValue& Param::AsValue() const
     {
-        const ParamValue* t_cast_ptr = dynamic_cast< const ParamValue* >( this );
+        const ParamValue* t_cast_ptr = static_cast< const ParamValue* >( this );
         return *t_cast_ptr;
     }
 
-    const ParamArray& Param::as_array() const
+    const ParamArray& Param::AsArray() const
     {
-        const ParamArray* t_cast_ptr = dynamic_cast< const ParamArray* >( this );
+        const ParamArray* t_cast_ptr = static_cast< const ParamArray* >( this );
         return *t_cast_ptr;
     }
 
-    const ParamNode& Param::as_node() const
+    const ParamNode& Param::AsNode() const
     {
-        const ParamNode* t_cast_ptr = dynamic_cast< const ParamNode* >( this );
+        const ParamNode* t_cast_ptr = static_cast< const ParamNode* >( this );
         return *t_cast_ptr;
     }
 
-    std::string Param::to_string() const
+    const ParamValue& Param::operator()() const
+    {
+        return AsValue();
+    }
+
+    ParamValue& Param::operator()()
+    {
+        return AsValue();
+    }
+
+    const Param& Param::operator[]( unsigned aIndex ) const
+    {
+        return AsArray()[aIndex];
+    }
+
+    Param& Param::operator[]( unsigned aIndex )
+    {
+        return AsArray()[aIndex];
+    }
+
+    const Param& Param::operator[]( const std::string& aName ) const
+    {
+        return AsNode()[aName];
+    }
+
+    Param& Param::operator[]( const std::string& aName )
+    {
+        return AsNode()[aName];
+    }
+
+    std::string Param::ToString() const
     {
         return string();
     }
@@ -112,13 +142,13 @@ namespace locust
 
     ParamValue::ParamValue() :
             Param(),
-            f_value()
+            fValue()
     {
     }
 
     ParamValue::ParamValue( const ParamValue& orig ) :
             Param( orig ),
-            f_value( orig.f_value )
+            fValue( orig.fValue )
     {
     }
 
@@ -126,29 +156,29 @@ namespace locust
     {
     }
 
-    Param* ParamValue::clone() const
+    Param* ParamValue::Clone() const
     {
         return new ParamValue( *this );
     }
 
-    bool ParamValue::is_null() const
+    bool ParamValue::IsNull() const
     {
         return false;
     }
 
-    bool ParamValue::is_value() const
+    bool ParamValue::IsValue() const
     {
         return true;
     }
 
-    const string& ParamValue::get() const
+    const string& ParamValue::Get() const
     {
-        return f_value;
+         return fValue;
     }
 
-    std::string ParamValue::to_string() const
+    std::string ParamValue::ToString() const
     {
-        return string( f_value );
+        return string( fValue );
     }
 
     //************************************
@@ -157,247 +187,285 @@ namespace locust
 
     ParamArray::ParamArray() :
             Param(),
-            f_contents()
+            fContents()
     {
     }
 
     ParamArray::ParamArray( const ParamArray& orig ) :
             Param( orig ),
-            f_contents( orig.f_contents.size() )
+            fContents( orig.fContents.size() )
     {
-        for( unsigned ind = 0; ind < f_contents.size(); ++ind )
+        for( unsigned ind = 0; ind < fContents.size(); ++ind )
         {
-            this->assign( ind, orig[ ind ].clone() );
+            this->Assign( ind, orig[ ind ].Clone() );
         }
     }
 
     ParamArray::~ParamArray()
     {
-        for( unsigned ind = 0; ind < f_contents.size(); ++ind )
+        for( unsigned ind = 0; ind < fContents.size(); ++ind )
         {
-            delete f_contents[ ind ];
+            delete fContents[ ind ];
         }
     }
 
-    Param* ParamArray::clone() const
+    Param* ParamArray::Clone() const
     {
         return new ParamArray( *this );
     }
 
-    bool ParamArray::is_null() const
+    bool ParamArray::IsNull() const
     {
         return false;
     }
 
-    bool ParamArray::is_array() const
+    bool ParamArray::IsArray() const
     {
         return true;
     }
 
-    unsigned ParamArray::size() const
+    unsigned ParamArray::Size() const
     {
-        return f_contents.size();
+        return fContents.size();
     }
-    bool ParamArray::empty() const
+    bool ParamArray::Empty() const
     {
-        return f_contents.empty();
+        return fContents.empty();
     }
 
-    void ParamArray::resize( unsigned a_size )
+    void ParamArray::Resize( unsigned a_size )
     {
-        unsigned curr_size = f_contents.size();
+        unsigned curr_size = fContents.size();
         for( unsigned ind = a_size; ind < curr_size; ++ind )
         {
-            delete f_contents[ ind ];
+            delete fContents[ ind ];
         }
-        f_contents.resize( a_size );
+        fContents.resize( a_size );
         return;
     }
 
-    const std::string& ParamArray::get_value( unsigned a_index ) const
+    const std::string& ParamArray::GetValue( unsigned aIndex ) const
     {
-        const ParamValue* value = value_at( a_index );
-        if( value == NULL ) throw Exception() << "No value at <" << a_index << "> is present at this node";
-        return value->get();
+        const ParamValue* value = ValueAt( aIndex );
+        if( value == NULL ) throw Exception() << "No value at <" << aIndex << "> is present at this node";
+        return value->Get();
     }
 
-    const std::string& ParamArray::get_value( unsigned a_index, const std::string& a_default ) const
+    const std::string& ParamArray::GetValue( unsigned aIndex, const std::string& aDefault ) const
     {
-        const ParamValue* value = value_at( a_index );
-        if( value == NULL ) return a_default;
-        return value->get();
+        const ParamValue* value = ValueAt( aIndex );
+        if( value == NULL ) return aDefault;
+        return value->Get();
     }
 
-    const Param* ParamArray::at( unsigned a_index ) const
+    const std::string& ParamArray::GetValue( unsigned aIndex, const char* aDefault ) const
     {
-        if( a_index >= f_contents.size() ) return NULL;
-        return f_contents[ a_index ];
-    }
-    Param* ParamArray::at( unsigned a_index )
-    {
-        if( a_index >= f_contents.size() ) return NULL;
-        return f_contents[ a_index ];
+        return GetValue( aIndex, string( aDefault ) );
     }
 
-    const ParamValue* ParamArray::value_at( unsigned a_index ) const
+    const Param* ParamArray::At( unsigned aIndex ) const
     {
-        if( a_index >= f_contents.size() ) return NULL;
-        return &f_contents[ a_index ]->as_value();
+        if( aIndex >= fContents.size() ) return NULL;
+        return fContents[ aIndex ];
     }
-    ParamValue* ParamArray::value_at( unsigned a_index )
+    Param* ParamArray::At( unsigned aIndex )
     {
-        if( a_index >= f_contents.size() ) return NULL;
-        return &f_contents[ a_index ]->as_value();
-    }
-
-    const ParamArray* ParamArray::array_at( unsigned a_index ) const
-    {
-        if( a_index >= f_contents.size() ) return NULL;
-        return &f_contents[ a_index ]->as_array();
-    }
-    ParamArray* ParamArray::array_at( unsigned a_index )
-    {
-        if( a_index >= f_contents.size() ) return NULL;
-        return &f_contents[ a_index ]->as_array();
+        if( aIndex >= fContents.size() ) return NULL;
+        return fContents[ aIndex ];
     }
 
-    const ParamNode* ParamArray::node_at( unsigned a_index ) const
+    const ParamValue* ParamArray::ValueAt( unsigned aIndex ) const
     {
-        if( a_index >= f_contents.size() ) return NULL;
-        return &f_contents[ a_index ]->as_node();
+        if( aIndex >= fContents.size() ) return NULL;
+        return dynamic_cast< ParamValue* >( fContents[ aIndex ] );
     }
-    ParamNode* ParamArray::node_at( unsigned a_index )
+    ParamValue* ParamArray::ValueAt( unsigned aIndex )
     {
-        if( a_index >= f_contents.size() ) return NULL;
-        return &f_contents[ a_index ]->as_node();
-    }
-
-    const Param& ParamArray::operator[]( unsigned a_index ) const
-    {
-        return *f_contents[ a_index ];
-    }
-    Param& ParamArray::operator[]( unsigned a_index )
-    {
-        return *f_contents[ a_index ];
+        if( aIndex >= fContents.size() ) return NULL;
+        return dynamic_cast< ParamValue* >( fContents[ aIndex ] );
     }
 
-    const Param* ParamArray::front() const
+    const ParamValue* ParamArray::ValueAtFast( unsigned aIndex ) const
     {
-        return f_contents.front();
+        if( aIndex >= fContents.size() ) return NULL;
+        return static_cast< ParamValue* >( fContents[ aIndex ] );
     }
-    Param* ParamArray::front()
+    ParamValue* ParamArray::ValueAtFast( unsigned aIndex )
     {
-        return f_contents.front();
-    }
-
-    const Param* ParamArray::back() const
-    {
-        return f_contents.back();
-    }
-    Param* ParamArray::back()
-    {
-        return f_contents.back();
+        if( aIndex >= fContents.size() ) return NULL;
+        return static_cast< ParamValue* >( fContents[ aIndex ] );
     }
 
-    // assign a copy of a_value to the array at a_index
-    void ParamArray::assign( unsigned a_index, const Param& a_value )
+    const ParamArray* ParamArray::ArrayAt( unsigned aIndex ) const
     {
-        erase( a_index );
-        f_contents[ a_index ] = a_value.clone();
+        if( aIndex >= fContents.size() ) return NULL;
+        return dynamic_cast< ParamArray* >( fContents[ aIndex ] );
+    }
+    ParamArray* ParamArray::ArrayAt( unsigned aIndex )
+    {
+        if( aIndex >= fContents.size() ) return NULL;
+        return dynamic_cast< ParamArray* >( fContents[ aIndex ] );
+    }
+
+    const ParamArray* ParamArray::ArrayAtFast( unsigned aIndex ) const
+    {
+        if( aIndex >= fContents.size() ) return NULL;
+        return static_cast< ParamArray* >( fContents[ aIndex ] );
+    }
+    ParamArray* ParamArray::ArrayAtFast( unsigned aIndex )
+    {
+        if( aIndex >= fContents.size() ) return NULL;
+        return static_cast< ParamArray* >( fContents[ aIndex ] );
+    }
+
+    const ParamNode* ParamArray::NodeAt( unsigned aIndex ) const
+    {
+        if( aIndex >= fContents.size() ) return NULL;
+        return dynamic_cast< ParamNode* >( fContents[ aIndex ] );
+    }
+    ParamNode* ParamArray::NodeAt( unsigned aIndex )
+    {
+        if( aIndex >= fContents.size() ) return NULL;
+        return dynamic_cast< ParamNode* >( fContents[ aIndex ] );
+    }
+
+    const ParamNode* ParamArray::NodeAtFast( unsigned aIndex ) const
+    {
+        if( aIndex >= fContents.size() ) return NULL;
+        return static_cast< ParamNode* >( fContents[ aIndex ] );
+    }
+    ParamNode* ParamArray::NodeAtFast( unsigned aIndex )
+    {
+        if( aIndex >= fContents.size() ) return NULL;
+        return static_cast< ParamNode* >( fContents[ aIndex ] );
+    }
+
+    const Param& ParamArray::operator[]( unsigned aIndex ) const
+    {
+        return *fContents[ aIndex ];
+    }
+    Param& ParamArray::operator[]( unsigned aIndex )
+    {
+        return *fContents[ aIndex ];
+    }
+
+    const Param* ParamArray::Front() const
+    {
+        return fContents.front();
+    }
+    Param* ParamArray::Front()
+    {
+        return fContents.front();
+    }
+
+    const Param* ParamArray::Back() const
+    {
+        return fContents.back();
+    }
+    Param* ParamArray::Back()
+    {
+        return fContents.back();
+    }
+
+    // assign a copy of aValue to the array at aIndex
+    void ParamArray::Assign( unsigned aIndex, const Param& aValue )
+    {
+        Erase( aIndex );
+        fContents[ aIndex ] = aValue.Clone();
         return;
     }
-    // directly assign a_value_ptr to the array at a_index
-    void ParamArray::assign( unsigned a_index, Param* a_value_ptr )
+    // directly assign aValue_ptr to the array at aIndex
+    void ParamArray::Assign( unsigned aIndex, Param* aValue_ptr )
     {
-        erase( a_index );
-        f_contents[ a_index ] = a_value_ptr;
+        Erase( aIndex );
+        fContents[ aIndex ] = aValue_ptr;
         return;
     }
 
-    void ParamArray::push_back( const Param& a_value )
+    void ParamArray::PushBack( const Param& aValue )
     {
-        f_contents.push_back( a_value.clone() );
+        fContents.push_back( aValue.Clone() );
         return;
     }
-    void ParamArray::push_back( Param* a_value_ptr )
+    void ParamArray::PushBack( Param* aValue_ptr )
     {
-        f_contents.push_back( a_value_ptr );
-        return;
-    }
-
-    void ParamArray::push_front( const Param& a_value )
-    {
-        f_contents.push_front( a_value.clone() );
-        return;
-    }
-    void ParamArray::push_front( Param* a_value_ptr )
-    {
-        f_contents.push_front( a_value_ptr );
+        fContents.push_back( aValue_ptr );
         return;
     }
 
-    void ParamArray::erase( unsigned a_index )
+    void ParamArray::PushFront( const Param& aValue )
     {
-        delete f_contents[ a_index ];
+        fContents.push_front( aValue.Clone() );
         return;
     }
-    Param* ParamArray::remove( unsigned a_index )
+    void ParamArray::PushFront( Param* aValue_ptr )
     {
-        Param* t_current = f_contents[ a_index ];
-        f_contents[ a_index ] = NULL;
-        return t_current;
+        fContents.push_front( aValue_ptr );
+        return;
     }
 
-    ParamArray::iterator ParamArray::begin()
+    void ParamArray::Erase( unsigned aIndex )
     {
-        return f_contents.begin();
+        delete fContents[ aIndex ];
+        return;
     }
-    ParamArray::const_iterator ParamArray::begin() const
+    Param* ParamArray::Remove( unsigned aIndex )
     {
-        return f_contents.begin();
-    }
-
-    ParamArray::iterator ParamArray::end()
-    {
-        return f_contents.end();
-    }
-    ParamArray::const_iterator ParamArray::end() const
-    {
-        return f_contents.end();
+        Param* tCurrent = fContents[ aIndex ];
+        fContents[ aIndex ] = NULL;
+        return tCurrent;
     }
 
-    ParamArray::reverse_iterator ParamArray::rbegin()
+    ParamArray::iterator ParamArray::Begin()
     {
-        return f_contents.rbegin();
+        return fContents.begin();
     }
-    ParamArray::const_reverse_iterator ParamArray::rbegin() const
+    ParamArray::const_iterator ParamArray::Begin() const
     {
-        return f_contents.rbegin();
-    }
-
-    ParamArray::reverse_iterator ParamArray::rend()
-    {
-        return f_contents.rend();
-    }
-    ParamArray::const_reverse_iterator ParamArray::rend() const
-    {
-        return f_contents.rend();
+        return fContents.begin();
     }
 
-    std::string ParamArray::to_string() const
+    ParamArray::iterator ParamArray::End()
+    {
+        return fContents.end();
+    }
+    ParamArray::const_iterator ParamArray::End() const
+    {
+        return fContents.end();
+    }
+
+    ParamArray::reverse_iterator ParamArray::RBegin()
+    {
+        return fContents.rbegin();
+    }
+    ParamArray::const_reverse_iterator ParamArray::RBegin() const
+    {
+        return fContents.rbegin();
+    }
+
+    ParamArray::reverse_iterator ParamArray::REnd()
+    {
+        return fContents.rend();
+    }
+    ParamArray::const_reverse_iterator ParamArray::REnd() const
+    {
+        return fContents.rend();
+    }
+
+    std::string ParamArray::ToString() const
     {
         stringstream out;
         string indentation;
-        for ( unsigned i=0; i<Param::s_indent_level; ++i )
+        for ( unsigned i=0; i<Param::sIndentLevel; ++i )
             indentation += "    ";
         out << '\n' << indentation << "[\n";
-        Param::s_indent_level++;
-        for( const_iterator it = begin(); it != end(); ++it )
+        Param::sIndentLevel++;
+        for( const_iterator it = Begin(); it != End(); ++it )
         {
             out << indentation << "    " << **it << '\n';
         }
-        Param::s_indent_level--;
-        out << indentation << "]\n";
+        Param::sIndentLevel--;
+        out << indentation << "]";
         return out.str();
     }
 
@@ -408,291 +476,335 @@ namespace locust
 
     ParamNode::ParamNode() :
             Param(),
-            f_contents()
+            fContents()
     {
     }
 
     ParamNode::ParamNode( const ParamNode& orig ) :
             Param( orig ),
-            f_contents()
+            fContents()
     {
-        for( const_iterator it = orig.f_contents.begin(); it != orig.f_contents.end(); ++it )
+        for( const_iterator it = orig.fContents.begin(); it != orig.fContents.end(); ++it )
         {
-            this->replace( it->first, *it->second );
+            this->Replace( it->first, *it->second );
         }
     }
 
     ParamNode::~ParamNode()
     {
-        for( iterator it = f_contents.begin(); it != f_contents.end(); ++it )
+        for( iterator it = fContents.begin(); it != fContents.end(); ++it )
         {
             delete it->second;
         }
     }
 
-    Param* ParamNode::clone() const
+    Param* ParamNode::Clone() const
     {
         return new ParamNode( *this );
     }
 
-    bool ParamNode::is_null() const
+    bool ParamNode::IsNull() const
     {
         return false;
     }
 
-    bool ParamNode::is_node() const
+    bool ParamNode::IsNode() const
     {
         return true;
     }
 
-    bool ParamNode::has( const std::string& a_name ) const
+    bool ParamNode::Has( const std::string& aName ) const
     {
-        return f_contents.count( a_name ) > 0;
+        return fContents.count( aName ) > 0;
     }
 
-    unsigned ParamNode::count( const std::string& a_name ) const
+    unsigned ParamNode::Count( const std::string& aName ) const
     {
-        return f_contents.count( a_name );
+        return fContents.count( aName );
     }
 
-    const std::string& ParamNode::get_value( const std::string& a_name ) const
+    const std::string& ParamNode::GetValue( const std::string& aName ) const
     {
-        const ParamValue* value = value_at( a_name );
-        if( value == NULL ) throw Exception() << "No value with name <" << a_name << "> is present at this node";
-        return value->get();
+        const ParamValue* value = ValueAt( aName );
+        if( value == NULL ) throw Exception() << "No value with name <" << aName << "> is present at this node";
+        return value->Get();
     }
 
-    const std::string& ParamNode::get_value( const std::string& a_name, const std::string& a_default ) const
+    const std::string& ParamNode::GetValue( const std::string& aName, const std::string& aDefault ) const
     {
-        const ParamValue* value = value_at( a_name );
-        if( value == NULL ) return a_default;
-        return value->get();
+        const ParamValue* value = ValueAt( aName );
+        if( value == NULL ) return aDefault;
+        return value->Get();
     }
 
-    const Param* ParamNode::at( const std::string& a_name ) const
+    const std::string& ParamNode::GetValue( const std::string& aName, const char* aDefault ) const
     {
-        const_iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
+        return GetValue( aName, string( aDefault ) );
+    }
+
+    const Param* ParamNode::At( const std::string& aName ) const
+    {
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() )
         {
             return NULL;
         }
         return it->second;
     }
 
-    Param* ParamNode::at( const std::string& a_name )
+    Param* ParamNode::At( const std::string& aName )
     {
-        iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() )
         {
             return NULL;
         }
         return it->second;
     }
 
-    const ParamValue* ParamNode::value_at( const std::string& a_name ) const
+    const ParamValue* ParamNode::ValueAt( const std::string& aName ) const
     {
-        const_iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
-        {
-            return NULL;
-        }
-        return &it->second->as_value();
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return dynamic_cast< ParamValue* >( it->second );
     }
 
-    ParamValue* ParamNode::value_at( const std::string& a_name )
+    ParamValue* ParamNode::ValueAt( const std::string& aName )
     {
-        iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
-        {
-            return NULL;
-        }
-        return &it->second->as_value();
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return dynamic_cast< ParamValue* >( it->second );
     }
 
-    const ParamArray* ParamNode::array_at( const std::string& a_name ) const
+    const ParamValue* ParamNode::ValueAtFast( const std::string& aName ) const
     {
-        const_iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
-        {
-            return NULL;
-        }
-        return &it->second->as_array();
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return static_cast< ParamValue* >( it->second );
     }
 
-    ParamArray* ParamNode::array_at( const std::string& a_name )
+    ParamValue* ParamNode::ValueAtFast( const std::string& aName )
     {
-        iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
-        {
-            return NULL;
-        }
-        return &it->second->as_array();
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return static_cast< ParamValue* >( it->second );
     }
 
-    const ParamNode* ParamNode::node_at( const std::string& a_name ) const
+    const ParamArray* ParamNode::ArrayAt( const std::string& aName ) const
     {
-
-        const_iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
-        {
-            return NULL;
-        }
-        return &it->second->as_node();
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return dynamic_cast< ParamArray* >( it->second );
     }
 
-    ParamNode* ParamNode::node_at( const std::string& a_name )
+    ParamArray* ParamNode::ArrayAt( const std::string& aName )
     {
-        iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
-        {
-            return NULL;
-        }
-        return &it->second->as_node();
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return dynamic_cast< ParamArray* >( it->second );
     }
 
-    const Param& ParamNode::operator[]( const std::string& a_name ) const
+    const ParamArray* ParamNode::ArrayAtFast( const std::string& aName ) const
     {
-        const_iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return static_cast< ParamArray* >( it->second );
+    }
+
+    ParamArray* ParamNode::ArrayAtFast( const std::string& aName )
+    {
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return static_cast< ParamArray* >( it->second );
+    }
+
+    const ParamNode* ParamNode::NodeAt( const std::string& aName ) const
+    {
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return dynamic_cast< ParamNode* >( it->second );
+    }
+
+    ParamNode* ParamNode::NodeAt( const std::string& aName )
+    {
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return dynamic_cast< ParamNode* >( it->second );
+    }
+
+    const ParamNode* ParamNode::NodeAtFast( const std::string& aName ) const
+    {
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return static_cast< ParamNode* >( it->second );
+    }
+
+    ParamNode* ParamNode::NodeAtFast( const std::string& aName )
+    {
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() ) return NULL;
+        return static_cast< ParamNode* >( it->second );
+    }
+
+    const Param& ParamNode::operator[]( const std::string& aName ) const
+    {
+        const_iterator it = fContents.find( aName );
+        if( it == fContents.end() )
         {
-            throw Exception() << "No value present corresponding to name <" << a_name << ">\n";
+            throw Exception() << "No value present corresponding to name <" << aName << ">\n";
         }
         return *(it->second);
     }
 
-    Param& ParamNode::operator[]( const std::string& a_name )
+    Param& ParamNode::operator[]( const std::string& aName )
     {
-        return *f_contents[ a_name ];
+        return *fContents[ aName ];
     }
 
-    bool ParamNode::add( const std::string& a_name, const Param& a_value )
+    bool ParamNode::Add( const std::string& aName, const Param& aValue )
     {
-        iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() )
         {
-            f_contents.insert( contents_type( a_name, a_value.clone() ) );
+            fContents.insert( contents_type( aName, aValue.Clone() ) );
             return true;
         }
         return false;
     }
 
-    bool ParamNode::add( const std::string& a_name, Param* a_value )
+    bool ParamNode::Add( const std::string& aName, Param* aValue )
     {
-        iterator it = f_contents.find( a_name );
-        if( it == f_contents.end() )
+        iterator it = fContents.find( aName );
+        if( it == fContents.end() )
         {
-            f_contents.insert( contents_type( a_name, a_value ) );
+            fContents.insert( contents_type( aName, aValue ) );
             return true;
         }
         return false;
     }
 
-    void ParamNode::replace( const std::string& a_name, const Param& a_value )
+    void ParamNode::Replace( const std::string& aName, const Param& aValue )
     {
-        erase( a_name );
-        f_contents[ a_name ] = a_value.clone();
+        Erase( aName );
+        fContents[ aName ] = aValue.Clone();
         return;
     }
 
-    void ParamNode::replace( const std::string& a_name, Param* a_value )
+    void ParamNode::Replace( const std::string& aName, Param* aValue )
     {
-        erase( a_name );
-        f_contents[ a_name ] = a_value;
+        Erase( aName );
+        fContents[ aName ] = aValue;
         return;
     }
 
-    void ParamNode::merge( const ParamNode* a_object )
+    void ParamNode::Merge( const ParamNode& aObject )
     {
-        for( const_iterator it = a_object->f_contents.begin(); it != a_object->f_contents.end(); ++it )
+        for( const_iterator it = aObject.fContents.begin(); it != aObject.fContents.end(); ++it )
         {
-            this->replace( it->first, *it->second );
+            if( this->Has( it->first ) )
+            {
+                Param* toBeMergedInto = this->At( it->first);
+                if( toBeMergedInto->IsNode() && it->second->IsNode() )
+                {
+                    toBeMergedInto->AsNode().Merge( it->second->AsNode() );
+                }
+                else
+                {
+                    this->Replace( it->first, *it->second );
+                }
+            }
+            else
+            {
+                this->Add( it->first, *it->second );
+            }
         }
+        return;
     }
 
-    void ParamNode::erase( const std::string& a_name )
+    void ParamNode::Erase( const std::string& aName )
     {
-        iterator it = f_contents.find( a_name );
-        if( it != f_contents.end() )
+        iterator it = fContents.find( aName );
+        if( it != fContents.end() )
         {
             delete it->second;
-            f_contents.erase( it );
+            fContents.erase( it );
         }
         return;
     }
 
-    Param* ParamNode::remove( const std::string& a_name )
+    Param* ParamNode::Remove( const std::string& aName )
     {
-        iterator it = f_contents.find( a_name );
-        if( it != f_contents.end() )
+        iterator it = fContents.find( aName );
+        if( it != fContents.end() )
         {
             Param* removed = it->second;
-            f_contents.erase( it );
+            fContents.erase( it );
             return removed;
         }
         return NULL;
     }
 
-    ParamNode::iterator ParamNode::begin()
+    ParamNode::iterator ParamNode::Begin()
     {
-        return f_contents.begin();
+        return fContents.begin();
     }
 
-    ParamNode::const_iterator ParamNode::begin() const
+    ParamNode::const_iterator ParamNode::Begin() const
     {
-        return f_contents.begin();
+        return fContents.begin();
     }
 
-    ParamNode::iterator ParamNode::end()
+    ParamNode::iterator ParamNode::End()
     {
-        return f_contents.end();
+        return fContents.end();
     }
 
-    ParamNode::const_iterator ParamNode::end() const
+    ParamNode::const_iterator ParamNode::End() const
     {
-        return f_contents.end();
+        return fContents.end();
     }
 
-    std::string ParamNode::to_string() const
+    std::string ParamNode::ToString() const
     {
         stringstream out;
         string indentation;
-        for ( unsigned i=0; i<Param::s_indent_level; ++i )
+        for ( unsigned i=0; i<Param::sIndentLevel; ++i )
             indentation += "    ";
         out << '\n' << indentation << "{\n";
-        Param::s_indent_level++;
-        for( const_iterator it = begin(); it != end(); ++it )
+        Param::sIndentLevel++;
+        for( const_iterator it = Begin(); it != End(); ++it )
         {
             out << indentation << "    " << it->first << " : " << *(it->second) << '\n';
         }
-        Param::s_indent_level--;
-        out << indentation << "}\n";
+        Param::sIndentLevel--;
+        out << indentation << "}";
         return out.str();
     }
 
 
 
 
-    std::ostream& operator<<(std::ostream& out, const Param& a_value)
+    std::ostream& operator<<(std::ostream& out, const Param& aValue)
     {
-        return out << a_value.to_string();
+        return out << aValue.ToString();
     }
 
 
-    std::ostream& operator<<(std::ostream& out, const ParamValue& a_value)
+    std::ostream& operator<<(std::ostream& out, const ParamValue& aValue)
     {
-        return out << a_value.to_string();
+        return out << aValue.ToString();
     }
 
 
-    std::ostream& operator<<(std::ostream& out, const ParamArray& a_value)
+    std::ostream& operator<<(std::ostream& out, const ParamArray& aValue)
     {
-        return out << a_value.to_string();
+        return out << aValue.ToString();
     }
 
 
-    std::ostream& operator<<(std::ostream& out, const ParamNode& a_value)
+    std::ostream& operator<<(std::ostream& out, const ParamNode& aValue)
     {
-        return out << a_value.to_string();
+        return out << aValue.ToString();
     }
 
 
@@ -706,12 +818,12 @@ namespace locust
     {
     }
 
-    ParamNode* ParamInputJSON::read_file( const std::string& a_filename )
+    ParamNode* ParamInputJSON::ReadFile( const std::string& aFilename )
     {
-        FILE* t_config_file = fopen( a_filename.c_str(), "r" );
+        FILE* t_config_file = fopen( aFilename.c_str(), "r" );
         if( t_config_file == NULL )
         {
-            LMCERROR( lmclog, "file <" << a_filename << "> did not open" );
+            LMCERROR( plog, "file <" << aFilename << "> did not open" );
             return NULL;
         }
         rapidjson::FileStream t_file_stream( t_config_file );
@@ -738,13 +850,13 @@ namespace locust
             }
             if( iChar == errorPos )
             {
-                LMCERROR( lmclog, "error parsing config file :\n" <<
+                LMCERROR( plog, "error parsing config file :\n" <<
                         '\t' << t_config_doc.GetParseError() << '\n' <<
                         "\tThe error was reported at line " << newlineCount << ", character " << errorPos - lastNewlinePos );
             }
             else
             {
-                LMCERROR( lmclog, "error parsing config file :\n" <<
+                LMCERROR( plog, "error parsing config file :\n" <<
                         '\t' << t_config_doc.GetParseError() <<
                         "\tend of file reached before error location was found" );
             }
@@ -753,103 +865,103 @@ namespace locust
         }
         fclose( t_config_file );
 
-        return ParamInputJSON::read_document( t_config_doc );
+        return ParamInputJSON::ReadDocument( t_config_doc );
     }
 
-    ParamNode* ParamInputJSON::read_string( const std::string& a_json_string )
+    ParamNode* ParamInputJSON::ReadString( const std::string& aJSONString )
     {
         rapidjson::Document t_config_doc;
-        if( t_config_doc.Parse<0>( a_json_string.c_str() ).HasParseError() )
+        if( t_config_doc.Parse<0>( aJSONString.c_str() ).HasParseError() )
         {
-            LMCERROR( lmclog, "error parsing string:\n" << t_config_doc.GetParseError() );
+            LMCERROR( plog, "error parsing string:\n" << t_config_doc.GetParseError() );
             return NULL;
         }
-        return ParamInputJSON::read_document( t_config_doc );
+        return ParamInputJSON::ReadDocument( t_config_doc );
     }
 
-    ParamNode* ParamInputJSON::read_document( const rapidjson::Document& a_doc )
+    ParamNode* ParamInputJSON::ReadDocument( const rapidjson::Document& aDoc )
     {
         ParamNode* t_config = new ParamNode();
-        for( rapidjson::Value::ConstMemberIterator jsonIt = a_doc.MemberBegin();
-                jsonIt != a_doc.MemberEnd();
+        for( rapidjson::Value::ConstMemberIterator jsonIt = aDoc.MemberBegin();
+                jsonIt != aDoc.MemberEnd();
                 ++jsonIt)
         {
-            t_config->replace( jsonIt->name.GetString(), ParamInputJSON::read_value( jsonIt->value ) );
+            t_config->Replace( jsonIt->name.GetString(), ParamInputJSON::ReadValue( jsonIt->value ) );
         }
         return t_config;
     }
 
-    Param* ParamInputJSON::read_value( const rapidjson::Value& a_value )
+    Param* ParamInputJSON::ReadValue( const rapidjson::Value& aValue )
     {
-        if( a_value.IsNull() )
+        if( aValue.IsNull() )
         {
             return new Param();
         }
-        if( a_value.IsObject() )
+        if( aValue.IsObject() )
         {
             ParamNode* t_config_object = new ParamNode();
-            for( rapidjson::Value::ConstMemberIterator jsonIt = a_value.MemberBegin();
-                    jsonIt != a_value.MemberEnd();
+            for( rapidjson::Value::ConstMemberIterator jsonIt = aValue.MemberBegin();
+                    jsonIt != aValue.MemberEnd();
                     ++jsonIt)
             {
-                t_config_object->replace( jsonIt->name.GetString(), ParamInputJSON::read_value( jsonIt->value ) );
+                t_config_object->Replace( jsonIt->name.GetString(), ParamInputJSON::ReadValue( jsonIt->value ) );
             }
             return t_config_object;
         }
-        if( a_value.IsArray() )
+        if( aValue.IsArray() )
         {
             ParamArray* t_config_array = new ParamArray();
-            for( rapidjson::Value::ConstValueIterator jsonIt = a_value.Begin();
-                    jsonIt != a_value.End();
+            for( rapidjson::Value::ConstValueIterator jsonIt = aValue.Begin();
+                    jsonIt != aValue.End();
                     ++jsonIt)
             {
-                t_config_array->push_back( ParamInputJSON::read_value( *jsonIt ) );
+                t_config_array->PushBack( ParamInputJSON::ReadValue( *jsonIt ) );
             }
             return t_config_array;
         }
-        if( a_value.IsString() )
+        if( aValue.IsString() )
         {
             ParamValue* t_config_value = new ParamValue();
-            (*t_config_value) << a_value.GetString();
+            (*t_config_value) << aValue.GetString();
             return t_config_value;
         }
-        if( a_value.IsBool() )
+        if( aValue.IsBool() )
         {
             ParamValue* t_config_value = new ParamValue();
-            (*t_config_value) << a_value.GetBool();
+            (*t_config_value) << aValue.GetBool();
             return t_config_value;
         }
-        if( a_value.IsInt() )
+        if( aValue.IsInt() )
         {
             ParamValue* t_config_value = new ParamValue();
-            (*t_config_value) << a_value.GetInt();
+            (*t_config_value) << aValue.GetInt();
             return t_config_value;
         }
-        if( a_value.IsUint() )
+        if( aValue.IsUint() )
         {
             ParamValue* t_config_value = new ParamValue();
-            (*t_config_value) << a_value.GetUint();
+            (*t_config_value) << aValue.GetUint();
             return t_config_value;
         }
-        if( a_value.IsInt64() )
+        if( aValue.IsInt64() )
         {
             ParamValue* t_config_value = new ParamValue();
-            (*t_config_value) << a_value.GetInt64();
+            (*t_config_value) << aValue.GetInt64();
             return t_config_value;
         }
-        if( a_value.IsUint64() )
+        if( aValue.IsUint64() )
         {
             ParamValue* t_config_value = new ParamValue();
-            (*t_config_value) << a_value.GetUint64();
+            (*t_config_value) << aValue.GetUint64();
             return t_config_value;
         }
-        if( a_value.IsDouble() )
+        if( aValue.IsDouble() )
         {
             ParamValue* t_config_value = new ParamValue();
-            (*t_config_value) << a_value.GetDouble();
+            (*t_config_value) << aValue.GetDouble();
             return t_config_value;
         }
-        LMCWARN( lmclog, "unknown type; returning null value" );
+        LMCWARN( plog, "(config_reader_json) unknown type; returning null value" );
         return new Param();
     }
 

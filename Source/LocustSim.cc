@@ -43,12 +43,12 @@ int main( int argc, char** argv )
 
     LMCINFO( lmclog, "Setting up generator toolbox" );
     GeneratorToolbox toolbox;
-    toolbox.Configure( configurator->config() );
+    toolbox.Configure( configurator->Config() );
 
     LMCINFO( lmclog, "Setting up simulation controller" );
     SimulationController controller;
     controller.SetFirstGenerator( toolbox.GetFirstGenerator() );
-    controller.Configure( configurator->config()->node_at( "simulation" ) );
+    controller.Configure( configurator->Config()->NodeAt( "simulation" ) );
 
     LMCINFO( lmclog, "Beginning simulation run" );
     controller.Run();

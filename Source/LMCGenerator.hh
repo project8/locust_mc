@@ -25,7 +25,7 @@ namespace locust
 
             virtual void Configure( const ParamNode* aNode ) = 0;
 
-            virtual void Accept( GeneratorVisitor* aVisitor ) = 0;
+            virtual void Accept( GeneratorVisitor* aVisitor ) const = 0;
 
             Signal* Run( unsigned aTimeSize ) const;
             void Run( Signal* aSignal ) const;

@@ -81,7 +81,7 @@ namespace locust
         return true;
     }
 
-    bool SimulationController::Run() const
+    bool SimulationController::Run()
     {
         if( fFirstGenerator == NULL )
         {
@@ -98,10 +98,15 @@ namespace locust
         {
             LMCINFO( lmclog, "Simulating record " << record );
             Signal* simulatedSignal = fFirstGenerator->Run( recordSize );
-            // TODO: write singal to egg file here!
             for( unsigned index = 0; index < 100; ++index )
             {
                 LMCWARN( lmclog, simulatedSignal->SignalTime( index ) );
+            }
+            if( ! fEggWriter.WriteRecord( simulatedSignal ) )
+            {
+                LMCERROR( lmclog, "Something went wrong while writing record " << index );
+                delete simulatedSignal;
+                return false;
             }
             // temporarily, immediately cleanup
             delete simulatedSignal;

@@ -18,7 +18,7 @@ namespace locust
             Parser( int an_argc, char** an_argv );
             virtual ~Parser();
 
-            void parse( int an_argc, char** an_argv );
+            void Parse( int an_argc, char** an_argv );
 
         private:
             static const char f_separator = '=';

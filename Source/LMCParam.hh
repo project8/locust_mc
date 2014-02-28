@@ -30,24 +30,43 @@ namespace locust
             Param(const Param& orig);
             virtual ~Param();
 
-            virtual Param* clone() const;
+            virtual Param* Clone() const;
 
-            virtual bool is_null() const;
-            virtual bool is_value() const;
-            virtual bool is_array() const;
-            virtual bool is_node() const;
+            virtual bool IsNull() const;
+            virtual bool IsValue() const;
+            virtual bool IsArray() const;
+            virtual bool IsNode() const;
 
-            ParamValue& as_value();
-            ParamArray& as_array();
-            ParamNode& as_node();
+            ParamValue& AsValue();
+            ParamArray& AsArray();
+            ParamNode& AsNode();
 
-            const ParamValue& as_value() const;
-            const ParamArray& as_array() const;
-            const ParamNode& as_node() const;
+            const ParamValue& AsValue() const;
+            const ParamArray& AsArray() const;
+            const ParamNode& AsNode() const;
 
-            virtual std::string to_string() const;
+            /// Assumes that the parameter is a value, and returns a reference to itself.
+            const ParamValue& operator()() const;
+            /// Assumes that the parameter is a value, and returns a reference to itself.
+            ParamValue& operator()();
 
-            static unsigned s_indent_level;
+            /// Assumes that the parameter is an array, and returns a reference to the Param at aIndex.
+            /// Behavior is undefined if aIndex is out-of-range.
+            const Param& operator[]( unsigned aIndex ) const;
+            /// Assumes that the parameter is an array, and returns a reference to the Param at aIndex.
+            /// Behavior is undefined if aIndex is out-of-range.
+            Param& operator[]( unsigned aIndex );
+
+            /// Assumes that the parameter is a node, and returns a reference to the Param corresponding to aName.
+            /// Throws an Exception if aName is not present.
+            const Param& operator[]( const std::string& aName ) const;
+            /// Assumes that the parameter is a node, and returns a reference to the Param corresponding to aName.
+            /// Adds a new Value if aName is not present.
+            Param& operator[]( const std::string& aName );
+
+            virtual std::string ToString() const;
+
+            static unsigned sIndentLevel;
     };
 
     class ParamValue : public Param
@@ -55,53 +74,53 @@ namespace locust
         public:
             ParamValue();
             template< typename XStreamableType >
-            ParamValue( XStreamableType a_streamable );
+            ParamValue( XStreamableType aStreamable );
             ParamValue(const ParamValue& orig);
             virtual ~ParamValue();
 
-            virtual Param* clone() const;
+            virtual Param* Clone() const;
 
-            virtual bool is_null() const;
-            virtual bool is_value() const;
+            virtual bool IsNull() const;
+            virtual bool IsValue() const;
 
-            const std::string& get() const;
+            const std::string& Get() const;
             template< typename XValType >
-            XValType get() const;
+            XValType Get() const;
 
             template< typename XStreamableType >
-            ParamValue& operator<<( const XStreamableType& a_streamable );
+            ParamValue& operator<<( const XStreamableType& aStreamable );
 
-            virtual std::string to_string() const;
+            virtual std::string ToString() const;
 
         protected:
-            std::string f_value;
+            std::string fValue;
 
     };
 
     template< typename XStreamableType >
-    ParamValue::ParamValue( XStreamableType a_streamable ) :
+    ParamValue::ParamValue( XStreamableType aStreamable ) :
             Param(),
-            f_value()
+            fValue()
     {
-        (*this) << a_streamable;
+        (*this) << aStreamable;
     }
 
     template< typename XValType >
-    XValType ParamValue::get() const
+    XValType ParamValue::Get() const
     {
-        XValType t_return;
-        stringstream t_buffer;
-        t_buffer << f_value;
-        t_buffer >> t_return;
-        return t_return;
+        XValType tReturn;
+        std::stringstream tBuffer;
+        tBuffer << fValue;
+        tBuffer >> tReturn;
+        return tReturn;
     }
 
     template< typename XStreamableType >
     ParamValue& ParamValue::operator<<( const XStreamableType& a_streamable )
     {
-        std::stringstream t_buffer;
-        t_buffer << a_streamable;
-        f_value = t_buffer.str();
+        std::stringstream tBuffer;
+        tBuffer << a_streamable;
+        fValue = tBuffer.str();
         return *this;
     }
 
@@ -121,122 +140,143 @@ namespace locust
             ParamArray( const ParamArray& orig );
             virtual ~ParamArray();
 
-            virtual Param* clone() const;
+            virtual Param* Clone() const;
 
-            virtual bool is_null() const;
-            virtual bool is_array() const;
+            virtual bool IsNull() const;
+            virtual bool IsArray() const;
 
-            unsigned size() const;
-            bool empty() const;
+            unsigned Size() const;
+            bool Empty() const;
 
             /// sets the size of the array
             /// if smaller than the current size, extra elements are deleted
-            void resize( unsigned a_size );
+            void Resize( unsigned a_size );
 
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
-            const std::string& get_value( unsigned a_index ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Throws a Exception if aName is not present or is not of type ParamValue
+            const std::string& GetValue( unsigned aIndex ) const;
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Throws a Exception if aName is not present or is not of type ParamValue
             template< typename XValType >
-            XValType get_value( unsigned a_index ) const;
+            XValType GetValue( unsigned aIndex ) const;
 
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
-            const std::string& get_value( unsigned a_index, const std::string& a_default ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Returns aDefault if aName is not present or is not of type ParamValue
+            const std::string& GetValue( unsigned aIndex, const std::string& aDefault ) const;
+            const std::string& GetValue( unsigned aIndex, const char* aDefault ) const;
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Returns aDefault if aName is not present or is not of type ParamValue
             template< typename XValType >
-            XValType get_value( unsigned a_index, XValType a_default ) const;
+            XValType GetValue( unsigned aIndex, XValType aDefault ) const;
 
-            /// Returns a pointer to the Param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const Param* at( unsigned a_index ) const;
-            /// Returns a pointer to the Param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            Param* at( unsigned a_index );
+            /// Returns a pointer to the Param corresponding to aName.
+            /// Returns NULL if aName is not present.
+            const Param* At( unsigned aIndex ) const;
+            /// Returns a pointer to the Param corresponding to aName.
+            /// Returns NULL if aName is not present.
+            Param* At( unsigned aIndex );
 
-            /// Returns a pointer to the ParamValue (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const ParamValue* value_at( unsigned a_index ) const;
-            /// Returns a pointer to the ParamValue (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            ParamValue* value_at( unsigned a_index );
+            /// Returns a pointer to the ParamValue (dynamic-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present or type is wrong.
+            const ParamValue* ValueAt( unsigned aIndex ) const;
+            /// Returns a pointer to the ParamValue (dynamic-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present or type is wrong.
+            ParamValue* ValueAt( unsigned aIndex );
+            /// Returns a pointer to the ParamValue (static-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present.
+            const ParamValue* ValueAtFast( unsigned aIndex ) const;
+            /// Returns a pointer to the ParamValue (static-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present.
+            ParamValue* ValueAtFast( unsigned aIndex );
 
-            /// Returns a pointer to the ParamArray (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const ParamArray* array_at( unsigned a_index ) const;
-            /// Returns a pointer to the ParamArray (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            ParamArray* array_at( unsigned a_index );
 
-            /// Returns a pointer to the ParamNode (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const ParamNode* node_at( unsigned a_index ) const;
-            /// Returns a pointer to the ParamNode (static-ly cast) corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            ParamNode* node_at( unsigned a_index );
+            /// Returns a pointer to the ParamArray (dynamic-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present or type is wrong.
+            const ParamArray* ArrayAt( unsigned aIndex ) const;
+            /// Returns a pointer to the ParamArray (dynamic-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present or type is wrong.
+            ParamArray* ArrayAt( unsigned aIndex );
+            /// Returns a pointer to the ParamArray (static-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present.
+            const ParamArray* ArrayAtFast( unsigned aIndex ) const;
+            /// Returns a pointer to the ParamArray (static-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present.
+            ParamArray* ArrayAtFast( unsigned aIndex );
 
-            /// Returns a reference to the Param at a_index.
-            /// Behavior is undefined if a_index is out-of-range.
-            const Param& operator[]( unsigned a_index ) const;
-            /// Returns a reference to the Param at a_index.
-            /// Behavior is undefined if a_index is out-of-range.
-            Param& operator[]( unsigned a_index );
+            /// Returns a pointer to the ParamNode (dynamic-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present or type is wrong.
+            const ParamNode* NodeAt( unsigned aIndex ) const;
+            /// Returns a pointer to the ParamNode (dynamic-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present or type is wrong.
+            ParamNode* NodeAt( unsigned aIndex );
+            /// Returns a pointer to the ParamNode (static-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present.
+            const ParamNode* NodeAtFast( unsigned aIndex ) const;
+            /// Returns a pointer to the ParamNode (static-ly cast) corresponding to aName.
+            /// Returns NULL if aName is not present.
+            ParamNode* NodeAtFast( unsigned aIndex );
 
-            const Param* front() const;
-            Param* front();
+            /// Returns a reference to the Param At aIndex.
+            /// Behavior is undefined if aIndex is out-of-range.
+            const Param& operator[]( unsigned aIndex ) const;
+            /// Returns a reference to the Param At aIndex.
+            /// Behavior is undefined if aIndex is out-of-range.
+            Param& operator[]( unsigned aIndex );
 
-            const Param* back() const;
-            Param* back();
+            const Param* Front() const;
+            Param* Front();
 
-            // assign a copy of a_value to the array at a_index
-            void assign( unsigned a_index, const Param& a_value );
-            // directly assign a_value_ptr to the array at a_index
-            void assign( unsigned a_index, Param* a_value_ptr );
+            const Param* Back() const;
+            Param* Back();
 
-            void push_back( const Param& a_value );
-            void push_back( Param* a_value_ptr );
+            // assign a copy of aValue to the array at aIndex
+            void Assign( unsigned aIndex, const Param& aValue );
+            // directly assign aValue_ptr to the array at aIndex
+            void Assign( unsigned aIndex, Param* aValue_ptr );
 
-            void push_front( const Param& a_value );
-            void push_front( Param* a_value_ptr );
+            void PushBack( const Param& aValue );
+            void PushBack( Param* aValue_ptr );
 
-            void erase( unsigned a_index );
-            Param* remove( unsigned a_index );
+            void PushFront( const Param& aValue );
+            void PushFront( Param* aValue_ptr );
 
-            iterator begin();
-            const_iterator begin() const;
+            void Erase( unsigned aIndex );
+            Param* Remove( unsigned aIndex );
 
-            iterator end();
-            const_iterator end() const;
+            iterator Begin();
+            const_iterator Begin() const;
 
-            reverse_iterator rbegin();
-            const_reverse_iterator rbegin() const;
+            iterator End();
+            const_iterator End() const;
 
-            reverse_iterator rend();
-            const_reverse_iterator rend() const;
+            reverse_iterator RBegin();
+            const_reverse_iterator RBegin() const;
 
-            virtual std::string to_string() const;
+            reverse_iterator REnd();
+            const_reverse_iterator REnd() const;
+
+            virtual std::string ToString() const;
 
         protected:
-            contents f_contents;
+            contents fContents;
     };
 
     template< typename XValType >
-    XValType ParamArray::get_value( unsigned a_index ) const
+    XValType ParamArray::GetValue( unsigned aIndex ) const
     {
-        const ParamValue* value = value_at( a_index );
-        if( value == NULL ) throw Exception() << "No value at <" << a_index << "> is present at this node";
-        return value->get< XValType >();
+        const ParamValue* value = ValueAt( aIndex );
+        if( value == NULL ) throw Exception() << "No Value At <" << aIndex << "> is present At this node";
+        return value->Get< XValType >();
     }
 
     template< typename XValType >
-    XValType ParamArray::get_value( unsigned a_index, XValType a_default ) const
+    XValType ParamArray::GetValue( unsigned aIndex, XValType aDefault ) const
     {
-        const ParamValue* value = value_at( a_index );
-        if( value == NULL ) return a_default;
-        return value->get< XValType >();
+        const ParamValue* value = ValueAt( aIndex );
+        if( value == NULL ) return aDefault;
+        return value->Get< XValType >();
     }
+
 
 
     class ParamNode : public Param
@@ -251,104 +291,110 @@ namespace locust
             ParamNode( const ParamNode& orig );
             virtual ~ParamNode();
 
-            virtual Param* clone() const;
+            virtual Param* Clone() const;
 
-            virtual bool is_null() const;
-            virtual bool is_node() const;
+            virtual bool IsNull() const;
+            virtual bool IsNode() const;
 
-            bool has( const std::string& a_name ) const;
-            unsigned count( const std::string& a_name ) const;
+            bool Has( const std::string& aName ) const;
+            unsigned Count( const std::string& aName ) const;
 
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
-            const std::string& get_value( const std::string& a_name ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Throws an exception if a_name is not present or is not of type ParamValue
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Throws a Exception if aName is not present or is not of type ParamValue
+            const std::string& GetValue( const std::string& aName ) const;
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Throws a Exception if aName is not present or is not of type ParamValue
             template< typename XValType >
-            XValType get_value( const std::string& a_name ) const;
+            XValType GetValue( const std::string& aName ) const;
 
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
-            const std::string& get_value( const std::string& a_name, const std::string& a_default ) const;
-            /// Returns the result of ParamValue::get if a_name is present and is of type ParamValue
-            /// Returns a_default if a_name is not present or is not of type ParamValue
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Returns a_default if aName is not present or is not of type ParamValue
+            const std::string& GetValue( const std::string& aName, const std::string& aDefault ) const;
+            const std::string& GetValue( const std::string& aName, const char* aDefault ) const;
+            /// Returns the result of ParamValue::Get if aName is present and is of type ParamValue
+            /// Returns a_default if aName is not present or is not of type ParamValue
             template< typename XValType >
-            XValType get_value( const std::string& a_name, XValType a_default ) const;
+            XValType GetValue( const std::string& aName, XValType aDefault ) const;
 
-            /// Returns a pointer to the Param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            const Param* at( const std::string& a_name ) const;
-            /// Returns a pointer to the Param corresponding to a_name.
-            /// Returns NULL if a_name is not present.
-            Param* at( const std::string& a_name );
+            /// Returns a pointer to the Param corresponding to aName.
+            /// Returns NULL if aName is not present.
+            const Param* At( const std::string& aName ) const;
+            /// Returns a pointer to the Param corresponding to aName.
+            /// Returns NULL if aName is not present.
+            Param* At( const std::string& aName );
 
-            const ParamValue* value_at( const std::string& a_name ) const;
-            ParamValue* value_at( const std::string& a_name );
+            const ParamValue* ValueAt( const std::string& aName ) const;
+            ParamValue* ValueAt( const std::string& aName );
+            const ParamValue* ValueAtFast( const std::string& aName ) const;
+            ParamValue* ValueAtFast( const std::string& aName );
 
-            const ParamArray* array_at( const std::string& a_name ) const;
-            ParamArray* array_at( const std::string& a_name );
+            const ParamArray* ArrayAt( const std::string& aName ) const;
+            ParamArray* ArrayAt( const std::string& aName );
+            const ParamArray* ArrayAtFast( const std::string& aName ) const;
+            ParamArray* ArrayAtFast( const std::string& aName );
 
-            const ParamNode* node_at( const std::string& a_name ) const;
-            ParamNode* node_at( const std::string& a_name );
+            const ParamNode* NodeAt( const std::string& aName ) const;
+            ParamNode* NodeAt( const std::string& aName );
+            const ParamNode* NodeAtFast( const std::string& aName ) const;
+            ParamNode* NodeAtFast( const std::string& aName );
 
-            /// Returns a reference to the Param corresponding to a_name.
-            /// Throws an exception if a_name is not present.
-            const Param& operator[]( const std::string& a_name ) const;
-            /// Returns a reference to the Param corresponding to a_name.
-            /// Adds a new value if a_name is not present.
-            Param& operator[]( const std::string& a_name );
+            /// Returns a reference to the Param corresponding to aName.
+            /// Throws an Exception if aName is not present.
+            const Param& operator[]( const std::string& aName ) const;
+            /// Returns a reference to the Param corresponding to aName.
+            /// Adds a new Value if aName is not present.
+            Param& operator[]( const std::string& aName );
 
-            /// creates a copy of a_value
-            bool add( const std::string& a_name, const Param& a_value );
-            /// directly adds (without copying) a_value_ptr
-            bool add( const std::string& a_name, Param* a_value_ptr );
+            /// creates a copy of aValue
+            bool Add( const std::string& aName, const Param& aValue );
+            /// directly adds (without copying) aValuePtr
+            bool Add( const std::string& aName, Param* aValuePtr );
 
-            /// creates a copy of a_value
-            void replace( const std::string& a_name, const Param& a_value );
-            /// directly adds (without copying) a_value_ptr
-            void replace( const std::string& a_name, Param* a_value_ptr );
+            /// creates a copy of aValue
+            void Replace( const std::string& aName, const Param& aValue );
+            /// directly adds (without copying) aValuePtr
+            void Replace( const std::string& aName, Param* aValuePtr );
 
             /// Merges the contents of a_object into this object.
-            /// If names in the contents of a_object exist in this object,
+            /// If names in the contents of aObject exist in this object,
             /// the values in this object corresponding to the matching names will be replaced.
-            void merge( const ParamNode* a_object );
+            void Merge( const ParamNode& aObject );
 
-            void erase( const std::string& a_name );
-            Param* remove( const std::string& a_name );
+            void Erase( const std::string& aName );
+            Param* Remove( const std::string& aName );
 
-            iterator begin();
-            const_iterator begin() const;
+            iterator Begin();
+            const_iterator Begin() const;
 
-            iterator end();
-            const_iterator end() const;
+            iterator End();
+            const_iterator End() const;
 
-            virtual std::string to_string() const;
+            virtual std::string ToString() const;
 
         protected:
-            contents f_contents;
+            contents fContents;
 
     };
 
     template< typename XValType >
-    XValType ParamNode::get_value( const std::string& a_name ) const
+    XValType ParamNode::GetValue( const std::string& aName ) const
     {
-        const ParamValue* value = value_at( a_name );
-        if( value == NULL ) throw Exception() << "No value with name <" << a_name << "> is present at this node";
-        return value->get< XValType >();
+        const ParamValue* value = ValueAt( aName );
+        if( value == NULL ) throw Exception() << "No Value with name <" << aName << "> is present At this node";
+        return value->Get< XValType >();
     }
 
     template< typename XValType >
-    XValType ParamNode::get_value( const std::string& a_name, XValType a_default ) const
+    XValType ParamNode::GetValue( const std::string& aName, XValType aDefault ) const
     {
-        const ParamValue* value = value_at( a_name );
-        if( value == NULL ) return a_default;
-        return value->get< XValType >();
+        const ParamValue* value = ValueAt( aName );
+        if( value == NULL ) return aDefault;
+        return value->Get< XValType >();
     }
 
 
 
-
-    std::ostream& operator<<(std::ostream& out, const Param& value);
+    std::ostream& operator<<(std::ostream& out, const Param& aValue);
     std::ostream& operator<<(std::ostream& out, const ParamValue& value);
     std::ostream& operator<<(std::ostream& out, const ParamArray& value);
     std::ostream& operator<<(std::ostream& out, const ParamNode& value);
@@ -365,10 +411,10 @@ namespace locust
             ParamInputJSON();
             virtual ~ParamInputJSON();
 
-            static ParamNode* read_file( const std::string& a_filename );
-            static ParamNode* read_string( const std::string& a_json_str );
-            static ParamNode* read_document( const rapidjson::Document& a_document );
-            static Param* read_value( const rapidjson::Value& a_value );
+            static ParamNode* ReadFile( const std::string& aFilename );
+            static ParamNode* ReadString( const std::string& aJSONStr );
+            static ParamNode* ReadDocument( const rapidjson::Document& aDocument );
+            static Param* ReadValue( const rapidjson::Value& aValue );
     };
 
 } /* namespace locust */

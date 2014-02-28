@@ -44,11 +44,11 @@ namespace locust
 
         if( aNode == NULL ) return true;
 
-        SetFilename( aNode->get_value( "egg-filename", fFilename ) );
-        SetDate( aNode->get_value( "date", fDate ) );
-        SetDescription( aNode->get_value( "description", fDescription ) );
-        SetRunType( aNode->get_value< monarch::RunType >( "run-type", fRunType ) );
-        if( ! SetBitDepth( aNode->get_value< unsigned >( "bit-depth", fBitDepth ) ) )
+        SetFilename( aNode->GetValue( "egg-filename", fFilename ) );
+        SetDate( aNode->GetValue( "date", fDate ) );
+        SetDescription( aNode->GetValue( "description", fDescription ) );
+        SetRunType( aNode->GetValue< monarch::RunType >( "run-type", fRunType ) );
+        if( ! SetBitDepth( aNode->GetValue< unsigned >( "bit-depth", fBitDepth ) ) )
         {
             LMCERROR( lmclog, "Error setting the bit depth" );
             return false;
@@ -92,21 +92,21 @@ namespace locust
 
     bool EggWriter::WriteRecord( const Signal* aSignal )
     {
-        if( fState != kWriting || fState != kPrepared )
+        if( fState != kWriting && fState != kPrepared )
         {
             LMCERROR( lmclog, "Egg file must be opened before writing records" );
             return false;
         }
         fState = kWriting;
 
-
+        // TODO: fill in record from signal
 
         return fMonarch->WriteRecord();
     }
 
     bool EggWriter::FinalizeEgg()
     {
-        if( fState != kWriting || fState != kPrepared )
+        if( fState != kWriting && fState != kPrepared )
         {
             LMCERROR( lmclog, "Egg file must be opened before finalizing" );
             return false;

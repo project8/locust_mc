@@ -29,12 +29,12 @@ namespace locust
     {
         if( aParam == NULL) return;
 
-        SetSigma( aParam->get_value< double >( "sigma", fSigma ) );
+        SetSigma( aParam->GetValue< double >( "sigma", fSigma ) );
 
         return;
     }
 
-    void GaussianNoiseGenerator::Accept( GeneratorVisitor* aVisitor )
+    void GaussianNoiseGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
         return;

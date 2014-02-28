@@ -43,7 +43,7 @@ namespace locust
 
         Factory< Generator >* genFactory = Factory< Generator >::GetInstance();
 
-        const ParamArray* generatorList = aNode->array_at( "generator-list" );
+        const ParamArray* generatorList = aNode->ArrayAt( "generator-list" );
         if( generatorList == NULL )
         {
             LMCERROR( lmclog, "No generator list was found" );
@@ -51,17 +51,17 @@ namespace locust
         }
 
         Generator* lastGenerator = NULL;
-        for( ParamArray::const_iterator it = generatorList->begin(); it != generatorList->end(); ++it )
+        for( ParamArray::const_iterator it = generatorList->Begin(); it != generatorList->End(); ++it )
         {
-            if( ! (*it)->is_value() )
+            if( ! (*it)->IsValue() )
             {
                 LMCERROR( lmclog, "Non-value-type array element found in generator-list" );
                 continue;
             }
-            Generator* newGenerator = genFactory->Create( (*it)->as_value().get() );
+            Generator* newGenerator = genFactory->Create( (*it)->AsValue().Get() );
             if( newGenerator == NULL )
             {
-                LMCERROR( lmclog, "Unrecognized generator name: " << (*it)->as_value().get() );
+                LMCERROR( lmclog, "Unrecognized generator name: " << (*it)->AsValue().Get() );
                 continue;
             }
             if( lastGenerator == NULL )
@@ -80,7 +80,7 @@ namespace locust
         while( nextGenerator != NULL )
         {
             LMCINFO( lmclog, "Configuring " << nextGenerator->GetName() );
-            nextGenerator->Configure( aNode->node_at( nextGenerator->GetName() ) );
+            nextGenerator->Configure( aNode->NodeAt( nextGenerator->GetName() ) );
             nextGenerator->SetRNG( &fRNG );
             nextGenerator = nextGenerator->GetNextGenerator();
         }
