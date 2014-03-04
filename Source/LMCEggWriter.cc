@@ -23,6 +23,8 @@ namespace locust
             fRunType( monarch::sRunTypeOther ),
             fBitDepth( 8 ),
             fDataTypeSize( 1 ),
+            fVoltageMin( -0.25 ),
+            fVoltageRange( 0.5 ),
             fAcquisitionRate( 1. ),
             fDuration( 1. ),
             fRecordSize( 1 ),
@@ -90,7 +92,10 @@ namespace locust
         header->SetRunSource( monarch::sSourceSimulation );
         header->SetFormatMode( monarch::sFormatSingle );
 
-        // TODO: information from digitizer loaded into header
+        header->SetBitDepth( fBitDepth );
+        header->SetDataTypeSize( fDataTypeSize );
+        header->SetVoltageMin( fVoltageMin );
+        header->SetVoltageRange( fVoltageRange );
 
         fRecord = fMonarch->GetRecordSeparateOne();
 
@@ -226,6 +231,28 @@ namespace locust
         }
         fBitDepth = bitDepth;
         return true;
+    }
+
+    double EggWriter::GetVoltageMin() const
+    {
+        return fVoltageMin;
+    }
+
+    void EggWriter::SetVoltageMin( double vMin )
+    {
+        fVoltageMin = vMin;
+        return;
+    }
+
+    double EggWriter::GetVoltageRange() const
+    {
+        return fVoltageRange;
+    }
+
+    void EggWriter::SetVoltageRange( double vRange )
+    {
+        fVoltageRange = vRange;
+        return;
     }
 
     unsigned EggWriter::GetDataTypeSize() const

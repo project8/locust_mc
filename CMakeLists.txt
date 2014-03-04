@@ -85,6 +85,7 @@ set( LOCUST_MC_HEADER_FILES
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCConstants.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDefaultConfig.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDestroyer.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDigitizer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCEggWriter.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCException.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCFactory.hh
@@ -105,6 +106,7 @@ set( LOCUST_MC_HEADER_FILES
 set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCConfigurator.cc
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDefaultConfig.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCDigitizer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCEggWriter.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCException.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/LMCGaussianNoiseGenerator.cc

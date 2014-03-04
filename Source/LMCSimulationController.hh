@@ -13,6 +13,7 @@
 
 namespace locust
 {
+    class Digitizer;
     class Generator;
     class ParamNode;
 
@@ -33,6 +34,8 @@ namespace locust
             void SetFirstGenerator( const Generator* firstGen );
 
         private:
+            const Digitizer* FindDigitizer() const;
+
             const Generator* fFirstGenerator;
 
             RunLengthCalculator fRunLengthCalc;

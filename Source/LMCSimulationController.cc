@@ -7,6 +7,7 @@
 
 #include "LMCSimulationController.hh"
 
+#include "LMCDigitizer.hh"
 #include "LMCGenerator.hh"
 #include "LMCLogger.hh"
 #include "LMCParam.hh"
@@ -72,6 +73,13 @@ namespace locust
 
         // overwrite the run duration in the egg writer, then prepare the egg file
         fEggWriter.SetDuration( fRunLengthCalc.GetDuration() );
+        const Digitizer* digitizer = FindDigitizer();
+        if( digitizer != NULL )
+        {
+            fEggWriter.SetBitDepth( digitizer->DigitizerParams().bit_depth );
+            fEggWriter.SetVoltageMin( digitizer->DigitizerParams().v_min );
+            fEggWriter.SetVoltageRange( digitizer->DigitizerParams().v_range );
+        }
         if( ! fEggWriter.PrepareEgg() )
         {
             LMCERROR( lmclog, "Error preparing the egg file" );
@@ -133,6 +141,18 @@ namespace locust
         }
 
         return true;
+    }
+
+    const Digitizer* SimulationController::FindDigitizer() const
+    {
+        const Generator* thisGenerator = fFirstGenerator;
+        const Digitizer* asDigitizer = dynamic_cast< const Digitizer* >( thisGenerator );
+        while( thisGenerator != NULL && asDigitizer == NULL )
+        {
+            thisGenerator = thisGenerator->GetNextGenerator();
+            asDigitizer = dynamic_cast< const Digitizer* >( thisGenerator );
+        }
+        return asDigitizer;
     }
 
 } /* namespace locust */

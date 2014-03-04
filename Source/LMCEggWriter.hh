@@ -48,6 +48,12 @@ namespace locust
 
             unsigned GetDataTypeSize() const;
 
+            double GetVoltageMin() const;
+            void SetVoltageMin( double vMin );
+
+            double GetVoltageRange() const;
+            void SetVoltageRange( double vRange );
+
             double GetAcquisitionRate() const;
             void SetAcquisitionRate( double rate );
 
@@ -70,6 +76,8 @@ namespace locust
 
             unsigned fBitDepth;
             unsigned fDataTypeSize;
+            double fVoltageMin;
+            double fVoltageRange;
 
             double fAcquisitionRate; // MHz
             double fDuration; // s
