@@ -7,11 +7,10 @@
 
 #include "LMCGaussianNoiseGenerator.hh"
 
-#include "LMCFactory.hh"
 
 namespace locust
 {
-    static Registrar< Generator, GaussianNoiseGenerator > sGNGeneratorReg( "gaussian-noise" );
+    MT_REGISTER_GENERATOR(GaussianNoiseGenerator, "gaussian-noise");
 
     GaussianNoiseGenerator::GaussianNoiseGenerator( const std::string& aName ) :
             Generator( aName ),

@@ -8,6 +8,7 @@
 #ifndef LMCGENERATOR_HH_
 #define LMCGENERATOR_HH_
 
+#include "LMCFactory.hh"
 #include "LMCVisitor.hh"
 #include "LMCParam.hh"
 #include "LMCSignal.hh"
@@ -53,6 +54,10 @@ namespace locust
 
             Generator* fNext;
     };
+
+
+#define MT_REGISTER_GENERATOR(gen_class, gen_name) \
+        static Registrar< Generator, gen_class > s_##gen_class##_writer_registrar( gen_name );
 
 } /* namespace locust */
 
