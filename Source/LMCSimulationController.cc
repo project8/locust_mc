@@ -17,10 +17,12 @@ namespace locust
     LMCLOGGER( lmclog, "SimulationController" );
 
     SimulationController::SimulationController() :
+            fRNG(),
             fFirstGenerator( NULL ),
             fRunLengthCalc(),
             fEggWriter()
     {
+        SetRNGSeed();
     }
 
     SimulationController::~SimulationController()
@@ -30,6 +32,11 @@ namespace locust
     bool SimulationController::Configure( const ParamNode* aNode )
     {
         if( aNode == NULL ) return true;
+
+        if( aNode->Has( "rng-seed" ) )
+        {
+            SetRNGSeed( aNode->GetValue< int >( "rng-seed" ) );
+        }
 
         // configure the run-length calculator
         if( ! fRunLengthCalc.Configure( aNode ) )
@@ -48,15 +55,36 @@ namespace locust
         return true;
     }
 
-    void SimulationController::SetFirstGenerator( const Generator* firstGen )
+    void SimulationController::SetRNGSeed(int seed)
+    {
+        fRNG.Reseed( seed );
+        return;
+    }
+
+    void SimulationController::SetRNGSeed()
+    {
+        fRNG.Reseed( RandomLib::Random::SeedWord() );
+        return;
+    }
+
+
+    void SimulationController::SetFirstGenerator( Generator* firstGen )
     {
         fFirstGenerator = firstGen;
+        fRunLengthCalc.SetFirstGenerator( fFirstGenerator );
         return;
     }
 
     bool SimulationController::Prepare()
     {
         LMCINFO( lmclog, "Preparing for run" );
+
+        Generator* nextGenerator = fFirstGenerator;
+        while( nextGenerator != NULL )
+        {
+            nextGenerator->SetRNG( &fRNG );
+            nextGenerator = nextGenerator->GetNextGenerator();
+        }
 
         if( ! fRunLengthCalc.VisitGenerators() )
         {
@@ -106,17 +134,16 @@ namespace locust
         {
             LMCINFO( lmclog, "Simulating record " << record );
             Signal* simulatedSignal = fFirstGenerator->Run( recordSize );
-            for( unsigned index = 0; index < 100; ++index )
+            if( simulatedSignal == NULL )
             {
-                LMCWARN( lmclog, simulatedSignal->SignalTime( index ) );
-            }
-
-            if( ! simulatedSignal->ToState( Signal::kDigital ) )
-            {
-                LMCERROR( lmclog, "Please digitize the signal before attempting to write to an egg file" );
-                delete simulatedSignal;
+                LMCERROR( lmclog, "Signal was not simulated" );
                 return false;
             }
+            for( unsigned index = 0; index < 100; ++index )
+            {
+                LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime( index ) << "  " << simulatedSignal->SignalDigital( index ) );
+            }
+
             if( ! fEggWriter.WriteRecord( simulatedSignal ) )
             {
                 LMCERROR( lmclog, "Something went wrong while writing record " << index );

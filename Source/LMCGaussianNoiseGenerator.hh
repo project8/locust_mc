@@ -15,22 +15,41 @@
 namespace locust
 {
 
+    /*!
+     @class GaussianNoiseGenerator
+     @author N. S. Oblath
+
+     @brief Add Gaussian-distributed noise to the signal
+
+     @details
+
+     Configuration name: "gaussian-noise"
+
+     Available configuration options:
+     - "mean": double -- Mean of the Gaussian noise (usually remains at 0)
+     - "sigma": double -- Standard deviation of the Gaussian noise
+
+    */
     class GaussianNoiseGenerator : public Generator
     {
         public:
             GaussianNoiseGenerator( const std::string& aName = "gaussian-noise" );
             virtual ~GaussianNoiseGenerator();
 
-            void Configure( const ParamNode* aNode );
+            bool Configure( const ParamNode* aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
+
+            double GetMean() const;
+            void SetMean( double aMean );
 
             double GetSigma() const;
             void SetSigma( double aSigma );
 
         private:
-            void Generate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal ) const;
 
+            double fMean;
             double fSigma;
 
             RandomLib::NormalDistribution< double > fNormDist;

@@ -7,10 +7,12 @@
 
 #include "LMCGenerator.hh"
 
+#include "LMCLogger.hh"
 #include "LMCSignal.hh"
 
 namespace locust
 {
+    LMCLOGGER( lmclog, "Generator" );
 
     Generator::Generator( const std::string& aName ) :
             fName( aName ),
@@ -28,16 +30,33 @@ namespace locust
     {
         Signal* newSignal = new Signal();
         newSignal->Initialize( aTimeSize );
-        Run( newSignal );
+        if( ! Run( newSignal ) )
+        {
+            delete newSignal;
+            return NULL;
+        }
         return newSignal;
     }
 
-    void Generator::Run( Signal* aSignal ) const
+    bool Generator::Run( Signal* aSignal ) const
     {
-        aSignal->ToState( fRequiredSignalState );
-        Generate( aSignal );
+        if(! Generate( aSignal ) )
+        {
+            LMCERROR( lmclog, "Signal generation failed" );
+            return false;
+        }
         if( fNext != NULL ) fNext->Run( aSignal );
-        return;
+        return true;
+    }
+
+    bool Generator::Generate( Signal* aSignal ) const
+    {
+        if( ! aSignal->ToState( fRequiredSignalState ) )
+        {
+            LMCERROR( lmclog, "Unable to convert signal to state <" << fRequiredSignalState << ">" );
+            return false;
+        }
+        return DoGenerate( aSignal );
     }
 
     const std::string& Generator::GetName() const

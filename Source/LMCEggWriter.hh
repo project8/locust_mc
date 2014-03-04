@@ -15,6 +15,20 @@ namespace locust
     class ParamNode;
     class Signal;
 
+    /*!
+     @class EggWriter
+     @author N. S. Oblath
+
+     @brief Uses the Monarch library to write simulated signals to an egg file
+
+     @details
+
+     Available configuration options:
+     - "filename": string -- filename of the output egg file
+     - "date": string -- date/time string
+     - "description": string -- informative run description
+     - "run-type": unsigned -- set the run type
+    */
     class EggWriter
     {
         public:

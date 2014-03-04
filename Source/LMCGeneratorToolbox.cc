@@ -35,19 +35,19 @@ namespace locust
         }
     }
 
-    void GeneratorToolbox::Configure( const ParamNode* aNode )
+    bool GeneratorToolbox::Configure( const ParamNode* aNode )
     {
-        if( aNode == NULL ) return;
+        if( aNode == NULL ) return false;
 
         LMCINFO( lmclog, "Creating generators" );
 
         Factory< Generator >* genFactory = Factory< Generator >::GetInstance();
 
-        const ParamArray* generatorList = aNode->ArrayAt( "generator-list" );
+        const ParamArray* generatorList = aNode->ArrayAt( "generators" );
         if( generatorList == NULL )
         {
             LMCERROR( lmclog, "No generator list was found" );
-            return;
+            return false;
         }
 
         Generator* lastGenerator = NULL;
@@ -58,19 +58,24 @@ namespace locust
                 LMCERROR( lmclog, "Non-value-type array element found in generator-list" );
                 continue;
             }
+
             Generator* newGenerator = genFactory->Create( (*it)->AsValue().Get() );
             if( newGenerator == NULL )
             {
                 LMCERROR( lmclog, "Unrecognized generator name: " << (*it)->AsValue().Get() );
                 continue;
             }
+
             if( lastGenerator == NULL )
             {
                 fFirstGenerator = newGenerator;
+                lastGenerator = newGenerator;
+                LMCDEBUG( lmclog, "First generator is <" << fFirstGenerator->GetName() << ">" );
             }
             else
             {
                 lastGenerator->SetNextGenerator( newGenerator );
+                LMCDEBUG( lmclog, "Adding generator <" << lastGenerator->GetName() << ">" );
             }
         }
 
@@ -79,7 +84,7 @@ namespace locust
         Generator* nextGenerator = fFirstGenerator;
         while( nextGenerator != NULL )
         {
-            LMCINFO( lmclog, "Configuring " << nextGenerator->GetName() );
+            LMCINFO( lmclog, "Configuring generator <" << nextGenerator->GetName() << ">" );
             nextGenerator->Configure( aNode->NodeAt( nextGenerator->GetName() ) );
             nextGenerator->SetRNG( &fRNG );
             nextGenerator = nextGenerator->GetNextGenerator();
@@ -87,10 +92,15 @@ namespace locust
 
         LMCINFO( lmclog, "Generator toolbox configuration complete" );
 
-        return;
+        return true;
     }
 
     const Generator* GeneratorToolbox::GetFirstGenerator() const
+    {
+        return fFirstGenerator;
+    }
+
+    Generator* GeneratorToolbox::GetFirstGenerator()
     {
         return fFirstGenerator;
     }

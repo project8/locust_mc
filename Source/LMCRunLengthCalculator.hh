@@ -14,6 +14,21 @@ namespace locust
 {
     class ParamNode;
 
+    /*!
+     @class RunLengthCalculator
+     @author N. S. Oblath
+
+     @brief Calculates the length of the run according to direct user requests and generator settings
+
+     @details
+
+     Available configuration options:
+     - "n-records": unsigned -- Set the run length by the number of records
+     - "duration": double -- Set the run length by total time in seconds
+     - "record-size": unsigned -- Number of elements in a record
+     - "acquisition-rate": double -- Set the acquisition rate in MHz (also sets bin width)
+     - "bin-width" double -- Set the bin width rate in ns (also sets acquisition rate)
+    */
     class RunLengthCalculator : public GeneratorVisitor
     {
         public:
@@ -67,6 +82,7 @@ namespace locust
 
         private:
             void Visit( const GaussianNoiseGenerator* );
+            void Visit( const Digitizer* );
 
             RunLengthState fState;
 

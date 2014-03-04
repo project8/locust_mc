@@ -7,13 +7,19 @@
 
 #include "LMCDigitizer.hh"
 
+#include "LMCLogger.hh"
+
 namespace locust
 {
+    LMCLOGGER( lmclog, "Digitizer" );
+
     MT_REGISTER_GENERATOR(Digitizer, "digitizer");
 
     Digitizer::Digitizer( const std::string& aName ) :
             Generator( aName )
     {
+        fRequiredSignalState = Signal::kTime;
+
         get_calib_params( 8, 1, -0.25, 0.5, &fParams );
     }
 
@@ -21,8 +27,10 @@ namespace locust
     {
     }
 
-    void Digitizer::Configure( const ParamNode* aNode )
+    bool Digitizer::Configure( const ParamNode* aNode )
     {
+        if( aNode == NULL ) return true;
+
         unsigned bitDepth = aNode->GetValue( "bit-depth", fParams.bit_depth );
         unsigned dataTypeSize = aNode->GetValue( "data-type-size", fParams.data_type_size );
         double vRange = aNode->GetValue( "v-range", fParams.v_range );
@@ -30,7 +38,9 @@ namespace locust
 
         get_calib_params( bitDepth, dataTypeSize, vMin, vRange, &fParams );
 
-        return;
+        LMCDEBUG( lmclog, "Digitizer calibration parameters set:\n" << fParams );
+
+        return true;
     }
 
     void Digitizer::Accept( GeneratorVisitor* aVisitor ) const
@@ -49,7 +59,7 @@ namespace locust
         return fParams;
     }
 
-    void Digitizer::Generate( Signal* aSignal ) const
+    bool Digitizer::DoGenerate( Signal* aSignal ) const
     {
         unsigned signalSize = aSignal->TimeSize();
 
@@ -59,10 +69,14 @@ namespace locust
         for( unsigned index = 0; index < signalSize; ++index )
         {
             digitizedData[ index ] = a2d( analogData[ index ], &fParams );
+            //if( index < 100 )
+            //{
+            //    LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << digitizedData[ index ] );
+            //}
         }
 
         aSignal->ToDigital( digitizedData, signalSize );
-        return;
+        return true;
     }
 
 } /* namespace locust */

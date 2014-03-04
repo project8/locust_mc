@@ -48,6 +48,8 @@ namespace locust
 
         fState = kTime;
 
+        LMCDEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
+
         return true;
     }
 
@@ -277,6 +279,7 @@ namespace locust
 
     bool Signal::FFTToTime()
     {
+        LMCDEBUG( lmclog, "Performing reverse FFT to the time domain" );
         fftw_execute( fPlanToTime );
         fState = kTime;
         return true;
@@ -284,6 +287,7 @@ namespace locust
 
     bool Signal::FFTToFreq()
     {
+        LMCDEBUG( lmclog, "Performing forward FFT to frequency domain" );
         fftw_execute( fPlanToFreq );
         fState = kFreq;
         return false;

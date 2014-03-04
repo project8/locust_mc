@@ -965,4 +965,92 @@ namespace locust
         return new Param();
     }
 
+
+
+    ParamOutputJSON::ParamOutputJSON()
+    {}
+
+    ParamOutputJSON::~ParamOutputJSON()
+    {}
+
+    bool ParamOutputJSON::WriteFile( const Param& toWrite, const std::string& aFilename, JSONWritingStyle aStyle )
+    {
+        if( aFilename.empty() )
+        {
+            LMCERROR( plog, "Filename cannot be an empty string" );
+            return false;
+        }
+
+        FILE* file = fopen( aFilename.c_str(), "w" );
+        if( file == NULL )
+        {
+            LMCERROR( plog, "Unable to open file: " << aFilename );
+            return false;
+        }
+
+        rapidjson::FileStream fileStream( file );
+
+        RJWriter* writer = NULL;
+        if( aStyle == kCompact )
+        {
+            writer = new RJWriter( fileStream );
+        }
+        else
+        {
+            writer = new RJPrettyWriter( fileStream );
+        }
+
+        if (! ParamOutputJSON::WriteParam( toWrite, writer ) )
+        {
+            LMCERROR( plog, "Error while writing file" );
+            delete writer;
+            return false;
+        }
+
+        delete writer;
+
+        return true;
+    }
+    bool ParamOutputJSON::WriteParam( const Param& toWrite, RJWriter* writer )
+    {
+        writer->Null();
+        LMCWARN( plog, "writing null" );
+        return true;
+    }
+    bool ParamOutputJSON::WriteParam( const ParamValue& toWrite, RJWriter* writer )
+    {
+        writer->String(toWrite.ToString().c_str());
+        return true;
+    }
+    bool ParamOutputJSON::WriteParam( const ParamArray& toWrite, RJWriter* writer )
+    {
+        writer->StartArray();
+        for( ParamArray::const_iterator it = toWrite.Begin(); it != toWrite.End(); ++it )
+        {
+            if( ! ParamOutputJSON::WriteParam( *(*it), writer ) )
+            {
+                LMCERROR( plog, "Error while writing parameter array" );
+                return false;
+            }
+        }
+        writer->EndArray();
+        return true;
+    }
+    bool ParamOutputJSON::WriteParam( const ParamNode& toWrite, RJWriter* writer )
+    {
+        writer->StartObject();
+        for( ParamNode::const_iterator it = toWrite.Begin(); it != toWrite.End(); ++it )
+        {
+            writer->String( it->first.c_str() );
+            if( ! ParamOutputJSON::WriteParam( *(it->second), writer ) )
+            {
+                LMCERROR( plog, "Error while writing parameter node" );
+                return false;
+            }
+        }
+        writer->EndObject();
+        return true;
+    }
+
+
 } /* namespace locust */

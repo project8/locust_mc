@@ -7,13 +7,17 @@
 
 #include "LMCGaussianNoiseGenerator.hh"
 
+#include "LMCLogger.hh"
 
 namespace locust
 {
+    LMCLOGGER( lmclog, "GaussianNoiseGenerator" );
+
     MT_REGISTER_GENERATOR(GaussianNoiseGenerator, "gaussian-noise");
 
     GaussianNoiseGenerator::GaussianNoiseGenerator( const std::string& aName ) :
             Generator( aName ),
+            fMean( 0. ),
             fSigma( 1. ),
             fNormDist()
     {
@@ -24,18 +28,30 @@ namespace locust
     {
     }
 
-    void GaussianNoiseGenerator::Configure( const ParamNode* aParam )
+    bool GaussianNoiseGenerator::Configure( const ParamNode* aParam )
     {
-        if( aParam == NULL) return;
+        if( aParam == NULL) return true;
 
+        SetMean( aParam->GetValue< double >( "mean", fMean ) );
         SetSigma( aParam->GetValue< double >( "sigma", fSigma ) );
 
-        return;
+        return true;
     }
 
     void GaussianNoiseGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
+        return;
+    }
+
+    double GaussianNoiseGenerator::GetMean() const
+    {
+        return fMean;
+    }
+
+    void GaussianNoiseGenerator::SetMean( double aMean )
+    {
+        fMean = aMean;
         return;
     }
 
@@ -50,13 +66,13 @@ namespace locust
         return;
     }
 
-    void GaussianNoiseGenerator::Generate( Signal* aSignal ) const
+    bool GaussianNoiseGenerator::DoGenerate( Signal* aSignal ) const
     {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTime( index ) += fNormDist( *fRNG, 0., fSigma );
+            aSignal->SignalTime( index ) += fNormDist( *fRNG, fMean, fSigma );
         }
-        return;
+        return true;
     }
 
 } /* namespace locust */

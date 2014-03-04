@@ -48,7 +48,7 @@ namespace locust
 
         // next, configure items that are needed no matter what.
 
-        SetRecordSize( aNode->GetValue< unsigned >( "record-size" ) );
+        SetRecordSize( aNode->GetValue< unsigned >( "record-size", fRecordSize ) );
 
         if( aNode->Has( "acquisition-rate" ) )
             SetAcquisitionRate( aNode->GetValue< double >( "acquisition-rate" ) );
@@ -62,7 +62,7 @@ namespace locust
     {
         if( fFirstGenerator == NULL )
         {
-            LMCWARN( lmclog, "First generator Has not been set" );
+            LMCWARN( lmclog, "First generator has not been set" );
             return false;
         }
 
@@ -77,6 +77,12 @@ namespace locust
     }
 
     void RunLengthCalculator::Visit( const GaussianNoiseGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
+    void RunLengthCalculator::Visit( const Digitizer* )
     {
         // nothing to see here, move along, please
         return;
@@ -132,7 +138,7 @@ namespace locust
                 break;
         }
 
-        LMCINFO( lmclog, "Final run length parameters:" <<
+        LMCINFO( lmclog, "Final run length parameters:\n" <<
                  "\t\tNumber of records: " << fNRecords << '\n' <<
                  "\t\tDuration: " << fDuration << " seconds\n" <<
                  "\t\tRecord size: " << fRecordSize << " samples\n" <<

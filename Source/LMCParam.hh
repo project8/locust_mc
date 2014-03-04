@@ -11,6 +11,8 @@
 #include "LMCException.hh"
 
 #include "document.h"
+#include "filestream.h"
+#include "writer.h"
 
 #include <deque>
 #include <map>
@@ -265,7 +267,7 @@ namespace locust
     XValType ParamArray::GetValue( unsigned aIndex ) const
     {
         const ParamValue* value = ValueAt( aIndex );
-        if( value == NULL ) throw Exception() << "No Value At <" << aIndex << "> is present At this node";
+        if( value == NULL ) throw Exception() << "No value is present at index <" << aIndex << ">";
         return value->Get< XValType >();
     }
 
@@ -380,7 +382,7 @@ namespace locust
     XValType ParamNode::GetValue( const std::string& aName ) const
     {
         const ParamValue* value = ValueAt( aName );
-        if( value == NULL ) throw Exception() << "No Value with name <" << aName << "> is present At this node";
+        if( value == NULL ) throw Exception() << "No value with name <" << aName << "> is present at this node";
         return value->Get< XValType >();
     }
 
@@ -417,6 +419,33 @@ namespace locust
             static Param* ReadValue( const rapidjson::Value& aValue );
     };
 
+    //***************************************
+    //************** OUTPUT *****************
+    //***************************************
+
+    class ParamOutputJSON
+    {
+        public:
+            typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > RJWriter;
+            typedef rapidjson::Writer< rapidjson::FileStream, rapidjson::UTF8<>, rapidjson::MemoryPoolAllocator<> > RJPrettyWriter;
+
+            enum JSONWritingStyle
+            {
+                kCompact,
+                kPretty
+            };
+
+        public:
+            ParamOutputJSON();
+            virtual ~ParamOutputJSON();
+
+            static bool WriteFile( const Param& toWrite, const std::string& aFilename, JSONWritingStyle aStyle );
+            static bool WriteParam( const Param& toWrite, RJWriter* writer );
+            static bool WriteParam( const ParamValue& toWrite, RJWriter* writer );
+            static bool WriteParam( const ParamArray& toWrite, RJWriter* writer );
+            static bool WriteParam( const ParamNode& toWrite, RJWriter* writer );
+
+    };
 } /* namespace locust */
 
 #endif /* LMCPARAM_HH_ */

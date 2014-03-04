@@ -56,11 +56,6 @@ namespace locust
         SetDate( aNode->GetValue( "date", fDate ) );
         SetDescription( aNode->GetValue( "description", fDescription ) );
         SetRunType( aNode->GetValue< monarch::RunType >( "run-type", fRunType ) );
-        if( ! SetBitDepth( aNode->GetValue< unsigned >( "bit-depth", fBitDepth ) ) )
-        {
-            LMCERROR( lmclog, "Error setting the bit depth" );
-            return false;
-        }
 
         return true;
     }
@@ -73,6 +68,8 @@ namespace locust
             return false;
         }
 
+        LMCDEBUG( lmclog, "Preparing egg file <" << fFilename << ">" );
+
         fMonarch = monarch::Monarch::OpenForWriting( fFilename );
 
         monarch::MonarchHeader* header = fMonarch->GetHeader();
@@ -82,7 +79,6 @@ namespace locust
         header->SetTimestamp( fDate );
         header->SetDescription( fDescription );
         header->SetRunType( fRunType );
-        header->SetDataTypeSize( fDataTypeSize );
         header->SetAcquisitionRate( fAcquisitionRate );
         header->SetRunDuration( fDuration );
         header->SetRecordSize( fRecordSize );
@@ -97,6 +93,8 @@ namespace locust
         header->SetVoltageMin( fVoltageMin );
         header->SetVoltageRange( fVoltageRange );
 
+        fMonarch->WriteHeader();
+
         fRecord = fMonarch->GetRecordSeparateOne();
 
         fAcquisitionId = 0;
@@ -107,6 +105,9 @@ namespace locust
         fRecordNBytes = header->GetDataTypeSize() * fRecordSize;
 
         fState = kPrepared;
+
+        LMCINFO( lmclog, "Egg file <" << fFilename << "> is ready for records" );
+
         return true;
     }
 
@@ -119,13 +120,15 @@ namespace locust
         }
         fState = kWriting;
 
+        LMCDEBUG( lmclog, "Writing record " << fRecordCounter    );
+
         fRecord->fAcquisitionId = fAcquisitionId;
         fRecord->fRecordId = fRecordCounter;
         fRecord->fTime = fRecordTime;
 
-        if( aSignal->GetState() != Signal::kTime )
+        if( aSignal->GetState() != Signal::kDigital )
         {
-            LMCERROR( lmclog, "Signal is not in the time domain; no record was written" );
+            LMCERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
             return false;
         }
         ::memcpy( fRecord->fData, reinterpret_cast< const byte_type* >( aSignal->SignalDigital() ), fRecordNBytes );
@@ -144,10 +147,14 @@ namespace locust
             return false;
         }
 
+        LMCDEBUG( lmclog, "Closing egg file" );
+
         fMonarch->Close();
         delete fMonarch;
 
         fState = kClosed;
+
+        LMCINFO( lmclog, "Egg file closed" );
 
         return true;
     }

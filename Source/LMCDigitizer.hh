@@ -15,21 +15,38 @@
 namespace locust
 {
 
+    /*!
+     @class Digitizer
+     @author N. S. Oblath
+
+     @brief Digitize the data
+
+     @details
+
+     Configuration name: "digitizer"
+
+     Available configuration options:
+     - "bit-depth": unsigned -- Number of bits used to digitize the data
+     - "data-type-size": unsigned -- Number of bytes used to store the data
+     - "v-min": double -- Minimum voltage for the digitizer input
+     - "v-range": double -- Range of the digitizer input
+
+    */
     class Digitizer : public Generator
     {
         public:
-            Digitizer( const std::string& aName = "generic-digitizer" );
+            Digitizer( const std::string& aName = "digitizer" );
             virtual ~Digitizer();
 
-            virtual void Configure( const ParamNode* aNode );
+            bool Configure( const ParamNode* aNode );
 
-            virtual void Accept( GeneratorVisitor* aVisitor ) const;
+            void Accept( GeneratorVisitor* aVisitor ) const;
 
             const dig_calib_params& DigitizerParams() const;
             dig_calib_params& DigitizerParams();
 
         protected:
-            virtual void Generate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal ) const;
 
             struct dig_calib_params fParams;
     };

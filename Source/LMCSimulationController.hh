@@ -11,12 +11,30 @@
 #include "LMCEggWriter.hh"
 #include "LMCRunLengthCalculator.hh"
 
+#include "RandomLib/Random.hpp"
+
 namespace locust
 {
     class Digitizer;
     class Generator;
     class ParamNode;
 
+    /*!
+     @class SimulationController
+     @author N. S. Oblath
+
+     @brief Creates and configures the requested generators
+
+     @details
+
+     Configuration name: "simulation"
+
+     Available configuration options:
+     - "rng-seed": int -- sets the RNG seed
+     - All configuration options in RunLengthCalculator
+     - All configuration options in EggWriter
+
+    */
     class SimulationController
     {
         public:
@@ -31,12 +49,17 @@ namespace locust
 
             bool Finalize();
 
-            void SetFirstGenerator( const Generator* firstGen );
+            void SetRNGSeed(int seed);
+            void SetRNGSeed();
+
+            void SetFirstGenerator( Generator* firstGen );
 
         private:
             const Digitizer* FindDigitizer() const;
 
-            const Generator* fFirstGenerator;
+            RandomLib::Random fRNG;
+
+            Generator* fFirstGenerator;
 
             RunLengthCalculator fRunLengthCalc;
 

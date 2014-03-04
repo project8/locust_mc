@@ -24,12 +24,12 @@ namespace locust
             Generator( const std::string& aName = "generic-generator" );
             virtual ~Generator();
 
-            virtual void Configure( const ParamNode* aNode ) = 0;
+            virtual bool Configure( const ParamNode* aNode ) = 0;
 
             virtual void Accept( GeneratorVisitor* aVisitor ) const = 0;
 
             Signal* Run( unsigned aTimeSize ) const;
-            void Run( Signal* aSignal ) const;
+            bool Run( Signal* aSignal ) const;
 
             const std::string& GetName() const;
             void SetName( const std::string& aName );
@@ -44,7 +44,8 @@ namespace locust
             void SetNextGenerator( Generator* aGenerator );
 
         protected:
-            virtual void Generate( Signal* aSignal ) const = 0;
+            bool Generate( Signal* aSignal ) const;
+            virtual bool DoGenerate( Signal* aSignal ) const = 0;
 
             std::string fName;
 
