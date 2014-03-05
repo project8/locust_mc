@@ -99,8 +99,12 @@ namespace locust
             return false;
         }
 
-        // overwrite the run duration in the egg writer, then prepare the egg file
+        // transfer settings to the egg writer . . .
+        // . . . from the run length calculator, . . .
+        fEggWriter.SetAcquisitionRate( fRunLengthCalc.GetAcquisitionRate() );
         fEggWriter.SetDuration( fRunLengthCalc.GetDuration() );
+        fEggWriter.SetRecordSize( fRunLengthCalc.GetRecordSize() );
+        // . . . from the digitizer
         const Digitizer* digitizer = FindDigitizer();
         if( digitizer != NULL )
         {
@@ -108,6 +112,8 @@ namespace locust
             fEggWriter.SetVoltageMin( digitizer->DigitizerParams().v_min );
             fEggWriter.SetVoltageRange( digitizer->DigitizerParams().v_range );
         }
+
+        // prepare the egg file (writes header, allocates record memory, etc)
         if( ! fEggWriter.PrepareEgg() )
         {
             LMCERROR( lmclog, "Error preparing the egg file" );

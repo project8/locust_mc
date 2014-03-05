@@ -80,22 +80,24 @@ namespace locust
         private:
             State fState;
 
+            // This info will be configured directly
             std::string fFilename;
-
             std::string fDate;
-
             std::string fDescription;
-
             monarch::RunType fRunType;
 
+            // This info will come from the digitizer
             unsigned fBitDepth;
             unsigned fDataTypeSize;
             double fVoltageMin;
             double fVoltageRange;
 
+            // This info will come from the run-length calculator
             double fAcquisitionRate; // MHz
             double fDuration; // s
             unsigned fRecordSize;
+
+            // Calculated at runtime
             monarch::TimeType fRecordLength; // ns
 
         public:

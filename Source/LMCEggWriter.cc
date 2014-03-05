@@ -76,7 +76,16 @@ namespace locust
 
         // configurable items
         header->SetFilename( fFilename );
-        header->SetTimestamp( fDate );
+        if( fDate.empty() )
+        {
+            char timestamp [256];
+            get_time_absolute_str( timestamp );
+            header->SetTimestamp( string( timestamp ) );
+        }
+        else
+        {
+            header->SetTimestamp( fDate );
+        }
         header->SetDescription( fDescription );
         header->SetRunType( fRunType );
         header->SetAcquisitionRate( fAcquisitionRate );
@@ -95,6 +104,7 @@ namespace locust
 
         fMonarch->WriteHeader();
 
+        fMonarch->SetInterface( monarch::sInterfaceSeparate );
         fRecord = fMonarch->GetRecordSeparateOne();
 
         fAcquisitionId = 0;
