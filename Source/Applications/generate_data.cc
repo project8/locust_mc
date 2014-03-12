@@ -93,17 +93,17 @@ double *hf_full_transferfunction_ch2;
 int hf_arraycount; //size of big transfer function arrays
 double *hf_transferfunction_ch1; //high frequency transfer function interpolated into current band
 double *hf_transferfunction_ch2; //high frequency transfer function interpolated into current band
-*/
+ */
 
 class ChirpEvent {
-public:
-    double duration; //in seconds
-    double start_time; //in seconds
-    double start_frequency; //in Hz
-    double dfdt; //in Hz/s
-    double power; //power radiated into chirp in Watts
-    //not actually used, but relevant to calculating above parameters
-   // double start_energy; //in eV
+    public:
+        double duration; //in seconds
+        double start_time; //in seconds
+        double start_frequency; //in Hz
+        double dfdt; //in Hz/s
+        double power; //power radiated into chirp in Watts
+        //not actually used, but relevant to calculating above parameters
+        // double start_energy; //in eV
 };
 
 ChirpEvent *events; //array of events to add
@@ -132,13 +132,13 @@ int load_config_file(const char *fname);
 int main(int argc,char *argv[])
 {
     if(argc<2) {
-	printf("usage: generate_data configfile\n");
-	return -1;
+        printf("usage: generate_data configfile\n");
+        return -1;
     }
     //load the config file
     if(load_config_file(argv[1])) {
-	printf("error reading config file");
-	return -1;
+        printf("error reading config file");
+        return -1;
     }
     //allocate working space 
     Anoise_f=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_size);
@@ -148,8 +148,8 @@ int main(int argc,char *argv[])
     channel1_f=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_size);
     channel2_f=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_size);
     signal_f=(fftw_complex*)fftw_malloc(sizeof(fftw_complex)*fft_size);
-//    hf_transferfunction_ch1=new double[fft_size];
-//    hf_transferfunction_ch2=new double[fft_size];
+    //    hf_transferfunction_ch1=new double[fft_size];
+    //    hf_transferfunction_ch2=new double[fft_size];
     channel1=(double*)fftw_malloc(sizeof(double)*record_size);
     channel2=(double*)fftw_malloc(sizeof(double)*record_size);
     signal_t=(double*)fftw_malloc(sizeof(double)*record_size);
@@ -165,7 +165,7 @@ int main(int argc,char *argv[])
     header->SetAcquisitionRate(sampling_rate/1e6);
     header->SetRecordSize(record_size);
     header->SetRunDuration(uint(nrecords*record_time));
-//    header->SetAcquisitionTime((double)(record_size/sampling_rate)*nrecords);
+    //    header->SetAcquisitionTime((double)(record_size/sampling_rate)*nrecords);
     if(waveguide_setup=="DOUBLEAMP") {
         header->SetAcquisitionMode(sTwoChannel);
     } else if(waveguide_setup=="SINGLEAMP") {
@@ -202,54 +202,54 @@ int main(int argc,char *argv[])
 	events[i].power=1e-15;
 	events[i].dfdt=events[i].start_frequency*events[i].power*JoulesToEv/emass;
     }
-    */
+     */
 
     //record event info in json file
     yajl_gen_string(mcinfo_json,(unsigned char*)("events"),strlen("events"));
     yajl_gen_array_open(mcinfo_json);
     for(int i=0;i<nevents;i++) {
-    	//record support
-    	int startrecord=(int)(events[i].start_time/record_time);
-    	int startsamp=(int)((events[i].start_time-((double)startrecord)*record_time)*sampling_rate);
-    	int endrecord=(int)((events[i].start_time+events[i].duration)/record_time);
-    	int endsamp=(int)((events[i].start_time+events[i].duration-((double)endrecord)*record_time)*sampling_rate);
-    	if(endrecord>nrecords) {
-    	    endrecord=nrecords-1;
-    	    endsamp=record_size-1;
-    	}
-    	yajl_gen_map_open(mcinfo_json);
-    	yajl_gen_string(mcinfo_json,(unsigned char*)("support"),strlen("support"));
-    	yajl_gen_array_open(mcinfo_json);
-    	yajl_gen_integer(mcinfo_json,startrecord);
-    	yajl_gen_integer(mcinfo_json,startsamp);
-    	yajl_gen_integer(mcinfo_json,endrecord);
-    	yajl_gen_integer(mcinfo_json,endsamp);
-    	yajl_gen_array_close(mcinfo_json);
-    	//record start energy
-    	//make_json_numeric_entry(mcinfo_json,"start_energy",events[i].start_energy);
-    	make_json_numeric_entry(mcinfo_json,"start_frequency",events[i].start_frequency);
-    	make_json_numeric_entry(mcinfo_json,"power",events[i].power);
-    	make_json_numeric_entry(mcinfo_json,"dfdt",events[i].dfdt);
-    	make_json_numeric_entry(mcinfo_json,"duration",events[i].duration);
-    	yajl_gen_map_close(mcinfo_json);
+        //record support
+        int startrecord=(int)(events[i].start_time/record_time);
+        int startsamp=(int)((events[i].start_time-((double)startrecord)*record_time)*sampling_rate);
+        int endrecord=(int)((events[i].start_time+events[i].duration)/record_time);
+        int endsamp=(int)((events[i].start_time+events[i].duration-((double)endrecord)*record_time)*sampling_rate);
+        if(endrecord>nrecords) {
+            endrecord=nrecords-1;
+            endsamp=record_size-1;
+        }
+        yajl_gen_map_open(mcinfo_json);
+        yajl_gen_string(mcinfo_json,(unsigned char*)("support"),strlen("support"));
+        yajl_gen_array_open(mcinfo_json);
+        yajl_gen_integer(mcinfo_json,startrecord);
+        yajl_gen_integer(mcinfo_json,startsamp);
+        yajl_gen_integer(mcinfo_json,endrecord);
+        yajl_gen_integer(mcinfo_json,endsamp);
+        yajl_gen_array_close(mcinfo_json);
+        //record start energy
+        //make_json_numeric_entry(mcinfo_json,"start_energy",events[i].start_energy);
+        make_json_numeric_entry(mcinfo_json,"start_frequency",events[i].start_frequency);
+        make_json_numeric_entry(mcinfo_json,"power",events[i].power);
+        make_json_numeric_entry(mcinfo_json,"dfdt",events[i].dfdt);
+        make_json_numeric_entry(mcinfo_json,"duration",events[i].duration);
+        yajl_gen_map_close(mcinfo_json);
     }
     yajl_gen_array_close(mcinfo_json);
 
     //generate monte carlo
     for(int onrecord=0;onrecord<nrecords;onrecord++) {
         if(waveguide_setup=="DOUBLEAMP") {
-    	    MonarchRecord *r=egg->GetRecordInterleaved();
-        	generate_record_doubleamp(r->fData);
+            MonarchRecord *r=egg->GetRecordInterleaved();
+            generate_record_doubleamp(r->fData);
         } else {
-    	    MonarchRecord *r=egg->GetRecordSeparateOne();
-        	generate_record_singleamp(r->fData);
+            MonarchRecord *r=egg->GetRecordSeparateOne();
+            generate_record_singleamp(r->fData);
         }
-    	if(!egg->WriteRecord()) {
-    	    cerr << "failed to write record" << endl;
-        	}
+        if(!egg->WriteRecord()) {
+            cerr << "failed to write record" << endl;
+        }
     }
     make_json_integer_entry(mcinfo_json,"records_simulated",nrecords);
-    
+
     //save egg
     egg->Close();
     //save mcinfo
@@ -289,74 +289,74 @@ void generate_record_singleamp(unsigned char *dataptr)
 
     //generate frequency space noise 
     for(int k=0;k<fft_size;k++) {
-	Anoise_f[k]=getGaussianRand(0,sigma_a)+I*getGaussianRand(0,sigma_a);
-	Bnoise_f[k]=getGaussianRand(0,sigma_b)+I*getGaussianRand(0,sigma_b);
+        Anoise_f[k]=getGaussianRand(0,sigma_a)+I*getGaussianRand(0,sigma_a);
+        Bnoise_f[k]=getGaussianRand(0,sigma_b)+I*getGaussianRand(0,sigma_b);
     }
 
     //combine noise sources
     //Add A+B+Ce^ilwg and (D+C+Be^ilwg)e^idl
     for(int i=0;i<fft_size;i++) {
-	double f=total_mixing_frequency+frequency_bin_width*((double)i);
-	double wg_phase=2*M_PI*f*total_length/c_wg;
-	complex double wg_e=cexp(I*wg_phase);
-	channel1_f[i]=Anoise_f[i]+Bnoise_f[i]+Bnoise_f[i]*wg_e;
+        double f=total_mixing_frequency+frequency_bin_width*((double)i);
+        double wg_phase=2*M_PI*f*total_length/c_wg;
+        complex double wg_e=cexp(I*wg_phase);
+        channel1_f[i]=Anoise_f[i]+Bnoise_f[i]+Bnoise_f[i]*wg_e;
     }
 
     //--inject signal--
     //first make signal in time space
     bool signal_present=false;
     for(int i=0;i<record_size;i++) {
-	signal_t[i]=0;
+        signal_t[i]=0;
     }
     printf("on time %g to %g\n",on_time,on_time+record_time);
     for(int k=0;k<nevents;k++) {
-//	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
-	if((events[k].start_time<(on_time+record_time))&&((events[k].start_time+events[k].duration)>(on_time))) { //this event is in my range
-        printf("creating event\n");
-	    signal_present=true;
-	    double vmax=sqrt(events[k].power*R);
-	    long start_sample=(events[k].start_time-on_time)*sampling_rate;
-	    if(start_sample<0) start_sample=0;
-	    long stop_sample=(events[k].start_time+events[k].duration-on_time)*sampling_rate;
-	    if(stop_sample>=record_size) stop_sample=record_size-1;
-	    double  fftnorm=1/((double)record_size);
-	    for(int i=start_sample;i<=stop_sample;i++) {
-		double t=on_time+((double)i)/sampling_rate;
-		double dt=t-events[k].start_time;
-		double phase=(events[k].start_frequency-total_mixing_frequency)*dt+events[k].dfdt*dt*dt;
-		signal_t[i]+=fftnorm*vmax*cos(2.0*M_PI*phase);
-	    }
-	}
+        //	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
+        if((events[k].start_time<(on_time+record_time))&&((events[k].start_time+events[k].duration)>(on_time))) { //this event is in my range
+            printf("creating event\n");
+            signal_present=true;
+            double vmax=sqrt(events[k].power*R);
+            long start_sample=(events[k].start_time-on_time)*sampling_rate;
+            if(start_sample<0) start_sample=0;
+            long stop_sample=(events[k].start_time+events[k].duration-on_time)*sampling_rate;
+            if(stop_sample>=record_size) stop_sample=record_size-1;
+            double  fftnorm=1/((double)record_size);
+            for(int i=start_sample;i<=stop_sample;i++) {
+                double t=on_time+((double)i)/sampling_rate;
+                double dt=t-events[k].start_time;
+                double phase=(events[k].start_frequency-total_mixing_frequency)*dt+events[k].dfdt*dt*dt;
+                signal_t[i]+=fftnorm*vmax*cos(2.0*M_PI*phase);
+            }
+        }
     }
     //now turn signal into frequency space
     if(signal_present) {
-	fftw_execute(signal_plan);
-	for(int i=0;i<fft_size;i++) {
-    	double f=total_mixing_frequency+frequency_bin_width*((double)i);
-    	double wg_phase=2*M_PI*f*2.0*dl/c_wg;
-	    complex double wg_e=cexp(I*wg_phase);
-	    channel1_f[i]+=0.5*signal_f[i]+0.5*wg_e*signal_f[i];
-//	    channel2_f[i]+=0.5*signal_f[i];
-	}
+        fftw_execute(signal_plan);
+        for(int i=0;i<fft_size;i++) {
+            double f=total_mixing_frequency+frequency_bin_width*((double)i);
+            double wg_phase=2*M_PI*f*2.0*dl/c_wg;
+            complex double wg_e=cexp(I*wg_phase);
+            channel1_f[i]+=0.5*signal_f[i]+0.5*wg_e*signal_f[i];
+            //	    channel2_f[i]+=0.5*signal_f[i];
+        }
     }
 
     //cable delays don't matter, ignore
     //
     //apply high and low frequency transfer function
     for(int i=0;i<fft_size;i++) {
-	  channel1_f[i]*=hf_transferfunction_ch1.data[i];
-	//channel2_f[i]*=hf_transferfunction_ch2[i];
+        channel1_f[i]*=hf_transferfunction_ch1.data[i];
+        //channel2_f[i]*=hf_transferfunction_ch2[i];
     }
 
     //TODO apply low frequency receiver chain transfer function
-    
+
     for(int i=0;i<fft_size;i++) {
-	//this applies uniform gain
-	//as a stopgap measure until real gain is known
-	channel1_f[i]*=gain;
-//	channel2_f[i]*=1e7;
+        //this applies uniform gain
+        //as a stopgap measure until real gain is known
+        channel1_f[i]*=gain;
+        //	channel2_f[i]*=1e7;
     }
-   
+
 
     //fft to construct the time series again
     fftw_execute(channel1_plan);
@@ -364,16 +364,16 @@ void generate_record_singleamp(unsigned char *dataptr)
     //discretize
     double fft_scale=1/((double)record_size);
     for(int i=0;i<record_size;i++) {
-	double x1=256*(fft_scale*channel1[i]/digitizer_fullscale+digitizer_fullscale);
-	double x2=256*(fft_scale*channel2[i]/digitizer_fullscale+digitizer_fullscale);
-	//clipping to 8 bits
-	if(x1>255) x1=255;
-	if(x2>255) x2=255;
-	if(x1<0) x1=0;
-	if(x2<0) x2=0;
-    //don't skip every other one, we're only saving one channel
-	dataptr[i]=(unsigned char)x1;
-//	dataptr[2*i+1]=(unsigned char)x2;
+        double x1=256*(fft_scale*channel1[i]/digitizer_fullscale+digitizer_fullscale);
+        double x2=256*(fft_scale*channel2[i]/digitizer_fullscale+digitizer_fullscale);
+        //clipping to 8 bits
+        if(x1>255) x1=255;
+        if(x2>255) x2=255;
+        if(x1<0) x1=0;
+        if(x2<0) x2=0;
+        //don't skip every other one, we're only saving one channel
+        dataptr[i]=(unsigned char)x1;
+        //	dataptr[2*i+1]=(unsigned char)x2;
     }
     //update time in seconds
     on_time+=record_time;
@@ -394,63 +394,63 @@ void generate_record_doubleamp(unsigned char *dataptr)
 
     //generate frequency space noise 
     for(int k=0;k<fft_size;k++) {
-	Anoise_f[k]=getGaussianRand(0,sigma_a)+I*getGaussianRand(0,sigma_a);
-	Bnoise_f[k]=getGaussianRand(0,sigma_b)+I*getGaussianRand(0,sigma_b);
-	Cnoise_f[k]=getGaussianRand(0,sigma_c)+I*getGaussianRand(0,sigma_c);
-	Dnoise_f[k]=getGaussianRand(0,sigma_d)+I*getGaussianRand(0,sigma_d);
+        Anoise_f[k]=getGaussianRand(0,sigma_a)+I*getGaussianRand(0,sigma_a);
+        Bnoise_f[k]=getGaussianRand(0,sigma_b)+I*getGaussianRand(0,sigma_b);
+        Cnoise_f[k]=getGaussianRand(0,sigma_c)+I*getGaussianRand(0,sigma_c);
+        Dnoise_f[k]=getGaussianRand(0,sigma_d)+I*getGaussianRand(0,sigma_d);
     }
 
     //combine noise sources
     //Add A+B+Ce^ilwg and (D+C+Be^ilwg)e^idl
     for(int i=0;i<fft_size;i++) {
-	double f=total_mixing_frequency+frequency_bin_width*((double)i);
-	double wg_phase=2*M_PI*f*lwg/c_wg;
-	complex double wg_e=cexp(I*wg_phase);
-	channel1_f[i]=Anoise_f[i]+Bnoise_f[i]+Cnoise_f[i]*wg_e;
-	channel2_f[i]=Dnoise_f[i]+Cnoise_f[i]+Bnoise_f[i]*wg_e;
+        double f=total_mixing_frequency+frequency_bin_width*((double)i);
+        double wg_phase=2*M_PI*f*lwg/c_wg;
+        complex double wg_e=cexp(I*wg_phase);
+        channel1_f[i]=Anoise_f[i]+Bnoise_f[i]+Cnoise_f[i]*wg_e;
+        channel2_f[i]=Dnoise_f[i]+Cnoise_f[i]+Bnoise_f[i]*wg_e;
     }
 
     //--inject signal--
     //first make signal in time space
     bool signal_present=false;
     for(int i=0;i<record_size;i++) {
-	signal_t[i]=0;
+        signal_t[i]=0;
     }
     printf("on time %g to %g\n",on_time,on_time+record_time);
     for(int k=0;k<nevents;k++) {
-//	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
-	if((events[k].start_time<(on_time+record_time))&&((events[k].start_time+events[k].duration)>(on_time))) { //this event is in my range
-        printf("creating event\n");
-	    signal_present=true;
-	    double vmax=sqrt(events[k].power*R);
-	    long start_sample=(events[k].start_time-on_time)*sampling_rate;
-	    if(start_sample<0) start_sample=0;
-	    long stop_sample=(events[k].start_time+events[k].duration-on_time)*sampling_rate;
-	    if(stop_sample>=record_size) stop_sample=record_size-1;
-	    double  fftnorm=1/((double)record_size);
-	    for(int i=start_sample;i<=stop_sample;i++) {
-		double t=on_time+((double)i)/sampling_rate;
-		double dt=t-events[k].start_time;
-		double phase=(events[k].start_frequency-total_mixing_frequency)*dt+events[k].dfdt*dt*dt;
-		signal_t[i]+=fftnorm*vmax*cos(2.0*M_PI*phase);
-	    }
-	}
+        //	if(events[k].start_time<on_time||(events[k].start_time+events[k].duration)>(on_time+record_time)) { //this event is in my range
+        if((events[k].start_time<(on_time+record_time))&&((events[k].start_time+events[k].duration)>(on_time))) { //this event is in my range
+            printf("creating event\n");
+            signal_present=true;
+            double vmax=sqrt(events[k].power*R);
+            long start_sample=(events[k].start_time-on_time)*sampling_rate;
+            if(start_sample<0) start_sample=0;
+            long stop_sample=(events[k].start_time+events[k].duration-on_time)*sampling_rate;
+            if(stop_sample>=record_size) stop_sample=record_size-1;
+            double  fftnorm=1/((double)record_size);
+            for(int i=start_sample;i<=stop_sample;i++) {
+                double t=on_time+((double)i)/sampling_rate;
+                double dt=t-events[k].start_time;
+                double phase=(events[k].start_frequency-total_mixing_frequency)*dt+events[k].dfdt*dt*dt;
+                signal_t[i]+=fftnorm*vmax*cos(2.0*M_PI*phase);
+            }
+        }
     }
     //now turn signal into frequency space
     if(signal_present) {
-	fftw_execute(signal_plan);
-	for(int i=0;i<fft_size;i++) {
-	    channel1_f[i]+=0.5*signal_f[i];
-	    channel2_f[i]+=0.5*signal_f[i];
-	}
+        fftw_execute(signal_plan);
+        for(int i=0;i<fft_size;i++) {
+            channel1_f[i]+=0.5*signal_f[i];
+            channel2_f[i]+=0.5*signal_f[i];
+        }
     }
-    
+
     //apply cable delays
     for(int i=0;i<fft_size;i++) {
-	double f=total_mixing_frequency+frequency_bin_width*((double)i);
-	double cable_phase=2*M_PI*f*dl/c_cable;
-	complex double cable_e=cexp(I*cable_phase);
-	channel2_f[i]=channel2_f[i]*cable_e;
+        double f=total_mixing_frequency+frequency_bin_width*((double)i);
+        double cable_phase=2*M_PI*f*dl/c_cable;
+        complex double cable_e=cexp(I*cable_phase);
+        channel2_f[i]=channel2_f[i]*cable_e;
     }
 
     //apply high and low frequency transfer function
@@ -459,14 +459,14 @@ void generate_record_doubleamp(unsigned char *dataptr)
 	channel1_f[i]*=hf_transferfunction_ch1.data[i];
 	channel2_f[i]*=hf_transferfunction_ch2.data[i];
     }
-    */
+     */
 
     //TODO apply low frequency receiver chain transfer function
     for(int i=0;i<fft_size;i++) {
-	//this applies uniform 70 dB gain
-	//as a stopgap measure until real gain is known
-	channel1_f[i]*=1e7;
-	channel2_f[i]*=1e7;
+        //this applies uniform 70 dB gain
+        //as a stopgap measure until real gain is known
+        channel1_f[i]*=1e7;
+        channel2_f[i]*=1e7;
     }
 
     //fft to construct the time series again
@@ -476,15 +476,15 @@ void generate_record_doubleamp(unsigned char *dataptr)
     //discretize
     double fft_scale=1/((double)record_size);
     for(int i=0;i<record_size;i++) {
-	double x1=256*(fft_scale*channel1[i]/digitizer_fullscale+digitizer_fullscale);
-	double x2=256*(fft_scale*channel2[i]/digitizer_fullscale+digitizer_fullscale);
-	//clipping to 8 bits
-	if(x1>255) x1=255;
-	if(x2>255) x2=255;
-	if(x1<0) x1=0;
-	if(x2<0) x2=0;
-	dataptr[2*i]=(unsigned char)x1;
-	dataptr[2*i+1]=(unsigned char)x2;
+        double x1=256*(fft_scale*channel1[i]/digitizer_fullscale+digitizer_fullscale);
+        double x2=256*(fft_scale*channel2[i]/digitizer_fullscale+digitizer_fullscale);
+        //clipping to 8 bits
+        if(x1>255) x1=255;
+        if(x2>255) x2=255;
+        if(x1<0) x1=0;
+        if(x2<0) x2=0;
+        dataptr[2*i]=(unsigned char)x1;
+        dataptr[2*i+1]=(unsigned char)x2;
     }
     //update time in seconds
     on_time+=record_time;
@@ -508,17 +508,17 @@ double getGaussianRand(double mean,double sigma)
     //Polar form of the Box-Muller transformation
     //taken from http://www.taygeta.com/random/gaussian.html
     if(has_spare_grand) {has_spare_grand=false; return spare_grand*sigma+mean;}
-   double x1, x2, w, y1;
-   do {
-             x1 = 2.0 * getUniformRand(1.0) - 1.0;
-             x2 = 2.0 * getUniformRand(1.0) - 1.0;
-             w = x1 * x1 + x2 * x2;
-   } while ( w >= 1.0 );
-   w = sqrt( (-2.0 * log( w ) ) / w );
-   y1 = x1 * w;
+    double x1, x2, w, y1;
+    do {
+        x1 = 2.0 * getUniformRand(1.0) - 1.0;
+        x2 = 2.0 * getUniformRand(1.0) - 1.0;
+        w = x1 * x1 + x2 * x2;
+    } while ( w >= 1.0 );
+    w = sqrt( (-2.0 * log( w ) ) / w );
+    y1 = x1 * w;
     spare_grand= x2 * w;
     has_spare_grand=true;
-   return y1*sigma+mean;
+    return y1*sigma+mean;
 }
 
 
@@ -602,7 +602,7 @@ int load_transfer_functions(const char *fname)
 	hf_transferfunction_ch1[i]=interpolate_transferfunction(hf_frequencies,hf_full_transferfunction_ch1,hf_arraycount,f);
 	hf_transferfunction_ch2[i]=interpolate_transferfunction(hf_frequencies,hf_full_transferfunction_ch2,hf_arraycount,f);
     }
-    */
+     */
     return 0;
 }
 
@@ -612,13 +612,13 @@ double interpolate_transferfunction(double *freqs,double *vals,int len,double f)
     if(f<=freqs[0]) return vals[0];
     if(f>=freqs[len-1]) return vals[len-1];
     for(int i=0;i<len;i++) {
-	if( (f>=freqs[i])&&(f<=freqs[i+1])) {
-	    double x1=freqs[i];
-	    double x2=freqs[i+1];
-	    double y1=vals[i];
-	    double y2=vals[i+1];
-	    return y1+(y2-y1)*((f-x1)/(x2-x1));
-	}
+        if( (f>=freqs[i])&&(f<=freqs[i+1])) {
+            double x1=freqs[i];
+            double x2=freqs[i+1];
+            double y1=vals[i];
+            double y2=vals[i+1];
+            return y1+(y2-y1)*((f-x1)/(x2-x1));
+        }
     }
     cerr << "interpolation failed" << endl;
     return nanf("bad programmer");
@@ -648,7 +648,7 @@ int load_config_file(const char *fname) {
         else fprintf(stderr, "unknown error");
         fprintf(stderr, "\n");
         return 1;
-        }
+    }
     waveguide_setup=getJsonString(node,"waveguide_setup");
     transfer_function_fname=getJsonString(node,"transfer_function_filename");
     if(waveguide_setup=="DOUBLEAMP") {
@@ -678,11 +678,11 @@ int load_config_file(const char *fname) {
     nevents=yevents->u.array.len;
     events=new ChirpEvent[nevents];
     for(int i=0;i<nevents;i++) {
-	events[i].start_time=getJsonDouble(yevents->u.array.values[i],"start_time");
-	events[i].duration=getJsonDouble(yevents->u.array.values[i],"duration");
-	events[i].start_frequency=getJsonDouble(yevents->u.array.values[i],"start_frequency");
-	events[i].dfdt=getJsonDouble(yevents->u.array.values[i],"dfdt");
-	events[i].power=getJsonDouble(yevents->u.array.values[i],"power");
+        events[i].start_time=getJsonDouble(yevents->u.array.values[i],"start_time");
+        events[i].duration=getJsonDouble(yevents->u.array.values[i],"duration");
+        events[i].start_frequency=getJsonDouble(yevents->u.array.values[i],"start_frequency");
+        events[i].dfdt=getJsonDouble(yevents->u.array.values[i],"dfdt");
+        events[i].power=getJsonDouble(yevents->u.array.values[i],"power");
     }
 
     return 0;
@@ -694,8 +694,8 @@ double getJsonDouble(yajl_val node,const char *key)
     const char *path[]={key,(const char*)0};
     yajl_val val=yajl_tree_get(node,path,yajl_t_number);
     if(val==NULL) {
-	cerr << "error getting json double " << key << endl;
-	return 0;
+        cerr << "error getting json double " << key << endl;
+        return 0;
     }
     return val->u.number.d;
 }
@@ -706,8 +706,8 @@ string getJsonString(yajl_val node,const char *key)
     const char *path[]={key,(const char*)0};
     yajl_val val=yajl_tree_get(node,path,yajl_t_string);
     if(val==NULL) {
-	cerr << "error getting json string " << key << endl;
-	return "";
+        cerr << "error getting json string " << key << endl;
+        return "";
     }
     return string(val->u.string);
 }
