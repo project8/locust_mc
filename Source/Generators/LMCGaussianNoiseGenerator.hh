@@ -22,12 +22,15 @@ namespace locust
      @brief Add Gaussian-distributed noise to the signal
 
      @details
+     Can operate in time or frequency space
 
      Configuration name: "gaussian-noise"
 
      Available configuration options:
      - "mean": double -- Mean of the Gaussian noise (usually remains at 0)
      - "sigma": double -- Standard deviation of the Gaussian noise
+     - "domain": string -- Determines whether the noise is generated in the time or frequency domain
+                           Available options: "time" and "freq" [default]
 
     */
     class GaussianNoiseGenerator : public Generator
@@ -46,8 +49,16 @@ namespace locust
             double GetSigma() const;
             void SetSigma( double aSigma );
 
+            Signal::State GetDomain() const;
+            void SetDomain( Signal::State aDomain );
+
         private:
             bool DoGenerate( Signal* aSignal ) const;
+
+            bool DoGenerateTime( Signal* aSignal ) const;
+            bool DoGenerateFreq( Signal* aSignal ) const;
+
+            bool (GaussianNoiseGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
 
             double fMean;
             double fSigma;

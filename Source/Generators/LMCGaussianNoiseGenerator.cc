@@ -9,6 +9,8 @@
 
 #include "LMCLogger.hh"
 
+using std::string;
+
 namespace locust
 {
     LMCLOGGER( lmclog, "GaussianNoiseGenerator" );
@@ -17,11 +19,12 @@ namespace locust
 
     GaussianNoiseGenerator::GaussianNoiseGenerator( const std::string& aName ) :
             Generator( aName ),
+            fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),
             fMean( 0. ),
             fSigma( 1. ),
             fNormDist()
     {
-        fRequiredSignalState = Signal::kTime;
+        fRequiredSignalState = Signal::kFreq;
     }
 
     GaussianNoiseGenerator::~GaussianNoiseGenerator()
@@ -34,6 +37,24 @@ namespace locust
 
         SetMean( aParam->GetValue< double >( "mean", fMean ) );
         SetSigma( aParam->GetValue< double >( "sigma", fSigma ) );
+
+        if( aParam->Has( "domain" ) )
+        {
+            string domain = aParam->GetValue( "domain" );
+            if( domain == "time" )
+            {
+                SetDomain( Signal::kTime );
+            }
+            else if( domain == "freq" )
+            {
+                SetDomain( Signal::kFreq );
+            }
+            else
+            {
+                LMCERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                return false;
+            }
+        }
 
         return true;
     }
@@ -66,11 +87,51 @@ namespace locust
         return;
     }
 
+    Signal::State GaussianNoiseGenerator::GetDomain() const
+    {
+        return fRequiredSignalState;
+    }
+
+    void GaussianNoiseGenerator::SetDomain( Signal::State aDomain )
+    {
+        if( aDomain == fRequiredSignalState ) return;
+        fRequiredSignalState == aDomain;
+        if( fRequiredSignalState == Signal::kTime )
+        {
+            fDoGenerateFunc = &GaussianNoiseGenerator::DoGenerateTime;
+        }
+        else if( fRequiredSignalState == Signal::kFreq )
+        {
+            fDoGenerateFunc = &GaussianNoiseGenerator::DoGenerateFreq;
+        }
+        else
+        {
+            LMCWARN( lmclog, "Unknown domain requested: " << aDomain );
+        }
+        return;
+    }
+
+
     bool GaussianNoiseGenerator::DoGenerate( Signal* aSignal ) const
+    {
+        return (this->*fDoGenerateFunc)( aSignal );
+    }
+
+    bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal ) const
     {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
             aSignal->SignalTime( index ) += fNormDist( *fRNG, fMean, fSigma );
+        }
+        return true;
+    }
+
+    bool GaussianNoiseGenerator::DoGenerateFreq( Signal* aSignal ) const
+    {
+        for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
+        {
+            aSignal->SignalFreq( index )[0] += fNormDist( *fRNG, fMean, fSigma );
+            aSignal->SignalFreq( index )[1] += fNormDist( *fRNG, fMean, fSigma );
         }
         return true;
     }
