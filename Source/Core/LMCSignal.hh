@@ -8,8 +8,10 @@
 #ifndef LMCSIGNAL_HH_
 #define LMCSIGNAL_HH_
 
-#include <complex.h>
 #include <fftw3.h>
+#include <complex.h>
+#include <stdint.h>
+
 
 namespace locust
 {
@@ -48,7 +50,8 @@ namespace locust
 
             bool ToTime();
             bool ToFreq();
-            bool ToDigital( uint64_t* anArray, unsigned aDigSize );
+//            bool ToDigital( uint64_t* anArray, unsigned aDigSize );            
+            bool ToDigital( uint8_t* anArray, unsigned aDigSize );  // pls
 
             const double* SignalTime() const;
             double* SignalTime();
@@ -62,11 +65,15 @@ namespace locust
             const fftw_complex& SignalFreq( unsigned anIndex ) const;
             fftw_complex& SignalFreq( unsigned anIndex );
 
-            const uint64_t* SignalDigital() const;
-            uint64_t* SignalDigital();
+//            const uint64_t* SignalDigital() const;            
+            const uint8_t* SignalDigital() const;  // pls
+//            uint64_t* SignalDigital();            
+            uint8_t* SignalDigital();  // pls
 
-            uint64_t SignalDigital( unsigned anIndex ) const;
-            uint64_t& SignalDigital( unsigned anIndex );
+//            uint64_t SignalDigital( unsigned anIndex ) const;            
+            uint8_t SignalDigital( unsigned anIndex ) const;  // pls
+//            uint64_t& SignalDigital( unsigned anIndex );            
+            uint8_t& SignalDigital( unsigned anIndex );  // pls
 
         private:
             bool FFTToTime();
@@ -90,7 +97,8 @@ namespace locust
 
             double* fSignalTime;
             fftw_complex* fSignalFreq;
-            uint64_t* fSignalDigital;
+//            uint64_t* fSignalDigital;            
+            uint8_t* fSignalDigital;  // pls
 
             fftw_plan fPlanToFreq;
             fftw_plan fPlanToTime;

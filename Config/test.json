@@ -1,0 +1,32 @@
+{
+    "generators":
+    [
+        "test-signal",
+        "digitizer"
+    ],
+    
+    "simulation":
+    {
+        "n-records": 1
+    },
+  
+    "gaussian-noise":
+    {
+    "mean": 0.0,
+    "sigma": 0.04,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+
+    },
+   
+    "test-signal":
+    {
+    "domain": "time",
+    "amplitude": 0.1,
+    "frequency": 8.0e3
+    }
+}
+

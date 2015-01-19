@@ -7,7 +7,7 @@
 
 #include "LMCDigitizer.hh"
 
-#include "LMCLogger.hh"
+#include "../Core/LMCLogger.hh"
 
 namespace locust
 {
@@ -64,7 +64,8 @@ namespace locust
         unsigned signalSize = aSignal->TimeSize();
 
         double* analogData = aSignal->SignalTime();
-        uint64_t* digitizedData = new uint64_t[ signalSize ];
+//        uint64_t* digitizedData = new uint64_t[ signalSize ];        
+        uint8_t* digitizedData = new uint8_t[ signalSize ];
 
         for( unsigned index = 0; index < signalSize; ++index )
         {

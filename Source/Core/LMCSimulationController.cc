@@ -7,7 +7,7 @@
 
 #include "LMCSimulationController.hh"
 
-#include "LMCDigitizer.hh"
+#include "../Generators/LMCDigitizer.hh"
 #include "LMCGenerator.hh"
 #include "LMCLogger.hh"
 #include "LMCParam.hh"
@@ -145,10 +145,10 @@ namespace locust
                 LMCERROR( lmclog, "Signal was not simulated" );
                 return false;
             }
-            for( unsigned index = 0; index < 100; ++index )
+            for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
             {
-                LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime( index ) << "  " << simulatedSignal->SignalDigital( index ) );
-            }
+                LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime( index ) << "  " << (int)simulatedSignal->SignalDigital( index ) );  // pls added (int)
+            //}  // pls edit.  Moved this bracket to include msg below.
 
             if( ! fEggWriter.WriteRecord( simulatedSignal ) )
             {
@@ -156,6 +156,8 @@ namespace locust
                 delete simulatedSignal;
                 return false;
             }
+            }  // pls edit
+
             // temporarily, immediately cleanup
             delete simulatedSignal;
         }

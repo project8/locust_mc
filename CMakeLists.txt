@@ -101,6 +101,7 @@ set( LOCUST_MC_HEADER_FILES
     
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCDigitizer.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCGaussianNoiseGenerator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTestSignalGenerator.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.hh
 )
 
@@ -121,6 +122,7 @@ set( LOCUST_MC_SOURCE_FILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCDigitizer.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCGaussianNoiseGenerator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTestSignalGenerator.cc
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.cc
 )
 
@@ -150,8 +152,7 @@ pbuilder_install_executables( LocustSim )
 #pbuilder_install_executables( check_egg_digitization )
 
 pbuilder_install_config (
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_new_config.json
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test.json          
     ${CMAKE_CURRENT_SOURCE_DIR}/Config/receiver_transfer_functions.json
     ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_config.json
     ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_single_config.json

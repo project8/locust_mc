@@ -8,7 +8,7 @@
 #ifndef LMCDIGITIZER_HH_
 #define LMCDIGITIZER_HH_
 
-#include "LMCGenerator.hh"
+#include "../Core/LMCGenerator.hh"
 
 #include "thorax.hh"
 

@@ -88,6 +88,12 @@ namespace locust
         return;
     }
 
+   void RunLengthCalculator::Visit( const TestSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
     bool RunLengthCalculator::CalculateRunLength()
     {
         switch( fState )

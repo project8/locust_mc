@@ -48,7 +48,7 @@ namespace locust
         {
             LMCERROR( lmclog, "No generator list was found" );
             return false;
-        }
+        } 
 
         Generator* lastGenerator = NULL;
         for( ParamArray::const_iterator it = generatorList->Begin(); it != generatorList->End(); ++it )
@@ -58,8 +58,13 @@ namespace locust
                 LMCERROR( lmclog, "Non-value-type array element found in generator-list" );
                 continue;
             }
+//            else
+//            {
+//                LMCDEBUG( lmclog, "Reading in reasonable generator: " << (*it)->AsValue().Get() );
+//            }
 
             Generator* newGenerator = genFactory->Create( (*it)->AsValue().Get() );
+//            LMCDEBUG( lmclog, "And the new generator is ... " << newGenerator->GetName());
             if( newGenerator == NULL )
             {
                 LMCERROR( lmclog, "Unrecognized generator name: " << (*it)->AsValue().Get() );
@@ -74,8 +79,11 @@ namespace locust
             }
             else
             {
+//                LMCDEBUG( lmclog, "About to set lastGenerator to ... " << newGenerator->GetName());
                 lastGenerator->SetNextGenerator( newGenerator );
-                LMCDEBUG( lmclog, "Adding generator <" << lastGenerator->GetName() << ">" );
+                LMCDEBUG( lmclog, "Adding generator <" << lastGenerator->GetNextGenerator()->GetName() << ">");  
+                LMCDEBUG( lmclog, "Meanwhile the previous one was <" << lastGenerator->GetName() << ">" );
+                lastGenerator = lastGenerator->GetNextGenerator();  // pls addition to advance list pointer.
             }
         }
 

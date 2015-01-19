@@ -8,7 +8,7 @@
 #ifndef LMCGAUSSIANNOISEGENERATOR_HH_
 #define LMCGAUSSIANNOISEGENERATOR_HH_
 
-#include "LMCGenerator.hh"
+#include "../Core/LMCGenerator.hh"
 
 #include "RandomLib/NormalDistribution.hpp"
 

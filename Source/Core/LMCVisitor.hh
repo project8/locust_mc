@@ -12,6 +12,7 @@ namespace locust
 {
     class Generator;
     class GaussianNoiseGenerator;
+    class TestSignalGenerator;
     class Digitizer;
 
     class GeneratorVisitor
@@ -23,6 +24,7 @@ namespace locust
             virtual void Visit( const Generator* );
 
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
+            virtual void Visit( const TestSignalGenerator* ) = 0;
             virtual void Visit( const Digitizer* ) = 0;
     };
 

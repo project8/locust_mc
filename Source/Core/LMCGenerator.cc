@@ -16,7 +16,7 @@ namespace locust
 
     Generator::Generator( const std::string& aName ) :
             fName( aName ),
-            fRequiredSignalState( Signal::kTime ),
+            fRequiredSignalState( Signal::kFreq ),  // pls confused here.
             fRNG( NULL ),
             fNext( NULL )
     {

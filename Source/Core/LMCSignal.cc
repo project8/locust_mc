@@ -46,7 +46,8 @@ namespace locust
         fPlanToFreq = fftw_plan_dft_r2c_1d( fTimeSize, fSignalTime, fSignalFreq, aFFTFlags);
         fPlanToTime = fftw_plan_dft_c2r_1d( fTimeSize, fSignalFreq, fSignalTime, aFFTFlags);
 
-        fState = kTime;
+        fState = kTime;  // pls confused here.
+//        fState = kFreq;
 
         LMCDEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
 
@@ -268,7 +269,8 @@ namespace locust
         return ToState( kFreq );
     }
 
-    bool Signal::ToDigital( uint64_t* anArray, unsigned aDigSize )
+//    bool Signal::ToDigital( uint64_t* anArray, unsigned aDigSize )    
+    bool Signal::ToDigital( uint8_t* anArray, unsigned aDigSize )  // pls
     {
         delete fSignalDigital;
         fSignalDigital = anArray;
@@ -290,7 +292,7 @@ namespace locust
         LMCDEBUG( lmclog, "Performing forward FFT to frequency domain" );
         fftw_execute( fPlanToFreq );
         fState = kFreq;
-        return false;
+        return true;  // pls
     }
 
     const double* Signal::SignalTime() const
@@ -333,22 +335,26 @@ namespace locust
         return fSignalFreq[ anIndex ];
     }
 
-    const uint64_t* Signal::SignalDigital() const
+//    const uint64_t* Signal::SignalDigital() const    
+    const uint8_t* Signal::SignalDigital() const  // pls
     {
         return fSignalDigital;
     }
 
-    uint64_t* Signal::SignalDigital()
+//    uint64_t* Signal::SignalDigital()    
+    uint8_t* Signal::SignalDigital()  // pls
     {
         return fSignalDigital;
     }
 
-    uint64_t Signal::SignalDigital( unsigned anIndex ) const
+//    uint64_t Signal::SignalDigital( unsigned anIndex ) const    
+    uint8_t Signal::SignalDigital( unsigned anIndex ) const  // pls
     {
         return fSignalDigital[ anIndex ];
     }
 
-    uint64_t& Signal::SignalDigital( unsigned anIndex )
+//    uint64_t& Signal::SignalDigital( unsigned anIndex )    
+    uint8_t& Signal::SignalDigital( unsigned anIndex )  // pls
     {
         return fSignalDigital[ anIndex ];
     }

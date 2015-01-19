@@ -82,6 +82,7 @@ namespace locust
 
         private:
             void Visit( const GaussianNoiseGenerator* );
+            void Visit( const TestSignalGenerator* );
             void Visit( const Digitizer* );
 
             RunLengthState fState;

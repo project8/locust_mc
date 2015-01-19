@@ -7,7 +7,7 @@
 
 #include "LMCGaussianNoiseGenerator.hh"
 
-#include "LMCLogger.hh"
+#include "../Core/LMCLogger.hh"
 
 using std::string;
 
@@ -19,12 +19,12 @@ namespace locust
 
     GaussianNoiseGenerator::GaussianNoiseGenerator( const std::string& aName ) :
             Generator( aName ),
-            fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),
+            fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),  // pls
             fMean( 0. ),
             fSigma( 1. ),
             fNormDist()
     {
-        fRequiredSignalState = Signal::kFreq;
+        fRequiredSignalState = Signal::kFreq;  // pls
     }
 
     GaussianNoiseGenerator::~GaussianNoiseGenerator()
@@ -44,6 +44,7 @@ namespace locust
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
+                LMCDEBUG( lmclog, "Domain is equal to time.");
             }
             else if( domain == "freq" )
             {
@@ -95,7 +96,7 @@ namespace locust
     void GaussianNoiseGenerator::SetDomain( Signal::State aDomain )
     {
         if( aDomain == fRequiredSignalState ) return;
-        fRequiredSignalState == aDomain;
+        fRequiredSignalState = aDomain;  // pls changed == to =.
         if( fRequiredSignalState == Signal::kTime )
         {
             fDoGenerateFunc = &GaussianNoiseGenerator::DoGenerateTime;
