@@ -2,11 +2,10 @@
  * LMCTestSignal.cc
  *
  *  Created on: Jan 14 2015
- *      Author: plslocum and nsoblath
+ *      Author: plslocum after nsoblath
  */
 
 #include "LMCTestSignalGenerator.hh"
-
 
 #include "../Core/LMCLogger.hh"
 
@@ -89,8 +88,7 @@ namespace locust
         return;
     }
 
-
-
+ 
 
     Signal::State TestSignalGenerator::GetDomain() const
     {

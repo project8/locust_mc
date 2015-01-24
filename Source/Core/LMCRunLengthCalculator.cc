@@ -94,6 +94,12 @@ namespace locust
         return;
     }
 
+  void RunLengthCalculator::Visit( const BasebandTrackGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
     bool RunLengthCalculator::CalculateRunLength()
     {
         switch( fState )
