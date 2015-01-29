@@ -14,6 +14,7 @@ namespace locust
     class GaussianNoiseGenerator;
     class TestSignalGenerator;
     class BasebandTrackGenerator;
+    class ReceiverTransferFunctionGenerator;
     class Digitizer;
 
     class GeneratorVisitor
@@ -27,6 +28,7 @@ namespace locust
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;
             virtual void Visit( const BasebandTrackGenerator* ) = 0;
+            virtual void Visit( const ReceiverTransferFunctionGenerator* ) = 0;
             virtual void Visit( const Digitizer* ) = 0;
     };
 

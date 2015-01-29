@@ -123,6 +123,7 @@ namespace locust
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
             aSignal->SignalTime( index ) += fNormDist( *fRNG, fMean, fSigma );
+            if (index<10) printf("signal %d is %f\n", index, aSignal->SignalTime(index));
         }
         return true;
     }

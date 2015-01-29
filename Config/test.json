@@ -1,11 +1,16 @@
 {
     "generators":
     [
-        "baseband-track",
         "gaussian-noise",
+        "receiver-transfer-function",
         "digitizer"
     ],
     
+    "receiver-transfer-function":
+    {
+
+    },
+
     "simulation":
     {
         "n-records": 1

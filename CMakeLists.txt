@@ -103,6 +103,7 @@ set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCGaussianNoiseGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTestSignalGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.hh
 )
 
@@ -125,6 +126,7 @@ set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCGaussianNoiseGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTestSignalGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.cc
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.cc
 )
 

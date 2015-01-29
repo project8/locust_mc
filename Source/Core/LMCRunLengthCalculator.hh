@@ -84,6 +84,7 @@ namespace locust
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const TestSignalGenerator* );
             void Visit( const BasebandTrackGenerator* );
+            void Visit( const ReceiverTransferFunctionGenerator* );
             void Visit( const Digitizer* );
 
             RunLengthState fState;
