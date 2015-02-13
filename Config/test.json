@@ -1,8 +1,8 @@
 {
     "generators":
     [
+        "baseband-track",
         "gaussian-noise",
-        "receiver-transfer-function",
         "digitizer"
     ],
     
@@ -18,8 +18,9 @@
   
     "gaussian-noise":
     {
+    "noise-floor": 20.0e-22,
     "mean": 0.0,
-    "sigma": 0.04,
+    "sigma": 1.0,
     "domain": "time"
     },
 
@@ -31,13 +32,13 @@
     "test-signal":
     {
     "domain": "time",
-    "amplitude": 0.0028,
+    "amplitude": 4.5e-8,
     "frequency": 8.0e6
     },
 
     "baseband-track":
     {
-    "electron-energy": 30.0,
+    "electron-energy": 30.424,
     "total-lo-freqs": 26.35,
     "domain": "time"
     }

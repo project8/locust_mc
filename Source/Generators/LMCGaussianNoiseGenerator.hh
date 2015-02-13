@@ -9,6 +9,7 @@
 #define LMCGAUSSIANNOISEGENERATOR_HH_
 
 #include "../Core/LMCGenerator.hh"
+#include "../Core/LMCRunLengthCalculator.hh"
 
 #include "RandomLib/NormalDistribution.hpp"
 
@@ -27,6 +28,7 @@ namespace locust
      Configuration name: "gaussian-noise"
 
      Available configuration options:
+     - "noise-floor" -- Measured noise floor of system in W/Hz.  Overrides "sigma".
      - "mean": double -- Mean of the Gaussian noise (usually remains at 0)
      - "sigma": double -- Standard deviation of the Gaussian noise
      - "domain": string -- Determines whether the noise is generated in the time or frequency domain
@@ -42,6 +44,9 @@ namespace locust
             bool Configure( const ParamNode* aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
+
+            double GetNoiseFloor() const;
+            void SetNoiseFloor( double aNoiseFloor );
 
             double GetMean() const;
             void SetMean( double aMean );
@@ -60,6 +65,9 @@ namespace locust
 
             bool (GaussianNoiseGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
 
+            bool HasNoiseFloor;
+
+            double fNoiseFloor;
             double fMean;
             double fSigma;
 

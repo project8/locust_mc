@@ -20,7 +20,7 @@ namespace locust
     {
         fRequiredSignalState = Signal::kTime;
 
-        get_calib_params( 8, 1, -0.25, 0.5, &fParams );
+        get_calib_params( 8, 1, -3.e-6, 6.e-6, &fParams );
     }
 
     Digitizer::~Digitizer()
