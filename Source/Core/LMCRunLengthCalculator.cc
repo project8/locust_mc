@@ -76,6 +76,12 @@ namespace locust
         return true;
     }
 
+    void RunLengthCalculator::Visit( const TrappedElectronGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
     void RunLengthCalculator::Visit( const ReceiverTransferFunctionGenerator* )
     {
         // nothing to see here, move along, please

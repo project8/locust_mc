@@ -1,8 +1,7 @@
 {
     "generators":
     [
-        "baseband-track",
-        "gaussian-noise",
+        "trapped-electron",
         "digitizer"
     ],
     
@@ -38,7 +37,7 @@
 
     "baseband-track":
     {
-    "electron-energy": 30.424,
+    "electron-energy": 30.0,
     "total-lo-freqs": 26.35,
     "domain": "time"
     }

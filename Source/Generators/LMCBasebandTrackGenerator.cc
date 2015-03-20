@@ -117,7 +117,7 @@ namespace locust
     double BasebandTrackGenerator::CalculateLarmorPower( double gamma ) const  
     {
     double power = 1./(4.*PI*8.85e-12)*(2./3.)*pow(1.602e-19,4.)/pow(9.11e-31,2.)/3.e8*
-      pow(1.,2.)*(gamma*gamma-1.)*sin(90.*PI/180.)*(1./1.6027e-16);  // keV/s, B = 1 T, pitch angle = 90 deg.
+      pow(1.,2.)*(gamma*gamma-1.)*pow(sin(90.*PI/180.),2.)*(1./1.6027e-16);  // keV/s, B = 1 T, pitch angle = 90 deg.
     return power;
     }
 
@@ -166,7 +166,7 @@ namespace locust
               TimeDependentEnergy -= LarmorPower*RunLengthCalculator1->GetBinWidth(); 
               TimeDependentAmplitude = pow(LarmorPower*1.602e-16, 0.5); // keV/s * 1.6e-19 J/eV * 1.e3 eV/keV = W.
               BBFreq = this->CalculateBasebandFrequency(this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy)));
-//              printf("bbfreq is %g\n", BBFreq);
+              printf("bbfreq is %g\n", BBFreq);
               printf("cyclotron freq is %g\n", this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy))); getchar();
 //              printf("amplitude is %g\n", TimeDependentAmplitude*TimeDependentAmplitude); getchar();
               aSignal->SignalTime( index ) += TimeDependentAmplitude*cos(2.*PI*BBFreq*(time-ElectronStartTime));
