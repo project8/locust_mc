@@ -98,6 +98,7 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         double time = 0.;
         double StartingEnergy = 30.; // keV
+        double StartingPitchAngle = 90.; // initial pitch angle in degrees 
         double TimeDependentEnergy = StartingEnergy;
         double LarmorPower = 0.;
         double TimeDependentAmplitude = 0.0; 
@@ -106,13 +107,25 @@ namespace locust
         double ElectronDuration = 0.001; // seconds
 
         double dt = RunLengthCalculator1->GetBinWidth(); // seconds
-        double *StartPosition = StartElectron();
+        double *StartPosition = StartElectron(StartingEnergy, StartingPitchAngle);
         double *position = StartPosition;
-        double StartingPitchAngle = 89.8; // initial pitch angle in degrees 
         double TimeDependentPitchAngle = StartingPitchAngle;
         double mu0 = GetMu(StartPosition, StartingEnergy, StartingPitchAngle);
-        double test = GetPitchAngle(StartPosition, StartingEnergy, mu0);
-        double phase = 0.;
+        double CyclotronFrequency = CalculateCyclotronFrequency(CalculateGamma(TimeDependentEnergy), position);
+        double ShiftedCyclotronFrequency = GetCyclotronFreqAntennaFrame(CyclotronFrequency, position[4]);
+        double ShiftedCyclotronFrequencyAtShort = GetCyclotronFreqAntennaFrame(CyclotronFrequency, -position[4]);
+        double phase1 = 2.*PI*(CENTER_TO_ANTENNA - position[2])/(C/ShiftedCyclotronFrequency);  // 2PI*L/lambda
+        double phase2 = 2.*PI*(position[2] + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA)/  // 2PI*L/lambda
+          (C/ShiftedCyclotronFrequencyAtShort);
+//printf("position[4] is %g\n", position[4]);
+//printf("shifted cyc freq is %f\n", ShiftedCyclotronFrequencyAtShort);
+printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", phase1, phase2, (phase1-phase2)/2./PI);
+ getchar();
+        double LO_phase = 0.;
+        double real_part1 = 0.;  // antenna
+        double real_part2 = 0.;  // short
+        double imaginary_part1 = 0.;
+        double imaginary_part2 = 0.;
 
 //printf("still outside loop\n");
 //getchar();
@@ -127,25 +140,26 @@ namespace locust
 //        printf("taking a step\n\n");
         position = StepElectron(position, TimeDependentEnergy, TimeDependentMu, dt);  
         LarmorPower = CalculateLarmorPower(CalculateGamma(TimeDependentEnergy), GetBMag(position[0], position[1], position[2]));  // keV/s            
-//        printf("just lost the LarmorPower*dt %g\n\n", LarmorPower*RunLengthCalculator1->GetBinWidth());
-//        TimeDependentEnergy -= LarmorPower*RunLengthCalculator1->GetBinWidth();  // Lose Larmor*dt in keV
-//        TimeDependentMu = GetMu(position, TimeDependentEnergy, TimeDependentPitchAngle);        
-//        TimeDependentPitchAngle = GetPitchAngle(position, TimeDependentEnergy, TimeDependentMu);
-        TimeDependentAmplitude = pow(LarmorPower*1.602e-16, 0.5); // keV/s * 1.6e-19 J/eV * 1.e3 eV/keV = W.
-        BBFreq = CalculateBasebandFrequency(CalculateCyclotronFrequency(CalculateGamma(TimeDependentEnergy), position));
-//              printf("bbfreq is %g\n", BBFreq);
-//              printf("cyclotron freq is %g\n", this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy))); getchar();
-//              printf("amplitude is %g\n", TimeDependentAmplitude*TimeDependentAmplitude); getchar();
+        CyclotronFrequency = CalculateCyclotronFrequency(CalculateGamma(TimeDependentEnergy), position);
+        ShiftedCyclotronFrequency = GetCyclotronFreqAntennaFrame(CyclotronFrequency, position[4]);
+        ShiftedCyclotronFrequencyAtShort = GetCyclotronFreqAntennaFrame(CyclotronFrequency, -position[4]);
 
-        phase += 2.*PI*BBFreq*dt;
-//        aSignal->SignalTime( index ) += TimeDependentAmplitude*cos(2.*PI*BBFreq*(time-ElectronStartTime));
-        aSignal->SignalTime( index ) += TimeDependentAmplitude*cos(phase);
+        TimeDependentAmplitude = pow(2.e-15/2.,0.5);  // for debugging.
+        phase1 += GetVoltagePhase(ShiftedCyclotronFrequency, dt);
+        phase2 += GetVoltagePhaseFromShort(ShiftedCyclotronFrequencyAtShort, dt);  // reflecting short.
+        LO_phase = -2.*PI*LO_FREQUENCY*time;
 
-//        printf("finished step\n\n");    
-//        printf("phase is %g\n", phase);
-//        printf("analytic phase is %g\n", 2.*PI*BBFreq*(time-ElectronStartTime));
-//        getchar();        
-//        printf("amplitude %d is %g at time %f seconds\n", index, TimeDependentAmplitude, time);
+        real_part1 = cos(phase1)*cos(LO_phase) - sin(phase1)*sin(LO_phase);
+        real_part2 = cos(phase2)*cos(LO_phase) - sin(phase2)*sin(LO_phase);
+        imaginary_part1 = sin(phase1)*cos(LO_phase) + cos(phase1)*sin(LO_phase);
+        imaginary_part2 = sin(phase2)*cos(LO_phase) + cos(phase2)*sin(LO_phase);
+
+        if (abs((phase1+LO_phase)/2./PI/time)<100.e6)  // low pass filter
+          {
+          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part1);
+          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part2);
+          }
+
         }
         }
 
@@ -162,6 +176,33 @@ namespace locust
         return true;
     }
 
+    double TrappedElectronGenerator::GetCyclotronFreqAntennaFrame( double RFFreq, double Vparallel) const
+    {
+    double FPrime = 0.;
+    double gamma = CalculateGamma(GetKineticEnergy(Vparallel));  // should replace C with C_w.
+//    double gamma = 1.;
+    FPrime = RFFreq * gamma * ( 1. - Vparallel/C );  // relativistic Doppler shift.
+    return FPrime;
+    }
+
+
+
+    double TrappedElectronGenerator::GetVoltagePhase( double Freq, double dt ) const
+    {    
+    double phase = 0.;
+    phase = 2.*PI*Freq*dt;
+    return phase;
+    }
+
+    double TrappedElectronGenerator::GetVoltagePhaseFromShort( double Freq, double dt ) const
+    {    
+    double phase = 0.;
+    phase = 2.*PI*Freq*dt;
+    return phase;
+    }
+
+
+
 
 
     double TrappedElectronGenerator::CalculateCyclotronFrequency( double Gamma, double *position ) const
@@ -175,27 +216,9 @@ namespace locust
 
     double TrappedElectronGenerator::CalculateBasebandFrequency( double CyclotronFrequency ) const
     {
-    double BasebandFrequency = (CyclotronFrequency - 26.385*1.e9);  // Hz
-//    printf("basebandfrequency is %g MHz\n\n", BasebandFrequency/1.e6);
-//    getchar();
+    double BasebandFrequency = (CyclotronFrequency - LO_FREQUENCY);  // Hz
     return BasebandFrequency;
     }
-
-
-
-
-
-double TrappedElectronGenerator::GetPitchAngle(double *position, double KineticEnergy, double mu) const
-{
-
-//printf("KineticEnergy is %g and mu is %g\n", KineticEnergy, mu);
-double Eperp = mu * GetBMag(position[0], position[1], position[2]);
-double Vperp = GetSpeed(Eperp);
-double PitchAngle = asin(Vperp/GetSpeed(KineticEnergy))*180./PI;
-//printf("PitchAngle from Vperp is %f, mu is %f, Vperp is %g, Eperp is %g\n", PitchAngle, mu, Vperp, Eperp);
-//getchar();
-return PitchAngle;
-}
 
 
 double TrappedElectronGenerator::GetMu(double *position, double KineticEnergy, double PitchAngle) const
@@ -204,6 +227,7 @@ double B = GetBMag(position[0], position[1], position[2]);
 double Vperp = GetSpeed(KineticEnergy)*sin(PitchAngle*PI/180.);
 double Eperp = GetKineticEnergy(Vperp);
 double mu = Eperp/B;
+printf("Eperp is %g\n", Eperp);
 //printf("mu is %g and B is %g\n", mu, B);
 //getchar();
 return mu;
@@ -220,13 +244,25 @@ return power;
 
 
 
-double *TrappedElectronGenerator::StartElectron() const
+double *TrappedElectronGenerator::StartElectron(double KineticEnergy, double PitchAngle) const
 {
-double *position = new double[4];
+double *position = new double[5];
 position[0] = 0.;  // x in cm
 position[1] = 0.;  // y in cm
-position[2] = 1.;  // z in cm
-position[3] = 1.;  // direction
+position[2] = 0.;  // z in cm
+double mu = GetMu(position, KineticEnergy, PitchAngle);
+double Eperp = mu * GetBMag(position[0],position[1],position[2]);
+double Eparallel = KineticEnergy - Eperp;
+if (Eparallel < 0.) Eparallel = 0.;  
+
+if (cos(PitchAngle*PI/180.) > 0.) position[3] = 1.;
+else position[3] = -1.; 
+
+double Vparallel = position[3]*GetSpeed(Eparallel);  // sign*speed = velocity
+
+printf("vparallel is %g and Eparallel is %g\n", Vparallel, Eparallel);
+
+position[4] = Vparallel;
 
 return position;
 }
@@ -292,7 +328,7 @@ else  // mirror point.
 
 
 //  deposit position and direction into return vector.
-double *position = new double[4];
+double *position = new double[5];
 position[0] = x;
 position[1] = y;
 position[2] = z;
@@ -302,6 +338,7 @@ else if (direction==0)
   position[3] = -1.;
 else
   position[3] = 99.;
+position[4] = Vparallel;
 
 //printf("position 2 (z) is %g\n", position[2]);
 
