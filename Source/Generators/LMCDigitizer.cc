@@ -20,7 +20,8 @@ namespace locust
     {
         fRequiredSignalState = Signal::kTime;
 
-        get_calib_params( 8, 1, -1.e-7, 2.e-7, &fParams );
+//        get_calib_params( 8, 1, -3.e-6, 6.e-6, &fParams );  // if Gaussian noise is included.
+        get_calib_params( 8, 1, -1.e-7, 2.e-7, &fParams );  // if Gaussian noise is not included.
     }
 
     Digitizer::~Digitizer()
@@ -72,7 +73,9 @@ namespace locust
             digitizedData[ index ] = a2d( analogData[ index ], &fParams );
             if( index < 100 )
             {
-                LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << digitizedData[ index ] );
+                LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
+    //            printf("digitized data is %x\n", digitizedData[index]);
+    //            getchar();
             }
         }
 

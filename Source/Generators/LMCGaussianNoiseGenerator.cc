@@ -138,7 +138,7 @@ namespace locust
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal ) const
     {
         double LocalSigma=0.;
-        if (HasNoiseFloor==true)
+        if (HasNoiseFloor==true)  // fNoiseFloor overrides fSigma.
           {
           RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
           LocalSigma=pow(fNoiseFloor*RunLengthCalculator1->GetAcquisitionRate()*1.e6,0.5);
@@ -146,7 +146,8 @@ namespace locust
           }
         else
           LocalSigma=fSigma;
-
+        fRNG->Reseed(1677227440);
+        std::cout << "Seed set to " << fRNG->SeedString() << "\n";//  getchar();
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
             aSignal->SignalTime( index ) += fNormDist( *fRNG, fMean, LocalSigma );

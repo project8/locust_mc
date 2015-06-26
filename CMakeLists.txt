@@ -12,6 +12,9 @@ include( ${PROJECT_SOURCE_DIR}/PackageBuilder.cmake )
 pbuilder_prepare_project( 1 0 0 )
 include_directories( ${PROJECT_SOURCE_DIR} )
 
+include( /usr/share/cmake-2.8/Modules/ExternalProject.cmake )
+#include( ${CMAKE_MODULE_PATH}/ExternalProject.cmake )
+
 
 #######################
 # locust dependencies #
@@ -51,6 +54,8 @@ endif( "${isSystemDir}" STREQUAL "-1" )
 include_directories( ${PROJECT_SOURCE_DIR}/monarch/Source )
 include_directories( ${PROJECT_SOURCE_DIR}/monarch/libthorax/cpp )
 include_directories( ${PROJECT_SOURCE_DIR}/monarch/libthorax )
+
+
 
 #find_package( Yajl )
 #if (NOT YAJL_FOUND)
@@ -156,6 +161,8 @@ pbuilder_install_executables( LocustSim )
 #add_executable( check_egg_digitization ${CMAKE_CURRENT_SOURCE_DIR}/Source/check_egg_digitization.cc )
 #target_link_libraries( check_egg_digitization ${EXTERNAL_LIBRARIES} )
 #pbuilder_install_executables( check_egg_digitization )
+
+ExternalProject_Add( kassiopeia SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kassiopeia )
 
 pbuilder_install_config (
     ${CMAKE_CURRENT_SOURCE_DIR}/Config/test.json          

@@ -166,8 +166,8 @@ namespace locust
               TimeDependentEnergy -= LarmorPower*RunLengthCalculator1->GetBinWidth(); 
               TimeDependentAmplitude = pow(LarmorPower*1.602e-16, 0.5); // keV/s * 1.6e-19 J/eV * 1.e3 eV/keV = W.
               BBFreq = this->CalculateBasebandFrequency(this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy)));
-              printf("bbfreq is %g\n", BBFreq);
-              printf("cyclotron freq is %g\n", this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy))); getchar();
+//              printf("bbfreq is %g\n", BBFreq);
+//              printf("cyclotron freq is %g\n", this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy))); getchar();
 //              printf("amplitude is %g\n", TimeDependentAmplitude*TimeDependentAmplitude); getchar();
               aSignal->SignalTime( index ) += TimeDependentAmplitude*cos(2.*PI*BBFreq*(time-ElectronStartTime));
               }

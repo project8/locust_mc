@@ -11,12 +11,13 @@
 #include "../Core/LMCGenerator.hh"
 #include "../Core/LMCRunLengthCalculator.hh"
 #define LO_FREQUENCY 26.385015e9 // Hz
+//#define LO_FREQUENCY 26.385 // Hz  This is where it was for collaboration meeting in April 2015.
 #define PI 3.1415926
 #define Z1 -2.5 // z-offset (cm) of lower coil.
 #define Z2 2.5  // z-offset (cm) of upper coil.
 #define RCOIL 2.0 // radius (cm) of both coils.
-#define CENTER_TO_ANTENNA 11.0 // distance from antenna to center of trap (cm).
-#define CENTER_TO_SHORT 11.0 // distance from short to center of trap (cm).
+#define CENTER_TO_ANTENNA 10.1// distance from antenna to center of trap (cm).
+#define CENTER_TO_SHORT 10.1 // distance from short to center of trap (cm).
 #define C 2.99792458e10 // speed of light in cm/s.
 #define MU0 1.256637e-4 // magnetic constant in T*cm/A.
 #define CURRENT 2.0 // bathtub coil current in amps.
@@ -29,7 +30,7 @@ namespace locust
      @class TrappedElectronGenerator
      @author P. L. Slocum after N. S. Oblath
 
-     @brief Add Gaussian-distributed noise to the signal
+     @brief  Step an electron through a magnetic trap and generate its Doppler-shifted cyclotron radiation.
 
      @details
      Operates in time space

@@ -70,7 +70,6 @@ namespace locust
             double fNoiseFloor;
             double fMean;
             double fSigma;
-
             RandomLib::NormalDistribution< double > fNormDist;
     };
 

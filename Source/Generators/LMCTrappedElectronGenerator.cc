@@ -98,13 +98,13 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         double time = 0.;
         double StartingEnergy = 30.; // keV
-        double StartingPitchAngle = 90.; // initial pitch angle in degrees 
+        double StartingPitchAngle = 89.75; // initial pitch angle in degrees 
         double TimeDependentEnergy = StartingEnergy;
         double LarmorPower = 0.;
         double TimeDependentAmplitude = 0.0; 
         double BBFreq = 0.;  // baseband frequency
         double ElectronStartTime = 0.000; // seconds
-        double ElectronDuration = 0.001; // seconds
+        double ElectronDuration = 0.0010; // seconds
 
         double dt = RunLengthCalculator1->GetBinWidth(); // seconds
         double *StartPosition = StartElectron(StartingEnergy, StartingPitchAngle);
@@ -120,12 +120,13 @@ namespace locust
 //printf("position[4] is %g\n", position[4]);
 //printf("shifted cyc freq is %f\n", ShiftedCyclotronFrequencyAtShort);
 printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", phase1, phase2, (phase1-phase2)/2./PI);
- getchar();
+// getchar();
         double LO_phase = 0.;
         double real_part1 = 0.;  // antenna
         double real_part2 = 0.;  // short
-        double imaginary_part1 = 0.;
-        double imaginary_part2 = 0.;
+        double imaginary_part1 = 0.;  // antenna
+        double imaginary_part2 = 0.;  // short
+        double Eloss = 0.;  // radiative energy loss.  keV.
 
 //printf("still outside loop\n");
 //getchar();
@@ -135,33 +136,52 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
         time = (double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6); // seconds
-        if (time > ElectronStartTime && time < ElectronDuration)
+        if (time > ElectronStartTime && time < ElectronDuration+ElectronStartTime)
         {
-//        printf("taking a step\n\n");
-        position = StepElectron(position, TimeDependentEnergy, TimeDependentMu, dt);  
-        LarmorPower = CalculateLarmorPower(CalculateGamma(TimeDependentEnergy), GetBMag(position[0], position[1], position[2]));  // keV/s            
+        LarmorPower = CalculateLarmorPower(CalculateGamma(TimeDependentEnergy), GetBMag(position[0], position[1], position[2]));  // keV/s
+// Now lose LarmorPower*dt in keV          
+        Eloss = LarmorPower*RunLengthCalculator1->GetBinWidth(); 
+        TimeDependentEnergy -= Eloss;
+
+//        TimeDependentAmplitude = pow(2.e-15,0.5);  // arbitrary, for debugging.
+//        TimeDependentAmplitude = pow(LarmorPower*1.602e-16, 0.5); // keV/s * 1.6e-19 J/eV * 1.e3 eV/keV = W.
+        TimeDependentAmplitude = pow(LarmorPower/2.*1.602e-16, 0.5); // keV/s * 1.6e-19 J/eV * 1.e3 eV/keV = W.
+// this next line is where the energy loss affects the tracking:
+        TimeDependentMu = TimeDependentMu* (1.-Eloss/TimeDependentEnergy);
+            
         CyclotronFrequency = CalculateCyclotronFrequency(CalculateGamma(TimeDependentEnergy), position);
+//        printf("cyc freq - 2.64457e10 is %g\n", CyclotronFrequency-2.64457e10); getchar();
         ShiftedCyclotronFrequency = GetCyclotronFreqAntennaFrame(CyclotronFrequency, position[4]);
         ShiftedCyclotronFrequencyAtShort = GetCyclotronFreqAntennaFrame(CyclotronFrequency, -position[4]);
 
-        TimeDependentAmplitude = pow(2.e-15/2.,0.5);  // for debugging.
         phase1 += GetVoltagePhase(ShiftedCyclotronFrequency, dt);
         phase2 += GetVoltagePhaseFromShort(ShiftedCyclotronFrequencyAtShort, dt);  // reflecting short.
         LO_phase = -2.*PI*LO_FREQUENCY*time;
 
         real_part1 = cos(phase1)*cos(LO_phase) - sin(phase1)*sin(LO_phase);
         real_part2 = cos(phase2)*cos(LO_phase) - sin(phase2)*sin(LO_phase);
-        imaginary_part1 = sin(phase1)*cos(LO_phase) + cos(phase1)*sin(LO_phase);
-        imaginary_part2 = sin(phase2)*cos(LO_phase) + cos(phase2)*sin(LO_phase);
+//        imaginary_part1 = sin(phase1)*cos(LO_phase) + cos(phase1)*sin(LO_phase);
+//        imaginary_part2 = sin(phase2)*cos(LO_phase) + cos(phase2)*sin(LO_phase);
 
-        if (abs((phase1+LO_phase)/2./PI/time)<100.e6)  // low pass filter
-          {
-          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part1);
-          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part2);
-          }
 
-        }
-        }
+//        if ( fabs(acos(real_part1)/2./PI/time) < 100.e6 )  // low pass filter.  wrong.
+//          {
+//          if (fabs(acos(real_part1)/2./PI/time) > 50.e6)
+//            printf("bb freq is %g\n", fabs( acos(real_part1)/2./PI/time ) );
+//          printf("time is %g\n", time); getchar();
+          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part1);  
+//          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part2);  // signal from short.
+//          printf("now signal is %g\n\n", aSignal->SignalTime(index)); getchar();
+//          }  // lpf
+
+//        printf("taking a step\n\n");
+        position = StepElectron(position, TimeDependentEnergy, TimeDependentMu, dt);  
+//        printf("z is %f\n", position[2]); getchar();
+
+
+        }  // if start<time<end
+        
+        }  // index
 
 
 
@@ -214,6 +234,7 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
     return Frequency;
     }
 
+// naive.
     double TrappedElectronGenerator::CalculateBasebandFrequency( double CyclotronFrequency ) const
     {
     double BasebandFrequency = (CyclotronFrequency - LO_FREQUENCY);  // Hz
@@ -227,7 +248,7 @@ double B = GetBMag(position[0], position[1], position[2]);
 double Vperp = GetSpeed(KineticEnergy)*sin(PitchAngle*PI/180.);
 double Eperp = GetKineticEnergy(Vperp);
 double mu = Eperp/B;
-printf("Eperp is %g\n", Eperp);
+//printf("Eperp is %g\n", Eperp);
 //printf("mu is %g and B is %g\n", mu, B);
 //getchar();
 return mu;
@@ -238,7 +259,7 @@ return mu;
 double TrappedElectronGenerator::CalculateLarmorPower( double gamma, double B) const  
 {
 double power = 1./(4.*PI*8.85e-12)*(2./3.)*pow(1.602e-19,4.)/pow(9.11e-31,2.)/3.e8*
-   pow(B,2.)*(gamma*gamma-1.)*pow(sin(90.*PI/180.),2.)*(1./1.6027e-16);  // keV/s, theta = 90.
+   pow(B,2.)*(gamma*gamma-1.)*pow(sin(90.0*PI/180.),2.)*(1./1.6027e-16);  // keV/s, theta = 90.
 return power;
 }
 
