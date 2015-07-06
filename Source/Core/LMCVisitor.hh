@@ -17,6 +17,7 @@ namespace locust
     class ReceiverTransferFunctionGenerator;
     class Digitizer;
     class TrappedElectronGenerator;
+    class KassiopeiaGenerator;
 
     class GeneratorVisitor
     {
@@ -26,6 +27,7 @@ namespace locust
 
             virtual void Visit( const Generator* );
 
+            virtual void Visit( const KassiopeiaGenerator* ) = 0;
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
             virtual void Visit( const TrappedElectronGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;

@@ -81,6 +81,7 @@ namespace locust
             void SetBinWidth( double bw );
 
         private:
+            void Visit( const KassiopeiaGenerator* );
             void Visit( const TrappedElectronGenerator* );
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const TestSignalGenerator* );
