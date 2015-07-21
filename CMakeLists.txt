@@ -6,125 +6,46 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( locust_mc )
 
-list (APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+set( CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} )
+
+
+list ( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake )
+include( KasperDefaults )
 
 include( ${PROJECT_SOURCE_DIR}/PackageBuilder.cmake )
 pbuilder_prepare_project( 1 0 0 )
 include_directories( ${PROJECT_SOURCE_DIR} )
 
-include( /usr/share/cmake-2.8/Modules/ExternalProject.cmake )
-#include( ${CMAKE_MODULE_PATH}/ExternalProject.cmake )
 
+# use, i.e. don't skip the full RPATH for the build tree
+set( CMAKE_SKIP_BUILD_RPATH TRUE )
 
-#######################
-# locust dependencies #
-#######################
+# when building, don't use the install RPATH already
+#( but later on when installing )
+set( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
 
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
-pbuilder_add_ext_libraries( "m" )
+set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
 
-include_directories( ${PROJECT_SOURCE_DIR}/RapidJSON )
-
-add_subdirectory( RandomLib )
-include( ${CMAKE_BINARY_DIR}/RandomLib/randomlib-config.cmake )
-include_directories( ${RandomLib_INCLUDE_DIRS} )
-link_directories( ${RandomLib_LIBRARY_DIRS} )
-pbuilder_add_ext_libraries( ${RandomLib_LIBRARIES} )
-message( STATUS "randomlib library dirs: ${RandomLib_LIBRARY_DIRS}" )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${RandomLib_LIBRARY_DIRS}" isSystemDir )
-message( STATUS "is system dir: ${isSystemDir}" )
-if( "${isSystemDir}" STREQUAL "-1" )
-   message( STATUS "appending to rpath" )
-   list( APPEND CMAKE_INSTALL_RPATH ${RandomLib_LIBRARY_DIRS} )
-endif( "${isSystemDir}" STREQUAL "-1" )
-
-#include_directories( ${PROJECT_SOURCE_DIR}/MTwist )
-#set( MTWIST_SOURCE_FILES
-#    ${PROJECT_SOURCE_DIR}/MTwist/mtwist.c
-#    ${PROJECT_SOURCE_DIR}/MTwist/randistrs.c
-#)
-
-add_subdirectory( monarch )
-pbuilder_add_ext_libraries( ${Monarch_LIBRARIES} )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
-if( "${isSystemDir}" STREQUAL "-1" )
-   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
-endif( "${isSystemDir}" STREQUAL "-1" )
-include_directories( ${PROJECT_SOURCE_DIR}/monarch/Source )
-include_directories( ${PROJECT_SOURCE_DIR}/monarch/libthorax/cpp )
-include_directories( ${PROJECT_SOURCE_DIR}/monarch/libthorax )
+# the RPATH to be used when installing, but only if it's not a system directory
+LIST( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir )
+IF( "${isSystemDir}" STREQUAL "-1" )
+   set( CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib" )
+ENDIF( "${isSystemDir}" STREQUAL "-1" )
 
 
 
-#find_package( Yajl )
-#if (NOT YAJL_FOUND)
-#  message(FATAL "Yajl not found")
-#endif (NOT YAJL_FOUND)
-#include_directories( ${YAJL_INCLUDE_DIR} )
-#pbuilder_add_ext_libraries( ${YAJL_LIBRARIES} )
-
-find_package( Protobuf )
-include_directories( ${PROTOBUF_INCLUDE_DIR} )
-pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
 
 
-# FFTW
-find_package(FFTW REQUIRED)
-if (NOT FFTW_THREADS_FOUND)
-  message(FATAL "FFTW_THREADS not found")
-endif (NOT FFTW_THREADS_FOUND)
-    pbuilder_add_ext_libraries (${FFTW_LIBRARIES})
-    set (FFTW_NTHREADS 1 CACHE STRING "Number of threads to use for FFTW processes")
-    add_definitions (-DFFTW_NTHREADS=${FFTW_NTHREADS})
-    message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
-include_directories (${FFTW_INCLUDE_DIR})
+option( GCC_FIX_LINKER_ERROR "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
+if( GCC_FIX_LINKER_ERROR )
+    set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
+endif( GCC_FIX_LINKER_ERROR )
 
 
-
-ExternalProject_Add( kassiopeia SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/kassiopeia )
-
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaBindings.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaFields.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaGenerators.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaGeometry.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaInteractions.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaMath.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaModifiers.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaNavigators.so)
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaObjects.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaOperators.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaReaders.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaReaders.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaSimulation.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaTerminators.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaTrajectories.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaUtility.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaVisualization.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaWriters.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaUtility.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMCore.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMElectrostaticBoundaryIntegrals.so)
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMFileManipulation.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMGeoBagPlugin.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMHashGenerator.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMIntegratingFieldSolver.so)
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMIO.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMMath.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMStructuredASCII.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMSurfaces.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMVisualization.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMZHGenerator.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKEMZHSolver.so )
-
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKommonCore.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaOperators.so )
-pbuilder_add_ext_libraries( ${CMAKE_CURRENT_SOURCE_DIR}/cbuild/kassiopeia-prefix/src/install/lib/libKassiopeiaReaders.so )
-
-###########
-# library #
-###########
 
 set (KASSIOPEIA_INCLUDE_DIRECTORIES
 ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/ 
@@ -187,97 +108,122 @@ ${PROJECT_SOURCE_DIR}/kassiopeia/KGeoBag/Source/Extensions/AxialMesh/Include/
 ${PROJECT_SOURCE_DIR}/kassiopeia/KGeoBag/Source/Extensions/DiscreteRotationalMesh/Include/
 /usr/local/root/include/
 )
-
-set (KASSIOPEIA_SOURCE_FILES
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSEvent.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSEventMessage.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSMainMessage.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRoot.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootElectricField.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootGenerator.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootMagneticField.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootSpace.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootSpaceInteraction.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootSpaceNavigator.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootStepModifier.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootSurfaceInteraction.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootSurfaceNavigator.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootTerminator.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootTrajectory.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRootWriter.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRun.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSRunMessage.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSSimulation.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSStep.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSStepMessage.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSTrack.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Source/KSTrackMessage.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/Core/Utility/KMessage.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSCommand.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSCommandGroup.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSComponent.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSComponentGroup.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSDictionary.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSObject.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSObjectsMessage.cxx
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Source/KSToolbox.cxx
-)
-
-set (KASSIOPEIA_HEADER_FILES
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSEvent.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSEventMessage.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSMainMessage.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRoot.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootElectricField.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootGenerator.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootMagneticField.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootSpace.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootSpaceInteraction.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootSpaceNavigator.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootStepModifier.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootSurfaceInteraction.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootSurfaceNavigator.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootTerminator.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootTrajectory.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRootWriter.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRun.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSRunMessage.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSSimulation.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSStep.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSStepMessage.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSTrack.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Simulation/Include/KSTrackMessage.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/Core/Utility/KMessage.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSCommandGroup.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSCommand.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSCommandMember.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSComponentGroup.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSComponent.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSComponentIntegral.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSCommandGroup.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSComponentMaximum.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSComponentMember.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSComponentMinimum.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSComponentTemplate.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSCore.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSDictionary.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSObject.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSObjectsMessage.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSOutput.h
-${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Objects/Include/KSToolbox.h
-)
-
-
 include_directories( ${KASSIOPEIA_INCLUDE_DIRECTORIES} )
-#link_directories( ${KASSIOPEIA_INCLUDE_DIRECTORIES} )
-#file(GLOB_RECURSE KASSIOPEIA_KEMFIELD ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/KEMField/  *.cxx )
-#add_library(Kassiopeia_KEMField ${KASSIOPEIA_KEMFIELD})
-#add_library(Kassiopeia ${KASSIOPEIA_SOURCE_FILES})
-#pbuilder_add_ext_libraries ( Kassiopeia )
-#pbuilder_add_ext_libraries ( Kassiopeia_KEMField )
-#pbuilder_install_headers( ${KASSIOPEIA_HEADER_FILES} )
-#pbuilder_install_libraries( Kassiopeia )
-#pbuilder_install_libraries( Kassiopeia_KEMField )
+
+
+
+
+#######################
+# locust dependencies #
+#######################
+
+
+
+pbuilder_add_ext_libraries( "m" )
+
+include_directories( ${PROJECT_SOURCE_DIR}/RapidJSON )
+
+add_subdirectory( RandomLib )
+include( ${CMAKE_BINARY_DIR}/RandomLib/randomlib-config.cmake )
+include_directories( ${RandomLib_INCLUDE_DIRS} )
+link_directories( ${RandomLib_LIBRARY_DIRS} )
+pbuilder_add_ext_libraries( ${RandomLib_LIBRARIES} )
+message( STATUS "randomlib library dirs: ${RandomLib_LIBRARY_DIRS}" )
+# add to the RPATH to be used when installing, but only if it's not a system directory
+list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${RandomLib_LIBRARY_DIRS}" isSystemDir )
+message( STATUS "is system dir: ${isSystemDir}" )
+if( "${isSystemDir}" STREQUAL "-1" )
+   message( STATUS "appending to rpath" )
+   list( APPEND CMAKE_INSTALL_RPATH ${RandomLib_LIBRARY_DIRS} )
+endif( "${isSystemDir}" STREQUAL "-1" )
+
+#include_directories( ${PROJECT_SOURCE_DIR}/MTwist )
+#set( MTWIST_SOURCE_FILES
+#    ${PROJECT_SOURCE_DIR}/MTwist/mtwist.c
+#    ${PROJECT_SOURCE_DIR}/MTwist/randistrs.c
+#)
+
+
+add_subdirectory( monarch )
+pbuilder_add_ext_libraries( ${Monarch_LIBRARIES} )
+# add to the RPATH to be used when installing, but only if it's not a system directory
+list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${Monarch_LIBRARY_DIR}" isSystemDir )
+if( "${isSystemDir}" STREQUAL "-1" )
+   list( APPEND CMAKE_INSTALL_RPATH ${Monarch_LIBRARY_DIR} )
+endif( "${isSystemDir}" STREQUAL "-1" )
+include_directories( ${PROJECT_SOURCE_DIR}/monarch/Source )
+include_directories( ${PROJECT_SOURCE_DIR}/monarch/libthorax/cpp )
+include_directories( ${PROJECT_SOURCE_DIR}/monarch/libthorax )
+
+
+
+#find_package( Yajl )
+#if (NOT YAJL_FOUND)
+#  message(FATAL "Yajl not found")
+#endif (NOT YAJL_FOUND)
+#include_directories( ${YAJL_INCLUDE_DIR} )
+#pbuilder_add_ext_libraries( ${YAJL_LIBRARIES} )
+
+find_package( Protobuf )
+include_directories( ${PROTOBUF_INCLUDE_DIR} )
+pbuilder_add_ext_libraries( ${PROTOBUF_LIBRARIES} )
+
+
+# FFTW
+find_package(FFTW REQUIRED)
+if (NOT FFTW_THREADS_FOUND)
+  message(FATAL "FFTW_THREADS not found")
+endif (NOT FFTW_THREADS_FOUND)
+    pbuilder_add_ext_libraries (${FFTW_LIBRARIES})
+    set (FFTW_NTHREADS 1 CACHE STRING "Number of threads to use for FFTW processes")
+    add_definitions (-DFFTW_NTHREADS=${FFTW_NTHREADS})
+    message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
+include_directories (${FFTW_INCLUDE_DIR})
+
+
+add_subdirectory( kassiopeia/Kommon )
+#include_directories( ${Kommon_INCLUDE_DIRS} )
+#link_directories( ${Kommon_LIBRARY_DIRS} )
+file(GLOB_RECURSE Kommon_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/Kommon/*.so)
+pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
+message( STATUS "Kommonlib include dirs: ${Kommon_INCLUDE_DIRS}" )
+message( STATUS "Kommonlib library dirs: ${Kommon_LIBRARY_DIRS}" )
+message( STATUS "Kommonlib libraries: ${Kommon_LIBRARIES}" )
+
+
+set( BUILD_KOMMON ON CACHE BOOL "${BUILD_KOMMON_DESC} (Required)" FORCE )
+set( Kommon_USE_GSL ON CACHE BOOL "(Required)" FORCE )
+set( Kommon_USE_ROOT ON CACHE BOOL "(Required)" FORCE )
+set( Kommon_USE_VTK ON CACHE BOOL "(Required)" FORCE )
+add_subdirectory( kassiopeia/KGeoBag )
+include_directories( ${KGeoBag_INCLUDE_DIRS} )
+link_directories( ${KGeoBag_LIBRARY_DIRS} )
+file(GLOB_RECURSE KGeoBag_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/KGeoBag/*.so)
+pbuilder_add_ext_libraries( ${KGeoBag_LIBRARIES} )
+#message( STATUS "Kommonlib include dirs: ${KGeoBag_INCLUDE_DIRS}" )
+
+add_subdirectory( kassiopeia/KEMField )
+include_directories( ${KEMField_INCLUDE_DIRS} )
+link_directories( ${KEMField_LIBRARY_DIRS} )
+file(GLOB_RECURSE KEMField_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/KEMField/*.so)
+pbuilder_add_ext_libraries( ${KEMField_LIBRARIES} )
+#message( STATUS "KEMField include dirs: ${KEMField_INCLUDE_DIRS}" )
+
+
+set( BUILD_KOMMON ON CACHE BOOL "${BUILD_KOMMON_DESC} (Required)" FORCE )
+set( BUILD_KGEOBAG ON CACHE BOOL "${BUILD_KGEOBAG_DESC} (Required)" FORCE )
+set( BUILD_KEMFIELD ON CACHE BOOL "${BUILD_KEMFIELD_DESC} (Required)" FORCE )
+set( Kommon_USE_GSL ON CACHE BOOL "(Required)" FORCE )
+set( Kommon_USE_ROOT ON CACHE BOOL "(Required)" FORCE )
+set( KGeoBag_USE_ROOT ON CACHE BOOL "(Required)" FORCE )
+set( Kommon_USE_VTK ON CACHE BOOL "(Required)" FORCE )
+set( KGeoBag_USE_VTK ON CACHE BOOL "(Required)" FORCE )
+add_subdirectory( kassiopeia/Kassiopeia )
+include_directories( ${Kassiopeia_INCLUDE_DIRS} )
+link_directories( ${Kassiopeia_LIBRARY_DIRS} )
+file(GLOB_RECURSE Kassiopeia_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/Kassiopeia/*.so)
+pbuilder_add_ext_libraries( ${Kassiopeia_LIBRARIES} )
+#message( STATUS "Kassiopeia include dirs: ${Kassiopeia_INCLUDE_DIRS}" )
 
 
 set( LOCUST_MC_HEADER_FILES
@@ -342,13 +288,21 @@ pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 pbuilder_install_libraries( LocustMC )
 
 
+
+
+
+
 ###############
 # executables #
 ###############
 
 
 add_executable( LocustSim ${CMAKE_CURRENT_SOURCE_DIR}/Source/Applications/LocustSim.cc )
-target_link_libraries( LocustSim LocustMC ${EXTERNAL_LIBRARIES} )
+#target_link_libraries( LocustSim LocustMC ${EXTERNAL_LIBRARIES} )
+
+SET_TARGET_PROPERTIES(LocustSim PROPERTIES LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+target_link_libraries( LocustSim ${Kommon_LIBRARIES} )
+target_link_libraries( LocustSim LocustMC )
 pbuilder_install_executables( LocustSim )
 
 

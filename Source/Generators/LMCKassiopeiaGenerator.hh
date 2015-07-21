@@ -39,6 +39,8 @@ namespace locust
         private:
             bool DoGenerate( Signal* aSignal ) const;
 
+            void KassiopeiaInit();
+
             bool DoGenerateTime( Signal* aSignal ) const;
             bool DoGenerateFreq( Signal* aSignal ) const;
 
