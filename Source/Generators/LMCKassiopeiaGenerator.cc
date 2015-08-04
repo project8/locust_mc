@@ -7,10 +7,8 @@
 
 
 
-
 #include "LMCKassiopeiaGenerator.hh"
-#include "../Core/LMCLogger.hh"
-
+#include "LMCLogger.hh"
 
 
 
@@ -30,6 +28,7 @@
 #include "KPrintProcessor.hh"
 #include "KElementProcessor.hh"
 #include "KTagProcessor.hh"
+#include "KSSimulation.h"
 
 #ifdef Kommon_USE_ROOT
 #include "KFormulaProcessor.hh"
@@ -110,16 +109,21 @@ namespace locust
     {
         tFile = new KTextFile();
         tFile->AddToNames( *tIter );
-        cout << *tIter << "\n"; // pls hack.  Check filename.
+        cout << *tIter << "\n"; // pls hack.  Checking filename.
         tTokenizer.ProcessFile( tFile );
         delete tFile;
     }
+
 
 
     KSToolbox::DeleteInstance();
 
     mainmsg( eNormal ) << "...finished" << eom;
 
+
+        KSRoot *KSRoot1 = new KSRoot();
+        KSSimulation *KSSimulation1 = new KSSimulation();
+        KSRoot1->Execute(KSSimulation1);
 
 
 

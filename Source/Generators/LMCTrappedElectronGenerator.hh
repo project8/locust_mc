@@ -20,7 +20,19 @@
 #define CENTER_TO_SHORT 10.1 // distance from short to center of trap (cm).
 #define C 2.99792458e10 // speed of light in cm/s.
 #define MU0 1.256637e-4 // magnetic constant in T*cm/A.
-#define CURRENT 2.0 // bathtub coil current in amps.
+
+// solenoid geometry
+#define ZBOTTOM -5.0 // cm
+#define ZTOP 5.0 // cm
+#define RSOLENOID 0.63 // cm
+#define NCOILS 100 // = 2 for pinch coils, = ~100 for solenoid.
+#define CURRENT_SOLENOID -1.7 // -1.7 amps for solenoid, +2.0 amps for pinch coils.
+
+
+// field grid
+#define SPACE_DIMENSION 20.0 // cm in x y and z.
+#define SPACE_RESOLUTION 0.2 // cm
+
 
 
 namespace locust
@@ -52,7 +64,8 @@ namespace locust
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-
+            
+ 
         private:
             bool DoGenerate( Signal* aSignal ) const;
 
@@ -60,7 +73,7 @@ namespace locust
             bool DoGenerateFreq( Signal* aSignal ) const;
             bool (TrappedElectronGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
 
-            double GetBMag(double x0, double y0, double z0) const;
+            double GetBMagExact(double x0, double y0, double z0) const;
             double GetBz( double x0, double y0, double z0 ) const;
             double GetBx( double x0, double y0, double z0 ) const;
             double GetBy( double x0, double y0, double z0 ) const;
@@ -77,6 +90,18 @@ namespace locust
             double GetVoltagePhase( double Freq, double dt ) const;
             double GetVoltagePhaseFromShort( double Freq, double dt ) const;
             double GetCyclotronFreqAntennaFrame( double RFFreq, double Vparallel) const;
+            void BuildFieldMaps();
+            double *GetBzMap() const;
+            double *GetBxMap() const;
+            double *GetByMap() const;
+            double InterpolateB(double x0, double y0, double z0, double *fieldmap) const;
+            double GetBMag(double x0, double y0, double z0) const;
+            
+            double *BzMap;
+            double *BxMap;
+            double *ByMap;
+
+
 
     };
 

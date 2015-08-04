@@ -8,6 +8,7 @@
 #include "LMCTrappedElectronGenerator.hh"
 
 #include "../Core/LMCLogger.hh"
+      
 
 using std::string;
 
@@ -22,6 +23,7 @@ namespace locust
             fDoGenerateFunc( &TrappedElectronGenerator::DoGenerateTime )
     {
         fRequiredSignalState = Signal::kTime;
+        BuildFieldMaps();
     }
 
     TrappedElectronGenerator::~TrappedElectronGenerator()
@@ -95,10 +97,15 @@ namespace locust
     bool TrappedElectronGenerator::DoGenerateTime( Signal* aSignal ) const
     {
 
+        printf("check 1\n");
+//        BuildFieldMaps();
+        printf("check 2\n");
+
+
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         double time = 0.;
         double StartingEnergy = 30.; // keV
-        double StartingPitchAngle = 89.75; // initial pitch angle in degrees 
+        double StartingPitchAngle = 89.3; // initial pitch angle in degrees 
         double TimeDependentEnergy = StartingEnergy;
         double LarmorPower = 0.;
         double TimeDependentAmplitude = 0.0; 
@@ -107,9 +114,12 @@ namespace locust
         double ElectronDuration = 0.0010; // seconds
 
         double dt = RunLengthCalculator1->GetBinWidth(); // seconds
+
         double *StartPosition = StartElectron(StartingEnergy, StartingPitchAngle);
         double *position = StartPosition;
         double TimeDependentPitchAngle = StartingPitchAngle;
+
+
         double mu0 = GetMu(StartPosition, StartingEnergy, StartingPitchAngle);
         double CyclotronFrequency = CalculateCyclotronFrequency(CalculateGamma(TimeDependentEnergy), position);
         double ShiftedCyclotronFrequency = GetCyclotronFreqAntennaFrame(CyclotronFrequency, position[4]);
@@ -132,6 +142,8 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
 //getchar();
 
         double TimeDependentMu = mu0;
+
+
 
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
@@ -187,6 +199,9 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
 
         delete RunLengthCalculator1;
         delete position;
+
+
+
 
         return true;
     }
@@ -281,7 +296,7 @@ else position[3] = -1.;
 
 double Vparallel = position[3]*GetSpeed(Eparallel);  // sign*speed = velocity
 
-printf("vparallel is %g and Eparallel is %g\n", Vparallel, Eparallel);
+printf("start electron says vparallel is %g and Eparallel is %g and Bmag is %g\n", Vparallel, Eparallel, GetBMag(position[0],position[1],position[2]));
 
 position[4] = Vparallel;
 
@@ -361,7 +376,7 @@ else
   position[3] = 99.;
 position[4] = Vparallel;
 
-//printf("position 2 (z) is %g\n", position[2]);
+printf("position[2] (z) is %g\n", position[2]); getchar();
 
 return position;
 
@@ -392,11 +407,13 @@ double Gamma = 1. + KineticEnergy/511.;  // 511. keV
 return Gamma;
 }
 
+//double TrappedElectronGenerator::GenerateBzMap(double x0, double y0, double z0) const
+//{
+//}
 
 
 
-
-double TrappedElectronGenerator::GetBMag(double x0, double y0, double z0) const
+double TrappedElectronGenerator::GetBMagExact(double x0, double y0, double z0) const
 {
 
 double Bmag = pow( GetBx(x0,y0,z0)*GetBx(x0,y0,z0) + 
@@ -407,166 +424,388 @@ return Bmag;
 }
 
 
-
-
-
-double TrappedElectronGenerator::GetBz( double x0, double y0, double z0 ) const
+double TrappedElectronGenerator::GetBz(double x0, double y0, double z0) const
 {
+
 
 double Bz=0.;
 int nsteps = 20;
+double ZBottom = ZBOTTOM;
+double ZTop = ZTOP;
+double ncoils = NCOILS;
 double phi = 0.;
 double dphi = 0.;
-double dlx1, dly1, dlz1 = 0.;
-double dlx2, dly2, dlz2 = 0.;
-double xx1, xy1, xz1 = 0.;
-double xx2, xy2, xz2 = 0.;
-double R=RCOIL;
+double dlx, dly, dlz = 0.;
+double xx, xy, xz = 0.;
+double R=RSOLENOID;
+double Zn = 0.;  // Z position of nth coil (cm).
 
+
+for (int j=0; j<ncoils; j++)  // step through coil windings
+{
+//printf("j is %d\n", j);
+Zn = ZBottom + (double)j*(ZTop-ZBottom)/((double)ncoils-1.);
 for (int i=0; i<nsteps; i++)
   {
 
   phi = (double)i/((double)nsteps)*2.*PI;
   dphi = 2.*PI/((double)nsteps);
 
-  dlx1 = -sin(phi)*R*dphi;
-  dly1 = cos(phi)*R*dphi;
-  dlz1 = 0.;
 
-  dlx2 = -sin(phi)*R*dphi;
-  dly2 = cos(phi)*R*dphi;
-  dlz2 = 0.;
+// small piece of coil #n.
+  dlx = -sin(phi)*R*dphi;
+  dly = cos(phi)*R*dphi;
+  dlz = 0.;
 
-  xx1 = x0 - R*cos(phi);
-  xy1 = y0 - R*sin(phi);
-  xz1 = z0 - (Z1);
-
-  xx2 = x0 - R*cos(phi);
-  xy2 = y0 - R*sin(phi);
-  xz2 = z0 - Z2;
+// vector from location of small piece of coil #n to observation point x0 y0 z0.
+  xx = x0 - R*cos(phi);
+  xy = y0 - R*sin(phi);
+  xz = z0 - (Zn);  // Zn is the z position of the nth coil.
 
 
+// B at x0 y0 z0 from small piece of coil #n
+if (xx*xx + xy*xy + xz*xz > 0.)
+  Bz += 1./(4.*PI) * MU0 * CURRENT_SOLENOID * (dlx*xy - dly*xx)/pow(xx*xx + xy*xy + xz*xz, 1.5);
 
-  Bz += MU0 * CURRENT * (dlx1*xy1 - dly1*xx1)/pow(xx1*xx1 + xy1*xy1 + xz1*xz1, 1.5);
-  Bz += MU0 * CURRENT * (dlx2*xy2 - dly2*xx2)/pow(xx2*xx2 + xy2*xy2 + xz2*xz2, 1.5);
+//printf("Bz is now %f\n", Bz);
 
-  }
 
-Bz += 1.0; // Add in main 1 T field.
+  } // i (phi)
 
+} // j (coil windings)
+
+
+Bz += 1.0;  // add in main field.
 //printf("Bz is %g\n", Bz);
 
-return Bz;  // T
+
+
+return Bz;
 
 }
 
 
 
 
-
-double TrappedElectronGenerator::GetBx( double x0, double y0, double z0 ) const
+double TrappedElectronGenerator::GetBx(double x0, double y0, double z0) const
 {
 
 
 double Bx=0.;
 int nsteps = 20;
+double ZBottom = ZBOTTOM;
+double ZTop = ZTOP;
+double ncoils = NCOILS;
 double phi = 0.;
 double dphi = 0.;
-double dlx1, dly1, dlz1 = 0.;
-double dlx2, dly2, dlz2 = 0.;
-double xx1, xy1, xz1 = 0.;
-double xx2, xy2, xz2 = 0.;
-double R=RCOIL;
+double dlx, dly, dlz = 0.;
+double xx, xy, xz = 0.;
+double R=RSOLENOID;
+double Zn = 0.;  // Z position of nth coil (cm).
 
+
+for (int j=0; j<ncoils; j++)  // step through coil windings
+{
+//printf("j is %d\n", j);
+Zn = ZBottom + (double)j*(ZTop-ZBottom)/((double)ncoils-1.);
 for (int i=0; i<nsteps; i++)
   {
-
- 
 
   phi = (double)i/((double)nsteps)*2.*PI;
   dphi = 2.*PI/((double)nsteps);
 
-  dlx1 = -sin(phi)*R*dphi;
-  dly1 = cos(phi)*R*dphi;
-  dlz1 = 0.;
 
-  dlx2 = -sin(phi)*R*dphi;
-  dly2 = cos(phi)*R*dphi;
-  dlz2 = 0.;
+// small piece of coil #n.
+  dlx = -sin(phi)*R*dphi;
+  dly = cos(phi)*R*dphi;
+  dlz = 0.;
 
-  xx1 = x0 - R*cos(phi);
-  xy1 = y0 - R*sin(phi);
-  xz1 = z0 - (Z1);
-
-  xx2 = x0 - R*cos(phi);
-  xy2 = y0 - R*sin(phi);
-  xz2 = z0 - Z2;
+// vector from location of small piece of coil #n to observation point x0 y0 z0.
+  xx = x0 - R*cos(phi);
+  xy = y0 - R*sin(phi);
+  xz = z0 - (Zn);  // Zn is the z position of the nth coil.
 
 
-  Bx += MU0 * CURRENT * (dly1*xz1 - dlz1*xy1)/pow(xx1*xx1 + xy1*xy1 + xz1*xz1, 1.5);
-  Bx += MU0 * CURRENT * (dly2*xz2 - dlz2*xy2)/pow(xx2*xx2 + xy2*xy2 + xz2*xz2, 1.5);
+// B at x0 y0 z0 from small piece of coil #n
+if (xx*xx + xy*xy + xz*xz > 0.)
+  Bx += 1./(4.*PI) * MU0 * CURRENT_SOLENOID * (dly*xz - dlz*xy)/pow(xx*xx + xy*xy + xz*xz, 1.5);
+
+
 //printf("Bx is now %f\n", Bx);
 
 
-  }
+  } // i (phi)
 
-//printf("Bx is %g\n", Bx);
+} // j (coil windings)
+
+
 
 return Bx;
 
 }
 
 
-double TrappedElectronGenerator::GetBy( double x0, double y0, double z0 ) const
+
+
+double TrappedElectronGenerator::GetBy(double x0, double y0, double z0) const
 {
 
 
 double By=0.;
 int nsteps = 20;
+double ZBottom = ZBOTTOM;
+double ZTop = ZTOP;
+double ncoils = NCOILS;
 double phi = 0.;
 double dphi = 0.;
-double dlx1, dly1, dlz1 = 0.;
-double dlx2, dly2, dlz2 = 0.;
-double xx1, xy1, xz1 = 0.;
-double xx2, xy2, xz2 = 0.;
-double R=RCOIL;
+double dlx, dly, dlz = 0.;
+double xx, xy, xz = 0.;
+double R=RSOLENOID;
+double Zn = 0.;  // Z position of nth coil (cm).
 
+
+for (int j=0; j<ncoils; j++)  // step through coil windings
+{
+//printf("j is %d\n", j);
+Zn = ZBottom + (double)j*(ZTop-ZBottom)/((double)ncoils-1.);
 for (int i=0; i<nsteps; i++)
   {
-
- 
-
 
   phi = (double)i/((double)nsteps)*2.*PI;
   dphi = 2.*PI/((double)nsteps);
 
-  dlx1 = -sin(phi)*R*dphi;
-  dly1 = cos(phi)*R*dphi;
-  dlz1 = 0.;
 
-  dlx2 = -sin(phi)*R*dphi;
-  dly2 = cos(phi)*R*dphi;
-  dlz2 = 0.;
+// small piece of coil #n.
+  dlx = -sin(phi)*R*dphi;
+  dly = cos(phi)*R*dphi;
+  dlz = 0.;
 
-  xx1 = x0 - R*cos(phi);
-  xy1 = y0 - R*sin(phi);
-  xz1 = z0 - (Z1); 
+// vector from location of small piece of coil #n to observation point x0 y0 z0.
+  xx = x0 - R*cos(phi);
+  xy = y0 - R*sin(phi);
+  xz = z0 - (Zn);  // Zn is the z position of the nth coil.
 
-  xx2 = x0 - R*cos(phi);
-  xy2 = y0 - R*sin(phi);
-  xz2 = z0 - Z2;
 
-  By += MU0 * CURRENT * (dlz1*xx1 - dlx1*xz1)/pow(xx1*xx1 + xy1*xy1 + xz1*xz1, 1.5);
-  By += MU0 * CURRENT * (dlz2*xx2 - dlx2*xz2)/pow(xx2*xx2 + xy2*xy2 + xz2*xz2, 1.5);
+// B at x0 y0 z0 from small piece of coil #n
+if (xx*xx + xy*xy + xz*xz > 0.)
+  By += 1./(4.*PI) * MU0 * CURRENT_SOLENOID * (dlz*xx - dlx*xz)/pow(xx*xx + xy*xy + xz*xz, 1.5);
+
+//printf("By is now %f\n", By);
+
+
+  } // i (phi)
+
+} // j (coil windings)
 
 //printf("By is %g\n", By);
-  }
 
-//printf("By is %g\n", By);
+
 
 return By;
 
 }
+
+
+
+double TrappedElectronGenerator::InterpolateB(double x0, double y0, double z0, double *fieldmap) const
+{
+
+double space_dimension = SPACE_DIMENSION;
+double space_resolution = SPACE_RESOLUTION;
+int array_dimension = (int)(space_dimension/space_resolution);
+
+int xindex = floor((x0 + space_dimension/2.)/space_resolution); // + = --
+int yindex = floor((y0 + space_dimension/2.)/space_resolution);
+int zindex = floor((z0 + space_dimension/2.)/space_resolution);
+
+if (xindex<0) xindex=0;
+if (yindex<0) yindex=0;
+if (zindex<0) zindex=0;
+if (xindex>array_dimension-1) xindex=array_dimension-1;
+if (yindex>array_dimension-1) yindex=array_dimension-1;
+if (zindex>array_dimension-1) zindex=array_dimension-1;
+
+double xfraction = (x0 + space_dimension/2.)/space_resolution - (double)xindex;
+double yfraction = (y0 + space_dimension/2.)/space_resolution - (double)yindex;
+double zfraction = (z0 + space_dimension/2.)/space_resolution - (double)zindex;
+
+double B_lower = fieldmap[zindex + yindex*array_dimension + xindex*array_dimension*array_dimension];
+double Bx_upper = fieldmap[(zindex) + (yindex)*array_dimension + (xindex+1)*array_dimension*array_dimension];
+double By_upper = fieldmap[(zindex) + (yindex+1)*array_dimension + (xindex)*array_dimension*array_dimension];
+double Bz_upper = fieldmap[(zindex+1) + (yindex)*array_dimension + (xindex)*array_dimension*array_dimension];
+
+bool positive = (Bx_upper - B_lower)*xfraction + 
+                (By_upper - B_lower)*yfraction + 
+                (Bz_upper - B_lower)*zfraction > 0.;
+
+double sign = 0.;
+if (positive) sign = 1.; else sign = -1.;
+
+double B = B_lower + 
+            sign * pow(
+              pow((Bx_upper - B_lower)*xfraction,2.) +
+              pow((By_upper - B_lower)*yfraction,2.) +
+              pow((Bz_upper - B_lower)*zfraction,2.), 0.5);
+
+//printf("Requested z0 is %f and B_lower is %f and B_upper is %f and fractions are %f %f %f, final Bz is %g\n", z0, B_lower, Bz_upper, xfraction, yfraction, zfraction, B);
+
+return B;
+
+}
+
+
+
+
+
+double *TrappedElectronGenerator::GetBzMap() const
+{
+double space_dimension = SPACE_DIMENSION;
+double space_resolution = SPACE_RESOLUTION;
+int array_dimension = (int)(space_dimension/space_resolution);
+double *BzMap = new double[array_dimension*array_dimension*array_dimension];
+double x0 = 0.;
+double y0 = 0.;
+double z0 = 0.;
+
+for (int i=0; i<(int)array_dimension; i++)
+  {
+  printf("Field map in Z, step %d out of %d\n", i, (int)array_dimension-1);
+  for (int j=0; j<array_dimension; j++)
+    for (int k=0; k<array_dimension; k++)
+      {
+      x0 = -space_dimension/2. + (double)i * space_resolution;
+      y0 = -space_dimension/2. + (double)j * space_resolution;
+      z0 = -space_dimension/2. + (double)k * space_resolution;
+      BzMap[k + array_dimension*j + array_dimension*array_dimension*i] = GetBz(x0, y0, z0);
+      }
+  }
+
+return BzMap;
+
+}
+
+
+double *TrappedElectronGenerator::GetBxMap() const
+{
+double space_dimension = SPACE_DIMENSION;
+double space_resolution = SPACE_RESOLUTION;
+int array_dimension = (int)(space_dimension/space_resolution);
+double *BxMap = new double[array_dimension*array_dimension*array_dimension];
+double x0 = 0.;
+double y0 = 0.;
+double z0 = 0.;
+
+for (int i=0; i<(int)array_dimension; i++)
+  {
+  printf("Field map in X, step %d out of %d\n", i, (int)array_dimension-1);
+  for (int j=0; j<array_dimension; j++)
+    for (int k=0; k<array_dimension; k++)
+      {
+      x0 = -space_dimension/2. + (double)i * space_resolution;
+      y0 = -space_dimension/2. + (double)j * space_resolution;
+      z0 = -space_dimension/2. + (double)k * space_resolution;
+      BxMap[k + array_dimension*j + array_dimension*array_dimension*i] = GetBx(x0, y0, z0);
+      }
+  }
+
+return BxMap;
+
+}
+
+double *TrappedElectronGenerator::GetByMap() const
+{
+double space_dimension = SPACE_DIMENSION;
+double space_resolution = SPACE_RESOLUTION;
+int array_dimension = (int)(space_dimension/space_resolution);
+double *ByMap = new double[array_dimension*array_dimension*array_dimension];
+double x0 = 0.;
+double y0 = 0.;
+double z0 = 0.;
+
+for (int i=0; i<(int)array_dimension; i++)
+  {
+  printf("Field map in Y, step %d out of %d\n", i, (int)array_dimension-1);
+  for (int j=0; j<array_dimension; j++)
+    for (int k=0; k<array_dimension; k++)
+      {
+      x0 = -space_dimension/2. + (double)i * space_resolution;
+      y0 = -space_dimension/2. + (double)j * space_resolution;
+      z0 = -space_dimension/2. + (double)k * space_resolution;
+      ByMap[k + array_dimension*j + array_dimension*array_dimension*i] = GetBy(x0, y0, z0);
+      }
+  }
+
+return ByMap;
+
+}
+
+
+
+
+
+
+
+void TrappedElectronGenerator::BuildFieldMaps()
+{
+
+double n = SPACE_DIMENSION/SPACE_RESOLUTION;
+
+FILE *fp1 = fopen("fieldmap.bin","rb");
+if (fp1==NULL) 
+{
+
+BzMap = GetBzMap();
+BxMap = GetBxMap();
+ByMap = GetByMap();
+
+FILE *fp0 = fopen("./fieldmap.bin","wb");
+if (fp0==NULL) {fputs ("File error",stderr);}
+
+fwrite(&n, sizeof(n), 1, fp0);
+fwrite(&BzMap[0], sizeof(BzMap[0]), (int)(n*n*n), fp0);
+fwrite(&BxMap[0], sizeof(BxMap[0]), (int)(n*n*n), fp0);
+fwrite(&ByMap[0], sizeof(ByMap[0]), (int)(n*n*n), fp0);
+
+fclose(fp0);
+
+}
+
+else 
+{
+fread(&n, sizeof(n), 1, fp1);
+printf("n read from file is %f\n", n);
+BzMap = (double*) malloc (sizeof(double)*(int)(n*n*n));
+BxMap = (double*) malloc (sizeof(double)*(int)(n*n*n));
+ByMap = (double*) malloc (sizeof(double)*(int)(n*n*n));
+
+fread(BzMap, sizeof(BzMap[0]), (int)(n*n*n), fp1);
+fread(BxMap, sizeof(BxMap[0]), (int)(n*n*n), fp1);
+fread(ByMap, sizeof(ByMap[0]), (int)(n*n*n), fp1);
+
+fclose(fp1);
+
+}
+
+
+}
+
+
+
+double TrappedElectronGenerator::GetBMag(double x0, double y0, double z0) const
+{
+
+// interpolate pre-built field map:
+
+double Bmag = pow( pow(InterpolateB(x0,y0,z0,BxMap),2.) + 
+                   pow(InterpolateB(x0,y0,z0,ByMap),2.) + 
+                   pow(InterpolateB(x0,y0,z0,BzMap),2.), 0.5);
+
+return Bmag;
+
+}
+
+
+
 
 
 

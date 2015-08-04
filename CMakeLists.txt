@@ -6,16 +6,39 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( locust_mc )
 
-set( CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} )
+set (BUILD_WITH_KASSIOPEIA 0)
 
 
-list ( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake )
-include( KasperDefaults )
+list ( APPEND CMAKE_MODULE_PATH 
+${PROJECT_SOURCE_DIR}
+${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
+)
+
+
 
 include( ${PROJECT_SOURCE_DIR}/PackageBuilder.cmake )
 pbuilder_prepare_project( 1 0 0 )
 include_directories( ${PROJECT_SOURCE_DIR} )
 
+
+
+if (BUILD_WITH_KASSIOPEIA)
+  include( KasperDefaults )
+  set( KASPER_BUILD TRUE )
+endif (BUILD_WITH_KASSIOPEIA)
+
+set ( CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} )
+
+
+list ( APPEND CMAKE_PREFIX_PATH 
+${CMAKE_BINARY_DIR}/kassiopeia/Kommon
+${CMAKE_BINARY_DIR}/kassiopeia/KGeoBag
+${CMAKE_BINARY_DIR}/kassiopeia/KEMField
+)
+
+
+
+IF (BUILD_WITH_KASSIOPEIA)
 
 # use, i.e. don't skip the full RPATH for the build tree
 set( CMAKE_SKIP_BUILD_RPATH TRUE )
@@ -110,6 +133,15 @@ ${PROJECT_SOURCE_DIR}/kassiopeia/KGeoBag/Source/Extensions/DiscreteRotationalMes
 )
 include_directories( ${KASSIOPEIA_INCLUDE_DIRECTORIES} )
 
+ENDIF (BUILD_WITH_KASSIOPEIA)
+
+
+set (LOCUST_MC_INCLUDE_DIRECTORIES
+${PROJECT_SOURCE_DIR}/Source/Generators/
+${PROJECT_SOURCE_DIR}/Source/Core/
+)
+include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
+
 
 
 
@@ -181,14 +213,13 @@ endif (NOT FFTW_THREADS_FOUND)
 include_directories (${FFTW_INCLUDE_DIR})
 
 
+IF (BUILD_WITH_KASSIOPEIA)
+
 add_subdirectory( kassiopeia/Kommon )
 #include_directories( ${Kommon_INCLUDE_DIRS} )
 #link_directories( ${Kommon_LIBRARY_DIRS} )
 file(GLOB_RECURSE Kommon_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/Kommon/*.so)
 pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
-message( STATUS "Kommonlib include dirs: ${Kommon_INCLUDE_DIRS}" )
-message( STATUS "Kommonlib library dirs: ${Kommon_LIBRARY_DIRS}" )
-message( STATUS "Kommonlib libraries: ${Kommon_LIBRARIES}" )
 
 
 set( BUILD_KOMMON ON CACHE BOOL "${BUILD_KOMMON_DESC} (Required)" FORCE )
@@ -223,8 +254,10 @@ include_directories( ${Kassiopeia_INCLUDE_DIRS} )
 link_directories( ${Kassiopeia_LIBRARY_DIRS} )
 file(GLOB_RECURSE Kassiopeia_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/Kassiopeia/*.so)
 pbuilder_add_ext_libraries( ${Kassiopeia_LIBRARIES} )
-#message( STATUS "Kassiopeia include dirs: ${Kassiopeia_INCLUDE_DIRS}" )
+message( STATUS "Kassiopeia_LIBRARIES: ${Kassiopeia_LIBRARIES}" )
 
+
+ENDIF ( BUILD_WITH_KASSIOPEIA )
 
 set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/LMCConfigurator.hh
@@ -251,9 +284,10 @@ set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTrappedElectronGenerator.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.hh
+#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.hh
 )
+
 
 set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/LMCConfigurator.cc
@@ -276,18 +310,17 @@ set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTrappedElectronGenerator.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.cc
+#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.cc
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.cc
 )
 
-add_library( LocustMC ${LOCUST_MC_SOURCE_FILES} )
-target_link_libraries( LocustMC ${EXTERNAL_LIBRARIES} )
 
+add_library( LocustMC ${LOCUST_MC_SOURCE_FILES} )
+SET_TARGET_PROPERTIES(LocustMC PROPERTIES LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+target_link_libraries( LocustMC ${EXTERNAL_LIBRARIES} )
 
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 pbuilder_install_libraries( LocustMC )
-
-
 
 
 
@@ -297,13 +330,14 @@ pbuilder_install_libraries( LocustMC )
 ###############
 
 
-add_executable( LocustSim ${CMAKE_CURRENT_SOURCE_DIR}/Source/Applications/LocustSim.cc )
-#target_link_libraries( LocustSim LocustMC ${EXTERNAL_LIBRARIES} )
+add_executable( LocustSim 
+${CMAKE_CURRENT_SOURCE_DIR}/Source/Applications/LocustSim.cc 
+)
 
 SET_TARGET_PROPERTIES(LocustSim PROPERTIES LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
-target_link_libraries( LocustSim ${Kommon_LIBRARIES} )
 target_link_libraries( LocustSim LocustMC )
 pbuilder_install_executables( LocustSim )
+
 
 
 #pbuilder_install_headers(${CMAKE_CURRENT_SOURCE_DIR}/Source/ReceiverTransferFunctions.hh)

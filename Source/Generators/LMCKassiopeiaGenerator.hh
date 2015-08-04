@@ -8,9 +8,8 @@
 #ifndef LMCKASSIOPEIAGENERATOR_HH_
 #define LMCKASSIOPEIAGENERATOR_HH_
 
-#include "../Core/LMCGenerator.hh"
-#include "../Core/LMCRunLengthCalculator.hh"
-//#include "KSRoot.h"
+#include "LMCGenerator.hh"
+#include "LMCRunLengthCalculator.hh"
 
 
 namespace locust
