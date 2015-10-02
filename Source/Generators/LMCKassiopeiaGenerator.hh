@@ -10,6 +10,7 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include <pthread.h>
 
 
 namespace locust
@@ -38,7 +39,7 @@ namespace locust
         private:
             bool DoGenerate( Signal* aSignal ) const;
 
-            void KassiopeiaInit();
+//            void * KassiopeiaInit(void *);
 
             bool DoGenerateTime( Signal* aSignal ) const;
             bool DoGenerateFreq( Signal* aSignal ) const;

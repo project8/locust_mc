@@ -97,21 +97,17 @@ namespace locust
     bool TrappedElectronGenerator::DoGenerateTime( Signal* aSignal ) const
     {
 
-        printf("check 1\n");
-//        BuildFieldMaps();
-        printf("check 2\n");
-
 
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         double time = 0.;
         double StartingEnergy = 30.; // keV
-        double StartingPitchAngle = 89.3; // initial pitch angle in degrees 
+        double StartingPitchAngle = 90.0; // initial pitch angle in degrees 
         double TimeDependentEnergy = StartingEnergy;
         double LarmorPower = 0.;
         double TimeDependentAmplitude = 0.0; 
         double BBFreq = 0.;  // baseband frequency
         double ElectronStartTime = 0.000; // seconds
-        double ElectronDuration = 0.0010; // seconds
+        double ElectronDuration = 8.375e-5; // seconds  (5 triggers on scope).
 
         double dt = RunLengthCalculator1->GetBinWidth(); // seconds
 
@@ -162,7 +158,7 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
         TimeDependentMu = TimeDependentMu* (1.-Eloss/TimeDependentEnergy);
             
         CyclotronFrequency = CalculateCyclotronFrequency(CalculateGamma(TimeDependentEnergy), position);
-//        printf("cyc freq - 2.64457e10 is %g\n", CyclotronFrequency-2.64457e10); getchar();
+        printf("cyc freq - LO_FREQUENCY is %g\n", CyclotronFrequency-LO_FREQUENCY); getchar();
         ShiftedCyclotronFrequency = GetCyclotronFreqAntennaFrame(CyclotronFrequency, position[4]);
         ShiftedCyclotronFrequencyAtShort = GetCyclotronFreqAntennaFrame(CyclotronFrequency, -position[4]);
 
@@ -192,6 +188,7 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
 
 
         }  // if start<time<end
+
         
         }  // index
 
@@ -245,7 +242,7 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
     double B = GetBMag(position[0], position[1], position[2]);
 //    double B=GetBMag(0.,0.,0.); // constant B field.  
     double Frequency = 1.602e-19*B/(2.*PI*Gamma*9.11e-31);  // Hz
-//    printf("B is %g\n", B);
+    printf("B is %g and Gamma is %f and fcyc is %g and fcyc-LO is %g\n", B, Gamma, Frequency,Frequency-LO_FREQUENCY); getchar();
     return Frequency;
     }
 
@@ -347,9 +344,13 @@ if (Eparallel > 0.)  // If we are not at a mirror point.
 else  // mirror point.
     {
 //    printf("we seem to be at a mirror point.\n  Eparallel is %g and Vparallel is %g\n", Eparallel,Vparallel);
-    Eovershoot = Eperp - KineticEnergy;
-    Eperp = KineticEnergy - Eovershoot;  // new corrected Eperp on other side of KineticEnergy.
-    Eparallel = KineticEnergy - Eperp;
+//    Eovershoot = Eperp - KineticEnergy;
+//    Eperp = KineticEnergy - Eovershoot;  // new corrected Eperp on other side of KineticEnergy.
+//    Eparallel = KineticEnergy - Eperp;
+
+    Eparallel = -Eparallel;
+    Eperp = KineticEnergy - Eparallel;
+
     Vparallel = -OldPosition[3]*GetSpeed(Eparallel);  // flip velocity direction with new Eparallel.
     if (direction==0) direction = 1;
       else direction = 0;  // toggle direction variable.
@@ -413,7 +414,7 @@ return Gamma;
 
 
 
-double TrappedElectronGenerator::GetBMagExact(double x0, double y0, double z0) const
+double TrappedElectronGenerator::GetBMag(double x0, double y0, double z0) const
 {
 
 double Bmag = pow( GetBx(x0,y0,z0)*GetBx(x0,y0,z0) + 
@@ -791,7 +792,7 @@ fclose(fp1);
 
 
 
-double TrappedElectronGenerator::GetBMag(double x0, double y0, double z0) const
+double TrappedElectronGenerator::GetBMagInterpolated(double x0, double y0, double z0) const
 {
 
 // interpolate pre-built field map:

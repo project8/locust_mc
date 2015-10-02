@@ -9,7 +9,7 @@
 
 #include "LMCKassiopeiaGenerator.hh"
 #include "LMCLogger.hh"
-
+#include "LMCGlobals.hh"
 
 
 #include "KSRoot.h"
@@ -65,10 +65,9 @@ namespace locust
 
 
 // pls hack:  This routine is lifted from Kassiopeia.cxx main().
-    void KassiopeiaGenerator::KassiopeiaInit()
+
+    void* KassiopeiaInit(void*)
     {
-
-
 
     KCommandLineTokenizer tCommandLine;
 //    tCommandLine.ProcessCommandLine( argc, argv );
@@ -102,6 +101,7 @@ namespace locust
     mainmsg( eNormal ) << "starting..." << eom;
 
 
+
     KSToolbox::GetInstance();
 
     KTextFile* tFile;
@@ -110,7 +110,7 @@ namespace locust
         tFile = new KTextFile();
         tFile->AddToNames( *tIter );
         cout << *tIter << "\n"; // pls hack.  Checking filename.
-        tTokenizer.ProcessFile( tFile );
+        tTokenizer.ProcessFile( tFile );  // this line is the program.
         delete tFile;
     }
 
@@ -120,23 +120,13 @@ namespace locust
 
     mainmsg( eNormal ) << "...finished" << eom;
 
-
-        KSRoot *KSRoot1 = new KSRoot();
-        KSSimulation *KSSimulation1 = new KSSimulation();
-        KSRoot1->Execute(KSSimulation1);
-
-
-
-    return;
-
+    return 0;
 
     }
 
 
     bool KassiopeiaGenerator::Configure( const ParamNode* aParam )
     {
-
-        KassiopeiaInit();
 
         if( aParam == NULL) return true;
         if( aParam->Has( "domain" ) )
@@ -197,11 +187,96 @@ namespace locust
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
+    void* thread1(void*)
+    {
+    while(1){
+//    printf("Hello!!\n");
+    printf("about to lock the mutex\n");
+    pthread_mutex_lock (&mymutex);
+    testvar = -100000.;
+    pthread_mutex_unlock (&mymutex);
+
+    }
+    return 0;
+    }
+
+
+    void* thread2(void*)
+    {
+    while(1){
+    printf("How are you?\n");
+    pthread_mutex_lock (&mymutex);
+    testvar += 1.;
+    printf("testvar is %f\n", testvar);
+    }
+    return 0;
+    }
+
+
+    void* thread3(void*)
+    {
+    while(1){
+    printf("This is the last thread?\n");
+    pthread_mutex_lock (&mymutex);
+    testvar += 1.;
+    printf("testvar is %f\n", testvar);
+    }
+    return 0;
+    }
+
+
+
+
+    int threadtest()
+    {
+    pthread_t tid1,tid2,tid3;
+
+    pthread_create(&tid1,NULL,thread1 ,NULL);
+    pthread_create(&tid2,NULL,thread2,NULL);
+    pthread_create(&tid3,NULL,thread3,NULL);
+    pthread_join(tid1,NULL);
+    pthread_join(tid2,NULL);
+    pthread_join(tid3,NULL);
+    return 0;
+    }
+
+
+    void* timetrace(void*)
+    {
+    while(1){
+    printf("timetrace says Z is %f\n", Z);
+    pthread_mutex_lock (&mymutex);
+    }
+    return 0;
+    }
+
+
+
+
     bool KassiopeiaGenerator::DoGenerateTime( Signal* aSignal ) const
     {
-
-
+//    	threadtest();
 //        Kassiopeia::mainmsg( katrin::eNormal ) << "Hello world from Kassiopeia, inside Locust. " << katrin::eom;  getchar();
+
+    	pthread_t tid1;
+        pthread_create(&tid1,NULL,KassiopeiaInit ,NULL);
+
+
+        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+        {
+
+            pthread_mutex_lock (&mymutex);
+            pthread_cond_wait(&tick, &mymutex);
+            printf("index is %d\n", index); //getchar();
+            aSignal->SignalTime( index ) += pow(2.e-15,0.5);  // sqrt of Larmor power.
+            pthread_mutex_unlock (&mymutex);
+
+ //           if (index<10) printf("signal %d is %g\n", index, aSignal->SignalTime(index));
+        }
+
+
+
+        pthread_join(tid1,NULL);  // This makes sure Locust does not just proceed without Kassiopeia.
         return true;
     }
 

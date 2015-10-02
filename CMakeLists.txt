@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( locust_mc )
 
-set (BUILD_WITH_KASSIOPEIA 0)
+set (BUILD_WITH_KASSIOPEIA 1)
 
 
 list ( APPEND CMAKE_MODULE_PATH 
@@ -261,6 +261,7 @@ ENDIF ( BUILD_WITH_KASSIOPEIA )
 
 set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/LMCConfigurator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/LMCGlobals.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/LMCConstants.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/LMCDefaultConfig.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/LMCDestroyer.hh
@@ -284,7 +285,7 @@ set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTrappedElectronGenerator.hh
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.hh
 )
 
@@ -310,7 +311,7 @@ set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTrappedElectronGenerator.cc
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.cc
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.cc
 )
 
