@@ -262,12 +262,14 @@ namespace locust
         pthread_create(&tid1,NULL,KassiopeiaInit ,NULL);
 
 
-        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+//        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+            for( unsigned index = 0; index < 4; ++index )
         {
-
+        	// lock access to the mutex, unless Kassiopeia needs to write to the globals.
             pthread_mutex_lock (&mymutex);
+            // stop here and check whether Kassiopeia sent out a tick signaling that the globals need to be digitized.
             pthread_cond_wait(&tick, &mymutex);
-            printf("index is %d\n", index); //getchar();
+            printf("Locust says:  index is %d and t is %g\n", index, t);
             aSignal->SignalTime( index ) += pow(2.e-15,0.5);  // sqrt of Larmor power.
             pthread_mutex_unlock (&mymutex);
 
