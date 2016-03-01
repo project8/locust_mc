@@ -1,10 +1,17 @@
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required( VERSION 3.0 )
 
 #########
 # setup #
 #########
 
-project( locust_mc )
+# Define the project
+cmake_policy( SET CMP0048 NEW ) # version in project()
+project( locust_mc VERSION 1.0.0 )
+
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/scarab/cmake )
+include( PackageBuilder )
+
+pbuilder_prepare_project()
 
 set (BUILD_WITH_KASSIOPEIA 0)
 # cxx flags to avoid incompatibility between gcc 5 and gcc <5.
@@ -15,13 +22,6 @@ list ( APPEND CMAKE_MODULE_PATH
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
 )
-
-
-
-include( ${PROJECT_SOURCE_DIR}/PackageBuilder.cmake )
-pbuilder_prepare_project( 1 0 0 )
-include_directories( ${PROJECT_SOURCE_DIR} )
-
 
 
 if (BUILD_WITH_KASSIOPEIA)
