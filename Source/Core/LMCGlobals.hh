@@ -20,6 +20,8 @@ double t_old = 0.;
 double dt = -99.;
 double fcyc = -99.;
 double de = -99.;
+double LarmorPower = -99.;
+double GammaZ = -99.;
 
 double testvar = 0.;
 pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;

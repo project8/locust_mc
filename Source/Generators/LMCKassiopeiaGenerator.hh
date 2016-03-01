@@ -12,6 +12,10 @@
 #include "LMCRunLengthCalculator.hh"
 #include <pthread.h>
 
+#define PI 3.1415926
+#define LO_FREQUENCY 26.385015e9 // Hz
+
+
 
 namespace locust
 {

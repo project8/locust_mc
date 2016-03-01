@@ -257,20 +257,28 @@ namespace locust
     {
 //    	threadtest();
 //        Kassiopeia::mainmsg( katrin::eNormal ) << "Hello world from Kassiopeia, inside Locust. " << katrin::eom;  getchar();
-
+        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
+        double dt = RunLengthCalculator1->GetBinWidth(); // seconds
+        double phi_t = 0.; // antenna voltage phase in radians.
+        double phiLO_t = 0.; // voltage phase of LO;
+        double fprime = 0.;  // Doppler shifted cyclotron frequency in Hz.
     	pthread_t tid1;
         pthread_create(&tid1,NULL,KassiopeiaInit ,NULL);
 
 
 //        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
-            for( unsigned index = 0; index < 4; ++index )
+            for( unsigned index = 0; index < 45; ++index )
         {
         	// lock access to the mutex, unless Kassiopeia needs to write to the globals.
             pthread_mutex_lock (&mymutex);
             // stop here and check whether Kassiopeia sent out a tick signaling that the globals need to be digitized.
             pthread_cond_wait(&tick, &mymutex);
-            printf("Locust says:  index is %d and t is %g\n", index, t);
-            aSignal->SignalTime( index ) += pow(2.e-15,0.5);  // sqrt of Larmor power.
+            printf("Locust says:  index is %d and t is %g and sqrtLarmorPower is %g\n", index, t, pow(LarmorPower, 0.5));
+            fprime = fcyc*GammaZ*(1.-zvelocity/2.99792e8);
+            phi_t += 2.*PI*fprime*dt;
+            phiLO_t += -2.*PI*LO_FREQUENCY*dt;
+            aSignal->SignalTime( index ) +=
+            		pow(LarmorPower,0.5)*(cos(phi_t)*cos(phiLO_t) - sin(phi_t)*sin(phiLO_t));
             pthread_mutex_unlock (&mymutex);
 
  //           if (index<10) printf("signal %d is %g\n", index, aSignal->SignalTime(index));
@@ -279,6 +287,7 @@ namespace locust
 
 
         pthread_join(tid1,NULL);  // This makes sure Locust does not just proceed without Kassiopeia.
+        delete RunLengthCalculator1;
         return true;
     }
 
