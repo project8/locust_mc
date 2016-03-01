@@ -93,6 +93,7 @@ ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Navigators/Include/
 ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Modifiers/Include/
 ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Terminators/Include/
 ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Trajectories/Include/
+${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Visualization/Include/
 ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Writers/Include/
 ${PROJECT_SOURCE_DIR}/kassiopeia/Kassiopeia/Readers/Include/
 ${PROJECT_SOURCE_DIR}/kassiopeia/KEMField/Source/2.0/Plugins/KGeoBag/include/
@@ -287,7 +288,7 @@ set( LOCUST_MC_HEADER_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTrappedElectronGenerator.hh
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.hh
+#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.hh
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.hh
 )
 
@@ -313,7 +314,7 @@ set( LOCUST_MC_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCBasebandTrackGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCReceiverTransferFunctionGenerator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCTrappedElectronGenerator.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.cc
+#    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCKassiopeiaGenerator.cc
 #    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/LMCSingleAmpSim.cc
 )
 
