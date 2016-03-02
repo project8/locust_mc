@@ -160,7 +160,7 @@ include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 
 pbuilder_add_ext_libraries( "m" )
 
-include_directories( ${PROJECT_SOURCE_DIR}/RapidJSON )
+include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
 
 pbuilder_add_submodule( Scarab Scarab/library )
 
