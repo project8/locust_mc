@@ -4,3 +4,6 @@
 [submodule "Scarab"]
 	path = Scarab
 	url = https://github.com/project8/scarab
+[submodule "libthorax"]
+	path = libthorax
+	url = https://github.com/project8/libthorax
