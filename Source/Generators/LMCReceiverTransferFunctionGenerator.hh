@@ -8,7 +8,7 @@
 #ifndef LMCRECEIVERTRANSFERFUNCTIONGENERATOR_HH_
 #define LMCRECEIVERTRANSFERFUNCTIONGENERATOR_HH_
 
-#include "../Core/LMCGenerator.hh"
+#include "LMCGenerator.hh"
 
 #include "RandomLib/NormalDistribution.hpp"
 

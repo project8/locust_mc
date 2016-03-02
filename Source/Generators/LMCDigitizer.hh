@@ -8,9 +8,9 @@
 #ifndef LMCDIGITIZER_HH_
 #define LMCDIGITIZER_HH_
 
-#include "../Core/LMCGenerator.hh"
+#include "LMCGenerator.hh"
 
-#include "thorax.hh"
+#include "thorax_digital.hh"
 
 namespace locust
 {
@@ -42,13 +42,13 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            const dig_calib_params& DigitizerParams() const;
-            dig_calib_params& DigitizerParams();
+            const thorax::dig_calib_params& DigitizerParams() const;
+            thorax::dig_calib_params& DigitizerParams();
 
         protected:
             bool DoGenerate( Signal* aSignal ) const;
 
-            struct dig_calib_params fParams;
+            struct thorax::dig_calib_params fParams;
     };
 
 } /* namespace locust */

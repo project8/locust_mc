@@ -7,7 +7,10 @@
 
 #include "LMCDigitizer.hh"
 
-#include "../Core/LMCLogger.hh"
+#include "LMCLogger.hh"
+
+using thorax::get_calib_params;
+using thorax::dig_calib_params;
 
 namespace locust
 {
@@ -20,7 +23,7 @@ namespace locust
     {
         fRequiredSignalState = Signal::kTime;
 
-        get_calib_params( 8, 1, -3.e-6, 6.e-6, &fParams );  // if Gaussian noise is included.
+        get_calib_params( 8, 1, -3.e-6, 6.e-6, false, &fParams );  // if Gaussian noise is included.
 
 //        get_calib_params( 8, 1, -1.e-7, 2.e-7, &fParams );  // if Gaussian noise is not included.
     }
@@ -36,9 +39,9 @@ namespace locust
         unsigned bitDepth = aNode->GetValue( "bit-depth", fParams.bit_depth );
         unsigned dataTypeSize = aNode->GetValue( "data-type-size", fParams.data_type_size );
         double vRange = aNode->GetValue( "v-range", fParams.v_range );
-        double vMin = aNode->GetValue( "v-min", fParams.v_min );
+        double vMin = aNode->GetValue( "v-offset", fParams.v_offset );
 
-        get_calib_params( bitDepth, dataTypeSize, vMin, vRange, &fParams );
+        get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
 
         LMCDEBUG( lmclog, "Digitizer calibration parameters set:\n" << fParams );
 

@@ -8,8 +8,8 @@
 #ifndef LMCGAUSSIANNOISEGENERATOR_HH_
 #define LMCGAUSSIANNOISEGENERATOR_HH_
 
-#include "../Core/LMCGenerator.hh"
-#include "../Core/LMCRunLengthCalculator.hh"
+#include "LMCGenerator.hh"
+#include "LMCRunLengthCalculator.hh"
 
 #include "RandomLib/NormalDistribution.hpp"
 

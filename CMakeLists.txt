@@ -13,7 +13,7 @@ include( PackageBuilder )
 
 pbuilder_prepare_project()
 
-option( locust_mc_locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
+option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 
 # cxx flags to avoid incompatibility between gcc 5 and gcc <5.
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -Wall -Wextra -D_GLIBCXX_USE_CXX11_ABI=0")
@@ -179,10 +179,11 @@ endif( "${isSystemDir}" STREQUAL "-1" )
 #    ${PROJECT_SOURCE_DIR}/MTwist/randistrs.c
 #)
 
+pbuilder_add_submodule( Scarab Scarab/library )
 
 pbuilder_add_submodule( Monarch monarch )
 
-
+pbuilder_add_submodule( libthorax libthorax )
 
 # FFTW
 find_package(FFTW REQUIRED)

@@ -7,7 +7,7 @@
 
 #include "LMCTrappedElectronGenerator.hh"
 
-#include "../Core/LMCLogger.hh"
+#include "LMCLogger.hh"
       
 
 using std::string;
