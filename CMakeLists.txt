@@ -183,8 +183,6 @@ pbuilder_add_submodule( Scarab Scarab/library )
 
 pbuilder_add_submodule( Monarch monarch )
 
-pbuilder_add_submodule( libthorax libthorax )
-
 # FFTW
 find_package(FFTW REQUIRED)
 if (NOT FFTW_THREADS_FOUND)

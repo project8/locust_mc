@@ -7,7 +7,7 @@
 
 #include "LMCSimulationController.hh"
 
-#include "../Generators/LMCDigitizer.hh"
+#include "LMCDigitizer.hh"
 #include "LMCGenerator.hh"
 #include "LMCLogger.hh"
 #include "LMCParam.hh"
@@ -99,22 +99,8 @@ namespace locust
             return false;
         }
 
-        // transfer settings to the egg writer . . .
-        // . . . from the run length calculator, . . .
-        fEggWriter.SetAcquisitionRate( fRunLengthCalc.GetAcquisitionRate() );
-        fEggWriter.SetDuration( fRunLengthCalc.GetDuration() );
-        fEggWriter.SetRecordSize( fRunLengthCalc.GetRecordSize() );
-        // . . . from the digitizer
-        const Digitizer* digitizer = FindDigitizer();
-        if( digitizer != NULL )
-        {
-            fEggWriter.SetBitDepth( digitizer->DigitizerParams().bit_depth );
-            fEggWriter.SetVoltageMin( digitizer->DigitizerParams().v_min );
-            fEggWriter.SetVoltageRange( digitizer->DigitizerParams().v_range );
-        }
-
         // prepare the egg file (writes header, allocates record memory, etc)
-        if( ! fEggWriter.PrepareEgg() )
+        if( ! fEggWriter.PrepareEgg( &fRunLengthCalc, FindDigitizer() ) )
         {
             LMCERROR( lmclog, "Error preparing the egg file" );
             return false;
@@ -145,18 +131,29 @@ namespace locust
                 LMCERROR( lmclog, "Signal was not simulated" );
                 return false;
             }
-            for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
+
+
+            if( simulatedSignal->GetDigitalIsSigned() )
             {
-                LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime( index ) << "  " << (int)simulatedSignal->SignalDigital( index ) );  // pls added (int)
-            //}  // pls edit.  Moved this bracket to include msg below.
+                for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
+                {
+                    LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalS()[index] );  // pls added (int)
+                }
+            }
+            else
+            {
+                for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
+                {
+                    LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalUS()[index] );  // pls added (int)
+                }
+            }
 
             if( ! fEggWriter.WriteRecord( simulatedSignal ) )
             {
-                LMCERROR( lmclog, "Something went wrong while writing record " << index );
+                LMCERROR( lmclog, "Something went wrong while writing record " << record );
                 delete simulatedSignal;
                 return false;
             }
-            }  // pls edit
 
             // temporarily, immediately cleanup
             delete simulatedSignal;

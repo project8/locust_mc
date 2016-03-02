@@ -9,8 +9,9 @@
 
 #include "LMCLogger.hh"
 
-using thorax::get_calib_params;
-using thorax::dig_calib_params;
+using scarab::get_calib_params;
+using scarab::dig_calib_params;
+using scarab::a2d;
 
 namespace locust
 {
@@ -19,7 +20,8 @@ namespace locust
     MT_REGISTER_GENERATOR(Digitizer, "digitizer");
 
     Digitizer::Digitizer( const std::string& aName ) :
-            Generator( aName )
+            Generator( aName ),
+            fADCValuesSigned( false )
     {
         fRequiredSignalState = Signal::kTime;
 
@@ -43,7 +45,7 @@ namespace locust
 
         get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
 
-        LMCDEBUG( lmclog, "Digitizer calibration parameters set:\n" << fParams );
+        LMCDEBUG( lmclog, "Digitizer calibration parameters set" );
 
         return true;
     }
@@ -69,21 +71,40 @@ namespace locust
         unsigned signalSize = aSignal->TimeSize();
 
         double* analogData = aSignal->SignalTime();
-//        uint64_t* digitizedData = new uint64_t[ signalSize ];        
-        uint8_t* digitizedData = new uint8_t[ signalSize ];
-
-        for( unsigned index = 0; index < signalSize; ++index )
+//        uint64_t* digitizedData = new uint64_t[ signalSize ];
+        if( fADCValuesSigned )
         {
-            digitizedData[ index ] = a2d( analogData[ index ], &fParams );
-            if( index < 100 )
+            int8_t* digitizedData = new int8_t[ signalSize ];
+
+            for( unsigned index = 0; index < signalSize; ++index )
             {
-                LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
-    //            printf("digitized data is %x\n", digitizedData[index]);
-    //            getchar();
+                digitizedData[ index ] = a2d< double, int8_t >( analogData[ index ], &fParams );
+                if( index < 100 )
+                {
+                    LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
+        //            printf("digitized data is %x\n", digitizedData[index]);
+        //            getchar();
+                }
             }
+            aSignal->ToDigital( digitizedData, signalSize );
+        }
+        else
+        {
+            uint8_t* digitizedData = new uint8_t[ signalSize ];
+
+            for( unsigned index = 0; index < signalSize; ++index )
+            {
+                digitizedData[ index ] = a2d< double, uint8_t >( analogData[ index ], &fParams );
+                if( index < 100 )
+                {
+                    LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (unsigned) digitizedData[ index ] );  // pls added (int)
+        //            printf("digitized data is %x\n", digitizedData[index]);
+        //            getchar();
+                }
+            }
+            aSignal->ToDigital( digitizedData, signalSize );
         }
 
-        aSignal->ToDigital( digitizedData, signalSize );
         return true;
     }
 

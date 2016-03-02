@@ -10,7 +10,7 @@
 
 #include "LMCGenerator.hh"
 
-#include "thorax_digital.hh"
+#include "digital.hh"
 
 namespace locust
 {
@@ -42,14 +42,30 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            const thorax::dig_calib_params& DigitizerParams() const;
-            thorax::dig_calib_params& DigitizerParams();
+            const scarab::dig_calib_params& DigitizerParams() const;
+            scarab::dig_calib_params& DigitizerParams();
+
+            void SetADCValuesSigned( bool aFlag );
+            bool GetADCValuesSigned() const;
 
         protected:
             bool DoGenerate( Signal* aSignal ) const;
 
-            struct thorax::dig_calib_params fParams;
+            struct scarab::dig_calib_params fParams;
+
+            bool fADCValuesSigned;
     };
+
+    inline void Digitizer::SetADCValuesSigned( bool aFlag )
+    {
+        fADCValuesSigned = aFlag;
+        return;
+    }
+
+    inline bool Digitizer::GetADCValuesSigned() const
+    {
+        return fADCValuesSigned;
+    }
 
 } /* namespace locust */
 

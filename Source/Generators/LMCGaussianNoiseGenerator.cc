@@ -150,8 +150,8 @@ namespace locust
         std::cout << "Seed set to " << fRNG->SeedString() << "\n";//  getchar();
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTime( index ) += fNormDist( *fRNG, fMean, LocalSigma );
-            if (index<10) printf("signal %d is %g\n", index, aSignal->SignalTime(index));
+            aSignal->SignalTime()[index] += fNormDist( *fRNG, fMean, LocalSigma );
+            if (index<10) printf("signal %d is %g\n", index, aSignal->SignalTime()[index]);
         }
         return true;
     }
@@ -160,8 +160,8 @@ namespace locust
     {
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {
-            aSignal->SignalFreq( index )[0] += fNormDist( *fRNG, fMean, fSigma );
-            aSignal->SignalFreq( index )[1] += fNormDist( *fRNG, fMean, fSigma );
+            aSignal->SignalFreq()[index][0] += fNormDist( *fRNG, fMean, fSigma );
+            aSignal->SignalFreq()[index][1] += fNormDist( *fRNG, fMean, fSigma );
         }
         return true;
     }

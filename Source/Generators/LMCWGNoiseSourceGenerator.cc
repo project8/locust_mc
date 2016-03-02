@@ -42,7 +42,7 @@ namespace locust
     {
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {
-            aSignal->SignalFreq( index ) += ???;
+            aSignal->SignalFreq()[index] += ???;
         }
         return true;
     }

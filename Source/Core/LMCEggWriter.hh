@@ -8,12 +8,17 @@
 #ifndef LMCEGGWRITER_HH_
 #define LMCEGGWRITER_HH_
 
-#include "Monarch.hpp"
+#include "M3Monarch.hh"
+
+#include "member_variables.hh"
 
 namespace locust
 {
     class ParamNode;
     class Signal;
+
+    class RunLengthCalculator;
+    class Digitizer;
 
     /*!
      @class EggWriter
@@ -27,7 +32,6 @@ namespace locust
      - "filename": string -- filename of the output egg file
      - "date": string -- date/time string
      - "description": string -- informative run description
-     - "run-type": unsigned -- set the run type
     */
     class EggWriter
     {
@@ -45,82 +49,31 @@ namespace locust
 
             bool Configure( const ParamNode* aNode );
 
-            const std::string& GetFilename() const;
-            void SetFilename( const std::string& filename );
-
-            const std::string& GetDate() const;
-            void SetDate( const std::string& date );
-
-            const std::string& GetDescription() const;
-            void SetDescription( const std::string& desc );
-
-            monarch::RunType GetRunType() const;
-            void SetRunType( monarch::RunType runType );
-
-            unsigned GetBitDepth() const;
-            bool SetBitDepth( unsigned bitDepth );
-
-            unsigned GetDataTypeSize() const;
-
-            double GetVoltageMin() const;
-            void SetVoltageMin( double vMin );
-
-            double GetVoltageRange() const;
-            void SetVoltageRange( double vRange );
-
-            double GetAcquisitionRate() const;
-            void SetAcquisitionRate( double rate );
-
-            double GetDuration() const;
-            void SetDuration( double duration );
-
-            unsigned GetRecordSize() const;
-            void SetRecordSize( unsigned size );
-
-        private:
-            State fState;
-
-            // This info will be configured directly
-            std::string fFilename;
-            std::string fDate;
-            std::string fDescription;
-            monarch::RunType fRunType;
-
-            // This info will come from the digitizer
-            unsigned fBitDepth;
-            unsigned fDataTypeSize;
-            double fVoltageMin;
-            double fVoltageRange;
-
-            // This info will come from the run-length calculator
-            double fAcquisitionRate; // MHz
-            double fDuration; // s
-            unsigned fRecordSize;
-
-            // Calculated at runtime
-            monarch::TimeType fRecordLength; // ns
+            mv_referrable( std::string, filename );
+            mv_referrable( std::string, date );
+            mv_referrable( std::string, description );
 
         public:
-            bool PrepareEgg();
+            bool PrepareEgg( const RunLengthCalculator* aRLC, const Digitizer* aDig );
 
             bool WriteRecord( const Signal* aSignal );
 
             bool FinalizeEgg();
 
-            monarch::Monarch* GetMonarch() const;
-
             void IncrementAcquisitionId();
 
+            mv_accessible_noset( monarch3::TimeType, record_length );
+            mv_accessible_noset( monarch3::RecordIdType, record_id );
+            mv_accessible_noset( monarch3::TimeType, record_time );
+            mv_accessible_noset( uint64_t, record_n_bytes );
+
         private:
-            monarch::Monarch* fMonarch;
+            monarch3::Monarch3* f_monarch;
+            monarch3::M3Stream* f_stream;
+            monarch3::M3Record* f_record;
 
-            monarch::MonarchRecordBytes* fRecord;
-
-            monarch::AcquisitionIdType fAcquisitionId;
-            monarch::RecordIdType fRecordCounter;
-            monarch::TimeType fRecordTime;
-
-            uint64_t fRecordNBytes;
+        private:
+            State f_state;
 
     };
 

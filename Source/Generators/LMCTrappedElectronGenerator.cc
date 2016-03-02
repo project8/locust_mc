@@ -177,7 +177,7 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
 //          if (fabs(acos(real_part1)/2./PI/time) > 50.e6)
 //            printf("bb freq is %g\n", fabs( acos(real_part1)/2./PI/time ) );
 //          printf("time is %g\n", time); getchar();
-          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part1);  
+          aSignal->SignalTime()[index] += TimeDependentAmplitude * (real_part1);
 //          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part2);  // signal from short.
 //          printf("now signal is %g\n\n", aSignal->SignalTime(index)); getchar();
 //          }  // lpf

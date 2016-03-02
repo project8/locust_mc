@@ -169,7 +169,7 @@ namespace locust
 //              printf("bbfreq is %g\n", BBFreq);
 //              printf("cyclotron freq is %g\n", this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy))); getchar();
 //              printf("amplitude is %g\n", TimeDependentAmplitude*TimeDependentAmplitude); getchar();
-              aSignal->SignalTime( index ) += TimeDependentAmplitude*cos(2.*PI*BBFreq*(time-ElectronStartTime));
+              aSignal->SignalTime()[index] += TimeDependentAmplitude*cos(2.*PI*BBFreq*(time-ElectronStartTime));
               }
         }
         delete RunLengthCalculator1;
@@ -182,8 +182,8 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {
-            aSignal->SignalFreq( index )[0] += 0.1*cos(2.*3.1415926*4000.*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6)); 
-            aSignal->SignalFreq( index )[1] += 0.1*sin(2.*3.1415926*4000.*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6)); 
+            aSignal->SignalFreq()[index][0] += 0.1*cos(2.*3.1415926*4000.*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->SignalFreq()[index][1] += 0.1*sin(2.*3.1415926*4000.*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
         }
         delete RunLengthCalculator1;
         return true;

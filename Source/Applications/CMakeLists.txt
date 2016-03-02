@@ -5,7 +5,7 @@ if( locust_mc_ENABLE_EXECUTABLES )
     )
     
     set( programs
- #       LocustSim
+        LocustSim
     )
     
     pbuilder_executables( programs lib_dependencies )
