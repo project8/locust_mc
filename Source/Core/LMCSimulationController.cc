@@ -9,12 +9,12 @@
 
 #include "LMCDigitizer.hh"
 #include "LMCGenerator.hh"
-#include "LMCLogger.hh"
+#include "Logger.hh"
 #include "LMCParam.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "SimulationController" );
+    LOGGER( lmclog, "SimulationController" );
 
     SimulationController::SimulationController() :
             fFirstGenerator( NULL ),
@@ -40,14 +40,14 @@ namespace locust
         // configure the run-length calculator
         if( ! fRunLengthCalc.Configure( aNode ) )
         {
-            LMCERROR( lmclog, "Error configuring the run length calculator" );
+            ERROR( lmclog, "Error configuring the run length calculator" );
             return false;
         }
 
         // configure the egg writer
         if( ! fEggWriter.Configure( aNode ) )
         {
-            LMCERROR( lmclog, "Error configuring the egg writer" );
+            ERROR( lmclog, "Error configuring the egg writer" );
             return false;
         }
 
@@ -76,25 +76,25 @@ namespace locust
 
     bool SimulationController::Prepare()
     {
-        LMCINFO( lmclog, "Preparing for run" );
+        INFO( lmclog, "Preparing for run" );
 
         if( ! fRunLengthCalc.VisitGenerators() )
         {
-            LMCERROR( lmclog, "Error while the run-length calculator was visiting generators" );
+            ERROR( lmclog, "Error while the run-length calculator was visiting generators" );
             return false;
         }
 
         // do the final determination of the run length
         if( ! fRunLengthCalc.CalculateRunLength() )
         {
-            LMCERROR( lmclog, "Error while the run-length calculator was calculating the run length" );
+            ERROR( lmclog, "Error while the run-length calculator was calculating the run length" );
             return false;
         }
 
         // prepare the egg file (writes header, allocates record memory, etc)
         if( ! fEggWriter.PrepareEgg( &fRunLengthCalc, FindDigitizer() ) )
         {
-            LMCERROR( lmclog, "Error preparing the egg file" );
+            ERROR( lmclog, "Error preparing the egg file" );
             return false;
         }
 
@@ -105,22 +105,22 @@ namespace locust
     {
         if( fFirstGenerator == NULL )
         {
-            LMCWARN( lmclog, "First generator is not present" );
+            WARN( lmclog, "First generator is not present" );
             return false;
         }
 
         unsigned nRecords = fRunLengthCalc.GetNRecords();
         unsigned recordSize = fRunLengthCalc.GetRecordSize();
 
-        LMCINFO( lmclog, "Commencing the run" );
+        INFO( lmclog, "Commencing the run" );
 
         for( unsigned record = 0; record < nRecords; ++record )
         {
-            LMCINFO( lmclog, "Simulating record " << record );
+            INFO( lmclog, "Simulating record " << record );
             Signal* simulatedSignal = fFirstGenerator->Run( recordSize );
             if( simulatedSignal == NULL )
             {
-                LMCERROR( lmclog, "Signal was not simulated" );
+                ERROR( lmclog, "Signal was not simulated" );
                 return false;
             }
 
@@ -129,20 +129,20 @@ namespace locust
             {
                 for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
                 {
-                    LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalS()[index] );  // pls added (int)
+                    WARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalS()[index] );  // pls added (int)
                 }
             }
             else
             {
                 for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
                 {
-                    LMCWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalUS()[index] );  // pls added (int)
+                    WARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalUS()[index] );  // pls added (int)
                 }
             }
 
             if( ! fEggWriter.WriteRecord( simulatedSignal ) )
             {
-                LMCERROR( lmclog, "Something went wrong while writing record " << record );
+                ERROR( lmclog, "Something went wrong while writing record " << record );
                 delete simulatedSignal;
                 return false;
             }
@@ -156,11 +156,11 @@ namespace locust
 
     bool SimulationController::Finalize()
     {
-        LMCINFO( lmclog, "Finalizing the run" );
+        INFO( lmclog, "Finalizing the run" );
 
         if(! fEggWriter.FinalizeEgg() )
         {
-            LMCERROR( lmclog, "Error while finalizing the egg file" );
+            ERROR( lmclog, "Error while finalizing the egg file" );
             return false;
         }
 

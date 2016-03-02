@@ -7,12 +7,12 @@
 
 #include "LMCTestSignalGenerator.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 namespace locust
 {
 
-    LMCLOGGER( lmclog, "TestSignalGenerator" );
+    LOGGER( lmclog, "TestSignalGenerator" );
 
     MT_REGISTER_GENERATOR(TestSignalGenerator, "test-signal");
 

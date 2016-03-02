@@ -8,7 +8,7 @@
 
 
 #include "LMCKassiopeiaGenerator.hh"
-#include "LMCLogger.hh"
+#include "Logger.hh"
 #include "LMCGlobals.hh"
 
 
@@ -48,7 +48,7 @@ using std::string;
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "KassiopeiaGenerator" );
+    LOGGER( lmclog, "KassiopeiaGenerator" );
 
     MT_REGISTER_GENERATOR(KassiopeiaGenerator, "kassiopeia");
 
@@ -135,7 +135,7 @@ namespace locust
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
-                LMCDEBUG( lmclog, "Domain is equal to time.");
+                DEBUG( lmclog, "Domain is equal to time.");
             }
             else if( domain == "freq" )
             {
@@ -143,7 +143,7 @@ namespace locust
             }
             else
             {
-                LMCERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                ERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
                 return false;
             }
         }
@@ -177,7 +177,7 @@ namespace locust
         }
         else
         {
-            LMCWARN( lmclog, "Unknown domain requested: " << aDomain );
+            WARN( lmclog, "Unknown domain requested: " << aDomain );
         }
         return;
     }

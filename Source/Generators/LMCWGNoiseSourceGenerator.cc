@@ -7,11 +7,11 @@
 
 #include "LMCWGNoiseSourceGenerator.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "WGNoiseSourceGenerator" );
+    LOGGER( lmclog, "WGNoiseSourceGenerator" );
 
     MT_REGISTER_GENERATOR(WGNoiseSourceGenerator, "noise-source");
 

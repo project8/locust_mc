@@ -8,11 +8,11 @@
 #include "LMCVisitor.hh"
 
 #include "LMCGenerator.hh"
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "GeneratorVisitor" );
+    LOGGER( lmclog, "GeneratorVisitor" );
 
     GeneratorVisitor::GeneratorVisitor()
     {
@@ -24,7 +24,7 @@ namespace locust
 
     void GeneratorVisitor::Visit( const Generator* aGen )
     {
-        LMCWARN( lmclog, "Generic generator-visit function called for generator <" << aGen->GetName() << ">" );
+        WARN( lmclog, "Generic generator-visit function called for generator <" << aGen->GetName() << ">" );
         return;
     }
 

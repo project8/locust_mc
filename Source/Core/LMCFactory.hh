@@ -10,7 +10,7 @@
 
 #include "LMCSingleton.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 #include <map>
 #include <string>
@@ -18,7 +18,7 @@
 
 namespace locust
 {
-    LMCLOGGER( lmclog_fact, "Factory" );
+    LOGGER( lmclog_fact, "Factory" );
 
     template< class XBaseType >
     class Factory;
@@ -91,7 +91,7 @@ namespace locust
         FactoryCIt it = fMap->find(a_class_name);
         if (it == fMap->end())
         {
-            LMCERROR( lmclog_fact, "Did not find Factory for <" << a_class_name << ">." );
+            ERROR( lmclog_fact, "Did not find Factory for <" << a_class_name << ">." );
             return NULL;
         }
 
@@ -104,7 +104,7 @@ namespace locust
         FactoryCIt it = fMap->find(a_class_name);
         if (it != fMap->end())
         {
-            LMCERROR( lmclog_fact, "Already have Factory RegisterClassed for <" << a_class_name << ">." );
+            ERROR( lmclog_fact, "Already have Factory RegisterClassed for <" << a_class_name << ">." );
             return;
         }
         fMap->insert(std::pair< std::string, const BaseRegistrar< XBaseType >* >(a_class_name, a_Registrar));

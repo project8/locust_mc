@@ -7,13 +7,13 @@
 
 #include "LMCGaussianNoiseGenerator.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 using std::string;
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "GaussianNoiseGenerator" );
+    LOGGER( lmclog, "GaussianNoiseGenerator" );
 
     MT_REGISTER_GENERATOR(GaussianNoiseGenerator, "gaussian-noise");
 
@@ -53,7 +53,7 @@ namespace locust
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
-                LMCDEBUG( lmclog, "Domain is equal to time.");
+                DEBUG( lmclog, "Domain is equal to time.");
             }
             else if( domain == "freq" )
             {
@@ -61,7 +61,7 @@ namespace locust
             }
             else
             {
-                LMCERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                ERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
                 return false;
             }
         }
@@ -124,7 +124,7 @@ namespace locust
         }
         else
         {
-            LMCWARN( lmclog, "Unknown domain requested: " << aDomain );
+            WARN( lmclog, "Unknown domain requested: " << aDomain );
         }
         return;
     }

@@ -7,12 +7,12 @@
 
 #include "LMCGenerator.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 #include "LMCSignal.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "Generator" );
+    LOGGER( lmclog, "Generator" );
 
     std::mt19937_64 Generator::fRNG;
 
@@ -48,7 +48,7 @@ namespace locust
     {
         if(! Generate( aSignal ) )
         {
-            LMCERROR( lmclog, "Signal generation failed" );
+            ERROR( lmclog, "Signal generation failed" );
             return false;
         }
         if( fNext != NULL ) fNext->Run( aSignal );
@@ -59,7 +59,7 @@ namespace locust
     {
         if( ! aSignal->ToState( fRequiredSignalState ) )
         {
-            LMCERROR( lmclog, "Unable to convert signal to state <" << fRequiredSignalState << ">" );
+            ERROR( lmclog, "Unable to convert signal to state <" << fRequiredSignalState << ">" );
             return false;
         }
         return DoGenerate( aSignal );

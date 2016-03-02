@@ -7,13 +7,13 @@
 
 #include "LMCReceiverTransferFunctionGenerator.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 using std::string;
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "ReceiverTransferFunctionGenerator" );
+    LOGGER( lmclog, "ReceiverTransferFunctionGenerator" );
 
     MT_REGISTER_GENERATOR(ReceiverTransferFunctionGenerator, "receiver-transfer-function");
 

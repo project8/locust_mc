@@ -7,7 +7,7 @@
 
 #include "LMCDigitizer.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 using scarab::get_calib_params;
 using scarab::dig_calib_params;
@@ -15,7 +15,7 @@ using scarab::a2d;
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "Digitizer" );
+    LOGGER( lmclog, "Digitizer" );
 
     MT_REGISTER_GENERATOR(Digitizer, "digitizer");
 
@@ -45,7 +45,7 @@ namespace locust
 
         get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
 
-        LMCDEBUG( lmclog, "Digitizer calibration parameters set" );
+        DEBUG( lmclog, "Digitizer calibration parameters set" );
 
         return true;
     }
@@ -81,7 +81,7 @@ namespace locust
                 digitizedData[ index ] = a2d< double, int8_t >( analogData[ index ], &fParams );
                 if( index < 100 )
                 {
-                    LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
+                    WARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
         //            printf("digitized data is %x\n", digitizedData[index]);
         //            getchar();
                 }
@@ -97,7 +97,7 @@ namespace locust
                 digitizedData[ index ] = a2d< double, uint8_t >( analogData[ index ], &fParams );
                 if( index < 100 )
                 {
-                    LMCWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (unsigned) digitizedData[ index ] );  // pls added (int)
+                    WARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (unsigned) digitizedData[ index ] );  // pls added (int)
         //            printf("digitized data is %x\n", digitizedData[index]);
         //            getchar();
                 }

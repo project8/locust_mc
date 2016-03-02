@@ -7,7 +7,7 @@
 
 #include "LMCParam.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 #include <sstream>
 using std::string;
@@ -24,7 +24,7 @@ using std::string;
 
 namespace locust
 {
-    LMCLOGGER( plog, "Param" );
+    LOGGER( plog, "Param" );
 
     unsigned Param::sIndentLevel = 0;
 
@@ -823,7 +823,7 @@ namespace locust
         FILE* t_config_file = fopen( aFilename.c_str(), "r" );
         if( t_config_file == NULL )
         {
-            LMCERROR( plog, "file <" << aFilename << "> did not open" );
+            ERROR( plog, "file <" << aFilename << "> did not open" );
             return NULL;
         }
         rapidjson::FileStream t_file_stream( t_config_file );
@@ -850,13 +850,13 @@ namespace locust
             }
             if( iChar == errorPos )
             {
-                LMCERROR( plog, "error parsing config file :\n" <<
+                ERROR( plog, "error parsing config file :\n" <<
                         '\t' << t_config_doc.GetParseError() << '\n' <<
                         "\tThe error was reported at line " << newlineCount << ", character " << errorPos - lastNewlinePos );
             }
             else
             {
-                LMCERROR( plog, "error parsing config file :\n" <<
+                ERROR( plog, "error parsing config file :\n" <<
                         '\t' << t_config_doc.GetParseError() <<
                         "\tend of file reached before error location was found" );
             }
@@ -873,7 +873,7 @@ namespace locust
         rapidjson::Document t_config_doc;
         if( t_config_doc.Parse<0>( aJSONString.c_str() ).HasParseError() )
         {
-            LMCERROR( plog, "error parsing string:\n" << t_config_doc.GetParseError() );
+            ERROR( plog, "error parsing string:\n" << t_config_doc.GetParseError() );
             return NULL;
         }
         return ParamInputJSON::ReadDocument( t_config_doc );
@@ -961,7 +961,7 @@ namespace locust
             (*t_config_value) << aValue.GetDouble();
             return t_config_value;
         }
-        LMCWARN( plog, "(config_reader_json) unknown type; returning null value" );
+        WARN( plog, "(config_reader_json) unknown type; returning null value" );
         return new Param();
     }
 
@@ -977,14 +977,14 @@ namespace locust
     {
         if( aFilename.empty() )
         {
-            LMCERROR( plog, "Filename cannot be an empty string" );
+            ERROR( plog, "Filename cannot be an empty string" );
             return false;
         }
 
         FILE* file = fopen( aFilename.c_str(), "w" );
         if( file == NULL )
         {
-            LMCERROR( plog, "Unable to open file: " << aFilename );
+            ERROR( plog, "Unable to open file: " << aFilename );
             return false;
         }
 
@@ -1002,7 +1002,7 @@ namespace locust
 
         if (! ParamOutputJSON::WriteParam( toWrite, writer ) )
         {
-            LMCERROR( plog, "Error while writing file" );
+            ERROR( plog, "Error while writing file" );
             delete writer;
             return false;
         }
@@ -1014,7 +1014,7 @@ namespace locust
     bool ParamOutputJSON::WriteParam( const Param& toWrite, RJWriter* writer )
     {
         writer->Null();
-        LMCWARN( plog, "writing null" );
+        WARN( plog, "writing null" );
         return true;
     }
     bool ParamOutputJSON::WriteParam( const ParamValue& toWrite, RJWriter* writer )
@@ -1029,7 +1029,7 @@ namespace locust
         {
             if( ! ParamOutputJSON::WriteParam( *(*it), writer ) )
             {
-                LMCERROR( plog, "Error while writing parameter array" );
+                ERROR( plog, "Error while writing parameter array" );
                 return false;
             }
         }
@@ -1044,7 +1044,7 @@ namespace locust
             writer->String( it->first.c_str() );
             if( ! ParamOutputJSON::WriteParam( *(it->second), writer ) )
             {
-                LMCERROR( plog, "Error while writing parameter node" );
+                ERROR( plog, "Error while writing parameter node" );
                 return false;
             }
         }

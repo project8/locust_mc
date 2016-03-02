@@ -7,11 +7,11 @@
 
 #include "LMCSignal.hh"
 
-#include "LMCLogger.hh"
+#include "Logger.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "Signal" );
+    LOGGER( lmclog, "Signal" );
 
     Signal::Signal() :
             fState( kNotInitialized ),
@@ -51,7 +51,7 @@ namespace locust
         fState = kTime;  // pls confused here.
 //        fState = kFreq;
 
-        LMCDEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
+        DEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
 
         return true;
     }
@@ -256,7 +256,7 @@ namespace locust
     {
         if( fState == kNotInitialized )
         {
-            LMCERROR( lmclog, "Signal is not initialized" );
+            ERROR( lmclog, "Signal is not initialized" );
             return false;
         }
         if( fState == aState ) return true;
@@ -264,10 +264,10 @@ namespace locust
         if( aState == kFreq ) return FFTToFreq();
         if( aState == kDigital )
         {
-            LMCERROR( lmclog, "Please use Signal::ToDigital to convert to a digital signal" );
+            ERROR( lmclog, "Please use Signal::ToDigital to convert to a digital signal" );
             return false;
         }
-        LMCERROR( lmclog, "Unknown state requested: " << aState );
+        ERROR( lmclog, "Unknown state requested: " << aState );
         return false;
     }
 
@@ -311,7 +311,7 @@ namespace locust
 
     bool Signal::FFTToTime()
     {
-        LMCDEBUG( lmclog, "Performing reverse FFT to the time domain" );
+        DEBUG( lmclog, "Performing reverse FFT to the time domain" );
         fftw_execute( fPlanToTime );
         fState = kTime;
         return true;
@@ -319,7 +319,7 @@ namespace locust
 
     bool Signal::FFTToFreq()
     {
-        LMCDEBUG( lmclog, "Performing forward FFT to frequency domain" );
+        DEBUG( lmclog, "Performing forward FFT to frequency domain" );
         fftw_execute( fPlanToFreq );
         fState = kFreq;
         return true;  // pls
