@@ -17,10 +17,8 @@ namespace locust
     LMCLOGGER( lmclog, "GeneratorToolbox" );
 
     GeneratorToolbox::GeneratorToolbox() :
-            fFirstGenerator( NULL ),
-            fRNG()
+            fFirstGenerator( NULL )
     {
-        fRNG.Reseed();
     }
 
     GeneratorToolbox::~GeneratorToolbox()
@@ -94,7 +92,6 @@ namespace locust
         {
             LMCINFO( lmclog, "Configuring generator <" << nextGenerator->GetName() << ">" );
             nextGenerator->Configure( aNode->NodeAt( nextGenerator->GetName() ) );
-            nextGenerator->SetRNG( &fRNG );
             nextGenerator = nextGenerator->GetNextGenerator();
         }
 

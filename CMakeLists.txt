@@ -13,6 +13,9 @@ include( PackageBuilder )
 
 pbuilder_prepare_project()
 
+
+set_option( USE_CPP11 TRUE )
+
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 
 # cxx flags to avoid incompatibility between gcc 5 and gcc <5.
@@ -158,26 +161,6 @@ include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 pbuilder_add_ext_libraries( "m" )
 
 include_directories( ${PROJECT_SOURCE_DIR}/RapidJSON )
-
-add_subdirectory( RandomLib )
-include( ${CMAKE_BINARY_DIR}/RandomLib/randomlib-config.cmake )
-include_directories( ${RandomLib_INCLUDE_DIRS} )
-link_directories( ${RandomLib_LIBRARY_DIRS} )
-pbuilder_add_ext_libraries( ${RandomLib_LIBRARIES} )
-message( STATUS "randomlib library dirs: ${RandomLib_LIBRARY_DIRS}" )
-# add to the RPATH to be used when installing, but only if it's not a system directory
-list( FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${RandomLib_LIBRARY_DIRS}" isSystemDir )
-message( STATUS "is system dir: ${isSystemDir}" )
-if( "${isSystemDir}" STREQUAL "-1" )
-   message( STATUS "appending to rpath" )
-   list( APPEND CMAKE_INSTALL_RPATH ${RandomLib_LIBRARY_DIRS} )
-endif( "${isSystemDir}" STREQUAL "-1" )
-
-#include_directories( ${PROJECT_SOURCE_DIR}/MTwist )
-#set( MTWIST_SOURCE_FILES
-#    ${PROJECT_SOURCE_DIR}/MTwist/mtwist.c
-#    ${PROJECT_SOURCE_DIR}/MTwist/randistrs.c
-#)
 
 pbuilder_add_submodule( Scarab Scarab/library )
 

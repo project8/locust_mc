@@ -17,7 +17,6 @@ namespace locust
     LMCLOGGER( lmclog, "SimulationController" );
 
     SimulationController::SimulationController() :
-            fRNG(),
             fFirstGenerator( NULL ),
             fRunLengthCalc(),
             fEggWriter()
@@ -57,13 +56,13 @@ namespace locust
 
     void SimulationController::SetRNGSeed(int seed)
     {
-        fRNG.Reseed( seed );
+        Generator::RNG().seed( seed );
         return;
     }
 
     void SimulationController::SetRNGSeed()
     {
-        fRNG.Reseed( RandomLib::Random::SeedWord() );
+        Generator::RNG().seed();
         return;
     }
 
@@ -78,13 +77,6 @@ namespace locust
     bool SimulationController::Prepare()
     {
         LMCINFO( lmclog, "Preparing for run" );
-
-        Generator* nextGenerator = fFirstGenerator;
-        while( nextGenerator != NULL )
-        {
-            nextGenerator->SetRNG( &fRNG );
-            nextGenerator = nextGenerator->GetNextGenerator();
-        }
 
         if( ! fRunLengthCalc.VisitGenerators() )
         {

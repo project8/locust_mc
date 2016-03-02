@@ -10,8 +10,6 @@
 
 #include "LMCGenerator.hh"
 
-#include "RandomLib/NormalDistribution.hpp"
-
 namespace locust
 {
 

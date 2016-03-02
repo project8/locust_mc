@@ -19,7 +19,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCVisitor.hh
     
     Generators/LMCDigitizer.hh
- #   Generators/LMCGaussianNoiseGenerator.hh
+    Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCTestSignalGenerator.hh
     Generators/LMCBasebandTrackGenerator.hh
     Generators/LMCReceiverTransferFunctionGenerator.hh
@@ -45,7 +45,7 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCVisitor.cc
 
     Generators/LMCDigitizer.cc
- #   Generators/LMCGaussianNoiseGenerator.cc
+    Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCTestSignalGenerator.cc
     Generators/LMCBasebandTrackGenerator.cc
     Generators/LMCReceiverTransferFunctionGenerator.cc

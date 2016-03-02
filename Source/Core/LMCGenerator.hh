@@ -13,7 +13,7 @@
 #include "LMCParam.hh"
 #include "LMCSignal.hh"
 
-#include "RandomLib/Random.hpp"
+#include <random>
 
 namespace locust
 {
@@ -37,11 +37,10 @@ namespace locust
             Signal::State GetRequiredSignalState() const;
             void SetRequiredSignalState( Signal::State state );
 
-            void SetRNG( RandomLib::Random* aRNG );
-            RandomLib::Random* GetRNG() const;
-
             Generator* GetNextGenerator() const;
             void SetNextGenerator( Generator* aGenerator );
+
+            static std::mt19937_64& RNG();
 
         protected:
             bool Generate( Signal* aSignal ) const;
@@ -51,9 +50,9 @@ namespace locust
 
             Signal::State fRequiredSignalState;
 
-            RandomLib::Random* fRNG;
-
             Generator* fNext;
+
+            static std::mt19937_64 fRNG;
     };
 
 

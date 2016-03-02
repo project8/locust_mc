@@ -14,10 +14,16 @@ namespace locust
 {
     LMCLOGGER( lmclog, "Generator" );
 
+    std::mt19937_64 Generator::fRNG;
+
+    std::mt19937_64& Generator::RNG()
+    {
+        return Generator::fRNG;
+    }
+
     Generator::Generator( const std::string& aName ) :
             fName( aName ),
             fRequiredSignalState( Signal::kFreq ),  // pls confused here.
-            fRNG( NULL ),
             fNext( NULL )
     {
     }
@@ -79,17 +85,6 @@ namespace locust
     {
         fRequiredSignalState = state;
         return;
-    }
-
-    void Generator::SetRNG( RandomLib::Random* aRNG )
-    {
-        fRNG = aRNG;
-        return;
-    }
-
-    RandomLib::Random* Generator::GetRNG() const
-    {
-        return fRNG;
     }
 
     Generator* Generator::GetNextGenerator() const

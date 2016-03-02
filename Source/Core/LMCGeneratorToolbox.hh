@@ -8,8 +8,6 @@
 #ifndef LMCGENERATORTOOLBOX_HH_
 #define LMCGENERATORTOOLBOX_HH_
 
-#include "RandomLib/Random.hpp"
-
 namespace locust
 {
     class Generator;
@@ -44,8 +42,6 @@ namespace locust
             void ConfigureGenerators( Generator* aGen );
 
             Generator* fFirstGenerator;
-
-            RandomLib::Random fRNG;
 
     };
 
