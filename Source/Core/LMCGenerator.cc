@@ -7,7 +7,7 @@
 
 #include "LMCGenerator.hh"
 
-#include "Logger.hh"
+#include "logger.hh"
 #include "LMCSignal.hh"
 
 namespace locust

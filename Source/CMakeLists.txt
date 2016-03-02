@@ -3,10 +3,8 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCGlobals.hh
 #    Core/LMCConstants.hh
 #    Core/LMCDefaultConfig.hh
-    Core/LMCDestroyer.hh
     Core/LMCEggWriter.hh
     Core/LMCException.hh
-    Core/LMCFactory.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
     Core/LMCParam.hh
@@ -14,7 +12,6 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
     Core/LMCSimulationController.hh
-    Core/LMCSingleton.hh
     Core/LMCVisitor.hh
     
     Generators/LMCDigitizer.hh

@@ -9,7 +9,7 @@
 
 #include "LMCDigitizer.hh"
 #include "LMCGenerator.hh"
-#include "Logger.hh"
+#include "logger.hh"
 #include "LMCParam.hh"
 
 namespace locust

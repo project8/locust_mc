@@ -7,7 +7,7 @@
 
 #include "LMCDigitizer.hh"
 
-#include "Logger.hh"
+#include "logger.hh"
 
 using scarab::get_calib_params;
 using scarab::dig_calib_params;

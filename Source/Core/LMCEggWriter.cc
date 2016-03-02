@@ -8,7 +8,7 @@
 #include "LMCEggWriter.hh"
 
 #include "LMCDigitizer.hh"
-#include "Logger.hh"
+#include "logger.hh"
 #include "LMCParam.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCSignal.hh"

@@ -7,10 +7,11 @@
 
 #include "LMCGeneratorToolbox.hh"
 
-#include "LMCFactory.hh"
 #include "LMCGenerator.hh"
-#include "Logger.hh"
+#include "logger.hh"
 #include "LMCParam.hh"
+
+#include "factory.hh"
 
 namespace locust
 {
@@ -39,7 +40,7 @@ namespace locust
 
         INFO( lmclog, "Creating generators" );
 
-        Factory< Generator >* genFactory = Factory< Generator >::GetInstance();
+        scarab::factory< Generator >* genFactory = scarab::factory< Generator >::get_instance();
 
         const ParamArray* generatorList = aNode->ArrayAt( "generators" );
         if( generatorList == NULL )
@@ -61,7 +62,7 @@ namespace locust
 //                DEBUG( lmclog, "Reading in reasonable generator: " << (*it)->AsValue().Get() );
 //            }
 
-            Generator* newGenerator = genFactory->Create( (*it)->AsValue().Get() );
+            Generator* newGenerator = genFactory->create( (*it)->AsValue().Get() );
 //            DEBUG( lmclog, "And the new generator is ... " << newGenerator->GetName());
             if( newGenerator == NULL )
             {

@@ -5,12 +5,13 @@
  *      Author: nsoblath
  */
 
-#include "../Core/LMCConfigurator.hh"
+#include "LMCConfigurator.hh"
 //#include "LMCDefaultConfig.hh"
-#include "../Core/LMCException.hh"
-#include "../Core/LMCGeneratorToolbox.hh"
-#include "../Core/LMCLogger.hh"
-#include "../Core/LMCSimulationController.hh"
+#include "LMCException.hh"
+#include "LMCGeneratorToolbox.hh"
+#include "LMCSimulationController.hh"
+
+#include "logger.hh"
 
 using namespace locust;
 

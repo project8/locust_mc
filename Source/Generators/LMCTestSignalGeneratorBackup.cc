@@ -7,7 +7,7 @@
 
 #include "LMCTestSignalGenerator.hh"
 
-#include "Logger.hh"
+#include "logger.hh"
 
 namespace locust
 {

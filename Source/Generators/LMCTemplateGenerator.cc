@@ -7,7 +7,7 @@
 
 #include "LMC[name]Generator.hh"
 
-#include "Logger.hh"
+#include "logger.hh"
 
 namespace locust
 {

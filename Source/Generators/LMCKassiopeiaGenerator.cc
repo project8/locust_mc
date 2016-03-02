@@ -8,7 +8,7 @@
 
 
 #include "LMCKassiopeiaGenerator.hh"
-#include "Logger.hh"
+#include "logger.hh"
 #include "LMCGlobals.hh"
 
 

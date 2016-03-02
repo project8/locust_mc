@@ -7,7 +7,7 @@
 
 #include "LMCReceiverTransferFunctionGenerator.hh"
 
-#include "Logger.hh"
+#include "logger.hh"
 
 using std::string;
 

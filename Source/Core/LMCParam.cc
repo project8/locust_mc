@@ -7,7 +7,7 @@
 
 #include "LMCParam.hh"
 
-#include "Logger.hh"
+#include "logger.hh"
 
 #include <sstream>
 using std::string;
