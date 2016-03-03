@@ -1,0 +1,3 @@
+[submodule "kassiopeia"]
+	path = kassiopeia
+	url = git://github.com/project8/kassiopeia.git
