@@ -14,12 +14,13 @@ include( PackageBuilder )
 pbuilder_prepare_project()
 
 
-set_option( USE_CPP11 TRUE )
+set_option( USE_CPP11 FALSE )
+set( CMAKE_CXX_FLAGS "-std=c++11")  # workaround in case the above line does not work.
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 
 # cxx flags to avoid incompatibility between gcc 5 and gcc <5.
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -Wall -Wextra -D_GLIBCXX_USE_CXX11_ABI=0")
+#set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} -Wall -Wextra -D_GLIBCXX_USE_CXX11_ABI=0")
 
 
 list ( APPEND CMAKE_MODULE_PATH 
@@ -179,7 +180,7 @@ include_directories (${FFTW_INCLUDE_DIR})
 
 
 IF (locust_mc_BUILD_WITH_KASSIOPEIA)
-
+set( CMAKE_CXX_FLAGS " ")
     add_subdirectory( kassiopeia/Kommon )
     #include_directories( ${Kommon_INCLUDE_DIRS} )
     #link_directories( ${Kommon_LIBRARY_DIRS} )
@@ -221,7 +222,7 @@ IF (locust_mc_BUILD_WITH_KASSIOPEIA)
     pbuilder_add_ext_libraries( ${Kassiopeia_LIBRARIES} )
     message( STATUS "Kassiopeia_LIBRARIES: ${Kassiopeia_LIBRARIES}" )
 
-
+set( CMAKE_CXX_FLAGS "-std=c++11") # switch cpp11 support back on.
 ENDIF ( locust_mc_BUILD_WITH_KASSIOPEIA )
 
 
