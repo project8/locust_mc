@@ -20,7 +20,7 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCBasebandTrackGenerator.hh
     Generators/LMCReceiverTransferFunctionGenerator.hh
     Generators/LMCTrappedElectronGenerator.hh
-#    Generators/LMCKassiopeiaGenerator.hh
+    Generators/LMCKassiopeiaGenerator.hh
 #    Generators/LMCSingleAmpSim.hh
 )
 
@@ -45,7 +45,7 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCBasebandTrackGenerator.cc
     Generators/LMCReceiverTransferFunctionGenerator.cc
     Generators/LMCTrappedElectronGenerator.cc
-#    Generators/LMCKassiopeiaGenerator.cc
+    Generators/LMCKassiopeiaGenerator.cc
 #    Generators/LMCSingleAmpSim.cc
 )
 

@@ -153,32 +153,6 @@ include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 
 
 
-#######################
-# locust dependencies #
-#######################
-
-
-
-pbuilder_add_ext_libraries( "m" )
-
-include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
-
-pbuilder_add_submodule( Scarab Scarab/library )
-
-pbuilder_add_submodule( Monarch monarch )
-
-# FFTW
-find_package(FFTW REQUIRED)
-if (NOT FFTW_THREADS_FOUND)
-  message(FATAL "FFTW_THREADS not found")
-endif (NOT FFTW_THREADS_FOUND)
-    pbuilder_add_ext_libraries (${FFTW_LIBRARIES})
-    set (FFTW_NTHREADS 1 CACHE STRING "Number of threads to use for FFTW processes")
-    add_definitions (-DFFTW_NTHREADS=${FFTW_NTHREADS})
-    message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
-include_directories (${FFTW_INCLUDE_DIR})
-
-
 IF (locust_mc_BUILD_WITH_KASSIOPEIA)
 set( CMAKE_CXX_FLAGS " ")
     add_subdirectory( kassiopeia/Kommon )
@@ -224,6 +198,35 @@ set( CMAKE_CXX_FLAGS " ")
 
 set( CMAKE_CXX_FLAGS "-std=c++11") # switch cpp11 support back on.
 ENDIF ( locust_mc_BUILD_WITH_KASSIOPEIA )
+
+
+
+
+
+#######################
+# locust dependencies #
+#######################
+
+
+
+pbuilder_add_ext_libraries( "m" )
+
+include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
+
+pbuilder_add_submodule( Scarab Scarab/library )
+
+pbuilder_add_submodule( Monarch monarch )
+
+# FFTW
+find_package(FFTW REQUIRED)
+if (NOT FFTW_THREADS_FOUND)
+  message(FATAL "FFTW_THREADS not found")
+endif (NOT FFTW_THREADS_FOUND)
+    pbuilder_add_ext_libraries (${FFTW_LIBRARIES})
+    set (FFTW_NTHREADS 1 CACHE STRING "Number of threads to use for FFTW processes")
+    add_definitions (-DFFTW_NTHREADS=${FFTW_NTHREADS})
+    message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
+include_directories (${FFTW_INCLUDE_DIR})
 
 
 ###########

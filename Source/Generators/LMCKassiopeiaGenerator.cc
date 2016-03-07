@@ -187,76 +187,13 @@ namespace locust
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    void* thread1(void*)
-    {
-    while(1){
-//    printf("Hello!!\n");
-    printf("about to lock the mutex\n");
-    pthread_mutex_lock (&mymutex);
-    testvar = -100000.;
-    pthread_mutex_unlock (&mymutex);
-
-    }
-    return 0;
-    }
-
-
-    void* thread2(void*)
-    {
-    while(1){
-    printf("How are you?\n");
-    pthread_mutex_lock (&mymutex);
-    testvar += 1.;
-    printf("testvar is %f\n", testvar);
-    }
-    return 0;
-    }
-
-
-    void* thread3(void*)
-    {
-    while(1){
-    printf("This is the last thread?\n");
-    pthread_mutex_lock (&mymutex);
-    testvar += 1.;
-    printf("testvar is %f\n", testvar);
-    }
-    return 0;
-    }
-
-
-
-
-    int threadtest()
-    {
-    pthread_t tid1,tid2,tid3;
-
-    pthread_create(&tid1,NULL,thread1 ,NULL);
-    pthread_create(&tid2,NULL,thread2,NULL);
-    pthread_create(&tid3,NULL,thread3,NULL);
-    pthread_join(tid1,NULL);
-    pthread_join(tid2,NULL);
-    pthread_join(tid3,NULL);
-    return 0;
-    }
-
-
-    void* timetrace(void*)
-    {
-    while(1){
-    printf("timetrace says Z is %f\n", Z);
-    pthread_mutex_lock (&mymutex);
-    }
-    return 0;
-    }
-
-
-
 
     bool KassiopeiaGenerator::DoGenerateTime( Signal* aSignal ) const
     {
-//    	threadtest();
-//        Kassiopeia::mainmsg( katrin::eNormal ) << "Hello world from Kassiopeia, inside Locust. " << katrin::eom;  getchar();
+
+
+
+        Kassiopeia::mainmsg( katrin::eNormal ) << "Hello world from Kassiopeia, inside Locust. " << katrin::eom;  getchar();
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         double dt = RunLengthCalculator1->GetBinWidth(); // seconds
         double phi_t = 0.; // antenna voltage phase in radians.
@@ -266,28 +203,39 @@ namespace locust
         pthread_create(&tid1,NULL,KassiopeiaInit ,NULL);
 
 
+
 //        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
             for( unsigned index = 0; index < 45; ++index )
         {
+
+
         	// lock access to the mutex, unless Kassiopeia needs to write to the globals.
             pthread_mutex_lock (&mymutex);
             // stop here and check whether Kassiopeia sent out a tick signaling that the globals need to be digitized.
             pthread_cond_wait(&tick, &mymutex);
             printf("Locust says:  index is %d and t is %g and sqrtLarmorPower is %g\n", index, t, pow(LarmorPower, 0.5));
+
             fprime = fcyc*GammaZ*(1.-zvelocity/2.99792e8);
             phi_t += 2.*PI*fprime*dt;
             phiLO_t += -2.*PI*LO_FREQUENCY*dt;
-            aSignal->SignalTime( index ) +=
+
+            aSignal->SignalTime()[ index ] +=
             		pow(LarmorPower,0.5)*(cos(phi_t)*cos(phiLO_t) - sin(phi_t)*sin(phiLO_t));
+
             pthread_mutex_unlock (&mymutex);
 
  //           if (index<10) printf("signal %d is %g\n", index, aSignal->SignalTime(index));
+
+
+
         }
 
 
 
         pthread_join(tid1,NULL);  // This makes sure Locust does not just proceed without Kassiopeia.
         delete RunLengthCalculator1;
+
+
         return true;
     }
 
