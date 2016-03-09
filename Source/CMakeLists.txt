@@ -50,6 +50,16 @@ set( LOCUST_MC_SOURCE_FILES
 )
 
 
-pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
 
+pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
+SET_TARGET_PROPERTIES(LocustMC PROPERTIES LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
+#target_link_libraries( LocustMC ${EXTERNAL_LIBRARIES} )
+#target_link_libraries( LocustMC ${KommonCore} )
+#target_link_libraries( LocustMC ${KommonRoot} )
+#target_link_libraries( LocustMC ${KommonGsl} )
+#target_link_libraries( LocustMC ${KommonVtk} )
+#target_link_libraries( LocustMC ${KGeoBagCore} )
+#target_link_libraries( LocustMC ${KEMCore} )
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
+
+

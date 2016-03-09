@@ -152,6 +152,35 @@ include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 
 
 
+pbuilder_add_submodule( Scarab Scarab/library )
+
+pbuilder_add_submodule( Monarch monarch )
+
+
+
+
+
+#######################
+# locust dependencies #
+#######################
+
+
+
+include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
+
+# FFTW
+find_package(FFTW REQUIRED)
+if (NOT FFTW_THREADS_FOUND)
+  message(FATAL "FFTW_THREADS not found")
+endif (NOT FFTW_THREADS_FOUND)
+    pbuilder_add_ext_libraries (${FFTW_LIBRARIES})
+    set (FFTW_NTHREADS 1 CACHE STRING "Number of threads to use for FFTW processes")
+    add_definitions (-DFFTW_NTHREADS=${FFTW_NTHREADS})
+    message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
+message (STATUS "FFTW_LIBRARIES is ${FFTW_LIBRARIES}")
+include_directories (${FFTW_INCLUDE_DIR})
+
+
 
 IF (locust_mc_BUILD_WITH_KASSIOPEIA)
 set( CMAKE_CXX_FLAGS " ")
@@ -159,8 +188,9 @@ set( CMAKE_CXX_FLAGS " ")
     #include_directories( ${Kommon_INCLUDE_DIRS} )
     #link_directories( ${Kommon_LIBRARY_DIRS} )
     file(GLOB_RECURSE Kommon_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/Kommon/*.so)
-    pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
-    
+#    pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
+#    pbuilder_add_ext_libraries( ${KommonCore} )
+    message( STATUS "Kommon libraries: ${Kommon_LIBRARIES}" )    
     
     set( BUILD_KOMMON ON CACHE BOOL "${BUILD_KOMMON_DESC} (Required)" FORCE )
     set( Kommon_USE_GSL ON CACHE BOOL "(Required)" FORCE )
@@ -170,16 +200,19 @@ set( CMAKE_CXX_FLAGS " ")
     include_directories( ${KGeoBag_INCLUDE_DIRS} )
     link_directories( ${KGeoBag_LIBRARY_DIRS} )
     file(GLOB_RECURSE KGeoBag_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/KGeoBag/*.so)
-    pbuilder_add_ext_libraries( ${KGeoBag_LIBRARIES} )
-    #message( STATUS "Kommonlib include dirs: ${KGeoBag_INCLUDE_DIRS}" )
+#    pbuilder_add_ext_libraries( ${KGeoBag_LIBRARIES} )
+#    pbuilder_add_ext_libraries( ${KGeoBagCore} )
+    message( STATUS "KGeoBag libraries: ${KGeoBag_LIBRARIES}" )
     
+
     add_subdirectory( kassiopeia/KEMField )
     include_directories( ${KEMField_INCLUDE_DIRS} )
     link_directories( ${KEMField_LIBRARY_DIRS} )
     file(GLOB_RECURSE KEMField_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/KEMField/*.so)
-    pbuilder_add_ext_libraries( ${KEMField_LIBRARIES} )
-    #message( STATUS "KEMField include dirs: ${KEMField_INCLUDE_DIRS}" )
-    
+#    pbuilder_add_ext_libraries( ${KEMField_LIBRARIES} )
+#    pbuilder_add_ext_libraries( ${KEMCore} )
+    message( STATUS "KEMField libraries: ${KEMField_LIBRARIES}" )
+
     
     set( BUILD_KOMMON ON CACHE BOOL "${BUILD_KOMMON_DESC} (Required)" FORCE )
     set( BUILD_KGEOBAG ON CACHE BOOL "${BUILD_KGEOBAG_DESC} (Required)" FORCE )
@@ -193,40 +226,17 @@ set( CMAKE_CXX_FLAGS " ")
     include_directories( ${Kassiopeia_INCLUDE_DIRS} )
     link_directories( ${Kassiopeia_LIBRARY_DIRS} )
     file(GLOB_RECURSE Kassiopeia_LIBRARIES ${CMAKE_BINARY_DIR}/kassiopeia/Kassiopeia/*.so)
-    pbuilder_add_ext_libraries( ${Kassiopeia_LIBRARIES} )
+#    pbuilder_add_ext_libraries( ${Kassiopeia_LIBRARIES} )
     message( STATUS "Kassiopeia_LIBRARIES: ${Kassiopeia_LIBRARIES}" )
 
 set( CMAKE_CXX_FLAGS "-std=c++11") # switch cpp11 support back on.
 ENDIF ( locust_mc_BUILD_WITH_KASSIOPEIA )
 
+message( STATUS "cmake_binary_dir is  ${CMAKE_BINARY_DIR}" )
+    message(STATUS "cmake_exe_linker_flags:  ${CMAKE_EXE_LINKER_FLAGS}" )
 
+#pbuilder_add_ext_libraries( "m" )
 
-
-
-#######################
-# locust dependencies #
-#######################
-
-
-
-pbuilder_add_ext_libraries( "m" )
-
-include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
-
-pbuilder_add_submodule( Scarab Scarab/library )
-
-pbuilder_add_submodule( Monarch monarch )
-
-# FFTW
-find_package(FFTW REQUIRED)
-if (NOT FFTW_THREADS_FOUND)
-  message(FATAL "FFTW_THREADS not found")
-endif (NOT FFTW_THREADS_FOUND)
-    pbuilder_add_ext_libraries (${FFTW_LIBRARIES})
-    set (FFTW_NTHREADS 1 CACHE STRING "Number of threads to use for FFTW processes")
-    add_definitions (-DFFTW_NTHREADS=${FFTW_NTHREADS})
-    message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
-include_directories (${FFTW_INCLUDE_DIR})
 
 
 ###########
@@ -240,6 +250,9 @@ add_subdirectory( Source )
 ###############
 
 add_subdirectory( Source/Applications )
+
+
+
 
 
 

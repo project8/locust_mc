@@ -188,6 +188,74 @@ namespace locust
     }
 
 
+
+    void* thread1(void*)
+    {
+    while(1){
+//    printf("Hello!!\n");
+    printf("about to lock the mutex\n");
+    pthread_mutex_lock (&mymutex);
+    testvar = -100000.;
+    pthread_mutex_unlock (&mymutex);
+
+    }
+    return 0;
+    }
+
+
+    void* thread2(void*)
+    {
+    while(1){
+    printf("How are you?\n");
+    pthread_mutex_lock (&mymutex);
+    testvar += 1.;
+    printf("testvar is %f\n", testvar);
+    }
+    return 0;
+    }
+
+
+    void* thread3(void*)
+    {
+    while(1){
+    printf("This is the last thread?\n");
+    pthread_mutex_lock (&mymutex);
+    testvar += 1.;
+    printf("testvar is %f\n", testvar);
+    }
+    return 0;
+    }
+
+
+
+
+    int threadtest()
+    {
+    pthread_t tid1,tid2,tid3;
+
+    pthread_create(&tid1,NULL,thread1 ,NULL);
+    pthread_create(&tid2,NULL,thread2,NULL);
+    pthread_create(&tid3,NULL,thread3,NULL);
+    pthread_join(tid1,NULL);
+    pthread_join(tid2,NULL);
+    pthread_join(tid3,NULL);
+    return 0;
+    }
+
+
+    void* timetrace(void*)
+    {
+    while(1){
+    printf("timetrace says Z is %f\n", Z);
+    pthread_mutex_lock (&mymutex);
+    }
+    return 0;
+    }
+
+
+
+
+
     bool KassiopeiaGenerator::DoGenerateTime( Signal* aSignal ) const
     {
 
@@ -199,15 +267,19 @@ namespace locust
         double phi_t = 0.; // antenna voltage phase in radians.
         double phiLO_t = 0.; // voltage phase of LO;
         double fprime = 0.;  // Doppler shifted cyclotron frequency in Hz.
-    	pthread_t tid1;
+
+
+
+        pthread_t tid1;
         pthread_create(&tid1,NULL,KassiopeiaInit ,NULL);
 
 
+//printf("locust is going to wait right here.\n"); getchar();
 
 //        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+
             for( unsigned index = 0; index < 45; ++index )
         {
-
 
         	// lock access to the mutex, unless Kassiopeia needs to write to the globals.
             pthread_mutex_lock (&mymutex);
