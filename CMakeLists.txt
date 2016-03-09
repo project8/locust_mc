@@ -14,8 +14,7 @@ include( PackageBuilder )
 pbuilder_prepare_project()
 
 
-set_option( USE_CPP11 FALSE )
-set( CMAKE_CXX_FLAGS "-std=c++11")  # workaround in case the above line does not work.
+set_option( USE_CPP11 TRUE )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 
