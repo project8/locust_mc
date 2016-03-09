@@ -2,6 +2,11 @@ if( locust_mc_ENABLE_EXECUTABLES )
 
     set( lib_dependencies 
         LocustMC
+        )
+
+IF (locust_mc_BUILD_WITH_KASSIOPEIA)
+    set( lib_dependencies 
+        LocustMC
 KommonCore
 KommonRoot
 KommonGsl
@@ -64,11 +69,14 @@ KassiopeiaReaders
 KassiopeiaVisualization
 KassiopeiaSimulation
 KassiopeiaBindings
-
     )
+ENDIF ( locust_mc_BUILD_WITH_KASSIOPEIA )
+
+
     
     set( programs
         LocustSim
+
     )
     
     pbuilder_executables( programs lib_dependencies )
