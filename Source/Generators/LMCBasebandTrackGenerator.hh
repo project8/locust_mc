@@ -8,9 +8,9 @@
 #ifndef LMCBASEBANDTRACKGENERATOR_HH_
 #define LMCBASEBANDTRACKGENERATOR_HH_
 
-#include "../Core/LMCGenerator.hh"
-#include "../Core/LMCRunLengthCalculator.hh"
-#define PI 3.1415926 // pls:  this should go into ../Core/LMCConstants.hh .
+#include "LMCGenerator.hh"
+#include "LMCRunLengthCalculator.hh"
+#define PI 3.1415926 // pls:  this should go into LMCConstants.hh .
 
 
 namespace locust

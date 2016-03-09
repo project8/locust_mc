@@ -7,11 +7,11 @@
 
 #include "LMCSignal.hh"
 
-#include "LMCLogger.hh"
+#include "logger.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "Signal" );
+    LOGGER( lmclog, "Signal" );
 
     Signal::Signal() :
             fState( kNotInitialized ),
@@ -20,10 +20,12 @@ namespace locust
             fDigitalSize( 0 ),
             fSignalTime( NULL ),
             fSignalFreq( NULL ),
-            fSignalDigital( NULL ),
+            fSignalDigital(),
+            fDigitalIsSigned( false ),
             fPlanToFreq(),
             fPlanToTime()
     {
+        fSignalDigital.fUnsigned = NULL;
     }
 
     Signal::~Signal()
@@ -49,7 +51,7 @@ namespace locust
         fState = kTime;  // pls confused here.
 //        fState = kFreq;
 
-        LMCDEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
+        DEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
 
         return true;
     }
@@ -58,11 +60,13 @@ namespace locust
     {
         delete [] fSignalTime;
         fftw_free( fSignalFreq );
-        delete [] fSignalDigital;
+        if( fDigitalIsSigned ) delete [] fSignalDigital.fSigned;
+        else delete [] fSignalDigital.fUnsigned;
 
         fSignalTime = NULL;
         fSignalFreq = NULL;
-        fSignalDigital = NULL;
+        fSignalDigital.fUnsigned = NULL;
+        fDigitalIsSigned = false;
 
         fftw_destroy_plan( fPlanToFreq );
         fftw_destroy_plan( fPlanToTime );
@@ -95,11 +99,24 @@ namespace locust
             }
         }
 
-        if( fSignalDigital != NULL )
+        if( fDigitalIsSigned )
         {
-            for( unsigned index = 0; index < fDigitalSize; ++index )
+            if( fSignalDigital.fSigned != NULL )
             {
-                fSignalDigital[index] = 0;
+                for( unsigned index = 0; index < fDigitalSize; ++index )
+                {
+                    fSignalDigital.fSigned[index] = 0;
+                }
+            }
+        }
+        else
+        {
+            if( fSignalDigital.fUnsigned != NULL )
+            {
+                for( unsigned index = 0; index < fDigitalSize; ++index )
+                {
+                    fSignalDigital.fUnsigned[index] = 0;
+                }
             }
         }
 
@@ -239,7 +256,7 @@ namespace locust
     {
         if( fState == kNotInitialized )
         {
-            LMCERROR( lmclog, "Signal is not initialized" );
+            ERROR( lmclog, "Signal is not initialized" );
             return false;
         }
         if( fState == aState ) return true;
@@ -247,10 +264,10 @@ namespace locust
         if( aState == kFreq ) return FFTToFreq();
         if( aState == kDigital )
         {
-            LMCERROR( lmclog, "Please use Signal::ToDigital to convert to a digital signal" );
+            ERROR( lmclog, "Please use Signal::ToDigital to convert to a digital signal" );
             return false;
         }
-        LMCERROR( lmclog, "Unknown state requested: " << aState );
+        ERROR( lmclog, "Unknown state requested: " << aState );
         return false;
     }
 
@@ -270,18 +287,31 @@ namespace locust
     }
 
 //    bool Signal::ToDigital( uint64_t* anArray, unsigned aDigSize )    
-    bool Signal::ToDigital( uint8_t* anArray, unsigned aDigSize )  // pls
+    bool Signal::ToDigital( int8_t* anArray, unsigned aDigSize )  // pls
     {
-        delete fSignalDigital;
-        fSignalDigital = anArray;
+        if( fDigitalIsSigned ) delete [] fSignalDigital.fSigned;
+        else delete [] fSignalDigital.fUnsigned;
+        fSignalDigital.fSigned = anArray;
         fDigitalSize = aDigSize;
         fState = kDigital;
+        fDigitalIsSigned = true;
+        return true;
+    }
+
+    bool Signal::ToDigital( uint8_t* anArray, unsigned aDigSize )  // pls
+    {
+        if( fDigitalIsSigned ) delete [] fSignalDigital.fSigned;
+        else delete [] fSignalDigital.fUnsigned;
+        fSignalDigital.fUnsigned = anArray;
+        fDigitalSize = aDigSize;
+        fState = kDigital;
+        fDigitalIsSigned = false;
         return true;
     }
 
     bool Signal::FFTToTime()
     {
-        LMCDEBUG( lmclog, "Performing reverse FFT to the time domain" );
+        DEBUG( lmclog, "Performing reverse FFT to the time domain" );
         fftw_execute( fPlanToTime );
         fState = kTime;
         return true;
@@ -289,7 +319,7 @@ namespace locust
 
     bool Signal::FFTToFreq()
     {
-        LMCDEBUG( lmclog, "Performing forward FFT to frequency domain" );
+        DEBUG( lmclog, "Performing forward FFT to frequency domain" );
         fftw_execute( fPlanToFreq );
         fState = kFreq;
         return true;  // pls
@@ -304,7 +334,7 @@ namespace locust
     {
         return fSignalTime;
     }
-
+/*
     double Signal::SignalTime( unsigned anIndex ) const
     {
         return fSignalTime[ anIndex ];
@@ -314,7 +344,7 @@ namespace locust
     {
         return fSignalTime[ anIndex ];
     }
-
+*/
     const fftw_complex* Signal::SignalFreq() const
     {
         return fSignalFreq;
@@ -324,7 +354,7 @@ namespace locust
     {
         return fSignalFreq;
     }
-
+/*
     const fftw_complex& Signal::SignalFreq( unsigned anIndex ) const
     {
         return fSignalFreq[ anIndex ];
@@ -334,19 +364,29 @@ namespace locust
     {
         return fSignalFreq[ anIndex ];
     }
-
+*/
 //    const uint64_t* Signal::SignalDigital() const    
-    const uint8_t* Signal::SignalDigital() const  // pls
+    const int8_t* Signal::SignalDigitalS() const  // pls
     {
-        return fSignalDigital;
+        return fSignalDigital.fSigned;
+    }
+
+    const uint8_t* Signal::SignalDigitalUS() const  // pls
+    {
+        return fSignalDigital.fUnsigned;
     }
 
 //    uint64_t* Signal::SignalDigital()    
-    uint8_t* Signal::SignalDigital()  // pls
+    int8_t* Signal::SignalDigitalS()  // pls
     {
-        return fSignalDigital;
+        return fSignalDigital.fSigned;
     }
 
+    uint8_t* Signal::SignalDigitalUS()  // pls
+    {
+        return fSignalDigital.fUnsigned;
+    }
+/*
 //    uint64_t Signal::SignalDigital( unsigned anIndex ) const    
     uint8_t Signal::SignalDigital( unsigned anIndex ) const  // pls
     {
@@ -358,5 +398,5 @@ namespace locust
     {
         return fSignalDigital[ anIndex ];
     }
-
+*/
 } /* namespace locust */

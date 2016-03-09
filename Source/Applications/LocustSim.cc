@@ -5,22 +5,23 @@
  *      Author: nsoblath
  */
 
-#include "../Core/LMCConfigurator.hh"
+#include "LMCConfigurator.hh"
 //#include "LMCDefaultConfig.hh"
-#include "../Core/LMCException.hh"
-#include "../Core/LMCGeneratorToolbox.hh"
-#include "../Core/LMCLogger.hh"
-#include "../Core/LMCSimulationController.hh"
+#include "LMCException.hh"
+#include "LMCGeneratorToolbox.hh"
+#include "LMCSimulationController.hh"
+
+#include "logger.hh"
 
 using namespace locust;
 
-LMCLOGGER( lmclog, "LocustSim" );
+LOGGER( lmclog, "LocustSim" );
 
 int main( int argc, char** argv )
 {
     try
     {
-        LMCDEBUG( lmclog, "Welcome to Locust_MC\n\n" <<
+        DEBUG( lmclog, "Welcome to Locust_MC\n\n" <<
                 "\t\t (                                     *            \n" <<
                 "\t\t )\\ )                         )      (  `      (    \n" <<
                 "\t\t(()/(              (       ( /(      )\\))(     )\\   \n" <<
@@ -33,44 +34,44 @@ int main( int argc, char** argv )
 
         Configurator configurator( argc, argv );
 
-        LMCINFO( lmclog, "Setting up generator toolbox" );
+        INFO( lmclog, "Setting up generator toolbox" );
         GeneratorToolbox toolbox;
         if( ! toolbox.Configure( configurator.Config() ) )
         {
-            LMCERROR( lmclog, "Unable to configure the generator toolbox" );
+            ERROR( lmclog, "Unable to configure the generator toolbox" );
             return -1;
         }
 
-        LMCINFO( lmclog, "Setting up simulation controller" );
+        INFO( lmclog, "Setting up simulation controller" );
         SimulationController controller;
         controller.SetFirstGenerator( toolbox.GetFirstGenerator() );
         if( ! controller.Configure( configurator.Config()->NodeAt( "simulation" ) ) )
         {
-            LMCERROR( lmclog, "Unable to configure the simulation controller" );
+            ERROR( lmclog, "Unable to configure the simulation controller" );
             return -1;
         }
 
-        LMCINFO( lmclog, "Preparing for run" );
+        INFO( lmclog, "Preparing for run" );
         if( ! controller.Prepare() )
         {
-            LMCERROR( lmclog, "Unable to prepare for the run" );
+            ERROR( lmclog, "Unable to prepare for the run" );
             return -1;
         }
 
-        LMCINFO( lmclog, "Beginning simulation run" );
+        INFO( lmclog, "Beginning simulation run" );
         controller.Run();
 
-        LMCINFO( lmclog, "Run complete; finalizing" );
+        INFO( lmclog, "Run complete; finalizing" );
         controller.Finalize();
     }
     catch( Exception& e )
     {
-        LMCERROR( lmclog, "Locust exception caught: " << e.what() );
+        ERROR( lmclog, "Locust exception caught: " << e.what() );
         return -1;
     }
     catch( std::exception& e )
     {
-        LMCERROR( lmclog, "Exception caught: " << e.what() );
+        ERROR( lmclog, "Exception caught: " << e.what() );
         return -1;
     }
 

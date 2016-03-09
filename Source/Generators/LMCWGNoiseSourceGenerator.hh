@@ -8,7 +8,7 @@
 #ifndef LMCWGNOISESOURCEGENERATOR_HH_
 #define LMCWGNOISESOURCEGENERATOR_HH_
 
-#include "../Core/LMCGenerator.hh"
+#include "LMCGenerator.hh"
 
 #include <complex>
 #include <vector>

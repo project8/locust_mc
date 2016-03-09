@@ -7,14 +7,14 @@
 
 #include "LMCTrappedElectronGenerator.hh"
 
-#include "../Core/LMCLogger.hh"
+#include "logger.hh"
       
 
 using std::string;
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "TrappedElectronGenerator" );
+    LOGGER( lmclog, "TrappedElectronGenerator" );
 
     MT_REGISTER_GENERATOR(TrappedElectronGenerator, "trapped-electron");
 
@@ -40,7 +40,7 @@ namespace locust
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
-                LMCDEBUG( lmclog, "Domain is equal to time.");
+                DEBUG( lmclog, "Domain is equal to time.");
             }
             else if( domain == "freq" )
             {
@@ -48,7 +48,7 @@ namespace locust
             }
             else
             {
-                LMCERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                ERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
                 return false;
             }
         }
@@ -82,7 +82,7 @@ namespace locust
         }
         else
         {
-            LMCWARN( lmclog, "Unknown domain requested: " << aDomain );
+            WARN( lmclog, "Unknown domain requested: " << aDomain );
         }
         return;
     }
@@ -177,7 +177,7 @@ printf("phase 1 is %g and phase 2 is %g radians, (phase1-phase2)/2PI is %g\n", p
 //          if (fabs(acos(real_part1)/2./PI/time) > 50.e6)
 //            printf("bb freq is %g\n", fabs( acos(real_part1)/2./PI/time ) );
 //          printf("time is %g\n", time); getchar();
-          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part1);  
+          aSignal->SignalTime()[index] += TimeDependentAmplitude * (real_part1);
 //          aSignal->SignalTime( index ) += TimeDependentAmplitude * (real_part2);  // signal from short.
 //          printf("now signal is %g\n\n", aSignal->SignalTime(index)); getchar();
 //          }  // lpf
@@ -329,7 +329,7 @@ if (OldPosition[3] == 1.)
 else if (OldPosition[3] == -1.)
   direction = 0;
 else
-  LMCERROR( lmclog, "Something is wrong with the position vector. ");
+  ERROR( lmclog, "Something is wrong with the position vector. ");
 
 if (Eparallel > 0.)  // If we are not at a mirror point.
     {

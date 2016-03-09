@@ -8,13 +8,13 @@
 #include "LMCConfigurator.hh"
 
 #include "LMCParser.hh"
-#include "LMCLogger.hh"
+#include "logger.hh"
 
 using std::string;
 
 namespace locust
 {
-    LMCLOGGER( mtlog, "Configurator" );
+    LOGGER( mtlog, "Configurator" );
 
     Configurator::Configurator( int an_argc, char** an_argv, ParamNode* a_default ) :
             f_master_config( new ParamNode() ),
@@ -83,7 +83,7 @@ namespace locust
         f_master_config->Merge( t_parser );
 
         //std::cout << "fourth configuration complete" << std::endl;
-        LMCINFO( mtlog, "final configuration:\n" << *f_master_config );
+        INFO( mtlog, "final configuration:\n" << *f_master_config );
     }
 
     Configurator::~Configurator()

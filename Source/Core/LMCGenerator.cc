@@ -7,17 +7,23 @@
 
 #include "LMCGenerator.hh"
 
-#include "LMCLogger.hh"
+#include "logger.hh"
 #include "LMCSignal.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "Generator" );
+    LOGGER( lmclog, "Generator" );
+
+    std::mt19937_64 Generator::fRNG;
+
+    std::mt19937_64& Generator::RNG()
+    {
+        return Generator::fRNG;
+    }
 
     Generator::Generator( const std::string& aName ) :
             fName( aName ),
             fRequiredSignalState( Signal::kFreq ),  // pls confused here.
-            fRNG( NULL ),
             fNext( NULL )
     {
     }
@@ -42,7 +48,7 @@ namespace locust
     {
         if(! Generate( aSignal ) )
         {
-            LMCERROR( lmclog, "Signal generation failed" );
+            ERROR( lmclog, "Signal generation failed" );
             return false;
         }
         if( fNext != NULL ) fNext->Run( aSignal );
@@ -53,7 +59,7 @@ namespace locust
     {
         if( ! aSignal->ToState( fRequiredSignalState ) )
         {
-            LMCERROR( lmclog, "Unable to convert signal to state <" << fRequiredSignalState << ">" );
+            ERROR( lmclog, "Unable to convert signal to state <" << fRequiredSignalState << ">" );
             return false;
         }
         return DoGenerate( aSignal );
@@ -79,17 +85,6 @@ namespace locust
     {
         fRequiredSignalState = state;
         return;
-    }
-
-    void Generator::SetRNG( RandomLib::Random* aRNG )
-    {
-        fRNG = aRNG;
-        return;
-    }
-
-    RandomLib::Random* Generator::GetRNG() const
-    {
-        return fRNG;
     }
 
     Generator* Generator::GetNextGenerator() const

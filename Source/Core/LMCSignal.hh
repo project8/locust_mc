@@ -51,29 +51,34 @@ namespace locust
             bool ToTime();
             bool ToFreq();
 //            bool ToDigital( uint64_t* anArray, unsigned aDigSize );            
+            bool ToDigital( int8_t* anArray, unsigned aDigSize );
             bool ToDigital( uint8_t* anArray, unsigned aDigSize );  // pls
 
             const double* SignalTime() const;
             double* SignalTime();
 
-            double SignalTime( unsigned anIndex ) const;
-            double& SignalTime( unsigned anIndex );
+            //double SignalTime( unsigned anIndex ) const;
+            //double& SignalTime( unsigned anIndex );
 
             const fftw_complex* SignalFreq() const;
             fftw_complex* SignalFreq();
 
-            const fftw_complex& SignalFreq( unsigned anIndex ) const;
-            fftw_complex& SignalFreq( unsigned anIndex );
+            //const fftw_complex& SignalFreq( unsigned anIndex ) const;
+            //fftw_complex& SignalFreq( unsigned anIndex );
 
-//            const uint64_t* SignalDigital() const;            
-            const uint8_t* SignalDigital() const;  // pls
-//            uint64_t* SignalDigital();            
-            uint8_t* SignalDigital();  // pls
+//            const uint64_t* SignalDigital() const;
+            const int8_t* SignalDigitalS() const;
+            const uint8_t* SignalDigitalUS() const;  // pls
+//            uint64_t* SignalDigital();
+            int8_t* SignalDigitalS();
+            uint8_t* SignalDigitalUS();  // pls
+
+            bool GetDigitalIsSigned() const;
 
 //            uint64_t SignalDigital( unsigned anIndex ) const;            
-            uint8_t SignalDigital( unsigned anIndex ) const;  // pls
+            //uint8_t SignalDigital( unsigned anIndex ) const;  // pls
 //            uint64_t& SignalDigital( unsigned anIndex );            
-            uint8_t& SignalDigital( unsigned anIndex );  // pls
+            //uint8_t& SignalDigital( unsigned anIndex );  // pls
 
         private:
             bool FFTToTime();
@@ -97,13 +102,23 @@ namespace locust
 
             double* fSignalTime;
             fftw_complex* fSignalFreq;
-//            uint64_t* fSignalDigital;            
-            uint8_t* fSignalDigital;  // pls
+//            uint64_t* fSignalDigital;
+            union SignalDigital
+            {
+                int8_t* fSigned;
+                uint8_t* fUnsigned;
+            } fSignalDigital;
+            bool fDigitalIsSigned;
 
             fftw_plan fPlanToFreq;
             fftw_plan fPlanToTime;
 
     };
+
+    inline bool Signal::GetDigitalIsSigned() const
+    {
+        return fDigitalIsSigned;
+    }
 
 } /* namespace locust */
 

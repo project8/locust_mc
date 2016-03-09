@@ -11,8 +11,6 @@
 #include "LMCEggWriter.hh"
 #include "LMCRunLengthCalculator.hh"
 
-#include "RandomLib/Random.hpp"
-
 namespace locust
 {
     class Digitizer;
@@ -56,8 +54,6 @@ namespace locust
 
         private:
             const Digitizer* FindDigitizer() const;
-
-            RandomLib::Random fRNG;
 
             Generator* fFirstGenerator;
 

@@ -8,8 +8,8 @@
 #ifndef LMCTRAPPEDELECTRONGENERATOR_HH_
 #define LMCTRAPPEDELECTRONGENERATOR_HH_
 
-#include "../Core/LMCGenerator.hh"
-#include "../Core/LMCRunLengthCalculator.hh"
+#include "LMCGenerator.hh"
+#include "LMCRunLengthCalculator.hh"
 #define LO_FREQUENCY 26.385015e9 // Hz  Bathtub pinch coil study.  Power vs. pitch angle.
 //#define LO_FREQUENCY 26.330015e9 // Hz  Solenoid 
 //#define LO_FREQUENCY 26.390487e9 // Hz, end-to-end trap.

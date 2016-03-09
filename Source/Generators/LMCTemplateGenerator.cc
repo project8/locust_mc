@@ -7,11 +7,11 @@
 
 #include "LMC[name]Generator.hh"
 
-#include "LMCLogger.hh"
+#include "logger.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "[name]Generator" );
+    LOGGER( lmclog, "[name]Generator" );
 
     MT_REGISTER_GENERATOR([name]Generator, "config-name");
 

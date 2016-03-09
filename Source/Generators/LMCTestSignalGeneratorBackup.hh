@@ -8,7 +8,7 @@
 #ifndef LMCTESTSIGNALGENERATOR_HH_
 #define LMCTESTSIGNALGENERATOR_HH_
 
-#include "../Core/LMCGenerator.hh"
+#include "LMCGenerator.hh"
 
 namespace locust
 {

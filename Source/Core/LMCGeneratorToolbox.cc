@@ -7,20 +7,19 @@
 
 #include "LMCGeneratorToolbox.hh"
 
-#include "LMCFactory.hh"
 #include "LMCGenerator.hh"
-#include "LMCLogger.hh"
+#include "logger.hh"
 #include "LMCParam.hh"
+
+#include "factory.hh"
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "GeneratorToolbox" );
+    LOGGER( lmclog, "GeneratorToolbox" );
 
     GeneratorToolbox::GeneratorToolbox() :
-            fFirstGenerator( NULL ),
-            fRNG()
+            fFirstGenerator( NULL )
     {
-        fRNG.Reseed();
     }
 
     GeneratorToolbox::~GeneratorToolbox()
@@ -29,7 +28,7 @@ namespace locust
         while( nextGenerator != NULL )
         {
             Generator* thisGenerator = nextGenerator;
-            LMCDEBUG( lmclog, "Cleaning up " << thisGenerator->GetName() );
+            DEBUG( lmclog, "Cleaning up " << thisGenerator->GetName() );
             nextGenerator = thisGenerator->GetNextGenerator();
             delete thisGenerator;
         }
@@ -39,14 +38,14 @@ namespace locust
     {
         if( aNode == NULL ) return false;
 
-        LMCINFO( lmclog, "Creating generators" );
+        INFO( lmclog, "Creating generators" );
 
-        Factory< Generator >* genFactory = Factory< Generator >::GetInstance();
+        scarab::factory< Generator >* genFactory = scarab::factory< Generator >::get_instance();
 
         const ParamArray* generatorList = aNode->ArrayAt( "generators" );
         if( generatorList == NULL )
         {
-            LMCERROR( lmclog, "No generator list was found" );
+            ERROR( lmclog, "No generator list was found" );
             return false;
         } 
 
@@ -55,19 +54,19 @@ namespace locust
         {
             if( ! (*it)->IsValue() )
             {
-                LMCERROR( lmclog, "Non-value-type array element found in generator-list" );
+                ERROR( lmclog, "Non-value-type array element found in generator-list" );
                 continue;
             }
 //            else
 //            {
-//                LMCDEBUG( lmclog, "Reading in reasonable generator: " << (*it)->AsValue().Get() );
+//                DEBUG( lmclog, "Reading in reasonable generator: " << (*it)->AsValue().Get() );
 //            }
 
-            Generator* newGenerator = genFactory->Create( (*it)->AsValue().Get() );
-//            LMCDEBUG( lmclog, "And the new generator is ... " << newGenerator->GetName());
+            Generator* newGenerator = genFactory->create( (*it)->AsValue().Get() );
+//            DEBUG( lmclog, "And the new generator is ... " << newGenerator->GetName());
             if( newGenerator == NULL )
             {
-                LMCERROR( lmclog, "Unrecognized generator name: " << (*it)->AsValue().Get() );
+                ERROR( lmclog, "Unrecognized generator name: " << (*it)->AsValue().Get() );
                 continue;
             }
 
@@ -75,30 +74,29 @@ namespace locust
             {
                 fFirstGenerator = newGenerator;
                 lastGenerator = newGenerator;
-                LMCDEBUG( lmclog, "First generator is <" << fFirstGenerator->GetName() << ">" );
+                DEBUG( lmclog, "First generator is <" << fFirstGenerator->GetName() << ">" );
             }
             else
             {
-//                LMCDEBUG( lmclog, "About to set lastGenerator to ... " << newGenerator->GetName());
+//                DEBUG( lmclog, "About to set lastGenerator to ... " << newGenerator->GetName());
                 lastGenerator->SetNextGenerator( newGenerator );
-                LMCDEBUG( lmclog, "Adding generator <" << lastGenerator->GetNextGenerator()->GetName() << ">");  
-                LMCDEBUG( lmclog, "Meanwhile the previous one was <" << lastGenerator->GetName() << ">" );
+                DEBUG( lmclog, "Adding generator <" << lastGenerator->GetNextGenerator()->GetName() << ">");  
+                DEBUG( lmclog, "Meanwhile the previous one was <" << lastGenerator->GetName() << ">" );
                 lastGenerator = lastGenerator->GetNextGenerator();  // pls addition to advance list pointer.
             }
         }
 
-        LMCINFO( lmclog, "Configuring generators" );
+        INFO( lmclog, "Configuring generators" );
 
         Generator* nextGenerator = fFirstGenerator;
         while( nextGenerator != NULL )
         {
-            LMCINFO( lmclog, "Configuring generator <" << nextGenerator->GetName() << ">" );
+            INFO( lmclog, "Configuring generator <" << nextGenerator->GetName() << ">" );
             nextGenerator->Configure( aNode->NodeAt( nextGenerator->GetName() ) );
-            nextGenerator->SetRNG( &fRNG );
             nextGenerator = nextGenerator->GetNextGenerator();
         }
 
-        LMCINFO( lmclog, "Generator toolbox configuration complete" );
+        INFO( lmclog, "Generator toolbox configuration complete" );
 
         return true;
     }

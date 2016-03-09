@@ -8,12 +8,13 @@
 #ifndef LMCGENERATOR_HH_
 #define LMCGENERATOR_HH_
 
-#include "LMCFactory.hh"
 #include "LMCVisitor.hh"
 #include "LMCParam.hh"
 #include "LMCSignal.hh"
 
-#include "RandomLib/Random.hpp"
+#include "factory.hh"
+
+#include <random>
 
 namespace locust
 {
@@ -37,11 +38,10 @@ namespace locust
             Signal::State GetRequiredSignalState() const;
             void SetRequiredSignalState( Signal::State state );
 
-            void SetRNG( RandomLib::Random* aRNG );
-            RandomLib::Random* GetRNG() const;
-
             Generator* GetNextGenerator() const;
             void SetNextGenerator( Generator* aGenerator );
+
+            static std::mt19937_64& RNG();
 
         protected:
             bool Generate( Signal* aSignal ) const;
@@ -51,14 +51,14 @@ namespace locust
 
             Signal::State fRequiredSignalState;
 
-            RandomLib::Random* fRNG;
-
             Generator* fNext;
+
+            static std::mt19937_64 fRNG;
     };
 
 
 #define MT_REGISTER_GENERATOR(gen_class, gen_name) \
-        static Registrar< Generator, gen_class > s_##gen_class##_writer_registrar( gen_name );
+        static scarab::registrar< Generator, gen_class > s_##gen_class##_generator_registrar( gen_name );
 
 } /* namespace locust */
 

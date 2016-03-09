@@ -7,13 +7,13 @@
 
 #include "LMCTestSignalGenerator.hh"
 
-#include "../Core/LMCLogger.hh"
+#include "logger.hh"
 
 using std::string;
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "TestSignalGenerator" );
+    LOGGER( lmclog, "TestSignalGenerator" );
 
     MT_REGISTER_GENERATOR(TestSignalGenerator, "test-signal");
 
@@ -44,7 +44,7 @@ namespace locust
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
-                LMCDEBUG( lmclog, "Domain is equal to time.");
+                DEBUG( lmclog, "Domain is equal to time.");
             }
             else if( domain == "freq" )
             {
@@ -52,7 +52,7 @@ namespace locust
             }
             else
             {
-                LMCERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                ERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
                 return false;
             }
         }
@@ -109,7 +109,7 @@ namespace locust
         }
         else
         {
-            LMCWARN( lmclog, "Unknown domain requested: " << aDomain );
+            WARN( lmclog, "Unknown domain requested: " << aDomain );
         }
         return;
     }
@@ -125,7 +125,7 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTime( index ) += fAmplitude*cos(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));  // T=2PI/A 
+            aSignal->SignalTime()[index] += fAmplitude*cos(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));  // T=2PI/A
         }
         delete RunLengthCalculator1;
         return true;
@@ -136,8 +136,8 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {
-            aSignal->SignalFreq( index )[0] += fAmplitude*cos(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6)); 
-            aSignal->SignalFreq( index )[1] += fAmplitude*sin(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6)); 
+            aSignal->SignalFreq()[index][0] += fAmplitude*cos(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->SignalFreq()[index][1] += fAmplitude*sin(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
         }
         delete RunLengthCalculator1;
         return true;

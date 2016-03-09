@@ -7,314 +7,189 @@
 
 #include "LMCEggWriter.hh"
 
-#include "LMCLogger.hh"
+#include "LMCDigitizer.hh"
+#include "logger.hh"
 #include "LMCParam.hh"
+#include "LMCRunLengthCalculator.hh"
 #include "LMCSignal.hh"
+
+#include "time.hh"
+
+#include <vector>
 
 namespace locust
 {
-    LMCLOGGER( lmclog, "EggWriter" );
+    LOGGER( lmclog, "EggWriter" );
 
     EggWriter::EggWriter() :
-            fState( kClosed ),
-            fFilename( "locust_mc.egg" ),
-            fDate(),
-            fDescription(),
-            fRunType( monarch::sRunTypeOther ),
-            fBitDepth( 8 ),
-            fDataTypeSize( 1 ),
-            fVoltageMin( -0.25 ),
-            fVoltageRange( 0.5 ),
-            fAcquisitionRate( 1. ),
-            fDuration( 1. ),
-            fRecordSize( 1 ),
-            fRecordLength( 1 ),
-            fMonarch( NULL ),
-            fRecord( NULL ),
-            fAcquisitionId( 0 ),
-            fRecordCounter( 0 ),
-            fRecordTime( 0. ),
-            fRecordNBytes( 0 )
+            f_filename( "locust_mc.egg" ),
+            f_date(),
+            f_description(),
+            f_record_length( 0 ),
+            f_record_id( 0 ),
+            f_record_time( 0 ),
+            f_record_n_bytes( 0 ),
+            f_monarch( NULL ),
+            f_stream( NULL ),
+            f_record( NULL ),
+            f_state( kClosed )
     {
     }
 
     EggWriter::~EggWriter()
     {
+        if( f_monarch != NULL )
+        {
+            FinalizeEgg();
+        }
     }
 
     bool EggWriter::Configure( const ParamNode* aNode )
     {
-        if( fState != kClosed )
+        if( f_state != kClosed )
         {
-            LMCERROR( lmclog, "Cannot configure the writer while a file is open" );
+            ERROR( lmclog, "Cannot configure the writer while a file is open" );
             return false;
         }
 
         if( aNode == NULL ) return true;
 
-        SetFilename( aNode->GetValue( "egg-filename", fFilename ) );
-        SetDate( aNode->GetValue( "date", fDate ) );
-        SetDescription( aNode->GetValue( "description", fDescription ) );
-        SetRunType( aNode->GetValue< monarch::RunType >( "run-type", fRunType ) );
+        f_filename = aNode->GetValue( "egg-filename", f_filename );
+        f_date = aNode->GetValue( "date", f_date );
+        f_description = aNode->GetValue( "description", f_description );
 
         return true;
     }
 
-    bool EggWriter::PrepareEgg()
+    bool EggWriter::PrepareEgg( const RunLengthCalculator* a_rlc, const Digitizer* a_digitizer )
     {
-        if( fState != kClosed )
+        if( f_state != kClosed )
         {
-            LMCERROR( lmclog, "Egg preparation cannot begin while a file is open" );
+            ERROR( lmclog, "Egg preparation cannot begin while a file is open" );
             return false;
         }
 
-        LMCDEBUG( lmclog, "Preparing egg file <" << fFilename << ">" );
+        DEBUG( lmclog, "Preparing egg file <" << f_filename << ">" );
 
-        fMonarch = monarch::Monarch::OpenForWriting( fFilename );
+        f_monarch = monarch3::Monarch3::OpenForWriting( f_filename );
 
-        monarch::MonarchHeader* header = fMonarch->GetHeader();
+        monarch3::M3Header* header = f_monarch->GetHeader();
 
         // configurable items
-        header->SetFilename( fFilename );
-        if( fDate.empty() )
+        header->SetFilename( f_filename );
+        if( f_date.empty() )
         {
-            char timestamp [256];
-            get_time_absolute_str( timestamp );
-            header->SetTimestamp( string( timestamp ) );
+            header->SetTimestamp( scarab::get_absolute_time_string()  );
         }
         else
         {
-            header->SetTimestamp( fDate );
+            header->SetTimestamp( f_date );
         }
-        header->SetDescription( fDescription );
-        header->SetRunType( fRunType );
-        header->SetAcquisitionRate( fAcquisitionRate );
-        header->SetRunDuration( fDuration );
-        header->SetRecordSize( fRecordSize );
+        header->SetDescription( f_description );
+        header->SetRunDuration( a_rlc->GetDuration() );
 
-        // non-configurable items
-        header->SetAcquisitionMode( monarch::sOneChannel );
-        header->SetRunSource( monarch::sSourceSimulation );
-        header->SetFormatMode( monarch::sFormatSingle );
+        unsigned t_data_type_size = 1;
+        bool t_signed_vals = false;
+        unsigned t_bit_depth = 8;
+        bool t_bits_right_aligned = false;
+        if( a_digitizer != NULL )
+        {
+            t_data_type_size = a_digitizer->DigitizerParams().data_type_size;
+            t_signed_vals = a_digitizer->GetADCValuesSigned();
+            t_bit_depth = a_digitizer->DigitizerParams().bit_depth;
+            t_bits_right_aligned = a_digitizer->DigitizerParams().bits_right_aligned;
+        }
 
-        header->SetBitDepth( fBitDepth );
-        header->SetDataTypeSize( fDataTypeSize );
-        header->SetVoltageMin( fVoltageMin );
-        header->SetVoltageRange( fVoltageRange );
+        std::vector< unsigned > t_chan_vec;
+        uint32_t t_stream_id = header->AddStream( "locust_mc",
+                a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), 1,
+                t_data_type_size, t_signed_vals,
+                t_bit_depth, t_bits_right_aligned,
+                &t_chan_vec );
 
-        fMonarch->WriteHeader();
+        for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )
+        {
+            header->GetChannelHeaders()[ *it ].SetVoltageOffset( a_digitizer->DigitizerParams().v_offset );
+            header->GetChannelHeaders()[ *it ].SetVoltageRange( a_digitizer->DigitizerParams().v_range );
+            header->GetChannelHeaders()[ *it ].SetDACGain( 1. );
+        }
 
-        fMonarch->SetInterface( monarch::sInterfaceSeparate );
-        fRecord = fMonarch->GetRecordSeparateOne();
+        f_monarch->WriteHeader();
 
-        fAcquisitionId = 0;
-        fRecordCounter = 0;
-        fRecordTime = 0;
-        fRecordLength = ( double )fRecordSize / ( 1.e3 * fAcquisitionRate );
+        f_stream = f_monarch->GetStream( t_stream_id );
+        f_record = f_stream->GetStreamRecord();
 
-        fRecordNBytes = header->GetDataTypeSize() * fRecordSize;
+        f_record_id = 0;
+        f_record_time = 0;
+        f_record_length = ( double )a_rlc->GetRecordSize() / ( 1.e-3 * a_rlc->GetAcquisitionRate() ); // in ns
+        f_record_n_bytes = a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize();
 
-        fState = kPrepared;
+        f_state = kPrepared;
 
-        LMCINFO( lmclog, "Egg file <" << fFilename << "> is ready for records" );
+        INFO( lmclog, "Egg file <" << f_filename << "> is ready for records" );
 
         return true;
     }
 
     bool EggWriter::WriteRecord( const Signal* aSignal )
     {
-        if( fState != kWriting && fState != kPrepared )
+        static bool t_is_new_acq = true;
+
+        if( f_state != kWriting && f_state != kPrepared )
         {
-            LMCERROR( lmclog, "Egg file must be opened before writing records" );
+            ERROR( lmclog, "Egg file must be opened before writing records" );
             return false;
         }
-        fState = kWriting;
+        f_state = kWriting;
 
-        LMCDEBUG( lmclog, "Writing record " << fRecordCounter    );
+        DEBUG( lmclog, "Writing record " << f_record_id );
 
-        fRecord->fAcquisitionId = fAcquisitionId;
-        fRecord->fRecordId = fRecordCounter;
-        fRecord->fTime = fRecordTime;
+        f_record->SetRecordId( f_record_id );
+        f_record->SetTime( f_record_time );
 
         if( aSignal->GetState() != Signal::kDigital )
         {
-            LMCERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
+            ERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
             return false;
         }
-        ::memcpy( fRecord->fData, reinterpret_cast< const byte_type* >( aSignal->SignalDigital() ), fRecordNBytes );
+        if( aSignal->GetDigitalIsSigned() ) ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalS() ), f_record_n_bytes );
+        else ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalUS() ), f_record_n_bytes );
 
-        ++fRecordCounter;
-        fRecordTime += fRecordLength;
+        ++f_record_id;
+        f_record_time += f_record_length;
 
-        return fMonarch->WriteRecord();
+        bool t_return = f_stream->WriteRecord( false );
+        t_is_new_acq = false;
+
+        return t_return;
     }
 
     bool EggWriter::FinalizeEgg()
     {
-        if( fState != kWriting && fState != kPrepared )
+        if( f_state != kWriting && f_state != kPrepared )
         {
-            LMCERROR( lmclog, "Egg file must be opened before finalizing" );
+            ERROR( lmclog, "Egg file must be opened before finalizing" );
             return false;
         }
 
-        LMCDEBUG( lmclog, "Closing egg file" );
+        if( f_stream != NULL )
+        {
+            f_stream->Close();
+            f_record = NULL;
+            f_stream = NULL;
+        }
 
-        fMonarch->Close();
-        delete fMonarch;
+        DEBUG( lmclog, "Closing egg file" );
 
-        fState = kClosed;
+        f_monarch->FinishWriting();
+        delete f_monarch;
+        f_monarch = NULL;
 
-        LMCINFO( lmclog, "Egg file closed" );
+        f_state = kClosed;
+
+        INFO( lmclog, "Egg file closed" );
 
         return true;
     }
-
-    monarch::Monarch* EggWriter::GetMonarch() const
-    {
-        return fMonarch;
-    }
-
-    const std::string& EggWriter::GetFilename() const
-    {
-        return fFilename;
-    }
-
-    void EggWriter::SetFilename( const std::string& filename )
-    {
-        fFilename = filename;
-        return;
-    }
-
-    const std::string& EggWriter::GetDate() const
-    {
-        return fDate;
-    }
-
-    void EggWriter::SetDate( const std::string& date )
-    {
-        fDate = date;
-        return;
-    }
-
-    const std::string& EggWriter::GetDescription() const
-    {
-        return fDescription;
-    }
-
-    void EggWriter::SetDescription( const std::string& desc )
-    {
-        fDescription = desc;
-        return;
-    }
-
-    monarch::RunType EggWriter::GetRunType() const
-    {
-        return fRunType;
-    }
-
-    void EggWriter::SetRunType( monarch::RunType runType )
-    {
-        fRunType = runType;
-        return;
-    }
-
-    unsigned EggWriter::GetBitDepth() const
-    {
-        return fBitDepth;
-    }
-
-    bool EggWriter::SetBitDepth( unsigned bitDepth )
-    {
-        if( fBitDepth <= 8 )
-        {
-            fDataTypeSize = 1;
-        }
-        else if( fBitDepth <= 16 )
-        {
-            fDataTypeSize = 2;
-        }
-        else if( fBitDepth <= 32 )
-        {
-            fDataTypeSize = 4;
-        }
-        else if( fBitDepth <= 64 )
-        {
-            fDataTypeSize = 8;
-        }
-        else
-        {
-            LMCERROR( lmclog, "Bit depth must be 64 bits or less" );
-            return false;
-        }
-        fBitDepth = bitDepth;
-        return true;
-    }
-
-    double EggWriter::GetVoltageMin() const
-    {
-        return fVoltageMin;
-    }
-
-    void EggWriter::SetVoltageMin( double vMin )
-    {
-        fVoltageMin = vMin;
-        return;
-    }
-
-    double EggWriter::GetVoltageRange() const
-    {
-        return fVoltageRange;
-    }
-
-    void EggWriter::SetVoltageRange( double vRange )
-    {
-        fVoltageRange = vRange;
-        return;
-    }
-
-    unsigned EggWriter::GetDataTypeSize() const
-    {
-        return fDataTypeSize;
-    }
-
-    double EggWriter::GetAcquisitionRate() const
-    {
-        return fAcquisitionRate;
-    }
-
-    void EggWriter::SetAcquisitionRate( double rate )
-    {
-        fAcquisitionRate = rate;
-        return;
-    }
-
-    double EggWriter::GetDuration() const
-    {
-        return fDuration;
-    }
-
-    void EggWriter::SetDuration( double duration )
-    {
-        fDuration = duration;
-        return;
-    }
-
-    unsigned EggWriter::GetRecordSize() const
-    {
-        return fRecordSize;
-    }
-
-    void EggWriter::SetRecordSize( unsigned size )
-    {
-        fRecordSize = size;
-        return;
-    }
-
-    void EggWriter::IncrementAcquisitionId()
-    {
-        ++fAcquisitionId;
-        return;
-    }
-
 
 } /* namespace locust */
