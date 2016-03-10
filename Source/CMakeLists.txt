@@ -20,7 +20,6 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCBasebandTrackGenerator.hh
     Generators/LMCReceiverTransferFunctionGenerator.hh
     Generators/LMCTrappedElectronGenerator.hh
-    Generators/LMCKassiopeiaGenerator.hh
 #    Generators/LMCSingleAmpSim.hh
 )
 
@@ -45,21 +44,21 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCBasebandTrackGenerator.cc
     Generators/LMCReceiverTransferFunctionGenerator.cc
     Generators/LMCTrappedElectronGenerator.cc
-    Generators/LMCKassiopeiaGenerator.cc
 #    Generators/LMCSingleAmpSim.cc
 )
 
+if (locust_mc_BUILD_WITH_KASSIOPEIA)
+    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_HEADER_FILES}
+        Generators/LMCKassiopeiaGenerator.hh
+    )
+
+    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+        Generators/LMCKassiopeiaGenerator.cc
+    )
+endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
-SET_TARGET_PROPERTIES(LocustMC PROPERTIES LINK_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
-#target_link_libraries( LocustMC ${EXTERNAL_LIBRARIES} )
-#target_link_libraries( LocustMC ${KommonCore} )
-#target_link_libraries( LocustMC ${KommonRoot} )
-#target_link_libraries( LocustMC ${KommonGsl} )
-#target_link_libraries( LocustMC ${KommonVtk} )
-#target_link_libraries( LocustMC ${KGeoBagCore} )
-#target_link_libraries( LocustMC ${KEMCore} )
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 
 
