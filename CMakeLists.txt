@@ -19,15 +19,30 @@ set_option( USE_CPP11 TRUE )
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" TRUE )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
-    list ( APPEND CMAKE_MODULE_PATH 
+    # Keep KasperDefaults from overriding the install prefix
+    set( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE )
+
+    list( APPEND CMAKE_MODULE_PATH 
         ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
     )
+    include( KasperDefaults )
+    
+    #kasper_module_paths( Kassiopeia )
+    
+    foreach( FLAG ${Kassiopeia_CFLAGS} )
+        add_definitions( -D${FLAG} )
+    endforeach( FLAG )
+    
+    # include directories
+    #kasper_internal_include_directories(
+    #)
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 set (LOCUST_MC_INCLUDE_DIRECTORIES
-    ${PROJECT_SOURCE_DIR}/Source/Generators/
-    ${PROJECT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
 )
 include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 
