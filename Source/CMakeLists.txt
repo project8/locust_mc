@@ -1,3 +1,27 @@
+
+if (locust_mc_BUILD_WITH_KASSIOPEIA)
+
+    # Make up for variables not created by PackageBuilder, but required by kasper_module_paths
+    set_path(DATA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/data" "Install directory for data files")
+    set_path(SCRATCH_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/scratch" "Directory for temporary files")
+    set_path(OUTPUT_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/output" "Directory for output files")
+    set_path(CACHE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/cache" "Directory for cache files")
+    set_path(LOG_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/log" "Directory for log files")
+    
+    kasper_module_paths( locust_mc )
+    
+    foreach( FLAG ${Kassiopeia_CFLAGS} )
+        message( STATUS "%%% adding {FLAG}" )
+        add_definitions( -D${FLAG} )
+    endforeach( FLAG )
+        
+    # include directories
+    #kasper_internal_include_directories(
+    #)
+
+endif (locust_mc_BUILD_WITH_KASSIOPEIA)
+
+
 set( LOCUST_MC_HEADER_FILES
     Core/LMCConfigurator.hh
     Core/LMCGlobals.hh

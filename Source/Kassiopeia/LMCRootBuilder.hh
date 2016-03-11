@@ -22,6 +22,12 @@ namespace katrin
     template< >
     inline bool LMCRootBuilder::AddElement( KContainer* aContainer )
     {
+        if( aContainer->Is< KSSimulation >() )
+        {
+            std::cout << "### running object called <" << fObject->GetName() << ">" << std::endl;
+            aContainer->ReleaseTo( fObject, &KSRoot::Execute );
+            return true;
+        }
         if( aContainer->Is< KSObject >() )
         {
             std::cout << "### adding object called <" << fObject->GetName() << ">" << std::endl;

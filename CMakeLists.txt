@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.0 )
+cmake_minimum_required( VERSION 3.1 )
 
 #########
 # setup #
@@ -26,16 +26,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
     )
     include( KasperDefaults )
-    
-    #kasper_module_paths( Kassiopeia )
-    
-    foreach( FLAG ${Kassiopeia_CFLAGS} )
-        add_definitions( -D${FLAG} )
-    endforeach( FLAG )
-    
-    # include directories
-    #kasper_internal_include_directories(
-    #)
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
@@ -61,6 +51,43 @@ pbuilder_add_submodule( Monarch monarch )
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     add_subdirectory( kassiopeia )
     
+    if( Kommon_ENABLE_DEBUG )
+        add_definitions( -DKommon_ENABLE_DEBUG )
+    endif( Kommon_ENABLE_DEBUG )
+    if( Kommon_USE_VTK )
+        add_definitions( -DKommon_ENABLE_DEBUG )
+    endif( Kommon_USE_VTK )
+    if( Kommon_USE_ROOT )
+        add_definitions( -DKommon_USE_ROOT )
+    endif( Kommon_USE_ROOT )
+    
+    if( KGeoBag_ENABLE_DEBUG )
+        add_definitions( -DKGeoBag_ENABLE_DEBUG )
+    endif( KGeoBag_ENABLE_DEBUG )
+    if( KGeoBag_USE_ROOT )
+        add_definitions( -DKGeoBag_USE_ROOT )
+    endif( KGeoBag_USE_ROOT )
+    if( KGeoBag_USE_VTK )
+        add_definitions( -DKGeoBag_USE_VTK )
+    endif( KGeoBag_USE_VTK )
+    
+    if( KEMField_USE_ROOT )
+        add_definitions( -DKEMField_USE_ROOT )
+    endif( KEMField_USE_ROOT )
+    if( KEMField_USE_VTK )
+        add_definitions( -DKEMField_USE_VTK )
+    endif( KEMField_USE_VTK )
+    
+    if( Kassiopeia_ENABLE_DEBUG )
+        add_definitions( -DKassiopeia_ENABLE_DEBUG )
+    endif( Kassiopeia_ENABLE_DEBUG )
+    if( Kassiopeia_USE_ROOT )
+        add_definitions( -DKassiopeia_USE_ROOT )
+    endif( Kassiopeia_USE_ROOT )
+    if( Kassiopeia_USE_VTK )
+        add_definitions( -DKassiopeia_USE_VTK )
+    endif( Kassiopeia_USE_VTK )
+    
     include( ${PROJECT_BINARY_DIR}/kassiopeia/Kommon/KommonConfig.cmake )
     include_directories( ${Kommon_INCLUDE_DIRS} )
     pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
@@ -82,8 +109,6 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 #######################
 # locust dependencies #
 #######################
-
-
 
 include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
 

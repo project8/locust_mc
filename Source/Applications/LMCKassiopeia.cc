@@ -29,9 +29,9 @@ int main( int argc, char** argv )
 
     RunKassiopeia tRunKass( tCommandLine );
 
-    int tReturn = tRunKass.Run();
+    //int tReturn = tRunKass.Run();
 
     mainmsg( eNormal ) << "...finished" << eom;
 
-    return tReturn;
+    return 0;
 }

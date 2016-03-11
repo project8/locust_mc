@@ -91,11 +91,11 @@ namespace locust
     {
         KSToolbox* tToolbox = KSToolbox::GetInstance();
 
-        KSRoot* tRoot = tToolbox->GetObjectAs< KSRoot >( "KSRoot" );
+        KSRoot* tRoot = tToolbox->GetObjectAs< KSRoot >( "root" );
 
         if( tRoot == NULL )
         {
-            mainmsg( eError ) << "Did not get a KSRoot object" << eom;
+            mainmsg( eError ) << "Did not get a root object" << eom;
             return -1;
         }
 
