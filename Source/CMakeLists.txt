@@ -76,6 +76,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 #        Generators/LMCKassiopeiaGenerator.hh
         Generators/LMCKassSignalGenerator.hh
 
+        Kassiopeia/LMCCyclotronRadiationExtractor.hh
+        Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
+        Kassiopeia/LMCEventHold.hh
+        Kassiopeia/LMCEventHoldBuilder.hh
         Kassiopeia/LMCRootBuilder.hh
         Kassiopeia/LMCRunKassiopeia.hh
     )
@@ -84,6 +88,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 #        Generators/LMCKassiopeiaGenerator.cc
         Generators/LMCKassSignalGenerator.cc
 
+        Kassiopeia/LMCCyclotronRadiationExtractor.cc
+        Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
+        Kassiopeia/LMCEventHold.cc
+        Kassiopeia/LMCEventHoldBuilder.cc
         Kassiopeia/LMCRootBuilder.cc
         Kassiopeia/LMCRunKassiopeia.cc
     )
