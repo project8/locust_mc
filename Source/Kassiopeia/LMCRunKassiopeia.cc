@@ -10,14 +10,12 @@
 #include "KMessage.h"
 #include "KTextFile.h"
 
-#include "KCommandLineTokenizer.hh"
 #include "KXMLTokenizer.hh"
 #include "KVariableProcessor.hh"
 #include "KIncludeProcessor.hh"
 #include "KLoopProcessor.hh"
 #include "KConditionProcessor.hh"
 #include "KPrintProcessor.hh"
-#include "KElementProcessor.hh"
 #include "KTagProcessor.hh"
 
 #ifdef Kommon_USE_ROOT
@@ -35,71 +33,90 @@ using namespace Kassiopeia;
 namespace locust
 {
 
-    RunKassiopeia::RunKassiopeia( KCommandLineTokenizer& aCommandLine )
+    RunKassiopeia::RunKassiopeia() :
+            fTokenizer( new KXMLTokenizer() ),
+            fVariableProcessor( new KVariableProcessor() ),
+            fIncludeProcessor( new KIncludeProcessor() ),
+            fLoopProcessor( new KLoopProcessor() ),
+            fConditionProcessor( new KConditionProcessor() ),
+            fPrintProcessor( new KPrintProcessor() ),
+            fTagProcessor( new KTagProcessor() ),
+            fElementProcessor( new KElementProcessor() )
     {
-        KXMLTokenizer tTokenizer;
-        KVariableProcessor tVariableProcessor( aCommandLine.GetVariables() );
-        KIncludeProcessor tIncludeProcessor;
-        KLoopProcessor tLoopProcessor;
-        KConditionProcessor tConditionProcessor;
-        KPrintProcessor tPrintProcessor;
-        KTagProcessor tTagProcessor;
-        KElementProcessor tElementProcessor;
+#ifdef Kommon_USE_ROOT
+        fFormulaProcessor = new KFormulaProcessor();
+        fSSProcessor = new KSaveSettingsProcessor();
+#endif
 
-        tVariableProcessor.InsertAfter( &tTokenizer );
-        tIncludeProcessor.InsertAfter( &tVariableProcessor );
+        fVariableProcessor->InsertAfter( fTokenizer );
+        fIncludeProcessor->InsertAfter( fVariableProcessor );
 
     #ifdef Kommon_USE_ROOT
-        KFormulaProcessor tFormulaProcessor;
-        tFormulaProcessor.InsertAfter( &tVariableProcessor );
-        tIncludeProcessor.InsertAfter( &tFormulaProcessor );
+        fFormulaProcessor->InsertAfter( fVariableProcessor );
+        fIncludeProcessor->InsertAfter( fFormulaProcessor );
     #endif
 
-        tLoopProcessor.InsertAfter( &tIncludeProcessor );
-        tConditionProcessor.InsertAfter( &tLoopProcessor );
-        tPrintProcessor.InsertAfter( &tConditionProcessor );
-        tTagProcessor.InsertAfter( &tPrintProcessor );
+        fLoopProcessor->InsertAfter( fIncludeProcessor );
+        fConditionProcessor->InsertAfter( fLoopProcessor );
+        fPrintProcessor->InsertAfter( fConditionProcessor );
+        fTagProcessor->InsertAfter( fPrintProcessor );
 
     #ifdef Kommon_USE_ROOT
-        KSaveSettingsProcessor tSSProcessor;
-        tSSProcessor.InsertAfter( &tPrintProcessor );
-        tTagProcessor.InsertAfter( &tSSProcessor );
+        fSSProcessor->InsertAfter( fPrintProcessor );
+        fTagProcessor->InsertAfter( fSSProcessor );
     #endif
 
-        tElementProcessor.InsertAfter( &tTagProcessor );
+        fElementProcessor->InsertAfter( fTagProcessor );
+    }
 
+    RunKassiopeia::~RunKassiopeia()
+    {
+        delete fTokenizer;
+        delete fVariableProcessor;
+        delete fIncludeProcessor;
+        delete fLoopProcessor;
+        delete fConditionProcessor;
+        delete fPrintProcessor;
+        delete fTagProcessor;
+        delete fElementProcessor;
+
+#ifdef Kommon_USE_ROOT
+        delete fFormulaProcessor;
+        delete fSSProcessor;
+#endif
+
+        KSToolbox::DeleteInstance();
+    }
+
+    void RunKassiopeia::SetVariableMap( const map< string, string >& aMap )
+    {
+        fVariableProcessor->SetExternalMap( aMap );
+        return;
+    }
+
+    int RunKassiopeia::Run( const std::vector< std::string >& aFiles )
+    {
         mainmsg( eNormal ) << "starting..." << eom;
 
         KSToolbox::GetInstance();
 
         KTextFile* tFile;
-        for( vector< string >::const_iterator tIter = aCommandLine.GetFiles().begin(); tIter != aCommandLine.GetFiles().end(); tIter++ )
+        for( vector< string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
         {
             tFile = new KTextFile();
             tFile->AddToNames( *tIter );
-            tTokenizer.ProcessFile( tFile );
+            fTokenizer->ProcessFile( tFile );
             delete tFile;
-        }
-    }
-
-    RunKassiopeia::~RunKassiopeia()
-    {
-        KSToolbox::DeleteInstance();
-    }
-
-    int RunKassiopeia::Run()
-    {
-        KSToolbox* tToolbox = KSToolbox::GetInstance();
-
-        KSRoot* tRoot = tToolbox->GetObjectAs< KSRoot >( "root" );
-
-        if( tRoot == NULL )
-        {
-            mainmsg( eError ) << "Did not get a root object" << eom;
-            return -1;
         }
 
         return 0;
+    }
+
+    int RunKassiopeia::Run( const std::string& aFile )
+    {
+        vector< string > tFileVec( 1 );
+        tFileVec[ 0 ] = aFile;
+        return Run( tFileVec );
     }
 
 } /* namespace locust */

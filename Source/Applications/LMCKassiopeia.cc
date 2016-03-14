@@ -27,11 +27,12 @@ int main( int argc, char** argv )
     KCommandLineTokenizer tCommandLine;
     tCommandLine.ProcessCommandLine( argc, argv );
 
-    RunKassiopeia tRunKass( tCommandLine );
+    RunKassiopeia tRunKass;
+    tRunKass.SetVariableMap( tCommandLine.GetVariables() );
 
-    //int tReturn = tRunKass.Run();
+    int tReturn = tRunKass.Run( tCommandLine.GetFiles() );
 
     mainmsg( eNormal ) << "...finished" << eom;
 
-    return 0;
+    return tReturn;
 }
