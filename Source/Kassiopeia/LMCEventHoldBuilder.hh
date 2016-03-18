@@ -12,10 +12,10 @@
 
 #include "LMCEventHold.hh"
 
-namespace locust
+namespace katrin
 {
 
-    typedef katrin::KComplexElement< EventHold > EventHoldBuilder;
+    typedef katrin::KComplexElement< locust::EventHold > EventHoldBuilder;
 
     template< >
     inline bool EventHoldBuilder::AddAttribute(KContainer *aContainer)
@@ -38,6 +38,6 @@ namespace locust
         return false;
     }
 
-} /* namespace locust */
+} /* namespace katrin */
 
 #endif /* LOCUST_LMCEVENTHOLDBUILDER_HH_ */

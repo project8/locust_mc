@@ -12,13 +12,13 @@
 
 #include "LMCCyclotronRadiationExtractor.hh"
 
-namespace locust
+namespace katrin
 {
 
-    typedef katrin::KComplexElement< CyclotronRadiationExtractor > CyclotronRadiationExtractorBuilder;
+    typedef KComplexElement< locust::CyclotronRadiationExtractor > CyclotronRadiationExtractorBuilder;
 
     template< >
-    inline bool EventHoldBuilder::AddAttribute(KContainer *aContainer)
+    inline bool CyclotronRadiationExtractorBuilder::AddAttribute(KContainer *aContainer)
     {
         if( aContainer->GetName() == "name" )
         {
@@ -40,6 +40,6 @@ namespace locust
         return false;
     }
 
-} /* namespace locust */
+} /* namespace katrin */
 
 #endif /* LOCUST_LMCCYCLOTRONRADIATIONEXTRACTORBUILDER_HH_ */

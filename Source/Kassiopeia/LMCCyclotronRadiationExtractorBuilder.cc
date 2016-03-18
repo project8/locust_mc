@@ -7,9 +7,9 @@
 
 #include "LMCCyclotronRadiationExtractorBuilder.hh"
 
-using namespace katrin;
+#include "KSRootBuilder.h"
 
-namespace locust
+namespace katrin
 {
 
     template< >
@@ -17,12 +17,12 @@ namespace locust
     {
     }
 
-    STATICINT SLMCEventHoldStructure =
+    STATICINT SLMCCyclRadExtrStructure =
             CyclotronRadiationExtractorBuilder::Attribute< string >( "name" )/*+
             CyclotronRadiationExtractorBuilder::Attribute< bool >( "wait_before_event" )+
             CyclotronRadiationExtractorBuilder::Attribute< string >( "wait_after_event" )*/;
 
-    STATICINT sLMCEventHold =
-            KSRootBuilder::ComplexElement< CyclotronRadiationExtractor >( "cycl_rad_extr" );
+    STATICINT sLMCCyclotronRadiationExtractor =
+            KSRootBuilder::ComplexElement< locust::CyclotronRadiationExtractor >( "cycl_rad_extr" );
 
-} /* namespace locust */
+} /* namespace katrin */

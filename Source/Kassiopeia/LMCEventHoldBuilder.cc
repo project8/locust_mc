@@ -7,9 +7,9 @@
 
 #include "LMCEventHoldBuilder.hh"
 
-using namespace katrin;
+#include "KSRootBuilder.h"
 
-namespace locust
+namespace katrin
 {
 
     template< >
@@ -23,6 +23,6 @@ namespace locust
             EventHoldBuilder::Attribute< string >( "wait_after_event" );
 
     STATICINT sLMCEventHold =
-            KSRootBuilder::ComplexElement< EventHold >( "mod_event_hold" );
+            KSRootBuilder::ComplexElement< locust::EventHold >( "mod_event_hold" );
 
-} /* namespace locust */
+} /* namespace katrin */
