@@ -8,6 +8,11 @@
 #ifndef LMCKASSSIGNALGENERATOR_HH_
 #define LMCKASSSIGNALGENERATOR_HH_
 
+#define PI 3.1415926
+#define LO_FREQUENCY 26.8730e9 // Hz
+
+
+
 #include "LMCGenerator.hh"
 
 namespace locust

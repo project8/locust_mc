@@ -158,7 +158,7 @@ namespace locust
         ++f_record_id;
         f_record_time += f_record_length;
 
-        bool t_return = f_stream->WriteRecord( false );
+        bool t_return = f_stream->WriteRecord( true ); // pls had to edit false to true
         t_is_new_acq = false;
 
         return t_return;

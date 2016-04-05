@@ -40,6 +40,8 @@ namespace locust
 
     bool EventHold::ExecutePreEventModification()
     {
+
+    	printf("check 1\n"); getchar();
         if( fWaitBeforeEvent )
         {
             std::unique_lock< std::mutex >tLock( fMutex );

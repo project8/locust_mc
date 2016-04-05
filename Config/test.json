@@ -1,7 +1,7 @@
 {
     "generators":
     [
-        "kassiopeia",
+        "kass-signal",
         "digitizer"
     ],
     
