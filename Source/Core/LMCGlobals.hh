@@ -8,7 +8,8 @@
 #ifndef GLOBALS_HH_
 #define GLOBALS_HH_
 
-#include <pthread.h>
+#include <condition_variable>
+#include <mutex>
 
 double Z = -99.;
 double R = -99.;
@@ -24,8 +25,26 @@ double LarmorPower = -99.;
 double GammaZ = -99.;
 
 double testvar = 0.;
-pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t tick;
+
+bool fWaitBeforeEvent = true;
+bool fWaitAfterEvent = true;
+bool fKassEventReady = false;
+bool fEventInProgress = false;
+bool fRunInProgress = false;
+bool fPreEventInProgress = false;
+
+
+
+std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
+std::mutex fMutexDigitizer;  // pls:  not completely sure we need an extra mutex, but it may help clarify.
+
+
+
+//  These global condition variables are causing the simulation to hang after writing to the egg file.
+std::condition_variable fPreEventCondition;
+std::condition_variable fPostEventCondition;
+std::condition_variable fDigitizerCondition;
+
 
 
 #endif /* GLOBALS_HH_ */

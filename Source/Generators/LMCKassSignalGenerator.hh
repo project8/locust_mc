@@ -36,6 +36,7 @@ namespace locust
     class KassSignalGenerator : public Generator
     {
         public:
+
             KassSignalGenerator( const std::string& aName = "kass-signal" );
             virtual ~KassSignalGenerator();
 

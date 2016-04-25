@@ -160,7 +160,6 @@ namespace locust
 
         bool t_return = f_stream->WriteRecord( true ); // pls had to edit false to true
         t_is_new_acq = false;
-
         return t_return;
     }
 
