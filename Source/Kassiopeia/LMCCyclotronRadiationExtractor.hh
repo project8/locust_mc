@@ -12,6 +12,7 @@
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
 
+
 namespace locust
 {
 
@@ -26,6 +27,18 @@ namespace locust
             CyclotronRadiationExtractor* Clone() const;
 
         public:
+            double t_old=0.;  // most recent digitizer tick.
+            double e_prestep=0.;
+            double e_poststep=0.;
+            double t_prestep=0.;
+            double de_step=0.;
+            double dt_step=0.;
+            double de = 0.;
+            double dt = 0.;
+
+
+
+
             bool ExecutePreStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticleQueue& aQueue );
             bool ExecutePostStepModifcation( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
 

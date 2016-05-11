@@ -46,6 +46,13 @@ namespace locust
 
         private:
             bool DoGenerate( Signal* aSignal ) const;
+            void* DriveAntenna(unsigned index, Signal* aSignal) const;
+            double ModeExcitation() const;
+            double* EyWR42Array() const;
+            double* ScaleArray(double *array, double factor) const;
+            double IntEyWR42ArraySqdA(double *EyArray1, double dimx, double dimy) const;
+
+
 
     };
 

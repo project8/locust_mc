@@ -1,30 +1,24 @@
 /*
- * Globals.hh
+ * GlobalsDefinition.hh
  *
  *  Created on: Sept. 24, 2015
  *      Author: pslocum
  */
 
-#ifndef GLOBALS_HH_
-#define GLOBALS_HH_
-
-#include <condition_variable>
-#include <mutex>
+#ifndef GLOBALSDEFINITION_HH_
+#define GLOBALSDEFINITION_HH_
 
 double Z = -99.;
-double R = -99.;
-double K = -99.;
-double vlong = -99.;
-double zvelocity = -99.;
-double t = 0.;
-double t_old = 0.;
-double dt = -99.;
-double fcyc = -99.;
-double de = -99.;
+double X = -99.;
+double t_poststep = -99.;
 double LarmorPower = -99.;
+double xvelocity = -99.;
+double yvelocity = -99.;
+double zvelocity = -99.;
+double fcyc = -99.;
 double GammaZ = -99.;
+double testvar = -99.;
 
-double testvar = 0.;
 
 bool fWaitBeforeEvent = true;
 bool fWaitAfterEvent = true;
@@ -47,4 +41,4 @@ std::condition_variable fDigitizerCondition;
 
 
 
-#endif /* GLOBALS_HH_ */
+#endif /* GLOBALSDEFINITION_HH_ */
