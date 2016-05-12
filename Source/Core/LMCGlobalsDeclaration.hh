@@ -15,6 +15,7 @@
 extern double Z;
 extern double X;
 extern double t_poststep;
+extern double t_old;
 extern double LarmorPower;
 extern double xvelocity;
 extern double yvelocity;

@@ -27,7 +27,6 @@ namespace locust
             CyclotronRadiationExtractor* Clone() const;
 
         public:
-            double t_old=0.;  // most recent digitizer tick.
             double e_prestep=0.;
             double e_poststep=0.;
             double t_prestep=0.;

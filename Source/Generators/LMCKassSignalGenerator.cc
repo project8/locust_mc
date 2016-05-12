@@ -108,7 +108,7 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
            printf("driving antenna, ModeExcitation is %g\n", ModeExcitation());
            printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %f\n",
                    index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
-//                  getchar();
+ //                 getchar();
 
 }
 
@@ -199,7 +199,7 @@ return array;
     	int PreEventCounter = 0;
     	int NPreEventSamples = 15000;
 
-    	FILE *fp = fopen("timing.txt","wb");
+//    	FILE *fp = fopen("timing.txt","wb");
 //    	fprintf(fp, "testing\n");
 
 
@@ -230,7 +230,7 @@ return array;
     	if (fPreEventInProgress)
     	  {
     	  PreEventCounter += 1;
-          printf("noise trigger index %d\n", index);
+ //         printf("noise trigger index %d\n", index);
           if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
         	  {
         	  fPreEventInProgress = false;  // reset.
@@ -251,16 +251,16 @@ return array;
           fDigitizerCondition.wait( tLock );
           if (fEventInProgress)
         	  {
-        	  fprintf(fp, "%.10g  ", t_poststep);
+//        	  fprintf(fp, "%.10g  ", t_poststep);
         	  DriveAntenna(index, aSignal);
         	  }
           tLock.unlock();
         }
-    	printf("made it out of eventhappening loop. index is %d\n", index);
+//    	printf("made it out of eventhappening loop. index is %d\n", index);
 
         }  // for loop
 
-    	fclose(fp);  // timing.txt file.
+//    	fclose(fp);  // timing.txt file.
 
 
         // trigger any remaining events in Kassiopeia so that its thread can finish.

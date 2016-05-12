@@ -40,7 +40,6 @@ namespace locust
     bool CyclotronRadiationExtractor::ExecutePostStepModifcation( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
 
-
     	t_poststep = aFinalParticle.GetTime();
 
         if (t_poststep - t_old > 5.e-9)
@@ -80,7 +79,6 @@ namespace locust
              printf("1/(sqrt(1-v^2/c^2) is %f\n", 1.0/pow(1.0-pow(anInitialParticle.GetSpeed()/2.99792e8,2.),0.5));
              printf("FinalParticle().IsActive() is %d\n", aFinalParticle.IsActive());
           	}
-
 
 
         return true;

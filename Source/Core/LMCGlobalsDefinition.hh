@@ -11,6 +11,7 @@
 double Z = -99.;
 double X = -99.;
 double t_poststep = -99.;
+double t_old = -99.;
 double LarmorPower = -99.;
 double xvelocity = -99.;
 double yvelocity = -99.;
