@@ -56,17 +56,11 @@ namespace locust
 
             GammaZ = 1.0/pow(1.0-pow(zvelocity/2.99792e8,2.),0.5);  // fix speed of light.
 
-//            fcyc = aFinalParticle.GetCyclotronFrequency();
-            fcyc = 1./8./dt;
+            fcyc = aFinalParticle.GetCyclotronFrequency();
+//            fcyc = 1./8./dt;
             LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
-
- //           printf("z position is %g and dt is %g\n", Z, dt);
-
-//            printf("Kassiopeia is about to send out a tick\n");
             fDigitizerCondition.notify_one();  // notify Locust after writing.
-
-//                getchar();
 
              t_old = t_poststep;
 
@@ -88,7 +82,7 @@ namespace locust
         return true;
     }
 
-    double CyclotronRadiationExtractor::ModeExcitation()
+    double CyclotronRadiationExtractor::ModeExcitation()  // not currently in use here.
     {
         double dim1_wr42 = 10.668e-3; // m
         double dim2_wr42 = 4.318e-3; // m

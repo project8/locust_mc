@@ -109,8 +109,8 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
 //           printf("fake mode exctitation is %g\n", FakeModeExcitation());
 
 //           printf("driving antenna, ModeExcitation is %g\n", ModeExcitation());
-           printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %f\n",
-                   index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
+//           printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %f\n",
+//                   index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
  //                 getchar();
 
 }
