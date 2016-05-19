@@ -45,6 +45,9 @@ namespace locust
         private:
             void InitializeComponent();
             void DeinitializeComponent();
+            double ModeExcitation();
+            double* EyWR42Array();
+
 
         protected:
             virtual void PullDeupdateComponent();

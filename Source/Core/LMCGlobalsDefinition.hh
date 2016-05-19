@@ -33,12 +33,10 @@ bool fPreEventInProgress = false;
 std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
 std::mutex fMutexDigitizer;  // pls:  not completely sure we need an extra mutex, but it may help clarify.
 
-
-
-//  These global condition variables are causing the simulation to hang after writing to the egg file.
 std::condition_variable fPreEventCondition;
 std::condition_variable fPostEventCondition;
 std::condition_variable fDigitizerCondition;
+std::condition_variable fKassReadyCondition;
 
 
 

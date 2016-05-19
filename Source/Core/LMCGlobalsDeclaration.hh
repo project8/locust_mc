@@ -7,6 +7,8 @@
 
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
+#define PI 3.1415926
+
 
 #include <condition_variable>
 #include <mutex>
@@ -39,11 +41,11 @@ extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mo
 extern std::mutex fMutexDigitizer;  // pls:  not completely sure we need an extra mutex, but it may help clarify.
 
 
-
 //  These global condition variables are causing the simulation to hang after writing to the egg file.
 extern std::condition_variable fPreEventCondition;
 extern std::condition_variable fPostEventCondition;
 extern std::condition_variable fDigitizerCondition;
+extern std::condition_variable fKassReadyCondition;
 
 
 
