@@ -56,8 +56,8 @@ namespace locust
 
             GammaZ = 1.0/pow(1.0-pow(zvelocity/2.99792e8,2.),0.5);  // fix speed of light.
 
-            fcyc = aFinalParticle.GetCyclotronFrequency();
-//            fcyc = 1./8./dt;
+//            fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
+            fcyc = 1.125/dt;
             LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
@@ -80,51 +80,6 @@ namespace locust
 
 
         return true;
-    }
-
-    double CyclotronRadiationExtractor::ModeExcitation()  // not currently in use here.
-    {
-        double dim1_wr42 = 10.668e-3; // m
-        double dim2_wr42 = 4.318e-3; // m
-    	double vy = yvelocity;
-    	double vx = xvelocity;
-    	double x = X + dim1_wr42/2.;  // center of waveguide is at zero.
-    	double Ey = 0.;
-    	double EyMax = 0.;
-
-    	double *EyArray1 = EyWR42Array();
-
-    //  normalize Ey if necessary.
-    //	EyArray1 = ScaleArray(EyArray1, 1./pow(IntEyWR42ArraySqdA(EyArray1, dim1_wr42, dim2_wr42), 0.5));
-
-    //	x=0.+dim1_wr42/2.; vy = 5.e7; vx=0.;  // fake test calcs in middle of waveguide.
-
-
-   	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
-   	EyMax = EyArray1[100/2];
-
-    	//	printf("EyMax is %g\n", EyMax);
-
-    	// E dot v / (Emax v) / sqrt(2) for half power lost in opposite direction.
-    	double EdotV = Ey*vy/fabs(EyMax*pow(vx*vx+vy*vy,0.5)) / 1.41421;
-    //	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
-
-    return EdotV;
-    }
-
-
-    double* CyclotronRadiationExtractor::EyWR42Array()
-    {
-    double a = 10.668e-3;
-    int nbins = 100;
-    double *EyArray1 = new double[nbins];
-    double x=0.;
-    for (int i=0; i<nbins; i++)
-      {
-      x = a*(double)i/(double)nbins;
-      EyArray1[i] = sin(PI*x/a);
-      }
-    return EyArray1;
     }
 
 

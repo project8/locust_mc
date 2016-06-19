@@ -82,8 +82,6 @@ namespace locust
                 if( index < 100 )
                 {
                     WARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
-        //            printf("digitized data is %x\n", digitizedData[index]);
-        //            getchar();
                 }
             }
             aSignal->ToDigital( digitizedData, signalSize );

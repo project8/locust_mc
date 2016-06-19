@@ -111,7 +111,8 @@ namespace locust
         {
             header->GetChannelHeaders()[ *it ].SetVoltageOffset( a_digitizer->DigitizerParams().v_offset );
             header->GetChannelHeaders()[ *it ].SetVoltageRange( a_digitizer->DigitizerParams().v_range );
-            header->GetChannelHeaders()[ *it ].SetDACGain( 1. );
+//            header->GetChannelHeaders()[ *it ].SetDACGain( 1. );
+            header->GetChannelHeaders()[ *it ].SetDACGain( a_digitizer->DigitizerParams().dac_gain );
         }
 
         f_monarch->WriteHeader();

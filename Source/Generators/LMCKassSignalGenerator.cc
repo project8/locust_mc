@@ -17,6 +17,7 @@
 
 double phi_t = 0.; // antenna voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO;
+double phiM_t = 0.; // phase of modulation.
 double dummy_time = 0.;  // time for checking mode excitation.
 
     	FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
@@ -101,20 +102,27 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
 
            fprime = fcyc*GammaZ*(1.-zvelocity/2.99792e8);
            phi_t += 2.*PI*fprime*dt;
-           phiLO_t += -2.*PI*LO_FREQUENCY*dt;
+           phiLO_t += 2.*PI*LO_FREQUENCY*dt;
+           phiM_t += 2.*PI*fcyc*dt;
+           LarmorPower = 1.e-15;
 
 
            aSignal->SignalTime()[ index ] +=
-              ModeExcitation()*pow(LarmorPower,0.5)*(cos(phi_t)*cos(phiLO_t) - sin(phi_t)*sin(phiLO_t));
+        		 AverageModeExcitation()*pow(LarmorPower,0.5)*(cos(phi_t)*cos(phiLO_t) + sin(phi_t)*sin(phiLO_t));
+//                (1./1.41421 - ModeExcitation())*pow(LarmorPower,0.5)*cos(phi_t)*cos(phiLO_t);
+//           AverageModeExcitation()*pow(LarmorPower,0.5)*cos(phiLO_t);  // check amplitude modulation.
+
 //           printf("fake mode exctitation is %g\n", FakeModeExcitation());
 
 //           printf("driving antenna, ModeExcitation is %g\n", ModeExcitation());
 //           printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %f\n",
 //                   index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
- //                 getchar();
+//                  getchar();
 
 }
 
+
+/*
 double KassSignalGenerator::FakeModeExcitation() const
 {
     double dim1_wr42 = 10.668e-3; // m
@@ -143,8 +151,8 @@ double KassSignalGenerator::FakeModeExcitation() const
 
 return EdotV;
 
-
 }
+*/
 
 
 double KassSignalGenerator::ModeExcitation() const
@@ -173,11 +181,47 @@ double KassSignalGenerator::ModeExcitation() const
 	double EdotV = fabs(Ey*vy)/fabs(EyMax*pow(vx*vx+vy*vy,0.5)) / 1.41421;
 //	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
 
-//	fprintf(fp2, "%.10g  ", EdotV);  // checking mode excitation.
+//	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
 
 
 return EdotV;
 }
+
+
+double KassSignalGenerator::AverageModeExcitation() const
+{
+    double dim1_wr42 = 10.668e-3; // m
+    double dim2_wr42 = 4.318e-3; // m
+	double vy = yvelocity;
+	double vx = xvelocity;
+	double x = X + dim1_wr42/2.;  // center of waveguide is at zero.
+	double Ey = 0.;
+	double EyMax = 0.;
+
+
+	double *EyArray1 = EyWR42Array();
+
+//  normalize Ey if necessary.
+//	EyArray1 = ScaleArray(EyArray1, 1./pow(IntEyWR42ArraySqdA(EyArray1, dim1_wr42, dim2_wr42), 0.5));
+//	x=0.+dim1_wr42/2.; vy = 5.e7; vx=0.;  // fake test calcs in middle of waveguide.
+
+
+	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
+	EyMax = EyArray1[100/2];
+//	printf("EyMax is %g\n", EyMax);
+
+	// E dot v / (Emax v) * 0.637 / sqrt(2) for analytic avg coupling/orbit and half power lost in opposite direction.
+	double AverageEdotV = fabs(Ey/EyMax) *0.637 / 1.41421;
+//	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
+
+//	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
+
+
+return AverageEdotV;
+}
+
+
+
 
 
 double* KassSignalGenerator::EyWR42Array() const
@@ -213,8 +257,7 @@ return EyArray1;
 
 //    	for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
 
-//        for( unsigned index = 0; index < 100000; ++index )
-        for( unsigned index = 0; index < 1000; ++index )
+        for( unsigned index = 0; index < 2e6; ++index )
     	{
 
         if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
@@ -234,6 +277,7 @@ return EyArray1;
         	  PreEventCounter = 0;  // reset.
     		  phi_t = 0.; // initialize antenna voltage phase in radians.
   		      phiLO_t = 0.; // initialize voltage phase of LO;
+  		      phiM_t = 0.; // initialize phase of modulation.
         	  WakeBeforeEvent();  // trigger Kass event.
               fEventInProgress = true;  // flag.
         	  }
@@ -257,21 +301,16 @@ return EyArray1;
         }  // for loop
 
 //    	fclose(fp);  // timing.txt file.
-        fclose(fp2); // mode excitation file.
+//        fclose(fp2); // mode excitation file.
 
         // trigger any remaining events in Kassiopeia so that its thread can finish.
     	while (fRunInProgress)
     	{
-    		printf("still in loop check 1\n");
     	    if (fRunInProgress)
     	    	if (ReceivedKassReady()) WakeBeforeEvent();
-    	    printf("still in loop check 2\n");
     	}
 
-
         Kassiopeia.join();  // wait for Kassiopeia to finish.
-
-//   printf("kass thread has joined.\n");
 
         return true;
     }

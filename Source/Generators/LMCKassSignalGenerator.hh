@@ -9,8 +9,10 @@
 #define LMCKASSSIGNALGENERATOR_HH_
 
 #define PI 3.1415926
-#define LO_FREQUENCY 26.8730e9 // Hz
-
+//#define LO_FREQUENCY 26.8730e9 // Hz  18 keV electrons in harmonic trap.
+#define LO_FREQUENCY 26.2757e9 // Hz  30 keV electrons in harmonic trap.
+//#define LO_FREQUENCY 27.0062e9  // Hz 18 keV electrons in bathtub trap.
+//#define LO_FREQUENCY 26.4061e9  // Hz 30 keV electrons in bathtub trap.
 
 
 #include "LMCGenerator.hh"
@@ -48,6 +50,7 @@ namespace locust
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(unsigned index, Signal* aSignal) const;
             double ModeExcitation() const;
+            double AverageModeExcitation() const;
             double FakeModeExcitation() const;
             double* EyWR42Array() const;
             double* ScaleArray(double *array, double factor) const;
