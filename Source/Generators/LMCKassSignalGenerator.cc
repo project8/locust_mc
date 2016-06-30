@@ -78,6 +78,7 @@ void WakeBeforeEvent()
 bool ReceivedKassReady()
 {
     if( !fKassEventReady)
+    if( !fKassEventReady)  // check again.
     {
 	printf("waiting for signal that Kass is Ready ...\n");
     std::unique_lock< std::mutex >tLock( fMutex );
@@ -108,7 +109,7 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
 
 
            aSignal->SignalTime()[ index ] +=
-        		 AverageModeExcitation()*pow(LarmorPower,0.5)*(cos(phi_t)*cos(phiLO_t) + sin(phi_t)*sin(phiLO_t));
+        		 AverageModeExcitation()*pow(LarmorPower,0.5)*(cos(phi_t)*cos(phiLO_t) - sin(phi_t)*sin(phiLO_t));
 //                (1./1.41421 - ModeExcitation())*pow(LarmorPower,0.5)*cos(phi_t)*cos(phiLO_t);
 //           AverageModeExcitation()*pow(LarmorPower,0.5)*cos(phiLO_t);  // check amplitude modulation.
 

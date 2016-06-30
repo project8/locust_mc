@@ -1,7 +1,8 @@
 {
     "generators":
     [
-        "kass-signal",
+        "gaussian-noise",
+        "receiver-transfer-function",
         "digitizer"
     ],
     

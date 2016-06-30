@@ -141,7 +141,8 @@ namespace locust
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
             aSignal->SignalTime()[index] += fNormDist( fRNG );
-   //         printf("signal %d is %g\n", index, aSignal->SignalTime()[index]);
+  //          if (index<100) {printf("signal %d is %g\n", index, aSignal->SignalTime()[index]);
+  //getchar();}
         }
         return true;
 

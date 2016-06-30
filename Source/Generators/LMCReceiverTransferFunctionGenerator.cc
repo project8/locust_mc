@@ -72,28 +72,27 @@ namespace locust
 //to the frequency spectrum even when the transfer function == 1.0 .
     bool ReceiverTransferFunctionGenerator::DoGenerateFreq( Signal* aSignal ) const
     {
-        double VoltageGain = pow(10.,fReceiverGain/2./10.);  // divide by 2 if gain is given in power.
-        double SqrtImpedance = pow(1., 0.5);  //  assume 1 ohm impedance for simple testing.
 
-//        for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
-//        {
+    	// low pass filter.
+        for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
+        {
+        	if (index < aSignal->FreqSize()*0.05 || index > aSignal->FreqSize()*0.95)
+        	{
+//        		printf("aSignal %d is %g\n", index, aSignal->SignalFreq()[index][0]);
+              aSignal->SignalFreq()[index][0] = 0.;
+              aSignal->SignalFreq()[index][1] = 0.;
+//      		printf("after lpf aSignal %d is %g\n\n", index, aSignal->SignalFreq()[index][0]);
+//      		getchar();
+        	}
+        	else
+        	{
 
-        // Get through antenna and apply voltage gain.  Assume perfect coupling.
-//            aSignal->SignalFreq( index )[0] *= VoltageGain * SqrtImpedance;
-//            aSignal->SignalFreq( index )[1] *= VoltageGain * SqrtImpedance;
+            aSignal->SignalFreq()[index][0] /= (double)aSignal->FreqSize();
+            aSignal->SignalFreq()[index][1] /= (double)aSignal->FreqSize();
 
-        // Step function for testing.  Factor of 1.0
-//            if (index<aSignal->FreqSize()/2.)
-//            {  
-//            aSignal->SignalFreq( index )[0] *= 1.0;
-//            aSignal->SignalFreq( index )[1] *= 1.0;
-//            }
-//            else
-//            {  
-//            aSignal->SignalFreq( index )[0] *= 1.0;
-//            aSignal->SignalFreq( index )[1] *= 1.0;
-//            }
-//        }
+        	}
+
+        }
         return true;
     }
 
