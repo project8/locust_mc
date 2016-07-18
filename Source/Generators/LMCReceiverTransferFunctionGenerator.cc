@@ -76,7 +76,11 @@ namespace locust
     	// low pass filter.
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {
-        	if (index < aSignal->FreqSize()*0.05 || index > aSignal->FreqSize()*0.95)
+        	if (index > aSignal->FreqSize()*0.95) // shifted?
+//            if (index > aSignal->FreqSize()/2*0.95 && index < aSignal->FreqSize()/2*1.05) // unshifted?
+//            if (index > aSignal->FreqSize()*0.95) // shifted and real and positive?
+
+
         	{
 //        		printf("aSignal %d is %g\n", index, aSignal->SignalFreq()[index][0]);
               aSignal->SignalFreq()[index][0] = 0.;

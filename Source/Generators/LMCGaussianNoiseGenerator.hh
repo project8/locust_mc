@@ -72,6 +72,7 @@ namespace locust
             double fSigma;
 
             mutable std::normal_distribution< double > fNormDist;
+
     };
 
 } /* namespace locust */

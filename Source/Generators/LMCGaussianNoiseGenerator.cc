@@ -138,12 +138,14 @@ namespace locust
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal ) const
     {
 
+
+
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
             aSignal->SignalTime()[index] += fNormDist( fRNG );
-  //          if (index<100) {printf("signal %d is %g\n", index, aSignal->SignalTime()[index]);
-  //getchar();}
         }
+
+
         return true;
 
     }

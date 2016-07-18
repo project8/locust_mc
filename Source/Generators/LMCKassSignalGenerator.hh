@@ -13,6 +13,7 @@
 #define LO_FREQUENCY 26.2757e9 // Hz  30 keV electrons in harmonic trap.
 //#define LO_FREQUENCY 27.0062e9  // Hz 18 keV electrons in bathtub trap.
 //#define LO_FREQUENCY 26.4061e9  // Hz 30 keV electrons in bathtub trap.
+//#define LO_FREQUENCY 26.3757e9 // Hz  30 keV electrons in harmonic trap, mixed to -50 MHz.
 
 
 #include "LMCGenerator.hh"
@@ -48,7 +49,8 @@ namespace locust
 
         private:
             bool DoGenerate( Signal* aSignal ) const;
-            void* DriveAntenna(unsigned index, Signal* aSignal) const;
+            void* DriveAntenna(unsigned index, Signal* aSignal, double* ImaginarySignal) const;
+            void* FilterNegativeFrequencies(Signal* aSignal, double* ImaginarySignal) const;
             double ModeExcitation() const;
             double AverageModeExcitation() const;
             double FakeModeExcitation() const;

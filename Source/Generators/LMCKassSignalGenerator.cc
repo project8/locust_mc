@@ -92,11 +92,78 @@ bool ReceivedKassReady()
 
 
 
-void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
+void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
 {
-	double dummy = 0.;
+	fftw_complex *SignalComplex;
+    SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * aSignal->TimeSize() );
+	fftw_complex *FFTComplex;
+    FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * aSignal->TimeSize() );
+
+    fftw_plan ForwardPlan;
+    ForwardPlan = fftw_plan_dft_1d(aSignal->TimeSize(), SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_plan ReversePlan;
+    ReversePlan = fftw_plan_dft_1d(aSignal->TimeSize(), FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+
+// Construct complex voltage.
+    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    {
+        SignalComplex[index][0] = aSignal->SignalTime()[ index ];
+        SignalComplex[index][1] = ImaginarySignal[index];
+//        if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
+
+    }
+
+    fftw_execute(ForwardPlan);
+
+
+//  Complex filter to set power at negative frequencies to 0.
+
+    for( unsigned index = aSignal->TimeSize()/2; index < aSignal->TimeSize(); ++index )
+    {
+        FFTComplex[index][0] = 0.;
+        FFTComplex[index][1] = 0.;
+    }
+
+
+    // Complex low pass filter 90% of Nyquist.
+        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+        {
+        	if ((index > aSignal->TimeSize()/2*90/100 ) && (index < aSignal->TimeSize()/2*110/100 ))
+            FFTComplex[index][0] = 0.;
+            FFTComplex[index][1] = 0.;
+        }
+
+
+
+
+
+    fftw_execute(ReversePlan);
+
+    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    {
+    	// normalize and take the real part of the reverse transform, for digitization.
+    aSignal->SignalTime()[index] = SignalComplex[index][0]/aSignal->TimeSize();
+//    if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
+    }
+
+delete SignalComplex;
+delete FFTComplex;
+
+
+}
+
+
+
+
+void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double* ImaginarySignal) const
+{
+
 	double dt = 5.e-9; // seconds, this might need to come from Kassiopeia and be exact.
     double fprime = 0.;  // Doppler shifted cyclotron frequency in Hz.
+    double RealVoltagePhase = 0.;
+    double ImagVoltagePhase = 0.;
+
 
 //                  printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
@@ -104,16 +171,13 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
            fprime = fcyc*GammaZ*(1.-zvelocity/2.99792e8);
            phi_t += 2.*PI*fprime*dt;
            phiLO_t += 2.*PI*LO_FREQUENCY*dt;
-           phiM_t += 2.*PI*fcyc*dt;
-           LarmorPower = 1.e-15;
+           RealVoltagePhase = cos( phi_t + phiLO_t ); // + cos( phi_t - phiLO_t ));
+           ImagVoltagePhase = cos( phi_t + phiLO_t - PI/2.); // + cos( phi_t - phiLO_t - PI/2.));
 
 
-           aSignal->SignalTime()[ index ] +=
-        		 AverageModeExcitation()*pow(LarmorPower,0.5)*(cos(phi_t)*cos(phiLO_t) - sin(phi_t)*sin(phiLO_t));
-//                (1./1.41421 - ModeExcitation())*pow(LarmorPower,0.5)*cos(phi_t)*cos(phiLO_t);
-//           AverageModeExcitation()*pow(LarmorPower,0.5)*cos(phiLO_t);  // check amplitude modulation.
+           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
+           ImaginarySignal[ index ] = AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
 
-//           printf("fake mode exctitation is %g\n", FakeModeExcitation());
 
 //           printf("driving antenna, ModeExcitation is %g\n", ModeExcitation());
 //           printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %f\n",
@@ -122,38 +186,6 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
 
 }
 
-
-/*
-double KassSignalGenerator::FakeModeExcitation() const
-{
-    double dim1_wr42 = 10.668e-3; // m
-    double dim2_wr42 = 4.318e-3; // m
-    dummy_time += 5.e-9;
-    double v = 5.5e7;
-    double phi_orbit = dummy_time/(1./26.44e9)*2.*PI;
-    double x = 0.0005*cos(phi_orbit);
-
-	double vy = v*sin(phi_orbit);
-	double vx = v*cos(phi_orbit);
-	x += dim1_wr42/2.;  // center of waveguide is at zero.
-	double Ey = 0.;
-	double EyMax = 0.;
-
-
-	double *EyArray1 = EyWR42Array();
-
-
-	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
-	EyMax = EyArray1[100/2];
-	printf("phi_orbit is %g and Ey is %g and vy is %g and vx is %g\n", phi_orbit, Ey, vy, vx);
-	double EdotV = fabs(Ey*vy)/fabs(EyMax*pow(vx*vx+vy*vy,0.5)) / 1.41421;
-
-	fprintf(fp3, "%.10g  ", EdotV);  // checking mode excitation.
-
-return EdotV;
-
-}
-*/
 
 
 double KassSignalGenerator::ModeExcitation() const
@@ -212,7 +244,9 @@ double KassSignalGenerator::AverageModeExcitation() const
 //	printf("EyMax is %g\n", EyMax);
 
 	// E dot v / (Emax v) * 0.637 / sqrt(2) for analytic avg coupling/orbit and half power lost in opposite direction.
-	double AverageEdotV = fabs(Ey/EyMax) *0.637 / 1.41421;
+	// or E dot v / (Emax v) * 0.637 for analytic avg coupling/orbit and reflecting short.
+	double AverageEdotV = fabs(Ey/EyMax) *0.637;
+
 //	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
 
 //	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
@@ -244,7 +278,9 @@ return EyArray1;
     bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
 
-//      samples for event spacing.
+    	double *ImaginarySignal = new double[aSignal->TimeSize()];  // temporary IQ patch.
+
+//      n samples for event spacing.
     	int PreEventCounter = 0;
     	int NPreEventSamples = 15000;
 
@@ -278,7 +314,6 @@ return EyArray1;
         	  PreEventCounter = 0;  // reset.
     		  phi_t = 0.; // initialize antenna voltage phase in radians.
   		      phiLO_t = 0.; // initialize voltage phase of LO;
-  		      phiM_t = 0.; // initialize phase of modulation.
         	  WakeBeforeEvent();  // trigger Kass event.
               fEventInProgress = true;  // flag.
         	  }
@@ -294,12 +329,17 @@ return EyArray1;
           if (fEventInProgress)
         	  {
 //        	  fprintf(fp, "%.10g  ", t_poststep);  // time stamp checking.
-        	  DriveAntenna(index, aSignal);
+        	  DriveAntenna(index, aSignal, ImaginarySignal);
         	  }
           tLock.unlock();
         }
 
         }  // for loop
+
+
+        FilterNegativeFrequencies(aSignal, ImaginarySignal);
+        delete ImaginarySignal;
+
 
 //    	fclose(fp);  // timing.txt file.
 //        fclose(fp2); // mode excitation file.
