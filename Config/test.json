@@ -1,6 +1,8 @@
 {
     "generators":
     [         
+    
+        "gaussian-noise",
         "kass-signal",
         "digitizer"
     ],

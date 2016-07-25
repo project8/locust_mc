@@ -17,7 +17,6 @@
 
 double phi_t = 0.; // antenna voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO;
-double phiM_t = 0.; // phase of modulation.
 double dummy_time = 0.;  // time for checking mode excitation.
 
     	FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
@@ -58,7 +57,7 @@ namespace locust
 
     void* KassiopeiaInit()
     {
-    	const string & afile = "/home/penny/project8/Project8_by_Devin.xml";
+    	const string & afile = "/home/hep/heeger/ps48/project8/Project8_by_Devin.xml";
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
     	delete RunKassiopeia1;
@@ -77,16 +76,16 @@ void WakeBeforeEvent()
 
 bool ReceivedKassReady()
 {
+
     if( !fKassEventReady)
     if( !fKassEventReady)  // check again.
     {
-	printf("waiting for signal that Kass is Ready ...\n");
     std::unique_lock< std::mutex >tLock( fMutex );
     fKassReadyCondition.wait( tLock );
-    printf("Got the fKassReadyCondition signal\n");
+    printf("LMC Got the fKassReadyCondition signal\n");
     return true;
     }
-    else return true;
+    else {return true;}
 }
 
 
@@ -94,22 +93,31 @@ bool ReceivedKassReady()
 
 void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
 {
+
+  int nwindows = 8;
+  int windowsize = aSignal->TimeSize()/nwindows;
+
+
 	fftw_complex *SignalComplex;
-    SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * aSignal->TimeSize() );
+    SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
 	fftw_complex *FFTComplex;
-    FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * aSignal->TimeSize() );
+    FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
 
     fftw_plan ForwardPlan;
-    ForwardPlan = fftw_plan_dft_1d(aSignal->TimeSize(), SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+    ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_plan ReversePlan;
-    ReversePlan = fftw_plan_dft_1d(aSignal->TimeSize(), FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+    ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+
+    for (int nwin = 0; nwin < nwindows; nwin++)
+      {
 
 
 // Construct complex voltage.
-    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    for( unsigned index = 0; index < windowsize; ++index )
     {
-        SignalComplex[index][0] = aSignal->SignalTime()[ index ];
-        SignalComplex[index][1] = ImaginarySignal[index];
+        SignalComplex[index][0] = aSignal->SignalTime()[ nwin*windowsize + index ];
+        SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
 //        if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
 
     }
@@ -117,15 +125,20 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
     fftw_execute(ForwardPlan);
 
 
+    
+
 //  Complex filter to set power at negative frequencies to 0.
 
-    for( unsigned index = aSignal->TimeSize()/2; index < aSignal->TimeSize(); ++index )
+    for( unsigned index = windowsize/2; index < windowsize; ++index )
     {
         FFTComplex[index][0] = 0.;
         FFTComplex[index][1] = 0.;
     }
 
+    
 
+
+    /*
     // Complex low pass filter 90% of Nyquist.
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
@@ -134,18 +147,25 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
             FFTComplex[index][1] = 0.;
         }
 
-
+    */    
 
 
 
     fftw_execute(ReversePlan);
 
-    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    double norm = (double)(windowsize);
+
+    for( unsigned index = 0; index < windowsize; ++index )
     {
     	// normalize and take the real part of the reverse transform, for digitization.
-    aSignal->SignalTime()[index] = SignalComplex[index][0]/aSignal->TimeSize();
+      aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
 //    if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
     }
+
+
+
+    }
+
 
 delete SignalComplex;
 delete FFTComplex;
@@ -171,12 +191,12 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
            fprime = fcyc*GammaZ*(1.-zvelocity/2.99792e8);
            phi_t += 2.*PI*fprime*dt;
            phiLO_t += 2.*PI*LO_FREQUENCY*dt;
-           RealVoltagePhase = cos( phi_t + phiLO_t ); // + cos( phi_t - phiLO_t ));
-           ImagVoltagePhase = cos( phi_t + phiLO_t - PI/2.); // + cos( phi_t - phiLO_t - PI/2.));
+           RealVoltagePhase = cos( phi_t - phiLO_t ); // + cos( phi_t + phiLO_t ));
+           ImagVoltagePhase = cos( phi_t - phiLO_t - PI/2.); // + cos( phi_t + phiLO_t - PI/2.));
 
 
            aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
-           ImaginarySignal[ index ] = AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
+           ImaginarySignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
 
 
 //           printf("driving antenna, ModeExcitation is %g\n", ModeExcitation());
@@ -278,11 +298,14 @@ return EyArray1;
     bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
 
-    	double *ImaginarySignal = new double[aSignal->TimeSize()];  // temporary IQ patch.
+      // temporary IQ patch.  Define and initialize ImaginarySignal.
+    	double *ImaginarySignal = new double[aSignal->TimeSize()]; 
+        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+          ImaginarySignal[ index ] = 0.;
 
 //      n samples for event spacing.
     	int PreEventCounter = 0;
-    	int NPreEventSamples = 15000;
+	int NPreEventSamples = 15000;
 
 //    	FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
 //    	fprintf(fp, "testing\n");
@@ -292,35 +315,37 @@ return EyArray1;
     	fRunInProgress = true;
 
 
-//    	for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    	for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
 
-        for( unsigned index = 0; index < 2e6; ++index )
     	{
 
         if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
         	{
         	if (ReceivedKassReady()) fPreEventInProgress = true;
+		               
         	}
 
 
     	if (fPreEventInProgress)
     	  {
     	  PreEventCounter += 1;
-//          aSignal->SignalTime()[ index ] += 3;  // dummy noise value
+	  //	            printf("preeventcounter is %d\n", PreEventCounter);
 
           if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
         	  {
         	  fPreEventInProgress = false;  // reset.
+                  fEventInProgress = true;
         	  PreEventCounter = 0;  // reset.
     		  phi_t = 0.; // initialize antenna voltage phase in radians.
-  		      phiLO_t = 0.; // initialize voltage phase of LO;
-        	  WakeBeforeEvent();  // trigger Kass event.
-              fEventInProgress = true;  // flag.
+  		  phiLO_t = 0.; // initialize voltage phase of LO;
+                  printf("LMC about to wakebeforeevent\n");
+	          WakeBeforeEvent();  // trigger Kass event.
         	  }
     	  }
 
 
     	if (fEventInProgress)  // fEventInProgress
+	if (fEventInProgress)  // check again.
         {
 //    	  printf("waiting for digitizer trigger ... index is %d\n", index);
           std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
@@ -328,7 +353,6 @@ return EyArray1;
           fDigitizerCondition.wait( tLock );
           if (fEventInProgress)
         	  {
-//        	  fprintf(fp, "%.10g  ", t_poststep);  // time stamp checking.
         	  DriveAntenna(index, aSignal, ImaginarySignal);
         	  }
           tLock.unlock();
@@ -337,7 +361,7 @@ return EyArray1;
         }  // for loop
 
 
-        FilterNegativeFrequencies(aSignal, ImaginarySignal);
+	FilterNegativeFrequencies(aSignal, ImaginarySignal);
         delete ImaginarySignal;
 
 
