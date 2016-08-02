@@ -22,7 +22,7 @@ namespace locust
     LOGGER( lmclog, "EggWriter" );
 
     EggWriter::EggWriter() :
-            f_filename( "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc.egg" ),
+            f_filename( "/home/slocum/locust_mc/cbuild/bin/locust_mc.egg" ),
             f_date(),
             f_description(),
             f_record_length( 0 ),

@@ -57,7 +57,7 @@ namespace locust
 
     void* KassiopeiaInit()
     {
-    	const string & afile = "/home/hep/heeger/ps48/project8/Project8_by_Devin.xml";
+    	const string & afile = "/home/slocum/project8/Project8_by_Devin.xml";
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
     	delete RunKassiopeia1;
@@ -183,12 +183,17 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
     double fprime = 0.;  // Doppler shifted cyclotron frequency in Hz.
     double RealVoltagePhase = 0.;
     double ImagVoltagePhase = 0.;
+    double GroupVelocity = 0.;
+    double SpeedOfLight = 2.99792458e8; // m/s
+    double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m                                                             
+
 
 
 //                  printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
-
-           fprime = fcyc*GammaZ*(1.-zvelocity/2.99792e8);
+    GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
+    //    printf("GroupVelocity is %g, CutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, CutOffFrequency, 2.*PI*fcyc); getchar();
+           fprime = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
            phi_t += 2.*PI*fprime*dt;
            phiLO_t += 2.*PI*LO_FREQUENCY*dt;
            RealVoltagePhase = cos( phi_t - phiLO_t ); // + cos( phi_t + phiLO_t ));
@@ -210,8 +215,8 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
 
 double KassSignalGenerator::ModeExcitation() const
 {
-    double dim1_wr42 = 10.668e-3; // m
-    double dim2_wr42 = 4.318e-3; // m
+    double dim1_wr42 = 10.668e-3; // a in m
+    double dim2_wr42 = 4.318e-3; // b in m
 	double vy = yvelocity;
 	double vx = xvelocity;
 	double x = X + dim1_wr42/2.;  // center of waveguide is at zero.
@@ -270,7 +275,6 @@ double KassSignalGenerator::AverageModeExcitation() const
 //	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
 
 //	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
-
 
 return AverageEdotV;
 }
