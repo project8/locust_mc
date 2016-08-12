@@ -25,9 +25,9 @@ namespace locust
     {
         fRequiredSignalState = Signal::kTime;
 
-	//        get_calib_params( 8, 1, -3.e-6, 6.e-6, false, &fParams );  // if Gaussian noise is included.
+				        get_calib_params( 8, 1, -3.e-6, 6.e-6, false, &fParams );  // if Gaussian noise is included.
 
-        get_calib_params( 8, 1, -1.e-7, 2.e-7, false, &fParams );  // if Gaussian noise is not included.
+					//						        get_calib_params( 8, 1, -1.e-7, 2.e-7, false, &fParams );  // if Gaussian noise is not included.
     }
 
     Digitizer::~Digitizer()

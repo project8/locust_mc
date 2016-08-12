@@ -38,7 +38,10 @@ namespace locust
         double tSigma = fSigma;
         if( aParam->Has( "noise-floor" ) )
         {
-            tSigma = sqrt( aParam->GetValue< double >( "noise-floor" ) * aParam->GetValue< double >( "acquisition-rate", 100. ) * 1.e6 );
+	  //            tSigma = sqrt( aParam->GetValue< double >( "noise-floor" ) * aParam->GetValue< double >( "acquisition-rate", 100. ) * 1.e6 );
+	  tSigma = sqrt( aParam->GetValue< double >( "noise-floor" ) * 200.e6/2.);  // sampling rate is 200 MHz.  divide by 2 due to nbins->nbins/2 in katydid normalization.
+
+
         }
         else
         {

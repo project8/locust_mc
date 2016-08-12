@@ -10,7 +10,13 @@
 
 #define PI 3.1415926
 //#define LO_FREQUENCY 26.8730e9 // Hz  18 keV electrons in harmonic trap.
-#define LO_FREQUENCY 26.2757e9 // Hz  30 keV electrons in harmonic trap.
+//#define LO_FREQUENCY 26.2757e9 // Hz  30 keV electrons in harmonic trap, pitch 87-90 spans 85-50 MHz in baseband. 
+//#define LO_FREQUENCY 26.3057e9 // Hz  30 keV electrons in harmonic trap, pitch 86-90 spans 81-20 MHz in baseband
+#define LO_FREQUENCY 26.2524e9 // Hz  30.48 keV electrons in harmonic trap, pitch 90, sits at 50 MHz in baseband
+//#define LO_FREQUENCY 24.8100e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9454, sits at 50 MHz in baseband.
+//#define LO_FREQUENCY 20.9688e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.8 T, sits at 50 MHz in baseband.
+//#define LO_FREQUENCY 25.1508e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 50 MHz in baseband.
+//#define LO_FREQUENCY 22.2897e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.85 T.  Sits at 50 MHz in baseband.
 //#define LO_FREQUENCY 27.0062e9  // Hz 18 keV electrons in bathtub trap.
 //#define LO_FREQUENCY 26.4061e9  // Hz 30 keV electrons in bathtub trap.
 //#define LO_FREQUENCY 26.3757e9 // Hz  30 keV electrons in harmonic trap, mixed to -50 MHz.

@@ -159,7 +159,7 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
     {
     	// normalize and take the real part of the reverse transform, for digitization.
       aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-//    if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
+      //    if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
     }
 
 
@@ -185,9 +185,8 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
     double ImagVoltagePhase = 0.;
     double GroupVelocity = 0.;
     double SpeedOfLight = 2.99792458e8; // m/s
-    double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m                                                             
-
-
+    double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m         
+                                
 
 //                  printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
@@ -204,10 +203,11 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
            ImaginarySignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
 
 
-//           printf("driving antenna, ModeExcitation is %g\n", ModeExcitation());
-//           printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %f\n",
-//                   index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
-//                  getchar();
+	   //	          printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
+	   //	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
+	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
+	   //	   	                     getchar();
+
 
 }
 
@@ -309,7 +309,7 @@ return EyArray1;
 
 //      n samples for event spacing.
     	int PreEventCounter = 0;
-	int NPreEventSamples = 15000;
+	int NPreEventSamples = 15;
 
 //    	FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
 //    	fprintf(fp, "testing\n");
@@ -319,7 +319,8 @@ return EyArray1;
     	fRunInProgress = true;
 
 
-    	for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+
 
     	{
 
