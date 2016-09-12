@@ -203,7 +203,7 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
            ImaginarySignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
 
 
-	   //	          printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
+	   //	   	   	   	   	   	          printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
 	   //	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
 	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
 	   //	   	                     getchar();
@@ -309,7 +309,7 @@ return EyArray1;
 
 //      n samples for event spacing.
     	int PreEventCounter = 0;
-	int NPreEventSamples = 15;
+	int NPreEventSamples = 150000;
 
 //    	FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
 //    	fprintf(fp, "testing\n");

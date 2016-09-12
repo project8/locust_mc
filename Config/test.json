@@ -1,8 +1,8 @@
 {
     "generators":
     [         
-        "kass-signal",
-        "gaussian-noise",       
+        "gaussian-noise",
+        "low-pass-filter",
          "digitizer"
     ],
     
@@ -18,7 +18,7 @@
   
     "gaussian-noise":
     {
-    "noise-floor": 20.0e-22,
+    "noise-floor": 10.0e-22,
     "domain": "time"
     },
 
