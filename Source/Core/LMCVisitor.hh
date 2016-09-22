@@ -14,10 +14,11 @@ namespace locust
     class GaussianNoiseGenerator;
     class TestSignalGenerator;
     class BasebandTrackGenerator;
-    class ReceiverTransferFunctionGenerator;
+    class LowPassFilterFFTGenerator;
     class Digitizer;
     class TrappedElectronGenerator;
-    class KassiopeiaGenerator;
+    class KassSignalGenerator;
+    class DecimateSignalGenerator;
 
     class GeneratorVisitor
     {
@@ -27,12 +28,13 @@ namespace locust
 
             virtual void Visit( const Generator* );
 
-            virtual void Visit( const KassiopeiaGenerator* ) = 0;
+            virtual void Visit( const KassSignalGenerator* ) = 0;
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
             virtual void Visit( const TrappedElectronGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;
             virtual void Visit( const BasebandTrackGenerator* ) = 0;
-            virtual void Visit( const ReceiverTransferFunctionGenerator* ) = 0;
+            virtual void Visit( const LowPassFilterFFTGenerator* ) = 0;
+            virtual void Visit( const DecimateSignalGenerator* ) = 0;
             virtual void Visit( const Digitizer* ) = 0;
     };
 

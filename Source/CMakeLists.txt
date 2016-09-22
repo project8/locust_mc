@@ -43,7 +43,9 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCTestSignalGenerator.hh
     Generators/LMCBasebandTrackGenerator.hh
-    Generators/LMCLowPassFilterGenerator.hh
+    Generators/LMCDecimateSignalGenerator.hh
+    Generators/LMCLowPassFilterFFTGenerator.hh
+    Generators/LMCButterworthLPFGenerator.hh
     Generators/LMCTrappedElectronGenerator.hh
 #    Generators/LMCSingleAmpSim.hh
 )
@@ -67,7 +69,9 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCTestSignalGenerator.cc
     Generators/LMCBasebandTrackGenerator.cc
-    Generators/LMCLowPassFilterGenerator.cc
+    Generators/LMCDecimateSignalGenerator.cc
+    Generators/LMCButterworthLPFGenerator.cc
+    Generators/LMCLowPassFilterFFTGenerator.cc
     Generators/LMCTrappedElectronGenerator.cc
 #    Generators/LMCSingleAmpSim.cc
 )

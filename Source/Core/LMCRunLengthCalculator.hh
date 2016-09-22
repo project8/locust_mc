@@ -81,12 +81,13 @@ namespace locust
             void SetBinWidth( double bw );
 
         private:
-            void Visit( const KassiopeiaGenerator* );
+            void Visit( const KassSignalGenerator* );
             void Visit( const TrappedElectronGenerator* );
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const TestSignalGenerator* );
             void Visit( const BasebandTrackGenerator* );
-            void Visit( const ReceiverTransferFunctionGenerator* );
+            void Visit( const LowPassFilterFFTGenerator* );
+            void Visit( const DecimateSignalGenerator* );
             void Visit( const Digitizer* );
 
             RunLengthState fState;

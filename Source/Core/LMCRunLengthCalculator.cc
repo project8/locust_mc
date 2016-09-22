@@ -76,7 +76,7 @@ namespace locust
         return true;
     }
 
-    void RunLengthCalculator::Visit( const KassiopeiaGenerator* )
+    void RunLengthCalculator::Visit( const KassSignalGenerator* )
     {
         // nothing to see here, move along, please
         return;
@@ -88,7 +88,7 @@ namespace locust
         return;
     }
 
-    void RunLengthCalculator::Visit( const ReceiverTransferFunctionGenerator* )
+    void RunLengthCalculator::Visit( const LowPassFilterFFTGenerator* )
     {
         // nothing to see here, move along, please
         return;
@@ -105,8 +105,15 @@ namespace locust
         // nothing to see here, move along, please
         return;
     }
+    void RunLengthCalculator::Visit( const DecimateSignalGenerator* )
+     {
+         // nothing to see here, move along, please
+         return;
+     }
 
-   void RunLengthCalculator::Visit( const TestSignalGenerator* )
+
+
+    void RunLengthCalculator::Visit( const TestSignalGenerator* )
     {
         // nothing to see here, move along, please
         return;

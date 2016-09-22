@@ -1,8 +1,7 @@
 {
     "generators":
     [         
-        "gaussian-noise",
-        "low-pass-filter",
+        "kass-signal",
          "digitizer"
     ],
     
