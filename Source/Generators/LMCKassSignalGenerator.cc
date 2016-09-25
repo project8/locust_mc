@@ -179,7 +179,7 @@ delete FFTComplex;
 void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
 
-	double dt = 5.e-9; // seconds, this might need to come from Kassiopeia and be exact.
+	double dt = 5.e-10; // seconds, this might need to come from Kassiopeia and be exact.
     double fprime = 0.;  // Doppler shifted cyclotron frequency in Hz.
     double RealVoltagePhase = 0.;
     double ImagVoltagePhase = 0.;
@@ -203,7 +203,7 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
            ImaginarySignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
 
 
-	   //	   	   	   	   	   	   	   	          printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
+	   //   printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
 	   //	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
 	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
 	   //	   	                     getchar();
@@ -301,6 +301,8 @@ return EyArray1;
 
     bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
+
+
 
       // temporary IQ patch.  Define and initialize ImaginarySignal.
     	double *ImaginarySignal = new double[aSignal->TimeSize()]; 

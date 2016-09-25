@@ -16,13 +16,17 @@
 //#define LO_FREQUENCY 24.8100e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9454, sits at 50 MHz in baseband.
 //#define LO_FREQUENCY 20.9688e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.8 T, sits at 50 MHz in baseband.
 
-//#define LO_FREQUENCY 25.1508e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 50 MHz in baseband.
+#define LO_FREQUENCY 25.1508e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 50 MHz in baseband.
+//#define LO_FREQUENCY 25.1010e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 99.8 MHz in baseband.               
+
+
+
 
 //#define LO_FREQUENCY 25.7537e9 // Hz, 17.83 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 50 MHz in baseband.               
 
 
 
-#define LO_FREQUENCY 25.18e9 // Hz, same frequency as RSA + 40.e6
+//#define LO_FREQUENCY 25.18e9 // Hz, same frequency as RSA + 40.e6
 //#define LO_FREQUENCY 25.7737e9 // Hz, mix central 17.83 keV down to 30MHz.
 //#define LO_FREQUENCY 26.3550e9 // Hz, find upper sideband of 17.83 keV
 

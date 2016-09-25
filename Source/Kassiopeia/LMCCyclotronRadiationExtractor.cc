@@ -42,7 +42,7 @@ namespace locust
 
     	t_poststep = aFinalParticle.GetTime();
 
-        if (t_poststep - t_old > 5.e-9)
+        if (t_poststep - t_old > 5.e-10)
             {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();

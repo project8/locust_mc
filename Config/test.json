@@ -2,6 +2,8 @@
     "generators":
     [         
         "kass-signal",
+        "lpf-fft",
+        "decimate-signal",
          "digitizer"
     ],
     
