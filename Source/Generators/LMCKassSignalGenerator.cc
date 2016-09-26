@@ -94,8 +94,8 @@ bool ReceivedKassReady()
 void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
 {
 
-  int nwindows = 8;
-  int windowsize = aSignal->TimeSize()/nwindows;
+  int nwindows = 80;
+  int windowsize = 10*aSignal->TimeSize()/nwindows;
 
 
 	fftw_complex *SignalComplex;
@@ -138,19 +138,6 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
     
 
 
-    /*
-    // Complex low pass filter 90% of Nyquist.
-        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
-        {
-        	if ((index > aSignal->TimeSize()/2*90/100 ) && (index < aSignal->TimeSize()/2*110/100 ))
-            FFTComplex[index][0] = 0.;
-            FFTComplex[index][1] = 0.;
-        }
-
-    */    
-
-
-
     fftw_execute(ReversePlan);
 
     double norm = (double)(windowsize);
@@ -158,7 +145,8 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
     for( unsigned index = 0; index < windowsize; ++index )
     {
     	// normalize and take the real part of the reverse transform, for digitization.
-      aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
+//      aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
+      aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
       //    if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
     }
 
@@ -199,7 +187,8 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
            ImagVoltagePhase = cos( phi_t - phiLO_t - PI/2.); // + cos( phi_t + phiLO_t - PI/2.));
 
 
-           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
+//           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
+           aLongSignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
            ImaginarySignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
 
 
@@ -302,12 +291,13 @@ return EyArray1;
     bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
 
-
-
       // temporary IQ patch.  Define and initialize ImaginarySignal.
-    	double *ImaginarySignal = new double[aSignal->TimeSize()]; 
-        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    	double *ImaginarySignal = new double[10*aSignal->TimeSize()];
+        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+          {
           ImaginarySignal[ index ] = 0.;
+          aLongSignal[ index ] = 0.;  // long record for oversampling.
+          }
 
 //      n samples for event spacing.
     	int PreEventCounter = 0;
@@ -321,7 +311,7 @@ return EyArray1;
     	fRunInProgress = true;
 
 
-	for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+	for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
 
 
     	{

@@ -8,6 +8,8 @@
 #include "LMCDecimateSignalGenerator.hh"
 
 #include "logger.hh"
+#include "LMCGlobalsDeclaration.hh"
+
 
 using std::string;
 
@@ -48,6 +50,8 @@ namespace locust
 
     bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) const
     {
+/*
+
 
     double* aTemporarySignal = new double[aSignal->TimeSize()];
 
@@ -58,16 +62,18 @@ namespace locust
       aSignal->SignalTime()[index] = 0.;
       }
 
+      */
+
     // Decimate Fs -> Fs/10
-    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    for( unsigned index = 0; index < 41943040; ++index )
       {
       if (index%10 == 0)
         {
-        aSignal->SignalTime()[index/10] = aTemporarySignal[index];
+        aSignal->SignalTime()[index/10] = aLongSignal[index];
         }
       }
 
-    delete aTemporarySignal;
+//    delete aTemporarySignal;
 
          return true;
     }

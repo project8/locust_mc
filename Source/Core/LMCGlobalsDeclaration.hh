@@ -48,5 +48,6 @@ extern std::condition_variable fDigitizerCondition;
 extern std::condition_variable fKassReadyCondition;
 
 
+extern double* aLongSignal;  // pls:  placeholder for oversampled signal.
 
 #endif /* GLOBALSDECLARATION_HH_ */
