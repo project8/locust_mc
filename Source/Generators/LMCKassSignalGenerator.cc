@@ -96,6 +96,8 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
   int nwindows = 80;
   int windowsize = 10*aSignal->TimeSize()/nwindows;
+  double CutoffFreq = 85.e6;
+
 
 
 	fftw_complex *SignalComplex;
@@ -116,7 +118,7 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 // Construct complex voltage.
     for( unsigned index = 0; index < windowsize; ++index )
     {
-        SignalComplex[index][0] = aSignal->SignalTime()[ nwin*windowsize + index ];
+        SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
         SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
 //        if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
 
@@ -126,6 +128,27 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
 
     
+
+    // Low Pass Filter
+
+    /*
+            for( unsigned index = 0; index < windowsize; ++index )
+              {
+              if
+                (
+              	(index > windowsize/2.*CutoffFreq/1.e9)
+              	//&&
+//              	(index < windowsize/2. * (1. + (1.e9-CutoffFreq)/1.e9))
+                )
+            	{
+    //        	  printf("index is %d\n", index);
+                  FFTComplex[index][0] = 0.;
+                  FFTComplex[index][1] = 0.;
+                }
+              }
+
+    */
+
 
 //  Complex filter to set power at negative frequencies to 0.
 
