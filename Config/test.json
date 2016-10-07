@@ -4,7 +4,8 @@
         "kass-signal",
         "lpf-fft",
         "decimate-signal",
-         "digitizer"
+        "gaussian-noise",
+        "digitizer"
     ],
     
     "receiver-transfer-function":
@@ -19,7 +20,7 @@
   
     "gaussian-noise":
     {
-    "noise-floor": 10.0e-22,
+    "noise-floor": 20.0e-26,
     "domain": "time"
     },
 

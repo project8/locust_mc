@@ -57,7 +57,7 @@ namespace locust
 
     void* KassiopeiaInit()
     {
-    	const string & afile = "/home/slocum/project8/Project8_by_Devin.xml";
+    	const string & afile = "/home/hep/heeger/ps48/project8/Project8_by_Devin.xml";
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
     	delete RunKassiopeia1;
@@ -85,7 +85,12 @@ bool ReceivedKassReady()
     printf("LMC Got the fKassReadyCondition signal\n");
     return true;
     }
-    else {return true;}
+    else 
+    {
+    printf("LMC sees the fKassEventReady flag\n");
+    return true;
+    }
+    return true;
 }
 
 
