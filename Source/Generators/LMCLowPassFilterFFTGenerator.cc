@@ -1,5 +1,5 @@
 /*
- * LMCLowPassFilterGenerator.cc
+ * LMCLowPassFilterFFTGenerator.cc
  *
  *  Created on: Sept 9, 2016
  *      Author: plslocum after nsoblath
@@ -15,40 +15,40 @@ using std::string;
 
 namespace locust
 {
-    LOGGER( lmclog, "LowPassFilterGenerator" );
+    LOGGER( lmclog, "LowPassFilterFFTGenerator" );
 
-    MT_REGISTER_GENERATOR(LowPassFilterGenerator, "lpf-fft");
+    MT_REGISTER_GENERATOR(LowPassFilterFFTGenerator, "lpf-fft");
 
-    LowPassFilterGenerator::LowPassFilterGenerator( const std::string& aName ) :
+    LowPassFilterFFTGenerator::LowPassFilterFFTGenerator( const std::string& aName ) :
             Generator( aName ),
-            fDoGenerateFunc( &LowPassFilterGenerator::DoGenerateTime )
+            fDoGenerateFunc( &LowPassFilterFFTGenerator::DoGenerateTime )
     {
         fRequiredSignalState = Signal::kTime;
     }
 
-    LowPassFilterGenerator::~LowPassFilterGenerator()
+    LowPassFilterFFTGenerator::~LowPassFilterFFTGenerator()
     {
     }
 
-    bool LowPassFilterGenerator::Configure( const ParamNode* aParam )
+    bool LowPassFilterFFTGenerator::Configure( const ParamNode* aParam )
     {
         if( aParam == NULL) return true;
         return true;
     }
 
-    void LowPassFilterGenerator::Accept( GeneratorVisitor* aVisitor ) const
+    void LowPassFilterFFTGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
         return;
     }
 
 
-    bool LowPassFilterGenerator::DoGenerate( Signal* aSignal ) const
+    bool LowPassFilterFFTGenerator::DoGenerate( Signal* aSignal ) const
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool LowPassFilterGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool LowPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal ) const
     {
 
 
@@ -84,12 +84,13 @@ namespace locust
           fftw_execute(ForwardPlan);
 
 
-// Low Pass Filter
+// Low Pass FilterFFT
         for( unsigned index = 0; index < windowsize; ++index )
           {
           if
             (
-          	(index > windowsize/2.*CutoffFreq/1.e9)
+          	(index > windowsize/2.*CutoffFreq/1.e9) &&
+          	(index < windowsize/2. * (1. + (1.e9-CutoffFreq)/1.e9))
             )
         	{
 //        	  printf("index is %d\n", index);
@@ -122,7 +123,7 @@ namespace locust
     	return true;
     }
 
-    bool LowPassFilterGenerator::DoGenerateFreq( Signal* aSignal ) const
+    bool LowPassFilterFFTGenerator::DoGenerateFreq( Signal* aSignal ) const
     {
 
 

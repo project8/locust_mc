@@ -1,12 +1,12 @@
 /*
- * LMCLowPassFilterGenerator.hh
+ * LMCLowPassFilterFFTGenerator.hh
  *
  *  Created on: 29 January 2015
  *      Author: plslocum after nsoblath
  */
 
-#ifndef LMCLOWPASSFILTERGENERATOR_HH_
-#define LMCLOWPASSFILTERGENERATOR_HH_
+#ifndef LMCLOWPASSFILTERFFTGENERATOR_HH_
+#define LMCLOWPASSFILTERFFTGENERATOR_HH_
 
 #include "LMCGenerator.hh"
 
@@ -14,10 +14,10 @@ namespace locust
 {
 
     /*!
-     @class LowPassFilterGenerator
+     @class LowPassFilterFFTGenerator
      @author P. L. Slocum after N. S. Oblath
 
-     @brief Apply low pass filter to signal using an fft.
+     @brief Apply low pass filter to fast-sampled signal using an fft.
 
      @details
      Can operate in frequency or time space, but only the frequency version will have any effect on the signal.
@@ -26,11 +26,11 @@ namespace locust
 
     */
 
-class LowPassFilterGenerator : public Generator
+class LowPassFilterFFTGenerator : public Generator
     {
         public:
-            LowPassFilterGenerator( const std::string& aName = "lpf-fft" );
-            virtual ~LowPassFilterGenerator();
+            LowPassFilterFFTGenerator( const std::string& aName = "lpf-fft" );
+            virtual ~LowPassFilterFFTGenerator();
 
             bool Configure( const ParamNode* aNode );
 
@@ -46,7 +46,7 @@ class LowPassFilterGenerator : public Generator
             bool DoGenerateTime( Signal* aSignal ) const;
             bool DoGenerateFreq( Signal* aSignal ) const;
 
-            bool (LowPassFilterGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
+            bool (LowPassFilterFFTGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
 
             double fReceiverGain;
 
@@ -54,4 +54,4 @@ class LowPassFilterGenerator : public Generator
 
 } /* namespace locust */
 
-#endif /* LMCLOWPASSFILTERGENERATOR_HH_ */
+#endif /* LMCLOWPASSFILTERFFTGENERATOR_HH_ */

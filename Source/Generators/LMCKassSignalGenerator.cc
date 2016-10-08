@@ -90,7 +90,6 @@ bool ReceivedKassReady()
     printf("LMC sees the fKassEventReady flag\n");
     return true;
     }
-    return true;
 }
 
 
