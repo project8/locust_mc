@@ -8,13 +8,14 @@
         "digitizer"
     ],
     
-    "receiver-transfer-function":
+    "kass-signal":
     {
-
+        "lo_frequency": 25.1159e9
     },
 
     "simulation":
     {
+        "egg-filename": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1
     },
   

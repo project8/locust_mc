@@ -9,6 +9,7 @@
 #define LMCKASSSIGNALGENERATOR_HH_
 
 #define PI 3.1415926
+#define LO_FREQUENCY 0.
 //#define LO_FREQUENCY 26.8730e9 // Hz  18 keV electrons in harmonic trap.
 //#define LO_FREQUENCY 26.2757e9 // Hz  30 keV electrons in harmonic trap, pitch 87-90 spans 85-50 MHz in baseband. 
 //#define LO_FREQUENCY 26.3057e9 // Hz  30 keV electrons in harmonic trap, pitch 86-90 spans 81-20 MHz in baseband
@@ -16,7 +17,8 @@
 //#define LO_FREQUENCY 24.8100e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9454, sits at 50 MHz in baseband.
 //#define LO_FREQUENCY 20.9688e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.8 T, sits at 50 MHz in baseband.
 
-#define LO_FREQUENCY 25.1159e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 84.9 MHz in baseband.
+//#define LO_FREQUENCY 25.1159e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 84.9 MHz in baseband.
+
 //#define LO_FREQUENCY 25.1010e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 99.8 MHz in baseband.               
 
 
@@ -68,6 +70,7 @@ namespace locust
             void Accept( GeneratorVisitor* aVisitor ) const;
 
         private:
+      double fLO_Frequency;  // parameter in json file.
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(unsigned index, Signal* aSignal, double* ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double* ImaginarySignal) const;

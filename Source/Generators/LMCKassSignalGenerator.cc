@@ -30,7 +30,8 @@ namespace locust
     MT_REGISTER_GENERATOR(KassSignalGenerator, "kass-signal");
 
     KassSignalGenerator::KassSignalGenerator( const std::string& aName ) :
-            Generator( aName )
+      Generator( aName ),
+      fLO_Frequency( 0.)
     {
         fRequiredSignalState = Signal::kTime;
 
@@ -43,6 +44,11 @@ namespace locust
     bool KassSignalGenerator::Configure( const ParamNode* aParam )
     {
         if( aParam == NULL) return true;
+        fLO_Frequency = LO_FREQUENCY;
+        if( aParam->Has( "lo_frequency" ) )
+	  {
+	    fLO_Frequency = aParam->GetValue< double >( "lo_frequency" );
+	  }
 
         return true;
     }
@@ -57,7 +63,7 @@ namespace locust
 
     void* KassiopeiaInit()
     {
-    	const string & afile = "/home/hep/heeger/ps48/project8/Project8_by_Devin.xml";
+    	const string & afile = "/home/hep/heeger/ps48/project8/Project8_WithRootOutput.xml";
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
     	delete RunKassiopeia1;
@@ -209,7 +215,7 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
     //    printf("GroupVelocity is %g, CutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, CutOffFrequency, 2.*PI*fcyc); getchar();
            fprime = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
            phi_t += 2.*PI*fprime*dt;
-           phiLO_t += 2.*PI*LO_FREQUENCY*dt;
+           phiLO_t += 2.*PI*fLO_Frequency*dt;
            RealVoltagePhase = cos( phi_t - phiLO_t ); // + cos( phi_t + phiLO_t ));
            ImagVoltagePhase = cos( phi_t - phiLO_t - PI/2.); // + cos( phi_t + phiLO_t - PI/2.));
 
@@ -223,6 +229,8 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
 	   //	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
 	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
 	   //	   	                     getchar();
+
+	   //	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
 
 
 }
