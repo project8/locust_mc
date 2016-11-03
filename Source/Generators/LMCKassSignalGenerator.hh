@@ -70,7 +70,7 @@ namespace locust
             void Accept( GeneratorVisitor* aVisitor ) const;
 
         private:
-      double fLO_Frequency;  // parameter in json file.
+      double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(unsigned index, Signal* aSignal, double* ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double* ImaginarySignal) const;

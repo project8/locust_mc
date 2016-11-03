@@ -26,6 +26,7 @@ namespace katrin
         {
             std::cout << "### running object called <" << fObject->GetName() << ">" << std::endl;
             aContainer->ReleaseTo( fObject, &KSRoot::Execute );
+	    //            printf("running the object check 1\n");
             return true;
         }
         if( aContainer->Is< KSObject >() )

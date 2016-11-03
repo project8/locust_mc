@@ -1,0 +1,35 @@
+{
+    "generators":
+    [         
+        "kass-signal",
+        "lpf-fft",
+        "decimate-signal",
+        "gaussian-noise",
+        "digitizer"
+    ],
+    
+    "kass-signal":
+    {
+        "lo_frequency": 24.84e9,
+        "xml-filename": "placeholder.xml"
+    },
+
+    "simulation":
+    {
+        "egg-filename": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc_Seed112377_LO24.84G.egg",
+        "n-records": 1
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor": 20.0e-26,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+
+    }
+
+}
+

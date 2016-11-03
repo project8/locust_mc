@@ -17,7 +17,7 @@
 
 double phi_t = 0.; // antenna voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO;
-double dummy_time = 0.;  // time for checking mode excitation.
+std::string gxml_filename = "blank.xml";
 
     	FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
     	FILE *fp3 = fopen("fabsfakemodeexctiation.txt","wb");  // time stamp checking.
@@ -45,10 +45,15 @@ namespace locust
     {
         if( aParam == NULL) return true;
         fLO_Frequency = LO_FREQUENCY;
-        if( aParam->Has( "lo_frequency" ) )
+        if( aParam->Has( "lo-frequency" ) )
 	  {
-	    fLO_Frequency = aParam->GetValue< double >( "lo_frequency" );
+	    fLO_Frequency = aParam->GetValue< double >( "lo-frequency" );
 	  }
+	if( aParam->Has( "xml-filename" ) )
+          {
+            gxml_filename = aParam->GetValue< std::string >( "xml-filename" );
+          }
+
 
         return true;
     }
@@ -61,9 +66,10 @@ namespace locust
 
 
 
-    void* KassiopeiaInit()
+  void* KassiopeiaInit()
     {
-    	const string & afile = "/home/hep/heeger/ps48/project8/Project8_WithRootOutput.xml";
+      //      cout << gxml_filename; getchar();
+        const string & afile = gxml_filename;
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
     	delete RunKassiopeia1;
