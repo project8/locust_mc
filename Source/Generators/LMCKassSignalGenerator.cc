@@ -90,18 +90,25 @@ bool ReceivedKassReady()
 {
 
     if( !fKassEventReady)
+      {
+        int counter = 0;
+	while (counter < 500000)  // wait 
+          {
+	    counter += 1;
+          }
+      }
     if( !fKassEventReady)  // check again.
     {
     std::unique_lock< std::mutex >tLock( fMutex );
     fKassReadyCondition.wait( tLock );
     printf("LMC Got the fKassReadyCondition signal\n");
-    return true;
+    //    return true;
     }
-    else 
-    {
-    printf("LMC sees the fKassEventReady flag\n");
+    //    else 
+    //    {
+    //    printf("LMC sees the fKassEventReady flag\n");
     return true;
-    }
+    //    }
 }
 
 
