@@ -69,9 +69,6 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCTestSignalGenerator.cc
     Generators/LMCBasebandTrackGenerator.cc
-    Generators/LMCDecimateSignalGenerator.cc
-    Generators/LMCButterworthLPFGenerator.cc
-    Generators/LMCLowPassFilterFFTGenerator.cc
     Generators/LMCTrappedElectronGenerator.cc
 #    Generators/LMCSingleAmpSim.cc
 )
@@ -90,6 +87,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCKassSignalGenerator.cc
+        Generators/LMCDecimateSignalGenerator.hh
+        Generators/LMCLowPassFilterFFTGenerator.hh
+        Generators/LMCButterworthLPFGenerator.hh
+
 
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc

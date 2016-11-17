@@ -102,13 +102,11 @@ bool ReceivedKassReady()
     std::unique_lock< std::mutex >tLock( fMutex );
     fKassReadyCondition.wait( tLock );
     printf("LMC Got the fKassReadyCondition signal\n");
-    //    return true;
     }
-    //    else 
-    //    {
-    //    printf("LMC sees the fKassEventReady flag\n");
+
+
     return true;
-    //    }
+
 }
 
 
