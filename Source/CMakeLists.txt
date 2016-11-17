@@ -43,9 +43,6 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCTestSignalGenerator.hh
     Generators/LMCBasebandTrackGenerator.hh
-    Generators/LMCDecimateSignalGenerator.hh
-    Generators/LMCLowPassFilterFFTGenerator.hh
-    Generators/LMCButterworthLPFGenerator.hh
     Generators/LMCTrappedElectronGenerator.hh
 #    Generators/LMCSingleAmpSim.hh
 )
