@@ -8,6 +8,8 @@
 #ifndef LMCKASSSIGNALGENERATOR_HH_
 #define LMCKASSSIGNALGENERATOR_HH_
 
+#define CENTER_TO_SHORT 0.010 // 10 cm
+#define CENTER_TO_ANTENNA 0.010 // 10 cm.
 #define PI 3.1415926
 #define LO_FREQUENCY 0.
 //#define LO_FREQUENCY 26.8730e9 // Hz  18 keV electrons in harmonic trap.
@@ -72,7 +74,7 @@ namespace locust
         private:
       double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal ) const;
-            void* DriveAntenna(unsigned index, Signal* aSignal, double* ImaginarySignal) const;
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double* ImaginarySignal) const;
             double ModeExcitation() const;
             double AverageModeExcitation() const;

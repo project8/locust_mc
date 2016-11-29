@@ -15,8 +15,9 @@
 #include "LMCGlobalsDeclaration.hh"
 
 
-double phi_t = 0.; // antenna voltage phase in radians.
-double phiLO_t = 0.; // voltage phase of LO;
+double phi_t1 = 0.; // antenna voltage phase in radians.
+double phi_t2 = 0.; // reflecting short voltage phase in radians.
+double phiLO_t = 0.; // voltage phase of LO in radians;
 std::string gxml_filename = "blank.xml";
 
     	FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
@@ -117,7 +118,6 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
   int nwindows = 80;
   int windowsize = 10*aSignal->TimeSize()/nwindows;
-  double CutoffFreq = 85.e6;
 
 
 
@@ -147,28 +147,7 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
     fftw_execute(ForwardPlan);
 
-
     
-
-    // Low Pass Filter
-
-    /*
-            for( unsigned index = 0; index < windowsize; ++index )
-              {
-              if
-                (
-              	(index > windowsize/2.*CutoffFreq/1.e9)
-              	//&&
-//              	(index < windowsize/2. * (1. + (1.e9-CutoffFreq)/1.e9))
-                )
-            	{
-    //        	  printf("index is %d\n", index);
-                  FFTComplex[index][0] = 0.;
-                  FFTComplex[index][1] = 0.;
-                }
-              }
-
-    */
 
 
 //  Complex filter to set power at negative frequencies to 0.
@@ -208,13 +187,16 @@ delete FFTComplex;
 
 
 
-void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double* ImaginarySignal) const
+void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
 
 	double dt = 5.e-10; // seconds, this might need to come from Kassiopeia and be exact.
-    double fprime = 0.;  // Doppler shifted cyclotron frequency in Hz.
-    double RealVoltagePhase = 0.;
-    double ImagVoltagePhase = 0.;
+    double fprime_antenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
+    double fprime_short = 0.;  // Doppler shifted cyclotron frequency in Hz.
+    double RealVoltage1 = 0.;
+    double ImagVoltage1 = 0.;
+    double RealVoltage2 = 0.;
+    double ImagVoltage2 = 0.;
     double GroupVelocity = 0.;
     double SpeedOfLight = 2.99792458e8; // m/s
     double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m         
@@ -224,16 +206,33 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal, double*
 
     GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
     //    printf("GroupVelocity is %g, CutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, CutOffFrequency, 2.*PI*fcyc); getchar();
-           fprime = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
-           phi_t += 2.*PI*fprime*dt;
+           fprime_antenna = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
+           fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
+
+
+
+       	if (PreEventCounter > 0)
+       	  {
+       		// initialize phases.
+       		phi_t1 = 2.*PI*(CENTER_TO_ANTENNA - Z) / (GroupVelocity/fprime_antenna);
+       		phi_t2 = 2.*PI*(Z + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (GroupVelocity/fprime_short);
+
+       	  }
+
+//printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
+
+           phi_t1 += 2.*PI*fprime_antenna*dt;
+           phi_t2 += 2.*PI*fprime_short*dt;
            phiLO_t += 2.*PI*fLO_Frequency*dt;
-           RealVoltagePhase = cos( phi_t - phiLO_t ); // + cos( phi_t + phiLO_t ));
-           ImagVoltagePhase = cos( phi_t - phiLO_t - PI/2.); // + cos( phi_t + phiLO_t - PI/2.));
+           RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
+           ImagVoltage1 = cos( phi_t1 - phiLO_t - PI/2.); // + cos( phi_t1 + phiLO_t - PI/2.));
+           RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
+           ImagVoltage2 = cos( phi_t2 - phiLO_t - PI/2.); // + cos( phi_t2 + phiLO_t - PI/2.));
 
 
 //           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
-           aLongSignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
-           ImaginarySignal[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*ImagVoltagePhase;
+           aLongSignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
+           ImaginarySignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
 
 
 	   //   printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
@@ -365,7 +364,6 @@ return EyArray1;
         if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
         	{
         	if (ReceivedKassReady()) fPreEventInProgress = true;
-		               
         	}
 
 
@@ -377,11 +375,8 @@ return EyArray1;
           if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
         	  {
         	  fPreEventInProgress = false;  // reset.
-                  fEventInProgress = true;
-        	  PreEventCounter = 0;  // reset.
-    		  phi_t = 0.; // initialize antenna voltage phase in radians.
-  		  phiLO_t = 0.; // initialize voltage phase of LO;
-                  printf("LMC about to wakebeforeevent\n");
+              fEventInProgress = true;
+//              printf("LMC about to wakebeforeevent\n");
 	          WakeBeforeEvent();  // trigger Kass event.
         	  }
     	  }
@@ -396,7 +391,9 @@ return EyArray1;
           fDigitizerCondition.wait( tLock );
           if (fEventInProgress)
         	  {
-        	  DriveAntenna(index, aSignal, ImaginarySignal);
+//        	  printf("about to drive antenna, PEV is %d\n", PreEventCounter);
+        	  DriveAntenna(PreEventCounter, index, aSignal, ImaginarySignal);
+        	  PreEventCounter = 0; // reset
         	  }
           tLock.unlock();
         }
