@@ -205,6 +205,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 //                  printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
     GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
+//    GroupVelocity = SpeedOfLight;
     //    printf("GroupVelocity is %g, CutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, CutOffFrequency, 2.*PI*fcyc); getchar();
            fprime_antenna = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
            fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
@@ -230,14 +231,13 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
            ImagVoltage2 = cos( phi_t2 - phiLO_t - PI/2.); // + cos( phi_t2 + phiLO_t - PI/2.));
 
 
-//           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
-           aLongSignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
-           ImaginarySignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
+           aLongSignal[ index ] += SmoothAverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);  // with or without reflecting short.
+           ImaginarySignal[ index ] += SmoothAverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);  // with or without reflecting short.
 
 
 	   //   printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
-	   //	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
-	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
+	   //	   	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
+	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
 	   //	   	                     getchar();
 
 	   //	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
@@ -280,6 +280,41 @@ return EdotV;
 }
 
 
+
+  double KassSignalGenerator::SmoothAverageModeExcitation() const
+  {
+    double dim1_wr42 = 10.668e-3; // m                                                                                                          
+    double dim2_wr42 = 4.318e-3; // m                                                                                                           
+    double vy = yvelocity;
+    double vx = xvelocity;
+    double x = X + dim1_wr42/2.;  // center of waveguide is at zero in Kassiopeia.         
+    double Ey = 0.;
+    double EyMax = 0.;
+
+    //  normalize Ey if necessary.                                                                                                                  
+    //      EyArray1 = ScaleArray(EyArray1, 1./pow(IntEyWR42ArraySqdA(EyArray1, dim1_wr42, dim2_wr42), 0.5));                                       
+    //      x=0.+dim1_wr42/2.; vy = 5.e7; vx=0.;  // fake test calcs in middle of waveguide.                                                        
+
+
+    Ey = sin(PI*x/dim1_wr42);
+
+    //      printf("EyMax is %g\n", EyMax);                                                                                                 
+
+    // E dot v / (Emax v) * 0.637 / sqrt(2) for analytic avg coupling/orbit and half power lost in opposite direction.                      
+    // or E dot v / (Emax v) * 0.637 for analytic avg coupling/orbit and reflecting short.                                                  
+    double AverageEdotV = fabs(Ey) *0.637;
+
+    //      printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);                         
+
+    //      fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.                                               
+
+    return AverageEdotV;
+  }
+
+
+
+
+
 double KassSignalGenerator::AverageModeExcitation() const
 {
     double dim1_wr42 = 10.668e-3; // m
@@ -300,7 +335,7 @@ double KassSignalGenerator::AverageModeExcitation() const
 
 	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
 	EyMax = EyArray1[100/2];
-//	printf("EyMax is %g\n", EyMax);
+	//	printf("EyMax is %g\n", EyMax);
 
 	// E dot v / (Emax v) * 0.637 / sqrt(2) for analytic avg coupling/orbit and half power lost in opposite direction.
 	// or E dot v / (Emax v) * 0.637 for analytic avg coupling/orbit and reflecting short.

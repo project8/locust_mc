@@ -8,8 +8,8 @@
 #ifndef LMCKASSSIGNALGENERATOR_HH_
 #define LMCKASSSIGNALGENERATOR_HH_
 
-#define CENTER_TO_SHORT 0.010 // 10 cm
-#define CENTER_TO_ANTENNA 0.010 // 10 cm.
+#define CENTER_TO_SHORT 0.010
+#define CENTER_TO_ANTENNA 0.010
 #define PI 3.1415926
 #define LO_FREQUENCY 0.
 //#define LO_FREQUENCY 26.8730e9 // Hz  18 keV electrons in harmonic trap.
@@ -78,6 +78,7 @@ namespace locust
             void* FilterNegativeFrequencies(Signal* aSignal, double* ImaginarySignal) const;
             double ModeExcitation() const;
             double AverageModeExcitation() const;
+            double SmoothAverageModeExcitation() const;
             double FakeModeExcitation() const;
             double* EyWR42Array() const;
             double* ScaleArray(double *array, double factor) const;

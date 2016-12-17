@@ -56,8 +56,9 @@ namespace locust
 
             GammaZ = 1.0/pow(1.0-pow(zvelocity/2.99792e8,2.),0.5);  // fix speed of light.
 
-//            fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
-            fcyc = 1.125/dt;
+            fcyc = aFinalParticle.GetCyclotronFrequency();
+//            fcyc = 1.125/dt;
+//            fcyc = 0.0156250/dt;
             LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
