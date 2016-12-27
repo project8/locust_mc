@@ -11,6 +11,10 @@
 #include "KField.h"
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
+#include "KSTrajInterpolatorHermite.h"
+#include "KSTrajTrajectoryAdiabatic.h"
+#include "KSTrajIntegratorRK8.h"
+
 
 
 namespace locust
