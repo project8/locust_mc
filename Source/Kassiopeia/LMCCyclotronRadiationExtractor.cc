@@ -46,18 +46,24 @@ namespace locust
             {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
-            Z = aFinalParticle.GetPosition().Z();
-            X = aFinalParticle.GetPosition().X();
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
             dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-            xvelocity = aFinalParticle.GetVelocity().GetX();
-            yvelocity = aFinalParticle.GetVelocity().GetY();
-            zvelocity = aFinalParticle.GetVelocity().GetZ();
+            X = aFinalParticle.GetPosition().X();
+            Y = aFinalParticle.GetPosition().Y();
+            Z = aFinalParticle.GetPosition().Z();
+            xVelocity = aFinalParticle.GetVelocity().GetX();
+            yVelocity = aFinalParticle.GetVelocity().GetY();
+            zVelocity = aFinalParticle.GetVelocity().GetZ();
+            xMagneticField = aFinalParticle.GetMagneticField().GetX();
+            yMagneticField = aFinalParticle.GetMagneticField().GetY();
+            zMagneticField = aFinalParticle.GetMagneticField().GetZ();
+            mparticle = aFinalParticle.GetMass();
+            qparticle = aFinalParticle.GetCharge();
 
             GammaZ = 1.0/pow(1.0-pow(zvelocity/2.99792e8,2.),0.5);  // fix speed of light.
 
-	    	                fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
-				//	                fcyc = 0.0156250/dt;
+            fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
+            //fcyc = 0.0156250/dt;
             LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.

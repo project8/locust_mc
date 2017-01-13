@@ -20,8 +20,8 @@ double phi_t2 = 0.; // reflecting short voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO in radians;
 std::string gxml_filename = "blank.xml";
 
-    	FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
-    	FILE *fp3 = fopen("fabsfakemodeexctiation.txt","wb");  // time stamp checking.
+//FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
+//FILE *fp3 = fopen("fabsfakemodeexctiation.txt","wb");  // time stamp checking.
 
 
 namespace locust
@@ -47,14 +47,13 @@ namespace locust
         if( aParam == NULL) return true;
         fLO_Frequency = LO_FREQUENCY;
         if( aParam->Has( "lo-frequency" ) )
-	  {
-	    fLO_Frequency = aParam->GetValue< double >( "lo-frequency" );
-	  }
-	if( aParam->Has( "xml-filename" ) )
-          {
+        {
+            fLO_Frequency = aParam->GetValue< double >( "lo-frequency" );
+        }
+        if( aParam->Has( "xml-filename" ) )
+        {
             gxml_filename = aParam->GetValue< std::string >( "xml-filename" );
-          }
-
+        }
 
         return true;
     }
@@ -66,10 +65,9 @@ namespace locust
     }
 
 
-
   void* KassiopeiaInit()
     {
-      //      cout << gxml_filename; getchar();
+        //cout << gxml_filename; getchar();
         const string & afile = gxml_filename;
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
@@ -91,20 +89,19 @@ bool ReceivedKassReady()
 {
 
     if( !fKassEventReady)
-      {
+    {
         int counter = 0;
-	while (counter < 500000)  // wait 
-          {
-	    counter += 1;
-          }
-      }
+        while (counter < 500000)  // wait 
+        {
+            counter += 1;
+        }
+    }
     if( !fKassEventReady)  // check again.
     {
-    std::unique_lock< std::mutex >tLock( fMutex );
-    fKassReadyCondition.wait( tLock );
-    printf("LMC Got the fKassReadyCondition signal\n");
+        std::unique_lock< std::mutex >tLock( fMutex );
+        fKassReadyCondition.wait( tLock );
+        printf("LMC Got the fKassReadyCondition signal\n");
     }
-
 
     return true;
 
@@ -113,311 +110,219 @@ bool ReceivedKassReady()
 
 
 
-void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
+//void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
+//{
+//
+//    aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
+//}
+//
+
+void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
 {
+    double c=2.998792458e8;
 
-  int nwindows = 80;
-  int windowsize = 10*aSignal->TimeSize()/nwindows;
+    //mass+charge
+    double qParticle=qparticle;
+    double mParticle=mparticle;
 
-
-
-	fftw_complex *SignalComplex;
-    SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-	fftw_complex *FFTComplex;
-    FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-
-    fftw_plan ForwardPlan;
-    ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
-    fftw_plan ReversePlan;
-    ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
-
-
-    for (int nwin = 0; nwin < nwindows; nwin++)
-      {
-
-
-// Construct complex voltage.
-    for( unsigned index = 0; index < windowsize; ++index )
+    //Number of Grid Points Per Side. Keep odd so center point lines up with center
+    const int nGridSide=9;
+    double rReceiver[nGridSide][nGridSide][3];
+    double rReceiverCenter[3]={0.,0.,1.};
+    double tReceiverNorm[3]={0.,0.,1.};
+    //Set Receiver Array Position. 
+    //May eventually get from kasssiopeia once set experimentally
+    for(unsigned ix=0;ix<nGridSide;ix++)
     {
-        SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
-        SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
-//        if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
-
+        for(unsigned iy=0;iy<nGridSide;iy++)
+        {
+            rReceiver[ix][iy][0]=double(ix)*dx-(nGridSide-1.)*dx/2.;
+            rReceiver[ix][iy][1]=double(iy)*dy-(nGridSide-1.)*dy/2.;
+            rReceiver[ix][iy][2]=0.;
+        }
+    }
+    //Rotate/ Shift as desired. Put in rotation in future version (just mult by matrix)
+    for(unsigned ix=0;ix<nGridSide;ix++)
+    {
+        for(unsigned iy=0;iy<nGridSide;iy++)
+        {
+            for(unsigned j=0;j<3;j++)
+            {
+                rReceiver[ix][iy][j]+=rReceiverCenter[j];
+            }
+        }
     }
 
-    fftw_execute(ForwardPlan);
+    //Solve for the retarted times for each point on receiver
+    //Calculate fields directly w/ Lienard-Wiechert
+    //Particle To Receiver Separation Vector/Distance
+    //t are vectors
+    double xParticleReceiver;
+    double tParticleReceiver[3];
 
-    
+    double tMagneticField[3]={xMagneticField,yMagneticField,zMagneticField};
+    double tMagneticFieldUnit[3]=NormalizeVector(tMagneticField);
 
+    double rParticle[3]={X,Y,Z};
 
-//  Complex filter to set power at negative frequencies to 0.
+    double tParticleVelocity[3]={xVelocity,yVelocity,zVelocity};
+    double tParticleVelocityUnit[3]=NormalizeVector(tParticleVelocity);
+    //////////////
+    double tBeta[3]={xVelocity/c,yVelocity/c,zVelocity/c};
 
-    for( unsigned index = windowsize/2; index < windowsize; ++index )
-    {
-        FFTComplex[index][0] = 0.;
-        FFTComplex[index][1] = 0.;
+    double xParticleVelocityParallel=Dot(tParticleVelocity,tMagneticField);
+    double tParticleVelocityParallel[3]=xParticleVelocityParallel*tMagneticFieldUnit;
+
+    double tParticleVelocityPerp[3];
+    for(int i=0;i<3;i++){
+        tParticleVelocityPerp[i]=tParticleVelocity[i]-tParticleVelocityParallel[i];
     }
 
-    
+    double xParticleVelocityPerp=Mag(tParticleVelocityPerp);
 
+    double Gamma=1./sqrt((1.-Mag(tBeta))*(1.+Mag(tBeta)));
+    double Omega=qParticle*tMagneticFieldMag/(mParticle*Gamma);
+    double rCyclotron=mParticle*xParticleVelocityPerp*Gamma/(qParticle*tMagneticFieldMag);
 
-    fftw_execute(ReversePlan);
-
-    double norm = (double)(windowsize);
-
-    for( unsigned index = 0; index < windowsize; ++index )
-    {
-    	// normalize and take the real part of the reverse transform, for digitization.
-//      aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-      aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-      //    if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
+    //Calculate Guiding Center Position:
+    //May replace w/ Direct call: Right Now symplectic method doesnt have interpolation: 
+    //Although could use symplectic as integrator to get as clost as possible then call with a guiding center like scheme from here
+    double rParticleGuidingCenter[3];
+    double tCrossRadial[3]=NormalizeVector(Cross(tParticleVelocity,tMagneticField));
+    for(int i=0;i<3;i++){
+        rParticleGuidingCenter[i]=rParticle[i]-rCyclotron*tCrossRadial[i];
     }
 
+    //Other 2 vectors describing perpindicular components of motion
+    double tAlpha[3], tBeta[3];
+    tAlpha=rParticle-rParticleGuidingCenter;
+    tBeta=Cross(tParticleVelocityUnit,tAlpha);
+    NormalizeVector(tAlpha);
+    NormalizeVector(tBeta);
 
 
+
+
+    double tRetarded=0.;
+    double tReceiver=t_poststep;
+    double A_Quad,B_Quad,C_Quad;
+
+
+    for(unsigned ix=0;ix<nGridSide;ix++)
+    {
+        for(unsigned iy=0;iy<nGridSide;iy++)
+        {
+
+            for(unsigned index=0;index<3;index++){
+                tParticleReceiver[index]=rReceiver[ix][iy][index]-rParticle[index];
+            }
+            xParticleReceiver=Mag(tParticleReceiver);
+            NormalizeVector(tParticleReceiver);
+
+            //Very First Guess: Eventually Supplement with Wave Technique
+            tRetarded=tReceiver-rParticle/c;
+
+
+
+
+            
+
+        }
+    }
+}
+
+//Private Geometric Vector Functions Needed
+
+//Cross, NormalizeVector, Mag
+
+
+
+
+
+
+//double KassSignalGenerator::ModeExcitation() const
+//{
+//
+//return EdotV;
+//}
+//
+//
+//double KassSignalGenerator::AverageModeExcitation() const
+//{
+//
+//return AverageEdotV;
+//}
+
+
+
+
+
+
+bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
+{
+    for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+    {
+        aLongSignal[ index ] = 0.;  // long record for oversampling.
     }
 
-
-delete SignalComplex;
-delete FFTComplex;
-
-
-}
+    //n samples for event spacing.
+    int PreEventCounter = 0;
+    int NPreEventSamples = 150000;
 
 
-
-
-void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
-{
-
-	double dt = 5.e-10; // seconds, this might need to come from Kassiopeia and be exact.
-    double fprime_antenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
-    double fprime_short = 0.;  // Doppler shifted cyclotron frequency in Hz.
-    double RealVoltage1 = 0.;
-    double ImagVoltage1 = 0.;
-    double RealVoltage2 = 0.;
-    double ImagVoltage2 = 0.;
-    double GroupVelocity = 0.;
-    double SpeedOfLight = 2.99792458e8; // m/s
-    double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m         
-                                
-
-//                  printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
-
-    GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
-    //    printf("GroupVelocity is %g, CutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, CutOffFrequency, 2.*PI*fcyc); getchar();
-           fprime_antenna = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
-           fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-
-
-
-       	if (PreEventCounter > 0)
-       	  {
-       		// initialize phases.
-       		phi_t1 = 2.*PI*(CENTER_TO_ANTENNA - Z) / (GroupVelocity/fprime_antenna);
-       		phi_t2 = 2.*PI*(Z + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (GroupVelocity/fprime_short);
-
-       	  }
-
-//printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
-
-           phi_t1 += 2.*PI*fprime_antenna*dt;
-           phi_t2 += 2.*PI*fprime_short*dt;
-           phiLO_t += 2.*PI*fLO_Frequency*dt;
-           RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
-           ImagVoltage1 = cos( phi_t1 - phiLO_t - PI/2.); // + cos( phi_t1 + phiLO_t - PI/2.));
-           RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
-           ImagVoltage2 = cos( phi_t2 - phiLO_t - PI/2.); // + cos( phi_t2 + phiLO_t - PI/2.));
-
-
-//           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
-           aLongSignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
-           ImaginarySignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
-
-
-	   //   printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
-	   //	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
-	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
-	   //	   	                     getchar();
-
-	   //	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-
-
-}
-
-
-
-double KassSignalGenerator::ModeExcitation() const
-{
-    double dim1_wr42 = 10.668e-3; // a in m
-    double dim2_wr42 = 4.318e-3; // b in m
-	double vy = yvelocity;
-	double vx = xvelocity;
-	double x = X + dim1_wr42/2.;  // center of waveguide is at zero.
-	double Ey = 0.;
-	double EyMax = 0.;
-
-
-	double *EyArray1 = EyWR42Array();
-
-//  normalize Ey if necessary.
-//	EyArray1 = ScaleArray(EyArray1, 1./pow(IntEyWR42ArraySqdA(EyArray1, dim1_wr42, dim2_wr42), 0.5));
-//	x=0.+dim1_wr42/2.; vy = 5.e7; vx=0.;  // fake test calcs in middle of waveguide.
-
-
-	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
-	EyMax = EyArray1[100/2];
-//	printf("EyMax is %g\n", EyMax);
-
-	// E dot v / (Emax v) / sqrt(2) for half power lost in opposite direction.
-	double EdotV = fabs(Ey*vy)/fabs(EyMax*pow(vx*vx+vy*vy,0.5)) / 1.41421;
-//	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
-
-//	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
-
-
-return EdotV;
-}
-
-
-double KassSignalGenerator::AverageModeExcitation() const
-{
-    double dim1_wr42 = 10.668e-3; // m
-    double dim2_wr42 = 4.318e-3; // m
-	double vy = yvelocity;
-	double vx = xvelocity;
-	double x = X + dim1_wr42/2.;  // center of waveguide is at zero.
-	double Ey = 0.;
-	double EyMax = 0.;
-
-
-	double *EyArray1 = EyWR42Array();
-
-//  normalize Ey if necessary.
-//	EyArray1 = ScaleArray(EyArray1, 1./pow(IntEyWR42ArraySqdA(EyArray1, dim1_wr42, dim2_wr42), 0.5));
-//	x=0.+dim1_wr42/2.; vy = 5.e7; vx=0.;  // fake test calcs in middle of waveguide.
-
-
-	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
-	EyMax = EyArray1[100/2];
-//	printf("EyMax is %g\n", EyMax);
-
-	// E dot v / (Emax v) * 0.637 / sqrt(2) for analytic avg coupling/orbit and half power lost in opposite direction.
-	// or E dot v / (Emax v) * 0.637 for analytic avg coupling/orbit and reflecting short.
-	double AverageEdotV = fabs(Ey/EyMax) *0.637;
-
-//	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
-
-//	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
-
-return AverageEdotV;
-}
-
-
-
-
-
-double* KassSignalGenerator::EyWR42Array() const
-{
-double a = 10.668e-3;
-int nbins = 100;
-double *EyArray1 = new double[nbins];
-double x=0.;
-for (int i=0; i<nbins; i++)
-  {
-  x = a*(double)i/(double)nbins;
-  EyArray1[i] = sin(PI*x/a);
-  }
-return EyArray1;
-}
-
-
-
-    bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
-    {
-
-      // temporary IQ patch.  Define and initialize ImaginarySignal.
-    	double *ImaginarySignal = new double[10*aSignal->TimeSize()];
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
-          {
-          ImaginarySignal[ index ] = 0.;
-          aLongSignal[ index ] = 0.;  // long record for oversampling.
-          }
-
-//      n samples for event spacing.
-    	int PreEventCounter = 0;
-	int NPreEventSamples = 150000;
-
-//    	FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
-//    	fprintf(fp, "testing\n");
-
-
-    	std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
-    	fRunInProgress = true;
-
+    std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
+    fRunInProgress = true;
 
 	for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
-
-
-    	{
-
+    {
         if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
         	{
-        	if (ReceivedKassReady()) fPreEventInProgress = true;
+                if (ReceivedKassReady()) fPreEventInProgress = true;
         	}
 
-
     	if (fPreEventInProgress)
-    	  {
-    	  PreEventCounter += 1;
-	  //	            printf("preeventcounter is %d\n", PreEventCounter);
-
-          if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
-        	  {
-        	  fPreEventInProgress = false;  // reset.
-              fEventInProgress = true;
-//              printf("LMC about to wakebeforeevent\n");
-	          WakeBeforeEvent();  // trigger Kass event.
-        	  }
-    	  }
+        {
+            PreEventCounter += 1;
+            // printf("preeventcounter is %d\n", PreEventCounter);
+            if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
+            {
+                fPreEventInProgress = false;  // reset.
+                fEventInProgress = true;
+                //printf("LMC about to wakebeforeevent\n");
+                WakeBeforeEvent();  // trigger Kass event.
+            }
+        }
 
 
     	if (fEventInProgress)  // fEventInProgress
-	if (fEventInProgress)  // check again.
-        {
-//    	  printf("waiting for digitizer trigger ... index is %d\n", index);
-          std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
-          tLock.lock();
-          fDigitizerCondition.wait( tLock );
-          if (fEventInProgress)
-        	  {
-//        	  printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-        	  DriveAntenna(PreEventCounter, index, aSignal, ImaginarySignal);
-        	  PreEventCounter = 0; // reset
-        	  }
-          tLock.unlock();
-        }
+            if (fEventInProgress)  // check again.
+            {
+                //printf("waiting for digitizer trigger ... index is %d\n", index);
+                std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
+                tLock.lock();
+                fDigitizerCondition.wait( tLock );
+                if (fEventInProgress)
+                {
+                    //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
+                    DriveAntenna(PreEventCounter, index, aSignal;
+                    PreEventCounter = 0; // reset
+                }
+                tLock.unlock();
+            }
 
         }  // for loop
 
 
-	FilterNegativeFrequencies(aSignal, ImaginarySignal);
-        delete ImaginarySignal;
+    // trigger any remaining events in Kassiopeia so that its thread can finish.
+    while (fRunInProgress)
+    {
+        if (fRunInProgress)
+            if (ReceivedKassReady()) WakeBeforeEvent();
+    }
 
+    Kassiopeia.join();  // wait for Kassiopeia to finish.
 
-//    	fclose(fp);  // timing.txt file.
-//        fclose(fp2); // mode excitation file.
-
-        // trigger any remaining events in Kassiopeia so that its thread can finish.
-    	while (fRunInProgress)
-    	{
-    	    if (fRunInProgress)
-    	    	if (ReceivedKassReady()) WakeBeforeEvent();
-    	}
-
-        Kassiopeia.join();  // wait for Kassiopeia to finish.
-
-        return true;
+    return true;
     }
 
 } /* namespace locust */

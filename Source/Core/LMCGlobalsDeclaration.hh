@@ -14,14 +14,20 @@
 #include <mutex>
 
 
-extern double Z;
-extern double X;
 extern double t_poststep;
 extern double t_old;
 extern double LarmorPower;
-extern double xvelocity;
-extern double yvelocity;
-extern double zvelocity;
+extern double X;
+extern double Y;
+extern double Z;
+extern double xVelocity;
+extern double yVelocity;
+extern double zVelocity;
+extern double xMagneticField;
+extern double yMagneticField;
+extern double zMagneticField;
+extern double mparticle;
+extern double qparticle;
 extern double fcyc;
 extern double GammaZ;
 extern double testvar;
