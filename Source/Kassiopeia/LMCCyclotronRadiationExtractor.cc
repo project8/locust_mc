@@ -48,27 +48,35 @@ namespace locust
             tLock.lock();
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
             dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-            X = aFinalParticle.GetPosition().X();
-            Y = aFinalParticle.GetPosition().Y();
-            Z = aFinalParticle.GetPosition().Z();
-            xVelocity = aFinalParticle.GetVelocity().GetX();
-            yVelocity = aFinalParticle.GetVelocity().GetY();
-            zVelocity = aFinalParticle.GetVelocity().GetZ();
-            xMagneticField = aFinalParticle.GetMagneticField().GetX();
-            yMagneticField = aFinalParticle.GetMagneticField().GetY();
-            zMagneticField = aFinalParticle.GetMagneticField().GetZ();
-            mparticle = aFinalParticle.GetMass();
-            qparticle = aFinalParticle.GetCharge();
 
-            GammaZ = 1.0/pow(1.0-pow(zvelocity/2.99792e8,2.),0.5);  // fix speed of light.
+            double X = aFinalParticle.GetPosition().X();
+            double Y = aFinalParticle.GetPosition().Y();
+            double Z = aFinalParticle.GetPosition().Z();
+            double xVelocity = aFinalParticle.GetVelocity().GetX();
+            double yVelocity = aFinalParticle.GetVelocity().GetY();
+            double zVelocity = aFinalParticle.GetVelocity().GetZ();
+            double xMagneticField = aFinalParticle.GetMagneticField().GetX();
+            double yMagneticField = aFinalParticle.GetMagneticField().GetY();
+            double zMagneticField = aFinalParticle.GetMagneticField().GetZ();
+            double mparticle = aFinalParticle.GetMass();
+            double qparticle = aFinalParticle.GetCharge();
 
-            fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
-            //fcyc = 0.0156250/dt;
-            LarmorPower = -de/dt*1.602677e-19;
+            locust::ParticleSlim aNewParticle;
+            aNewParticle.SetPosition(X,Y,Z);
+            aNewParticle.SetVelocityVector(xVelocity,yVelocity,zVelocity);
+            aNewParticle.SetMagneticFieldVector(xMagneticField,yMagneticField,zMagneticField);
+            aNewParticle.SetMass(mparticle);
+            aNewParticle.SetCharge(qparticle);
+            
+            fParticleHistory.push_front(aNewParticle);
+            //////////!!!!!!!!!!!!!!!!!!!!!?////////////
+            //Need to put in something to pop out old points
+
+
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
-             t_old = t_poststep;
+            t_old = t_poststep;
 
              /*
              printf("de is %g and dt is %g and LarmorPower is %g\n", de, dt, LarmorPower);

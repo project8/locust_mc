@@ -82,6 +82,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
+        Kassiopeia/LMCParticleSlim.hh
         Kassiopeia/LMCRootBuilder.hh
         Kassiopeia/LMCRunKassiopeia.hh
     )
@@ -97,6 +98,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
+        Kassiopeia/LMCParticleSlim.cc
         Kassiopeia/LMCRootBuilder.cc
         Kassiopeia/LMCRunKassiopeia.cc
     )

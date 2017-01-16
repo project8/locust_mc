@@ -110,26 +110,19 @@ bool ReceivedKassReady()
 
 
 
-//void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
-//{
-//
-//    aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
-//}
-//
 
-void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
+void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
 {
     double c=2.998792458e8;
-
-    //mass+charge
-    double qParticle=qparticle;
-    double mParticle=mparticle;
+    locust::ParticleSlim CurrentParticle = fParticleHistory.front();
 
     //Number of Grid Points Per Side. Keep odd so center point lines up with center
     const int nGridSide=9;
     double rReceiver[nGridSide][nGridSide][3];
     double rReceiverCenter[3]={0.,0.,1.};
     double tReceiverNorm[3]={0.,0.,1.};
+    double dx=0.005; 
+    double dy=0.005;
     //Set Receiver Array Position. 
     //May eventually get from kasssiopeia once set experimentally
     for(unsigned ix=0;ix<nGridSide;ix++)
@@ -153,59 +146,16 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
         }
     }
 
-    //Solve for the retarted times for each point on receiver
-    //Calculate fields directly w/ Lienard-Wiechert
-    //Particle To Receiver Separation Vector/Distance
-    //t are vectors
-    double xParticleReceiver;
-    double tParticleReceiver[3];
-
-    double tMagneticField[3]={xMagneticField,yMagneticField,zMagneticField};
-    double tMagneticFieldUnit[3]=NormalizeVector(tMagneticField);
-
-    double rParticle[3]={X,Y,Z};
-
-    double tParticleVelocity[3]={xVelocity,yVelocity,zVelocity};
-    double tParticleVelocityUnit[3]=NormalizeVector(tParticleVelocity);
-    //////////////
-    double tBeta[3]={xVelocity/c,yVelocity/c,zVelocity/c};
-
-    double xParticleVelocityParallel=Dot(tParticleVelocity,tMagneticField);
-    double tParticleVelocityParallel[3]=xParticleVelocityParallel*tMagneticFieldUnit;
-
-    double tParticleVelocityPerp[3];
-    for(int i=0;i<3;i++){
-        tParticleVelocityPerp[i]=tParticleVelocity[i]-tParticleVelocityParallel[i];
-    }
-
-    double xParticleVelocityPerp=Mag(tParticleVelocityPerp);
-
-    double Gamma=1./sqrt((1.-Mag(tBeta))*(1.+Mag(tBeta)));
-    double Omega=qParticle*tMagneticFieldMag/(mParticle*Gamma);
-    double rCyclotron=mParticle*xParticleVelocityPerp*Gamma/(qParticle*tMagneticFieldMag);
-
-    //Calculate Guiding Center Position:
-    //May replace w/ Direct call: Right Now symplectic method doesnt have interpolation: 
-    //Although could use symplectic as integrator to get as clost as possible then call with a guiding center like scheme from here
-    double rParticleGuidingCenter[3];
-    double tCrossRadial[3]=NormalizeVector(Cross(tParticleVelocity,tMagneticField));
-    for(int i=0;i<3;i++){
-        rParticleGuidingCenter[i]=rParticle[i]-rCyclotron*tCrossRadial[i];
-    }
-
-    //Other 2 vectors describing perpindicular components of motion
-    double tAlpha[3], tBeta[3];
-    tAlpha=rParticle-rParticleGuidingCenter;
-    tBeta=Cross(tParticleVelocityUnit,tAlpha);
-    NormalizeVector(tAlpha);
-    NormalizeVector(tBeta);
-
-
 
 
     double tRetarded=0.;
     double tReceiver=t_poststep;
     double A_Quad,B_Quad,C_Quad;
+    double ReceiverPower[nGridSide][nGridSide];
+    double TotalPower=0.;
+    double tSpaceTimeInterval[2]={99.,99.};
+    double dtRetarded[2]={};
+    double tTolerance=1e-12;
 
 
     for(unsigned ix=0;ix<nGridSide;ix++)
@@ -213,29 +163,61 @@ void* KassSignalGenerator::DriveAntenna(unsigned index, Signal* aSignal) const
         for(unsigned iy=0;iy<nGridSide;iy++)
         {
 
-            for(unsigned index=0;index<3;index++){
-                tParticleReceiver[index]=rReceiver[ix][iy][index]-rParticle[index];
-            }
-            xParticleReceiver=Mag(tParticleReceiver);
-            NormalizeVector(tParticleReceiver);
+            CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
 
             //Very First Guess: Eventually Supplement with Wave Technique
-            tRetarded=tReceiver-rParticle/c;
+            //Put into function?????
+            tRetarded=tReceiver-CurrentParticle.GetReceiverDistance()/c;
+
+            //ResetParticle(CurrentParticle,tRetarded,1);
+            tSpaceTimeInterval[0]=CurrentParticle.GetSpaceTimeInterval();
+            CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
+            //Roots to Quadratic Equation
+            dtRetarded[0]=(-B_Quad-sign(B_Quad)*sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad))/(2.*A_Quad);
+            dtRetarded[1]=(2.*C_Quad)/(-B_Quad-sign(B_Quad)*sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad));
+
+            //Newton's Method
+            while(tSpaceTimeInterval[0]>tTolerance)
+            {
+                CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
+
+                dtRetarded[0]=CurrentParticle.NewtonStep(tRetarded,dtRetarded[0]);
+                tRetarded+=dtRetarded[0];
+            }
 
 
 
-
+            ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2]);
+            TotalPower+=ReceiverPower[ix][iy];
             
 
         }
     }
+
+    //Remove overly old elements from fParticleHistory
+    while(tReceiver-fParticleHistory.back()>3e-8 || fParticleHistory.size()>5000 )
+    {
+        fParticleHistory.pop_back();
+
+    }
+
+
+
+
+    //aSignal->SignalTime()[ index ] += sqrt(TotalPower*Resistance);
+
+
+
 }
 
-//Private Geometric Vector Functions Needed
+double sign(double x)
+{
+    if(x>=0.)
+        return 1.;
 
-//Cross, NormalizeVector, Mag
-
-
+    if(x<0.)
+        return -1.;
+}
 
 
 
@@ -304,7 +286,7 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
                 if (fEventInProgress)
                 {
                     //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                    DriveAntenna(PreEventCounter, index, aSignal;
+                    DriveAntenna(PreEventCounter, index, aSignal);
                     PreEventCounter = 0; // reset
                 }
                 tLock.unlock();

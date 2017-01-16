@@ -9,23 +9,27 @@
 #define GLOBALSDEFINITION_HH_
 
 double t_poststep = -99.;
+
 double t_old = -99.;
-double LarmorPower = -99.;
-double X = -99.;
-double Y = -99.;
-double Z = -99.;
-double xVelocity = -99.;
-double yVelocity = -99.;
-double zVelocity = -99.;
-double xMagneticField = -99.;
-double yMagneticField = -99.;
-double zMagneticField = -99.;
-double mparticle = -99.;
-double qparticle = -99.;
-double fcyc = -99.;
-double GammaZ = -99.;
+//double LarmorPower = -99.;
+//double X = -99.;
+//double Y = -99.;
+//double Z = -99.;
+//double xVelocity = -99.;
+//double yVelocity = -99.;
+//double zVelocity = -99.;
+//double xMagneticField = -99.;
+//double yMagneticField = -99.;
+//double zMagneticField = -99.;
+//double mparticle = -99.;
+//double qparticle = -99.;
+//double fcyc = -99.;
+//double GammaZ = -99.;
 double testvar = -99.;
 
+//running deque for saving previous few ns of particle history 
+//in order to caluclate retarded fields
+std::deque<locust::ParticleSlim> fParticleHistory;
 
 bool fWaitBeforeEvent = true;
 bool fWaitAfterEvent = true;

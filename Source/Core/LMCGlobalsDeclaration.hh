@@ -9,29 +9,31 @@
 #define GLOBALSDECLARATION_HH_
 #define PI 3.1415926
 
-
 #include <condition_variable>
 #include <mutex>
+#include <deque>
+#include "LMCParticleSlim.hh"
 
 
 extern double t_poststep;
 extern double t_old;
-extern double LarmorPower;
-extern double X;
-extern double Y;
-extern double Z;
-extern double xVelocity;
-extern double yVelocity;
-extern double zVelocity;
-extern double xMagneticField;
-extern double yMagneticField;
-extern double zMagneticField;
-extern double mparticle;
-extern double qparticle;
-extern double fcyc;
-extern double GammaZ;
+//extern double LarmorPower;
+//extern double X;
+//extern double Y;
+//extern double Z;
+//extern double xVelocity;
+//extern double yVelocity;
+//extern double zVelocity;
+//extern double xMagneticField;
+//extern double yMagneticField;
+//extern double zMagneticField;
+//extern double mparticle;
+//extern double qparticle;
+//extern double fcyc;
+//extern double GammaZ;
 extern double testvar;
 
+extern std::deque<locust::ParticleSlim> fParticleHistory;
 
 
 extern bool fWaitBeforeEvent;
