@@ -76,6 +76,8 @@ namespace locust
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
             double sign(double x);
+            bool IsInside(double tNew, int IndexMin, int IndexMax);
+            int BinarySearch(double tNew, int IndexMin, int IndexMax);
 
 
 

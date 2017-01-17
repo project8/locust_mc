@@ -43,7 +43,7 @@ namespace locust
     	t_poststep = aFinalParticle.GetTime();
 
         if (t_poststep - t_old > 5.e-10)
-            {
+        {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
@@ -69,8 +69,6 @@ namespace locust
             aNewParticle.SetCharge(qparticle);
             
             fParticleHistory.push_front(aNewParticle);
-            //////////!!!!!!!!!!!!!!!!!!!!!?////////////
-            //Need to put in something to pop out old points
 
 
             tLock.unlock();
@@ -90,7 +88,7 @@ namespace locust
              printf("1/(sqrt(1-v^2/c^2) is %f\n", 1.0/pow(1.0-pow(anInitialParticle.GetSpeed()/2.99792e8,2.),0.5));
              printf("FinalParticle().IsActive() is %d\n", aFinalParticle.IsActive());
              */
-          	}
+        }
 
 
         return true;

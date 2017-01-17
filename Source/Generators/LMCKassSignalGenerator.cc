@@ -186,7 +186,6 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             }
 
 
-
             ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2]);
             TotalPower+=ReceiverPower[ix][iy];
             
@@ -208,6 +207,72 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
 
 
+}
+////Return index of deque closest to desired time
+int FindNode(double tNew, double tOld, int IndexOld)
+{
+    int IndexNew=0;
+    if(TConst)
+    {
+        IndexNew=round((tOld-tNew)/dt)+IndexOld;
+    }
+    else
+    {
+        if(IndexOld==0)
+        {
+            IndexNew=BinarySearch(tNew,0,fParticleHistory.size()-1);
+
+        }
+        else
+        {
+            for(int i=1;i<20;i++){
+                if(IsInside(tNew,IndexOld,8*i))
+                {
+                    IndexNew=BinarySearch(tNew,IndexOld-8*i,IndexOld+8*i);
+                    break;
+                }
+            }
+
+
+        }
+    }
+    return IndexNew;
+
+}
+
+bool IsInside(double tNew, int IndexMin, int IndexMax)
+{
+    return tNew>=fParticleHistory[IndexMin].GetTime() && tNew<=fParticleHistory[IndexMax].GetTime();
+}
+
+int BinarySearch(double tNew, int IndexMin, int IndexMax)
+{
+    int IntervalLength=IndexMax-IndexMin;
+    int IndexMid;
+
+    while(IntervalLength>1)
+    {
+        IndexMid=round((IndexMin+IndexMax)/2.);
+        if(fParticleHistory[IndexMid].GetTime()>tNew)
+        {
+            IndexMax=IndexMid;
+
+        }
+        else if(fParticleHistory[IndexMid].GetTime()<tNew)
+        {
+            IndexMin=IndexMid;
+        }
+        else if(fParticleHistory[IndexMid].GetTime()==tNew)
+        {
+            return IndexMid;
+        }
+
+        IndexLength=IndexMax-IndexMin;
+    }
+    //Now that we have it between an interval of one return index of 
+    //node tNew is closer to. Ie) determine if bigger or smaller than avg. of 2 points
+
+    return IndexMin+round(tNew-0.5(fParticleHistory[IndexMin].GetTime()+fPArticleHistory[IndexMax].GetTime()));
 }
 
 double sign(double x)
