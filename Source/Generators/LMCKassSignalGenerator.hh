@@ -75,7 +75,8 @@ namespace locust
       double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
-            double sign(double x);
+            void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
+            int FindNode(double tNew, double tOld, int IndexOld);
             bool IsInside(double tNew, int IndexMin, int IndexMax);
             int BinarySearch(double tNew, int IndexMin, int IndexMax);
 

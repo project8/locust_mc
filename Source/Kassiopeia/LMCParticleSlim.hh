@@ -24,6 +24,7 @@ namespace locust
             virtual ~ParticleSlim();
 
             void SetTime(double);
+            double GetTime();
             void SetPosition(double,double,double);
             void SetVelocityVector(double,double,double);
             void SetMagneticFieldVector(double,double,double);
@@ -45,7 +46,6 @@ namespace locust
 
 
             double CalculatePower(double,double,double);
-            void Interpolate(double);
 
 
 

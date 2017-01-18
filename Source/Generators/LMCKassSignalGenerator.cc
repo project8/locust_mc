@@ -15,9 +15,6 @@
 #include "LMCGlobalsDeclaration.hh"
 
 
-double phi_t1 = 0.; // antenna voltage phase in radians.
-double phi_t2 = 0.; // reflecting short voltage phase in radians.
-double phiLO_t = 0.; // voltage phase of LO in radians;
 std::string gxml_filename = "blank.xml";
 
 //FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
@@ -107,6 +104,61 @@ bool ReceivedKassReady()
 
 }
 
+void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal) const
+{
+
+    int nwindows = 80;
+    int windowsize = 10*aSignal->TimeSize()/nwindows;
+
+	fftw_complex *SignalComplex;
+    SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
+
+	fftw_complex *FFTComplex;
+    FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
+
+    fftw_plan ForwardPlan;
+    ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+    fftw_plan ReversePlan;
+    ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+
+    for (int nwin = 0; nwin < nwindows; nwin++)
+    {
+
+        //Put (Real Voltage into Time Domain)
+        for( unsigned index = 0; index < windowsize; ++index )
+        {
+            SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
+            SignalComplex[index][1] = 0.
+        }
+
+        fftw_execute(ForwardPlan);
+
+        //Complex filter to set power at negative frequencies to 0.
+        for( unsigned index = windowsize/2; index < windowsize; ++index )
+        {
+            FFTComplex[index][0] = 0.;
+            FFTComplex[index][1] = 0.;
+        }
+
+        fftw_execute(ReversePlan);
+
+        double norm = (double)(windowsize);
+
+        for( unsigned index = 0; index < windowsize; ++index )
+        {
+            //normalize and take the real part of the reverse transform, for digitization.
+            aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
+        }
+
+    }
+
+
+    delete SignalComplex;
+    delete FFTComplex;
+
+
+}
 
 
 
@@ -173,8 +225,11 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             tSpaceTimeInterval[0]=CurrentParticle.GetSpaceTimeInterval();
             CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
             //Roots to Quadratic Equation
-            dtRetarded[0]=(-B_Quad-sign(B_Quad)*sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad))/(2.*A_Quad);
-            dtRetarded[1]=(2.*C_Quad)/(-B_Quad-sign(B_Quad)*sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad));
+            double signB=-1.;
+            if(B_Quad>0)B_Quad=1.;
+
+            dtRetarded[0]=(-B_Quad - signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad)) / (2.*A_Quad);
+            dtRetarded[1]=(2.*C_Quad)/(-B_Quad- signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad));
 
             //Newton's Method
             while(tSpaceTimeInterval[0]>tTolerance)
@@ -183,6 +238,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
                 dtRetarded[0]=CurrentParticle.NewtonStep(tRetarded,dtRetarded[0]);
                 tRetarded+=dtRetarded[0];
+                CurrentIndex=FindNode(tRetarded,CurrentIndex);
             }
 
 
@@ -194,22 +250,24 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     }
 
     //Remove overly old elements from fParticleHistory
-    while(tReceiver-fParticleHistory.back()>3e-8 || fParticleHistory.size()>5000 )
+    while(tReceiver-fParticleHistory.back().GetTime()>3e-8 || fParticleHistory.size()>5000 )
     {
         fParticleHistory.pop_back();
-
     }
 
 
 
 
-    //aSignal->SignalTime()[ index ] += sqrt(TotalPower*Resistance);
+    //Scaling doesnt matter...
+    double Resistance=1.;
+
+    aLongSignal[ index ] += sqrt(TotalPower*Resistance);
 
 
 
 }
 ////Return index of deque closest to desired time
-int FindNode(double tNew, double tOld, int IndexOld)
+int KassSignalGenerator::FindNode(double tNew, double tOld, int IndexOld)
 {
     int IndexNew=0;
     if(TConst)
@@ -240,17 +298,17 @@ int FindNode(double tNew, double tOld, int IndexOld)
 
 }
 
-bool IsInside(double tNew, int IndexMin, int IndexMax)
+bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax)
 {
     return tNew>=fParticleHistory[IndexMin].GetTime() && tNew<=fParticleHistory[IndexMax].GetTime();
 }
 
-int BinarySearch(double tNew, int IndexMin, int IndexMax)
+int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax)
 {
-    int IntervalLength=IndexMax-IndexMin;
+    int IndexLength=IndexMax-IndexMin;
     int IndexMid;
 
-    while(IntervalLength>1)
+    while(IndexLength>1)
     {
         IndexMid=round((IndexMin+IndexMax)/2.);
         if(fParticleHistory[IndexMid].GetTime()>tNew)
@@ -272,35 +330,8 @@ int BinarySearch(double tNew, int IndexMin, int IndexMax)
     //Now that we have it between an interval of one return index of 
     //node tNew is closer to. Ie) determine if bigger or smaller than avg. of 2 points
 
-    return IndexMin+round(tNew-0.5(fParticleHistory[IndexMin].GetTime()+fPArticleHistory[IndexMax].GetTime()));
+    return IndexMin+round(tNew-0.5*(fParticleHistory[IndexMin].GetTime()+fParticleHistory[IndexMax].GetTime()));
 }
-
-double sign(double x)
-{
-    if(x>=0.)
-        return 1.;
-
-    if(x<0.)
-        return -1.;
-}
-
-
-
-
-//double KassSignalGenerator::ModeExcitation() const
-//{
-//
-//return EdotV;
-//}
-//
-//
-//double KassSignalGenerator::AverageModeExcitation() const
-//{
-//
-//return AverageEdotV;
-//}
-
-
 
 
 
@@ -359,6 +390,7 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
 
         }  // for loop
 
+    //FilterNegativeFrequencies(aSignal);
 
     // trigger any remaining events in Kassiopeia so that its thread can finish.
     while (fRunInProgress)
