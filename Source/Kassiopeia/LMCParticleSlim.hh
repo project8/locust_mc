@@ -33,7 +33,6 @@ namespace locust
 
             void SetReceiverTime(double);
             void SetReceiverPosition(double,double,double);
-
             void CalculateKinematicProperties();
 
             void CalculateQuadraticCoefficients(double&,double&,double&);
@@ -42,8 +41,7 @@ namespace locust
             double GetSpaceTimeInterval(double,KGeoBag::KThreeVector);
             double GetReceiverDistance();
             double NewtonStep(double, double);
-
-
+            double HouseHolderStep(double, double);
 
             double CalculatePower(double,double,double);
 

@@ -72,13 +72,13 @@ namespace locust
             void Accept( GeneratorVisitor* aVisitor ) const;
 
         private:
-      double fLO_Frequency;  // typically defined by a parameter in json file.
+            double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal ) const;
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double *ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
-            int FindNode(double tNew, double tOld, int IndexOld);
-            bool IsInside(double tNew, int IndexMin, int IndexMax);
-            int BinarySearch(double tNew, int IndexMin, int IndexMax);
+            int FindNode(double tNew, int IndexOld) const;
+            bool IsInside(double tNew, int IndexMin, int IndexMax) const;
+            int BinarySearch(double tNew, int IndexMin, int IndexMax) const;
 
 
 

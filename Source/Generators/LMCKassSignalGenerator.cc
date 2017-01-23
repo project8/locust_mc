@@ -104,7 +104,7 @@ bool ReceivedKassReady()
 
 }
 
-void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal) const
+void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
 {
 
     int nwindows = 80;
@@ -129,7 +129,7 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal) const
         for( unsigned index = 0; index < windowsize; ++index )
         {
             SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
-            SignalComplex[index][1] = 0.
+            SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
         }
 
         fftw_execute(ForwardPlan);
@@ -161,22 +161,38 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal) const
 }
 
 
-
-
-void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
+void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
     double c=2.998792458e8;
-    locust::ParticleSlim CurrentParticle = fParticleHistory.front();
+
+
+    locust::ParticleSlim CurrentParticle = fParticleHistory.back();
+    int CurrentIndex[2]={};
+
+    if(fParticleHistory.size()>=2 && dtConst)
+    {
+        double dtTmp=fParticleHistory[0].GetTime()-fParticleHistory[1].GetTime();
+        if(dtConst==-99)
+            dtConst=dtTmp;
+        else if(abs(dtTmp-dtConst)>1e-14)
+        {
+            printf("Non- constant Time Steps!");
+            dtConst=0.;
+
+        }
+    }
 
     //Number of Grid Points Per Side. Keep odd so center point lines up with center
     const int nGridSide=9;
     double rReceiver[nGridSide][nGridSide][3];
     double rReceiverCenter[3]={0.,0.,1.};
-    double tReceiverNorm[3]={0.,0.,1.};
+    double ThetaSurf=0.; 
+    double PhiSurf=0.;
+    double tReceiverNorm[3]={sin(ThetaSurf)*cos(PhiSurf),sin(ThetaSurf)*cos(PhiSurf),cos(ThetaSurf)};
     double dx=0.005; 
     double dy=0.005;
     //Set Receiver Array Position. 
-    //May eventually get from kasssiopeia once set experimentally
+    //May eventually get from kasssiopeia 
     for(unsigned ix=0;ix<nGridSide;ix++)
     {
         for(unsigned iy=0;iy<nGridSide;iy++)
@@ -186,18 +202,30 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             rReceiver[ix][iy][2]=0.;
         }
     }
-    //Rotate/ Shift as desired. Put in rotation in future version (just mult by matrix)
+    ///Perform Rotation on receiver surface
+    double SurfaceRotation[3][3]={{cos(ThetaSurf)*cos(PhiSurf),-sin(PhiSurf),cos(PhiSurf)*sin(ThetaSurf)},{cos(ThetaSurf)*sin(PhiSurf),cos(PhiSurf),sin(PhiSurf)*sin(ThetaSurf)},{-sin(ThetaSurf),0.,cos(ThetaSurf)}};
+
     for(unsigned ix=0;ix<nGridSide;ix++)
     {
         for(unsigned iy=0;iy<nGridSide;iy++)
         {
-            for(unsigned j=0;j<3;j++)
+            double tmpPos[3]={};
+
+            for(int i=0;i<3;i++)
             {
-                rReceiver[ix][iy][j]+=rReceiverCenter[j];
+                for(int j=0;j<3;j++)
+                {
+                    tmpPos[i]+=SurfaceRotation[i][j]*rReceiver[ix][iy][j];
+                }
+            }
+            //Shift Receiver to desired location
+            for(int i=0;i<3;i++)
+            {
+                rReceiver[ix][iy][i]=tmpPos[i]+rReceiverCenter[i];
+
             }
         }
     }
-
 
 
     double tRetarded=0.;
@@ -207,44 +235,80 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double TotalPower=0.;
     double tSpaceTimeInterval[2]={99.,99.};
     double dtRetarded[2]={};
-    double tTolerance=1e-12;
+    double tTolerance=1e-14;
 
 
     for(unsigned ix=0;ix<nGridSide;ix++)
     {
         for(unsigned iy=0;iy<nGridSide;iy++)
         {
-
             CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+            CurrentParticle.SetReceiverTime(tReceiver);
+            if(CurrentParticle.GetTime()==0 && CurrentParticle.GetSpaceTimeInterval()<0)
+            {
+                ReceiverPower[ix][iy]=0.;
+                continue;
+            }
 
             //Very First Guess: Eventually Supplement with Wave Technique
             //Put into function?????
             tRetarded=tReceiver-CurrentParticle.GetReceiverDistance()/c;
 
-            //ResetParticle(CurrentParticle,tRetarded,1);
-            tSpaceTimeInterval[0]=CurrentParticle.GetSpaceTimeInterval();
+            //tSpaceTimeInterval[0]=CurrentParticle.GetSpaceTimeInterval();
             CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
             //Roots to Quadratic Equation
             double signB=-1.;
-            if(B_Quad>0)B_Quad=1.;
+            if(B_Quad>0)signB=1.;
 
             dtRetarded[0]=(-B_Quad - signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad)) / (2.*A_Quad);
             dtRetarded[1]=(2.*C_Quad)/(-B_Quad- signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad));
 
+            for(int i=0;i<2;i++)
+            {
+                CurrentIndex[i]=FindNode(tRetarded+dtRetarded[i],0.);
+                CurrentParticle=fParticleHistory[CurrentIndex[i]];
+                CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+                CurrentParticle.SetReceiverTime(tReceiver);
+                tSpaceTimeInterval[i]=CurrentParticle.Interpolate(tRetarded+dtRetarded[i]);
+            }
+
+            //Cute way of returning index of minimum spacetime interval
+            int minIndex=int(tSpaceTimeInterval[0]>tSpaceTimeInterval[1]);
+
+            dtRetarded[0]=dtRetarded[minIndex];
+            tSpaceTimeInterval[0]=tSpaceTimeInterval[minIndex];
+            CurrentIndex[0]=CurrentIndex[minIndex];
+            CurrentParticle=fParticleHistory[CurrentIndex[0]];
+            CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+            CurrentParticle.SetReceiverTime(tReceiver);
+
             //Newton's Method
+            int tmpcnt=0;
             while(tSpaceTimeInterval[0]>tTolerance)
             {
                 CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
-
                 dtRetarded[0]=CurrentParticle.NewtonStep(tRetarded,dtRetarded[0]);
+                //dtRetarded[0]=CurrentParticle.HouseHolderStep(tRetarded,dtRetarded[0]);
                 tRetarded+=dtRetarded[0];
-                CurrentIndex=FindNode(tRetarded,CurrentIndex);
+                CurrentIndex[1]=FindNode(tRetarded,CurrentIndex[0]);
+                if(CurrentIndex[0]!=CurrentIndex[1])
+                {
+                    CurrentIndex[0]=CurrentIndex[1];
+                    CurrentParticle=fParticleHistory[CurrentIndex[0]];
+                    CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+                    CurrentParticle.SetReceiverTime(tReceiver);
+                }
+                tSpaceTimeInterval[0]=CurrentParticle.Interpolate(tRetarded);
+                tmpcnt++;
+                if(tmpcnt>10)
+                {
+                    printf("bad!!!\n");
+                    break;
+                }
             }
 
-
-            ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2]);
+            ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2])*dx*dy;
             TotalPower+=ReceiverPower[ix][iy];
-            
 
         }
     }
@@ -255,24 +319,25 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
         fParticleHistory.pop_back();
     }
 
-
-
-
     //Scaling doesnt matter...
     double Resistance=1.;
 
-    aLongSignal[ index ] += sqrt(TotalPower*Resistance);
+    aLongSignal[ index ] += sqrt(TotalPower*Resistance)*cos(2.*PI*fLO_Frequency*tReceiver);
+    ImaginarySignal[ index ] += sqrt(TotalPower*Resistance)*sin(2.*PI*fLO_Frequency*tReceiver);
 
 
 
 }
 ////Return index of deque closest to desired time
-int KassSignalGenerator::FindNode(double tNew, double tOld, int IndexOld)
+int KassSignalGenerator::FindNode(double tNew, int IndexOld) const
 {
+    double tOld=fParticleHistory[IndexOld].GetTime();
     int IndexNew=0;
+    bool TConst = bool(dtConst);
+
     if(TConst)
     {
-        IndexNew=round((tOld-tNew)/dt)+IndexOld;
+        IndexNew=round((tOld-tNew)/dtConst)+IndexOld;
     }
     else
     {
@@ -284,9 +349,9 @@ int KassSignalGenerator::FindNode(double tNew, double tOld, int IndexOld)
         else
         {
             for(int i=1;i<20;i++){
-                if(IsInside(tNew,IndexOld,8*i))
+                if(IsInside(tNew,IndexOld,pow(2,i)))
                 {
-                    IndexNew=BinarySearch(tNew,IndexOld-8*i,IndexOld+8*i);
+                    IndexNew=BinarySearch(tNew,IndexOld-pow(2,i),IndexOld+pow(2,i));
                     break;
                 }
             }
@@ -298,12 +363,12 @@ int KassSignalGenerator::FindNode(double tNew, double tOld, int IndexOld)
 
 }
 
-bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax)
+bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) const
 {
     return tNew>=fParticleHistory[IndexMin].GetTime() && tNew<=fParticleHistory[IndexMax].GetTime();
 }
 
-int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax)
+int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) const
 {
     int IndexLength=IndexMax-IndexMin;
     int IndexMid;
@@ -338,8 +403,11 @@ int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax)
 
 bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
 {
+    double *ImaginarySignal = new double[10*aSignal->TimeSize()];
+
     for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
     {
+        ImaginarySignal[ index ] = 0.;  
         aLongSignal[ index ] = 0.;  // long record for oversampling.
     }
 
@@ -382,7 +450,7 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
                 if (fEventInProgress)
                 {
                     //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                    DriveAntenna(PreEventCounter, index, aSignal);
+                    DriveAntenna(PreEventCounter, index, aSignal, ImaginarySignal);
                     PreEventCounter = 0; // reset
                 }
                 tLock.unlock();
@@ -390,7 +458,8 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
 
         }  // for loop
 
-    //FilterNegativeFrequencies(aSignal);
+    FilterNegativeFrequencies(aSignal, ImaginarySignal);
+    delete ImaginarySignal;
 
     // trigger any remaining events in Kassiopeia so that its thread can finish.
     while (fRunInProgress)

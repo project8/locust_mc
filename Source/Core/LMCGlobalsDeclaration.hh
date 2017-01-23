@@ -32,6 +32,7 @@ extern double t_old;
 //extern double fcyc;
 //extern double GammaZ;
 extern double testvar;
+extern double dtConst;
 
 extern std::deque<locust::ParticleSlim> fParticleHistory;
 

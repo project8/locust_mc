@@ -42,34 +42,37 @@ namespace locust
 
     	t_poststep = aFinalParticle.GetTime();
 
+        //////////////!!!!!!!!!!!!!!!!!!/////////////
+        //Need to have every step accessible
+        //Will have to make sure it is still sorted... could be problematic... dont want overwrites either
+        //Noah is not sure if this mutex is even necessary, thss is hopefully okay
+        double X = aFinalParticle.GetPosition().X();
+        double Y = aFinalParticle.GetPosition().Y();
+        double Z = aFinalParticle.GetPosition().Z();
+        double xVelocity = aFinalParticle.GetVelocity().GetX();
+        double yVelocity = aFinalParticle.GetVelocity().GetY();
+        double zVelocity = aFinalParticle.GetVelocity().GetZ();
+        double xMagneticField = aFinalParticle.GetMagneticField().GetX();
+        double yMagneticField = aFinalParticle.GetMagneticField().GetY();
+        double zMagneticField = aFinalParticle.GetMagneticField().GetZ();
+        double mparticle = aFinalParticle.GetMass();
+        double qparticle = aFinalParticle.GetCharge();
+
+        locust::ParticleSlim aNewParticle;
+        aNewParticle.SetPosition(X,Y,Z);
+        aNewParticle.SetVelocityVector(xVelocity,yVelocity,zVelocity);
+        aNewParticle.SetMagneticFieldVector(xMagneticField,yMagneticField,zMagneticField);
+        aNewParticle.SetMass(mparticle);
+        aNewParticle.SetCharge(qparticle);
+        
+        fParticleHistory.push_front(aNewParticle);
+
         if (t_poststep - t_old > 5.e-10)
         {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
             dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-
-            double X = aFinalParticle.GetPosition().X();
-            double Y = aFinalParticle.GetPosition().Y();
-            double Z = aFinalParticle.GetPosition().Z();
-            double xVelocity = aFinalParticle.GetVelocity().GetX();
-            double yVelocity = aFinalParticle.GetVelocity().GetY();
-            double zVelocity = aFinalParticle.GetVelocity().GetZ();
-            double xMagneticField = aFinalParticle.GetMagneticField().GetX();
-            double yMagneticField = aFinalParticle.GetMagneticField().GetY();
-            double zMagneticField = aFinalParticle.GetMagneticField().GetZ();
-            double mparticle = aFinalParticle.GetMass();
-            double qparticle = aFinalParticle.GetCharge();
-
-            locust::ParticleSlim aNewParticle;
-            aNewParticle.SetPosition(X,Y,Z);
-            aNewParticle.SetVelocityVector(xVelocity,yVelocity,zVelocity);
-            aNewParticle.SetMagneticFieldVector(xMagneticField,yMagneticField,zMagneticField);
-            aNewParticle.SetMass(mparticle);
-            aNewParticle.SetCharge(qparticle);
-            
-            fParticleHistory.push_front(aNewParticle);
-
 
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.

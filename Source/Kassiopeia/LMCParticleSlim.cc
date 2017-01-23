@@ -85,8 +85,10 @@ namespace locust
         fReceiverVector=fReceiverPosition-fPosition;
         fReceiverDistance=fReceiverVector.Magnitude();
         fReceiverDir=fReceiverVector.Unit();
+        CalculateKinematicProperties();
         return;
     }
+
     void ParticleSlim::SetReceiverTime(double aTime)
     {
         fReceiverTime=aTime;
@@ -98,30 +100,36 @@ namespace locust
     {
         double beta=fVelocity.Magnitude()/KConst::C();
         fGamma=1./sqrt((1.-beta)*(1.+beta));
-        ///////////!!!!!!!!!!!!!!//////////
-        //put in formulas for cyclotron radius/ frequency!!!11
-
+        fCyclotronFrequency=abs(fCharge) * fMagneticField.Magnitude() / ( fMass * fGamma);
+        
         fVelocityParallel=fVelocity.Dot(fMagneticField.Unit());
 
-        ////Need to account for sign of charge!!!! fix
+        KGeoBag::KThreeVector vPerp=fVelocity-fVelocityParallel*fMagneticField.Unit();
+
+        fCyclotronRadius = fGamma * fMass * vPerp.Magnitude() / (abs(fCharge) * fMagneticField.Magnitude());
+
         KGeoBag::KThreeVector tCrossRadial=(fVelocity.Cross(fMagneticField)).Unit();
-        fGuidingCenterPosition=fPosition-fCyclotronRadius*tCrossRadial;
+
+        if(fCharge<0)
+        {
+            tCrossRadial=-1.*tCrossRadial;
+        }
+
+        fGuidingCenterPosition=fPosition+fCyclotronRadius*tCrossRadial;
 
         fAlpha=fPosition-fGuidingCenterPosition;
 
-        fBeta=fVelocity.Cross(fAlpha);
+        fBeta=fMagneticField.Cross(fAlpha);
         fAlpha=fAlpha.Unit();
         fBeta=fBeta.Unit();
-
-
-
         return;
     }
 
-    double ParticleSlim::Interpolate(double dt)
+    double ParticleSlim::Interpolate(double tRetarded)
     {
+        double dt=tRetarded-fTime;
         KGeoBag::KThreeVector rNewPosition=fGuidingCenterPosition + fCyclotronRadius * ( cos(fCyclotronFrequency*dt)*fAlpha + sin(fCyclotronFrequency*dt)*fBeta);
-        return GetSpaceTimeInterval(fTime+dt,rNewPosition);
+        return GetSpaceTimeInterval(tRetarded,rNewPosition);
     }
 
 
@@ -137,23 +145,21 @@ namespace locust
 
     double ParticleSlim::GetSpaceTimeInterval()
     {
-        double s2=pow(fReceiverTime-fTime,2)- fReceiverVector.MagnitudeSquared()/KConst::C();
-        return sqrt(s2);
+        double s=fReceiverTime-fTime-fReceiverVector.Magnitude()/KConst::C();
+        return s;
     }
 
     double ParticleSlim::GetSpaceTimeInterval(double tNew, KGeoBag::KThreeVector rNew)
     {
         KGeoBag::KThreeVector drNew=fReceiverPosition-rNew;
-        double s2=pow(fReceiverTime-tNew,2)- drNew.MagnitudeSquared()/KConst::C();
-        return sqrt(s2);
+        double s=fReceiverTime-tNew-drNew.Magnitude()/KConst::C();
+        return s;
     }
 
     double ParticleSlim::GetReceiverDistance()
     {
         return fReceiverDistance;
     }
-
-
 
     double ParticleSlim::NewtonStep(double tRetarded, double dtRetarded)
     {
@@ -162,9 +168,25 @@ namespace locust
         CalculateQuadraticCoefficients(A,B,C);
 
         double f_sin=A*dtRetarded*dtRetarded+B*dtRetarded+C+2.*fCyclotronRadius/(c*c)*(fReceiverVector.Dot((cos(fCyclotronFrequency*(dtRetarded+tRetarded))-cos(fCyclotronFrequency*tRetarded))*fAlpha+(sin(fCyclotronFrequency*(dtRetarded+tRetarded))-sin(fCyclotronFrequency*tRetarded))*fBeta)-fCyclotronRadius*(1.-cos(fCyclotronFrequency*dtRetarded)));
-        double df_sin=2.*A*dtRetarded+B+2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*(fReceiverVector.Dot(-sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)-fCyclotronRadius*(1.-cos(fCyclotronFrequency*dtRetarded)));
+        double df_sin=2.*A*dtRetarded+B+2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*(fReceiverVector.Dot(-sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)-fCyclotronRadius*sin(fCyclotronFrequency*dtRetarded));
 
         return dtRetarded-f_sin/df_sin;
+    }
+
+    double ParticleSlim::HouseHolderStep(double tRetarded, double dtRetarded)
+    {
+        double c=KConst::C();
+        double A,B,C;
+        CalculateQuadraticCoefficients(A,B,C);
+
+        double f_sin=A*dtRetarded*dtRetarded+B*dtRetarded+C+2.*fCyclotronRadius/(c*c)*(fReceiverVector.Dot((cos(fCyclotronFrequency*(dtRetarded+tRetarded))-cos(fCyclotronFrequency*tRetarded))*fAlpha+(sin(fCyclotronFrequency*(dtRetarded+tRetarded))-sin(fCyclotronFrequency*tRetarded))*fBeta)-fCyclotronRadius*(1.-cos(fCyclotronFrequency*dtRetarded)));
+        double df_sin=2.*A*dtRetarded+B+2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*(fReceiverVector.Dot(-sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)-fCyclotronRadius*sin(fCyclotronFrequency*dtRetarded));
+        double d2f_sin=2.*A - 2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*fCyclotronFrequency*(fReceiverVector.Dot(cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)+fCyclotronRadius*cos(fCyclotronFrequency*dtRetarded));
+        
+        double SqrtArg=1. - 2. * d2f_sin * f_sin / (df_sin * df_sin);
+        if(SqrtArg < 0)  return NewtonStep(tRetarded,dtRetarded);
+
+        return dtRetarded - df_sin / d2f_sin * ( 1. - sqrt(SqrtArg));
     }
     
 
@@ -174,10 +196,15 @@ namespace locust
 
         KGeoBag::KThreeVector SurfaceNormal(X,Y,Z);
 
+        //Lorentz Equation
         KGeoBag::KThreeVector BetaDot=fCharge/fMass*fBetaVelocity.Cross(fMagneticField);
-        KGeoBag::KThreeVector E=-fCharge / (KConst::FourPiEps() * c *pow((1.- fReceiverDir.Dot(fBetaVelocity)),3.)*fReceiverDistance ) * (c / (fGamma*fGamma*fReceiverDistance)*(fReceiverDir-fBetaVelocity.Unit()) + (fReceiverDir.Cross(fReceiverDir.Cross(BetaDot))));
 
-        KGeoBag::KThreeVector S =1. / KConst::MuNull()*E.Cross(fReceiverDir.Cross(E));
+        //Lienard-Wiechert Equations
+        KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fBetaVelocity),3.)*fReceiverDistance ) * (c / (fGamma*fGamma*fReceiverDistance)*(fReceiverDir-fBetaVelocity) + (fReceiverDir.Cross(fReceiverDir.Cross(BetaDot))));
+
+        KGeoBag::KThreeVector B = fReceiverDir.Cross(E)/c;
+
+        KGeoBag::KThreeVector S =1. / KConst::MuNull()*E.Cross(B);
 
         double P=S.Dot(SurfaceNormal);
 
