@@ -11,6 +11,7 @@
 
 #include "logger.hh"
 #include <thread>
+#include <algorithm>
 
 #include "LMCGlobalsDeclaration.hh"
 
@@ -165,7 +166,6 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 {
     double c=2.998792458e8;
 
-
     locust::ParticleSlim CurrentParticle = fParticleHistory.back();
     int CurrentIndex[2]={};
 
@@ -174,11 +174,10 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
         double dtTmp=fParticleHistory[0].GetTime()-fParticleHistory[1].GetTime();
         if(dtConst==-99)
             dtConst=dtTmp;
-        else if(abs(dtTmp-dtConst)>1e-14)
+        else if(fabs(dtTmp-dtConst)>1e-14)
         {
             printf("Non- constant Time Steps!");
             dtConst=0.;
-
         }
     }
 
@@ -188,7 +187,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double rReceiverCenter[3]={0.,0.,1.};
     double ThetaSurf=0.; 
     double PhiSurf=0.;
-    double tReceiverNorm[3]={sin(ThetaSurf)*cos(PhiSurf),sin(ThetaSurf)*cos(PhiSurf),cos(ThetaSurf)};
+    double tReceiverNorm[3]={sin(ThetaSurf)*cos(PhiSurf),sin(ThetaSurf)*sin(PhiSurf),cos(ThetaSurf)};
     double dx=0.005; 
     double dy=0.005;
     //Set Receiver Array Position. 
@@ -226,7 +225,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             }
         }
     }
-
+    
 
     double tRetarded=0.;
     double tReceiver=t_poststep;
@@ -235,89 +234,156 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double TotalPower=0.;
     double tSpaceTimeInterval[2]={99.,99.};
     double dtRetarded[2]={};
-    double tTolerance=1e-14;
+    double tTolerance=1e-20;
 
+    int HistorySize=int(fParticleHistory.size());
+    int HistoryMaxSize=1000;
+    
+   
+
+    while(tReceiver-fParticleHistory.back().GetTime()>1e-7 || fParticleHistory.size()>HistoryMaxSize)
+    {
+        fParticleHistory.pop_back();
+        HistorySize=fParticleHistory.size();
+    }
+    
+    printf("Size: %d\n",HistorySize);
+
+
+    int AvgIters=0;
 
     for(unsigned ix=0;ix<nGridSide;ix++)
     {
         for(unsigned iy=0;iy<nGridSide;iy++)
         {
-            CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
-            CurrentParticle.SetReceiverTime(tReceiver);
-            if(CurrentParticle.GetTime()==0 && CurrentParticle.GetSpaceTimeInterval()<0)
+
+            if(HistorySize<HistoryMaxSize)
             {
-                ReceiverPower[ix][iy]=0.;
-                continue;
+                fParticleHistory.back().SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+                fParticleHistory.back().SetReceiverTime(tReceiver);
+
+                if(fParticleHistory.back().GetSpaceTimeInterval(0.)<0)
+                {
+                    ReceiverPower[ix][iy]=0.;
+                    //printf("Skipping! out of Bounds!: tReceiver=%e\n",tReceiver);
+                    continue;
+                }
             }
 
-            //Very First Guess: Eventually Supplement with Wave Technique
-            //Put into function?????
-            tRetarded=tReceiver-CurrentParticle.GetReceiverDistance()/c;
-
-            //tSpaceTimeInterval[0]=CurrentParticle.GetSpaceTimeInterval();
-            CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
-            //Roots to Quadratic Equation
-            double signB=-1.;
-            if(B_Quad>0)signB=1.;
-
-            dtRetarded[0]=(-B_Quad - signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad)) / (2.*A_Quad);
-            dtRetarded[1]=(2.*C_Quad)/(-B_Quad- signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad));
-
-            for(int i=0;i<2;i++)
-            {
-                CurrentIndex[i]=FindNode(tRetarded+dtRetarded[i],0.);
-                CurrentParticle=fParticleHistory[CurrentIndex[i]];
-                CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
-                CurrentParticle.SetReceiverTime(tReceiver);
-                tSpaceTimeInterval[i]=CurrentParticle.Interpolate(tRetarded+dtRetarded[i]);
-            }
-
-            //Cute way of returning index of minimum spacetime interval
-            int minIndex=int(tSpaceTimeInterval[0]>tSpaceTimeInterval[1]);
-
-            dtRetarded[0]=dtRetarded[minIndex];
-            tSpaceTimeInterval[0]=tSpaceTimeInterval[minIndex];
-            CurrentIndex[0]=CurrentIndex[minIndex];
+            CurrentIndex[0]=FindNode(tReceiver,0.);
             CurrentParticle=fParticleHistory[CurrentIndex[0]];
             CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
             CurrentParticle.SetReceiverTime(tReceiver);
 
+            tRetarded=tReceiver-CurrentParticle.GetReceiverDistance()/c;
+            //printf("tRetarded %e\n",tRetarded);
+
+            CurrentIndex[0]=FindNode(tRetarded,CurrentIndex[0]);
+            CurrentParticle=fParticleHistory[CurrentIndex[0]];
+            CurrentParticle.Interpolate(tRetarded);
+            CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+            CurrentParticle.SetReceiverTime(tReceiver);
+            tSpaceTimeInterval[0]=CurrentParticle.GetSpaceTimeInterval();
+
+            
+           // printf("Index %d of %d \n",CurrentIndex[0],HistorySize);
+           // printf("Interval0: %e \n",tSpaceTimeInterval[0]);
+
+            //CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
+            ////printf("A B C: %e %e %e \n",A_Quad,B_Quad,C_Quad);
+
+            ////Roots to Quadratic Equation
+            //double signB=-1.;
+            //if(B_Quad>0)signB=1.;
+
+            //dtRetarded[0]=(-B_Quad - signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad)) / (2.*A_Quad);
+            //dtRetarded[1]=(2.*C_Quad)/(-B_Quad- signB *sqrt(B_Quad*B_Quad-4.*A_Quad*C_Quad));
+
+            //double OriginalIndex=CurrentIndex[0];
+            //for(int i=0;i<2;i++)
+            //{
+            //    CurrentIndex[i]=FindNode(tRetarded+dtRetarded[i],OriginalIndex);
+            //    tSpaceTimeInterval[i]=99.;
+            //    //Make sure it is in bounds!
+            //    if(CurrentIndex[i]>=0 && CurrentIndex[i]<HistorySize)
+            //    {
+            //        CurrentParticle=fParticleHistory[CurrentIndex[i]];
+            //        CurrentParticle.Interpolate(tRetarded+dtRetarded[i]);
+            //        CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+            //        CurrentParticle.SetReceiverTime(tReceiver);
+            //        tSpaceTimeInterval[i]=CurrentParticle.GetSpaceTimeInterval();
+            //    }
+            //}
+
+            ////printf("dt0: %e \n",dtRetarded[0]);
+            ////printf("dt1: %e \n",dtRetarded[1]);
+            ////printf("s0: %e \n",tSpaceTimeInterval[0]);
+            ////printf("s1: %e \n",tSpaceTimeInterval[1]);
+
+            ////Cute way of returning index of minimum spacetime interval
+            //int minIndex=int(fabs(tSpaceTimeInterval[0])>fabs(tSpaceTimeInterval[1]));
+            ////printf("mindex: %d \n",minIndex);
+
+            //dtRetarded[0]=dtRetarded[minIndex];
+            //CurrentIndex[0]=CurrentIndex[minIndex];
+
+            //tRetarded+=dtRetarded[0];
+            //CurrentParticle=fParticleHistory[CurrentIndex[0]];
+            //CurrentParticle.Interpolate(tRetarded);
+            //CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+            //CurrentParticle.SetReceiverTime(tReceiver);
+
+            //tSpaceTimeInterval[0]=tSpaceTimeInterval[minIndex];
+
+            //printf("s0: %e \n",tSpaceTimeInterval[0]);
+
             //Newton's Method
-            int tmpcnt=0;
-            while(tSpaceTimeInterval[0]>tTolerance)
+
+            for(int i=0;i<10;i++)
             {
-                CurrentParticle.CalculateQuadraticCoefficients(A_Quad,B_Quad,C_Quad);
-                dtRetarded[0]=CurrentParticle.NewtonStep(tRetarded,dtRetarded[0]);
-                //dtRetarded[0]=CurrentParticle.HouseHolderStep(tRetarded,dtRetarded[0]);
-                tRetarded+=dtRetarded[0];
-                CurrentIndex[1]=FindNode(tRetarded,CurrentIndex[0]);
-                if(CurrentIndex[0]!=CurrentIndex[1])
+                if(fabs(tSpaceTimeInterval[0])<tTolerance)
                 {
-                    CurrentIndex[0]=CurrentIndex[1];
-                    CurrentParticle=fParticleHistory[CurrentIndex[0]];
-                    CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
-                    CurrentParticle.SetReceiverTime(tReceiver);
-                }
-                tSpaceTimeInterval[0]=CurrentParticle.Interpolate(tRetarded);
-                tmpcnt++;
-                if(tmpcnt>10)
-                {
-                    printf("bad!!!\n");
                     break;
                 }
+
+                AvgIters++;
+
+                dtRetarded[0]=tSpaceTimeInterval[0];
+                //printf("s1: %e \n",dtRetarded[0]);
+                //dtRetarded[0]=CurrentParticle.NewtonStep(dtRetarded[0]);
+                //printf("s2: %e \n",dtRetarded[0]);
+                //dtRetarded[0]=CurrentParticle.HouseHolderStep(dtRetarded[0]);
+                
+                tRetarded+=dtRetarded[0];
+               // CurrentIndex[1]=FindNode(tRetarded,CurrentIndex[0]);
+
+               // CurrentIndex[1]=std::max(CurrentIndex[1],0);
+               // CurrentIndex[1]=std::min(CurrentIndex[1],HistorySize-1);
+
+               // if(CurrentIndex[0]!=CurrentIndex[1])
+               // {
+               //     CurrentIndex[0]=CurrentIndex[1];
+               //     CurrentParticle=fParticleHistory[CurrentIndex[0]];
+               // }
+
+                CurrentParticle.Interpolate(tRetarded);
+                CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+                CurrentParticle.SetReceiverTime(tReceiver);
+
+
+                tSpaceTimeInterval[0]=CurrentParticle.GetSpaceTimeInterval();
+                //printf("s1: %e \n",tSpaceTimeInterval[0]);
             }
 
+            //printf("we got me a marlin\n");
             ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2])*dx*dy;
             TotalPower+=ReceiverPower[ix][iy];
 
         }
     }
+    printf("Power: %e\n",TotalPower);
+    printf("Avg Its: %e\n",double(AvgIters)/double(nGridSide*nGridSide));
 
-    //Remove overly old elements from fParticleHistory
-    while(tReceiver-fParticleHistory.back().GetTime()>3e-8 || fParticleHistory.size()>5000 )
-    {
-        fParticleHistory.pop_back();
-    }
 
     //Scaling doesnt matter...
     double Resistance=1.;
@@ -359,17 +425,26 @@ int KassSignalGenerator::FindNode(double tNew, int IndexOld) const
 
         }
     }
+
     return IndexNew;
 
 }
 
 bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) const
 {
+    IndexMin=std::max(IndexMin,0);
+    int HistorySize=int(fParticleHistory.size());
+    IndexMax=std::min(IndexMax,HistorySize-1);
+
     return tNew>=fParticleHistory[IndexMin].GetTime() && tNew<=fParticleHistory[IndexMax].GetTime();
 }
 
 int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) const
 {
+    IndexMin=std::max(IndexMin,0);
+    int HistorySize=int(fParticleHistory.size());
+    IndexMax=std::min(IndexMax,HistorySize-1);
+
     int IndexLength=IndexMax-IndexMin;
     int IndexMid;
 

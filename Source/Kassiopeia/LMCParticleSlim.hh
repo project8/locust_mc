@@ -31,35 +31,37 @@ namespace locust
             void SetMass(double);
             void SetCharge(double);
 
-            void SetReceiverTime(double);
             void SetReceiverPosition(double,double,double);
-            void CalculateKinematicProperties();
+            void SetReceiverTime(double);
+            void SetKinematicProperties();
+
+            void Interpolate(double);
 
             void CalculateQuadraticCoefficients(double&,double&,double&);
-            double Interpolate(double);
             double GetSpaceTimeInterval();
-            double GetSpaceTimeInterval(double,KGeoBag::KThreeVector);
+            double GetSpaceTimeInterval(double);
             double GetReceiverDistance();
-            double NewtonStep(double, double);
-            double HouseHolderStep(double, double);
+            double NewtonStep(double);
+            double HouseHolderStep(double);
 
             double CalculatePower(double,double,double);
 
+            void Print();
 
 
 
         private:
-            double fTime;
+            double fTime; //Time od node given from kassiopeia
+            double fTimeDisplacement;//dt. Allows us to interpolate particle locally around node
 
             KGeoBag::KThreeVector fPosition;
             KGeoBag::KThreeVector fVelocity;
-            KGeoBag::KThreeVector fBetaVelocity;
             double fVelocityParallel;
 
             KGeoBag::KThreeVector fGuidingCenterPosition;
-
             KGeoBag::KThreeVector fMagneticField;
 
+            //2 perp. vectors which define helical motion
             KGeoBag::KThreeVector fAlpha;
             KGeoBag::KThreeVector fBeta;
 

@@ -64,6 +64,8 @@ namespace locust
         aNewParticle.SetMagneticFieldVector(xMagneticField,yMagneticField,zMagneticField);
         aNewParticle.SetMass(mparticle);
         aNewParticle.SetCharge(qparticle);
+        aNewParticle.SetTime(t_poststep);
+        aNewParticle.SetKinematicProperties();
         
         fParticleHistory.push_front(aNewParticle);
 
