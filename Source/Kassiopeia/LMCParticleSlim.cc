@@ -134,17 +134,6 @@ namespace locust
         return;
     }
 
-
-    void ParticleSlim::CalculateQuadraticCoefficients(double& A, double& B, double& C)
-    {
-        double c=KConst::C();
-        A=1.-pow(fVelocityParallel/c,2.);
-        B=-2.*(fReceiverTime-fTime-fTimeDisplacement)+2.*fVelocityParallel*fReceiverVector.Dot(fMagneticField.Unit())/(c*c);
-        C=pow((fReceiverTime-fTime-fTimeDisplacement),2.)-pow(fReceiverDistance/c,2.);
-
-        return;
-    }
-
     double ParticleSlim::GetSpaceTimeInterval()
     {
         double s=fReceiverTime-fTime-fTimeDisplacement-fReceiverVector.Magnitude()/KConst::C();
@@ -166,40 +155,6 @@ namespace locust
         return fReceiverDistance;
     }
 
-    double ParticleSlim::NewtonStep(double dtRetarded)
-    {
-        double tRetarded=fTime+fTimeDisplacement;
-
-        double A,B,C;
-        CalculateQuadraticCoefficients(A,B,C);
-
-        double c=KConst::C();
-
-        double f_sin=A*dtRetarded*dtRetarded+B*dtRetarded+C+2.*fCyclotronRadius/(c*c)*(fReceiverVector.Dot((cos(fCyclotronFrequency*(dtRetarded+tRetarded))-cos(fCyclotronFrequency*tRetarded))*fAlpha+(sin(fCyclotronFrequency*(dtRetarded+tRetarded))-sin(fCyclotronFrequency*tRetarded))*fBeta)-fCyclotronRadius*(1.-cos(fCyclotronFrequency*dtRetarded)));
-        double df_sin=2.*A*dtRetarded+B+2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*(fReceiverVector.Dot(-sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)-fCyclotronRadius*sin(fCyclotronFrequency*dtRetarded));
-
-        return dtRetarded-f_sin/df_sin;
-    }
-
-    double ParticleSlim::HouseHolderStep(double dtRetarded)
-    {
-        double tRetarded=fTime+fTimeDisplacement;
-
-        double A,B,C;
-        CalculateQuadraticCoefficients(A,B,C);
-
-        double c=KConst::C();
-
-        double f_sin=A*dtRetarded*dtRetarded+B*dtRetarded+C+2.*fCyclotronRadius/(c*c)*(fReceiverVector.Dot((cos(fCyclotronFrequency*(dtRetarded+tRetarded))-cos(fCyclotronFrequency*tRetarded))*fAlpha+(sin(fCyclotronFrequency*(dtRetarded+tRetarded))-sin(fCyclotronFrequency*tRetarded))*fBeta)-fCyclotronRadius*(1.-cos(fCyclotronFrequency*dtRetarded)));
-        double df_sin=2.*A*dtRetarded+B+2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*(fReceiverVector.Dot(-sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)-fCyclotronRadius*sin(fCyclotronFrequency*dtRetarded));
-        double d2f_sin=2.*A - 2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*fCyclotronFrequency*(fReceiverVector.Dot(cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)+fCyclotronRadius*cos(fCyclotronFrequency*dtRetarded));
-        
-        double SqrtArg=1. - 2. * d2f_sin * f_sin / (df_sin * df_sin);
-        if(SqrtArg < 0)  return NewtonStep(dtRetarded);
-
-        return dtRetarded - df_sin / d2f_sin * ( 1. - sqrt(SqrtArg));
-    }
-    
 
     double ParticleSlim::CalculatePower(double X, double Y, double Z)
     {

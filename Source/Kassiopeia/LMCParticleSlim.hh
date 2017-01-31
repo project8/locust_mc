@@ -37,12 +37,9 @@ namespace locust
 
             void Interpolate(double);
 
-            void CalculateQuadraticCoefficients(double&,double&,double&);
             double GetSpaceTimeInterval();
             double GetSpaceTimeInterval(double);
             double GetReceiverDistance();
-            double NewtonStep(double);
-            double HouseHolderStep(double);
 
             double CalculatePower(double,double,double);
 
@@ -51,7 +48,7 @@ namespace locust
 
 
         private:
-            double fTime; //Time od node given from kassiopeia
+            double fTime; //Time of node given from kassiopeia
             double fTimeDisplacement;//dt. Allows us to interpolate particle locally around node
 
             KGeoBag::KThreeVector fPosition;
