@@ -49,6 +49,10 @@ namespace locust
     {
         return fTime;
     }
+    double ParticleSlim::GetTimeDisplacement()
+    {
+        return fTimeDisplacement;
+    }
 
     void ParticleSlim::SetPosition(double X, double Y, double Z)
     {

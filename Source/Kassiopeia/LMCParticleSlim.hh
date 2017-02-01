@@ -25,6 +25,7 @@ namespace locust
 
             void SetTime(double);
             double GetTime();
+            double GetTimeDisplacement();
             void SetPosition(double,double,double);
             void SetVelocityVector(double,double,double);
             void SetMagneticFieldVector(double,double,double);

@@ -26,7 +26,7 @@ double t_old = -99.;
 //double fcyc = -99.;
 //double GammaZ = -99.;
 double testvar = -99.;
-double dtConst=-99;
+double EventModTimeStep=-99.;
 
 //running deque for saving previous few ns of particle history 
 //in order to caluclate retarded fields

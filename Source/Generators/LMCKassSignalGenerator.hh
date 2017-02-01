@@ -11,6 +11,7 @@
 #define CENTER_TO_SHORT 0.010 // 10 cm
 #define CENTER_TO_ANTENNA 0.010 // 10 cm.
 #define PI 3.1415926
+#define N_GRID_SIDE 9 //Number of discretized points per side of the receiver
 #define LO_FREQUENCY 0.
 //#define LO_FREQUENCY 26.8730e9 // Hz  18 keV electrons in harmonic trap.
 //#define LO_FREQUENCY 26.2757e9 // Hz  30 keV electrons in harmonic trap, pitch 87-90 spans 85-50 MHz in baseband. 
@@ -71,15 +72,16 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
+
         private:
+            mutable double PreviousTimes[N_GRID_SIDE][N_GRID_SIDE][2]; //Cache the results from previous iteration. [0] is previous retarded time, [1] is corresponding index
             double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double *ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
-            int FindNode(double tNew, int IndexOld) const;
+            int FindNode(double tNew, double dtStepSize, int IndexOld) const;
             bool IsInside(double tNew, int IndexMin, int IndexMax) const;
             int BinarySearch(double tNew, int IndexMin, int IndexMax) const;
-
 
 
     };

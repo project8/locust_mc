@@ -67,7 +67,7 @@ namespace locust
         aNewParticle.SetTime(t_poststep);
         aNewParticle.SetKinematicProperties();
         
-        fParticleHistory.push_front(aNewParticle);
+        fParticleHistory.push_back(aNewParticle);
 
         if (t_poststep - t_old > 5.e-10)
         {
@@ -75,6 +75,7 @@ namespace locust
             tLock.lock();
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
             dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
+            EventModTimeStep = dt;
 
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
