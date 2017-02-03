@@ -31,6 +31,7 @@ double EventModTimeStep=-99.;
 //running deque for saving previous few ns of particle history 
 //in order to caluclate retarded fields
 std::deque<locust::ParticleSlim> fParticleHistory;
+std::deque<locust::ParticleSlim> fNewParticleHistory;
 
 bool fWaitBeforeEvent = true;
 bool fWaitAfterEvent = true;

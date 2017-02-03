@@ -43,9 +43,6 @@ namespace locust
     	t_poststep = aFinalParticle.GetTime();
 
         //////////////!!!!!!!!!!!!!!!!!!/////////////
-        //Need to have every step accessible
-        //Will have to make sure it is still sorted... could be problematic... dont want overwrites either
-        //Noah is not sure if this mutex is even necessary, thss is hopefully okay
         double X = aFinalParticle.GetPosition().X();
         double Y = aFinalParticle.GetPosition().Y();
         double Z = aFinalParticle.GetPosition().Z();
@@ -67,15 +64,28 @@ namespace locust
         aNewParticle.SetTime(t_poststep);
         aNewParticle.SetKinematicProperties();
         
-        fParticleHistory.push_back(aNewParticle);
+        fNewParticleHistory.push_back(aNewParticle);
 
         if (t_poststep - t_old > 5.e-10)
         {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
+
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
             dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
+
             EventModTimeStep = dt;
+
+            //Put in new entries in global ParticleHistory
+            fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
+            fNewParticleHistory.clear();
+
+            //Purge fParticleHistory of overly old entries
+            int HistoryMaxSize=5000;
+            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size()>HistoryMaxSize)
+            {
+                fParticleHistory.pop_front();
+            }
 
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.

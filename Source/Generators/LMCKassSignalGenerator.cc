@@ -231,17 +231,11 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double tTolerance=1e-17;
     double dtStepSize=fabs(fParticleHistory[1].GetTime()-fParticleHistory[0].GetTime());
 
-    int HistorySize=int(fParticleHistory.size());
+    int HistorySize=fParticleHistory.size();
     int HistoryMaxSize=5000;
    
-
-    while(tReceiver-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size()>HistoryMaxSize)
-    {
-        fParticleHistory.pop_front();
-        HistorySize=fParticleHistory.size();
-    }
     
-   //printf("Size: %d\n",HistorySize);
+   //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
 
 
     int AvgIters=0;
@@ -357,7 +351,16 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 ////Return index of deque closest to desired time
 int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) const
 {
-    int HistorySize=int(fParticleHistory.size());
+    int HistorySize=fParticleHistory.size();
+   //printf("Size: %d \n",HistorySize);
+   //fflush(stdout);
+
+    if(!IsInside(tNew,0,HistorySize-1))
+    {
+        printf("RED ALERT NOT IN DEQUE\n");
+
+    }
+
     IndexOld=std::max(IndexOld,0);
     IndexOld=std::min(IndexOld,HistorySize-1);
 
@@ -392,7 +395,7 @@ int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) 
 
 bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) const
 {
-    int HistorySize=int(fParticleHistory.size());
+    int HistorySize=fParticleHistory.size();
     IndexMin=std::max(IndexMin,0);
     IndexMax=std::min(IndexMax,HistorySize-1);
 
@@ -405,7 +408,7 @@ bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) cons
 
 int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) const
 {
-    int HistorySize=int(fParticleHistory.size());
+    int HistorySize=fParticleHistory.size();
     IndexMin=std::max(IndexMin,0);
     IndexMax=std::min(IndexMax,HistorySize-1);
 

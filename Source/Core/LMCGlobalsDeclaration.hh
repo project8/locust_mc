@@ -35,6 +35,7 @@ extern double testvar;
 extern double EventModTimeStep;
 
 extern std::deque<locust::ParticleSlim> fParticleHistory;
+extern std::deque<locust::ParticleSlim> fNewParticleHistory;
 
 
 extern bool fWaitBeforeEvent;
