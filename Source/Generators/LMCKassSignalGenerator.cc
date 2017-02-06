@@ -228,7 +228,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double TotalPower=0.;
     double tSpaceTimeInterval=99.;
     double dtRetarded=0;
-    double tTolerance=1e-17;
+    double tTolerance=1e-18;
     double dtStepSize=fabs(fParticleHistory[1].GetTime()-fParticleHistory[0].GetTime());
 
     int HistorySize=fParticleHistory.size();
@@ -340,11 +340,14 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
 
     //Scaling doesnt matter...
-    double Resistance=1.;
+    double Resistance=1.e12;
 
     aLongSignal[ index ] += sqrt(TotalPower*Resistance)*cos(2.*PI*fLO_Frequency*tReceiver);
     ImaginarySignal[ index ] += sqrt(TotalPower*Resistance)*sin(2.*PI*fLO_Frequency*tReceiver);
 
+    //double ftmp=1.59162e11;
+    //aLongSignal[ index ] += 1e-3*cos(ftmp*tReceiver)*cos(2.*PI*fLO_Frequency*tReceiver);
+    //ImaginarySignal[ index ] += 1e-3*cos(ftmp*tReceiver)*sin(2.*PI*fLO_Frequency*tReceiver);
 
 
 }
