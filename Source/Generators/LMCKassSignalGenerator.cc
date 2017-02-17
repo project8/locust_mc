@@ -175,7 +175,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 {
 
     locust::ParticleSlim CurrentParticle = fParticleHistory.back();
-    int CurrentIndex=0.;
+    int CurrentIndex;
 
     //Number of Grid Points Per Side. Keep odd so center point lines up with center
     const int nGridSide=int(N_GRID_SIDE);
@@ -184,8 +184,8 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double ThetaSurf=0.; 
     double PhiSurf=0.;
     double tReceiverNorm[3]={sin(ThetaSurf)*cos(PhiSurf),sin(ThetaSurf)*sin(PhiSurf),cos(ThetaSurf)};
-    double dx=0.005; 
-    double dy=0.005;
+    double dx=0.010; 
+    double dy=0.010;
     //Set Receiver Array Position. 
     //May eventually get from kasssiopeia 
     for(unsigned ix=0;ix<nGridSide;ix++)
@@ -228,15 +228,20 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double TotalPower=0.;
     double tSpaceTimeInterval=99.;
     double dtRetarded=0;
-    double tTolerance=1e-18;
+    double tTolerance=1e-23;
     double dtStepSize=fabs(fParticleHistory[1].GetTime()-fParticleHistory[0].GetTime());
 
     int HistorySize=fParticleHistory.size();
     int HistoryMaxSize=5000;
+
+    //fParticleHistory[HistorySize-4].Interpolate(fParticleHistory[HistorySize-4].GetTime());
+    //fParticleHistory[HistorySize-3].Interpolate(fParticleHistory[HistorySize-3].GetTime());
+    //fParticleHistory[HistorySize-4].ErrorCheck(fParticleHistory[HistorySize-4]);
+    //fParticleHistory[HistorySize-2].Print();
+    //fParticleHistory[HistorySize-1].Print();
    
     
    //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
-
 
     int AvgIters=0;
 
@@ -244,9 +249,8 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     {
         for(unsigned iy=0;iy<nGridSide;iy++)
         {
-
             //Check if there is time for photon to reach receiver if particle is recently created
-            if(HistorySize<HistoryMaxSize)
+            if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
             {
                 fParticleHistory.front().SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
                 fParticleHistory.front().SetReceiverTime(tReceiver);
@@ -274,6 +278,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             }
             else
             {
+                //printf("EventModStep: %e\n",EventModTimeStep);
                 tRetarded=PreviousTimes[ix][iy][0]+EventModTimeStep;
                 CurrentIndex=int(PreviousTimes[ix][iy][1]);
             }
@@ -293,12 +298,12 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             //fflush(stdout);
 
             //Converge to root
-            for(int i=0;i<10;i++)
+            for(int i=0;i<20;i++)
             {
-                if(fabs(tSpaceTimeInterval)<tTolerance)
-                {
-                    break;
-                }
+                //if(fabs(tSpaceTimeInterval)<tTolerance)
+                //{
+                //    break;
+                //}
 
                 AvgIters++;
 
@@ -306,16 +311,13 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
                 tRetarded+=dtRetarded;
                 CurrentParticle.Interpolate(tRetarded);
 
-                if(fabs(CurrentParticle.GetTimeDisplacement()) > 0.75*dtStepSize)
+                if(fabs(CurrentParticle.GetTimeDisplacement()) > dtStepSize)
                 {
-                    CurrentIndex+=round(CurrentParticle.GetTimeDisplacement()/dtStepSize);
-                    CurrentIndex=std::max(CurrentIndex,0);
-                    CurrentIndex=std::min(CurrentIndex,HistorySize-1);
-
+                    CurrentIndex=FindNode(tRetarded,dtStepSize,CurrentIndex);
                     CurrentParticle=fParticleHistory[CurrentIndex];
                     CurrentParticle.Interpolate(tRetarded);
-                    //printf("%e %e\n",CurrentParticle.GetTimeDisplacement(),dtStepSize*0.75);
                 }
+                //printf("%e %e\n",CurrentParticle.GetTimeDisplacement(),dtStepSize*0.75);
 
                 CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
                 CurrentParticle.SetReceiverTime(tReceiver);
@@ -323,8 +325,13 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
                 tSpaceTimeInterval=CurrentParticle.GetSpaceTimeInterval();
 
                 //printf("s1: %e \n",tSpaceTimeInterval);
-                //fflush(stdout);
-                if(i==9)printf("WeeWooWeeWoo\n");
+                ////fflush(stdout);
+                //if(i==9)
+                //{
+                //    printf("WeeWoo\n");
+                //    //printf("Int: %e\n",tSpaceTimeInterval);
+
+                //}
             }
 
             PreviousTimes[ix][iy][0]=tRetarded;
@@ -340,12 +347,14 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
 
     //Scaling doesnt matter...
-    double Resistance=1.e12;
+    double Resistance=1.e13;
 
     aLongSignal[ index ] += sqrt(TotalPower*Resistance)*cos(2.*PI*fLO_Frequency*tReceiver);
     ImaginarySignal[ index ] += sqrt(TotalPower*Resistance)*sin(2.*PI*fLO_Frequency*tReceiver);
 
-    //double ftmp=1.59162e11;
+   // //double ftmp=2.*PI*25.3313e9;
+    double ftmp=fParticleHistory.back().fCyclotronFrequency;
+    //printf("%8.4f\n",ftmp);
     //aLongSignal[ index ] += 1e-3*cos(ftmp*tReceiver)*cos(2.*PI*fLO_Frequency*tReceiver);
     //ImaginarySignal[ index ] += 1e-3*cos(ftmp*tReceiver)*sin(2.*PI*fLO_Frequency*tReceiver);
 
@@ -358,11 +367,11 @@ int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) 
    //printf("Size: %d \n",HistorySize);
    //fflush(stdout);
 
-    if(!IsInside(tNew,0,HistorySize-1))
-    {
-        printf("RED ALERT NOT IN DEQUE\n");
+    //if(!IsInside(tNew,0,HistorySize-1))
+    //{
+    //    printf("RED ALERT NOT IN DEQUE\n");
 
-    }
+    //}
 
     IndexOld=std::max(IndexOld,0);
     IndexOld=std::min(IndexOld,HistorySize-1);
@@ -390,6 +399,12 @@ int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) 
             break;
         }
     }
+
+    //if(fabs(tNew-fParticleHistory[IndexNew].GetTime())>dtStepSize)
+    //{
+    //    printf("You fucked up yo!\n");
+    //    printf("%e\n", fabs(tNew-fParticleHistory[IndexNew].GetTime())/dtStepSize);
+    //}
 
 
     return IndexNew;
@@ -439,8 +454,16 @@ int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) c
     }
     //Now that we have it between an interval of one return index of 
     //node tNew is closer to. Ie) determine if bigger or smaller than avg. of 2 points
+    //int IndexNew=IndexMin;
+    //if(fParticleHistory[IndexMax].GetTime()-tNew<tNew-fParticleHistory[IndexMin].GetTime())
+    //{
+    //    IndexNew=IndexMax;
+    //}
 
-    return IndexMin+round(tNew-0.5*(fParticleHistory[IndexMin].GetTime()+fParticleHistory[IndexMax].GetTime()));
+    //return IndexNew;
+    
+    IndexMin=std::max(IndexMin,0);
+    return IndexMin;
 }
 
 bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const

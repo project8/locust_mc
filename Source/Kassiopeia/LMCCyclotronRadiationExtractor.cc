@@ -39,10 +39,8 @@ namespace locust
 
     bool CyclotronRadiationExtractor::ExecutePostStepModifcation( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
-
     	t_poststep = aFinalParticle.GetTime();
 
-        //////////////!!!!!!!!!!!!!!!!!!/////////////
         double X = aFinalParticle.GetPosition().X();
         double Y = aFinalParticle.GetPosition().Y();
         double Z = aFinalParticle.GetPosition().Z();
@@ -74,10 +72,16 @@ namespace locust
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
             dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
 
-            EventModTimeStep = dt;
+            EventModTimeStep = fNewParticleHistory.back().GetTime()-fNewParticleHistory.front().GetTime()+dt;
 
             //Put in new entries in global ParticleHistory
             fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
+            //Set Spline coefficients
+            for(int i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
+            {
+                fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
+            }
+
             fNewParticleHistory.clear();
 
             //Purge fParticleHistory of overly old entries
@@ -86,6 +90,15 @@ namespace locust
             {
                 fParticleHistory.pop_front();
             }
+
+            ////Make 100% Sure list is ordered!!!
+            //for(int i=0;i<fParticleHistory.size()-1;i++)
+            //{
+            //    if(fParticleHistory[i].GetTime()>fParticleHistory[i+1].GetTime())
+            //    {
+            //        printf("Ruh Roh\n");
+            //    }
+            //}
 
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.

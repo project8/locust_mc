@@ -24,8 +24,6 @@ namespace locust
             virtual ~ParticleSlim();
 
             void SetTime(double);
-            double GetTime();
-            double GetTimeDisplacement();
             void SetPosition(double,double,double);
             void SetVelocityVector(double,double,double);
             void SetMagneticFieldVector(double,double,double);
@@ -38,6 +36,11 @@ namespace locust
 
             void Interpolate(double);
 
+            double GetTime();
+            double GetTimeDisplacement();
+            KGeoBag::KThreeVector GetPosition();
+            KGeoBag::KThreeVector GetVelocity();
+
             double GetSpaceTimeInterval();
             double GetSpaceTimeInterval(double);
             double GetReceiverDistance();
@@ -45,16 +48,22 @@ namespace locust
             double CalculatePower(double,double,double);
 
             void Print();
+            void SetSpline(ParticleSlim);
+            void ErrorCheck(ParticleSlim);
 
 
 
-        private:
+       // private:
             double fTime; //Time of node given from kassiopeia
-            double fTimeDisplacement;//dt. Allows us to interpolate particle locally around node
+            double fTimeDisplacement;//Allows us to interpolate particle locally around node
+            double fTimeStep;//Time Step to next node
 
             KGeoBag::KThreeVector fPosition;
             KGeoBag::KThreeVector fVelocity;
             double fVelocityParallel;
+
+            KGeoBag::KThreeVector fNewPosition;
+            KGeoBag::KThreeVector fNewVelocity;
 
             KGeoBag::KThreeVector fGuidingCenterPosition;
             KGeoBag::KThreeVector fMagneticField;
@@ -68,6 +77,9 @@ namespace locust
             double fGamma;
             double fCyclotronFrequency;
             double fCyclotronRadius;
+
+            KGeoBag::KThreeVector fSplineC;
+            KGeoBag::KThreeVector fSplineD;
 
             /////////////////Receiver Info////////////
             double fReceiverTime;
