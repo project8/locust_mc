@@ -13,6 +13,9 @@
 #include <thread>
 #include <algorithm>
 
+#include <iostream>
+#include <fstream>
+
 #include "LMCGlobalsDeclaration.hh"
 
 
@@ -173,6 +176,8 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
 void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
+    //std::ofstream myfile;
+    //myfile.open ("example.txt",std::ios::app);
 
     locust::ParticleSlim CurrentParticle = fParticleHistory.back();
     int CurrentIndex;
@@ -249,6 +254,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     {
         for(unsigned iy=0;iy<nGridSide;iy++)
         {
+            continue;
             //Check if there is time for photon to reach receiver if particle is recently created
             if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
             {
@@ -347,17 +353,21 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
 
     //Scaling doesnt matter...
-    double Resistance=1.e13;
+    double Resistance=1.;
 
-    aLongSignal[ index ] += sqrt(TotalPower*Resistance)*cos(2.*PI*fLO_Frequency*tReceiver);
-    ImaginarySignal[ index ] += sqrt(TotalPower*Resistance)*sin(2.*PI*fLO_Frequency*tReceiver);
+    //aLongSignal[ index ] += sqrt(TotalPower*Resistance)*cos(2.*PI*fLO_Frequency*tReceiver);
+    //ImaginarySignal[ index ] += sqrt(TotalPower*Resistance)*sin(2.*PI*fLO_Frequency*tReceiver);
 
-   // //double ftmp=2.*PI*25.3313e9;
-    double ftmp=fParticleHistory.back().fCyclotronFrequency;
+    //double ftmp=fParticleHistory.back().fCyclotronFrequency;
+    double ftmp=1.5916186e11;
     //printf("%8.4f\n",ftmp);
-    //aLongSignal[ index ] += 1e-3*cos(ftmp*tReceiver)*cos(2.*PI*fLO_Frequency*tReceiver);
+    aLongSignal[ index ] += cos((ftmp-2.*PI*fLO_Frequency)*tReceiver);
+    ImaginarySignal[ index ] += sin((ftmp-2.*PI*fLO_Frequency)*tReceiver);
+    //aLongSignal[ index ] += cos(ftmp*tReceiver)*cos(2.*PI*fLO_Frequency*tReceiver);
     //ImaginarySignal[ index ] += 1e-3*cos(ftmp*tReceiver)*sin(2.*PI*fLO_Frequency*tReceiver);
 
+    //myfile<<aLongSignal[index]<<" ";
+    //myfile.close();
 
 }
 ////Return index of deque closest to desired time

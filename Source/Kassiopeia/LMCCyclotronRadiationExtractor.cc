@@ -52,6 +52,7 @@ namespace locust
         double zMagneticField = aFinalParticle.GetMagneticField().GetZ();
         double mparticle = aFinalParticle.GetMass();
         double qparticle = aFinalParticle.GetCharge();
+        double fcyc = aFinalParticle.GetCyclotronFrequency();
 
         locust::ParticleSlim aNewParticle;
         aNewParticle.SetPosition(X,Y,Z);
@@ -60,6 +61,7 @@ namespace locust
         aNewParticle.SetMass(mparticle);
         aNewParticle.SetCharge(qparticle);
         aNewParticle.SetTime(t_poststep);
+        aNewParticle.SetCyclotronFrequency(2.*PI*fcyc);
         aNewParticle.SetKinematicProperties();
         
         fNewParticleHistory.push_back(aNewParticle);

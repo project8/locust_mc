@@ -89,6 +89,11 @@ namespace locust
         fMagneticField.SetComponents(Bx,By,Bz);
         return;
     }
+    void ParticleSlim::SetCyclotronFrequency(double fcyc)
+    {
+        fCyclotronFrequency=fcyc;
+        return;
+    }
 
     void ParticleSlim::SetMass(double aMass)
     {
@@ -122,7 +127,8 @@ namespace locust
         double beta=fVelocity.Magnitude()/KConst::C();
         fGamma=1./sqrt((1.-beta)*(1.+beta));
 
-        fCyclotronFrequency=fabs(fCharge) * fMagneticField.Magnitude() / ( fMass * fGamma);
+        //fCyclotronFrequency=fabs(fCharge) * fMagneticField.Magnitude() / ( fMass * fGamma);
+        //printf("%f8.4\n",fCyclotronFrequency);
         fVelocityParallel=fVelocity.Dot(fMagneticField.Unit());
         KGeoBag::KThreeVector vPerp=fVelocity-fVelocityParallel*fMagneticField.Unit();
         fBeta=vPerp.Unit();
@@ -241,7 +247,8 @@ namespace locust
 
         KGeoBag::KThreeVector S =1. / KConst::MuNull()*E.Cross(B);
 
-        double P=fabs(S.Dot(SurfaceNormal));
+        //double P=fabs(S.Dot(SurfaceNormal));
+        double P=fabs(S.Dot(SurfaceNormal))/fabs(fCharge);
 
         return P;
     }
