@@ -24,6 +24,9 @@ std::string gxml_filename = "blank.xml";
 //FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
 //FILE *fp3 = fopen("fabsfakemodeexctiation.txt","wb");  // time stamp checking.
 
+double phi_LO=0.;
+double phi_1=0.;
+//double tReceiver=0.;
 
 namespace locust
 {
@@ -189,8 +192,8 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double ThetaSurf=0.; 
     double PhiSurf=0.;
     double tReceiverNorm[3]={sin(ThetaSurf)*cos(PhiSurf),sin(ThetaSurf)*sin(PhiSurf),cos(ThetaSurf)};
-    double dx=0.010; 
-    double dy=0.010;
+    double dx=0.005; 
+    double dy=0.005;
     //Set Receiver Array Position. 
     //May eventually get from kasssiopeia 
     for(unsigned ix=0;ix<nGridSide;ix++)
@@ -227,8 +230,9 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
         }
     }
 
+    double tReceiver=t_old;
     double tRetarded=0.;
-    double tReceiver=t_poststep;
+    //double tReceiver=t_poststep;
     double ReceiverPower[nGridSide][nGridSide];
     double TotalPower=0.;
     double tSpaceTimeInterval=99.;
@@ -238,6 +242,9 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
     int HistorySize=fParticleHistory.size();
     int HistoryMaxSize=5000;
+
+    //printf("tReceiver Est: %e\n",tReceiver-EventModTimeStep);
+    //printf("tReceiver Old: %e\n",tReceiver);
 
     //fParticleHistory[HistorySize-4].Interpolate(fParticleHistory[HistorySize-4].GetTime());
     //fParticleHistory[HistorySize-3].Interpolate(fParticleHistory[HistorySize-3].GetTime());
@@ -348,23 +355,31 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
         }
     }
-    //printf("Power: %e\n",TotalPower);
+    double Resistance=1.;
+    double Voltage=sqrt(TotalPower*Resistance);
+    //printf("Voltage: %e\n",Voltage);
     //printf("Avg Its: %e\n",double(AvgIters)/double(nGridSide*nGridSide));
 
 
-    //Scaling doesnt matter...
-    double Resistance=1.;
+    if(TotalPower)Voltage-=1.55158;
+    Voltage*=1.e3;
 
-    //aLongSignal[ index ] += sqrt(TotalPower*Resistance)*cos(2.*PI*fLO_Frequency*tReceiver);
-    //ImaginarySignal[ index ] += sqrt(TotalPower*Resistance)*sin(2.*PI*fLO_Frequency*tReceiver);
 
     //double ftmp=fParticleHistory.back().fCyclotronFrequency;
     double ftmp=1.5916186e11;
-    //printf("%8.4f\n",ftmp);
-    aLongSignal[ index ] += cos((ftmp-2.*PI*fLO_Frequency)*tReceiver);
-    ImaginarySignal[ index ] += sin((ftmp-2.*PI*fLO_Frequency)*tReceiver);
-    //aLongSignal[ index ] += cos(ftmp*tReceiver)*cos(2.*PI*fLO_Frequency*tReceiver);
-    //ImaginarySignal[ index ] += 1e-3*cos(ftmp*tReceiver)*sin(2.*PI*fLO_Frequency*tReceiver);
+    phi_1+=ftmp*EventModTimeStep;
+    
+    phi_LO+=2.*PI*fLO_Frequency*EventModTimeStep;
+
+
+    //aLongSignal[ index ] += (Voltage)*cos(phi_LO);
+    //ImaginarySignal[ index ] += (Voltage)*cos(phi_LO);
+
+    aLongSignal[ index ] += cos(phi_1)*cos(phi_LO);
+    ImaginarySignal[ index ] += cos(phi_1)*cos(phi_LO);
+
+    //aLongSignal[ index ] += cos(phi_1-phi_LO);
+    //ImaginarySignal[ index ] += cos(phi_1-phi_LO);
 
     //myfile<<aLongSignal[index]<<" ";
     //myfile.close();
@@ -533,9 +548,10 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
 
         }  // for loop
 
-    FilterNegativeFrequencies(aSignal, ImaginarySignal);
+    //FilterNegativeFrequencies(aSignal, ImaginarySignal);
     delete ImaginarySignal;
 
+    
     // trigger any remaining events in Kassiopeia so that its thread can finish.
     while (fRunInProgress)
     {

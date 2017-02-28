@@ -66,7 +66,7 @@ namespace locust
         
         fNewParticleHistory.push_back(aNewParticle);
 
-        if (t_poststep - t_old > 5.e-10)
+        if (t_poststep - t_old >= 5.e-10)
         {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
@@ -74,7 +74,7 @@ namespace locust
             de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
             dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
 
-            EventModTimeStep = fNewParticleHistory.back().GetTime()-fNewParticleHistory.front().GetTime()+dt;
+            //EventModTimeStep = fNewParticleHistory.back().GetTime()-fNewParticleHistory.front().GetTime()+dt;
 
             //Put in new entries in global ParticleHistory
             fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
@@ -105,7 +105,8 @@ namespace locust
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
-            t_old = t_poststep;
+            t_old+=EventModTimeStep;
+            //t_old = t_poststep;
 
              /*
              printf("de is %g and dt is %g and LarmorPower is %g\n", de, dt, LarmorPower);
