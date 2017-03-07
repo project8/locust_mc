@@ -13,9 +13,6 @@
 #include <thread>
 #include <algorithm>
 
-#include <iostream>
-#include <fstream>
-
 #include "LMCGlobalsDeclaration.hh"
 
 
@@ -179,9 +176,6 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
 void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
-    //std::ofstream myfile;
-    //myfile.open ("example.txt",std::ios::app);
-
     locust::ParticleSlim CurrentParticle = fParticleHistory.back();
     int CurrentIndex;
 
@@ -261,7 +255,6 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     {
         for(unsigned iy=0;iy<nGridSide;iy++)
         {
-            continue;
             //Check if there is time for photon to reach receiver if particle is recently created
             if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
             {
@@ -311,7 +304,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             //fflush(stdout);
 
             //Converge to root
-            for(int i=0;i<20;i++)
+            for(int i=0;i<25;i++)
             {
                 //if(fabs(tSpaceTimeInterval)<tTolerance)
                 //{
@@ -361,12 +354,12 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     //printf("Avg Its: %e\n",double(AvgIters)/double(nGridSide*nGridSide));
 
 
-    if(TotalPower)Voltage-=1.55158;
-    Voltage*=1.e3;
+    //if(TotalPower)Voltage-=1.55158;
+    //Voltage*=1.e3;
 
 
-    //double ftmp=fParticleHistory.back().fCyclotronFrequency;
-    double ftmp=1.5916186e11;
+    double ftmp=fParticleHistory.back().fCyclotronFrequency;
+    //double ftmp=1.5916186e11;
     phi_1+=ftmp*EventModTimeStep;
     
     phi_LO+=2.*PI*fLO_Frequency*EventModTimeStep;
