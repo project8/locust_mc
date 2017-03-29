@@ -13,6 +13,9 @@
 #include <thread>
 #include <algorithm>
 
+//#include <iostream>
+//#include <fstream>
+
 #include "LMCGlobalsDeclaration.hh"
 
 
@@ -176,14 +179,17 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
 void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
+    std::ofstream myfile;
+    myfile.open ("example.txt",std::ios::app);
+
     locust::ParticleSlim CurrentParticle = fParticleHistory.back();
     int CurrentIndex;
 
     //Number of Grid Points Per Side. Keep odd so center point lines up with center
     const int nGridSide=int(N_GRID_SIDE);
     double rReceiver[nGridSide][nGridSide][3];
-    double rReceiverCenter[3]={0.,0.,1.};
-    double ThetaSurf=0.; 
+    double rReceiverCenter[3]={1.,0.,0.};
+    double ThetaSurf=PI/2.; 
     double PhiSurf=0.;
     double tReceiverNorm[3]={sin(ThetaSurf)*cos(PhiSurf),sin(ThetaSurf)*sin(PhiSurf),cos(ThetaSurf)};
     double dx=0.005; 
@@ -343,13 +349,15 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             PreviousTimes[ix][iy][0]=tRetarded;
             PreviousTimes[ix][iy][1]=double(CurrentIndex);
 
-            ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2])*dx*dy;
+            //ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2])*dx*dy;
+            ReceiverPower[ix][iy]=CurrentParticle.CalculateVoltage();
             TotalPower+=ReceiverPower[ix][iy];
 
         }
     }
     double Resistance=1.;
-    double Voltage=sqrt(TotalPower*Resistance);
+    //double Voltage=sqrt(TotalPower*Resistance);
+    double Voltage=TotalPower;
     //printf("Voltage: %e\n",Voltage);
     //printf("Avg Its: %e\n",double(AvgIters)/double(nGridSide*nGridSide));
 
@@ -365,16 +373,17 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     phi_LO+=2.*PI*fLO_Frequency*EventModTimeStep;
 
 
-    //aLongSignal[ index ] += (Voltage)*cos(phi_LO);
-    //ImaginarySignal[ index ] += (Voltage)*cos(phi_LO);
+    aLongSignal[ index ] += (Voltage)*cos(phi_LO);
+    ImaginarySignal[ index ] += (Voltage)*cos(phi_LO);
 
-    aLongSignal[ index ] += cos(phi_1)*cos(phi_LO);
-    ImaginarySignal[ index ] += cos(phi_1)*cos(phi_LO);
+    //aLongSignal[ index ] += cos(phi_1)*cos(phi_LO);
+    //ImaginarySignal[ index ] += cos(phi_1)*cos(phi_LO);
 
     //aLongSignal[ index ] += cos(phi_1-phi_LO);
     //ImaginarySignal[ index ] += cos(phi_1-phi_LO);
 
     //myfile<<aLongSignal[index]<<" ";
+    //myfile<<Voltage<<" ";
     //myfile.close();
 
 }

@@ -47,6 +47,7 @@ namespace locust
             double GetReceiverDistance();
 
             double CalculatePower(double,double,double);
+            double CalculateVoltage();
 
             void Print();
             void SetSpline(ParticleSlim);
