@@ -20,6 +20,7 @@ namespace locust
             fVelocityParallel( -99.),
             fNewPosition( -99., -99., -99. ),
             fNewVelocity( -99., -99., -99. ),
+            fNewAcceleration( -99., -99., -99. ),
             fGuidingCenterPosition( -99., -99., -99. ),
             fMagneticField( -99., -99., -99. ),
             fAlpha( -99., -99., -99. ),
@@ -124,6 +125,8 @@ namespace locust
 
     void ParticleSlim::SetKinematicProperties()
     {
+        fNewAcceleration=fCharge/fMass*fNewVelocity.Cross(fMagneticField);
+
         double beta=fVelocity.Magnitude()/KConst::C();
         fGamma=1./sqrt((1.-beta)*(1.+beta));
 
@@ -167,6 +170,8 @@ namespace locust
 
         fNewVelocity=fVelocityParallel*fMagneticField.Unit() + fCyclotronRadius*fCyclotronFrequency*(-sin(CyclotronFrequency*fTimeDisplacement)*fAlpha+cos(CyclotronFrequency*fTimeDisplacement)*fBeta)+3.*fSplineC*pow(fTimeDisplacement/fTimeStep,2.)/fTimeStep+4.*fSplineD*pow(fTimeDisplacement/fTimeStep,3.)/fTimeStep;
 
+        fNewAcceleration=fCharge/fMass*fNewVelocity.Cross(fMagneticField);
+
         return;
     }
 
@@ -196,46 +201,41 @@ namespace locust
         return fReceiverDistance;
     }
 
-  //  double ParticleSlim::NewtonStep(double dtRetarded)
-  //  {
-  //      double tRetarded=fTime+fTimeDisplacement;
-
-  //      double A,B,C;
-  //      CalculateQuadraticCoefficients(A,B,C);
-
-  //      double c=KConst::C();
-
-  //      double f_sin=A*dtRetarded*dtRetarded+B*dtRetarded+C+2.*fCyclotronRadius/(c*c)*(fReceiverVector.Dot((cos(fCyclotronFrequency*(dtRetarded+tRetarded))-cos(fCyclotronFrequency*tRetarded))*fAlpha+(sin(fCyclotronFrequency*(dtRetarded+tRetarded))-sin(fCyclotronFrequency*tRetarded))*fBeta)-fCyclotronRadius*(1.-cos(fCyclotronFrequency*dtRetarded)));
-  //      double df_sin=2.*A*dtRetarded+B+2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*(fReceiverVector.Dot(-sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)-fCyclotronRadius*sin(fCyclotronFrequency*dtRetarded));
-
-  //      return dtRetarded-f_sin/df_sin;
-  //  }
-
-  //  double ParticleSlim::HouseHolderStep(double dtRetarded)
-  //  {
-  //      double tRetarded=fTime+fTimeDisplacement;
-
-  //      double A,B,C;
-  //      CalculateQuadraticCoefficients(A,B,C);
-
-  //      double c=KConst::C();
-
-  //      double f_sin=A*dtRetarded*dtRetarded+B*dtRetarded+C+2.*fCyclotronRadius/(c*c)*(fReceiverVector.Dot((cos(fCyclotronFrequency*(dtRetarded+tRetarded))-cos(fCyclotronFrequency*tRetarded))*fAlpha+(sin(fCyclotronFrequency*(dtRetarded+tRetarded))-sin(fCyclotronFrequency*tRetarded))*fBeta)-fCyclotronRadius*(1.-cos(fCyclotronFrequency*dtRetarded)));
-  //      double df_sin=2.*A*dtRetarded+B+2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*(fReceiverVector.Dot(-sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)-fCyclotronRadius*sin(fCyclotronFrequency*dtRetarded));
-  //      double d2f_sin=2.*A - 2.*fCyclotronRadius/(c*c)*fCyclotronFrequency*fCyclotronFrequency*(fReceiverVector.Dot(cos(fCyclotronFrequency*(dtRetarded+tRetarded))*fAlpha+sin(fCyclotronFrequency*(dtRetarded+tRetarded))*fBeta)+fCyclotronRadius*cos(fCyclotronFrequency*dtRetarded));
-
-  //      double SqrtArg=1. - 2. * d2f_sin * f_sin / (df_sin * df_sin);
-  //      if(SqrtArg < 0)  return NewtonStep(dtRetarded);
-
-  //      return dtRetarded - df_sin / d2f_sin * ( 1. - sqrt(SqrtArg));
-  //  }
-
-
-    double ParticleSlim::CalculatePower(double X, double Y, double Z)
+    double ParticleSlim::GetStepRoot(int StepOrder, double tSpaceTimeInterval)
     {
+        double tRetarded=fTime+fTimeDisplacement;
+
         double c=KConst::C();
 
-        KGeoBag::KThreeVector SurfaceNormal(X,Y,Z);
+
+        if(StepOrder==0)
+        {
+            return tRetarded+tSpaceTimeInterval;
+        }
+
+        double fZero=pow((fReceiverTime-tRetarded),2.)-pow(fReceiverDistance,2.)/(c*c);
+        double fZeroPrime=2.*((tRetarded-fReceiverTime)-fNewVelocity.Dot(fNewPosition)/(c*c)+fNewVelocity.Dot(fReceiverPosition)/(c*c));
+        double NewtonRatio=fZero/fZeroPrime;
+
+        if(StepOrder==1)
+        {
+            return tRetarded-NewtonRatio;
+        }
+
+        double fZeroDoublePrime=2.*(1.-fNewVelocity.Dot(fNewVelocity)/(c*c)-fNewAcceleration.Dot(fNewPosition-fReceiverPosition)/(c*c));
+
+        if(StepOrder==2)
+        {
+            return tRetarded-NewtonRatio*(1.+(NewtonRatio*fZeroDoublePrime)/(2.*fZeroPrime));
+        }
+
+        return 0;
+    }
+
+
+    void ParticleSlim::CalculateElectricField(double& Ex, double &Ey, double& Ez)
+    {
+        double c=KConst::C();
 
         //Lorentz Equation
         KGeoBag::KThreeVector BetaDot=fCharge/(fMass * c) *fNewVelocity.Cross(fMagneticField);
@@ -243,15 +243,24 @@ namespace locust
         //Lienard-Wiechert Equations
         KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * (c / (fGamma*fGamma*fReceiverDistance)*(fReceiverDir-1./c*fNewVelocity) + (fReceiverDir.Cross(fReceiverDir.Cross(BetaDot))));
 
-        KGeoBag::KThreeVector B = fReceiverDir.Cross(E)/c;
-
-        KGeoBag::KThreeVector S =1. / KConst::MuNull()*E.Cross(B);
-
-        //double P=fabs(S.Dot(SurfaceNormal));
-        double P=fabs(S.Dot(SurfaceNormal))/fabs(fCharge);
-
-        return P;
+        Ex=E.X();
+        Ey=E.Y();
+        Ez=E.Z();
     }
+
+    void ParticleSlim::CalculateMagneticField(double& Hx, double &Hy, double& Hz)
+    {
+        double Ex, Ey, Ez;
+        CalculateElectricField(Ex,Ey,Ez);
+        KGeoBag::KThreeVector E(Ex,Ey,Ez);
+        
+        KGeoBag::KThreeVector H = fReceiverDir.Cross(E)/(KConst::MuNull()*KConst::C());
+
+        Hx=H.X();
+        Hy=H.Y();
+        Hz=H.Z();
+    }
+
     double ParticleSlim::CalculateVoltage()
     {
         //Lienard-Wiechert Equations
@@ -272,6 +281,7 @@ namespace locust
 
         printf("fNewPosition: %e %e %e\n",fNewPosition[0],fNewPosition[1],fNewPosition[2]);
         printf("fNewVelocity: %e %e %e\n",fNewVelocity[0],fNewVelocity[1],fNewVelocity[2]);
+        printf("fNewAcceleration: %e %e %e\n",fNewAcceleration[0],fNewAcceleration[1],fNewAcceleration[2]);
 
         printf("fGuidingCenterPosition: %e %e %e\n",fGuidingCenterPosition[0],fGuidingCenterPosition[1],fGuidingCenterPosition[2]);
         printf("fMagneticField: %e %e %e\n",fMagneticField[0],fMagneticField[1],fMagneticField[2]);

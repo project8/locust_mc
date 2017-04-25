@@ -46,8 +46,10 @@ namespace locust
             double GetSpaceTimeInterval(double);
             double GetReceiverDistance();
 
-            double CalculatePower(double,double,double);
+            double GetStepRoot(int,double);
             double CalculateVoltage();
+            void CalculateElectricField(double&,double&,double&);
+            void CalculateMagneticField(double&,double&,double&);
 
             void Print();
             void SetSpline(ParticleSlim);
@@ -66,6 +68,7 @@ namespace locust
 
             KGeoBag::KThreeVector fNewPosition;
             KGeoBag::KThreeVector fNewVelocity;
+            KGeoBag::KThreeVector fNewAcceleration;
 
             KGeoBag::KThreeVector fGuidingCenterPosition;
             KGeoBag::KThreeVector fMagneticField;

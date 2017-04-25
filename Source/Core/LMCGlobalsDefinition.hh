@@ -11,20 +11,6 @@
 double t_poststep = -99.;
 
 double t_old = -99.;
-//double LarmorPower = -99.;
-//double X = -99.;
-//double Y = -99.;
-//double Z = -99.;
-//double xVelocity = -99.;
-//double yVelocity = -99.;
-//double zVelocity = -99.;
-//double xMagneticField = -99.;
-//double yMagneticField = -99.;
-//double zMagneticField = -99.;
-//double mparticle = -99.;
-//double qparticle = -99.;
-//double fcyc = -99.;
-//double GammaZ = -99.;
 double testvar = -99.;
 double EventModTimeStep=5e-10;
 

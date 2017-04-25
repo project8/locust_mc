@@ -54,6 +54,8 @@ namespace locust
         double qparticle = aFinalParticle.GetCharge();
         double fcyc = aFinalParticle.GetCyclotronFrequency();
 
+        //printf("%e \n",fcyc);
+
         locust::ParticleSlim aNewParticle;
         aNewParticle.SetPosition(X,Y,Z);
         aNewParticle.SetVelocityVector(xVelocity,yVelocity,zVelocity);

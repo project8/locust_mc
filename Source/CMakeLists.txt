@@ -32,6 +32,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCException.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
+    Core/LMCHFSSReader.hh
     Core/LMCParam.hh
     Core/LMCParser.hh
     Core/LMCRunLengthCalculator.hh
@@ -55,6 +56,7 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCException.cc
     Core/LMCGenerator.cc
     Core/LMCGeneratorToolbox.cc
+    Core/LMCHFSSReader.cc
     Core/LMCParam.cc
     Core/LMCParser.cc
     Core/LMCRunLengthCalculator.cc

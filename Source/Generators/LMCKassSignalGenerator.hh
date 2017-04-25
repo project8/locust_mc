@@ -13,32 +13,6 @@
 #define PI 3.1415926
 #define N_GRID_SIDE 9 //Number of discretized points per side of the receiver
 #define LO_FREQUENCY 0.
-//#define LO_FREQUENCY 26.8730e9 // Hz  18 keV electrons in harmonic trap.
-//#define LO_FREQUENCY 26.2757e9 // Hz  30 keV electrons in harmonic trap, pitch 87-90 spans 85-50 MHz in baseband. 
-//#define LO_FREQUENCY 26.3057e9 // Hz  30 keV electrons in harmonic trap, pitch 86-90 spans 81-20 MHz in baseband
-////#define LO_FREQUENCY 26.2524e9 // Hz  30.48 keV electrons in harmonic trap, pitch 90, sits at 50 MHz in baseband
-//#define LO_FREQUENCY 24.8100e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9454, sits at 50 MHz in baseband.
-//#define LO_FREQUENCY 20.9688e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.8 T, sits at 50 MHz in baseband.
-
-//#define LO_FREQUENCY 25.1159e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 84.9 MHz in baseband.
-
-//#define LO_FREQUENCY 25.1010e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 99.8 MHz in baseband.               
-
-
-
-
-//#define LO_FREQUENCY 25.7537e9 // Hz, 17.83 keV electron in harmonic trap, pitch 90, main field 0.9583 as per Luiz.  Sits at 50 MHz in baseband.               
-
-
-
-//#define LO_FREQUENCY 25.14e9 // Hz, same frequency as RSA
-//#define LO_FREQUENCY 25.7737e9 // Hz, mix central 17.83 keV down to 30MHz.
-//#define LO_FREQUENCY 26.3550e9 // Hz, find upper sideband of 17.83 keV
-
-//#define LO_FREQUENCY 22.2897e9 // Hz, 30.48 keV electron in harmonic trap, pitch 90, main field 0.85 T.  Sits at 50 MHz in baseband.
-//#define LO_FREQUENCY 27.0062e9  // Hz 18 keV electrons in bathtub trap.
-//#define LO_FREQUENCY 26.4061e9  // Hz 30 keV electrons in bathtub trap.
-//#define LO_FREQUENCY 26.3757e9 // Hz  30 keV electrons in harmonic trap, mixed to -50 MHz.
 
 
 #include "LMCGenerator.hh"
@@ -74,11 +48,24 @@ namespace locust
 
 
         private:
-            mutable double PreviousTimes[N_GRID_SIDE][N_GRID_SIDE][2]; //Cache the results from previous iteration. [0] is previous retarded time, [1] is corresponding index
+            std::vector<std::array<double, 3> > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            mutable std::vector<std::array<double, 2> > PreviousTimes; //Cache the results from previous iteration. [0] is previous retarded time, [1] is corresponding index
             double fLO_Frequency;  // typically defined by a parameter in json file.
+
+            mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;
+            mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
+
+            bool fWriteNFD;
+            std::vector<double> NFDFrequencies;
+            std::string fAND_filename;
+            std::string fNFD_filename;
+
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double *ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
+
+            void NFDWrite() const;
+
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
             bool IsInside(double tNew, int IndexMin, int IndexMax) const;
             int BinarySearch(double tNew, int IndexMin, int IndexMax) const;

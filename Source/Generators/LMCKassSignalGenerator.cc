@@ -13,20 +13,17 @@
 #include <thread>
 #include <algorithm>
 
-//#include <iostream>
-//#include <fstream>
+#include <iostream>
+#include <fstream>
 
 #include "LMCGlobalsDeclaration.hh"
+#include "LMCHFSSReader.hh"
 
 
 std::string gxml_filename = "blank.xml";
 
-//FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
-//FILE *fp3 = fopen("fabsfakemodeexctiation.txt","wb");  // time stamp checking.
-
 double phi_LO=0.;
-double phi_1=0.;
-//double tReceiver=0.;
+const int NPreEventSamples = 150000;
 
 namespace locust
 {
@@ -36,20 +33,10 @@ namespace locust
 
     KassSignalGenerator::KassSignalGenerator( const std::string& aName ) :
       Generator( aName ),
+      fWriteNFD(0.),
       fLO_Frequency( 0.)
     {
         fRequiredSignalState = Signal::kTime;
-
-        const int nGridSide=int(N_GRID_SIDE);
-        for(int i=0;i<nGridSide;i++)
-        {
-            for(int j=0;j<nGridSide;j++)
-            {
-                PreviousTimes[i][j][0]=-99.;
-                PreviousTimes[i][j][1]=-99.;
-            }
-        }
-
     }
 
     KassSignalGenerator::~KassSignalGenerator()
@@ -68,6 +55,24 @@ namespace locust
         {
             gxml_filename = aParam->GetValue< std::string >( "xml-filename" );
         }
+        if( aParam->Has( "and-filename" ) )
+        {
+            fWriteNFD=1;
+            fAND_filename = aParam->GetValue< std::string >( "and-filename" );
+            HFSSReader HFRead;
+            HFRead.ParseANDFile(fAND_filename);
+            rReceiver=HFRead.GetSurfacePoints();
+            NFDFrequencies=HFRead.GetFrequencies();
+            fNFD_filename=HFRead.GetNFDFilename();
+        }
+        else
+        {
+            //If not, use existing code to generate plane receiver
+            HFSSReader HFRead;
+            rReceiver=HFRead.GeneratePlane({0.05,0.05},7);//Argumemts: Size, resolution
+            rReceiver=HFRead.RotateShift(rReceiver,{1.,0.,0.},{1.,0.,0.});//Arguments Normal vector, Position (m)
+        }
+        PreviousTimes=std::vector<std::array<double,2> >(rReceiver.size(),{-99.,-99.});
 
         return true;
     }
@@ -138,10 +143,8 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
     fftw_plan ReversePlan;
     ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
 
-
     for (int nwin = 0; nwin < nwindows; nwin++)
     {
-
         //Put (Real Voltage into Time Domain)
         for( unsigned index = 0; index < windowsize; ++index )
         {
@@ -150,7 +153,6 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
         }
 
         fftw_execute(ForwardPlan);
-
         //Complex filter to set power at negative frequencies to 0.
         for( unsigned index = windowsize/2; index < windowsize; ++index )
         {
@@ -176,211 +178,195 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
 }
 
+void KassSignalGenerator::NFDWrite() const
+{
+        std::ofstream fNFDOutput;
+        fNFDOutput.open(fNFD_filename,std::ios::out | std::ios::trunc);
+
+        fNFDOutput << "#Index, X, Y, Z, Ex(real, imag), Ey(real, imag), Ez(real, imag), Hx(real, imag), Hy(real, imag), Hz(real, imag)"<<std::endl;
+        
+        fNFDOutput << "Frequencies "<<NFDFrequencies.size()<<std::endl;
+
+        fNFDOutput << std::setprecision(9);
+
+        // Loop over frequencies
+        for(int i = 0; i < NFDFrequencies.size() ; i++)
+        {
+
+            fNFDOutput << std::scientific;
+            fNFDOutput <<"Frequency "<< NFDFrequencies[i] <<std::endl;
+
+            fNFDOutput << std::fixed;
+            for(int j = 0; j < rReceiver.size() ; j++)
+            {
+
+                fNFDOutput <<j<<", "<<rReceiver[j][0]<<", "<<rReceiver[j][1]<<", "<<rReceiver[j][2]<<", "<< NFDElectricFieldFreq[i][j][0][0]<<", "<< NFDElectricFieldFreq[i][j][0][1]<<", "<< NFDElectricFieldFreq[i][j][1][0]<<", "<< NFDElectricFieldFreq[i][j][1][1]<<", "<< NFDElectricFieldFreq[i][j][2][0]<<", "<< NFDElectricFieldFreq[i][j][2][1]<<", "<< NFDMagneticFieldFreq[i][j][0][0]<<", "<< NFDMagneticFieldFreq[i][j][0][1]<<", "<< NFDMagneticFieldFreq[i][j][1][0]<<", "<< NFDMagneticFieldFreq[i][j][1][1]<<", "<< NFDMagneticFieldFreq[i][j][2][0]<<", "<< NFDMagneticFieldFreq[i][j][2][1]<<std::endl;
+
+            }
+        }
+        fNFDOutput.close();
+
+
+        //Be 100% sure vector deallocates memory correctly (probably overkill)
+        NFDElectricFieldFreq.resize(0);
+        NFDElectricFieldFreq.shrink_to_fit();
+
+        NFDMagneticFieldFreq.resize(0);
+        NFDMagneticFieldFreq.shrink_to_fit();
+
+}
+
 
 void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
-    std::ofstream myfile;
-    myfile.open ("example.txt",std::ios::app);
+    //std::ofstream myfile;
+    //myfile.open ("example.txt",std::ios::app);
 
     locust::ParticleSlim CurrentParticle = fParticleHistory.back();
     int CurrentIndex;
 
-    //Number of Grid Points Per Side. Keep odd so center point lines up with center
-    const int nGridSide=int(N_GRID_SIDE);
-    double rReceiver[nGridSide][nGridSide][3];
-    double rReceiverCenter[3]={1.,0.,0.};
-    double ThetaSurf=PI/2.; 
-    double PhiSurf=0.;
-    double tReceiverNorm[3]={sin(ThetaSurf)*cos(PhiSurf),sin(ThetaSurf)*sin(PhiSurf),cos(ThetaSurf)};
-    double dx=0.005; 
-    double dy=0.005;
-    //Set Receiver Array Position. 
-    //May eventually get from kasssiopeia 
-    for(unsigned ix=0;ix<nGridSide;ix++)
-    {
-        for(unsigned iy=0;iy<nGridSide;iy++)
-        {
-            rReceiver[ix][iy][0]=double(ix)*dx-(nGridSide-1.)*dx/2.;
-            rReceiver[ix][iy][1]=double(iy)*dy-(nGridSide-1.)*dy/2.;
-            rReceiver[ix][iy][2]=0.;
-        }
-    }
-    ///Perform Rotation on receiver surface
-    double SurfaceRotation[3][3]={{cos(ThetaSurf)*cos(PhiSurf),-sin(PhiSurf),cos(PhiSurf)*sin(ThetaSurf)},{cos(ThetaSurf)*sin(PhiSurf),cos(PhiSurf),sin(PhiSurf)*sin(ThetaSurf)},{-sin(ThetaSurf),0.,cos(ThetaSurf)}};
-
-    for(unsigned ix=0;ix<nGridSide;ix++)
-    {
-        for(unsigned iy=0;iy<nGridSide;iy++)
-        {
-            double tmpPos[3]={};
-
-            for(int i=0;i<3;i++)
-            {
-                for(int j=0;j<3;j++)
-                {
-                    tmpPos[i]+=SurfaceRotation[i][j]*rReceiver[ix][iy][j];
-                }
-            }
-            //Shift Receiver to desired location
-            for(int i=0;i<3;i++)
-            {
-                rReceiver[ix][iy][i]=tmpPos[i]+rReceiverCenter[i];
-
-            }
-        }
-    }
-
     double tReceiver=t_old;
     double tRetarded=0.;
     //double tReceiver=t_poststep;
-    double ReceiverPower[nGridSide][nGridSide];
-    double TotalPower=0.;
+    double ReceiverVoltage[rReceiver.size()];
+    double TotalVoltage=0.;
     double tSpaceTimeInterval=99.;
     double dtRetarded=0;
-    double tTolerance=1e-23;
+    double tTolerance=1.e-23;
     double dtStepSize=fabs(fParticleHistory[1].GetTime()-fParticleHistory[0].GetTime());
 
     int HistorySize=fParticleHistory.size();
     int HistoryMaxSize=5000;
 
-    //printf("tReceiver Est: %e\n",tReceiver-EventModTimeStep);
-    //printf("tReceiver Old: %e\n",tReceiver);
+    phi_LO+=2.*PI*fLO_Frequency*EventModTimeStep;
 
-    //fParticleHistory[HistorySize-4].Interpolate(fParticleHistory[HistorySize-4].GetTime());
-    //fParticleHistory[HistorySize-3].Interpolate(fParticleHistory[HistorySize-3].GetTime());
-    //fParticleHistory[HistorySize-4].ErrorCheck(fParticleHistory[HistorySize-4]);
-    //fParticleHistory[HistorySize-2].Print();
-    //fParticleHistory[HistorySize-1].Print();
-   
-    
    //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
 
     int AvgIters=0;
 
-    for(unsigned ix=0;ix<nGridSide;ix++)
+    for(unsigned i=0;i<rReceiver.size();i++)
     {
-        for(unsigned iy=0;iy<nGridSide;iy++)
+        //Check if there is time for photon to reach receiver if particle is recently created
+        if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
         {
-            //Check if there is time for photon to reach receiver if particle is recently created
-            if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
+            fParticleHistory.front().SetReceiverPosition(rReceiver[i][0],rReceiver[i][1],rReceiver[i][2]);
+            fParticleHistory.front().SetReceiverTime(tReceiver);
+
+            if(fParticleHistory.front().GetSpaceTimeInterval(0.)<0)
             {
-                fParticleHistory.front().SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
-                fParticleHistory.front().SetReceiverTime(tReceiver);
-
-                if(fParticleHistory.front().GetSpaceTimeInterval(0.)<0)
-                {
-                    ReceiverPower[ix][iy]=0.;
-                    //printf("Skipping! out of Bounds!: tReceiver=%e\n",tReceiver);
-                    continue;
-                }
+                ReceiverVoltage[i]=0.;
+                //printf("Skipping! out of Bounds!: tReceiver=%e\n",tReceiver);
+                continue;
             }
+        }
 
-            if(PreviousTimes[ix][iy][0]==-99.)
-            {
-                CurrentIndex=FindNode(tReceiver,dtStepSize,HistorySize-1);
-                CurrentParticle=fParticleHistory[CurrentIndex];
-                CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
-                CurrentParticle.SetReceiverTime(tReceiver);
-
-                double c=2.998792458e8;
-                tRetarded=tReceiver-CurrentParticle.GetReceiverDistance()/c;
-
-                //printf("Index %d of %d\n",CurrentIndex[0],HistorySize-1);
-                //printf("--------\n");
-            }
-            else
-            {
-                //printf("EventModStep: %e\n",EventModTimeStep);
-                tRetarded=PreviousTimes[ix][iy][0]+EventModTimeStep;
-                CurrentIndex=int(PreviousTimes[ix][iy][1]);
-            }
-
-            CurrentIndex=std::max(CurrentIndex,0);
-            CurrentIndex=std::min(CurrentIndex,HistorySize-1);
-
-            CurrentIndex=FindNode(tRetarded,dtStepSize,CurrentIndex);
-
+        if(PreviousTimes[i][0]==-99.)
+        {
+            CurrentIndex=FindNode(tReceiver,dtStepSize,HistorySize-1);
             CurrentParticle=fParticleHistory[CurrentIndex];
-            CurrentParticle.Interpolate(tRetarded);
-            CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
+            CurrentParticle.SetReceiverPosition(rReceiver[i][0],rReceiver[i][1],rReceiver[i][2]);
             CurrentParticle.SetReceiverTime(tReceiver);
-            tSpaceTimeInterval=CurrentParticle.GetSpaceTimeInterval();
 
-            //printf("s0: %e \n",tSpaceTimeInterval);
-            //fflush(stdout);
+            double c=2.998792458e8;
+            tRetarded=tReceiver-CurrentParticle.GetReceiverDistance()/c;
 
-            //Converge to root
-            for(int i=0;i<25;i++)
+            //printf("Index %d of %d\n",CurrentIndex[0],HistorySize-1);
+            //printf("--------\n");
+        }
+        else
+        {
+            //printf("EventModStep: %e\n",EventModTimeStep);
+            tRetarded=PreviousTimes[i][0]+EventModTimeStep;
+            CurrentIndex=int(PreviousTimes[i][1]);
+        }
+
+        CurrentIndex=std::max(CurrentIndex,0);
+        CurrentIndex=std::min(CurrentIndex,HistorySize-1);
+
+        CurrentIndex=FindNode(tRetarded,dtStepSize,CurrentIndex);
+
+        CurrentParticle=fParticleHistory[CurrentIndex];
+        CurrentParticle.Interpolate(tRetarded);
+        CurrentParticle.SetReceiverPosition(rReceiver[i][0],rReceiver[i][1],rReceiver[i][2]);
+        CurrentParticle.SetReceiverTime(tReceiver);
+        tSpaceTimeInterval=CurrentParticle.GetSpaceTimeInterval();
+
+        //printf("s0: %e \n",tSpaceTimeInterval);
+
+        double tOldSpaceTimeInterval=99.;
+
+        //Converge to root
+        for(int j=0;j<25;j++)
+        {
+
+            AvgIters++;
+
+            tRetarded=CurrentParticle.GetStepRoot(0,tSpaceTimeInterval);
+
+            CurrentParticle.Interpolate(tRetarded);
+
+            if(fabs(CurrentParticle.GetTimeDisplacement()) > dtStepSize)
             {
-                //if(fabs(tSpaceTimeInterval)<tTolerance)
-                //{
-                //    break;
-                //}
-
-                AvgIters++;
-
-                dtRetarded=tSpaceTimeInterval;
-                tRetarded+=dtRetarded;
+                CurrentIndex=FindNode(tRetarded,dtStepSize,CurrentIndex);
+                CurrentParticle=fParticleHistory[CurrentIndex];
                 CurrentParticle.Interpolate(tRetarded);
-
-                if(fabs(CurrentParticle.GetTimeDisplacement()) > dtStepSize)
-                {
-                    CurrentIndex=FindNode(tRetarded,dtStepSize,CurrentIndex);
-                    CurrentParticle=fParticleHistory[CurrentIndex];
-                    CurrentParticle.Interpolate(tRetarded);
-                }
-                //printf("%e %e\n",CurrentParticle.GetTimeDisplacement(),dtStepSize*0.75);
-
-                CurrentParticle.SetReceiverPosition(rReceiver[ix][iy][0],rReceiver[ix][iy][1],rReceiver[ix][iy][2]);
-                CurrentParticle.SetReceiverTime(tReceiver);
-
-                tSpaceTimeInterval=CurrentParticle.GetSpaceTimeInterval();
-
-                //printf("s1: %e \n",tSpaceTimeInterval);
-                ////fflush(stdout);
-                //if(i==9)
-                //{
-                //    printf("WeeWoo\n");
-                //    //printf("Int: %e\n",tSpaceTimeInterval);
-
-                //}
             }
+            //printf("%e %e\n",CurrentParticle.GetTimeDisplacement(),dtStepSize*0.75);
 
-            PreviousTimes[ix][iy][0]=tRetarded;
-            PreviousTimes[ix][iy][1]=double(CurrentIndex);
+            CurrentParticle.SetReceiverPosition(rReceiver[i][0],rReceiver[i][1],rReceiver[i][2]);
+            CurrentParticle.SetReceiverTime(tReceiver);
 
-            //ReceiverPower[ix][iy]=CurrentParticle.CalculatePower(tReceiverNorm[0],tReceiverNorm[1],tReceiverNorm[2])*dx*dy;
-            ReceiverPower[ix][iy]=CurrentParticle.CalculateVoltage();
-            TotalPower+=ReceiverPower[ix][iy];
+            tSpaceTimeInterval=CurrentParticle.GetSpaceTimeInterval();
+            //printf("s1: %e \n",tSpaceTimeInterval);
 
+            //if(fabs(tSpaceTimeInterval)<tTolerance && fabs(tSpaceTimeInterval-tOldSpaceTimeInterval)<tTolerance/100.)
+            //{
+            //    break;
+            //}
+
+            tOldSpaceTimeInterval=tSpaceTimeInterval;
+        }
+
+        PreviousTimes[i][0]=tRetarded;
+        PreviousTimes[i][1]=double(CurrentIndex);
+
+        ReceiverVoltage[i]=CurrentParticle.CalculateVoltage();
+        TotalVoltage+=ReceiverVoltage[i];
+
+        int fNFDIndex=index-NPreEventSamples;
+        if(fWriteNFD && fNFDIndex<16384)
+        {
+            double tmpElectricField[3]; double tmpMagneticField[3];
+            CurrentParticle.CalculateElectricField(tmpElectricField[0],tmpElectricField[1],tmpElectricField[2]);
+            CurrentParticle.CalculateMagneticField(tmpMagneticField[0],tmpMagneticField[1],tmpMagneticField[2]);
+
+            for(int j=0;j<NFDFrequencies.size();j++)
+            {
+                for(int k=0;k<3;k++)
+                {
+                    //Complex factors for Downmixing/ DFT sums
+                    double DownConvert[2]={cos(phi_LO),-sin(phi_LO)};
+                    int kFreq=int((NFDFrequencies[j]-fLO_Frequency)*16384.*EventModTimeStep);
+                    double DFTFactor[2]={cos(2.*PI*kFreq/16384.*double(fNFDIndex)),-sin(2.*PI*kFreq/16384.*double(fNFDIndex))};
+
+                    NFDElectricFieldFreq[j][i][k][0]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[0]-DownConvert[1]*DFTFactor[1]);
+                    NFDElectricFieldFreq[j][i][k][1]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0]);
+
+                    NFDMagneticFieldFreq[j][i][k][0]+=tmpMagneticField[k]*(DownConvert[0]*DFTFactor[0]-DownConvert[1]*DFTFactor[1]);
+                    NFDMagneticFieldFreq[j][i][k][1]+=tmpMagneticField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0]);
+                }
+            }
         }
     }
-    double Resistance=1.;
-    //double Voltage=sqrt(TotalPower*Resistance);
-    double Voltage=TotalPower;
+
+    double Voltage=TotalVoltage/double(rReceiver.size());
+
     //printf("Voltage: %e\n",Voltage);
-    //printf("Avg Its: %e\n",double(AvgIters)/double(nGridSide*nGridSide));
+    //printf("Avg Its: %e\n",double(AvgIters)/double(rReceiver.size()));
 
+    aLongSignal[ index ] += Voltage*cos(phi_LO);
+    ImaginarySignal[ index ] += -Voltage*sin(phi_LO);
 
-    //if(TotalPower)Voltage-=1.55158;
-    //Voltage*=1.e3;
-
-
-    double ftmp=fParticleHistory.back().fCyclotronFrequency;
-    //double ftmp=1.5916186e11;
-    phi_1+=ftmp*EventModTimeStep;
-    
-    phi_LO+=2.*PI*fLO_Frequency*EventModTimeStep;
-
-
-    aLongSignal[ index ] += (Voltage)*cos(phi_LO);
-    ImaginarySignal[ index ] += (Voltage)*cos(phi_LO);
-
-    //aLongSignal[ index ] += cos(phi_1)*cos(phi_LO);
-    //ImaginarySignal[ index ] += cos(phi_1)*cos(phi_LO);
-
-    //aLongSignal[ index ] += cos(phi_1-phi_LO);
-    //ImaginarySignal[ index ] += cos(phi_1-phi_LO);
 
     //myfile<<aLongSignal[index]<<" ";
     //myfile<<Voltage<<" ";
@@ -429,7 +415,6 @@ int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) 
 
     //if(fabs(tNew-fParticleHistory[IndexNew].GetTime())>dtStepSize)
     //{
-    //    printf("You fucked up yo!\n");
     //    printf("%e\n", fabs(tNew-fParticleHistory[IndexNew].GetTime())/dtStepSize);
     //}
 
@@ -479,15 +464,6 @@ int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) c
 
         IndexLength=IndexMax-IndexMin;
     }
-    //Now that we have it between an interval of one return index of 
-    //node tNew is closer to. Ie) determine if bigger or smaller than avg. of 2 points
-    //int IndexNew=IndexMin;
-    //if(fParticleHistory[IndexMax].GetTime()-tNew<tNew-fParticleHistory[IndexMin].GetTime())
-    //{
-    //    IndexNew=IndexMax;
-    //}
-
-    //return IndexNew;
     
     IndexMin=std::max(IndexMin,0);
     return IndexMin;
@@ -499,14 +475,25 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
 
     for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
     {
-        ImaginarySignal[ index ] = 0.;  
+        ImaginarySignal[ index ] = 0.;
         aLongSignal[ index ] = 0.;  // long record for oversampling.
+    }
+
+    if(fWriteNFD)
+    {
+        //Initialize to correct sizes/ all zeros
+        NFDElectricFieldFreq.resize(NFDFrequencies.size());
+        NFDMagneticFieldFreq.resize(NFDFrequencies.size());
+        for(int i=0;i<NFDFrequencies.size();i++)
+        {
+            NFDElectricFieldFreq[i]=std::vector<std::array<std::array<double,2>, 3> >(rReceiver.size(),{0.});
+            NFDMagneticFieldFreq[i]=std::vector<std::array<std::array<double,2>, 3> >(rReceiver.size(),{0.});
+        }
+        
     }
 
     //n samples for event spacing.
     int PreEventCounter = 0;
-    int NPreEventSamples = 150000;
-
 
     std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
     fRunInProgress = true;
@@ -543,6 +530,7 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
                 {
                     //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
                     DriveAntenna(PreEventCounter, index, aSignal, ImaginarySignal);
+
                     PreEventCounter = 0; // reset
                 }
                 tLock.unlock();
@@ -550,9 +538,10 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
 
         }  // for loop
 
-    //FilterNegativeFrequencies(aSignal, ImaginarySignal);
-    delete ImaginarySignal;
+    if(fWriteNFD) NFDWrite();
 
+    FilterNegativeFrequencies(aSignal, ImaginarySignal);
+    delete ImaginarySignal;
     
     // trigger any remaining events in Kassiopeia so that its thread can finish.
     while (fRunInProgress)
