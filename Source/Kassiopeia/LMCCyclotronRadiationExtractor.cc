@@ -68,7 +68,7 @@ namespace locust
         
         fNewParticleHistory.push_back(aNewParticle);
 
-        if (t_poststep - t_old >= 5.e-10)
+        if (t_poststep - t_old >= EventModTimeStep)
         {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();

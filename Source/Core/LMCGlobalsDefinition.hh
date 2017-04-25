@@ -14,6 +14,8 @@ double t_old = -99.;
 double testvar = -99.;
 double EventModTimeStep=5e-10;
 
+int fDecimationFactor=10.;
+
 //running deque for saving previous few ns of particle history 
 //in order to caluclate retarded fields
 std::deque<locust::ParticleSlim> fParticleHistory;

@@ -51,6 +51,13 @@ namespace locust
         {
             fLO_Frequency = aParam->GetValue< double >( "lo-frequency" );
         }
+        if( aParam->Has( "carrier-frequency" ) )
+        {
+            double fCarrier_Frequency = aParam->GetValue< double >( "carrier-frequency" );
+            fDecimationFactor = AntiAliasingSetup(fCarrier_Frequency,1.e9);
+            DEBUG( lmclog, "Changing Decimation Factor to: "<< fDecimationFactor);
+            EventModTimeStep*=10./double(fDecimationFactor);
+        }
         if( aParam->Has( "xml-filename" ) )
         {
             gxml_filename = aParam->GetValue< std::string >( "xml-filename" );
@@ -124,6 +131,36 @@ bool ReceivedKassReady()
 
     return true;
 
+}
+
+//Change decimation factor/ (and therefore the sampling rate) to guarantee no aliasing of signal
+double KassSignalGenerator::AntiAliasingSetup(double fCarrier_Frequency, double fBandwidth_Frequency) const
+{
+    double fSampleMin = 2.*fBandwidth_Frequency;
+    int fDecimationRange[2] = {10,100};
+    int fDecimation = fDecimationRange[0];
+
+    double fSample_Frequency;
+    int mFactor;
+
+    while(fDecimation <= fDecimationRange[1])
+    {
+        fSample_Frequency=double(fDecimation)/double(fDecimationRange[0])*fSampleMin;
+        mFactor=floor((2.*fCarrier_Frequency-fBandwidth_Frequency)/fSample_Frequency);
+        if(fSample_Frequency >= (2.*fCarrier_Frequency+fBandwidth_Frequency)/(double(mFactor+1)))
+        {
+            break;
+        }
+
+        fDecimation++;
+    }
+
+    if(fDecimation==fDecimationRange[1])
+    {
+            ERROR( lmclog, "Cannot find Decimation Factor. Are you sure about your carrier frequency?");
+    }
+
+    return fDecimation;
 }
 
 void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const

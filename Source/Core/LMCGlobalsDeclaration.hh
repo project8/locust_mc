@@ -21,6 +21,8 @@ extern double t_old;
 extern double testvar;
 extern double EventModTimeStep;
 
+extern int fDecimationFactor;
+
 extern std::deque<locust::ParticleSlim> fParticleHistory;
 extern std::deque<locust::ParticleSlim> fNewParticleHistory;
 

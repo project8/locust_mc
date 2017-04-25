@@ -264,7 +264,8 @@ namespace locust
     double ParticleSlim::CalculateVoltage()
     {
         //Lienard-Wiechert Equations
-        double V=fCharge / (KConst::FourPiEps()*fReceiverDistance*(1.- fReceiverDir.Dot(fNewVelocity)/KConst::C()));
+        //double V=fCharge / (KConst::FourPiEps()*fReceiverDistance*(1.- fReceiverDir.Dot(fNewVelocity)/KConst::C()));
+        double V=-1./ (fReceiverDistance*(1.- fReceiverDir.Dot(fNewVelocity)/KConst::C()));
         return V;
 
     }

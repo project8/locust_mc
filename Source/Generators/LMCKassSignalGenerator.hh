@@ -64,6 +64,7 @@ namespace locust
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double *ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
 
+            double AntiAliasingSetup(double fCarrier_Frequency, double fBandwidth_Frequency) const;
             void NFDWrite() const;
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
