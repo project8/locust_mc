@@ -8,6 +8,9 @@
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
 #define PI 3.1415926
+#define CENTER_TO_SHORT 0.010 // 1 cm
+#define CENTER_TO_ANTENNA 0.010 // 1 cm.
+
 
 
 #include <condition_variable>

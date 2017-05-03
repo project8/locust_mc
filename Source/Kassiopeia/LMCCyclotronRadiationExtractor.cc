@@ -37,8 +37,66 @@ namespace locust
 
     }
 
+    double CyclotronRadiationExtractor::GetGroupVelocity(KSParticle& aFinalParticle)
+    {
+        double SpeedOfLight = 2.99792458e8; // m/s
+        double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m
+        double fcyc = aFinalParticle.GetCyclotronFrequency();
+        double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
+//        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
+    	return GroupVelocity;
+    }
+
+    double CyclotronRadiationExtractor::GetCouplingFactor(KSParticle& aFinalParticle)
+    {
+    	double dim1_wr42 = 10.668e-3; // a in m
+    	double vx = aFinalParticle.GetVelocity().GetX();
+    	double vy = aFinalParticle.GetVelocity().GetY();
+    	double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
+//    	double coupling = fabs(vy)*sin(PI*x/dim1_wr42) / (sin(PI*dim1_wr42/2./dim1_wr42) * pow(vx*vx+vy*vy,0.5));
+    	double coupling = 0.63*sin(PI*x/dim1_wr42);  // avg over cyclotron orbit.
+    	return coupling*coupling;
+
+    }
+
+    double CyclotronRadiationExtractor::GetDampingFactor(KSParticle& aFinalParticle)
+    {
+        double fcyc = aFinalParticle.GetCyclotronFrequency();
+        double GroupVelocity = GetGroupVelocity(aFinalParticle);
+    	double zvelocity = aFinalParticle.GetVelocity().GetZ();
+    	double zposition = aFinalParticle.GetPosition().GetZ();
+        double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocity(aFinalParticle),2.),0.5);
+
+    	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
+    	double phi_short = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+//        double FieldFromShort = cos(phi_short);  // no resonant enhancement.
+        double FieldFromShort = cos(0.) + cos(phi_short); // yes resonant enhancement.
+        double CouplingFactor = GetCouplingFactor(aFinalParticle);
+
+        double DampingFactor = CouplingFactor*(1. - FieldFromShort*FieldFromShort);  // can be > 0 or < 0.
+
+//        printf("zposition is %g and lambdaprime is %g\n", zposition, GroupVelocity/fprime_short);
+//        printf("CouplingFactor is %f\n", CouplingFactor); getchar();
+
+    	return DampingFactor;
+    }
+
+
+
     bool CyclotronRadiationExtractor::ExecutePostStepModifcation( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
+
+
+//    	printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
+//    	printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
+
+
+// adjust power with short.
+//    	double DeltaE = GetDampingFactor(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+//    	aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+
+//    	printf("DeltaE is %g and post fix kinetic energy is %g\n", DeltaE, aFinalParticle.GetKineticEnergy() - 4.84338e-15); getchar();
+
 
     	t_poststep = aFinalParticle.GetTime();
 
@@ -54,10 +112,10 @@ namespace locust
             yvelocity = aFinalParticle.GetVelocity().GetY();
             zvelocity = aFinalParticle.GetVelocity().GetZ();
 
-            GammaZ = 1.0/pow(1.0-pow(zvelocity/2.99792e8,2.),0.5);  // fix speed of light.
+            GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocity(aFinalParticle),2.),0.5);  // speed of light is group velocity
 
-	    	                fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
-				//	                fcyc = 0.0156250/dt;
+//	    	                fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
+					                fcyc = 1.125/dt;
             LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.

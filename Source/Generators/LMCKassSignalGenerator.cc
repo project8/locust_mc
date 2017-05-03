@@ -46,9 +46,11 @@ namespace locust
     {
         if( aParam == NULL) return true;
         fLO_Frequency = LO_FREQUENCY;
+
         if( aParam->Has( "lo-frequency" ) )
 	  {
 	    fLO_Frequency = aParam->GetValue< double >( "lo-frequency" );
+
 	  }
 	if( aParam->Has( "xml-filename" ) )
           {
@@ -210,13 +212,11 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
            fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
 
 
-
        	if (PreEventCounter > 0)
        	  {
        		// initialize phases.
        		phi_t1 = 2.*PI*(CENTER_TO_ANTENNA - Z) / (GroupVelocity/fprime_antenna);
        		phi_t2 = 2.*PI*(Z + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (GroupVelocity/fprime_short);
-
        	  }
 
 //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
@@ -229,18 +229,21 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
            RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
            ImagVoltage2 = cos( phi_t2 - phiLO_t - PI/2.); // + cos( phi_t2 + phiLO_t - PI/2.));
 
+           RealVoltage2 = 0.;  // take out short.
+           ImagVoltage2 = 0.;  // take out short.
+
 
 //           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
            aLongSignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
            ImaginarySignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
 
 
-	   //   printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
-	   //	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
-	   //	   	                      index, aSignal->SignalTime()[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime, GammaZ);
-	   //	   	                     getchar();
+//	      printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
+//	   	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
+//	   	   	                      index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
+//	   	   	                     getchar();
 
-	   //	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
+//	   	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
 
 
 }

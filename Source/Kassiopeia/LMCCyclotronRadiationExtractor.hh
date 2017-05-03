@@ -39,9 +39,6 @@ namespace locust
             double de = 0.;
             double dt = 0.;
 
-
-
-
             bool ExecutePreStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticleQueue& aQueue );
             bool ExecutePostStepModifcation( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
 
@@ -49,6 +46,10 @@ namespace locust
         private:
             void InitializeComponent();
             void DeinitializeComponent();
+            double GetGroupVelocity(Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactor(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactor(Kassiopeia::KSParticle& aFinalParticle);
+
 
 
         protected:
