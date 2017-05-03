@@ -1,0 +1,11 @@
+$begin 'NearFieldHeader'
+type = 'nfd'
+geometry = 'sphere'
+center = '0, 0, 0'
+radius = '5cm'
+fsweep='25.937GHz'
+$end 'NearFieldHeader'
+
+$begin 'NearFieldData'
+FreqData("1GHz", "exportfields-25GHz.nfd")
+$end 'NearFieldData'

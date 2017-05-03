@@ -384,7 +384,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
                     //Complex factors for Downmixing/ DFT sums
                     double DownConvert[2]={cos(phi_LO),-sin(phi_LO)};
                     int kFreq=int((NFDFrequencies[j]-fLO_Frequency)*16384.*EventModTimeStep);
-                    double DFTFactor[2]={cos(2.*PI*kFreq/16384.*double(fNFDIndex)),-sin(2.*PI*kFreq/16384.*double(fNFDIndex))};
+                    double DFTFactor[2]={cos(2.*PI*double(kFreq)/16384.*double(fNFDIndex)),-sin(2.*PI*double(kFreq)/16384.*double(fNFDIndex))};
 
                     NFDElectricFieldFreq[j][i][k][0]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[0]-DownConvert[1]*DFTFactor[1]);
                     NFDElectricFieldFreq[j][i][k][1]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0]);
