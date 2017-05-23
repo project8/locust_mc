@@ -103,6 +103,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
+ENDIF ( locust_mc_BUILD_WITH_KASSIOPEIA )
+
+
 pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 

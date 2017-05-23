@@ -3,9 +3,13 @@ if( locust_mc_ENABLE_EXECUTABLES )
     set( lib_dependencies 
         LocustMC
     )
+ENDIF ( locust_mc_BUILD_WITH_KASSIOPEIA )
+
+
     
     set( programs
         LocustSim
+
     )
     
     if( locust_mc_BUILD_WITH_KASSIOPEIA )
