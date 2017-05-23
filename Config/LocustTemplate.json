@@ -10,7 +10,7 @@
     "kass-signal":
     {
         "lo-frequency": 25.957e9,
-        "xml-filename": "/home/penny/project8/manage/Project8_WithRoot_Template.xml"
+        "xml-filename": "/home/penny/locust_mc/Config/Project8_WithoutRoot_Template.xml"
     },
 
     "simulation":
