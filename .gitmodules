@@ -7,4 +7,4 @@
 [submodule "kassiopeia"]
 	path = kassiopeia
 	url = git://github.com/project8/kassiopeia.git
-	branch = origin/feature/eventmod
+	branch = feature/eventmod
