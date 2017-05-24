@@ -203,7 +203,6 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double SpeedOfLight = 2.99792458e8; // m/s
     double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m         
                                 
-
 //                  printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
     GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
