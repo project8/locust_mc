@@ -55,7 +55,7 @@ namespace locust
     	double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
 //    	double coupling = fabs(vy)*sin(PI*x/dim1_wr42) / (sin(PI*dim1_wr42/2./dim1_wr42) * pow(vx*vx+vy*vy,0.5));
     	double coupling = 0.63*sin(PI*x/dim1_wr42);  // avg over cyclotron orbit.
-    	return coupling*coupling;
+    	return coupling;
 
     }
 
@@ -69,8 +69,8 @@ namespace locust
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
     	double phi_short = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
-//        double FieldFromShort = cos(phi_short);  // no resonant enhancement.
-        double FieldFromShort = cos(0.) + cos(phi_short); // yes resonant enhancement.
+//        double FieldFromShort = cos(phi_short);  // no resonant enhancement.  just damping.
+        double FieldFromShort = cos(0.) + cos(phi_short); // yes resonant enhancement.  and damping.
         double CouplingFactor = GetCouplingFactor(aFinalParticle);
 
         double DampingFactor = CouplingFactor*(1. - FieldFromShort*FieldFromShort);  // can be > 0 or < 0.
@@ -91,9 +91,9 @@ namespace locust
 //    	printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 
 
-// adjust power with short.
-//    	double DeltaE = GetDampingFactor(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-//    	aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+// adjust Larmor power with short.
+    	double DeltaE = GetDampingFactor(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+    	aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
 
 //    	printf("DeltaE is %g and post fix kinetic energy is %g\n", DeltaE, aFinalParticle.GetKineticEnergy() - 4.84338e-15); getchar();
 

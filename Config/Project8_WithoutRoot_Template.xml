@@ -11,13 +11,16 @@
 <external_define name="postvis" value="0"/>
 
 
+<!-- bathtub -->
+<!--
 <external_define name="pinch" value="0.05"/>
 <external_define name="bathtub" value="-2.0"/> 
+-->
 
-<!--
+<!-- harmonic -->
 <external_define name="pinch" value="-1.0"/>
 <external_define name="bathtub" value="0.0"/> 
--->
+
 
 <external_define name="field" value="0.9583"/>
 <external_define name="alignment" value="0."/>
@@ -234,7 +237,7 @@
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="89.67" value_max="89.67"/> 
+        <theta_uniform value_min="90.00" value_max="90.00"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
