@@ -17,6 +17,9 @@
 #include <regex>
 #include <math.h>
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "logger.hh"
 
 namespace locust
@@ -156,19 +159,20 @@ namespace locust
 
         ParseExpressionLine=".*nfd";
         std::regex_search(InputLine,ParseMatch,ParseExpressionLine);
-        std::string fNFD_filename=ParseMatch.str();
+
+        fNFD_filename=ParseMatch.str();
         //Get out Filename
         int tIndex=0;
          while((tIndex=fNFD_filename.find("\""))!=std::string::npos)
          {
              fNFD_filename.erase(0,tIndex+1);
          }
-         //cout<<fNFD_filename<<std::endl;
+        // std::cout<<fNFD_filename<<std::endl;
 
         fANDInput.close();
 
         //Generate Geometries: Increase Final Argument for finer discretization 
-        if(GeometryIndex==0)rSurfacePoints=GenerateSphere(GeometryScale[0],10);
+        if(GeometryIndex==0)rSurfacePoints=GenerateSphere(GeometryScale[0],15);
         else if(GeometryIndex==1)rSurfacePoints=GenerateBox(GeometryScale,13);
         else if(GeometryIndex==2)rSurfacePoints=GenerateCylinder({GeometryScale[0],GeometryScale[1]},10);
         else if(GeometryIndex==3)rSurfacePoints=GeneratePlane({GeometryScale[0],GeometryScale[1]},10);
@@ -198,6 +202,8 @@ namespace locust
 
         DEBUG( lmclog, "Chosen HFSS Frequencies:");
         for(int i=0;i<NFDFrequencies.size();i++) DEBUG( lmclog, NFDFrequencies[i]);
+
+       //rSurfacePoints=RotateShift(rSurfacePoints,{1.,0.,0.},{0.,0.,0.}); 
 
         return;
     }
@@ -327,18 +333,38 @@ namespace locust
 
     }
 
+    //std::vector<std::array<double, 3> > HFSSReader::GenerateSphere(double Radius, int nResolution)
+    //{
+    //    std::vector<std::array<double, 3> > rPointVector;
+    //    srand(time(NULL));
+    //    std::array<double, 3> rPointVectorBuffer;
+    //    double sum=0.;
+    //    for(int i=0;i<10000;i++)
+    //    {
+    //        rPointVectorBuffer[0]= -1. + static_cast <double> (rand() / static_cast <double> (RAND_MAX/2.));
+    //        rPointVectorBuffer[1]= -1. + static_cast <double> (rand() / static_cast <double> (RAND_MAX/2.));
+    //        rPointVectorBuffer[2]= -1. + static_cast <double> (rand() / static_cast <double> (RAND_MAX/2.));
+    //        sum=sqrt(rPointVectorBuffer[0]*rPointVectorBuffer[0]+rPointVectorBuffer[1]*rPointVectorBuffer[1]+rPointVectorBuffer[2]*rPointVectorBuffer[2]);
+    //        rPointVectorBuffer[0]*=Radius/sum;
+    //        rPointVectorBuffer[1]*=Radius/sum;
+    //        rPointVectorBuffer[2]*=Radius/sum;
+    //        rPointVector.push_back(rPointVectorBuffer);
+    //    }
+
+    //    return rPointVector;
+    //}
     std::vector<std::array<double, 3> > HFSSReader::GenerateSphere(double Radius, int nResolution)
     {
         std::vector<std::array<double, 3> > rPointVector;
         int nRings=2.*nResolution+3;
-        double dz=2./double(nRings-1.);
+        double dz=2.*(1.-1./double(nRings))/double(nRings-1.);
         double zRings[nRings];
         double rRings[nRings];
         double RingCount[nRings];
 
         for(int i=0;i<nRings;i++)
         {
-            zRings[i]=-1.+dz*double(i);
+            zRings[i]=-1.*(1.-1./double(nRings))+dz*double(i);
             rRings[i]=sqrt(1.-pow(zRings[i],2.));
             RingCount[i]=round(2.*PI*rRings[i])/dz;
         }

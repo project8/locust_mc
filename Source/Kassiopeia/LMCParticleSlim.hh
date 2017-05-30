@@ -50,6 +50,7 @@ namespace locust
             double CalculateVoltage();
             void CalculateElectricField(double&,double&,double&);
             void CalculateMagneticField(double&,double&,double&);
+            double CalculatePower();
 
             void Print();
             void SetSpline(ParticleSlim);

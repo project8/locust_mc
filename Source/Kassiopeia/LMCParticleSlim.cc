@@ -238,14 +238,17 @@ namespace locust
         double c=KConst::C();
 
         //Lorentz Equation
-        KGeoBag::KThreeVector BetaDot=fCharge/(fMass * c) *fNewVelocity.Cross(fMagneticField);
+        KGeoBag::KThreeVector BetaDot = fNewAcceleration / c;
+        KGeoBag::KThreeVector nMinusBeta = fReceiverDir - 1./ c * fNewVelocity;
 
         //Lienard-Wiechert Equations
-        KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * (c / (fGamma*fGamma*fReceiverDistance)*(fReceiverDir-1./c*fNewVelocity) + (fReceiverDir.Cross(fReceiverDir.Cross(BetaDot))));
+        KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * ( c * nMinusBeta / (fGamma*fGamma*fReceiverDistance) + (fReceiverDir.Cross(nMinusBeta.Cross(BetaDot))));
 
         Ex=E.X();
         Ey=E.Y();
         Ez=E.Z();
+
+
     }
 
     void ParticleSlim::CalculateMagneticField(double& Hx, double &Hy, double& Hz)
@@ -264,10 +267,22 @@ namespace locust
     double ParticleSlim::CalculateVoltage()
     {
         //Lienard-Wiechert Equations
-        //double V=fCharge / (KConst::FourPiEps()*fReceiverDistance*(1.- fReceiverDir.Dot(fNewVelocity)/KConst::C()));
-        double V=-1./ (fReceiverDistance*(1.- fReceiverDir.Dot(fNewVelocity)/KConst::C()));
+        double V=fCharge / (KConst::FourPiEps()*fReceiverDistance*(1.- fReceiverDir.Dot(fNewVelocity)/KConst::C()));
+        //double V=-1./ (fReceiverDistance*(1.- fReceiverDir.Dot(fNewVelocity)/KConst::C()));
         return V;
 
+    }
+
+    ////Only works with sphere at origin
+    double ParticleSlim::CalculatePower()
+    {
+        double Ex, Ey, Ez;
+        CalculateElectricField(Ex,Ey,Ez);
+        KGeoBag::KThreeVector E(Ex,Ey,Ez);
+        KGeoBag::KThreeVector H = fReceiverDir.Cross(E)/(KConst::MuNull()*KConst::C());
+        KGeoBag::KThreeVector S = E.Cross(H);
+
+        return S.Dot(fReceiverPosition.Unit())*(1.-fReceiverDir.Dot(fNewVelocity)/KConst::C());
     }
 
     void ParticleSlim::Print()
@@ -321,13 +336,6 @@ namespace locust
 
         //KGeoBag::KThreeVector newVel=fVelocityParallel*fMagneticField.Unit() + fCyclotronFrequency*fCyclotronRadius*(-sin(CyclotronFrequency*dt)*fAlpha+cos(CyclotronFrequency*dt)*fBeta)+3.*fSplineC/dt+4.*fSplineD/dt;
         //printf("%e %e\n",fSplineC.Magnitude(),fSplineD.Magnitude());
-
-        //KGeoBag::KThreeVector tmp=newPos-aNextParticle.GetPosition();
-        //KGeoBag::KThreeVector tmp=newVel-aNextParticle.GetVelocity();
-        //printf("%e\n",tmp.Magnitude());
-
-        //fSplineC/=(dt*dt*dt*dt);
-        //fSplineD/=(dt*dt*dt);
 
         return;
     }

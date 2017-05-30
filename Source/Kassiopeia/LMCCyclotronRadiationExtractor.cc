@@ -95,15 +95,6 @@ namespace locust
                 fParticleHistory.pop_front();
             }
 
-            ////Make 100% Sure list is ordered!!!
-            //for(int i=0;i<fParticleHistory.size()-1;i++)
-            //{
-            //    if(fParticleHistory[i].GetTime()>fParticleHistory[i+1].GetTime())
-            //    {
-            //        printf("Ruh Roh\n");
-            //    }
-            //}
-
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 

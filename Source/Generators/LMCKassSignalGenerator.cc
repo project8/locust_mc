@@ -222,6 +222,7 @@ void KassSignalGenerator::NFDWrite() const
 
         fNFDOutput << "#Index, X, Y, Z, Ex(real, imag), Ey(real, imag), Ez(real, imag), Hx(real, imag), Hy(real, imag), Hz(real, imag)"<<std::endl;
         
+        fNFDOutput << std::fixed;
         fNFDOutput << "Frequencies "<<NFDFrequencies.size()<<std::endl;
 
         fNFDOutput << std::setprecision(9);
@@ -230,13 +231,13 @@ void KassSignalGenerator::NFDWrite() const
         for(int i = 0; i < NFDFrequencies.size() ; i++)
         {
 
-            fNFDOutput << std::scientific;
+            fNFDOutput<<std::scientific;
             fNFDOutput <<"Frequency "<< NFDFrequencies[i] <<std::endl;
 
-            fNFDOutput << std::fixed;
             for(int j = 0; j < rReceiver.size() ; j++)
             {
 
+                fNFDOutput<<std::scientific;
                 fNFDOutput <<j<<", "<<rReceiver[j][0]<<", "<<rReceiver[j][1]<<", "<<rReceiver[j][2]<<", "<< NFDElectricFieldFreq[i][j][0][0]<<", "<< NFDElectricFieldFreq[i][j][0][1]<<", "<< NFDElectricFieldFreq[i][j][1][0]<<", "<< NFDElectricFieldFreq[i][j][1][1]<<", "<< NFDElectricFieldFreq[i][j][2][0]<<", "<< NFDElectricFieldFreq[i][j][2][1]<<", "<< NFDMagneticFieldFreq[i][j][0][0]<<", "<< NFDMagneticFieldFreq[i][j][0][1]<<", "<< NFDMagneticFieldFreq[i][j][1][0]<<", "<< NFDMagneticFieldFreq[i][j][1][1]<<", "<< NFDMagneticFieldFreq[i][j][2][0]<<", "<< NFDMagneticFieldFreq[i][j][2][1]<<std::endl;
 
             }
@@ -257,7 +258,7 @@ void KassSignalGenerator::NFDWrite() const
 void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
     //std::ofstream myfile;
-    //myfile.open ("example.txt",std::ios::app);
+    //myfile.open ("Poynting.txt",std::ios::app);
 
     locust::ParticleSlim CurrentParticle = fParticleHistory.back();
     int CurrentIndex;
@@ -267,9 +268,10 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     //double tReceiver=t_poststep;
     double ReceiverVoltage[rReceiver.size()];
     double TotalVoltage=0.;
+
     double tSpaceTimeInterval=99.;
     double dtRetarded=0;
-    double tTolerance=1.e-23;
+    double tTolerance=1e-23;
     double dtStepSize=fabs(fParticleHistory[1].GetTime()-fParticleHistory[0].GetTime());
 
     int HistorySize=fParticleHistory.size();
@@ -354,12 +356,6 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             CurrentParticle.SetReceiverTime(tReceiver);
 
             tSpaceTimeInterval=CurrentParticle.GetSpaceTimeInterval();
-            //printf("s1: %e \n",tSpaceTimeInterval);
-
-            //if(fabs(tSpaceTimeInterval)<tTolerance && fabs(tSpaceTimeInterval-tOldSpaceTimeInterval)<tTolerance/100.)
-            //{
-            //    break;
-            //}
 
             tOldSpaceTimeInterval=tSpaceTimeInterval;
         }
@@ -393,35 +389,24 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
                     NFDMagneticFieldFreq[j][i][k][1]+=tmpMagneticField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0]);
                 }
             }
+
+        }
+        else if(fNFDIndex >=16384)
+        {
+            printf("Done! \n");
         }
     }
 
     double Voltage=TotalVoltage/double(rReceiver.size());
 
-    //printf("Voltage: %e\n",Voltage);
-    //printf("Avg Its: %e\n",double(AvgIters)/double(rReceiver.size()));
-
     aLongSignal[ index ] += Voltage*cos(phi_LO);
     ImaginarySignal[ index ] += -Voltage*sin(phi_LO);
-
-
-    //myfile<<aLongSignal[index]<<" ";
-    //myfile<<Voltage<<" ";
-    //myfile.close();
 
 }
 ////Return index of deque closest to desired time
 int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) const
 {
     int HistorySize=fParticleHistory.size();
-   //printf("Size: %d \n",HistorySize);
-   //fflush(stdout);
-
-    //if(!IsInside(tNew,0,HistorySize-1))
-    //{
-    //    printf("RED ALERT NOT IN DEQUE\n");
-
-    //}
 
     IndexOld=std::max(IndexOld,0);
     IndexOld=std::min(IndexOld,HistorySize-1);
@@ -434,11 +419,6 @@ int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) 
 
     double tMid=fParticleHistory[IndexMid].GetTime();
 
-    //printf("Old Time: %e Old Index: %d\n",tOld,IndexOld);
-    //printf("Mid Time: %e Mid Index: %d\n",tMid,IndexMid);
-    //printf("New Time: %e\n",tNew);
-
-
     int IndexNew=0;
 
     for(int i=0;i<20;i++){
@@ -450,12 +430,6 @@ int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) 
         }
     }
 
-    //if(fabs(tNew-fParticleHistory[IndexNew].GetTime())>dtStepSize)
-    //{
-    //    printf("%e\n", fabs(tNew-fParticleHistory[IndexNew].GetTime())/dtStepSize);
-    //}
-
-
     return IndexNew;
 
 }
@@ -465,10 +439,6 @@ bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) cons
     int HistorySize=fParticleHistory.size();
     IndexMin=std::max(IndexMin,0);
     IndexMax=std::min(IndexMax,HistorySize-1);
-
-    //printf("Min Time: %e Min Index: %d\n",fParticleHistory[IndexMin].GetTime(),IndexMin);
-    //printf("Try Time: %e \n",tNew);
-    //printf("Max Time: %e Max Index: %d\n",fParticleHistory[IndexMax].GetTime(),IndexMax);
 
     return tNew>=fParticleHistory[IndexMin].GetTime() && tNew<=fParticleHistory[IndexMax].GetTime();
 }
