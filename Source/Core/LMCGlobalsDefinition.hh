@@ -10,8 +10,12 @@
 
 double Z = -99.;
 double X = -99.;
+double Y = -99.;
 double t_poststep = -99.;
 double t_old = -99.;
+double phi_shortTE11 = 0.;
+double* phi_shortTM01 = new double[200];
+double* phi_polarizerTM01 = new double[200];
 double LarmorPower = -99.;
 double xvelocity = -99.;
 double yvelocity = -99.;

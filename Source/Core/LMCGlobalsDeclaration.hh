@@ -8,8 +8,8 @@
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
 #define PI 3.1415926
-#define CENTER_TO_SHORT 0.010 // 1 cm
-#define CENTER_TO_ANTENNA 0.010 // 1 cm.
+#define CENTER_TO_SHORT 0.045 // 1 cm
+#define CENTER_TO_ANTENNA 0.049 // 1 cm.
 
 
 
@@ -19,8 +19,12 @@
 
 extern double Z;
 extern double X;
+extern double Y;
 extern double t_poststep;
 extern double t_old;
+extern double phi_shortTE11;
+extern double* phi_shortTM01;
+extern double* phi_polarizerTM01;
 extern double LarmorPower;
 extern double xvelocity;
 extern double yvelocity;

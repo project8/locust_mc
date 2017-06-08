@@ -201,7 +201,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
     double ImagVoltage2 = 0.;
     double GroupVelocity = 0.;
     double SpeedOfLight = 2.99792458e8; // m/s
-    double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m         
+    double CutOffFrequency = 2. * PI * SpeedOfLight * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
                                 
 //                  printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
@@ -216,6 +216,8 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
        		// initialize phases.
        		phi_t1 = 2.*PI*(CENTER_TO_ANTENNA - Z) / (GroupVelocity/fprime_antenna);
        		phi_t2 = 2.*PI*(Z + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (GroupVelocity/fprime_short);
+       		phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
+       		phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
        	  }
 
 //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
@@ -228,13 +230,14 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
            RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
            ImagVoltage2 = cos( phi_t2 - phiLO_t - PI/2.); // + cos( phi_t2 + phiLO_t - PI/2.));
 
+
+           /*
            RealVoltage2 = 0.;  // take out short.
            ImagVoltage2 = 0.;  // take out short.
+           */
 
-
-//           aSignal->SignalTime()[ index ] += AverageModeExcitation()*pow(LarmorPower,0.5)*RealVoltagePhase;
-           aLongSignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
-           ImaginarySignal[ index ] += AverageModeExcitation()/pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
+           aLongSignal[ index ] += TE11ModeExcitation()*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
+           ImaginarySignal[ index ] += TE11ModeExcitation()*pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
 
 
 //	      printf("driving antenna, ModeExcitation is %g\n\n", AverageModeExcitation());
@@ -247,91 +250,18 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
 }
 
-
-
-double KassSignalGenerator::ModeExcitation() const
+double KassSignalGenerator::TE11ModeExcitation() const
 {
-    double dim1_wr42 = 10.668e-3; // a in m
-    double dim2_wr42 = 4.318e-3; // b in m
-	double vy = yvelocity;
-	double vx = xvelocity;
-	double x = X + dim1_wr42/2.;  // center of waveguide is at zero.
-	double Ey = 0.;
-	double EyMax = 0.;
+	double kc = 1.841/0.00502920;
+	double r = pow(X*X+Y*Y,0.5);
 
+// fraction of emitted power that goes into TE11.
+	double coupling = 119116./168.2 * 2./PI * 4./(2.*PI) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
+			(j0(kc*r) + jn(2, kc*r)) );
 
-	double *EyArray1 = EyWR42Array();
-
-//  normalize Ey if necessary.
-//	EyArray1 = ScaleArray(EyArray1, 1./pow(IntEyWR42ArraySqdA(EyArray1, dim1_wr42, dim2_wr42), 0.5));
-//	x=0.+dim1_wr42/2.; vy = 5.e7; vx=0.;  // fake test calcs in middle of waveguide.
-
-
-	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
-	EyMax = EyArray1[100/2];
-//	printf("EyMax is %g\n", EyMax);
-
-	// E dot v / (Emax v) / sqrt(2) for half power lost in opposite direction.
-	double EdotV = fabs(Ey*vy)/fabs(EyMax*pow(vx*vx+vy*vy,0.5)) / 1.41421;
-//	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
-
-//	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
-
-
-return EdotV;
+	return pow(coupling,0.5);  // field amplitude is sqrt of power going into field.
 }
 
-
-double KassSignalGenerator::AverageModeExcitation() const
-{
-    double dim1_wr42 = 10.668e-3; // m
-    double dim2_wr42 = 4.318e-3; // m
-	double vy = yvelocity;
-	double vx = xvelocity;
-	double x = X + dim1_wr42/2.;  // center of waveguide is at zero.
-	double Ey = 0.;
-	double EyMax = 0.;
-
-
-	double *EyArray1 = EyWR42Array();
-
-//  normalize Ey if necessary.
-//	EyArray1 = ScaleArray(EyArray1, 1./pow(IntEyWR42ArraySqdA(EyArray1, dim1_wr42, dim2_wr42), 0.5));
-//	x=0.+dim1_wr42/2.; vy = 5.e7; vx=0.;  // fake test calcs in middle of waveguide.
-
-
-	Ey = EyArray1[(int)(100.*x/dim1_wr42)];
-	EyMax = EyArray1[100/2];
-//	printf("EyMax is %g\n", EyMax);
-
-	// E dot v / (Emax v) * 0.637 / sqrt(2) for analytic avg coupling/orbit and half power lost in opposite direction.
-	// or E dot v / (Emax v) * 0.637 for analytic avg coupling/orbit and reflecting short.
-	double AverageEdotV = fabs(Ey/EyMax) *0.637;
-
-//	printf("x is %f and Ey is %g and yvelocity is %g and xvelocity is %g and EdotV is %f\n", x, Ey, vy, vx, EdotV);
-
-//	fprintf(fp2, "%.10g %.10g %.10g %.10g ", EdotV, vx, vy, X);  // checking mode excitation.
-
-return AverageEdotV;
-}
-
-
-
-
-
-double* KassSignalGenerator::EyWR42Array() const
-{
-double a = 10.668e-3;
-int nbins = 100;
-double *EyArray1 = new double[nbins];
-double x=0.;
-for (int i=0; i<nbins; i++)
-  {
-  x = a*(double)i/(double)nbins;
-  EyArray1[i] = sin(PI*x/a);
-  }
-return EyArray1;
-}
 
 
 

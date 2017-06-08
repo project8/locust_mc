@@ -11,9 +11,11 @@
 <external_define name="postvis" value="0"/>
 
 
+<!-- bathtub -->
 <external_define name="pinch" value="0.05"/>
 <external_define name="bathtub" value="-2.0"/> 
 
+<!-- harmonic -->
 <!--
 <external_define name="pinch" value="-1.0"/>
 <external_define name="bathtub" value="0.0"/> 
@@ -225,16 +227,16 @@
 
     <ksgen_generator_composite name="gen_uniform">
         <energy_composite>
-            <energy_fix value="17830.0"/>
+            <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.000" value_max="0.000"/>
+            <x_uniform value_min="0.001" value_max="0.001"/>
             <y_uniform value_min="0.000" value_max="0.000"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="89.67" value_max="89.67"/> 
+        <theta_uniform value_min="89.68" value_max="89.68"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -257,8 +259,6 @@
             <time_fix value="0."/>
         </time_composite>
     </ksgen_generator_composite>
-
-    <!-- trajectories -->
 
     <kstraj_trajectory_exact name="traj_exact">
         <integrator_rk8/>

@@ -73,12 +73,7 @@ namespace locust
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double* ImaginarySignal) const;
-            double ModeExcitation() const;
-            double AverageModeExcitation() const;
-            double FakeModeExcitation() const;
-            double* EyWR42Array() const;
-            double* ScaleArray(double *array, double factor) const;
-            double IntEyWR42ArraySqdA(double *EyArray1, double dimx, double dimy) const;
+            double TE11ModeExcitation() const;
 
 
 

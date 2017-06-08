@@ -46,9 +46,14 @@ namespace locust
         private:
             void InitializeComponent();
             void DeinitializeComponent();
-            double GetGroupVelocity(Kassiopeia::KSParticle& aFinalParticle);
-            double GetDampingFactor(Kassiopeia::KSParticle& aFinalParticle);
-            double GetCouplingFactor(Kassiopeia::KSParticle& aFinalParticle);
+            double GetGroupVelocityTE11(Kassiopeia::KSParticle& aFinalParticle);
+            double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactor(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTE11(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+
 
 
 
