@@ -155,13 +155,6 @@ add_subdirectory( Source/Applications )
 #pbuilder_install_executables( check_egg_digitization )
 
 pbuilder_install_config (
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test.json          
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/receiver_transfer_functions.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_single_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_single_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/tone_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/tone_single_config.json
+
 )
 
