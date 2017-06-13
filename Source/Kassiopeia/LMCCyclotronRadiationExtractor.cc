@@ -119,6 +119,7 @@ namespace locust
     	  {
       	  phi_shortTE11 = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
       	  TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
+//      	  printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
     	  }
     	else
     	  {
@@ -242,7 +243,9 @@ namespace locust
         double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
         double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
 
-        double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
+//        double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
+        double DampingFactor = DampingFactorTE11;
+
 
 
 /*
@@ -268,7 +271,7 @@ if (fabs(DampingFactor)>0.)
 //    	printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 
 
-// adjust power with short.
+// adjust power with reflections.
     	double DeltaE = GetDampingFactor(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
 //    	printf("poststep says DeltaE is %g\n", DeltaE);
     	aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
