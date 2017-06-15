@@ -296,8 +296,8 @@ if (fabs(DampingFactor)>0.)
 
             GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE11(aFinalParticle),2.),0.5);  // speed of light is group velocity
 
-//	    	                fcyc = aFinalParticle.GetCyclotronFrequency();  // inconsistent.  do not use.
-					                fcyc = 1.125/dt;
+	    	                fcyc = aFinalParticle.GetCyclotronFrequency();
+//					                fcyc = 1.125/dt;  // for testing
             LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.

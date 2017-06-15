@@ -93,20 +93,11 @@ bool ReceivedKassReady()
 {
 
     if( !fKassEventReady)
-      {
-        int counter = 0;
-	while (counter < 500000)  // wait 
-          {
-	    counter += 1;
-          }
-      }
-    if( !fKassEventReady)  // check again.
     {
     std::unique_lock< std::mutex >tLock( fMutex );
     fKassReadyCondition.wait( tLock );
     printf("LMC Got the fKassReadyCondition signal\n");
     }
-
 
     return true;
 
@@ -296,6 +287,7 @@ double KassSignalGenerator::TE11ModeExcitation() const
         if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
         	{
         	if (ReceivedKassReady()) fPreEventInProgress = true;
+        	printf("LMC says it ReceivedKassReady()\n");
         	}
 
 
@@ -308,7 +300,7 @@ double KassSignalGenerator::TE11ModeExcitation() const
         	  {
         	  fPreEventInProgress = false;  // reset.
               fEventInProgress = true;
-//              printf("LMC about to wakebeforeevent\n");
+              printf("LMC about to WakeBeforeEvent()\n");
 	          WakeBeforeEvent();  // trigger Kass event.
         	  }
     	  }
