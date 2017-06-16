@@ -42,19 +42,19 @@ namespace locust
     {
     }
 
-    bool KassSignalGenerator::Configure( const ParamNode* aParam )
+    bool KassSignalGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
         fLO_Frequency = LO_FREQUENCY;
 
-        if( aParam->Has( "lo-frequency" ) )
+        if( aParam->has( "lo-frequency" ) )
 	  {
-	    fLO_Frequency = aParam->GetValue< double >( "lo-frequency" );
+	    fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
 
 	  }
-	if( aParam->Has( "xml-filename" ) )
+	if( aParam->has( "xml-filename" ) )
           {
-            gxml_filename = aParam->GetValue< std::string >( "xml-filename" );
+            gxml_filename = aParam->get_value< std::string >( "xml-filename" );
           }
 
 

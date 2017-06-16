@@ -23,7 +23,7 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 set( LOCUST_MC_HEADER_FILES
-    Core/LMCConfigurator.hh
+    #Core/LMCConfigurator.hh
     Core/LMCGlobalsDeclaration.hh
     Core/LMCGlobalsDefinition.hh
 #    Core/LMCConstants.hh
@@ -32,8 +32,8 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCException.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
-    Core/LMCParam.hh
-    Core/LMCParser.hh
+    #Core/LMCParam.hh
+    #Core/LMCParser.hh
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
     Core/LMCSimulationController.hh
@@ -49,14 +49,14 @@ set( LOCUST_MC_HEADER_FILES
 
 
 set( LOCUST_MC_SOURCE_FILES
-    Core/LMCConfigurator.cc
+    #Core/LMCConfigurator.cc
 #    Core/LMCDefaultConfig.cc
     Core/LMCEggWriter.cc
     Core/LMCException.cc
     Core/LMCGenerator.cc
     Core/LMCGeneratorToolbox.cc
-    Core/LMCParam.cc
-    Core/LMCParser.cc
+    #Core/LMCParam.cc
+    #Core/LMCParser.cc
     Core/LMCRunLengthCalculator.cc
     Core/LMCSignal.cc
     Core/LMCSimulationController.cc

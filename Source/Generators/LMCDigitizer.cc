@@ -34,18 +34,18 @@ namespace locust
     {
     }
 
-    bool Digitizer::Configure( const ParamNode* aNode )
+    bool Digitizer::Configure( const scarab::param_node* aNode )
     {
         if( aNode == NULL ) return true;
 
-        unsigned bitDepth = aNode->GetValue( "bit-depth", fParams.bit_depth );
-        unsigned dataTypeSize = aNode->GetValue( "data-type-size", fParams.data_type_size );
-        double vRange = aNode->GetValue( "v-range", fParams.v_range );
-        double vMin = aNode->GetValue( "v-offset", fParams.v_offset );
+        unsigned bitDepth = aNode->get_value( "bit-depth", fParams.bit_depth );
+        unsigned dataTypeSize = aNode->get_value( "data-type-size", fParams.data_type_size );
+        double vRange = aNode->get_value( "v-range", fParams.v_range );
+        double vMin = aNode->get_value( "v-offset", fParams.v_offset );
 
         get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
 
-        DEBUG( lmclog, "Digitizer calibration parameters set" );
+        LDEBUG( lmclog, "Digitizer calibration parameters set" );
 
         return true;
     }
@@ -81,7 +81,7 @@ namespace locust
                 digitizedData[ index ] = a2d< double, int8_t >( analogData[ index ], &fParams );
                 if( index < 100 )
                 {
-                    WARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
+                    LWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
                 }
             }
             aSignal->ToDigital( digitizedData, signalSize );
@@ -95,7 +95,7 @@ namespace locust
                 digitizedData[ index ] = a2d< double, uint8_t >( analogData[ index ], &fParams );
                 if( index < 100 )
                 {
-                    WARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (unsigned) digitizedData[ index ] );  // pls added (int)
+                    LWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (unsigned) digitizedData[ index ] );  // pls added (int)
         //            printf("digitized data is %x\n", digitizedData[index]);
         //            getchar();
                 }

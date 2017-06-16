@@ -46,6 +46,8 @@ include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 pbuilder_add_submodule( Scarab Scarab/library )
 
 pbuilder_add_submodule( Monarch monarch )
+# we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
+set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
 
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)

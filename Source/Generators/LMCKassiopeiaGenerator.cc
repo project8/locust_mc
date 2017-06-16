@@ -125,17 +125,17 @@ namespace locust
     }
 
 
-    bool KassiopeiaGenerator::Configure( const ParamNode* aParam )
+    bool KassiopeiaGenerator::Configure( const scarab::param_node* aParam )
     {
 
         if( aParam == NULL) return true;
-        if( aParam->Has( "domain" ) )
+        if( aParam->has( "domain" ) )
         {
-            string domain = aParam->GetValue( "domain" );
+            string domain = aParam->get_value( "domain" );
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
-                DEBUG( lmclog, "Domain is equal to time.");
+                LDEBUG( lmclog, "Domain is equal to time.");
             }
             else if( domain == "freq" )
             {
@@ -143,7 +143,7 @@ namespace locust
             }
             else
             {
-                ERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
                 return false;
             }
         }
@@ -177,7 +177,7 @@ namespace locust
         }
         else
         {
-            WARN( lmclog, "Unknown domain requested: " << aDomain );
+            LWARN( lmclog, "Unknown domain requested: " << aDomain );
         }
         return;
     }

@@ -8,12 +8,12 @@
 #ifndef LMCDEFAULTCONFIG_HH_
 #define LMCDEFAULTCONFIG_HH_
 
-#include "LMCParam.hh"
+#include "param.hh"
 
 namespace locust
 {
 
-    class DefaultConfig : public ParamNode
+    class DefaultConfig : public scarab::param_node
     {
         public:
             DefaultConfig();

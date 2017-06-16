@@ -9,7 +9,7 @@
 
 #include "LMCGenerator.hh"
 #include "logger.hh"
-#include "LMCParam.hh"
+#include "param.hh"
 
 namespace locust
 {
@@ -34,26 +34,26 @@ namespace locust
     {
     }
 
-    bool RunLengthCalculator::Configure( const ParamNode* aNode )
+    bool RunLengthCalculator::Configure( const scarab::param_node* aNode )
     {
         if( aNode == NULL ) return false;
 
         // first, configure items that will affect the method for calculating the run length
 
-        if( aNode->Has( "n-records" ) )
-            SetNRecords( aNode->GetValue< unsigned >( "n-records" ) );
+        if( aNode->has( "n-records" ) )
+            SetNRecords( aNode->get_value< unsigned >( "n-records" ) );
 
-        if( aNode->Has( "duration" ) )
-            SetDuration( aNode->GetValue< double >( "duration" ) );
+        if( aNode->has( "duration" ) )
+            SetDuration( aNode->get_value< double >( "duration" ) );
 
         // next, configure items that are needed no matter what.
 
-        SetRecordSize( aNode->GetValue< unsigned >( "record-size", fRecordSize ) );
+        SetRecordSize( aNode->get_value< unsigned >( "record-size", fRecordSize ) );
 
-        if( aNode->Has( "acquisition-rate" ) )
-            SetAcquisitionRate( aNode->GetValue< double >( "acquisition-rate" ) );
-        if( aNode->Has( "bin-width" ) )
-            SetBinWidth( aNode->GetValue< double >( "bin-width" ) );
+        if( aNode->has( "acquisition-rate" ) )
+            SetAcquisitionRate( aNode->get_value< double >( "acquisition-rate" ) );
+        if( aNode->has( "bin-width" ) )
+            SetBinWidth( aNode->get_value< double >( "bin-width" ) );
 
         return true;
     }
@@ -62,7 +62,7 @@ namespace locust
     {
         if( fFirstGenerator == NULL )
         {
-            WARN( lmclog, "First generator has not been set" );
+            LWARN( lmclog, "First generator has not been set" );
             return false;
         }
 
@@ -130,19 +130,19 @@ namespace locust
         switch( fState )
         {
             case kDecided:
-                WARN( lmclog, "Run length already calculated; use Reset function to recalculate" );
+                LWARN( lmclog, "Run length already calculated; use Reset function to recalculate" );
                 return false;
                 break;
             case kByRecords:
                 fDuration = fNRecords * fBinWidth * fRecordSize;
                 fState = kDecided;
-                INFO( lmclog, "Run length determined by the number of records" );
+                LINFO( lmclog, "Run length determined by the number of records" );
                 break;
             case kByDuration:
                 fNRecords = (unsigned)( fDuration / double(fBinWidth * fRecordSize) );
                 fDuration = fNRecords * fBinWidth * fRecordSize;
                 fState = kDecided;
-                INFO( lmclog, "Run length determined by the duration, rounded down to an integer number of records" );
+                LINFO( lmclog, "Run length determined by the duration, rounded down to an integer number of records" );
                 break;
             case kByGenerators:
                 if( fByGeneratorsState == kByRecords )
@@ -150,7 +150,7 @@ namespace locust
                     fNRecords = fByGeneratorsNRecords;
                     fDuration = fNRecords * fBinWidth * fRecordSize;
                     fState = kDecided;
-                    INFO( lmclog, "Run length determined by generators setting the number of records" );
+                    LINFO( lmclog, "Run length determined by generators setting the number of records" );
                     break;
                 }
                 else if( fByGeneratorsState == kByDuration )
@@ -159,23 +159,23 @@ namespace locust
                     fNRecords = (unsigned)( fDuration / double(fBinWidth * fRecordSize) );
                     fDuration = fNRecords * fBinWidth * fRecordSize;
                     fState = kDecided;
-                    INFO( lmclog, "Run length determined by generators setting the duration" );
+                    LINFO( lmclog, "Run length determined by generators setting the duration" );
                     break;
                 }
-                WARN( lmclog, "Unable to set parameters by generators (by-generators state: " << fByGeneratorsState << ")" );
+                LWARN( lmclog, "Unable to set parameters by generators (by-generators state: " << fByGeneratorsState << ")" );
                 return false;
                 break;
             case kUnknown:
-                WARN( lmclog, "Run length parameters have not been supplied" );
+                LWARN( lmclog, "Run length parameters have not been supplied" );
                 return false;
                 break;
             default:
-                WARN( lmclog, "Unrecognized state: " << fState );
+                LWARN( lmclog, "Unrecognized state: " << fState );
                 return false;
                 break;
         }
 
-        INFO( lmclog, "Final run length parameters:\n" <<
+        LINFO( lmclog, "Final run length parameters:\n" <<
                  "\t\tNumber of records: " << fNRecords << '\n' <<
                  "\t\tDuration: " << fDuration << " seconds\n" <<
                  "\t\tRecord size: " << fRecordSize << " samples\n" <<

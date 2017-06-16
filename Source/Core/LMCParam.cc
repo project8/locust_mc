@@ -5,7 +5,7 @@
  *      Author: nsoblath
  */
 
-#include "LMCParam.hh"
+#include "param.hh"
 
 #include "logger.hh"
 
@@ -701,7 +701,7 @@ namespace locust
     {
         for( const_iterator it = aObject.fContents.begin(); it != aObject.fContents.end(); ++it )
         {
-            if( this->Has( it->first ) )
+            if( this->has( it->first ) )
             {
                 Param* toBeMergedInto = this->At( it->first);
                 if( toBeMergedInto->IsNode() && it->second->IsNode() )
@@ -823,7 +823,7 @@ namespace locust
         FILE* t_config_file = fopen( aFilename.c_str(), "r" );
         if( t_config_file == NULL )
         {
-            ERROR( plog, "file <" << aFilename << "> did not open" );
+            LERROR( plog, "file <" << aFilename << "> did not open" );
             return NULL;
         }
         rapidjson::FileStream t_file_stream( t_config_file );
@@ -850,13 +850,13 @@ namespace locust
             }
             if( iChar == errorPos )
             {
-                ERROR( plog, "error parsing config file :\n" <<
+                LERROR( plog, "error parsing config file :\n" <<
                         '\t' << t_config_doc.GetParseError() << '\n' <<
                         "\tThe error was reported at line " << newlineCount << ", character " << errorPos - lastNewlinePos );
             }
             else
             {
-                ERROR( plog, "error parsing config file :\n" <<
+                LERROR( plog, "error parsing config file :\n" <<
                         '\t' << t_config_doc.GetParseError() <<
                         "\tend of file reached before error location was found" );
             }
@@ -873,7 +873,7 @@ namespace locust
         rapidjson::Document t_config_doc;
         if( t_config_doc.Parse<0>( aJSONString.c_str() ).HasParseError() )
         {
-            ERROR( plog, "error parsing string:\n" << t_config_doc.GetParseError() );
+            LERROR( plog, "error parsing string:\n" << t_config_doc.GetParseError() );
             return NULL;
         }
         return ParamInputJSON::ReadDocument( t_config_doc );
@@ -961,7 +961,7 @@ namespace locust
             (*t_config_value) << aValue.GetDouble();
             return t_config_value;
         }
-        WARN( plog, "(config_reader_json) unknown type; returning null value" );
+        LWARN( plog, "(config_reader_json) unknown type; returning null value" );
         return new Param();
     }
 
@@ -977,14 +977,14 @@ namespace locust
     {
         if( aFilename.empty() )
         {
-            ERROR( plog, "Filename cannot be an empty string" );
+            LERROR( plog, "Filename cannot be an empty string" );
             return false;
         }
 
         FILE* file = fopen( aFilename.c_str(), "w" );
         if( file == NULL )
         {
-            ERROR( plog, "Unable to open file: " << aFilename );
+            LERROR( plog, "Unable to open file: " << aFilename );
             return false;
         }
 
@@ -1002,7 +1002,7 @@ namespace locust
 
         if (! ParamOutputJSON::WriteParam( toWrite, writer ) )
         {
-            ERROR( plog, "Error while writing file" );
+            LERROR( plog, "Error while writing file" );
             delete writer;
             return false;
         }
@@ -1014,7 +1014,7 @@ namespace locust
     bool ParamOutputJSON::WriteParam( const Param& toWrite, RJWriter* writer )
     {
         writer->Null();
-        WARN( plog, "writing null" );
+        LWARN( plog, "writing null" );
         return true;
     }
     bool ParamOutputJSON::WriteParam( const ParamValue& toWrite, RJWriter* writer )
@@ -1029,7 +1029,7 @@ namespace locust
         {
             if( ! ParamOutputJSON::WriteParam( *(*it), writer ) )
             {
-                ERROR( plog, "Error while writing parameter array" );
+                LERROR( plog, "Error while writing parameter array" );
                 return false;
             }
         }
@@ -1044,7 +1044,7 @@ namespace locust
             writer->String( it->first.c_str() );
             if( ! ParamOutputJSON::WriteParam( *(it->second), writer ) )
             {
-                ERROR( plog, "Error while writing parameter node" );
+                LERROR( plog, "Error while writing parameter node" );
                 return false;
             }
         }

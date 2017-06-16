@@ -10,9 +10,13 @@
 
 #include "LMCVisitor.hh"
 
+namespace scarab
+{
+    class param_node;
+}
+
 namespace locust
 {
-    class ParamNode;
 
     /*!
      @class RunLengthCalculator
@@ -45,7 +49,7 @@ namespace locust
             RunLengthCalculator();
             virtual ~RunLengthCalculator();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             bool VisitGenerators();
 

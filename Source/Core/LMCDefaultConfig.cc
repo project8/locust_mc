@@ -17,7 +17,7 @@ namespace locust
     {
         // default client configuration
 
-        ParamValue tValue;
+        scarab::param_value tValue;
 
         add( "", tValue <<  );
 

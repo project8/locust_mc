@@ -41,7 +41,7 @@ namespace locust
             TestSignalGenerator( const std::string& aName = "test-signal" );
             virtual ~TestSignalGenerator();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 

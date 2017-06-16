@@ -8,7 +8,7 @@
 #ifndef LMCCONFIGURATOR_HH_
 #define LMCCONFIGURATOR_HH_
 
-#include "LMCParam.hh"
+#include "param.hh"
 
 #include "LMCException.hh"
 

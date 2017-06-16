@@ -31,32 +31,32 @@ namespace locust
     {
     }
 
-    bool GaussianNoiseGenerator::Configure( const ParamNode* aParam )
+    bool GaussianNoiseGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
 
         double tSigma = fSigma;
-        if( aParam->Has( "noise-floor" ) )
+        if( aParam->has( "noise-floor" ) )
         {
-	  //            tSigma = sqrt( aParam->GetValue< double >( "noise-floor" ) * aParam->GetValue< double >( "acquisition-rate", 100. ) * 1.e6 );
-	  tSigma = sqrt( aParam->GetValue< double >( "noise-floor" ) * 200.e6/2.);  // sampling rate is 200 MHz.  divide by 2 due to nbins->nbins/2 in katydid normalization.
+	  //            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * aParam->get_value< double >( "acquisition-rate", 100. ) * 1.e6 );
+	  tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * 200.e6/2.);  // sampling rate is 200 MHz.  divide by 2 due to nbins->nbins/2 in katydid normalization.
 
 
         }
         else
         {
-            tSigma = aParam->GetValue( "sigma", fSigma );
+            tSigma = aParam->get_value( "sigma", fSigma );
         }
 
-        SetMeanAndSigma( aParam->GetValue< double >( "mean", fMean ), tSigma );
+        SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
 
-        if( aParam->Has( "domain" ) )
+        if( aParam->has( "domain" ) )
         {
-            string domain = aParam->GetValue( "domain" );
+            string domain = aParam->get_value( "domain" );
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
-                DEBUG( lmclog, "Domain is equal to time.");
+                LDEBUG( lmclog, "Domain is equal to time.");
             }
             else if( domain == "freq" )
             {
@@ -64,7 +64,7 @@ namespace locust
             }
             else
             {
-                ERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
                 return false;
             }
         }
@@ -127,7 +127,7 @@ namespace locust
         }
         else
         {
-            WARN( lmclog, "Unknown domain requested: " << aDomain );
+            LWARN( lmclog, "Unknown domain requested: " << aDomain );
         }
         return;
     }

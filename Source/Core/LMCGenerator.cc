@@ -48,7 +48,7 @@ namespace locust
     {
         if(! Generate( aSignal ) )
         {
-            ERROR( lmclog, "Signal generation failed" );
+            LERROR( lmclog, "Signal generation failed" );
             return false;
         }
         if( fNext != NULL ) fNext->Run( aSignal );
@@ -59,7 +59,7 @@ namespace locust
     {
         if( ! aSignal->ToState( fRequiredSignalState ) )
         {
-            ERROR( lmclog, "Unable to convert signal to state <" << fRequiredSignalState << ">" );
+            LERROR( lmclog, "Unable to convert signal to state <" << fRequiredSignalState << ">" );
             return false;
         }
         return DoGenerate( aSignal );

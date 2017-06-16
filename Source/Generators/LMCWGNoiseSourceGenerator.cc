@@ -25,7 +25,7 @@ namespace locust
     {
     }
 
-    bool WGNoiseSourceGenerator::Configure( const ParamNode* aParam )
+    bool WGNoiseSourceGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
 

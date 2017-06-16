@@ -64,7 +64,7 @@ namespace locust
             KassSignalGenerator( const std::string& aName = "kass-signal" );
             virtual ~KassSignalGenerator();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 

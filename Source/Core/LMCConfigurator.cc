@@ -83,7 +83,7 @@ namespace locust
         f_master_config->Merge( t_parser );
 
         //std::cout << "fourth configuration complete" << std::endl;
-        INFO( mtlog, "final configuration:\n" << *f_master_config );
+        LINFO( mtlog, "final configuration:\n" << *f_master_config );
     }
 
     Configurator::~Configurator()

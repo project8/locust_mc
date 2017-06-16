@@ -1,7 +1,7 @@
 #ifndef MT_PARSER_HH_
 #define MT_PARSER_HH_
 
-#include "LMCParam.hh"
+#include "param.hh"
 
 #include "LMCException.hh"
 

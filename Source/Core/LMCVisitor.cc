@@ -24,7 +24,7 @@ namespace locust
 
     void GeneratorVisitor::Visit( const Generator* aGen )
     {
-        WARN( lmclog, "Generic generator-visit function called for generator <" << aGen->GetName() << ">" );
+        LWARN( lmclog, "Generic generator-visit function called for generator <" << aGen->GetName() << ">" );
         return;
     }
 

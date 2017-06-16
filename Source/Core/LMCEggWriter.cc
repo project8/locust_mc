@@ -9,7 +9,7 @@
 
 #include "LMCDigitizer.hh"
 #include "logger.hh"
-#include "LMCParam.hh"
+#include "param.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCSignal.hh"
 
@@ -44,19 +44,19 @@ namespace locust
         }
     }
 
-    bool EggWriter::Configure( const ParamNode* aNode )
+    bool EggWriter::Configure( const scarab::param_node* aNode )
     {
         if( f_state != kClosed )
         {
-            ERROR( lmclog, "Cannot configure the writer while a file is open" );
+            LERROR( lmclog, "Cannot configure the writer while a file is open" );
             return false;
         }
 
         if( aNode == NULL ) return true;
 
-        f_filename = aNode->GetValue( "egg-filename", f_filename );
-        f_date = aNode->GetValue( "date", f_date );
-        f_description = aNode->GetValue( "description", f_description );
+        f_filename = aNode->get_value( "egg-filename", f_filename );
+        f_date = aNode->get_value( "date", f_date );
+        f_description = aNode->get_value( "description", f_description );
 
         return true;
     }
@@ -65,11 +65,11 @@ namespace locust
     {
         if( f_state != kClosed )
         {
-            ERROR( lmclog, "Egg preparation cannot begin while a file is open" );
+            LERROR( lmclog, "Egg preparation cannot begin while a file is open" );
             return false;
         }
 
-        DEBUG( lmclog, "Preparing egg file <" << f_filename << ">" );
+        LDEBUG( lmclog, "Preparing egg file <" << f_filename << ">" );
 
         f_monarch = monarch3::Monarch3::OpenForWriting( f_filename );
 
@@ -127,7 +127,7 @@ namespace locust
 
         f_state = kPrepared;
 
-        INFO( lmclog, "Egg file <" << f_filename << "> is ready for records" );
+        LINFO( lmclog, "Egg file <" << f_filename << "> is ready for records" );
 
         return true;
     }
@@ -138,19 +138,19 @@ namespace locust
 
         if( f_state != kWriting && f_state != kPrepared )
         {
-            ERROR( lmclog, "Egg file must be opened before writing records" );
+            LERROR( lmclog, "Egg file must be opened before writing records" );
             return false;
         }
         f_state = kWriting;
 
-        DEBUG( lmclog, "Writing record " << f_record_id );
+        LDEBUG( lmclog, "Writing record " << f_record_id );
 
         f_record->SetRecordId( f_record_id );
         f_record->SetTime( f_record_time );
 
         if( aSignal->GetState() != Signal::kDigital )
         {
-            ERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
+            LERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
             return false;
         }
         if( aSignal->GetDigitalIsSigned() ) ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalS() ), f_record_n_bytes );
@@ -168,7 +168,7 @@ namespace locust
     {
         if( f_state != kWriting && f_state != kPrepared )
         {
-            ERROR( lmclog, "Egg file must be opened before finalizing" );
+            LERROR( lmclog, "Egg file must be opened before finalizing" );
             return false;
         }
 
@@ -179,7 +179,7 @@ namespace locust
             f_stream = NULL;
         }
 
-        DEBUG( lmclog, "Closing egg file" );
+        LDEBUG( lmclog, "Closing egg file" );
 
         f_monarch->FinishWriting();
         delete f_monarch;
@@ -187,7 +187,7 @@ namespace locust
 
         f_state = kClosed;
 
-        INFO( lmclog, "Egg file closed" );
+        LINFO( lmclog, "Egg file closed" );
 
         return true;
     }

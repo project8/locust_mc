@@ -32,7 +32,7 @@ class LowPassFilterFFTGenerator : public Generator
             LowPassFilterFFTGenerator( const std::string& aName = "lpf-fft" );
             virtual ~LowPassFilterFFTGenerator();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
