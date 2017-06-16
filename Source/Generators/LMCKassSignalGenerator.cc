@@ -18,6 +18,7 @@
 double phi_t1 = 0.; // antenna voltage phase in radians.
 double phi_t2 = 0.; // reflecting short voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO in radians;
+bool fKassEventReady = false;  // This is needed to run on a Mac.
 std::string gxml_filename = "blank.xml";
 
     	FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
@@ -232,6 +233,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
 
 //	      printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
+//	      printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
 //	   	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
 //	   	   	                      index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
 //	   	   	                     getchar();
