@@ -18,7 +18,6 @@
 double phi_t1 = 0.; // antenna voltage phase in radians.
 double phi_t2 = 0.; // reflecting short voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO in radians;
-bool fKassEventReady = false;  // This is needed to run on a Mac.
 std::string gxml_filename = "blank.xml";
 
     	FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
@@ -279,6 +278,7 @@ double KassSignalGenerator::TE11ModeExcitation() const
 
     	std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
     	fRunInProgress = true;
+    	fKassEventReady = false;
 
 
 	for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
