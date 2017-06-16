@@ -382,7 +382,7 @@
     <ksnav_surface name="nav_surface"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-3"/>
+    <ksterm_max_time name="term_max_time" time="0.5e-7"/>
     <ksterm_min_energy name="term_min_energy" energy="[cut]"/>
     <ksterm_min_z name="term_min_z" z="-.065"/>
     <ksterm_max_z name="term_max_z" z=".065"/>
