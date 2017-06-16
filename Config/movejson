@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+
+
+for i in `seq 1 17`
+do
+
+echo $i
+mv KryptonSeed112378_LO$i.json KryptonSeed112377_LO$i.json
+
+done
+

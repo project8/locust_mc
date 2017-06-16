@@ -1,18 +1,33 @@
-#general:
-*.swp
+# Compiled Object files
+*.slo
+*.lo
 *.o
+
+# Compiled Dynamic libraries
 *.so
+
+# Compiled Static libraries
+*.lai
+*.la
 *.a
-*.dylib
-*.pyc
 
-#json files
-*.json
+# Mac
+.DS_Store
 
-#executables
-generate_data
-check_egg_digitization
+# Build
+Build/
+Build*/
+build/
+build*/
+cbuild*/
+Install/
+Install/*
+install/
+install/*
 
-#output files
-*.egg
-*.mcinfo
+# Eclipse
+.project
+.cproject
+
+# GEdit
+*~
