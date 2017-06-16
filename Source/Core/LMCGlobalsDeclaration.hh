@@ -45,6 +45,7 @@ extern bool fPreEventInProgress;
 
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
+extern std::mutex fKassReadyMutex;  // pls:  this mutex is used for pre and post event mods.
 extern std::mutex fMutexDigitizer;  // pls:  not completely sure we need an extra mutex, but it may help clarify.
 
 

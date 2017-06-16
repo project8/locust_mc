@@ -94,7 +94,7 @@ bool ReceivedKassReady()
 
     if( !fKassEventReady)
     {
-    std::unique_lock< std::mutex >tLock( fMutex );
+    std::unique_lock< std::mutex >tLock( fKassReadyMutex );
     fKassReadyCondition.wait( tLock );
     printf("LMC Got the fKassReadyCondition signal\n");
     }
@@ -275,10 +275,12 @@ double KassSignalGenerator::TE11ModeExcitation() const
 //    	FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
 //    	fprintf(fp, "testing\n");
 
+    printf("check 1 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
 
     	std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
     	fRunInProgress = true;
     	fKassEventReady = false;
+        printf("check 2 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
 
 
 	for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
