@@ -111,27 +111,23 @@ void WakeBeforeEvent()
 }
 
 
+
+
 bool ReceivedKassReady()
 {
 
     if( !fKassEventReady)
     {
-        int counter = 0;
-        while (counter < 500000)  // wait 
-        {
-            counter += 1;
-        }
-    }
-    if( !fKassEventReady)  // check again.
-    {
-        std::unique_lock< std::mutex >tLock( fMutex );
-        fKassReadyCondition.wait( tLock );
-        printf("LMC Got the fKassReadyCondition signal\n");
+    std::unique_lock< std::mutex >tLock( fKassReadyMutex );
+    fKassReadyCondition.wait( tLock );
+    printf("LMC Got the fKassReadyCondition signal\n");
     }
 
     return true;
 
 }
+
+
 
 //Change decimation factor/ (and therefore the sampling rate) to guarantee no aliasing of signal
 double KassSignalGenerator::AntiAliasingSetup(double fCarrier_Frequency, double fBandwidth_Frequency) const
