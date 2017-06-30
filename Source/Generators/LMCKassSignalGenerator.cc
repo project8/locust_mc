@@ -231,11 +231,15 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
            ImaginarySignal[ index ] += TE11ModeExcitation()*pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
 
 
-//	      printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
-//	      printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
-//	   	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
-//	   	   	                      index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
-//	   	   	                     getchar();
+	   //	   if (t_old > 0.004)
+	   //	     {
+
+	   	      printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
+	   	      printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
+	   	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
+	   	   	                      index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
+	   	   	                     getchar();
+	   //	     }
 
 //	   	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
 
@@ -275,12 +279,12 @@ double KassSignalGenerator::TE11ModeExcitation() const
 //    	FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
 //    	fprintf(fp, "testing\n");
 
-    printf("check 1 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
+//    printf("check 1 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
 
     	std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
     	fRunInProgress = true;
     	fKassEventReady = false;
-        printf("check 2 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
+	//        printf("check 2 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
 
 
 	for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )

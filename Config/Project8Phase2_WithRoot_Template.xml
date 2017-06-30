@@ -39,7 +39,7 @@
 <external_define name="file" value="Phase2Output"/>
 
 
-<include name="/home/penny/locust_mc/Config/Project8Phase2Geometry.xml"/>
+<include name="/home/hep/heeger/ps48/locust_mc/Config/Project8Phase2Geometry.xml"/>
 
 
 <geometry>
@@ -240,8 +240,8 @@
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.003" value_max="0.003"/>
-            <y_uniform value_min="0.003" value_max="0.003"/>
+            <x_uniform value_min="0.00" value_max="0.00"/>
+            <y_uniform value_min="0.00" value_max="0.00"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
@@ -382,7 +382,7 @@
     <ksnav_surface name="nav_surface"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-3"/>
+    <ksterm_max_time name="term_max_time" time="20.e-3"/>
     <ksterm_min_energy name="term_min_energy" energy="[cut]"/>
     <ksterm_min_z name="term_min_z" z="-.065"/>
     <ksterm_max_z name="term_max_z" z=".065"/>
@@ -399,7 +399,7 @@
     <!-- writers -->
 
     <kswrite_root name="write_root" base="[file].root"/> 
-    <kswrite_vtk name="write_vtk" base="Project8Kassiopeia_Seed[seed]"/>
+<!--    <kswrite_vtk name="write_vtk" base="Project8Kassiopeia_Seed[seed]"/> -->
 
     <!-- output -->
 
@@ -496,15 +496,13 @@
         trajectory="[trajectory]"
         space_navigator="nav_space"
         surface_navigator="nav_surface"
-        writer="write_root"
-        writer="write_vtk"
     />
 
 
 
 </kassiopeia>
 
-
+<!--
     <vtk_window
         name="vtk_window"
         enable_display="true"
@@ -537,7 +535,7 @@
 
     </vtk_window> 
 
-
+-->
 
 <!--
 

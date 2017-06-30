@@ -8,8 +8,8 @@
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
 #define PI 3.1415926
-#define CENTER_TO_SHORT 0.045 // 1 cm
-#define CENTER_TO_ANTENNA 0.049 // 1 cm.
+#define CENTER_TO_SHORT 0.046 // m
+#define CENTER_TO_ANTENNA 0.04820 // m
 
 
 

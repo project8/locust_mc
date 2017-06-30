@@ -149,7 +149,7 @@ namespace locust
     	double FieldFromShort=0.;  // first doppler shift
     	double FieldFromPolarizer=0.; // other doppler shift
     	double TM01FieldAfterBounces = 0.;
-    	int nbounces = 100;
+    	int nbounces = 10;
 
 //    	printf("TM01 l1 is %g and l2 is %g\n", GroupVelocity/fprime_short, GroupVelocity/fprime_polarizer); getchar();
 
@@ -243,20 +243,21 @@ namespace locust
         double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
         double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
 
-//        double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
-        double DampingFactor = DampingFactorTE11;
+	        double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
+		//        double DampingFactor = DampingFactorTE11;
 
 
 
-/*
+		/*				
 if (fabs(DampingFactor)>0.)
 {
-//        printf("x, y, z position is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), zposition);
+  printf("elapsed time is %g\n", aFinalParticle.GetTime());
+  printf("x, y, z position is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), aFinalParticle.GetPosition().GetZ());
         printf("couplingTM01 is %f\n", CouplingFactorTM01);
         printf("damping factor total = %f, DampingFactorTE11 is %g and DampingFactorTM01 is %g\n", DampingFactor, DampingFactorTE11, DampingFactorTM01);
         getchar();
 }
-*/
+		*/	
 
     	return DampingFactor;
     }

@@ -144,7 +144,7 @@
         
     "egg1":
     {
-        "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc_backup.egg",
+        "filename": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc_30bounces_0.044_0.0485_TE_TM_20ms_xyz0.0.egg",
         "egg-reader": "egg3",
         "number-of-slices": 450,
         "slice-size": 8192
@@ -173,7 +173,7 @@
 
     "egg2":
     {
-        "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc_backup.egg",
+        "filename": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc_30bounces_0.044_0.0485_TE_TM_20ms_xyz0.0.egg",
         "egg-reader": "egg3",
         "number-of-slices": 450,
         "slice-size": 8192
@@ -232,13 +232,13 @@
 
     "treewriter":
     {
-        "output-file": "/home/penny/locust_mc/cbuild/bin/katydidtree.root",
+        "output-file": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/katydidtree.root",
         "file-flag": "recreate"
     },
 
     "waterfall-writer":
     {
-        "output-file": "/home/penny/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
