@@ -39,7 +39,7 @@
 <external_define name="file" value="Phase2Output"/>
 
 
-<include name="/home/hep/heeger/ps48/locust_mc/Config/Project8Phase2Geometry.xml"/>
+<include name="/home/penny/locust_mc/Config/Project8Phase2Geometry.xml"/>
 
 
 <geometry>

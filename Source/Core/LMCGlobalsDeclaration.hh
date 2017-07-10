@@ -41,6 +41,7 @@ extern bool fKassEventReady;
 extern bool fEventInProgress;
 extern bool fRunInProgress;
 extern bool fPreEventInProgress;
+extern bool fFalseStartKassiopeia;
 
 
 

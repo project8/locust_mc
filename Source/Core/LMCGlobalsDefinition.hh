@@ -31,6 +31,7 @@ bool fKassEventReady = false;
 bool fEventInProgress = false;
 bool fRunInProgress = false;
 bool fPreEventInProgress = false;
+bool fFalseStartKassiopeia = true;
 
 
 

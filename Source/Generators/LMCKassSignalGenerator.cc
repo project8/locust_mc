@@ -99,6 +99,13 @@ bool ReceivedKassReady()
     printf("LMC Got the fKassReadyCondition signal\n");
     }
 
+    if (fFalseStartKassiopeia)  // workaround for some Macs
+    {
+    std::unique_lock< std::mutex >tLock( fKassReadyMutex );
+    fKassReadyCondition.wait( tLock );
+    }
+
+
     return true;
 
 }
@@ -234,11 +241,13 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 	   //	   if (t_old > 0.004)
 	   //	     {
 
-	   	      printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
+/*
+           printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
 	   	      printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
 	   	   	   	              printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
 	   	   	                      index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
 	   	   	                     getchar();
+*/
 	   //	     }
 
 //	   	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
