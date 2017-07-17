@@ -348,6 +348,7 @@
 
     <kstraj_trajectory_adiabatic name="traj_adiabaticsynchrotron">
         <integrator_rk8/> 
+        <interpolator_hermite name="interpolator_hermite"/>
 <!--        <integrator_rk54/> -->
         <term_propagation/>
         <term_synchrotron/>

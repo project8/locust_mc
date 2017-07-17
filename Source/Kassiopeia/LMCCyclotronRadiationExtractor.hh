@@ -11,11 +11,13 @@
 #include "KField.h"
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
-#include "KSTrajInterpolatorHermite.h"
-#include "KSTrajTrajectoryAdiabatic.h"
-#include "KSTrajIntegratorRK8.h"
+
+#include "KSStep.h"
+#include "KSTrajectory.h"
+#include "KSToolbox.h"
 
 
+using namespace Kassiopeia;
 
 namespace locust
 {
@@ -41,6 +43,9 @@ namespace locust
 
             bool ExecutePreStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticleQueue& aQueue );
             bool ExecutePostStepModifcation( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
+            void SetTrajectory( KSTrajectory* aTrajectory );
+            void SetStep( KSStep* anStep );
+
 
 
         private:
@@ -53,9 +58,9 @@ namespace locust
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
-
-
-
+            CyclotronRadiationExtractor* fCyclotronRadiationExtractor;
+            KSTrajectory* fProject8Trajectory;
+            KSToolbox* fToolbox;
 
         protected:
             virtual void PullDeupdateComponent();

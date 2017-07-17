@@ -8,15 +8,21 @@
 #include "LMCCyclotronRadiationExtractor.hh"
 #include "LMCGlobalsDeclaration.hh"
 
-using namespace Kassiopeia;
 namespace locust
 {
 
-    CyclotronRadiationExtractor::CyclotronRadiationExtractor()
+    CyclotronRadiationExtractor::CyclotronRadiationExtractor() :
+    		        fToolbox( KSToolbox::GetInstance() ),
+                    fCyclotronRadiationExtractor( NULL ),
+                    fProject8Trajectory( NULL )
     {
+
     }
 
-    CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig )
+    CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig ) :
+    	    		        fToolbox( KSToolbox::GetInstance() ),
+                            fCyclotronRadiationExtractor(  aOrig.fCyclotronRadiationExtractor  ),
+                            fProject8Trajectory( aOrig.fProject8Trajectory )
     {
     }
 
@@ -189,21 +195,6 @@ namespace locust
     	}
         } // phi_shortTM01 == 0.  This loop defines the initial standing wave on the first tracking step.
 
-        else  // advance the phases smoothly in time and add up the resulting fields again.
-        {
-        	/*
-        FieldFromShort = cos(0.);  // no bounces yet.
-        FieldFromPolarizer = cos(0.);  // no bounces yet.
-        for (int i=0; i<nbounces; i++)
-          {
-          phi_shortTM01[i] += 2.*PI*fprime_short*dt;
-          phi_polarizerTM01[i] += 2.*PI*fprime_polarizer*dt;
-          FieldFromShort += cos(phi_shortTM01[i]);
-          FieldFromPolarizer += cos(phi_polarizerTM01[i]);
-
-          }
-          */
-        }
 
 //    	printf("fieldfromshort is %g\n", FieldFromShort);
 //    	printf("fieldfrompolarizer is %g\n", FieldFromPolarizer);
@@ -264,12 +255,34 @@ if (fabs(DampingFactor)>0.)
 
 
 
+    void CyclotronRadiationExtractor::SetTrajectory( KSTrajectory* aTrajectory )
+    {
+
+        fProject8Trajectory = aTrajectory;
+//        if (fProject8Trajectory->Empty()) printf("empty\n");
+//        getchar();
+
+        return;
+    }
+
+
+    void TestPrint( const KSTrajectory& aTrajectory, KSParticle& aFinalParticle)
+    {
+
+    aTrajectory.GetInterpolatedParticleState(5.e-9, aFinalParticle);
+    	if (aTrajectory.Empty())
+    	printf("hello!\n");getchar();
+    return;
+    }
+
+
     bool CyclotronRadiationExtractor::ExecutePostStepModifcation( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
 
-
 //    	printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 //    	printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
+
+
 
 
 // adjust power with reflections.
@@ -279,13 +292,20 @@ if (fabs(DampingFactor)>0.)
 
 //    	printf("z is %f and DeltaE is %g and post fix kinetic energy is %g\n", aFinalParticle.GetPosition().Z(), DeltaE, aFinalParticle.GetKineticEnergy() - 4.84338e-15); getchar();
 
-
     	t_poststep = aFinalParticle.GetTime();
 
-        if (t_poststep - t_old > 5.e-10)
+        if (t_poststep - t_old > 5.e-10)  // take a digitizer sample.
             {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
+            t_poststep = t_old + 5.e-10;
+
+            if (fToolbox->HasObject("traj_adiabaticsynchrotron"))  // interpolate timestamp
+            {
+            fProject8Trajectory = fToolbox->GetObjectAs< KSTrajectory >("traj_adiabaticsynchrotron");
+            fProject8Trajectory->GetInterpolatedParticleState(t_old+5.e-10,aFinalParticle);
+            }
+
             Z = aFinalParticle.GetPosition().Z();
             X = aFinalParticle.GetPosition().X();
             Y = aFinalParticle.GetPosition().Y();
@@ -297,7 +317,7 @@ if (fabs(DampingFactor)>0.)
 
             GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE11(aFinalParticle),2.),0.5);  // speed of light is group velocity
 
-	    	                fcyc = aFinalParticle.GetCyclotronFrequency();
+	    	fcyc = aFinalParticle.GetCyclotronFrequency();
 //					                fcyc = 1.125/dt;  // for testing
             LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
