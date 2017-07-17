@@ -18,7 +18,7 @@ namespace katrin
     }
 
     STATICINT SLMCEventHoldStructure =
-            EventHoldBuilder::Attribute< string >( "name" )+
+            EventHoldBuilder::Attribute< std::string >( "name" )+
             EventHoldBuilder::Attribute< bool >( "wait_before_event" )+
             EventHoldBuilder::Attribute< bool >( "wait_after_event" );
 

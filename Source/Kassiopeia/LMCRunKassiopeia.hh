@@ -34,7 +34,7 @@ namespace locust
             RunKassiopeia();
             virtual ~RunKassiopeia();
 
-            void SetVariableMap( const map< string, string >& aMap );
+            void SetVariableMap( const std::map< std::string, std::string >& aMap );
 
             int Run( const std::vector< std::string >& aFiles );
             int Run( const std::string& aFile );
