@@ -25,7 +25,7 @@
 
 #include "KSMainMessage.h"
 #include "KSRoot.h"
-#include "KSToolbox.h"
+#include "KToolbox.h"
 
 using namespace katrin;
 using namespace Kassiopeia;
@@ -85,10 +85,10 @@ namespace locust
         delete fSSProcessor;
 #endif
 
-        KSToolbox::DeleteInstance();
+	KToolbox::GetInstance().Clear();
     }
 
-    void RunKassiopeia::SetVariableMap( const map< string, string >& aMap )
+    void RunKassiopeia::SetVariableMap( const std::map< std::string, std::string >& aMap )
     {
         fVariableProcessor->SetExternalMap( aMap );
         return;
@@ -98,10 +98,10 @@ namespace locust
     {
         mainmsg( eNormal ) << "starting..." << eom;
 
-        KSToolbox::GetInstance();
+        KToolbox::GetInstance();
 
         KTextFile* tFile;
-        for( vector< string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
+        for( std::vector< std::string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
         {
             tFile = new KTextFile();
             tFile->AddToNames( *tIter );
@@ -114,7 +114,7 @@ namespace locust
 
     int RunKassiopeia::Run( const std::string& aFile )
     {
-        vector< string > tFileVec( 1 );
+        std::vector< std::string > tFileVec( 1 );
         tFileVec[ 0 ] = aFile;
         return Run( tFileVec );
     }

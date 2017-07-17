@@ -35,7 +35,7 @@
 #endif
 
 #include "KSMainMessage.h"
-#include "KSToolbox.h"
+#include "KToolbox.h"
 
 using namespace Kassiopeia;
 using namespace katrin;
@@ -102,7 +102,7 @@ namespace locust
 
 
 
-    KSToolbox::GetInstance();
+    KToolbox::GetInstance();
 
     KTextFile* tFile;
     for( vector< string >::const_iterator tIter = tCommandLine.GetFiles().begin(); tIter != tCommandLine.GetFiles().end(); tIter++ )
@@ -116,7 +116,7 @@ namespace locust
 
 
 
-    KSToolbox::DeleteInstance();
+    KToolbox::DeleteInstance();
 
     mainmsg( eNormal ) << "...finished" << eom;
 
