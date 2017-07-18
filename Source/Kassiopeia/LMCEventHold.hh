@@ -34,8 +34,8 @@ namespace locust
 
         public:
 
-            virtual bool ExecutePreEventModification();
-            virtual bool ExecutePostEventModifcation();
+            virtual bool ExecutePreEventModification(Kassiopeia::KSEvent &anEvent);
+            virtual bool ExecutePostEventModification(Kassiopeia::KSEvent &anEvent);
 
         public:
             void WakeBeforeEvent();

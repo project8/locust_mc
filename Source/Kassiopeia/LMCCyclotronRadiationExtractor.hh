@@ -47,7 +47,6 @@ namespace locust
             void SetStep( KSStep* anStep );
 
 
-
         private:
             void InitializeComponent();
             void DeinitializeComponent();

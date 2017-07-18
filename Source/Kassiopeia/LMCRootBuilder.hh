@@ -4,7 +4,7 @@
 #include "KComplexElement.hh"
 #include "KSRoot.h"
 #include "KSSimulation.h"
-#include "KSToolbox.h"
+#include "KToolbox.h"
 
 using namespace Kassiopeia;
 namespace katrin
@@ -32,7 +32,7 @@ namespace katrin
         if( aContainer->Is< KSObject >() )
         {
             std::cout << "### adding object called <" << fObject->GetName() << ">" << std::endl;
-            aContainer->ReleaseTo( KSToolbox::GetInstance(), &KSToolbox::AddObject );
+            KToolbox::GetInstance().AddContainer(*aContainer);
             return true;
         }
         return false;
