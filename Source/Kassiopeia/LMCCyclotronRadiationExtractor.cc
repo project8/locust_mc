@@ -11,18 +11,11 @@
 namespace locust
 {
 
-    CyclotronRadiationExtractor::CyclotronRadiationExtractor() :
-    		        fToolbox( KSToolbox::GetInstance() ),
-                    fCyclotronRadiationExtractor( NULL ),
-                    fProject8Trajectory( NULL )
+    CyclotronRadiationExtractor::CyclotronRadiationExtractor()
     {
-
     }
 
-    CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig ) :
-    	    		        fToolbox( KSToolbox::GetInstance() ),
-                            fCyclotronRadiationExtractor(  aOrig.fCyclotronRadiationExtractor  ),
-                            fProject8Trajectory( aOrig.fProject8Trajectory )
+    CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig ) 
     {
     }
 
@@ -255,18 +248,8 @@ if (fabs(DampingFactor)>0.)
 
 
 
+
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
-
-    {
-
-    aTrajectory.GetInterpolatedParticleState(5.e-9, aFinalParticle);
-    	if (aTrajectory.Empty())
-    	printf("hello!\n");getchar();
-    return;
-    }
-
-
-    bool CyclotronRadiationExtractor::ExecutePostStepModifcation( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
 
 //    	printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
@@ -289,13 +272,13 @@ if (fabs(DampingFactor)>0.)
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
             t_poststep = t_old + 5.e-10;
-
+/*
             if (fToolbox->HasObject("traj_adiabaticsynchrotron"))  // interpolate timestamp
             {
             fProject8Trajectory = fToolbox->GetObjectAs< KSTrajectory >("traj_adiabaticsynchrotron");
             fProject8Trajectory->GetInterpolatedParticleState(t_old+5.e-10,aFinalParticle);
             }
-
+*/
             Z = aFinalParticle.GetPosition().Z();
             X = aFinalParticle.GetPosition().X();
             Y = aFinalParticle.GetPosition().Y();

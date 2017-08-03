@@ -11,13 +11,6 @@
 #include "KField.h"
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
-<<<<<<< HEAD
-
-#include "KSStep.h"
-#include "KSTrajectory.h"
-#include "KSToolbox.h"
-=======
->>>>>>> my-temporary-work
 
 
 using namespace Kassiopeia;
@@ -46,7 +39,7 @@ namespace locust
 
             bool ExecutePreStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticleQueue& aQueue );
             bool ExecutePostStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
->>>>>>> my-temporary-work
+
 
 
         private:
@@ -59,13 +52,6 @@ namespace locust
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
-<<<<<<< HEAD
-            CyclotronRadiationExtractor* fCyclotronRadiationExtractor;
-            KSTrajectory* fProject8Trajectory;
-            KSToolbox* fToolbox;
-=======
-
->>>>>>> my-temporary-work
 
         protected:
             virtual void PullDeupdateComponent();

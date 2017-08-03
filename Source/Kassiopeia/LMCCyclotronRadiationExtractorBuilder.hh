@@ -10,7 +10,7 @@
 
 #include "KComplexElement.hh"
 #include "LMCCyclotronRadiationExtractor.hh"
-#include "KSToolbox.h"
+#include "KToolbox.h"
 
 
 using namespace Kassiopeia;
@@ -29,12 +29,13 @@ namespace katrin
             aContainer->CopyTo( fObject, &KNamed::SetName );
             return true;
         }
+/*
         if( aContainer->GetName() == "set_trajectory" )
         {
             fObject->SetTrajectory( KSToolbox::GetInstance()->GetObjectAs< KSTrajectory >( aContainer->AsReference< string >() ) );
             return true;
         }
-
+*/
         /*
         if( aContainer->GetName() == "wait_before_event" )
         {

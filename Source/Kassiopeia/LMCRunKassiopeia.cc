@@ -101,25 +101,12 @@ namespace locust
         KToolbox::GetInstance().Clear();
     }
 
-<<<<<<< HEAD
-    void RunKassiopeia::SetVariableMap( const std::map< std::string, std::string >& aMap )
-    {
-        fVariableProcessor->SetExternalMap( aMap );
-        return;
-    }
-=======
 
->>>>>>> my-temporary-work
+
 
     int RunKassiopeia::Run( const std::vector< std::string >& aFiles )
     {
 
-<<<<<<< HEAD
-        KToolbox::GetInstance();
-
-        KTextFile* tFile;
-        for( std::vector< std::string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
-=======
 
 //    cout << "file vector is \n";
 //    cout << aFiles[0]; getchar();
@@ -169,7 +156,7 @@ namespace locust
 
         for( std::vector< std::string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
 
->>>>>>> my-temporary-work
+
         {
             tFile = new KTextFile();
             tFile->AddToNames( *tIter );
@@ -185,10 +172,6 @@ namespace locust
 
     int RunKassiopeia::Run( const std::string& aFile )
     {
-<<<<<<< HEAD
-=======
-    	
->>>>>>> my-temporary-work
         std::vector< std::string > tFileVec( 1 );
         tFileVec[ 0 ] = aFile;
         return Run( tFileVec );

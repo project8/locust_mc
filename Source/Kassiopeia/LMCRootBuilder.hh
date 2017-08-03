@@ -45,10 +45,6 @@ namespace katrin
         }
         if( aContainer->Is< KSObject >() )
         {
-<<<<<<< HEAD
-            std::cout << "### adding object called <" << fObject->GetName() << ">" << std::endl;
-            KToolbox::GetInstance().AddContainer(*aContainer);
-=======
             KToolbox::GetInstance().AddContainer(*aContainer);
             return true;
 
@@ -70,7 +66,7 @@ namespace katrin
             tField->SetName(aContainer->GetName());
             aContainer->ReleaseTo(tField, &KSMagneticKEMField::SetMagneticField );
             KToolbox::GetInstance().Add(tField,tField->GetName());
->>>>>>> my-temporary-work
+
             return true;
         }
         return false;
