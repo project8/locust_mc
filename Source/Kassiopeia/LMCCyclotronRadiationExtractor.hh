@@ -11,10 +11,6 @@
 #include "KField.h"
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
-#include "KSTrajInterpolatorHermite.h"
-#include "KSTrajTrajectoryAdiabatic.h"
-#include "KSTrajIntegratorRK8.h"
-
 
 
 namespace locust
@@ -40,7 +36,7 @@ namespace locust
             double dt = 0.;
 
             bool ExecutePreStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticleQueue& aQueue );
-            bool ExecutePostStepModifcation( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
+            bool ExecutePostStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
 
 
         private:
@@ -53,8 +49,6 @@ namespace locust
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
-
-
 
 
         protected:

@@ -8,8 +8,12 @@
 #ifndef LMC_LMCRUNKASSIOPEIA_HH_
 #define LMC_LMCRUNKASSIOPEIA_HH_
 
-#include "KElementProcessor.hh"
+#include <vector>
+#include <string>
 
+//#include "KElementProcessor.hh"
+
+/*
 namespace katrin
 {
     class KConditionProcessor;
@@ -19,11 +23,14 @@ namespace katrin
     class KTagProcessor;
     class KVariableProcessor;
     class KXMLTokenizer;
-#ifdef Kommon_USE_ROOT
+    class KCommandLineTokenizer;
+//#ifdef Kommon_USE_ROOT
     class KFormulaProcessor;
     class KSaveSettingsProcessor;
-#endif
+//#endif
 }
+*/
+
 
 namespace locust
 {
@@ -34,13 +41,13 @@ namespace locust
             RunKassiopeia();
             virtual ~RunKassiopeia();
 
-            void SetVariableMap( const map< string, string >& aMap );
-
             int Run( const std::vector< std::string >& aFiles );
             int Run( const std::string& aFile );
 
         private:
+            /*
             katrin::KXMLTokenizer* fTokenizer;
+            katrin::KCommandLineTokenizer* fCommandLineTokenizer;
             katrin::KVariableProcessor* fVariableProcessor;
             katrin::KIncludeProcessor* fIncludeProcessor;
             katrin::KLoopProcessor* fLoopProcessor;
@@ -49,10 +56,11 @@ namespace locust
             katrin::KTagProcessor* fTagProcessor;
             katrin::KElementProcessor* fElementProcessor;
 
-#ifdef Kommon_USE_ROOT
+//#ifdef Kommon_USE_ROOT
             katrin::KFormulaProcessor* fFormulaProcessor;
-            katrin::KSaveSettingsProcessor* fSSProcessor;
-#endif
+//#endif
+*/
+
 
     };
 

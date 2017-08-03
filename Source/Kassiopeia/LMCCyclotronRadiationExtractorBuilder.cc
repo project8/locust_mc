@@ -8,6 +8,7 @@
 #include "LMCCyclotronRadiationExtractorBuilder.hh"
 
 #include "KSRootBuilder.h"
+using namespace std;
 
 namespace katrin
 {
@@ -18,7 +19,7 @@ namespace katrin
     }
 
     STATICINT SLMCCyclRadExtrStructure =
-            CyclotronRadiationExtractorBuilder::Attribute< string >( "name" )/*+
+            CyclotronRadiationExtractorBuilder::Attribute< std::string >( "name" )/*+
             CyclotronRadiationExtractorBuilder::Attribute< bool >( "wait_before_event" )+
             CyclotronRadiationExtractorBuilder::Attribute< string >( "wait_after_event" )*/;
 

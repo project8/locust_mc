@@ -9,9 +9,9 @@
 #define LOCUST_LMCCYCLOTRONRADIATIONEXTRACTORBUILDER_HH_
 
 #include "KComplexElement.hh"
-
 #include "LMCCyclotronRadiationExtractor.hh"
 
+using namespace Kassiopeia;
 namespace katrin
 {
 
