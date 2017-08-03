@@ -383,7 +383,7 @@
     <ksnav_surface name="nav_surface"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="20.e-3"/>
+    <ksterm_max_time name="term_max_time" time="1.e-3"/>
     <ksterm_min_energy name="term_min_energy" energy="[cut]"/>
     <ksterm_min_z name="term_min_z" z="-.065"/>
     <ksterm_max_z name="term_max_z" z=".065"/>
@@ -459,8 +459,8 @@
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-        <command parent="root_stepmodifier" field="add_modifier" child="my_rad_extr"/>  
-           
+        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> 
+
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
         <command parent="write_root" field="add_step_output" child="component_step_world"/> 
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>

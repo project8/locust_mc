@@ -248,6 +248,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 	   	   	                      index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
 	   	   	                     getchar();
 */
+
 	   //	     }
 
 //	   	   printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
@@ -288,12 +289,9 @@ double KassSignalGenerator::TE11ModeExcitation() const
 //    	FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
 //    	fprintf(fp, "testing\n");
 
-//    printf("check 1 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
-
     	std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
     	fRunInProgress = true;
     	fKassEventReady = false;
-	//        printf("check 2 LMCKassSignalGenerator says fKassEventReady is %d\n", fKassEventReady);
 
 
 	for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )

@@ -15,6 +15,7 @@
 
 using namespace Kassiopeia;
 
+using namespace Kassiopeia;
 namespace katrin
 {
 

@@ -255,18 +255,8 @@ if (fabs(DampingFactor)>0.)
 
 
 
-    void CyclotronRadiationExtractor::SetTrajectory( KSTrajectory* aTrajectory )
-    {
+    bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
 
-        fProject8Trajectory = aTrajectory;
-//        if (fProject8Trajectory->Empty()) printf("empty\n");
-//        getchar();
-
-        return;
-    }
-
-
-    void TestPrint( const KSTrajectory& aTrajectory, KSParticle& aFinalParticle)
     {
 
     aTrajectory.GetInterpolatedParticleState(5.e-9, aFinalParticle);
@@ -359,6 +349,7 @@ if (fabs(DampingFactor)>0.)
     void CyclotronRadiationExtractor::PushDeupdateComponent()
     {
     }
+
 
 
 } /* namespace locust */
