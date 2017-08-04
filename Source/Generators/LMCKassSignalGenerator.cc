@@ -94,7 +94,7 @@ namespace locust
   void* KassiopeiaInit()
     {
         //cout << gxml_filename; getchar();
-        const string & afile = gxml_filename;
+        const std::string & afile = gxml_filename;
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
     	delete RunKassiopeia1;

@@ -27,7 +27,7 @@ bool fKassEventReady = false;
 bool fEventInProgress = false;
 bool fRunInProgress = false;
 bool fPreEventInProgress = false;
-
+bool fFalseStartKassiopeia = true; // flag to avoid false start on some Macs.
 
 
 std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
@@ -43,3 +43,4 @@ double* aLongSignal = new double[41943040];  // pls:  placeholder for oversample
 
 
 #endif /* GLOBALSDEFINITION_HH_ */
+
