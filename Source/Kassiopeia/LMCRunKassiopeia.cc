@@ -109,9 +109,9 @@ namespace locust
 
 
 //    cout << "file vector is \n";
-//    cout << aFiles[0]; getchar();
+//    cout << aFiles[0].c_str();
 
-    	char* dummy_args[] = { "dummyname", "/home/penny/Kassiopeia_3.3.2/Kassiopeia/XML/Examples/QuadrupoleTrapSimulation.xml", NULL};
+    	char* dummy_args[] = { (char*)"dummyname", (char*)aFiles[0].c_str(), NULL};
 
         KCommandLineTokenizer tCommandLine;
         tCommandLine.ProcessCommandLine( 2, dummy_args );
