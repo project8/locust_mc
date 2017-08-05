@@ -24,6 +24,9 @@ std::string gxml_filename = "blank.xml";
 
 double phi_LO=0.;
 const int NPreEventSamples = 150000;
+int fNFDIndex=-1;
+
+//double fPowerZ[100]={};
 
 namespace locust
 {
@@ -77,7 +80,7 @@ namespace locust
             //If not, use existing code to generate plane receiver
             HFSSReader HFRead;
             rReceiver=HFRead.GeneratePlane({0.05,0.05},7);//Argumemts: Size, resolution
-            rReceiver=HFRead.RotateShift(rReceiver,{1.,0.,0.},{1.,0.,0.});//Arguments Normal vector, Position (m)
+            rReceiver=HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,0.});//Arguments Normal vector, Position (m)
         }
         PreviousTimes=std::vector<std::array<double,2> >(rReceiver.size(),{-99.,-99.});
 
@@ -234,7 +237,7 @@ void KassSignalGenerator::NFDWrite() const
             {
 
                 fNFDOutput<<std::scientific;
-                fNFDOutput <<j<<", "<<rReceiver[j][0]<<", "<<rReceiver[j][1]<<", "<<rReceiver[j][2]<<", "<< NFDElectricFieldFreq[i][j][0][0]<<", "<< NFDElectricFieldFreq[i][j][0][1]<<", "<< NFDElectricFieldFreq[i][j][1][0]<<", "<< NFDElectricFieldFreq[i][j][1][1]<<", "<< NFDElectricFieldFreq[i][j][2][0]<<", "<< NFDElectricFieldFreq[i][j][2][1]<<", "<< NFDMagneticFieldFreq[i][j][0][0]<<", "<< NFDMagneticFieldFreq[i][j][0][1]<<", "<< NFDMagneticFieldFreq[i][j][1][0]<<", "<< NFDMagneticFieldFreq[i][j][1][1]<<", "<< NFDMagneticFieldFreq[i][j][2][0]<<", "<< NFDMagneticFieldFreq[i][j][2][1]<<std::endl;
+                fNFDOutput <<j+1<<", "<<rReceiver[j][0]<<", "<<rReceiver[j][1]<<", "<<rReceiver[j][2]<<", "<< NFDElectricFieldFreq[i][j][0][0]<<", "<< NFDElectricFieldFreq[i][j][0][1]<<", "<< NFDElectricFieldFreq[i][j][1][0]<<", "<< NFDElectricFieldFreq[i][j][1][1]<<", "<< NFDElectricFieldFreq[i][j][2][0]<<", "<< NFDElectricFieldFreq[i][j][2][1]<<", "<< NFDMagneticFieldFreq[i][j][0][0]<<", "<< NFDMagneticFieldFreq[i][j][0][1]<<", "<< NFDMagneticFieldFreq[i][j][1][0]<<", "<< NFDMagneticFieldFreq[i][j][1][1]<<", "<< NFDMagneticFieldFreq[i][j][2][0]<<", "<< NFDMagneticFieldFreq[i][j][2][1]<<std::endl;
 
             }
         }
@@ -290,7 +293,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
             if(fParticleHistory.front().GetSpaceTimeInterval(0.)<0)
             {
                 ReceiverVoltage[i]=0.;
-                //printf("Skipping! out of Bounds!: tReceiver=%e\n",tReceiver);
+                printf("Skipping! out of Bounds!: tReceiver=%e\n",tReceiver);
                 continue;
             }
         }
@@ -362,12 +365,17 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
         ReceiverVoltage[i]=CurrentParticle.CalculateVoltage();
         TotalVoltage+=ReceiverVoltage[i];
 
-        int fNFDIndex=index-NPreEventSamples;
-        if(fWriteNFD && fNFDIndex<16384)
+        double tMinHFSS=1e-8;
+        const int nHFSSBins=2048;
+        if(fWriteNFD && fNFDIndex<nHFSSBins && tReceiver >= tMinHFSS )
         {
             double tmpElectricField[3]; double tmpMagneticField[3];
             CurrentParticle.CalculateElectricField(tmpElectricField[0],tmpElectricField[1],tmpElectricField[2]);
             CurrentParticle.CalculateMagneticField(tmpMagneticField[0],tmpMagneticField[1],tmpMagneticField[2]);
+            
+            //If doing the first receiver
+            if(i == 0) fNFDIndex++;
+
 
             for(int j=0;j<NFDFrequencies.size();j++)
             {
@@ -375,19 +383,20 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
                 {
                     //Complex factors for Downmixing/ DFT sums
                     double DownConvert[2]={cos(phi_LO),-sin(phi_LO)};
-                    int kFreq=int((NFDFrequencies[j]-fLO_Frequency)*16384.*EventModTimeStep);
-                    double DFTFactor[2]={cos(2.*PI*double(kFreq)/16384.*double(fNFDIndex)),-sin(2.*PI*double(kFreq)/16384.*double(fNFDIndex))};
+                    int kFreq=int((NFDFrequencies[j]-fLO_Frequency)*double(nHFSSBins)*EventModTimeStep);
+                    double DFTFactor[2]={cos(2.*PI*double(kFreq)/double(nHFSSBins)*double(fNFDIndex)),-sin(2.*PI*double(kFreq)/double(nHFSSBins)*double(fNFDIndex))};
 
-                    NFDElectricFieldFreq[j][i][k][0]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[0]-DownConvert[1]*DFTFactor[1]);
-                    NFDElectricFieldFreq[j][i][k][1]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0]);
+                    NFDElectricFieldFreq[j][i][k][0]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[0]-DownConvert[1]*DFTFactor[1])/(double(nHFSSBins));
+                    NFDElectricFieldFreq[j][i][k][1]+=tmpElectricField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0])/(double(nHFSSBins));
 
-                    NFDMagneticFieldFreq[j][i][k][0]+=tmpMagneticField[k]*(DownConvert[0]*DFTFactor[0]-DownConvert[1]*DFTFactor[1]);
-                    NFDMagneticFieldFreq[j][i][k][1]+=tmpMagneticField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0]);
+                    NFDMagneticFieldFreq[j][i][k][0]+=tmpMagneticField[k]*(DownConvert[0]*DFTFactor[0]-DownConvert[1]*DFTFactor[1])/(double(nHFSSBins));
+                    NFDMagneticFieldFreq[j][i][k][1]+=tmpMagneticField[k]*(DownConvert[0]*DFTFactor[1]+DownConvert[1]*DFTFactor[0])/(double(nHFSSBins));
                 }
             }
+            if(fNFDIndex%100==0 && i==0)printf("%d\n",fNFDIndex);
 
         }
-        else if(fNFDIndex >=16384)
+        else if(fWriteNFD && fNFDIndex >=nHFSSBins)
         {
             printf("Done! \n");
         }
@@ -542,7 +551,7 @@ bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
         }  // for loop
 
     if(fWriteNFD) NFDWrite();
-
+    
     FilterNegativeFrequencies(aSignal, ImaginarySignal);
     delete ImaginarySignal;
     

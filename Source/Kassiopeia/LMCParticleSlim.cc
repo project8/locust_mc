@@ -242,7 +242,10 @@ namespace locust
         KGeoBag::KThreeVector nMinusBeta = fReceiverDir - 1./ c * fNewVelocity;
 
         //Lienard-Wiechert Equations
-        KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * ( c * nMinusBeta / (fGamma*fGamma*fReceiverDistance) + (fReceiverDir.Cross(nMinusBeta.Cross(BetaDot))));
+        //KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * ( c * nMinusBeta / (fGamma*fGamma*fReceiverDistance) + (fReceiverDir.Cross(nMinusBeta.Cross(BetaDot))));
+        //KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * ( (fReceiverDir.Cross(nMinusBeta.Cross(BetaDot))));
+        KGeoBag::KThreeVector E=fCharge / (KConst::FourPiEps() * c *pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * ( (fReceiverDir.Cross(nMinusBeta.Cross(BetaDot))));
+        //KGeoBag::KThreeVector E=1. / (pow(1.- fReceiverDir.Dot(fNewVelocity)/c,3.)*fReceiverDistance ) * ( (fReceiverDir.Cross(nMinusBeta.Cross(BetaDot))));
 
         Ex=E.X();
         Ey=E.Y();
@@ -282,7 +285,8 @@ namespace locust
         KGeoBag::KThreeVector H = fReceiverDir.Cross(E)/(KConst::MuNull()*KConst::C());
         KGeoBag::KThreeVector S = E.Cross(H);
 
-        return S.Dot(fReceiverPosition.Unit())*(1.-fReceiverDir.Dot(fNewVelocity)/KConst::C());
+        //return S.Dot(fReceiverPosition.Unit())*(1.-fReceiverDir.Dot(fNewVelocity)/KConst::C());
+        return S.X();
     }
 
     void ParticleSlim::Print()

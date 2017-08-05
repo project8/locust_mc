@@ -172,8 +172,8 @@ namespace locust
         fANDInput.close();
 
         //Generate Geometries: Increase Final Argument for finer discretization 
-        if(GeometryIndex==0)rSurfacePoints=GenerateSphere(GeometryScale[0],15);
-        else if(GeometryIndex==1)rSurfacePoints=GenerateBox(GeometryScale,13);
+        if(GeometryIndex==0)rSurfacePoints=GenerateSphere(GeometryScale[0],30);
+        else if(GeometryIndex==1)rSurfacePoints=GenerateBox(GeometryScale,40);
         else if(GeometryIndex==2)rSurfacePoints=GenerateCylinder({GeometryScale[0],GeometryScale[1]},10);
         else if(GeometryIndex==3)rSurfacePoints=GeneratePlane({GeometryScale[0],GeometryScale[1]},10);
      
@@ -382,7 +382,7 @@ namespace locust
                 rPointVectorBuffer[1]=Radius*rRings[i]*sin(Phi);
                 rPointVector.push_back(rPointVectorBuffer);
                 Phi+=dPhi;
-            }while(Phi<2.*PI);
+            }while(Phi<2.*PI-dPhi/2.);
         }
 
         return rPointVector;
@@ -433,14 +433,14 @@ namespace locust
             RingCount=round(2.*PI*double(i));
             Phi=0.;
             dPhi=2.*PI/double(RingCount);
-            while(Phi<2.*PI)
+            do
             {
                 rPointVectorBuffer[0]=dz[0]*double(i)*cos(Phi);
                 rPointVectorBuffer[1]=dz[0]*double(i)*sin(Phi);
                 rPointVectorEnd.push_back(rPointVectorBuffer);
                 Phi+=dPhi;
-
             }
+            while(Phi<2.*PI-dPhi/2);
         }
         rPointVector.insert(rPointVector.end(), rPointVectorEnd.begin(), rPointVectorEnd.end());
         rPointVectorEnd=RotateShift(rPointVectorEnd,{0.,0.,1.},{0.,0.,GeometryScale[1]});
