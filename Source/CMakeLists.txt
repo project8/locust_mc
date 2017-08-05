@@ -74,7 +74,7 @@ set( LOCUST_MC_SOURCE_FILES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
-        Generators/LMCKassSignalGenerator.hh
+        Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCDecimateSignalGenerator.hh
         Generators/LMCLowPassFilterFFTGenerator.hh
         Generators/LMCButterworthLPFGenerator.hh
@@ -90,7 +90,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
-        Generators/LMCKassSignalGenerator.cc
+        Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCDecimateSignalGenerator.cc
         Generators/LMCLowPassFilterFFTGenerator.cc
         Generators/LMCButterworthLPFGenerator.cc

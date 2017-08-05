@@ -82,6 +82,7 @@ namespace locust
 
         private:
             void Visit( const KassSignalGenerator* );
+            void Visit( const FreeFieldSignalGenerator* );
             void Visit( const TrappedElectronGenerator* );
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const TestSignalGenerator* );

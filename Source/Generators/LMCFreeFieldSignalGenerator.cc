@@ -1,11 +1,11 @@
 /*
- * LMCKassSignalGenerator.cc
+ * LMCFreeFieldSignalGenerator.cc
  *
  *  Created on: Mar 12, 2014
  *      Author: nsoblath
  */
 
-#include "LMCKassSignalGenerator.hh"
+#include "LMCFreeFieldSignalGenerator.hh"
 #include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 
@@ -28,11 +28,11 @@ int fNFDIndex=-1;
 
 namespace locust
 {
-    LOGGER( lmclog, "KassSignalGenerator" );
+    LOGGER( lmclog, "FreeFieldSignalGenerator" );
 
-    MT_REGISTER_GENERATOR(KassSignalGenerator, "kass-signal");
+    MT_REGISTER_GENERATOR(FreeFieldSignalGenerator, "freefield-signal");
 
-    KassSignalGenerator::KassSignalGenerator( const std::string& aName ) :
+    FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
       Generator( aName ),
       fWriteNFD(0.),
       fLO_Frequency( 0.)
@@ -40,11 +40,11 @@ namespace locust
         fRequiredSignalState = Signal::kTime;
     }
 
-    KassSignalGenerator::~KassSignalGenerator()
+    FreeFieldSignalGenerator::~FreeFieldSignalGenerator()
     {
     }
 
-    bool KassSignalGenerator::Configure( const ParamNode* aParam )
+    bool FreeFieldSignalGenerator::Configure( const ParamNode* aParam )
     {
         if( aParam == NULL) return true;
         fLO_Frequency = LO_FREQUENCY;
@@ -85,7 +85,7 @@ namespace locust
         return true;
     }
 
-    void KassSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
+    void FreeFieldSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
         return;
@@ -131,7 +131,7 @@ bool ReceivedKassReady()
 
 
 //Change decimation factor/ (and therefore the sampling rate) to guarantee no aliasing of signal
-double KassSignalGenerator::AntiAliasingSetup(double fCarrier_Frequency, double fBandwidth_Frequency) const
+double FreeFieldSignalGenerator::AntiAliasingSetup(double fCarrier_Frequency, double fBandwidth_Frequency) const
 {
     double fSampleMin = 2.*fBandwidth_Frequency;
     int fDecimationRange[2] = {10,100};
@@ -160,7 +160,7 @@ double KassSignalGenerator::AntiAliasingSetup(double fCarrier_Frequency, double 
     return fDecimation;
 }
 
-void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
+void* FreeFieldSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
 {
 
     int nwindows = 80;
@@ -212,7 +212,7 @@ void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *Im
 
 }
 
-void KassSignalGenerator::NFDWrite() const
+void FreeFieldSignalGenerator::NFDWrite() const
 {
         std::ofstream fNFDOutput;
         fNFDOutput.open(fNFD_filename,std::ios::out | std::ios::trunc);
@@ -252,7 +252,7 @@ void KassSignalGenerator::NFDWrite() const
 }
 
 
-void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
+void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
 {
     //std::ofstream myfile;
     //myfile.open ("Poynting.txt",std::ios::app);
@@ -407,7 +407,7 @@ void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Sig
 
 }
 ////Return index of deque closest to desired time
-int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) const
+int FreeFieldSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) const
 {
     int HistorySize=fParticleHistory.size();
 
@@ -437,7 +437,7 @@ int KassSignalGenerator::FindNode(double tNew, double dtStepSize, int IndexOld) 
 
 }
 
-bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) const
+bool FreeFieldSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) const
 {
     int HistorySize=fParticleHistory.size();
     IndexMin=std::max(IndexMin,0);
@@ -446,7 +446,7 @@ bool KassSignalGenerator::IsInside(double tNew, int IndexMin, int IndexMax) cons
     return tNew>=fParticleHistory[IndexMin].GetTime() && tNew<=fParticleHistory[IndexMax].GetTime();
 }
 
-int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) const
+int FreeFieldSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) const
 {
     int HistorySize=fParticleHistory.size();
     IndexMin=std::max(IndexMin,0);
@@ -479,7 +479,7 @@ int KassSignalGenerator::BinarySearch(double tNew, int IndexMin, int IndexMax) c
     return IndexMin;
 }
 
-bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
+bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const
 {
     double *ImaginarySignal = new double[10*aSignal->TimeSize()];
 

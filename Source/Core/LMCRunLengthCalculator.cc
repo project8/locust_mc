@@ -81,6 +81,11 @@ namespace locust
         // nothing to see here, move along, please
         return;
     }
+    void RunLengthCalculator::Visit( const FreeFieldSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
 
     void RunLengthCalculator::Visit( const TrappedElectronGenerator* )
     {

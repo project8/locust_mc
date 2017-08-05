@@ -1,12 +1,12 @@
 /*
- * LMCKassSignalGenerator.hh
+ * LMCFreeFieldSignalGenerator.hh
  *
  *  Created on: Mar 12, 2014
  *      Author: nsoblath
  */
 
-#ifndef LMCKASSSIGNALGENERATOR_HH_
-#define LMCKASSSIGNALGENERATOR_HH_
+#ifndef LMCFREEFIELDSIGNALGENERATOR_HH_
+#define LMCFREEFIELDSIGNALGENERATOR_HH_
 
 #define PI 3.1415926
 #define N_GRID_SIDE 9 //Number of discretized points per side of the receiver
@@ -19,7 +19,7 @@ namespace locust
 {
 
     /*!
-     @class KassSignalGenerator
+     @class FreeFieldSignalGenerator
      @author N. S. Oblath
 
      @brief
@@ -33,12 +33,12 @@ namespace locust
      - "param-name": type -- Description
 
     */
-    class KassSignalGenerator : public Generator
+    class FreeFieldSignalGenerator : public Generator
     {
         public:
 
-            KassSignalGenerator( const std::string& aName = "kass-signal" );
-            virtual ~KassSignalGenerator();
+            FreeFieldSignalGenerator( const std::string& aName = "freefield-signal" );
+            virtual ~FreeFieldSignalGenerator();
 
             bool Configure( const ParamNode* aNode );
 
@@ -74,4 +74,4 @@ namespace locust
 
 } /* namespace locust */
 
-#endif /* LMCKASSSIGNALGENERATOR_HH_ */
+#endif /* LMCFREEFIELDSIGNALGENERATOR_HH_ */
