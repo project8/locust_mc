@@ -38,7 +38,7 @@ namespace locust
     }
 
 
-    bool EventHold::ExecutePreEventModification()
+    bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
 
     	printf("check 1\n"); getchar();
@@ -51,7 +51,7 @@ namespace locust
         return false;
     }
 
-    bool EventHold::ExecutePostEventModifcation()
+    bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
         if( fWaitAfterEvent )
         {
@@ -91,3 +91,4 @@ namespace locust
 
 
 } /* namespace locust */
+

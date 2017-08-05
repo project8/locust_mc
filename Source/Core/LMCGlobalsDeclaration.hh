@@ -32,6 +32,7 @@ extern bool fKassEventReady;
 extern bool fEventInProgress;
 extern bool fRunInProgress;
 extern bool fPreEventInProgress;
+extern bool fFalseStartKassiopeia;
 
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
@@ -55,3 +56,4 @@ extern double* aLongSignal;  // pls:  placeholder for oversampled signal.
 //std::vector<std::array<std::array<double, 16384>, 3 > >  NFDMagneticField;  // pls:  placeholder for oversampled signal.
 
 #endif /* GLOBALSDECLARATION_HH_ */
+

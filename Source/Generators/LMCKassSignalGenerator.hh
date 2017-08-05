@@ -8,8 +8,6 @@
 #ifndef LMCKASSSIGNALGENERATOR_HH_
 #define LMCKASSSIGNALGENERATOR_HH_
 
-#define CENTER_TO_SHORT 0.010 // 10 cm
-#define CENTER_TO_ANTENNA 0.010 // 10 cm.
 #define PI 3.1415926
 #define N_GRID_SIDE 9 //Number of discretized points per side of the receiver
 #define LO_FREQUENCY 0.

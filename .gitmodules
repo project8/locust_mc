@@ -6,4 +6,5 @@
 	url = https://github.com/project8/scarab
 [submodule "kassiopeia"]
 	path = kassiopeia
-	url = git://github.com/project8/kassiopeia.git
+	url = https://github.com/project8/kassiopeia.git
+	branch = feature/eventmod

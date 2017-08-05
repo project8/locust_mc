@@ -43,3 +43,4 @@ namespace katrin
 } /* namespace katrin */
 
 #endif /* LOCUST_LMCCYCLOTRONRADIATIONEXTRACTORBUILDER_HH_ */
+
