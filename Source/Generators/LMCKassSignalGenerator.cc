@@ -26,8 +26,6 @@ double phi_LO=0.;
 const int NPreEventSamples = 150000;
 int fNFDIndex=-1;
 
-//double fPowerZ[100]={};
-
 namespace locust
 {
     LOGGER( lmclog, "KassSignalGenerator" );
