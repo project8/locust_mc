@@ -58,7 +58,7 @@ namespace locust
 
 
 
-        //private:
+        private:
             double fTime; //Time of node given from kassiopeia
             double fTimeDisplacement;//Allows us to interpolate particle locally around node
             double fTimeStep;//Time Step to next node
