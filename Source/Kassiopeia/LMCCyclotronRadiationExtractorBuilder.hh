@@ -29,13 +29,13 @@ namespace katrin
             aContainer->CopyTo( fObject, &KNamed::SetName );
             return true;
         }
-/*
+
         if( aContainer->GetName() == "set_trajectory" )
         {
-            fObject->SetTrajectory( KSToolbox::GetInstance()->GetObjectAs< KSTrajectory >( aContainer->AsReference< string >() ) );
+            fObject->SetTrajectory( KToolbox::GetInstance().Get< KSTrajectory >( aContainer->AsReference< std::string >() ) );
             return true;
         }
-*/
+
         /*
         if( aContainer->GetName() == "wait_before_event" )
         {

@@ -247,6 +247,17 @@ if (fabs(DampingFactor)>0.)
     }
 
 
+    void CyclotronRadiationExtractor::SetTrajectory( KSTrajectory* aTrajectory )
+    {
+// this function is being run by KSRoot.cxx at initialization but presently
+// fTrajectory is not staying defined through the stepping.  Suspect binding problem.
+
+    	fTrajectory = aTrajectory;
+
+        return;
+    }
+
+
 
 
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
@@ -254,8 +265,6 @@ if (fabs(DampingFactor)>0.)
 
 //    	printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 //    	printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
-
-
 
 
 // adjust power with reflections.
@@ -271,14 +280,13 @@ if (fabs(DampingFactor)>0.)
             {
         	std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
+
             t_poststep = t_old + 5.e-10;
-/*
-            if (fToolbox->HasObject("traj_adiabaticsynchrotron"))  // interpolate timestamp
-            {
-            fProject8Trajectory = fToolbox->GetObjectAs< KSTrajectory >("traj_adiabaticsynchrotron");
-            fProject8Trajectory->GetInterpolatedParticleState(t_old+5.e-10,aFinalParticle);
-            }
-*/
+            // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
+            katrin::KToolbox::GetInstance().Get< KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_poststep, aFinalParticle);
+//            printf("now t_old is %g\n", t_old);
+//            getchar();
+
             Z = aFinalParticle.GetPosition().Z();
             X = aFinalParticle.GetPosition().X();
             Y = aFinalParticle.GetPosition().Y();
@@ -296,11 +304,10 @@ if (fabs(DampingFactor)>0.)
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
-             t_old = t_poststep;
+             t_old = t_poststep;  // get ready to look for next sample.
 
-             /*
+/*
              printf("de is %g and dt is %g and LarmorPower is %g\n", de, dt, LarmorPower);
-
           	 printf("Kassiopeia says:  tick has happened; continuous time is %g and zvelocity is %f\n", t_poststep, zvelocity);
           	 printf("Kassiopeia says:  fcyc is %g\n", fcyc);
           	 printf("  initial particle momentum: %g\n", anInitialParticle.GetMomentum().Z());
@@ -310,6 +317,7 @@ if (fabs(DampingFactor)>0.)
              printf("1/(sqrt(1-v^2/c^2) is %f\n", 1.0/pow(1.0-pow(anInitialParticle.GetSpeed()/2.99792e8,2.),0.5));
              printf("FinalParticle().IsActive() is %d\n", aFinalParticle.IsActive());
              */
+
           	}
 
 

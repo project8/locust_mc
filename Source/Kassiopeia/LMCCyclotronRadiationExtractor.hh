@@ -8,9 +8,15 @@
 #ifndef LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 #define LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 
+#include "KSTrajectory.h"
+
+
 #include "KField.h"
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
+#include "KSTrajTrajectoryAdiabatic.h"
+
+#include "KToolbox.h"
 
 
 using namespace Kassiopeia;
@@ -40,6 +46,8 @@ namespace locust
             bool ExecutePreStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticleQueue& aQueue );
             bool ExecutePostStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
 
+            void SetTrajectory( KSTrajectory* aTrajectory );
+
 
 
         private:
@@ -52,6 +60,9 @@ namespace locust
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            KSTrajectory* fTrajectory;
+
+
 
         protected:
             virtual void PullDeupdateComponent();
