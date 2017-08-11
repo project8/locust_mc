@@ -18,11 +18,11 @@ namespace locust
     MT_REGISTER_GENERATOR(GaussianNoiseGenerator, "gaussian-noise");
 
     GaussianNoiseGenerator::GaussianNoiseGenerator( const std::string& aName ) :
-                    Generator( aName ),
-                    fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),
-                    fMean( 0. ),
-                    fSigma( 1. ),
-                    fNormDist( fMean, fSigma )
+    Generator( aName ),
+    fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),
+    fMean( 0. ),
+    fSigma( 1. ),
+    fNormDist( fMean, fSigma )
     {
         fRequiredSignalState = Signal::kFreq;
     }
@@ -38,10 +38,8 @@ namespace locust
         double tSigma = fSigma;
         if( aParam->has( "noise-floor" ) )
         {
-	  //            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * aParam->get_value< double >( "acquisition-rate", 100. ) * 1.e6 );
-	  tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * 200.e6/2.);  // sampling rate is 200 MHz.  divide by 2 due to nbins->nbins/2 in katydid normalization.
-
-
+            //tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * aParam->get_value< double >( "acquisition-rate", 100. ) * 1.e6 );
+            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * 200.e6/2.);  // sampling rate is 200 MHz.  divide by 2 due to nbins->nbins/2 in katydid normalization.
         }
         else
         {
@@ -140,17 +138,12 @@ namespace locust
 
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal ) const
     {
-
-
-
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
             aSignal->SignalTime()[index] += fNormDist( fRNG );
         }
 
-
         return true;
-
     }
 
     bool GaussianNoiseGenerator::DoGenerateFreq( Signal* aSignal ) const
