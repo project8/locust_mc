@@ -12,9 +12,13 @@
 
 #include "member_variables.hh"
 
+namespace scarab
+{
+    class param_node;
+}
+
 namespace locust
 {
-    class ParamNode;
     class Signal;
 
     class RunLengthCalculator;
@@ -47,7 +51,7 @@ namespace locust
             EggWriter();
             virtual ~EggWriter();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             mv_referrable( std::string, filename );
             mv_referrable( std::string, date );

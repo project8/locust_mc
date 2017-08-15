@@ -8,13 +8,15 @@
 #ifndef LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 #define LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 
+#include "KSTrajectory.h"
+
+
 #include "KField.h"
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
-#include "KSTrajInterpolatorHermite.h"
 #include "KSTrajTrajectoryAdiabatic.h"
-#include "KSTrajIntegratorRK8.h"
 
+#include "KToolbox.h"
 
 
 namespace locust
@@ -38,15 +40,25 @@ namespace locust
             double dt_step=0.;
             double de = 0.;
             double dt = 0.;
-            
 
             bool ExecutePreStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticleQueue& aQueue );
             bool ExecutePostStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
+
+            void SetTrajectory( Kassiopeia::KSTrajectory* aTrajectory );
 
 
         private:
             void InitializeComponent();
             void DeinitializeComponent();
+            double GetGroupVelocityTE11(Kassiopeia::KSParticle& aFinalParticle);
+            double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactor(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTE11(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            Kassiopeia::KSTrajectory* fTrajectory;
+
 
 
         protected:

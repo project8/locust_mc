@@ -8,6 +8,9 @@
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
 #define PI 3.1415926
+#define CENTER_TO_SHORT 0.046 // m
+#define CENTER_TO_ANTENNA 0.04820 // m
+
 
 #include <condition_variable>
 #include <vector>
@@ -16,8 +19,20 @@
 #include "LMCParticleSlim.hh"
 
 
+extern double Z;
+extern double X;
+extern double Y;
 extern double t_poststep;
 extern double t_old;
+extern double phi_shortTE11;
+extern double* phi_shortTM01;
+extern double* phi_polarizerTM01;
+extern double LarmorPower;
+extern double xvelocity;
+extern double yvelocity;
+extern double zvelocity;
+extern double fcyc;
+extern double GammaZ;
 extern double testvar;
 extern double EventModTimeStep;
 
@@ -33,7 +48,6 @@ extern bool fEventInProgress;
 extern bool fRunInProgress;
 extern bool fPreEventInProgress;
 extern bool fFalseStartKassiopeia;
-
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
 extern std::mutex fKassReadyMutex;  // pls:  this mutex is used for pre and post event mods.

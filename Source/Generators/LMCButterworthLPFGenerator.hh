@@ -32,7 +32,7 @@ class ButterworthLPFGenerator : public Generator
             ButterworthLPFGenerator( const std::string& aName = "butterworth-lpf" );
             virtual ~ButterworthLPFGenerator();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 

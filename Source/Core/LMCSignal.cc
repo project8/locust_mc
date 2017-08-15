@@ -51,7 +51,7 @@ namespace locust
         fState = kTime;  // pls confused here.
 //        fState = kFreq;
 
-        DEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
+        LDEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
 
         return true;
     }
@@ -256,7 +256,7 @@ namespace locust
     {
         if( fState == kNotInitialized )
         {
-            ERROR( lmclog, "Signal is not initialized" );
+            LERROR( lmclog, "Signal is not initialized" );
             return false;
         }
         if( fState == aState ) return true;
@@ -264,10 +264,10 @@ namespace locust
         if( aState == kFreq ) return FFTToFreq();
         if( aState == kDigital )
         {
-            ERROR( lmclog, "Please use Signal::ToDigital to convert to a digital signal" );
+            LERROR( lmclog, "Please use Signal::ToDigital to convert to a digital signal" );
             return false;
         }
-        ERROR( lmclog, "Unknown state requested: " << aState );
+        LERROR( lmclog, "Unknown state requested: " << aState );
         return false;
     }
 
@@ -311,7 +311,7 @@ namespace locust
 
     bool Signal::FFTToTime()
     {
-        DEBUG( lmclog, "Performing reverse FFT to the time domain" );
+        LDEBUG( lmclog, "Performing reverse FFT to the time domain" );
         fftw_execute( fPlanToTime );
         fState = kTime;
         return true;
@@ -319,7 +319,7 @@ namespace locust
 
     bool Signal::FFTToFreq()
     {
-        DEBUG( lmclog, "Performing forward FFT to frequency domain" );
+        LDEBUG( lmclog, "Performing forward FFT to frequency domain" );
         fftw_execute( fPlanToFreq );
         fState = kFreq;
         return true;  // pls

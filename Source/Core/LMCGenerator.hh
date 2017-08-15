@@ -9,7 +9,7 @@
 #define LMCGENERATOR_HH_
 
 #include "LMCVisitor.hh"
-#include "LMCParam.hh"
+#include "param.hh"
 #include "LMCSignal.hh"
 
 #include "factory.hh"
@@ -25,7 +25,7 @@ namespace locust
             Generator( const std::string& aName = "generic-generator" );
             virtual ~Generator();
 
-            virtual bool Configure( const ParamNode* aNode ) = 0;
+            virtual bool Configure( const scarab::param_node* aNode ) = 0;
 
             virtual void Accept( GeneratorVisitor* aVisitor ) const = 0;
 

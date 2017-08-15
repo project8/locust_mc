@@ -31,7 +31,7 @@ namespace locust
     {
     }
 
-    bool ButterworthLPFGenerator::Configure( const ParamNode* aParam )
+    bool ButterworthLPFGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
         return true;
@@ -58,18 +58,6 @@ namespace locust
     	int N = 8;  // 8th order digital filter.
     	int M = 8;
 
-        //Denominator Coefficients
-        //ai[0]=1.0000;
-        //ai[1]=-7.436415727064;
-        //ai[2]=24.212528496827;
-        //ai[3]=-45.08206974092;
-        //ai[4]=52.5005503707;
-        //ai[5]=-39.15720043493;
-        //ai[6]=18.265819680576;
-        //ai[7]=-4.872150915425;
-        //ai[8]=0.568938280997;
-        //ai[9]=0.0000000;
-
         ai[0]=1.0000;
         ai[1]=-6.8730110236;
         ai[2]=20.7365964965756;
@@ -81,18 +69,6 @@ namespace locust
         ai[8]=0.322972809305;
         ai[9]=0.0000000;
 
-        //Numerator coefficients
-        //bi[0]=6.3465677158e-11;
-        //bi[1]=5.0772541726e-10;
-        //bi[2]=1.77703896042e-9;
-        //bi[3]=3.554077920853e-9;
-        //bi[4]=4.442597401066e-9;
-        //bi[5]=3.554077920853e-9;
-        //bi[6]=1.77703896042e-9;
-        //bi[7]=5.0772541726e-10;
-        //bi[8]=6.3465677158e-11;
-        //bi[9]=0.0000000;
-        
         bi[0]=1.25420323016e-8;
         bi[1]=1.00336258412e-7;
         bi[2]=3.511769044450e-7;
@@ -145,13 +121,12 @@ namespace locust
             aLongSignal[index] = FilteredSignal[index];
         }
 
-        delete FilteredSignal;
+        delete [] FilteredSignal;
         return true;
     }
 
     bool ButterworthLPFGenerator::DoGenerateFreq( Signal* aSignal ) const
     {
-
         return true;
     }
 

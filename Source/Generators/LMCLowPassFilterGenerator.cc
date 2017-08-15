@@ -28,7 +28,7 @@ namespace locust
     {
     }
 
-    bool LowPassFilterGenerator::Configure( const ParamNode* aParam )
+    bool LowPassFilterGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
         return true;

@@ -11,11 +11,15 @@
 #include "LMCEggWriter.hh"
 #include "LMCRunLengthCalculator.hh"
 
+namespace scarab
+{
+    class param_node;
+}
+
 namespace locust
 {
     class Digitizer;
     class Generator;
-    class ParamNode;
 
     /*!
      @class SimulationController
@@ -39,7 +43,7 @@ namespace locust
             SimulationController();
             virtual ~SimulationController();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             bool Prepare();
 

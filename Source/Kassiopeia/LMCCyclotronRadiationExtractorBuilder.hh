@@ -9,8 +9,9 @@
 #define LOCUST_LMCCYCLOTRONRADIATIONEXTRACTORBUILDER_HH_
 
 #include "KComplexElement.hh"
-
 #include "LMCCyclotronRadiationExtractor.hh"
+#include "KToolbox.h"
+
 
 namespace katrin
 {
@@ -25,6 +26,13 @@ namespace katrin
             aContainer->CopyTo( fObject, &KNamed::SetName );
             return true;
         }
+
+        if( aContainer->GetName() == "set_trajectory" )
+        {
+            fObject->SetTrajectory( KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory >( aContainer->AsReference< std::string >() ) );
+            return true;
+        }
+
         /*
         if( aContainer->GetName() == "wait_before_event" )
         {

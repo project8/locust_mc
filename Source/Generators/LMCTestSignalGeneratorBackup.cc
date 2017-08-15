@@ -27,7 +27,7 @@ namespace locust
     {
     }
 
-    bool TestSignalGenerator::Configure( const ParamNode* aParam )
+    bool TestSignalGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
 

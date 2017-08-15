@@ -4,19 +4,18 @@
         "kass-signal",
         "lpf-fft",
         "decimate-signal",
-        "gaussian-noise",
         "digitizer"
     ],
     
     "kass-signal":
     {
-        "lo_frequency": 24.84e9,
-        "xml-filename": "/home/penny/project8/manage/Project8_Template.xml"
+        "lo-frequency": 25.2814e9,
+        "xml-filename": "/home/penny/locust_mc/Config/Project8Phase2_WithRoot_Template.xml"
     },
 
     "simulation":
     {
-        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc_Seed112377_LO24.84G.egg",
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1
     },
   

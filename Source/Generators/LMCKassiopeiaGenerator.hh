@@ -32,7 +32,7 @@ namespace locust
             KassiopeiaGenerator( const std::string& aName = "kassiopeia" );
             virtual ~KassiopeiaGenerator();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 

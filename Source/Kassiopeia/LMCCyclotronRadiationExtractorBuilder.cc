@@ -8,7 +8,9 @@
 #include "LMCCyclotronRadiationExtractorBuilder.hh"
 
 #include "KSRootBuilder.h"
+using namespace std;
 
+using namespace Kassiopeia;
 namespace katrin
 {
 

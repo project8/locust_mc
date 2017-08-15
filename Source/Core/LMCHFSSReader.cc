@@ -69,14 +69,14 @@ namespace locust
             {
                 if(InputLine.find("nfd")==std::string::npos)
                 {
-                    ERROR( lmclog, "Must produce NFD file if AND input is specified!" );
+                    LERROR( lmclog, "Must produce NFD file if AND input is specified!" );
                 }
             }
             else if(InputLine.find("fields")!=std::string::npos)
             {
                 if(InputLine.find("EH")==std::string::npos)
                 {
-                    ERROR( lmclog, "Program only supports EH Field Mode!" );
+                    LERROR( lmclog, "Program only supports EH Field Mode!" );
                 }
             }
             else if(InputLine.find("geometry")!=std::string::npos)
@@ -87,7 +87,7 @@ namespace locust
                 else if(InputLine.find("plane")!=std::string::npos) GeometryIndex=3;
                 else
                 {
-                    ERROR( lmclog, "Program only supports sphere, box, cylinder or plane!" );
+                    LERROR( lmclog, "Program only supports sphere, box, cylinder or plane!" );
                 }
             }
             else if(InputLine.find("center")!=std::string::npos)
@@ -135,7 +135,7 @@ namespace locust
             else if(InputLine.find("fcoords")!=std::string::npos)
             {
                 if(InputLine.find("cartesian")==std::string::npos)
-                    ERROR( lmclog, "Program only supports cartesian coordinates for now!" );
+                    LERROR( lmclog, "Program only supports cartesian coordinates for now!" );
             }
 
 
@@ -178,30 +178,30 @@ namespace locust
         else if(GeometryIndex==3)rSurfacePoints=GeneratePlane({GeometryScale[0],GeometryScale[1]},10);
      
         //Print DEBUG information. Make sure that everything looks correct
-        DEBUG( lmclog, "Configuring HFSS Compatible Output");
+        LDEBUG( lmclog, "Configuring HFSS Compatible Output");
 
         if(GeometryIndex==0)
         {
-            DEBUG( lmclog, "Sphere generated with "<<rSurfacePoints.size()<<" surface points");
+            LDEBUG( lmclog, "Sphere generated with "<<rSurfacePoints.size()<<" surface points");
         }
         else if(GeometryIndex==1)
         {
-            DEBUG( lmclog, "Box generated with "<<rSurfacePoints.size()<<" surface points");
+            LDEBUG( lmclog, "Box generated with "<<rSurfacePoints.size()<<" surface points");
         }
         else if(GeometryIndex==2)
         {
-            DEBUG( lmclog, "Cylinder generated with "<<rSurfacePoints.size()<<" surface points");
+            LDEBUG( lmclog, "Cylinder generated with "<<rSurfacePoints.size()<<" surface points");
         }
         else if(GeometryIndex==3)
         {
-            DEBUG( lmclog, "Plane generated with "<<rSurfacePoints.size()<<" surface points");
+            LDEBUG( lmclog, "Plane generated with "<<rSurfacePoints.size()<<" surface points");
         }
 
-        DEBUG( lmclog, "Geometry Center: "<<GeometryCenter[0]<<" "<<GeometryCenter[1]<<" "<<GeometryCenter[2] );
-        DEBUG( lmclog, "Geometry Scale: "<<GeometryScale[0]<<" "<<GeometryScale[1]<<" "<<GeometryScale[2] );
+        LDEBUG( lmclog, "Geometry Center: "<<GeometryCenter[0]<<" "<<GeometryCenter[1]<<" "<<GeometryCenter[2] );
+        LDEBUG( lmclog, "Geometry Scale: "<<GeometryScale[0]<<" "<<GeometryScale[1]<<" "<<GeometryScale[2] );
 
-        DEBUG( lmclog, "Chosen HFSS Frequencies:");
-        for(int i=0;i<NFDFrequencies.size();i++) DEBUG( lmclog, NFDFrequencies[i]);
+        LDEBUG( lmclog, "Chosen HFSS Frequencies:");
+        for(int i=0;i<NFDFrequencies.size();i++) LDEBUG( lmclog, NFDFrequencies[i]);
 
        //rSurfacePoints=RotateShift(rSurfacePoints,{1.,0.,0.},{0.,0.,0.}); 
 

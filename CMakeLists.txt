@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.0.0 )
+project( locust_mc VERSION 1.0.0)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -46,6 +46,8 @@ include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 pbuilder_add_submodule( Scarab Scarab/library )
 
 pbuilder_add_submodule( Monarch monarch )
+# we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
+set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
 
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
@@ -155,13 +157,6 @@ add_subdirectory( Source/Applications )
 #pbuilder_install_executables( check_egg_digitization )
 
 pbuilder_install_config (
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test.json          
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/receiver_transfer_functions.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_bg_single_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/test_single_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/tone_config.json
-    ${CMAKE_CURRENT_SOURCE_DIR}/Config/tone_single_config.json
+
 )
 

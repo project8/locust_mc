@@ -8,10 +8,15 @@
 #ifndef LMCGENERATORTOOLBOX_HH_
 #define LMCGENERATORTOOLBOX_HH_
 
+
+namespace scarab
+{
+    class param_node;
+}
+
 namespace locust
 {
     class Generator;
-    class ParamNode;
 
     /*!
      @class GeneratorToolbox
@@ -33,7 +38,7 @@ namespace locust
             GeneratorToolbox();
             virtual ~GeneratorToolbox();
 
-            bool Configure( const ParamNode* aNode );
+            bool Configure( const scarab::param_node* aNode );
 
             const Generator* GetFirstGenerator() const;
             Generator* GetFirstGenerator();
