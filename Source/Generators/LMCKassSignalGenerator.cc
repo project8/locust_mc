@@ -31,11 +31,10 @@ namespace locust
     MT_REGISTER_GENERATOR(KassSignalGenerator, "kass-signal");
 
     KassSignalGenerator::KassSignalGenerator( const std::string& aName ) :
-      Generator( aName ),
-      fLO_Frequency( 0.)
+            Generator( aName ),
+            fLO_Frequency( 0.)
     {
         fRequiredSignalState = Signal::kTime;
-
     }
 
     KassSignalGenerator::~KassSignalGenerator()
@@ -67,7 +66,6 @@ namespace locust
     }
 
 
-
   void* KassiopeiaInit()
     {
         //cout << gxml_filename; getchar();
@@ -78,13 +76,11 @@ namespace locust
     }
 
 
-
     void WakeBeforeEvent()
     {
 
         fPreEventCondition.notify_one();
         return;
-
     }
 
 
@@ -104,47 +100,39 @@ namespace locust
             fKassReadyCondition.wait( tLock );
         }
 
-
         return true;
-
     }
 
 
-
-
-    void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
+    void* FreeFieldSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
     {
 
-        int nwindows = 80;
-        int windowsize = 10*aSignal->TimeSize()/nwindows;
-
+        int tNWindows = 80;
+        int tWindowSize = 10 * aSignal->TimeSize() / tNWindows;
 
         fftw_complex *SignalComplex;
-        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
+        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * tWindowSize );
+
         fftw_complex *FFTComplex;
-        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
+        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * tWindowSize );
 
         fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+        ForwardPlan = fftw_plan_dft_1d(tWindowSize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
         fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+        ReversePlan = fftw_plan_dft_1d(tWindowSize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
 
-
-        for (int nwin = 0; nwin < nwindows; nwin++)
+        for (int nwin = 0; nwin < tNWindows; ++nwin)
         {
-            // Construct complex voltage.
-            for( unsigned index = 0; index < windowsize; ++index )
+            //Put (Real Voltage into Time Domain)
+            for( unsigned index = 0; index < tWindowSize; ++index )
             {
-                SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
-                SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
-                //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
+                SignalComplex[index][0] = aLongSignal[ tNWindows*tWindowSize + index ];
+                SignalComplex[index][1] = ImaginarySignal[ tNWindows*tWindowSize + index ];
             }
 
             fftw_execute(ForwardPlan);
-
             //Complex filter to set power at negative frequencies to 0.
-
-            for( unsigned index = windowsize/2; index < windowsize; ++index )
+            for( unsigned index = tWindowSize/2; index < tWindowSize; ++index )
             {
                 FFTComplex[index][0] = 0.;
                 FFTComplex[index][1] = 0.;
@@ -152,61 +140,60 @@ namespace locust
 
             fftw_execute(ReversePlan);
 
-            double norm = (double)(windowsize);
-
-            for( unsigned index = 0; index < windowsize; ++index )
+            for( unsigned index = 0; index < tWindowSize; ++index )
             {
-                // normalize and take the real part of the reverse transform, for digitization.
-                //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
+                //normalize and take the real part of the reverse transform, for digitization.
+                aLongSignal[ tNWindows*tWindowSize + index ] = SignalComplex[index][0] / tWindowSize; //type fftw_complex is a typedef for double[2]
             }
-
         }
 
 
-        delete SignalComplex;
-        delete FFTComplex;
+        delete [] SignalComplex;
+        delete [] FFTComplex;
 
     }
 
-
-    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
+    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* anImaginarySignal) const
     {
 
         double dt = 5.e-10; // seconds, this might need to come from Kassiopeia and be exact.
-        double fprime_antenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
-        double fprime_short = 0.;  // Doppler shifted cyclotron frequency in Hz.
+        double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
+        double tDopplerFrequencyShort = 0.;  
         double RealVoltage1 = 0.;
         double ImagVoltage1 = 0.;
         double RealVoltage2 = 0.;
         double ImagVoltage2 = 0.;
-        double GroupVelocity = 0.;
         double SpeedOfLight = 2.99792458e8; // m/s
-        double CutOffFrequency = 2. * PI * SpeedOfLight * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
-                                    
+        double tCutOffFrequency = 2. * PI * SpeedOfLight * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
+
+        locust::Particle tParticle = fParticleHistory.front();
+        double tCyclotronFrequency = tParticle.GetCyclotronFrequency();
+        double tVelocityZ = tParticle.GetVelocity().Z();
+        double tGroupVelocity = SpeedOfLight * sqrt( 1. - pow(tCutOffFrequency/(2. * PI * tCyclotronFrequency  ), 2.) );
+        double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
+
         //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
-        GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
-        //printf("GroupVelocity is %g, CutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, CutOffFrequency, 2.*PI*fcyc); getchar();
-        fprime_antenna = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
-        fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
+        //printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, tCutOffFrequency, 2.*PI*fcyc); getchar();
+        tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
+        tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
 
+        double tPositionZ = tParticle.GetPosition.Z();
 
         if (PreEventCounter > 0)
         {
             // initialize phases.
-            phi_t1 = 2.*PI*(CENTER_TO_ANTENNA - Z) / (GroupVelocity/fprime_antenna);
-            phi_t2 = 2.*PI*(Z + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (GroupVelocity/fprime_short);
+            phi_t1 = 2. *PI * (CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
+            phi_t2 = 2. *PI * (tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
             phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
             phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
         }
 
         //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
 
-        phi_t1 += 2.*PI*fprime_antenna*dt;
-        phi_t2 += 2.*PI*fprime_short*dt;
-        phiLO_t += 2.*PI*fLO_Frequency*dt;
+        phi_t1 += 2. * PI * tDopplerFrequencyAntenna * dt;
+        phi_t2 += 2. * PI * tDopplerFrequencyShort * dt;
+        phiLO_t += 2. * PI * fLO_Frequency * dt;
         RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
         ImagVoltage1 = cos( phi_t1 - phiLO_t - PI/2.); // + cos( phi_t1 + phiLO_t - PI/2.));
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
@@ -215,15 +202,15 @@ namespace locust
         //RealVoltage2 = 0.;  // take out short.
         //ImagVoltage2 = 0.;  // take out short.
         
-        aLongSignal[ index ] += TE11ModeExcitation()*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
-        ImaginarySignal[ index ] += TE11ModeExcitation()*pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
+        aLongSignal[ index ] += TE11ModeExcitation() * sqrt(LarmorPower) * (RealVoltage1 + RealVoltage2);
+        anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt( 2. * LarmorPower) * (ImagVoltage1 + ImagVoltage2);
 
         //if (t_old > 0.004)
         //{
         //    printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
         //    printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
-        //    printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and fprime is %g and GammaZ is %.10g\n",
-        //    index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, fprime_antenna, GammaZ);
+        //    printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n",
+        //    index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, tDopplerFrequencyAntenna, GammaZ);
         //    getchar();
         //}
 
@@ -234,13 +221,17 @@ namespace locust
     double KassSignalGenerator::TE11ModeExcitation() const
     {
         double kc = 1.841/0.00502920;
-        double r = pow(X*X+Y*Y,0.5);
+        locust::Particle tParticle = fParticleHistory.front();
+        double tPositionX = tParticle.GetPosition.X();
+        double tPositionY = tParticle.GetPosition.Y();
+        double r = sqrt( tPositionX*tPositionX + tPositionY*tPositionY);
 
         // fraction of emitted power that goes into TE11.
-        double coupling = 119116./168.2 * 2./PI * 4./(2.*PI) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
+        // XXX
+        double tCoupling = 119116./168.2 * 2./PI * 4./(2.*PI) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
                 (j0(kc*r) + jn(2, kc*r)) );
 
-        return pow(coupling,0.5);  // field amplitude is sqrt of power going into field.
+        return sqrt(tCoupling);  // field amplitude is sqrt of power going into field.
     }
 
 

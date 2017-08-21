@@ -1,12 +1,12 @@
 /*
- * LMCParticleSlim.hh
+ * LMCParticle.hh
  *
  *  Created on: Jan 13, 2017
  *      Author: nbuzinsky
  */
 
-#ifndef LMCPARTICLESLIM_HH_
-#define LMCPARTICLESLIM_HH_
+#ifndef LMCPARTICLE_HH_
+#define LMCPARTICLE_HH_
 
 #include <stdint.h>
 #include <KThreeVector.hh>
@@ -16,12 +16,12 @@
 namespace locust
 {
 
-    class ParticleSlim
+    class Particle
     {
 
         public:
-            ParticleSlim();
-            virtual ~ParticleSlim();
+            Particle();
+            virtual ~Particle();
 
             void SetTime(double);
             void SetPosition(double,double,double);
@@ -31,32 +31,21 @@ namespace locust
             void SetCharge(double);
             void SetCyclotronFrequency(double);
 
-            void SetReceiverPosition(double,double,double);
-            void SetReceiverTime(double);
             void SetKinematicProperties();
 
             void Interpolate(double);
 
-            double GetTime();
-            double GetTimeDisplacement();
-            KGeoBag::KThreeVector GetPosition();
-            KGeoBag::KThreeVector GetVelocity();
+            double GetTime(const bool &aInterpolated = false) const;
+            KGeoBag::KThreeVector GetPosition(const bool &aInterpolated = false ) const;
+            KGeoBag::KThreeVector GetVelocity(const bool &aInterpolated = false) const;
+            KGeoBag::KThreeVector GetAcceleration(const bool &aInterpolated = false) const;
 
-            double GetSpaceTimeInterval();
-            double GetSpaceTimeInterval(double);
-            double GetReceiverDistance();
+            double CalculateVoltage(const KGeoBag::KThreeVector&) const;
+            KGeoBag::KThreeVector CalculateElectricField(const KGeoBag::KThreeVector&) const;
+            KGeoBag::KThreeVector CalculateMagneticField(const KGeoBag::KThreeVector&) const;
 
-            double GetStepRoot(int,double);
-            double CalculateVoltage();
-            void CalculateElectricField(double&,double&,double&);
-            void CalculateMagneticField(double&,double&,double&);
-            double CalculatePower();
-
-            void Print();
-            void SetSpline(ParticleSlim);
-            void ErrorCheck(ParticleSlim);
-
-
+            void Print() const;
+            void SetSpline(Particle);
 
         private:
             double fTime; //Time of node given from kassiopeia
@@ -65,6 +54,7 @@ namespace locust
 
             KGeoBag::KThreeVector fPosition;
             KGeoBag::KThreeVector fVelocity;
+            KGeoBag::KThreeVector fAcceleration;
             double fVelocityParallel;
 
             KGeoBag::KThreeVector fNewPosition;
@@ -87,16 +77,9 @@ namespace locust
             KGeoBag::KThreeVector fSplineC;
             KGeoBag::KThreeVector fSplineD;
 
-            /////////////////Receiver Info////////////
-            double fReceiverTime;
-            KGeoBag::KThreeVector fReceiverPosition;
-            KGeoBag::KThreeVector fReceiverVector;
-            double fReceiverDistance;
-            KGeoBag::KThreeVector fReceiverDir;
-
 };
 
 
 } /* namespace locust */
 
-#endif /* LMCPARTICLESLIM_HH_ */
+#endif /* LMCPARTICLE_HH_ */

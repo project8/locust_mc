@@ -208,7 +208,7 @@ namespace locust
         return;
     }
 
-    std::vector<std::array<double, 3> > HFSSReader::GetSurfacePoints()
+    std::vector<KGeoBag::KThreeVector> HFSSReader::GetSurfacePoints()
     {
         return rSurfacePoints;
     }
@@ -249,7 +249,7 @@ namespace locust
         InputString.erase(std::remove(InputString.begin(), InputString.end(), ','), InputString.end());
     }
 
-    void HFSSReader::ArrayParse(std::string InputString, std::array<double, 3> (&X) )
+    void HFSSReader::ArrayParse(std::string InputString,  KGeoBag::KThreeVector &X )
     {
         StringClean(InputString);
         std::stringstream InputStream(InputString);
@@ -263,9 +263,9 @@ namespace locust
     }
 
 
-    std::vector<std::array<double, 3> > HFSSReader::GeneratePlane(std::array<double, 2> GeometryScale, int nResolution)
+    std::vector<KGeoBag::KThreeVector> HFSSReader::GeneratePlane(std::array<double, 2> GeometryScale, int nResolution)
     {
-        std::vector<std::array<double, 3> > rPointVector;
+        std::vector< KGeoBag::KThreeVector > rPointVector;
 
         double SizeRatio[2]={1.,1.};
         int MinIndex=(GeometryScale[0] < GeometryScale[1]) ? 0 : 1;
@@ -278,7 +278,7 @@ namespace locust
             dx[i]=double(GeometryScale[i])/double(N[i]-1);
         }
 
-        std::array<double, 3> rPointVectorBuffer;
+        KGeoBag::KThreeVector rPointVectorBuffer;
         rPointVectorBuffer[2]=0.;
         for(int i=0;i<N[0];i++)
         {
@@ -294,9 +294,9 @@ namespace locust
         return rPointVector;
     }
 
-    std::vector<std::array<double, 3> > HFSSReader::GenerateBox(std::array<double, 3> GeometryScale, int nResolution)
+    std::vector<KGeoBag::KThreeVector > HFSSReader::GenerateBox(KGeoBag::KThreeVector GeometryScale, int nResolution)
     {
-        std::vector<std::array<double, 3> > rPointVector;
+        std::vector<KGeoBag::KThreeVector> rPointVector;
 
         double SizeRatio[3]={1.,1.,1.};
         int MinIndex=0.;
@@ -313,7 +313,7 @@ namespace locust
             dx[i]=double(GeometryScale[i])/double(N[i]-1);
         }
 
-        std::array<double, 3> rPointVectorBuffer;
+        KGeoBag::KThreeVector rPointVectorBuffer;
         for(int i=0;i<N[0];i++)
         {
             rPointVectorBuffer[0]=dx[0]*(double(i)-double(N[0]-1.)/2.);
@@ -323,7 +323,7 @@ namespace locust
                 for(int k=0;k<N[2];k++)
                 {
                     rPointVectorBuffer[2]=dx[2]*(double(k)-double(N[2]-1.)/2.);
-                    if(abs(rPointVectorBuffer[0])==GeometryScale[0]/2. || abs(rPointVectorBuffer[1])==GeometryScale[1]/2. || abs(rPointVectorBuffer[2])==GeometryScale[2]/2.)
+                    if(fabs(rPointVectorBuffer[0])==GeometryScale[0]/2. || fabs(rPointVectorBuffer[1])==GeometryScale[1]/2. || fabs(rPointVectorBuffer[2])==GeometryScale[2]/2.)
                         rPointVector.push_back(rPointVectorBuffer);
                 }
             }
@@ -333,29 +333,9 @@ namespace locust
 
     }
 
-    //std::vector<std::array<double, 3> > HFSSReader::GenerateSphere(double Radius, int nResolution)
-    //{
-    //    std::vector<std::array<double, 3> > rPointVector;
-    //    srand(time(NULL));
-    //    std::array<double, 3> rPointVectorBuffer;
-    //    double sum=0.;
-    //    for(int i=0;i<10000;i++)
-    //    {
-    //        rPointVectorBuffer[0]= -1. + static_cast <double> (rand() / static_cast <double> (RAND_MAX/2.));
-    //        rPointVectorBuffer[1]= -1. + static_cast <double> (rand() / static_cast <double> (RAND_MAX/2.));
-    //        rPointVectorBuffer[2]= -1. + static_cast <double> (rand() / static_cast <double> (RAND_MAX/2.));
-    //        sum=sqrt(rPointVectorBuffer[0]*rPointVectorBuffer[0]+rPointVectorBuffer[1]*rPointVectorBuffer[1]+rPointVectorBuffer[2]*rPointVectorBuffer[2]);
-    //        rPointVectorBuffer[0]*=Radius/sum;
-    //        rPointVectorBuffer[1]*=Radius/sum;
-    //        rPointVectorBuffer[2]*=Radius/sum;
-    //        rPointVector.push_back(rPointVectorBuffer);
-    //    }
-
-    //    return rPointVector;
-    //}
-    std::vector<std::array<double, 3> > HFSSReader::GenerateSphere(double Radius, int nResolution)
+    std::vector<KGeoBag::KThreeVector > HFSSReader::GenerateSphere(double Radius, int nResolution)
     {
-        std::vector<std::array<double, 3> > rPointVector;
+        std::vector<KGeoBag::KThreeVector> rPointVector;
         int nRings=2.*nResolution+3;
         double dz=2.*(1.-1./double(nRings))/double(nRings-1.);
         double zRings[nRings];
@@ -370,7 +350,7 @@ namespace locust
         }
         double Phi=0.;
 
-        std::array<double, 3> rPointVectorBuffer;
+        KGeoBag::KThreeVector rPointVectorBuffer;
         for(int i=0;i<nRings;i++)
         {
             Phi=0.;
@@ -388,9 +368,9 @@ namespace locust
         return rPointVector;
     }
 
-    std::vector<std::array<double, 3> > HFSSReader::GenerateCylinder(std::array<double, 2> GeometryScale, int nResolution)
+    std::vector<KGeoBag::KThreeVector > HFSSReader::GenerateCylinder(std::array<double, 2> GeometryScale, int nResolution)
     {
-        std::vector<std::array<double, 3> > rPointVector;
+        std::vector<KGeoBag::KThreeVector > rPointVector;
 
         double SizeRatio[2]={1.,1.};
         int MinIndex=(GeometryScale[0] < GeometryScale[1]) ? 0 : 1;
@@ -410,7 +390,7 @@ namespace locust
         double dPhi=2.*PI/double(RingCount);
         double Phi=0.; double Z=0.;
         //Fill in outer surface of cylinder
-        std::array<double, 3> rPointVectorBuffer;
+        KGeoBag::KThreeVector rPointVectorBuffer;
         for(int i=0;i<nRings;i++)
         {
             Phi=0.;
@@ -425,7 +405,7 @@ namespace locust
             Z+=dz[1];
         }
         //Fill in end caps
-        std::vector<std::array<double, 3> > rPointVectorEnd;
+        std::vector<KGeoBag::KThreeVector> rPointVectorEnd;
         rPointVectorBuffer[0]=0.; rPointVectorBuffer[1]=0.; rPointVectorBuffer[2]=0.;
         rPointVectorEnd.push_back(rPointVectorBuffer);
         for(int i=1;i<N[0]-1;i++)
@@ -451,7 +431,7 @@ namespace locust
 
     }
 
-    std::vector<std::array<double, 3> > HFSSReader::RotateShift(std::vector<std::array<double, 3> > rPointVector, std::array<double, 3> tNormal, std::array<double, 3> rCenter)
+    std::vector<KGeoBag::KThreeVector> HFSSReader::RotateShift(std::vector<KGeoBag::KThreeVector> rPointVector, KGeoBag::KThreeVector tNormal, KGeoBag::KThreeVector rCenter)
     {
         double tNormalization=0.;
         for(int i=0;i<3;i++)tNormalization+=pow(tNormal[i],2.);

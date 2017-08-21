@@ -40,7 +40,7 @@ namespace locust
         double SpeedOfLight = 2.99792458e8; // m/s
         double CutOffFrequency = 2. * PI * SpeedOfLight * 2.405 / 2. / PI / 0.00502920; // rad/s
         double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
+        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) );
         //printf("GroupVelocity is %g\n", GroupVelocity); getchar();
     	return GroupVelocity;
     }
@@ -49,7 +49,7 @@ namespace locust
         double SpeedOfLight = 2.99792458e8; // m/s
         double CutOffFrequency = 2. * PI * SpeedOfLight * 1.841 / 2. / PI / 0.00502920; // rad/s
         double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) , 0.5);
+        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) );
         //("GroupVelocity is %g\n", GroupVelocity); getchar();
     	return GroupVelocity;
     }
@@ -81,7 +81,7 @@ namespace locust
         //printf("gcpx = %f and gcpy = %f\n", gcpx, gcpy);
         //printf("kass gcpx = %f and kass gcpy = %f\n", kassgcpx, kassgcpy); getchar();
         //printf("dx is %f and dy is %f\n", dx, dy);
-    	double r = pow(x*x+y*y,0.5);
+    	double r = sqrt( x*x + y*y);
     	double coupling = 119116./168.2 * 2./PI * 4./(2.*PI) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
     			(j0(kc*r) + jn(2, kc*r)) );
         //printf("TE11 coupling at r=%f is %f\n", r, coupling); //getchar();
@@ -93,7 +93,7 @@ namespace locust
     	double kc = 2.405/0.00502920;
     	double x = aFinalParticle.GetPosition().GetX();
     	double y = aFinalParticle.GetPosition().GetY();
-    	double r = pow(x*x+y*y,0.5);
+    	double r = sqrt(x*x + y*y);
     	double coupling =   146876.5/168.2 * 2./PI * 4./(2.*PI) / kc * j1(kc*r);
         //printf("tm01 coupling at r=%f is %f\n", r, coupling); //getchar();
         //printf("guiding center z is %f\n", aFinalParticle.GetGuidingCenterPosition().GetZ());
@@ -134,14 +134,14 @@ namespace locust
     {
 
     	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-        double fcyc = aFinalParticle.GetCyclotronFrequency();
+        double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTM01(aFinalParticle);
-        //double zvelocity = aFinalParticle.GetVelocity().GetZ();
-        double zposition = aFinalParticle.GetPosition().GetZ();
-        double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTM01(aFinalParticle),2.),0.5);
+        double tVelocityZ = aFinalParticle.GetVelocity().GetZ();
+        double tPositionZ = aFinalParticle.GetPosition().GetZ();
+        double GammaZ = 1.0/sqrt(1.0-pow(tVelocityZ / GetGroupVelocityTM01(aFinalParticle),2.) );
 
-    	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double fprime_polarizer = fcyc*GammaZ*(1.-zvelocity/GroupVelocity);
+    	double fprime_short = tCyclotronFrequency*GammaZ*(1.+tVelocityZ/GroupVelocity);
+    	double fprime_polarizer = tCyclotronFrequency*GammaZ*(1.-tVelocityZ/GroupVelocity);
     	double lambda_short = GroupVelocity/fprime_short;
     	double lambda_polarizer = GroupVelocity/fprime_polarizer;
     	double FieldFromShort=0.;  // first doppler shift
@@ -153,8 +153,8 @@ namespace locust
 
         if ((phi_shortTM01[0] == 0.)||(0==0))  // if the event has just started, or always.
         {
-            phi_shortTM01[0] = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
-            phi_polarizerTM01[0] = 2.*PI*2.*(CENTER_TO_ANTENNA - zposition)/lambda_polarizer + PI;  // starting phi after 0th bounce.
+            phi_shortTM01[0] = 2.*PI*2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
+            phi_polarizerTM01[0] = 2.*PI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + PI;  // starting phi after 0th bounce.
 
             FieldFromShort = cos(0.) + cos(phi_shortTM01[0]); // starting field, after 0th bounce.
             FieldFromPolarizer = cos(0.) + cos(phi_polarizerTM01[0]); // starting field, after 0th bounce.
@@ -163,11 +163,11 @@ namespace locust
             {
                 if (i%2==0)
                 {
-                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*PI*2.*(CENTER_TO_ANTENNA - zposition)/lambda_short + PI;  // phase shift
+                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*PI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + PI;  // phase shift
                 }
                 else
                 {
-                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*PI*2.*(zposition + CENTER_TO_SHORT)/lambda_short;
+                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*PI*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
                 }
                 FieldFromShort += cos(phi_shortTM01[i+1]); // field adds after each bounce.
             }
@@ -177,11 +177,11 @@ namespace locust
             {
                 if (i%2==0)
                 {
-                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*PI*2.*(CENTER_TO_SHORT + zposition)/lambda_polarizer;
+                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*PI*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
                 }
                 else
                 {
-                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*PI*2.*(CENTER_TO_ANTENNA - zposition)/lambda_polarizer + PI;  // phase shift.
+                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*PI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + PI;  // phase shift.
                 }
                 FieldFromPolarizer += cos(phi_polarizerTM01[i+1]);
             }
@@ -194,7 +194,7 @@ namespace locust
 
         TM01FieldAfterBounces = FieldFromShort + FieldFromPolarizer;
 
-        //printf("x y z is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), zposition);
+        //printf("x y z is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), tPositionZ);
         //printf("lambda_short is %g and lambda_polarizer is %g\n", lambda_short, lambda_polarizer);
         //printf("TM01FieldAfterBounces is %g\n", TM01FieldAfterBounces); //getchar();
 
@@ -282,7 +282,7 @@ namespace locust
 
         //printf("%e \n",fcyc);
 
-        locust::ParticleSlim aNewParticle;
+        locust::Particle aNewParticle;
         aNewParticle.SetPosition(X,Y,Z);
         aNewParticle.SetVelocityVector(xVelocity,yVelocity,zVelocity);
         aNewParticle.SetMagneticFieldVector(xMagneticField,yMagneticField,zMagneticField);
@@ -336,11 +336,11 @@ namespace locust
             t_old+=EventModTimeStep;
             //t_old = t_poststep;
 
-            GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE11(aFinalParticle),2.),0.5);  // speed of light is group velocity
+            //GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE11(aFinalParticle),2.),0.5);  // speed of light is group velocity
 
-	    	fcyc = aFinalParticle.GetCyclotronFrequency();
+	    	//fcyc = aFinalParticle.GetCyclotronFrequency();
             //fcyc = 1.125/dt;  // for testing
-            LarmorPower = -de/dt*1.602677e-19;
+            //LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 

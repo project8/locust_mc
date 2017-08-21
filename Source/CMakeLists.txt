@@ -35,6 +35,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCHFSSReader.hh
     #Core/LMCParam.hh
     #Core/LMCParser.hh
+    Core/LMCParticle.hh
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
     Core/LMCSimulationController.hh
@@ -59,6 +60,7 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCHFSSReader.cc
     #Core/LMCParam.cc
     #Core/LMCParser.cc
+    Core/LMCParticle.cc
     Core/LMCRunLengthCalculator.cc
     Core/LMCSignal.cc
     Core/LMCSimulationController.cc
@@ -84,7 +86,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
-        Kassiopeia/LMCParticleSlim.hh
         Kassiopeia/LMCRootBuilder.hh
         Kassiopeia/LMCRunKassiopeia.hh
     )
@@ -100,7 +101,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
-        Kassiopeia/LMCParticleSlim.cc
         Kassiopeia/LMCRootBuilder.cc
         Kassiopeia/LMCRunKassiopeia.cc
     )

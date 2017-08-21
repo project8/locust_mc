@@ -16,30 +16,22 @@
 #include <vector>
 #include <mutex>
 #include <deque>
-#include "LMCParticleSlim.hh"
+#include "LMCParticle.hh"
 
 
-extern double Z;
-extern double X;
-extern double Y;
 extern double t_poststep;
 extern double t_old;
+
 extern double phi_shortTE11;
 extern double* phi_shortTM01;
 extern double* phi_polarizerTM01;
-extern double LarmorPower;
-extern double xvelocity;
-extern double yvelocity;
-extern double zvelocity;
-extern double fcyc;
-extern double GammaZ;
 extern double testvar;
 extern double EventModTimeStep;
 
 extern int fDecimationFactor;
 
-extern std::deque<locust::ParticleSlim> fParticleHistory;
-extern std::deque<locust::ParticleSlim> fNewParticleHistory;
+extern std::deque<locust::Particle> fParticleHistory;
+extern std::deque<locust::Particle> fNewParticleHistory;
 
 extern bool fWaitBeforeEvent;
 extern bool fWaitAfterEvent;

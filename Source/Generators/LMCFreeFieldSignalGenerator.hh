@@ -9,10 +9,10 @@
 #define LMCFREEFIELDSIGNALGENERATOR_HH_
 
 #define PI 3.1415926
-#define N_GRID_SIDE 9 //Number of discretized points per side of the receiver
 #define LO_FREQUENCY 0.
 
 
+#include <KThreeVector.hh>
 #include "LMCGenerator.hh"
 
 namespace locust
@@ -46,11 +46,11 @@ namespace locust
 
 
         private:
-            std::vector<std::array<double, 3> > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
-            mutable std::vector<std::array<double, 2> > PreviousTimes; //Cache the results from previous iteration. [0] is previous retarded time, [1] is corresponding index
+            std::vector<KGeoBag::KThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            mutable std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
 
-            mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;
+            mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the KThreeVectors too.....
             mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
 
             bool fWriteNFD;
@@ -62,13 +62,10 @@ namespace locust
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double *ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
 
-            double AntiAliasingSetup(double fCarrier_Frequency, double fBandwidth_Frequency) const;
+            double AntiAliasingSetup(double fCarrierFrequency, double fBandwidthFrequency) const;
             void NFDWrite() const;
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
-            bool IsInside(double tNew, int IndexMin, int IndexMax) const;
-            int BinarySearch(double tNew, int IndexMin, int IndexMax) const;
-
 
     };
 
