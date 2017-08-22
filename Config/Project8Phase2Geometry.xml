@@ -1,8 +1,132 @@
-<geometry>
+
+<!-- quadrupole geometry -->
+
+
+
+<!--
+    <tag name="electrode_tag" name="endcap_electrode_tag">
+        <rotated_poly_line_surface name="endcap_electrode_surface" rotated_mesh_count="128">
+            <poly_line>
+                <start_point x="3.350e-3" y="0.0"/>
+                <next_line x="3.636e-3" y="2.000e-3" line_mesh_count="50" line_mesh_power="1."/>
+                <next_line x="4.384e-3" y="4.000e-3" line_mesh_count="50" line_mesh_power="1."/>
+                <next_line x="5.406e-3" y="6.000e-3" line_mesh_count="200" line_mesh_power="1."/>
+            </poly_line>
+        </rotated_poly_line_surface>
+    </tag>
+
+    <tag name="electrode_tag" name="ring_electrode_tag">
+        <rotated_poly_line_surface name="ring_electrode_surface" rotated_mesh_count="128">
+            <poly_line>
+                <start_point x="4.000e-3" y="7.379e-3"/>
+                <next_line x="3.000e-3" y="6.360e-3" line_mesh_count="200" line_mesh_power="1."/>
+                <next_line x="2.000e-3" y="5.518e-3" line_mesh_count="100" line_mesh_power="1."/>
+                <next_line x="1.000e-3" y="4.944e-3" line_mesh_count="50" line_mesh_power="1."/>
+                <next_line x="0.000e-3" y="4.738e-3" line_mesh_count="50" line_mesh_power="1."/>
+                <next_line x="-1.000e-3" y="4.944e-3" line_mesh_count="50" line_mesh_power="1."/>
+                <next_line x="-2.000e-3" y="5.518e-3" line_mesh_count="50" line_mesh_power="1."/>
+                <next_line x="-3.000e-3" y="6.360e-3" line_mesh_count="100" line_mesh_power="1."/>
+                <next_line x="-4.000e-3" y="7.379e-3" line_mesh_count="200" line_mesh_power="1."/>
+            </poly_line>
+        </rotated_poly_line_surface>
+    </tag>
+
+-->
+
+
+    <!-- solenoid -->
+
+    <tag name="magnet_tag" name="solenoid33_tag">
+        <cylinder_tube_space name="solenoid33_space" z1="-50.e-3" z2="50.e-3" r1="8.000e-3" r2="9.000e-3" radial_mesh_count="30"/>
+    </tag>
+
+
+    <!-- pinch coils -->
+
+    <tag name="magnet_tag" name="upstream_pinch_coil_tag">
+      <cylinder_tube_space
+	 name="upstream_pinch_coil_space"
+	 z1="-.0038"
+	 z2=".0038"
+	 longitudinal_mesh_count="10"
+	 longitudinal_mesh_power="1."
+	 r1="0.0074"
+	 r2="0.0094"
+	 radial_mesh_count="30"
+	 radial_mesh_power="1."
+	 axial_mesh_count="128"
+	 />
+      </tag>
+
+
+    <tag name="magnet_tag" name="center_pinch_coil_tag">
+      <cylinder_tube_space
+	 name="center_pinch_coil_space"
+	 z1="-.0038"
+	 z2=".0038"
+	 longitudinal_mesh_count="10"
+	 longitudinal_mesh_power="1."
+	 r1="0.0074"
+	 r2="0.0094"
+	 radial_mesh_count="30"
+	 radial_mesh_power="1."
+	 axial_mesh_count="128"
+	 />
+      </tag>
+
+
+    <tag name="magnet_tag" name="downstream_pinch_coil_tag">
+      <cylinder_tube_space
+	 name="downstream_pinch_coil_space"
+	 z1="-.0038"
+	 z2=".0038"
+	 longitudinal_mesh_count="10"
+	 longitudinal_mesh_power="1."
+	 r1="0.0074"
+	 r2="0.0094"
+	 radial_mesh_count="30"
+	 radial_mesh_power="1."
+	 axial_mesh_count="128"
+	 />
+      </tag>
+
+    <!-- bathtub coils -->
+
+    <tag name="magnet_tag" name="upstream_bathtub_coil_tag">
+      <cylinder_tube_space
+	 name="upstream_bathtub_coil_space"
+	 z1="-.0038"
+	 z2=".0038"
+	 longitudinal_mesh_count="10"
+	 longitudinal_mesh_power="1."
+	 r1="0.0074"
+	 r2="0.0094"
+	 radial_mesh_count="30"
+	 radial_mesh_power="1."
+	 axial_mesh_count="128"
+	 />
+      </tag>
+
+
+    <tag name="magnet_tag" name="downstream_bathtub_coil_tag">
+      <cylinder_tube_space
+	 name="downstream_bathtub_coil_space"
+	 z1="-.0038"
+	 z2=".0038"
+	 longitudinal_mesh_count="10"
+	 longitudinal_mesh_power="1."
+	 r1="0.0074"
+	 r2="0.0094"
+	 radial_mesh_count="30"
+	 radial_mesh_power="1."
+	 axial_mesh_count="128"
+	 />
+      </tag>
 
   <!-- waveguide -->
+    <tag name="project8_cylindrical_waveguide_tag">
       <cylinder_space
-	 name="cylindricalwaveguide_space"
+	 name="new_cylindricalwaveguide_space"
 	 z1="-0.07"
 	 z2="0.07"
 	 longitudinal_mesh_count="10"
@@ -12,88 +136,111 @@
 	 radial_mesh_power="1."
 	 axial_mesh_count="128"
 	 />
+    </tag>
 
 
-<!-- center -->
-    <flattened_circle_surface name="center_surface" z="0." flattened_mesh_count="10" flattened_mesh_power="4.">
-        <circle x="0.0" y="0.0" radius="0.00502920" circle_mesh_count="128"/>
-    </flattened_circle_surface>
+    <!-- cell -->
+<!--
+    <tag name="cell_tag">
+        <cylinder_space name="cell_space" z1="-1.5e-3" z2="1.5e-3" r="4.5e-3"/>
+    </tag>
+-->
+    <!-- waveguide boundaries -->
+
+    <tag name="upstream_endcap_tag">
+        <disk_surface name="upstream_endcap" r="0.00502920" z="0.07"/>
+    </tag>
+    <tag name="downstream_endcap_tag">
+        <disk_surface name="downstream_endcap" r="0.00502920" z="-0.07"/>
+    </tag>
 
 
-    <!-- pinch coil -->
+    <tag name="waveguidejacket_tag">
+        <cylinder_surface name="waveguide_jacket" r="0.00502920" z1="-0.07" z2="0.07"/>
+    </tag>
 
-    <tag name="magnet_tag">
-      <cylinder_tube_space
-	 name="pinch_coil_space"
-	 z1="-.0038"
-	 z2=".0038"
-	 longitudinal_mesh_count="10"
-	 longitudinal_mesh_power="1."
-	 r1="0.0074"
-	 r2="0.0094"
-	 radial_mesh_count="30"
-	 radial_mesh_power="1."
-	 axial_mesh_count="128"
-	 />
-      </tag>
 
-    <!-- bathtub coil -->
-
-    <tag name="magnet_tag">
-      <cylinder_tube_space
-	 name="bathtub_coil_space"
-	 z1="-.0038"
-	 z2=".0038"
-	 longitudinal_mesh_count="10"
-	 longitudinal_mesh_power="1."
-	 r1="0.0074"
-	 r2="0.0094"
-	 radial_mesh_count="30"
-	 radial_mesh_power="1."
-	 axial_mesh_count="128"
-	 />
-      </tag>
 
     <!-- assembly -->
+<!--
+    <space name="cell_assembly" node="cell_space">
+        <surface name="target" node="target_surface"/>
+    </space>
+-->
+    <space name="cylindricalwaveguide_assembly" node="new_cylindricalwaveguide_space">
+        <surface name="upstream_endcap_piece" node="upstream_endcap"/>
+        <surface name="downstream_endcap_piece" node="downstream_endcap"/>
+        <surface name="jacket" node="waveguide_jacket"/>
+    </space>
+
 
     <space name="project8_assembly">
-      <space name="waveguide" node="cylindricalwaveguide_space">
-	<surface name="center" node="center_surface"/>
-	</space>
-      <space name="upstream_pinch_coil" node="pinch_coil_space">
+<!--
+        <surface name="top_endcap_electrode" node="endcap_electrode_surface"/>
+        <surface name="bottom_endcap_electrode" node="endcap_electrode_surface">
+                <transformation rotation_euler="0. 180. 0."/>
+        </surface>
+        <surface name="ring_electrode" node="ring_electrode_surface"/>
+-->
+
+      <space name="upstream_pinch_coil" node="upstream_pinch_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {0.0221742}"/>
 	</space>
-      <space name="center_pinch_coil" node="pinch_coil_space">
-    	<transformation rotation_euler="0. 0. 0."/>
-	<transformation displacement="{0.} {0.} {0.}"/>
-	</space>
-      <space name="downstream_pinch_coil" node="pinch_coil_space">
+        <space name="center_pinch_coil" node="center_pinch_coil_space">
+      	  <transformation rotation_euler="0. 0. 0."/>
+	  <transformation displacement="{0.} {0.} {0.0}"/>
+        </space>
+      <space name="downstream_pinch_coil" node="downstream_pinch_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {-0.0221742}"/>
 	</space>
-      <space name="upstream_bathtub_coil" node="bathtub_coil_space">
+      <space name="upstream_bathtub_coil" node="upstream_bathtub_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {0.0443484}"/>
 	</space>
-      <space name="downstream_bathtub_coil" node="bathtub_coil_space">
+      <space name="downstream_bathtub_coil" node="downstream_bathtub_coil_space">
     	<transformation rotation_euler="0. 0. 0."/> 
 	<transformation displacement="{0.} {0.} {-0.0443484}"/>
 	</space>
-      </space>
+
+
+      <space name="cylindricalwaveguide" tree="cylindricalwaveguide_assembly"/>
+<!--        <space name="cell" tree="cell_assembly"/>  -->
+        <surface name="upstream_endcap_piece" node="upstream_endcap">
+            <transformation displacement="0. 0. 0."/>
+        </surface>
+        <surface name="downstream_endcap_piece" node="downstream_endcap">
+            <transformation displacement="0. 0. 0."/>
+        </surface>
+        <surface name="whole_waveguide_jacket" node="waveguide_jacket">
+            <transformation displacement="0. 0. 0."/>
+        </surface>
 
 
 
-    <!-- appearance -->
+    </space>
 
-    <appearance name="app_magnet_upstream_pinch" color="0 255 96 96" arc="72" surfaces="project8_assembly/upstream_pinch_coil/#"/>
-    <appearance name="app_magnet_downstream_pinch" color="0 255 96 96" arc="72" surfaces="project8_assembly/downstream_pinch_coil/#"/>
-    <appearance name="app_magnet_center_pinch" color="0 255 96 96" arc="72" surfaces="project8_assembly/center_pinch_coil/#"/>
-    <appearance name="app_magnet_upstream_bathtub" color="0 255 96 96" arc="72" surfaces="project8_assembly/upstream_bathtub_coil/#"/>
-    <appearance name="app_magnet_downstream_bathtub" color="0 255 96 96" arc="72" surfaces="project8_assembly/downstream_bathtub_coil/#"/>
-    <appearance name="app_waveguide_top" color="255 128 0 96" arc="72" surfaces="project8_assembly/waveguide/top"/>
-    <appearance name="app_waveguide_bottom" color="255 128 0 96" arc="72" surfaces="project8_assembly/waveguide/bottom"/>
-    <appearance name="app_waveguide_jacket" color="255 128 0 96" arc="72" surfaces="project8_assembly/waveguide/jacket"/>
-    <appearance name="app_center" color="0 128 255 96" arc="72" surfaces="project8_assembly/waveguide/center"/>
 
-</geometry>
+
+    <cylinder_space name="world_space" z1="-50" z2="50" r="20"/>
+    <space name="world" node="world_space">
+        <space name="project8" tree="project8_assembly">
+            <transformation rotation_axis_angle="[alignment] 90. 90."/>
+        </space>
+    </space>
+
+
+
+
+    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/upstream_bathtub_coil/#"/> 
+    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/upstream_pinch_coil/#"/> 
+    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/center_pinch_coil/#"/> 
+    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_pinch_coil/#"/> 
+    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_bathtub_coil/#"/> 
+    <appearance name="app_waveguide" color="255 128 0 96" arc="72" surfaces="world/project8/cylindricalwaveguide/upstream_endcap_piece"/>
+    <appearance name="app_waveguide" color="255 128 0 96" arc="72" surfaces="world/project8/cylindricalwaveguide/downstream_endcap_piece"/>
+    <appearance name="app_waveguide" color="255 128 0 96" arc="72" surfaces="world/project8/cylindricalwaveguide/jacket"/>
+
+
+
