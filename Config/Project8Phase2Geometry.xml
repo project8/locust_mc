@@ -1,45 +1,4 @@
 
-<!-- quadrupole geometry -->
-
-
-
-<!--
-    <tag name="electrode_tag" name="endcap_electrode_tag">
-        <rotated_poly_line_surface name="endcap_electrode_surface" rotated_mesh_count="128">
-            <poly_line>
-                <start_point x="3.350e-3" y="0.0"/>
-                <next_line x="3.636e-3" y="2.000e-3" line_mesh_count="50" line_mesh_power="1."/>
-                <next_line x="4.384e-3" y="4.000e-3" line_mesh_count="50" line_mesh_power="1."/>
-                <next_line x="5.406e-3" y="6.000e-3" line_mesh_count="200" line_mesh_power="1."/>
-            </poly_line>
-        </rotated_poly_line_surface>
-    </tag>
-
-    <tag name="electrode_tag" name="ring_electrode_tag">
-        <rotated_poly_line_surface name="ring_electrode_surface" rotated_mesh_count="128">
-            <poly_line>
-                <start_point x="4.000e-3" y="7.379e-3"/>
-                <next_line x="3.000e-3" y="6.360e-3" line_mesh_count="200" line_mesh_power="1."/>
-                <next_line x="2.000e-3" y="5.518e-3" line_mesh_count="100" line_mesh_power="1."/>
-                <next_line x="1.000e-3" y="4.944e-3" line_mesh_count="50" line_mesh_power="1."/>
-                <next_line x="0.000e-3" y="4.738e-3" line_mesh_count="50" line_mesh_power="1."/>
-                <next_line x="-1.000e-3" y="4.944e-3" line_mesh_count="50" line_mesh_power="1."/>
-                <next_line x="-2.000e-3" y="5.518e-3" line_mesh_count="50" line_mesh_power="1."/>
-                <next_line x="-3.000e-3" y="6.360e-3" line_mesh_count="100" line_mesh_power="1."/>
-                <next_line x="-4.000e-3" y="7.379e-3" line_mesh_count="200" line_mesh_power="1."/>
-            </poly_line>
-        </rotated_poly_line_surface>
-    </tag>
-
--->
-
-
-    <!-- solenoid -->
-
-    <tag name="magnet_tag" name="solenoid33_tag">
-        <cylinder_tube_space name="solenoid33_space" z1="-50.e-3" z2="50.e-3" r1="8.000e-3" r2="9.000e-3" radial_mesh_count="30"/>
-    </tag>
-
 
     <!-- pinch coils -->
 
@@ -139,12 +98,7 @@
     </tag>
 
 
-    <!-- cell -->
-<!--
-    <tag name="cell_tag">
-        <cylinder_space name="cell_space" z1="-1.5e-3" z2="1.5e-3" r="4.5e-3"/>
-    </tag>
--->
+
     <!-- waveguide boundaries -->
 
     <tag name="upstream_endcap_tag">
@@ -153,20 +107,11 @@
     <tag name="downstream_endcap_tag">
         <disk_surface name="downstream_endcap" r="0.00502920" z="-0.07"/>
     </tag>
-
-
     <tag name="waveguidejacket_tag">
         <cylinder_surface name="waveguide_jacket" r="0.00502920" z1="-0.07" z2="0.07"/>
     </tag>
 
 
-
-    <!-- assembly -->
-<!--
-    <space name="cell_assembly" node="cell_space">
-        <surface name="target" node="target_surface"/>
-    </space>
--->
     <space name="cylindricalwaveguide_assembly" node="new_cylindricalwaveguide_space">
         <surface name="upstream_endcap_piece" node="upstream_endcap"/>
         <surface name="downstream_endcap_piece" node="downstream_endcap"/>
@@ -175,13 +120,6 @@
 
 
     <space name="project8_assembly">
-<!--
-        <surface name="top_endcap_electrode" node="endcap_electrode_surface"/>
-        <surface name="bottom_endcap_electrode" node="endcap_electrode_surface">
-                <transformation rotation_euler="0. 180. 0."/>
-        </surface>
-        <surface name="ring_electrode" node="ring_electrode_surface"/>
--->
 
       <space name="upstream_pinch_coil" node="upstream_pinch_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
