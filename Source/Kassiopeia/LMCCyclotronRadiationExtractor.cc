@@ -258,9 +258,9 @@ namespace locust
         //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 
         // adjust power with reflections.
-        double DeltaE = GetDampingFactor(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+        //double DeltaE = GetDampingFactor(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
         //printf("poststep says DeltaE is %g\n", DeltaE);
-    	aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+    	//aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
 
         //printf("z is %f and DeltaE is %g and post fix kinetic energy is %g\n", aFinalParticle.GetPosition().Z(), DeltaE, aFinalParticle.GetKineticEnergy() - 4.84338e-15); getchar();
 
@@ -296,29 +296,25 @@ namespace locust
 
         /////////////////////////////////////////////////////////////////////////////
 
-        if (t_poststep - t_old >= EventModTimeStep) //take a digitizer sample
+        if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s
         {
             std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
 
-            //t_poststep = t_old + 5.e-10;
             // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
-            katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_poststep, aFinalParticle);
+            //katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_poststep, aFinalParticle);
             //printf("now t_old is %g\n", t_old);
             //getchar();
 
-            Z = aFinalParticle.GetPosition().Z();
-            X = aFinalParticle.GetPosition().X();
-            Y = aFinalParticle.GetPosition().Y();
+            //de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
+            //dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
 
-            de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
-            dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-
-            EventModTimeStep = fNewParticleHistory.back().GetTime()-fNewParticleHistory.front().GetTime()+dt;
+            //fEventModTimeStep = fNewParticleHistory.back().GetTime()-fNewParticleHistory.front().GetTime()+dt;
+            //printf("%e\n",fcyc);
 
             //Put in new entries in global ParticleHistory
             fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
-            //Set Spline coefficients OPTIONAL
+            //Set Spline coefficients -> MAKE OPTIONAL XXX
             for(int i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
             {
                 fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
@@ -333,18 +329,11 @@ namespace locust
                 fParticleHistory.pop_front();
             }
 
-            t_old+=EventModTimeStep;
             //t_old = t_poststep;
 
-            //GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE11(aFinalParticle),2.),0.5);  // speed of light is group velocity
-
-	    	//fcyc = aFinalParticle.GetCyclotronFrequency();
-            //fcyc = 1.125/dt;  // for testing
-            //LarmorPower = -de/dt*1.602677e-19;
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
-            t_old = t_poststep;  // get ready to look for next sample.
 
              //printf("de is %g and dt is %g and LarmorPower is %g\n", de, dt, LarmorPower);
           	 //printf("Kassiopeia says:  tick has happened; continuous time is %g and zvelocity is %f\n", t_poststep, zvelocity);

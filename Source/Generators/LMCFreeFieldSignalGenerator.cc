@@ -57,7 +57,7 @@ namespace locust
             double fCarrier_Frequency = aParam->get_value< double >( "carrier-frequency" );
             fDecimationFactor = AntiAliasingSetup(fCarrier_Frequency,1.e9);
             LDEBUG( lmclog, "Changing Decimation Factor to: "<< fDecimationFactor);
-            EventModTimeStep*= 10. / double(fDecimationFactor);
+            fDigitizerTimeStep*= 10. / double(fDecimationFactor);
         }
         if( aParam->has( "xml-filename" ) )
         {
@@ -80,6 +80,7 @@ namespace locust
             HFSSReader HFRead;
             rReceiver = HFRead.GeneratePlane({0.05,0.05},7);//Argumemts: Size, resolution
             rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,0.});//Arguments Normal vector, Position (m)
+            //rReceiver = HFRead.RotateShift(rReceiver,{0.,0.,1.},{0.,0.,0.15});//Arguments Normal vector, Position (m)
         }
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});
 
@@ -243,8 +244,8 @@ namespace locust
 
     double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const KGeoBag::KThreeVector &aParticlePosition, const KGeoBag::KThreeVector &aReceiverPosition )
     {
-        //return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / KConst::C();
-        return sqrt( pow(aReceiverTime - aParticleTime , 2. ) - ((aReceiverPosition - aParticlePosition)/ KConst::C()).MagnitudeSquared() );
+        //return pow(aReceiverTime - aParticleTime,2.) - (aReceiverPosition - aParticlePosition).MagnitudeSquared() / pow(KConst::C() , 2.);
+        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / KConst::C();
     }
 
     double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, KGeoBag::KThreeVector aReceiverPosition, double aSpaceTimeInterval, const int aStepOrder = 0)
@@ -255,7 +256,12 @@ namespace locust
 
         if(aStepOrder==0)
         {
-            return tRetardedTime+aSpaceTimeInterval;
+            double tCorrection = sqrt(fabs(aSpaceTimeInterval));
+            double tSign;
+            (aSpaceTimeInterval > 0) ? tSign = 1. : tSign = -1.;
+            
+            return tRetardedTime + aSpaceTimeInterval;
+            //return tRetardedTime + tSign * aSpaceTimeInterval;
         }
 
         KGeoBag::KThreeVector tNewPosition = aParticle.GetPosition(true);
@@ -288,7 +294,6 @@ namespace locust
     }
 
 
-
     void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
     {
         locust::Particle tCurrentParticle = fParticleHistory.back();
@@ -308,7 +313,8 @@ namespace locust
 
         const int HistorySize = fParticleHistory.size();
 
-        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * EventModTimeStep;
+        //phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fEventModTimeStep;
+        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
 
        //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
 
@@ -316,15 +322,15 @@ namespace locust
 
         for(unsigned i=0;i<rReceiver.size();++i)
         {
+            tReceiverPosition = rReceiver[i];
+
             //Check if there is time for photon to reach receiver if particle is recently created
             if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
             {
-                tReceiverPosition = rReceiver[i];
-
                 fParticleHistory.front().Interpolate(0);
-                if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), 0. , fParticleHistory.front().GetPosition(true), tReceiverPosition) < 0)
+                if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), 0. , fParticleHistory.front().GetPosition(true), tReceiverPosition) < 0 )
                 {
-                    printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
+                    //printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
                     continue;
                 }
             }
@@ -339,7 +345,7 @@ namespace locust
             else
             {
                 CurrentIndex = PreviousTimes[i].first;
-                tRetardedTime = PreviousTimes[i].second + EventModTimeStep;
+                tRetardedTime = PreviousTimes[i].second + fDigitizerTimeStep;
             }
 
             CurrentIndex = std::min(std::max(CurrentIndex,0) , HistorySize - 1);
@@ -398,7 +404,8 @@ namespace locust
                     {
                         //Complex factors for Downmixing/ DFT sums
                         double DownConvert[2] = { cos(phi_LO) , - sin(phi_LO) };
-                        int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * EventModTimeStep;
+                        //int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fEventModTimeStep;
+                        int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fDigitizerTimeStep;
                         double DFTFactor[2] = { cos(2. * PI * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * PI * kFreq * fNFDIndex / nHFSSBins ) };
 
                         NFDElectricFieldFreq[j][i][k][0] += tmpElectricField[k] * ( DownConvert[0] * DFTFactor[0] - DownConvert[1] * DFTFactor[1] ) / nHFSSBins;
@@ -421,6 +428,8 @@ namespace locust
 
         aLongSignal[ index ] += tVoltage * cos(phi_LO);
         ImaginarySignal[ index ] += -tVoltage * sin(phi_LO);
+
+        t_old += fDigitizerTimeStep;
 
     }
 
@@ -448,18 +457,26 @@ namespace locust
             kIndexRange[0] = kIndexMid - kIndexSearchWidth;
             kIndexRange[1] = kIndexMid + kIndexSearchWidth;
 
-            kIndexRange[0] = std::max(kIndexMid, 0 );
-            kIndexRange[1] = std::min(kIndexMid, tHistorySize - 1);
+            kIndexRange[0] = std::max(kIndexRange[0], 0 );
+            kIndexRange[1] = std::min(kIndexRange[1], tHistorySize - 1);
 
             if( tNew >= fParticleHistory[ kIndexRange[0] ].GetTime() && tNew <= fParticleHistory[ kIndexRange[1] ].GetTime())
             {
                 //Get iterator pointing to particle step closest to tNew
-                it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double a , const locust::Particle &b) { return a < b.GetTime();} ) - 1;
+                it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
                 break;
             }
         }
+        
+        int tNodeIndex = it - fParticleHistory.begin();
+        //printf("%d %e %e %e\n",tNodeIndex, tNew, fParticleHistory.front().GetTime(), fParticleHistory.back().GetTime());
+        //cout<<tNodeIndex<<endl;
+        //if(tNodeIndex < 0 || tNodeIndex > (tHistorySize - 1))
+        //{
+        //    LERROR(lmclog, "OUT OF INDEX SEARCH");
+        //}
 
-        return it - fParticleHistory.begin();
+        return tNodeIndex;
     }
 
     bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const

@@ -19,14 +19,15 @@
 #include "LMCParticle.hh"
 
 
-extern double t_poststep;
 extern double t_old;
+extern double t_poststep;
 
 extern double phi_shortTE11;
 extern double* phi_shortTM01;
 extern double* phi_polarizerTM01;
 extern double testvar;
-extern double EventModTimeStep;
+//extern double fEventModTimeStep;
+extern double fDigitizerTimeStep;
 
 extern int fDecimationFactor;
 

@@ -8,14 +8,15 @@
 #ifndef GLOBALSDEFINITION_HH_
 #define GLOBALSDEFINITION_HH_
 
-double t_poststep = -99.;
 double t_old = -99.;
+double t_poststep = -99.;
 
 double phi_shortTE11 = 0.;
 double* phi_shortTM01 = new double[200];
 double* phi_polarizerTM01 = new double[200];
 double testvar = -99.;
-double EventModTimeStep = 5e-10;
+double fDigitizerTimeStep = 5e-10; //Time step for sampling
+//double fEventModTimeStep = 5e-10; //Exact difference in time for fNewParticle History. 
 
 int fDecimationFactor=10.;
 
