@@ -158,32 +158,36 @@ namespace locust
     void* FreeFieldSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
     {
 
-        int tNWindows = 80;
-        int tWindowSize = 10 * aSignal->TimeSize() / tNWindows;
+        int nwindows = 80;
+        int windowsize = 10*aSignal->TimeSize()/nwindows;
+
 
         fftw_complex *SignalComplex;
-        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * tWindowSize );
-
+        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
         fftw_complex *FFTComplex;
-        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * tWindowSize );
+        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
 
         fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(tWindowSize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
         fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(tWindowSize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+        ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
 
-        for (int nwin = 0; nwin < tNWindows; ++nwin)
+
+        for (int nwin = 0; nwin < nwindows; nwin++)
         {
-            //Put (Real Voltage into Time Domain)
-            for( unsigned index = 0; index < tWindowSize; ++index )
+            // Construct complex voltage.
+            for( unsigned index = 0; index < windowsize; ++index )
             {
-                SignalComplex[index][0] = aLongSignal[ tNWindows*tWindowSize + index ];
-                SignalComplex[index][1] = ImaginarySignal[ tNWindows*tWindowSize + index ];
+                SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
+                SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
+                //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
 
             fftw_execute(ForwardPlan);
+
             //Complex filter to set power at negative frequencies to 0.
-            for( unsigned index = tWindowSize/2; index < tWindowSize; ++index )
+
+            for( unsigned index = windowsize/2; index < windowsize; ++index )
             {
                 FFTComplex[index][0] = 0.;
                 FFTComplex[index][1] = 0.;
@@ -191,18 +195,24 @@ namespace locust
 
             fftw_execute(ReversePlan);
 
-            for( unsigned index = 0; index < tWindowSize; ++index )
+            double norm = (double)(windowsize);
+
+            for( unsigned index = 0; index < windowsize; ++index )
             {
-                //normalize and take the real part of the reverse transform, for digitization.
-                aLongSignal[ tNWindows*tWindowSize + index ] = SignalComplex[index][0] / tWindowSize; //type fftw_complex is a typedef for double[2]
+                // normalize and take the real part of the reverse transform, for digitization.
+                //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
+                aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
+                //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
+
         }
 
 
-        delete [] SignalComplex;
-        delete [] FFTComplex;
+        delete SignalComplex;
+        delete FFTComplex;
 
     }
+
 
     void FreeFieldSignalGenerator::NFDWrite() const
     {
