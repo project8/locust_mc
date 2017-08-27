@@ -18,7 +18,7 @@
 double phi_t1 = 0.; // antenna voltage phase in radians.
 double phi_t2 = 0.; // reflecting short voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO in radians;
-std::string gxml_filename = "blank.xml";
+static std::string gxml_filename = "blank.xml";
 
 FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
 FILE *fp3 = fopen("fabsfakemodeexctiation.txt","wb");  // time stamp checking.
@@ -66,7 +66,7 @@ namespace locust
     }
 
 
-  void* KassiopeiaInit()
+  static void* KassiopeiaInit()
     {
         //cout << gxml_filename; getchar();
         const std::string & afile = gxml_filename;
@@ -76,7 +76,7 @@ namespace locust
     }
 
 
-    void WakeBeforeEvent()
+    static void WakeBeforeEvent()
     {
 
         fPreEventCondition.notify_one();
@@ -84,7 +84,7 @@ namespace locust
     }
 
 
-    bool ReceivedKassReady()
+    static bool ReceivedKassReady()
     {
 
         if( !fKassEventReady)
@@ -163,80 +163,91 @@ namespace locust
 
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* anImaginarySignal) const
     {
-
-        double dt = 5.e-10; // seconds, this might need to come from Kassiopeia and be exact.
+        //double dt = fDigitizerTimeStep; 
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
         double RealVoltage1 = 0.;
         double ImagVoltage1 = 0.;
         double RealVoltage2 = 0.;
         double ImagVoltage2 = 0.;
-        double SpeedOfLight = 2.99792458e8; // m/s
-        double tCutOffFrequency = 2. * PI * SpeedOfLight * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
+        double tCutOffFrequency = 2. * KConst::Pi() * KConst::C() * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
 
-        locust::Particle tParticle = fParticleHistory.front();
+        auto tIteratorParticle = fParticleHistory.end() - 1;
+        locust::Particle tParticle = *(tIteratorParticle--);
+        locust::Particle tPreviousParticle = *tIteratorParticle;
+
+        //Set as positive, even though really negative
+        double dE = (tPreviousParticle.GetKineticEnergy() - tParticle.GetKineticEnergy()) / tParticle.GetCharge(); //Convert to eV
+        double dt = tParticle.GetTime() - tPreviousParticle.GetTime();
+        double tLarmorPower = dE /  dt;
+
         double tCyclotronFrequency = tParticle.GetCyclotronFrequency();
         double tVelocityZ = tParticle.GetVelocity().Z();
-        double tGroupVelocity = SpeedOfLight * sqrt( 1. - pow(tCutOffFrequency/(2. * PI * tCyclotronFrequency  ), 2.) );
+        double tGroupVelocity = KConst::C() * sqrt( 1. - pow(tCutOffFrequency/( tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
         //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
-        //printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, tCutOffFrequency, 2.*PI*fcyc); getchar();
+        //printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, tCutOffFrequency, 2.*tPI*fcyc); getchar();
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
 
-        double tPositionZ = tParticle.GetPosition.Z();
+        double tPositionZ = tParticle.GetPosition().Z();
 
         if (PreEventCounter > 0)
         {
             // initialize phases.
-            phi_t1 = 2. *PI * (CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
-            phi_t2 = 2. *PI * (tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
+            phi_t1 = (CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
+            phi_t2 = (tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
             phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
             phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
         }
 
         //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
 
-        phi_t1 += 2. * PI * tDopplerFrequencyAntenna * dt;
-        phi_t2 += 2. * PI * tDopplerFrequencyShort * dt;
-        phiLO_t += 2. * PI * fLO_Frequency * dt;
+        phi_t1 += tDopplerFrequencyAntenna * dt;
+        phi_t2 += tDopplerFrequencyShort * dt;
+        phiLO_t += 2.* KConst::Pi() * fLO_Frequency * dt;
         RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
-        ImagVoltage1 = cos( phi_t1 - phiLO_t - PI/2.); // + cos( phi_t1 + phiLO_t - PI/2.));
+        ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
-        ImagVoltage2 = cos( phi_t2 - phiLO_t - PI/2.); // + cos( phi_t2 + phiLO_t - PI/2.));
+        ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
 
         //RealVoltage2 = 0.;  // take out short.
         //ImagVoltage2 = 0.;  // take out short.
         
-        aLongSignal[ index ] += TE11ModeExcitation() * sqrt(LarmorPower) * (RealVoltage1 + RealVoltage2);
-        anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt( 2. * LarmorPower) * (ImagVoltage1 + ImagVoltage2);
+        //aLongSignal[ index ] = TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+        //anImaginarySignal[ index ] = TE11ModeExcitation() * sqrt( 2. * tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+        
+        aLongSignal[ index ] = TE11ModeExcitation() * (RealVoltage1 + RealVoltage2);
+        anImaginarySignal[ index ] = TE11ModeExcitation() * (ImagVoltage1 + ImagVoltage2);
 
         //if (t_old > 0.004)
         //{
         //    printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
         //    printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
         //    printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n",
-        //    index, aLongSignal[ index ], t_poststep, zvelocity, pow(LarmorPower,0.5), fcyc, tDopplerFrequencyAntenna, GammaZ);
+        //    index, aLongSignal[ index ], t_poststep, zvelocity, pow(tLarmorPower,0.5), fcyc, tDopplerFrequencyAntenna, GammaZ);
         //    getchar();
         //}
 
         //printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
+
+        t_old += fDigitizerTimeStep;
 
     }
 
     double KassSignalGenerator::TE11ModeExcitation() const
     {
         double kc = 1.841/0.00502920;
-        locust::Particle tParticle = fParticleHistory.front();
-        double tPositionX = tParticle.GetPosition.X();
-        double tPositionY = tParticle.GetPosition.Y();
+        locust::Particle tParticle = fParticleHistory.back();
+        double tPositionX = tParticle.GetPosition().X();
+        double tPositionY = tParticle.GetPosition().Y();
         double r = sqrt( tPositionX*tPositionX + tPositionY*tPositionY);
 
         // fraction of emitted power that goes into TE11.
         // XXX
-        double tCoupling = 119116./168.2 * 2./PI * 4./(2.*PI) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
+        double tCoupling = 119116./168.2 * 2./KConst::Pi() * 4./(2. * KConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
                 (j0(kc*r) + jn(2, kc*r)) );
 
         return sqrt(tCoupling);  // field amplitude is sqrt of power going into field.
@@ -256,6 +267,8 @@ namespace locust
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 150000;
+        fKeepDigitizedSteps = true;
+        fPhaseIIWaveguideCoupling = true;
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
         //fprintf(fp, "testing\n");

@@ -93,6 +93,15 @@ namespace locust
         return;
     }
 
+    double Particle::GetCyclotronFrequency() const
+    {
+        return fCyclotronFrequency;
+    }
+    double Particle::GetKineticEnergy() const //In SI
+    {
+       return (fGamma - 1.) * fMass * pow(KConst::C() , 2.); 
+    }
+
     void Particle::SetMass(double aMass)
     {
         fMass = aMass;
@@ -103,6 +112,11 @@ namespace locust
     {
         fCharge = aCharge;
         return;
+    }
+
+    double Particle::GetCharge() const
+    {
+        return fCharge;
     }
 
     void Particle::SetKinematicProperties()

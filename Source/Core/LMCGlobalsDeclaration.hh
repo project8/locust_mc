@@ -26,7 +26,6 @@ extern double phi_shortTE11;
 extern double* phi_shortTM01;
 extern double* phi_polarizerTM01;
 extern double testvar;
-//extern double fEventModTimeStep;
 extern double fDigitizerTimeStep;
 
 extern int fDecimationFactor;
@@ -41,6 +40,9 @@ extern bool fEventInProgress;
 extern bool fRunInProgress;
 extern bool fPreEventInProgress;
 extern bool fFalseStartKassiopeia;
+
+extern bool fKeepDigitizedSteps; 
+extern bool fPhaseIIWaveguideCoupling;
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
 extern std::mutex fKassReadyMutex;  // pls:  this mutex is used for pre and post event mods.

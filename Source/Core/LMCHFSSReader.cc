@@ -5,10 +5,6 @@
  *      Author: nbuzinsky
  */
 
-#ifndef PI
-#define PI 3.1415926
-#endif
-
 #include "LMCHFSSReader.hh"
 
 #include <algorithm>
@@ -19,6 +15,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <KConst.h>
 
 #include "logger.hh"
 
@@ -341,12 +338,13 @@ namespace locust
         double zRings[nRings];
         double rRings[nRings];
         double RingCount[nRings];
+        double tPI = KConst::Pi();
 
         for(int i=0;i<nRings;i++)
         {
             zRings[i]=-1.*(1.-1./double(nRings))+dz*double(i);
             rRings[i]=sqrt(1.-pow(zRings[i],2.));
-            RingCount[i]=round(2.*PI*rRings[i])/dz;
+            RingCount[i]=round(2.*tPI*rRings[i])/dz;
         }
         double Phi=0.;
 
@@ -355,14 +353,14 @@ namespace locust
         {
             Phi=0.;
             rPointVectorBuffer[2]=Radius*zRings[i];
-            double dPhi=2.*PI/double(RingCount[i]);
+            double dPhi=2.*tPI/double(RingCount[i]);
             //if(i%2)Phi+=dPhi/3.;
             do{
                 rPointVectorBuffer[0]=Radius*rRings[i]*cos(Phi);
                 rPointVectorBuffer[1]=Radius*rRings[i]*sin(Phi);
                 rPointVector.push_back(rPointVectorBuffer);
                 Phi+=dPhi;
-            }while(Phi<2.*PI-dPhi/2.);
+            }while(Phi<2.*tPI-dPhi/2.);
         }
 
         return rPointVector;
@@ -375,6 +373,7 @@ namespace locust
         double SizeRatio[2]={1.,1.};
         int MinIndex=(GeometryScale[0] < GeometryScale[1]) ? 0 : 1;
         SizeRatio[(MinIndex+1)%2]=GeometryScale[(MinIndex+1)%2]/GeometryScale[MinIndex];
+        double tPI = KConst::Pi();
 
         int N[2]; double dz[2];
         for(int i=0;i<2;i++)
@@ -386,8 +385,8 @@ namespace locust
 
         double Radius=GeometryScale[0];
         int nRings=N[1];
-        int RingCount=int(2.*PI*Radius/dz[1]);
-        double dPhi=2.*PI/double(RingCount);
+        int RingCount=int(2.*tPI*Radius/dz[1]);
+        double dPhi=2.*tPI/double(RingCount);
         double Phi=0.; double Z=0.;
         //Fill in outer surface of cylinder
         KGeoBag::KThreeVector rPointVectorBuffer;
@@ -410,9 +409,9 @@ namespace locust
         rPointVectorEnd.push_back(rPointVectorBuffer);
         for(int i=1;i<N[0]-1;i++)
         {
-            RingCount=round(2.*PI*double(i));
+            RingCount=round(2.*tPI*double(i));
             Phi=0.;
-            dPhi=2.*PI/double(RingCount);
+            dPhi=2.*tPI/double(RingCount);
             do
             {
                 rPointVectorBuffer[0]=dz[0]*double(i)*cos(Phi);
@@ -420,7 +419,7 @@ namespace locust
                 rPointVectorEnd.push_back(rPointVectorBuffer);
                 Phi+=dPhi;
             }
-            while(Phi<2.*PI-dPhi/2);
+            while(Phi<2.*tPI-dPhi/2);
         }
         rPointVector.insert(rPointVector.end(), rPointVectorEnd.begin(), rPointVectorEnd.end());
         rPointVectorEnd=RotateShift(rPointVectorEnd,{0.,0.,1.},{0.,0.,GeometryScale[1]});
@@ -450,7 +449,7 @@ namespace locust
         //If Both XY normals are 0, do not do phi rotation
         double Phi=0.;
         if(tNormal[0])Phi=atan(tNormal[1]/tNormal[0]);
-        else if(tNormal[1])Phi=PI/2.;
+        else if(tNormal[1])Phi=KConst::Pi() / 2.;
 
 
         ///Perform Rotation on surface

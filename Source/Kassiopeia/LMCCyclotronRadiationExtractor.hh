@@ -8,8 +8,9 @@
 #ifndef LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 #define LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 
-#include "KSTrajectory.h"
+#include "LMCParticle.hh"
 
+#include "KSTrajectory.h"
 
 #include "KField.h"
 #include "KSStepModifier.h"
@@ -57,6 +58,7 @@ namespace locust
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &aFinalParticle);
             Kassiopeia::KSTrajectory* fTrajectory;
 
 

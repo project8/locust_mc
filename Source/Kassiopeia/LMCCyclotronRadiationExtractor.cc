@@ -37,19 +37,19 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetGroupVelocityTM01(KSParticle& aFinalParticle)
     {
-        double SpeedOfLight = 2.99792458e8; // m/s
-        double CutOffFrequency = 2. * PI * SpeedOfLight * 2.405 / 2. / PI / 0.00502920; // rad/s
+        double SpeedOfLight = KConst::C();
+        double CutOffFrequency = 2. * KConst::Pi() * SpeedOfLight * 2.405 / 2. / KConst::Pi() / 0.00502920; // rad/s
         double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) );
+        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*KConst::Pi()*fcyc), 2.) );
         //printf("GroupVelocity is %g\n", GroupVelocity); getchar();
     	return GroupVelocity;
     }
     double CyclotronRadiationExtractor::GetGroupVelocityTE11(KSParticle& aFinalParticle)
     {
-        double SpeedOfLight = 2.99792458e8; // m/s
-        double CutOffFrequency = 2. * PI * SpeedOfLight * 1.841 / 2. / PI / 0.00502920; // rad/s
+        double SpeedOfLight = KConst::C(); // m/s
+        double CutOffFrequency = 2. * KConst::Pi() * SpeedOfLight * 1.841 / 2. / KConst::Pi() / 0.00502920; // rad/s
         double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*PI*fcyc), 2.) );
+        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*KConst::Pi()*fcyc), 2.) );
         //("GroupVelocity is %g\n", GroupVelocity); getchar();
     	return GroupVelocity;
     }
@@ -82,7 +82,7 @@ namespace locust
         //printf("kass gcpx = %f and kass gcpy = %f\n", kassgcpx, kassgcpy); getchar();
         //printf("dx is %f and dy is %f\n", dx, dy);
     	double r = sqrt( x*x + y*y);
-    	double coupling = 119116./168.2 * 2./PI * 4./(2.*PI) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
+    	double coupling = 119116./168.2 * 2./KConst::Pi() * 4./(2.*KConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
     			(j0(kc*r) + jn(2, kc*r)) );
         //printf("TE11 coupling at r=%f is %f\n", r, coupling); //getchar();
     	return coupling;
@@ -94,7 +94,7 @@ namespace locust
     	double x = aFinalParticle.GetPosition().GetX();
     	double y = aFinalParticle.GetPosition().GetY();
     	double r = sqrt(x*x + y*y);
-    	double coupling =   146876.5/168.2 * 2./PI * 4./(2.*PI) / kc * j1(kc*r);
+    	double coupling =   146876.5/168.2 * 2./KConst::Pi() * 4./(2.*KConst::Pi()) / kc * j1(kc*r);
         //printf("tm01 coupling at r=%f is %f\n", r, coupling); //getchar();
         //printf("guiding center z is %f\n", aFinalParticle.GetGuidingCenterPosition().GetZ());
     	return coupling;
@@ -116,7 +116,7 @@ namespace locust
 
     	if ((phi_shortTE11==0.)||(0==0))  // after each step.
         {
-            phi_shortTE11 = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+            phi_shortTE11 = 2.*KConst::Pi()*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
             TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
             //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
         }
@@ -147,14 +147,15 @@ namespace locust
     	double FieldFromShort=0.;  // first doppler shift
     	double FieldFromPolarizer=0.; // other doppler shift
     	double TM01FieldAfterBounces = 0.;
+        double tPI = KConst::Pi();
     	int nbounces = 10;
 
         //printf("TM01 l1 is %g and l2 is %g\n", GroupVelocity/fprime_short, GroupVelocity/fprime_polarizer); getchar();
 
         if ((phi_shortTM01[0] == 0.)||(0==0))  // if the event has just started, or always.
         {
-            phi_shortTM01[0] = 2.*PI*2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
-            phi_polarizerTM01[0] = 2.*PI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + PI;  // starting phi after 0th bounce.
+            phi_shortTM01[0] = 2.* tPI *2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
+            phi_polarizerTM01[0] = 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + tPI;  // starting phi after 0th bounce.
 
             FieldFromShort = cos(0.) + cos(phi_shortTM01[0]); // starting field, after 0th bounce.
             FieldFromPolarizer = cos(0.) + cos(phi_polarizerTM01[0]); // starting field, after 0th bounce.
@@ -163,11 +164,11 @@ namespace locust
             {
                 if (i%2==0)
                 {
-                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*PI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + PI;  // phase shift
+                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + tPI;  // phase shift
                 }
                 else
                 {
-                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*PI*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
+                    phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*tPI*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
                 }
                 FieldFromShort += cos(phi_shortTM01[i+1]); // field adds after each bounce.
             }
@@ -177,11 +178,11 @@ namespace locust
             {
                 if (i%2==0)
                 {
-                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*PI*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
+                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*tPI*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
                 }
                 else
                 {
-                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*PI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + PI;  // phase shift.
+                    phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + tPI;  // phase shift.
                 }
                 FieldFromPolarizer += cos(phi_polarizerTM01[i+1]);
             }
@@ -251,85 +252,96 @@ namespace locust
         return;
     }
 
+    locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( KSParticle &aFinalParticle)
+    {
+        KGeoBag::KThreeVector tPosition = aFinalParticle.GetPosition();
+        KGeoBag::KThreeVector tVelocity = aFinalParticle.GetVelocity();
+        KGeoBag::KThreeVector tMagneticField = aFinalParticle.GetMagneticField();
+        double tMass = aFinalParticle.GetMass();
+        double tCharge = aFinalParticle.GetCharge();
+        double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
+    	double tTime = aFinalParticle.GetTime();
+
+        //printf("%e \n",fcyc);
+
+        locust::Particle aNewParticle;
+        aNewParticle.SetPosition(tPosition.X(),tPosition.Y(),tPosition.Z());
+        aNewParticle.SetVelocityVector(tVelocity.X(),tVelocity.Y(),tVelocity.Z());
+        aNewParticle.SetMagneticFieldVector(tMagneticField.X(),tMagneticField.Y(),tMagneticField.Z());
+        aNewParticle.SetMass(tMass);
+        aNewParticle.SetCharge(tCharge);
+        aNewParticle.SetTime(tTime);
+        aNewParticle.SetCyclotronFrequency(2.*KConst::Pi()*tCyclotronFrequency);
+        aNewParticle.SetKinematicProperties();
+        
+        return aNewParticle;
+
+    }
+
 
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
         //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
         //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 
-        // adjust power with reflections.
-        //double DeltaE = GetDampingFactor(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-        //printf("poststep says DeltaE is %g\n", DeltaE);
-    	//aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+        if(fPhaseIIWaveguideCoupling)
+        {
+            // adjust power with reflections.
+            double DeltaE = GetDampingFactor(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            //printf("poststep says DeltaE is %g\n", DeltaE);
+            aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+        }
+
 
         //printf("z is %f and DeltaE is %g and post fix kinetic energy is %g\n", aFinalParticle.GetPosition().Z(), DeltaE, aFinalParticle.GetKineticEnergy() - 4.84338e-15); getchar();
 
     	t_poststep = aFinalParticle.GetTime();
-        /////////////////////////////////////////////////////////////////////////////
-        
-        double X = aFinalParticle.GetPosition().X();
-        double Y = aFinalParticle.GetPosition().Y();
-        double Z = aFinalParticle.GetPosition().Z();
-        double xVelocity = aFinalParticle.GetVelocity().GetX();
-        double yVelocity = aFinalParticle.GetVelocity().GetY();
-        double zVelocity = aFinalParticle.GetVelocity().GetZ();
-        double xMagneticField = aFinalParticle.GetMagneticField().GetX();
-        double yMagneticField = aFinalParticle.GetMagneticField().GetY();
-        double zMagneticField = aFinalParticle.GetMagneticField().GetZ();
-        double mparticle = aFinalParticle.GetMass();
-        double qparticle = aFinalParticle.GetCharge();
-        double fcyc = aFinalParticle.GetCyclotronFrequency();
 
-        //printf("%e \n",fcyc);
+        if(fParticleHistory.size() == 0 && fKeepDigitizedSteps)
+        {
+            katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(0, aFinalParticle);
+            fParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
+        }
 
-        locust::Particle aNewParticle;
-        aNewParticle.SetPosition(X,Y,Z);
-        aNewParticle.SetVelocityVector(xVelocity,yVelocity,zVelocity);
-        aNewParticle.SetMagneticFieldVector(xMagneticField,yMagneticField,zMagneticField);
-        aNewParticle.SetMass(mparticle);
-        aNewParticle.SetCharge(qparticle);
-        aNewParticle.SetTime(t_poststep);
-        aNewParticle.SetCyclotronFrequency(2.*PI*fcyc);
-        aNewParticle.SetKinematicProperties();
-        
-        fNewParticleHistory.push_back(aNewParticle);
 
-        /////////////////////////////////////////////////////////////////////////////
+        fNewParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
 
         if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s
         {
             std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
 
-            // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
-            //katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_poststep, aFinalParticle);
-            //printf("now t_old is %g\n", t_old);
-            //getchar();
+            int tHistoryMaxSize;
 
-            //de = aFinalParticle.GetKineticEnergy_eV() - anInitialParticle.GetKineticEnergy_eV();
-            //dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-
-            //fEventModTimeStep = fNewParticleHistory.back().GetTime()-fNewParticleHistory.front().GetTime()+dt;
-            //printf("%e\n",fcyc);
-
-            //Put in new entries in global ParticleHistory
-            fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
-            //Set Spline coefficients -> MAKE OPTIONAL XXX
-            for(int i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
+            //Phase II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
+            if(fKeepDigitizedSteps)
             {
-                fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
+                // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
+                katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old, aFinalParticle);
+                fParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
+                tHistoryMaxSize = 5;
+
+            }
+            else
+            {
+                //Put in new entries in global ParticleHistory
+                fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
+                //Set Spline coefficients -
+                for(int i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
+                {
+                    fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
+                }
+                tHistoryMaxSize = 5000;
+
             }
 
             fNewParticleHistory.clear();
 
-            //Purge fParticleHistory of overly old entries
-            int HistoryMaxSize=5000;
-            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size()>HistoryMaxSize)
-            {
-                fParticleHistory.pop_front();
-            }
 
-            //t_old = t_poststep;
+            //Purge fParticleHistory of overly old entries
+            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
+                fParticleHistory.pop_front();
+
 
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.

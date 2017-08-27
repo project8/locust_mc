@@ -20,7 +20,7 @@
 #include "LMCHFSSReader.hh"
 
 
-std::string gxml_filename = "blank.xml";
+static std::string gxml_filename = "blank.xml";
 
 double phi_LO=0.;
 const int NPreEventSamples = 150000;
@@ -78,7 +78,7 @@ namespace locust
         {
             //If not, use existing code to generate plane receiver
             HFSSReader HFRead;
-            rReceiver = HFRead.GeneratePlane({0.05,0.05},7);//Argumemts: Size, resolution
+            rReceiver = HFRead.GeneratePlane({0.025,0.025},7);//Argumemts: Size, resolution
             rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,0.});//Arguments Normal vector, Position (m)
             //rReceiver = HFRead.RotateShift(rReceiver,{0.,0.,1.},{0.,0.,0.15});//Arguments Normal vector, Position (m)
         }
@@ -94,7 +94,7 @@ namespace locust
     }
 
 
-  void* KassiopeiaInit()
+  static void* KassiopeiaInit()
     {
         //cout << gxml_filename; getchar();
         const std::string & afile = gxml_filename;
@@ -105,14 +105,14 @@ namespace locust
 
 
 
-    void WakeBeforeEvent()
+    static void WakeBeforeEvent()
     {
         fPreEventCondition.notify_one();
         return;
     }
 
 
-    bool ReceivedKassReady()
+    static bool ReceivedKassReady()
     {
         if( !fKassEventReady)
         {
@@ -416,7 +416,7 @@ namespace locust
                         double DownConvert[2] = { cos(phi_LO) , - sin(phi_LO) };
                         //int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fEventModTimeStep;
                         int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fDigitizerTimeStep;
-                        double DFTFactor[2] = { cos(2. * PI * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * PI * kFreq * fNFDIndex / nHFSSBins ) };
+                        double DFTFactor[2] = { cos(2. * KConst::Pi() * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * KConst::Pi() * kFreq * fNFDIndex / nHFSSBins ) };
 
                         NFDElectricFieldFreq[j][i][k][0] += tmpElectricField[k] * ( DownConvert[0] * DFTFactor[0] - DownConvert[1] * DFTFactor[1] ) / nHFSSBins;
                         NFDElectricFieldFreq[j][i][k][1] += tmpElectricField[k] * ( DownConvert[0] * DFTFactor[1] + DownConvert[1] * DFTFactor[0] ) / nHFSSBins;
@@ -513,6 +513,8 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
+        fKeepDigitizedSteps = false;
+        fPhaseIIWaveguideCoupling = false;
 
         std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
         fRunInProgress = true;

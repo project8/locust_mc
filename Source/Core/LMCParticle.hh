@@ -39,6 +39,9 @@ namespace locust
             KGeoBag::KThreeVector GetPosition(const bool &aInterpolated = false ) const;
             KGeoBag::KThreeVector GetVelocity(const bool &aInterpolated = false) const;
             KGeoBag::KThreeVector GetAcceleration(const bool &aInterpolated = false) const;
+            double GetCyclotronFrequency() const;
+            double GetKineticEnergy() const;
+            double GetCharge() const;
 
             double CalculateVoltage(const KGeoBag::KThreeVector&) const;
             KGeoBag::KThreeVector CalculateElectricField(const KGeoBag::KThreeVector&) const;
