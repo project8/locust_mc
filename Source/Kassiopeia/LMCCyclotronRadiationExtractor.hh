@@ -15,7 +15,6 @@
 #include "KField.h"
 #include "KSStepModifier.h"
 #include "KSComponentTemplate.h"
-#include "KSTrajTrajectoryAdiabatic.h"
 
 #include "KToolbox.h"
 

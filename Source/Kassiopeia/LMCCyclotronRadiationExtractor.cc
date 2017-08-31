@@ -304,6 +304,7 @@ namespace locust
         }
 
 
+        // keep all of the particles whether the digitizer ticks or not.
         fNewParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
 
         if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s

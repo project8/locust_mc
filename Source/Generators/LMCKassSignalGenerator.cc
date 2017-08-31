@@ -177,13 +177,13 @@ namespace locust
         locust::Particle tPreviousParticle = *tIteratorParticle;
 
         //Set as positive, even though really negative
-        double dE = (tPreviousParticle.GetKineticEnergy() - tParticle.GetKineticEnergy()) / tParticle.GetCharge(); //Convert to eV
+        double dE = (tPreviousParticle.GetKineticEnergy() - tParticle.GetKineticEnergy()); // Joules
         double dt = tParticle.GetTime() - tPreviousParticle.GetTime();
         double tLarmorPower = dE /  dt;
 
-        double tCyclotronFrequency = tParticle.GetCyclotronFrequency();
+        double tCyclotronFrequency = tParticle.GetCyclotronFrequency()/2./KConst::Pi();
         double tVelocityZ = tParticle.GetVelocity().Z();
-        double tGroupVelocity = KConst::C() * sqrt( 1. - pow(tCutOffFrequency/( tCyclotronFrequency  ), 2.) );
+        double tGroupVelocity = KConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*KConst::Pi()*tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
         //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
@@ -219,19 +219,21 @@ namespace locust
         //aLongSignal[ index ] = TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
         //anImaginarySignal[ index ] = TE11ModeExcitation() * sqrt( 2. * tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
         
-        aLongSignal[ index ] = TE11ModeExcitation() * (RealVoltage1 + RealVoltage2);
-        anImaginarySignal[ index ] = TE11ModeExcitation() * (ImagVoltage1 + ImagVoltage2);
+        aLongSignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+        anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
 
         //if (t_old > 0.004)
-        //{
-        //    printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
-        //    printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
-        //    printf("Locust says:  signal %d is %g and t is %g and zvelocity is %g and sqrtLarmorPower is %g and fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n",
-        //    index, aLongSignal[ index ], t_poststep, zvelocity, pow(tLarmorPower,0.5), fcyc, tDopplerFrequencyAntenna, GammaZ);
-        //    getchar();
-        //}
-
-        //printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
+        /*
+        {
+            printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
+            printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
+            printf("Locust says:  signal %d is %g and dE is %g and dt is %g and zvelocity is %g and sqrtLarmorPower is %g and "
+            		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n",
+            index, aLongSignal[ index ], dE, dt, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
+            getchar();
+        }
+*/
+//        printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
 
         t_old += fDigitizerTimeStep;
 
