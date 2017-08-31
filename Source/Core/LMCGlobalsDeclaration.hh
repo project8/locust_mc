@@ -41,8 +41,7 @@ extern bool fRunInProgress;
 extern bool fPreEventInProgress;
 extern bool fFalseStartKassiopeia;
 
-extern bool fKeepDigitizedSteps; 
-extern bool fPhaseIIWaveguideCoupling;
+extern bool fPhaseIISimulation;
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
 extern std::mutex fKassReadyMutex;  // pls:  this mutex is used for pre and post event mods.

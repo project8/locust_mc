@@ -414,7 +414,6 @@ namespace locust
                     {
                         //Complex factors for Downmixing/ DFT sums
                         double DownConvert[2] = { cos(phi_LO) , - sin(phi_LO) };
-                        //int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fEventModTimeStep;
                         int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fDigitizerTimeStep;
                         double DFTFactor[2] = { cos(2. * KConst::Pi() * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * KConst::Pi() * kFreq * fNFDIndex / nHFSSBins ) };
 
@@ -513,8 +512,7 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        fKeepDigitizedSteps = false;
-        fPhaseIIWaveguideCoupling = false;
+        fPhaseIISimulation = false;
 
         std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
         fRunInProgress = true;

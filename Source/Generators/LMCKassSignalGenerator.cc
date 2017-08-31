@@ -163,7 +163,6 @@ namespace locust
 
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* anImaginarySignal) const
     {
-        //double dt = fDigitizerTimeStep; 
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
         double RealVoltage1 = 0.;
@@ -172,14 +171,10 @@ namespace locust
         double ImagVoltage2 = 0.;
         double tCutOffFrequency = 2. * KConst::Pi() * KConst::C() * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
 
-        auto tIteratorParticle = fParticleHistory.end() - 1;
-        locust::Particle tParticle = *(tIteratorParticle--);
-        locust::Particle tPreviousParticle = *tIteratorParticle;
+        locust::Particle tParticle = fParticleHistory.back();
 
         //Set as positive, even though really negative
-        double dE = (tPreviousParticle.GetKineticEnergy() - tParticle.GetKineticEnergy()) / tParticle.GetCharge(); //Convert to eV
-        double dt = tParticle.GetTime() - tPreviousParticle.GetTime();
-        double tLarmorPower = dE /  dt;
+        double tLarmorPower = tParticle.GetLarmorPower();
 
         double tCyclotronFrequency = tParticle.GetCyclotronFrequency();
         double tVelocityZ = tParticle.GetVelocity().Z();
@@ -205,9 +200,9 @@ namespace locust
 
         //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
 
-        phi_t1 += tDopplerFrequencyAntenna * dt;
-        phi_t2 += tDopplerFrequencyShort * dt;
-        phiLO_t += 2.* KConst::Pi() * fLO_Frequency * dt;
+        phi_t1 += tDopplerFrequencyAntenna * fDigitizerTimeStep;
+        phi_t2 += tDopplerFrequencyShort * fDigitizerTimeStep;
+        phiLO_t += 2.* KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
         RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
         ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
@@ -267,8 +262,7 @@ namespace locust
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 150000;
-        fKeepDigitizedSteps = true;
-        fPhaseIIWaveguideCoupling = true;
+        fPhaseIISimulation = true;
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
         //fprintf(fp, "testing\n");

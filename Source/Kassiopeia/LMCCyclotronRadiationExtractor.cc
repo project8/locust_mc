@@ -284,7 +284,7 @@ namespace locust
         //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
         //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 
-        if(fPhaseIIWaveguideCoupling)
+        if(fPhaseIISimulation)
         {
             // adjust power with reflections.
             double DeltaE = GetDampingFactor(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
@@ -297,13 +297,6 @@ namespace locust
 
     	t_poststep = aFinalParticle.GetTime();
 
-        if(fParticleHistory.size() == 0 && fKeepDigitizedSteps)
-        {
-            katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(0, aFinalParticle);
-            fParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
-        }
-
-
         fNewParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
 
         if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s
@@ -314,7 +307,7 @@ namespace locust
             int tHistoryMaxSize;
 
             //Phase II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
-            if(fKeepDigitizedSteps)
+            if(fPhaseIISimulation)
             {
                 // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
                 katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old, aFinalParticle);

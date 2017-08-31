@@ -31,6 +31,7 @@ namespace locust
             fGamma( -99. ),
             fCyclotronFrequency( -99. ),
             fCyclotronRadius( -99. ),
+            fLarmorPower( -99. ),
             fSplineC( -99., -99., -99. ),
             fSplineD( -99., -99., -99. )
     {
@@ -119,10 +120,17 @@ namespace locust
         return fCharge;
     }
 
+    double Particle::GetLarmorPower() const
+    {
+        return fLarmorPower;
+    }
+
     void Particle::SetKinematicProperties()
     {
-        fAcceleration=fCharge/fMass*fNewVelocity.Cross(fMagneticField);
-        fNewAcceleration= fAcceleration;
+        fAcceleration = fCharge/fMass*fNewVelocity.Cross(fMagneticField);
+        fNewAcceleration = fAcceleration;
+
+        fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (KConst::FourPiEps() * pow( KConst::C() , 3.) );
 
         double tBeta = fVelocity.Magnitude() / KConst::C();
         fGamma = 1. / sqrt(( 1. - tBeta ) * ( 1. + tBeta ));

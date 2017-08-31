@@ -33,12 +33,8 @@ bool fRunInProgress = false;
 bool fPreEventInProgress = false;
 bool fFalseStartKassiopeia = true; // flag to avoid false start on some Macs.
 
-//Extract only (interpolated) values of the particle only at exactly the Digitizer Frequency
-//If false puts all (uninterpolated) steps from kassiopeia into fParticleHistory
-bool fKeepDigitizedSteps = true; 
-//Defaults to setup of phase II waveguides, where effect of waveguide reacts on 
-//particle motion, causing changes in electron energy
-bool fPhaseIIWaveguideCoupling = true;
+//If true Phase II (kass build) if false Phase III (freefield gnerator)
+bool fPhaseIISimulation = true;
 
 
 std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
