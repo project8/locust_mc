@@ -27,9 +27,9 @@ namespace locust
             void SetPosition(double,double,double);
             void SetVelocityVector(double,double,double);
             void SetMagneticFieldVector(double,double,double);
+            void SetCyclotronFrequency(double);
             void SetMass(double);
             void SetCharge(double);
-            void SetCyclotronFrequency(double);
 
             void SetKinematicProperties();
 
@@ -42,6 +42,7 @@ namespace locust
             double GetCyclotronFrequency() const;
             double GetKineticEnergy() const;
             double GetCharge() const;
+            double GetLarmorPower() const;
 
             double CalculateVoltage(const KGeoBag::KThreeVector&) const;
             KGeoBag::KThreeVector CalculateElectricField(const KGeoBag::KThreeVector&) const;
@@ -76,6 +77,7 @@ namespace locust
             double fGamma;
             double fCyclotronFrequency;
             double fCyclotronRadius;
+            double fLarmorPower;
 
             KGeoBag::KThreeVector fSplineC;
             KGeoBag::KThreeVector fSplineD;
