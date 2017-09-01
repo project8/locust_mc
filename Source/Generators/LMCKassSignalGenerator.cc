@@ -217,17 +217,18 @@ namespace locust
         anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
 
         //if (t_old > 0.004)
-        /*
+/*
         {
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
-            printf("Locust says:  signal %d is %g and dE is %g and dt is %g and zvelocity is %g and sqrtLarmorPower is %g and "
+            printf("Locust says:  signal %d is %g and zvelocity is %g and sqrtLarmorPower is %g and "
             		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n",
-            index, aLongSignal[ index ], dE, dt, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
+            index, aLongSignal[ index ], tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
             getchar();
         }
-*/
-//        printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
+
+        printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
+        */
 
         t_old += fDigitizerTimeStep;
 
