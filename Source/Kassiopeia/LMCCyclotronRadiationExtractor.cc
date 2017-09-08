@@ -310,8 +310,9 @@ namespace locust
             if(fPhaseIISimulation)
             {
                 // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
-                katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old, aFinalParticle);
-                fParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
+                KSParticle tParticleCopy = aFinalParticle;
+                katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old, tParticleCopy);
+                fParticleHistory.push_back(ExtractKassiopeiaParticle(tParticleCopy));
                 tHistoryMaxSize = 5;
 
             }
