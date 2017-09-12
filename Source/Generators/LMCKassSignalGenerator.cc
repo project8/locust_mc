@@ -176,13 +176,14 @@ namespace locust
         //Set as positive, even though really negative
         double tLarmorPower = tParticle.GetLarmorPower();
         double tCyclotronFrequency = tParticle.GetCyclotronFrequency()/2./KConst::Pi();
+        if (tCyclotronFrequency < 15.e9) {printf("check 2PI in fcyc\n"); getchar();}
         double tVelocityZ = tParticle.GetVelocity().Z();
         double tGroupVelocity = KConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*KConst::Pi()*tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
         //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
-        //printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", GroupVelocity, tCutOffFrequency, 2.*tPI*fcyc); getchar();
+//        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*KConst::Pi()*tCyclotronFrequency); getchar();
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
 
@@ -191,16 +192,16 @@ namespace locust
         if (PreEventCounter > 0)
         {
             // initialize phases.
-            phi_t1 = (CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
-            phi_t2 = (tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
+            phi_t1 = 2.*KConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
+            phi_t2 = 2.*KConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
             phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
             phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
         }
 
         //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
 
-        phi_t1 += tDopplerFrequencyAntenna * fDigitizerTimeStep;
-        phi_t2 += tDopplerFrequencyShort * fDigitizerTimeStep;
+        phi_t1 += 2.*KConst::Pi()*tDopplerFrequencyAntenna * fDigitizerTimeStep;
+        phi_t2 += 2.*KConst::Pi()*tDopplerFrequencyShort * fDigitizerTimeStep;
         phiLO_t += 2.* KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
         RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
         ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
@@ -221,14 +222,14 @@ namespace locust
         {
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
-            printf("Locust says:  signal %d is %g and zvelocity is %g and sqrtLarmorPower is %g and "
-            		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n",
-            index, aLongSignal[ index ], tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
+            printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
+            		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
+            index, aLongSignal[ index ], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
             getchar();
         }
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-        */
+*/
 
         t_old += fDigitizerTimeStep;
 
