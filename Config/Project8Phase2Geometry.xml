@@ -132,7 +132,7 @@
       <space name="downstream_pinch_coil" node="downstream_pinch_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {-0.0221742}"/>
-	</space>
+	</space> 
       <space name="upstream_bathtub_coil" node="upstream_bathtub_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {0.0443484}"/>
@@ -174,7 +174,7 @@
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/upstream_bathtub_coil/#"/> 
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/upstream_pinch_coil/#"/> 
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/center_pinch_coil/#"/> 
-    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_pinch_coil/#"/> 
+    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_pinch_coil/#"/>
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_bathtub_coil/#"/> 
     <appearance name="app_waveguide" color="255 128 0 96" arc="72" surfaces="world/project8/cylindricalwaveguide/upstream_endcap_piece"/>
     <appearance name="app_waveguide" color="255 128 0 96" arc="72" surfaces="world/project8/cylindricalwaveguide/downstream_endcap_piece"/>
