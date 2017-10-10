@@ -150,7 +150,10 @@ namespace locust
     	double FieldFromPolarizer=0.; // other doppler shift
     	double TM01FieldAfterBounces = 0.;
         double tPI = KConst::Pi();
-    	int nbounces = 10;
+    	int nbounces = 20;
+        double time_decay = 1.;
+        double reflection_coefficient = 1.0;
+
 
         //printf("TM01 l1 is %g and l2 is %g\n", GroupVelocity/fprime_short, GroupVelocity/fprime_polarizer); getchar();
 
@@ -161,13 +164,13 @@ namespace locust
 
 //   	       	printf("phi_shortTM01[0] is %.10g and tPI is %.10g and z is %.10g and lambda is %.10g\n", phi_shortTM01[0], tPI, tPositionZ, lambda_short);
 
-            FieldFromShort = cos(0.) + cos(phi_shortTM01[0]); // starting field, after 0th bounce.
-            FieldFromPolarizer = cos(0.) + cos(phi_polarizerTM01[0]); // starting field, after 0th bounce.
-//   	       	printf("starting TM01FieldFromShort is %g\n", FieldFromShort);
+            FieldFromShort = cos(0.) + 1./1.4*reflection_coefficient*cos(phi_shortTM01[0]); // starting field, after 0th bounce.
+            FieldFromPolarizer = 1./1.4*reflection_coefficient*cos(phi_polarizerTM01[0]); // starting field, after 0th bounce.
 
 
             for (int i=0; i<nbounces; i++)  // short-going wave, initially.
             {
+	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
                     phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + tPI;  // phase shift
@@ -176,14 +179,14 @@ namespace locust
                 {
                     phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*tPI*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
                 }
-                FieldFromShort += cos(phi_shortTM01[i+1]); // field adds after each bounce.
-//       	       	printf("TM01FieldFromShort is %g\n", FieldFromShort);
 
+                FieldFromShort += time_decay*cos(phi_shortTM01[i+1]); // field adds after each bounce.
             }
 
 
             for (int i=0; i<nbounces; i++)  // polarizer-going wave, initially.
             {
+	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
                     phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*tPI*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
@@ -192,7 +195,7 @@ namespace locust
                 {
                     phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + tPI;  // phase shift.
                 }
-                FieldFromPolarizer += cos(phi_polarizerTM01[i+1]);
+                FieldFromPolarizer += time_decay*cos(phi_polarizerTM01[i+1]);
             }
         } // phi_shortTM01 == 0.  This loop defines the initial standing wave on the first tracking step.
 
@@ -206,8 +209,6 @@ namespace locust
         //printf("x y z is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), tPositionZ);
         //printf("lambda_short is %g and lambda_polarizer is %g\n", lambda_short, lambda_polarizer);
         //printf("TM01FieldAfterBounces is %g\n", TM01FieldAfterBounces); //getchar();
-
-        //printf("TM01FieldAfterBounces is %f\n", TM01FieldAfterBounces);
 
     	return TM01FieldAfterBounces;
     }
@@ -239,15 +240,16 @@ namespace locust
         double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
 		//double DampingFactor = DampingFactorTE11;
 
-        //if (fabs(DampingFactor)>0.)
-        //{
-        //    printf("elapsed time is %g\n", aFinalParticle.GetTime());
-        //    printf("x, y, z position is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), aFinalParticle.GetPosition().GetZ());
-        //    printf("couplingTM01 is %f\n", CouplingFactorTM01);
-        //    printf("damping factor total = %f, DampingFactorTE11 is %g and DampingFactorTM01 is %g\n", DampingFactor, DampingFactorTE11, DampingFactorTM01);
-        //    getchar();
-        //}
-                    
+	/*	
+        if (fabs(DampingFactor)>0.)
+        {
+	      printf("elapsed time is %g\n", aFinalParticle.GetTime());
+            printf("x, y, z position is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), aFinalParticle.GetPosition().GetZ());
+            printf("couplingTM01 is %f\n", CouplingFactorTM01);
+            printf("damping factor total = %f, DampingFactorTE11 is %g and DampingFactorTM01 is %g\n", DampingFactor, DampingFactorTE11, DampingFactorTM01);
+            getchar();
+        }
+	*/	                   
 
     	return DampingFactor;
     }
@@ -292,8 +294,7 @@ namespace locust
 
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
-//      printf("fcyc before coupling is %.9g and Bz is %.10g\n\n", aFinalParticle.GetCyclotronFre\
-quency(), aFinalParticle.GetMagneticField().GetZ());
+//      printf("fcyc before coupling is %.9g and Bz is %.10g\n\n", aFinalParticle.GetCyclotronFrequency(), aFinalParticle.GetMagneticField().GetZ());
 
         //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
         //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
@@ -316,6 +317,7 @@ quency(), aFinalParticle.GetMagneticField().GetZ());
 
         if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s
         {
+
             std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
 
