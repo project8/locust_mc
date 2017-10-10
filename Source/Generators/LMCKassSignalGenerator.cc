@@ -174,6 +174,9 @@ namespace locust
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
     {
 
+      //      double LO_modulation = 0.; // from RF interference?
+      //      double IQ_modulation = 0.; // from RF interference?                      
+      //      double LO_phasemodulation = 0.; // RF interference?
         double dt = 5.e-10; // seconds, this might need to come from Kassiopeia and be exact.
         double fprime_antenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double fprime_short = 0.;  // Doppler shifted cyclotron frequency in Hz.
@@ -206,21 +209,27 @@ namespace locust
 
         phi_t1 += 2.*PI*fprime_antenna*dt;
         phi_t2 += 2.*PI*fprime_short*dt;
-        phiLO_t += 2.*PI*fLO_Frequency*dt;
-        RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
+	//        LO_modulation = 1. - 1.e6/fLO_Frequency * fabs(cos(2.*PI*t_poststep/0.0005));
+	//	        LO_phasemodulation = 4.e-3*cos(2.*PI*t_poststep/0.0005);
+	//                IQ_modulation = 10.*cos(2.*PI*t_poststep/0.0005);
+
+		//        phiLO_t += 2.*PI*fLO_Frequency*LO_modulation*dt;
+		//	        phiLO_t += 2.*PI*fLO_Frequency*dt + LO_phasemodulation;
+		        phiLO_t += 2.*PI*fLO_Frequency*dt;
+        RealVoltage1 = cos( phi_t1 - phiLO_t); // + cos( phi_t1 + phiLO_t ));
         ImagVoltage1 = cos( phi_t1 - phiLO_t - PI/2.); // + cos( phi_t1 + phiLO_t - PI/2.));
-        RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
+        RealVoltage2 = cos( phi_t2 - phiLO_t); // + cos( phi_t2 + phiLO_t ));
         ImagVoltage2 = cos( phi_t2 - phiLO_t - PI/2.); // + cos( phi_t2 + phiLO_t - PI/2.));
 
         //RealVoltage2 = 0.;  // take out short.
         //ImagVoltage2 = 0.;  // take out short.
         
         aLongSignal[ index ] += TE11ModeExcitation()*pow(LarmorPower,0.5)*(RealVoltage1 + RealVoltage2);
-        ImaginarySignal[ index ] += TE11ModeExcitation()*pow(2.,0.5)*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);
+        ImaginarySignal[ index ] += TE11ModeExcitation()*pow(LarmorPower,0.5)*(ImagVoltage1 + ImagVoltage2);  // 1.1 = IQ imbalance
 
         //if (t_old > 0.004)
 
-	/*	
+	/*		
         {
 
 	  
@@ -244,6 +253,8 @@ namespace locust
         // fraction of emitted power that goes into TE11.
         double coupling = 119116./168.2 * 2./PI * 4./(2.*PI) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
                 (j0(kc*r) + jn(2, kc*r)) );
+
+	//        coupling = 1.0; // remove A.M.
 
         return pow(coupling,0.5);  // field amplitude is sqrt of power going into field.
     }

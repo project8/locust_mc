@@ -6,21 +6,9 @@
             { "type": "egg-processor",          "name": "egg1" },
             { "type": "forward-fftw",           "name": "fft1" },
             { "type": "convert-to-power",       "name": "to-ps1" },
-            { "type": "gain-variation",         "name": "gainvar" },
-            { "type": "data-accumulator",       "name": "acc" },
-            { "type": "egg-processor",          "name": "egg2" },
-            { "type": "forward-fftw",           "name": "fft2" },
-            { "type": "convert-to-power",       "name": "to-ps2" },
-            { "type": "variable-spectrum-discriminator", "name": "discrim" },
-            { "type": "create-kd-tree",         "name": "kd-tree" },
-            { "type": "consensus-thresholding", "name": "ct" },
-            { "type": "dbscan-track-clustering","name": "tr-clust"},
-            { "type": "hough-transform",        "name": "hough" },
-            { "type": "track-proc",             "name": "tr-proc" },
-            { "type": "dbscan-event-clustering","name": "ev-clust" },
-	        { "type": "root-tree-writer",       "name": "treewriter" },
-                { "type": "root-spectrogram-writer", "name":"waterfall-writer" },
-            { "type": "throughput-profiler",    "name": "profiler" }
+            { "type": "root-spectrogram-writer", "name":"waterfall-writer" },
+            { "type": "basic-root-writer",   "name": "writer" }
+
         ],
         
         "connections":
@@ -30,16 +18,7 @@
                 "slot": "fft1:header",
                 "order": 0
             },
-            {
-                "signal": "egg1:header",
-                "slot": "profiler:start",
-                "order": 1
-            },
-            {
-                "signal": "egg2:header",
-                "slot": "fft2:header"
-            },
-
+           
             {
                 "signal": "egg1:ts",
                 "slot": "fft1:ts-real"
@@ -48,203 +27,63 @@
                 "signal": "fft1:fft",
                 "slot": "to-ps1:fs-fftw-to-psd"
             },
+           
+            
             {
                 "signal": "to-ps1:psd",
-                "slot": "acc:ps"
+                "slot": "writer:psd"
             },
+           
+                      
             {
-                "signal": "acc:ps-finished",
-                "slot": "gainvar:ps"
-            },
-            {
-                "signal": "gainvar:gain-var",
-                "slot": "discrim:gv"
-            },
-
-
-            {
-                "signal": "egg2:ts",
-                "slot": "profiler:data"
-            },
-            {
-                "signal": "egg2:ts",
-                "slot": "fft2:ts-real"
-            },
-            {
-                "signal": "fft2:fft",
-                "slot": "to-ps2:fs-fftw-to-psd"
-            },
-            {
-                "signal": "to-ps2:psd",
-                "slot": "discrim:ps-pre"
-            },
-            {
-                "signal": "discrim:disc-1d",
-                "slot": "kd-tree:disc-1d"
-            },
-            {
-                "signal": "egg2:egg-done",
-                "slot": "kd-tree:make-tree"
-            },
-            {
-                "signal": "kd-tree:kd-tree",
-                "slot": "ct:kd-tree-in"
-            },
-            {
-                "signal": "ct:kd-tree-out",
-                "slot": "tr-clust:kd-tree"
-            },
-            {
-                "signal": "tr-clust:track",
-                "slot": "hough:swf-cand"
-            },
-            {
-                "signal": "hough:hough",
-                "slot": "tr-proc:swfc-and-hough"
-            },
-            {
-                "signal": "tr-proc:track",
-                "slot": "ev-clust:track"
-            },
-            {
-                "signal": "tr-clust:clustering-done",
-                "slot": "ev-clust:do-clustering"
-            },
-            {
-                "signal": "to-ps2:psd",
+                "signal": "to-ps1:psd",
                 "slot": "waterfall-writer:psd"
             },
             {
-                "signal": "egg2:egg-done",
+                "signal": "egg1:egg-done",
                 "slot": "waterfall-writer:write-file"
-            },
-
-            {
-                "signal": "tr-proc:track",
-                "slot": "treewriter:processed-track"
-            },
-
-            {
-                "signal": "ev-clust:event",
-                "slot": "treewriter:multi-track-event"
-            },
-            {
-                "signal": "ev-clust:clustering-done",
-                "slot": "profiler:stop",
-                "order": 0
             }
+          
+         
         ],
         
         "run-queue":
         [
-            "egg1",
-            "egg2"
+            "egg1"
         ]
     },
         
     "egg1":
     {
-        "filename": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc_30bounces_0.044_0.0485_TE_TM_20ms_xyz0.0.egg",
+        "filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc_bathtub2-5_pitch89.8_coiltip2deg.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 450,
-        "slice-size": 8192
+        "number-of-slices": 1600,
+        "slice-size": 8192,
+        "stride": 1024
     },
 
     "fft1":
     {
         "transform-flag": "ESTIMATE"
     },
-    
-    "acc":
-    {
-        "number-to-average": 0,
-        "signal-interval": 0
-    },
-    
-    "gainvar":
-    {
-        "normalize": false,
-        "min-frequency": 1.0e6,
-        "max-frequency": 100.0e6,
-        "fit-points": 25
-    },
-    
 
-
-    "egg2":
-    {
-        "filename": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc_30bounces_0.044_0.0485_TE_TM_20ms_xyz0.0.egg",
-        "egg-reader": "egg3",
-        "number-of-slices": 450,
-        "slice-size": 8192
-    },
-
-    "fft2":
-    {
-        "transform-flag": "ESTIMATE"
-    },
-    
-    "discrim":
-    {
-        "min-frequency": 1.0e6,
-        "max-frequency": 100.0e6,
-        "snr-threshold-power": 1000.0
-    },
-
-    "kd-tree":
-    {
-        "time-radius": 0.0006,
-        "freq-radius": 0.15e6,
-        "distance-method": "euclidean"
-    },
-
-    "ct":
-    {
-        "membership-radius": 0.5,
-        "min-number-votes": 6
-    },
-
-    "tr-clust":
-    {
-        "comment": "radii are now specified in kd-tree",
-        "min-points": 4
-    },
-
-    "hough":
-    {
-        "n-theta-points": 100,
-        "n-r-points": 150
-    },
-
-    "tr-proc":
-    {
-        "pl-dist-cut1": 0.07,
-        "pl-dist-cut2": 0.035,
-        "min-points": 6,
-        "min-slope": 1.0
-    },
-
-    "ev-clust":
-    {
-        "radii": [0.0025, 20.0e6],
-        "min-points": 0
-    },
-
-    "treewriter":
-    {
-        "output-file": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/katydidtree.root",
-        "file-flag": "recreate"
-    },
 
     "waterfall-writer":
     {
-        "output-file": "/home/hep/heeger/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
         "min-freq": 0.0,
         "max-freq": 100.0e6
+    },
+
+    "writer":
+    {
+        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/basic.root",
+        "file-flag": "recreate"
     }
+
 
    
 }

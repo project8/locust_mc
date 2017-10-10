@@ -147,8 +147,8 @@ namespace locust
     	double FieldFromShort=0.;  // first doppler shift
     	double FieldFromPolarizer=0.; // other doppler shift
     	double TM01FieldAfterBounces = 0.;
-    	int nbounces = 500;
-        double time_decay = 0.;
+    	int nbounces = 20;
+        double time_decay = 1.;
         double reflection_coefficient = 1.0;
 
         //printf("TM01 l1 is %g and l2 is %g\n", GroupVelocity/fprime_short, GroupVelocity/fprime_polarizer); getchar();
@@ -163,7 +163,7 @@ namespace locust
 
             for (int i=0; i<nbounces; i++)  // short-going wave, initially.
             {
-	      time_decay = exp(-(double)i*2./(double)nbounces);
+	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
                     phi_shortTM01[i+1] = phi_shortTM01[i] + 2.*PI*2.*(CENTER_TO_ANTENNA - zposition)/lambda_short + PI;  // phase shift
@@ -178,7 +178,7 @@ namespace locust
 
             for (int i=0; i<nbounces; i++)  // polarizer-going wave, initially.
             {
-	      time_decay = exp(-(double)i*2./(double)nbounces);
+	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
                     phi_polarizerTM01[i+1] = phi_polarizerTM01[i] + 2.*PI*2.*(CENTER_TO_SHORT + zposition)/lambda_polarizer;
@@ -259,7 +259,7 @@ namespace locust
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
 
-      //      printf("zvelocity is %g and Z is %g\n", aFinalParticle.GetVelocity().GetZ(), aFinalParticle.GetPosition().Z()); getchar();
+      //      printf("zvelocity is %g and fcyc is %g\n", aFinalParticle.GetVelocity().GetZ(), aFinalParticle.GetCyclotronFrequency()); getchar();
         //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
         //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 
