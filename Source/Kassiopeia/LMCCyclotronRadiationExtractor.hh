@@ -17,6 +17,7 @@
 #include "KSComponentTemplate.h"
 
 #include "KToolbox.h"
+#include <gsl/gsl_sf_bessel.h>
 
 
 namespace locust

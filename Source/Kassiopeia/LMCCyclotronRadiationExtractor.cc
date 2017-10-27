@@ -95,7 +95,10 @@ namespace locust
     	double y = aFinalParticle.GetPosition().GetY();
     	double r = sqrt(x*x + y*y);
     	double coupling =   146876.5/168.2 * 2./KConst::Pi() * 4./(2.*KConst::Pi()) / kc * j1(kc*r);
-        //printf("tm01 coupling at r=%f is %f\n", r, coupling); //getchar();
+
+    	printf("j1(kc*r) is %f\n", gsl_sf_bessel_zero_Jnu(0,1)); getchar();
+
+    	//printf("tm01 coupling at r=%f is %f\n", r, coupling); //getchar();
         //printf("guiding center z is %f\n", aFinalParticle.GetGuidingCenterPosition().GetZ());
     	return coupling;
     }
@@ -292,8 +295,8 @@ namespace locust
 
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
-//      printf("fcyc before coupling is %.9g and Bz is %.10g\n\n", aFinalParticle.GetCyclotronFre\
-quency(), aFinalParticle.GetMagneticField().GetZ());
+//      printf("fcyc before coupling is %.9g and vz is %.10g\n\n", aFinalParticle.GetCyclotronFre\
+quency(), aFinalParticle.GetVelocity().GetZ()); getchar();
 
         //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
         //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
