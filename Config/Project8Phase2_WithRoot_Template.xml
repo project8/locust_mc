@@ -7,17 +7,12 @@
 <external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub -->
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
 <!--<external_define name="fieldZ" value="0.9581540"/> -->
-<<<<<<< HEAD
 <external_define name="fieldX" value="0."/>  <!-- earth's horiz. field in Seattle -->
-=======
-<external_define name="fieldX" value="1.9e-5"/>  <!-- earth's horiz. field in Seattle -->
->>>>>>> ab805a1c338ebc51c72695795afdcbc29267d582
 <external_define name="fieldY" value="0.0"/>
 
 
 <external_define name="alignment" value="0."/>
 
->>>>>>> feature/Phase2
  <external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
@@ -36,7 +31,8 @@
 
 <geometry>
 
-<include name="/home/hep/baker/ps48/locust_mc/Config/Project8Phase2Geometry.xml"/>
+<include name="/home/penny/locust_mc/Config/Project8Phase2Geometry.xml"/>
+
 </geometry>
     
     <!-- solenoid turns -->
@@ -61,13 +57,9 @@
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
 
 
-<<<<<<< HEAD
 
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
-=======
->>>>>>> ab805a1c338ebc51c72695795afdcbc29267d582
 
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
 
 
@@ -221,11 +213,7 @@
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-<<<<<<< HEAD
         <theta_uniform value_min="89.0" value_max="89.0"/> 
-=======
-        <theta_uniform value_min="88.5" value_max="88.5"/> 
->>>>>>> ab805a1c338ebc51c72695795afdcbc29267d582
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -421,11 +409,7 @@
 
 
     <!-- terminators -->
-<<<<<<< HEAD
     <ksterm_max_time name="term_max_time" time="1.e-6"/>
-=======
-    <ksterm_max_time name="term_max_time" time="3.e-3"/>
->>>>>>> ab805a1c338ebc51c72695795afdcbc29267d582
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
@@ -509,15 +493,9 @@
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
-<<<<<<< HEAD
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
 
-=======
-
-        <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
-        <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
->>>>>>> ab805a1c338ebc51c72695795afdcbc29267d582
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
@@ -569,19 +547,14 @@
         space_navigator="nav_space"
         surface_navigator="nav_surface"      
         writer="write_root"
-<<<<<<< HEAD
-=======
-        writer="write_vtk"
-        surface_navigator="nav_surface"      
-        writer="write_root"
->>>>>>> ab805a1c338ebc51c72695795afdcbc29267d582
     />
 
 
 
 </kassiopeia>
 
-<!--
+
+
 
     <vtk_window
         name="vtk_window"
@@ -616,8 +589,6 @@
         /> 
 
     </vtk_window> 
--->
-
 
 
 

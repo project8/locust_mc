@@ -208,9 +208,11 @@ namespace locust
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
         ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
 
-
         //RealVoltage2 = 0.;  // take out short.
         //ImagVoltage2 = 0.;  // take out short.
+        
+        //aLongSignal[ index ] = TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+        //anImaginarySignal[ index ] = TE11ModeExcitation() * sqrt( 2. * tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
         
         aLongSignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
         anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
@@ -229,9 +231,8 @@ namespace locust
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
 */
 
-        t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
+        t_old += fDigitizerTimeStep;
 
-	  
     }
 
     double KassSignalGenerator::TE11ModeExcitation() const
