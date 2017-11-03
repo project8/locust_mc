@@ -7,7 +7,7 @@
 <external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub -->
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
 <!--<external_define name="fieldZ" value="0.9581540"/> -->
-<external_define name="fieldX" value="1.9e-5"/>  <!-- earth's horiz. field in Seattle -->
+<external_define name="fieldX" value="0.0"/>  <!-- earth's horiz. field in Seattle -->
 <external_define name="fieldY" value="0.0"/>
 
 
@@ -32,7 +32,7 @@
 
 <geometry>
 
-<include name="/home/hep/baker/ps48/locust_mc/Config/Project8Phase2Geometry.xml"/>
+<include name="/home/penny/ps48/locust_mc/Config/Project8Phase2Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -408,7 +408,7 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="3.e-3"/>
+    <ksterm_max_time name="term_max_time" time="5.e-4"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>

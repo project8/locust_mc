@@ -10,12 +10,12 @@
     "kass-signal":
     {
         "lo-frequency": 25.2814e9,
-        "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Project8Phase2_WithRoot_pitch89.96.xml"
+        "xml-filename": "/home/penny/locust_mc/Config/Project8Phase2_WithRoot_Template.xml"
     },
 
     "simulation":
     {
-        "egg-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc_pitch89.96_0.076_0.0772_notip_x0.003yz0_gain500.egg",
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1
     },
   
