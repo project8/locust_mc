@@ -5,12 +5,7 @@
 
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
 <external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub -->
-<external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
-<!--<external_define name="fieldZ" value="0.9581540"/> -->
-<external_define name="fieldX" value="0.0"/>
-<external_define name="fieldY" value="0.0"/>
-
-
+<external_define name="field" value="0.9583"/>
 <external_define name="alignment" value="0."/>
 
  <external_define name="generator" value="gen_uniform"/>
@@ -32,6 +27,7 @@
 <geometry>
 
 <include name="/home/penny/locust_mc/Config/Project8Phase2Geometry.xml"/>
+
 </geometry>
     
     <!-- solenoid turns -->
@@ -56,8 +52,8 @@
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
 
 
-
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
+
 
 
 
@@ -97,8 +93,21 @@
 
     <ksfield_magnetic_constant
         name="field_magnetic_main"
-        field="[fieldX] [fieldY]  [fieldZ]"
+        field="0. 0. [field]"
     />
+
+
+    <ksfield_magnetic_ramped
+        name="ramped_b"
+        root_field="field_magnetic_main"
+        ramping_type="inversion2"
+        num_cycles="10"
+        ramp_up_time="0.001"
+        ramp_down_time="0.001"
+        time_constant="0.025"
+        >
+    </ksfield_magnetic_ramped>
+
 
     <!-- generators -->
 
@@ -202,17 +211,17 @@
 
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="30472.3"/>
+            <energy_fix value="17830.0"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.003" value_max="0.003"/>
-            <y_uniform value_min="0.00" value_max="0.00"/>
+            <x_uniform value_min="0.00" value_max="0.00"/>
+            <y_uniform value_min="0.003" value_max="0.003"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="88.5" value_max="88.5"/> 
-            <phi_uniform value_min="0." value_max="0."/>
+        <theta_uniform value_min="89.0" value_max="89.0"/> 
+            <phi_uniform value_min="90." value_max="90."/>
         </direction_spherical_composite>
         <time_composite>
             <time_fix value="0."/>
@@ -407,24 +416,24 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="5.e-4"/>
-    <ksterm_max_steps name="term_max_steps" steps="10000"/>
+    <ksterm_max_time name="term_max_time" time="1.e-6"/>
+    <ksterm_max_steps name="term_max_steps" steps="50"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
-    <ksterm_min_z name="term_min_z" z="-.07"/>
-    <ksterm_max_z name="term_max_z" z=".07"/>
+    <ksterm_min_z name="term_min_z" z="-.065"/>
+    <ksterm_max_z name="term_max_z" z=".065"/>
     <ksterm_death name="term_upstream_endcap_death"/>
     <ksterm_death name="term_downstream_endcap_death"/>
     <ksterm_death name="term_waveguide_jacket_death"/>
 
     
     <!-- modifiers -->
-    <cycl_rad_extr name="my_rad_extr"  /> 
+<!--    <cycl_rad_extr name="my_rad_extr"  /> -->
 
 
     <!-- writers -->
 
     <kswrite_root name="write_root" path="[output_path]" base="[file].root"/>
-    <kswrite_vtk name="write_vtk" path="[output_path]" base="Project8"/> 
+    <kswrite_vtk name="write_vtk" path="[output_path]" base="Project8"/>
 
     <!-- output -->
 
@@ -467,6 +476,7 @@
     <ks_component_group name="component_step_world">
         <component_member name="time" field="time" parent="component_step_final_particle"/>
         <component_member name="position" field="position" parent="component_step_final_particle"/>
+        <component_member name="guiding_center_position" field="guiding_center_position" parent="component_step_final_particle"/>
         <component_member name="momentum" field="momentum" parent="component_step_final_particle"/>
         <component_member name="magnetic_field" field="magnetic_field" parent="component_step_final_particle"/>
         <component_member name="kinetic_energy" field="kinetic_energy_ev" parent="component_step_final_particle"/>
@@ -476,8 +486,6 @@
         <component_member name="lorentz_factor" field="lorentz_factor" parent="component_step_final_particle"/>
         <component_member name="speed" field="speed" parent="component_step_final_particle"/>
         <component_member name="orbital_magnetic_moment" field="orbital_magnetic_moment" parent="component_step_final_particle"/>
-        <component_member name="guiding_center_position" field="guiding_center_position" parent="component_step_final_particle"/>
-
     </ks_component_group>
 
 
@@ -487,13 +495,10 @@
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
+<!--        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> -->
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
-
-        <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
-        <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
@@ -537,22 +542,23 @@
         run="1"
         seed="[seed]"
         events="1"
-        magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
+        magnetic_field="field_electromagnet"
         space="space_world"
         generator="[generator]"
         trajectory="[trajectory]"
         space_navigator="nav_space"
         surface_navigator="nav_surface"
         writer="write_root"
-        writer="write_vtk"
+      
     />
 
 
 
 </kassiopeia>
 
-<!--
+
+
 
     <vtk_window
         name="vtk_window"
@@ -587,8 +593,6 @@
         /> 
 
     </vtk_window> 
--->
-
 
 
 <!--
