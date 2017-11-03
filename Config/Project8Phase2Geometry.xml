@@ -174,7 +174,7 @@
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/upstream_bathtub_coil/#"/> 
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/upstream_pinch_coil/#"/> 
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/center_pinch_coil/#"/> 
-    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_pinch_coil/#"/> 
+    <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_pinch_coil/#"/>
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_bathtub_coil/#"/> 
     <appearance name="app_waveguide" color="255 128 0 96" arc="72" surfaces="world/project8/cylindricalwaveguide/upstream_endcap_piece"/>
     <appearance name="app_waveguide" color="255 128 0 96" arc="72" surfaces="world/project8/cylindricalwaveguide/downstream_endcap_piece"/>
