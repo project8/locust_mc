@@ -6,28 +6,27 @@ locust_mc is a monte carlo simulation package of the receiver chain for Project 
 Dependencies
 ------------
 **External**
-
-    Boost (www.boost.org) version 1.46 or higher (date_time, filesystem, program_options, system, thread)
-    CMake (www.cmake.org) version 2.8 or higher
-    FFTW3 (3.3 or newer)
-    G++ version 4.5 or higher (if compiling with GCC)
-    GSL (www.gnu.org/software/gsl)
-    HDF5 (required by Monarch3 and for outputing to HDF5 files)
-    ROOT (www.cern.ch/root) version 5.24 or higher (6.x should work too)
+ - Boost (www.boost.org) version 1.46 or higher (date_time, filesystem, program_options, system, thread)
+ - CMake (www.cmake.org) version 2.8 or higher
+ - FFTW3 (3.3 or newer)
+ - G++ version 4.5 or higher (if compiling with GCC)
+ - GSL (www.gnu.org/software/gsl)
+ - HDF5 (required by Monarch3 and for outputing to HDF5 files)
+ - ROOT (www.cern.ch/root) version 5.24 or higher (6.x should work too)
         --enable-minuit2 (if you want to use KaFit)
         --enable-fftw3 (if you want to use KEMField)
 
-Optional Dependencies:
-    LibXml2 (xmlsoft.org)
-    Log4CXX (logging.apache.org/log4cxx)
-    MPI (www.open-mpi.org or mpich.org)
-    OpenCL (www.khronos.org/opencl), installation details depend on your system
-    OpenSSL (openssl.org) version 0.9.6 or higher
-    PETSc (mcs.anl.gov/petsc)
-    VTK (www.vtk.org) version 5.0 or higher
-    zlib (www.zlib.net)
-    pdflatex (for making the documentation; minimum version not known)
-    doxygen (for making the documentation; minimum version not known)(3.1 or better)
+**Optional Dependencies**
+ - LibXml2 (xmlsoft.org)
+ - Log4CXX (logging.apache.org/log4cxx)
+ - MPI (www.open-mpi.org or mpich.org)
+ - OpenCL (www.khronos.org/opencl), installation details depend on your system
+ - OpenSSL (openssl.org) version 0.9.6 or higher
+ - PETSc (mcs.anl.gov/petsc)
+ - VTK (www.vtk.org) version 5.0 or higher
+ - zlib (www.zlib.net)
+ - pdflatex (for making the documentation; minimum version not known)
+ - doxygen (for making the documentation; minimum version not known)(3.1 or better)
 
 **Submodules** (included with locust; must be fetched via Git)
 - [Monarch](https://github.com/project8/monarch)
@@ -105,6 +104,7 @@ The following steps will build locust from scratch.  In the terminal:
   If the compiler runs into errors during the build, first check that you've updated the submodules and that you have all of the required dependencies installed (many are called "optional" on this page, but if you want to build without them you must also specify this in the cmake window). If you made a change to the dependencies or submodules, you may have to wipe the build directory and start again from step 1; simply writing `make install` again will not always work. 
 
 4. Add the locust binaries to your $PATH to call executables directly from the command line.
+
     ```
     $ source /path/to/locust_mc/build/bin/kasperenv.sh 
     ```
@@ -122,5 +122,9 @@ Locust is typically started with a command like:
 
 Documentation
 -------------
+
+There is a reference manual for usage in Documentation.
+
+The Config/Tutorial directory contains an example guiding the user through a Phase II locust simulation.
 
 Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issues).

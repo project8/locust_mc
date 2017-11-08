@@ -13,7 +13,6 @@
 
 <external_define name="alignment" value="0."/>
 
->>>>>>> feature/Phase2
  <external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
