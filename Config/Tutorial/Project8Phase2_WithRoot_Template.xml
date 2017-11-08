@@ -30,8 +30,7 @@
 
 
 <geometry>
-
-<include name="/home/penny/ps48/locust_mc/Config/Project8Phase2Geometry.xml"/>
+    <include name="/home/XXX/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
