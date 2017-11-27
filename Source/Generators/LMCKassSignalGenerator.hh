@@ -71,8 +71,9 @@ namespace locust
         private:
       double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal ) const;
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const;
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* anImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double* ImaginarySignal) const;
+            void* FilterNegativeFrequenciesNew(Signal* aSignal) const;
             double TE11ModeExcitation() const;
 
 

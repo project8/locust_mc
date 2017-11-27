@@ -437,6 +437,8 @@ namespace locust
 
         aLongSignal[ index ] += tVoltage * cos(phi_LO);
         ImaginarySignal[ index ] += -tVoltage * sin(phi_LO);
+        aSignal->LongSignalTimeNew()[index][0] += tVoltage * cos(phi_LO);
+        aSignal->LongSignalTimeNew()[index][1] += -tVoltage * sin(phi_LO);
 
         t_old += fDigitizerTimeStep;
 

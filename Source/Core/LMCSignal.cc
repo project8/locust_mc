@@ -17,13 +17,21 @@ namespace locust
             fState( kNotInitialized ),
             fTimeSize( 0 ),
             fFreqSize( 0 ),
+            fFreqSizeNew( 0 ),
             fDigitalSize( 0 ),
             fSignalTime( NULL ),
             fSignalFreq( NULL ),
+            fSignalTimeNew( NULL ),
+            fSignalFreqNew( NULL ),
+            fLongSignalTimeNew( NULL ),
+            fLongSignalFreqNew( NULL ),
             fSignalDigital(),
             fDigitalIsSigned( false ),
             fPlanToFreq(),
-            fPlanToTime()
+            fPlanToTime(),
+            fPlanToFreqNew(),
+            fPlanToTimeNew()
+
     {
         fSignalDigital.fUnsigned = NULL;
     }
@@ -39,14 +47,24 @@ namespace locust
 
         fTimeSize = aTimeSize;
         fFreqSize = fTimeSize / 2 + 1;
+        fFreqSizeNew = fTimeSize;
 
         fSignalTime = new double [fTimeSize];
         fSignalFreq = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize );
+        fSignalTimeNew = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize );
+        fSignalFreqNew = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeNew );
+        fLongSignalTimeNew = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize*10 );
+        fLongSignalFreqNew = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeNew*10 );
 
         ResetValues();
 
         fPlanToFreq = fftw_plan_dft_r2c_1d( fTimeSize, fSignalTime, fSignalFreq, aFFTFlags);
         fPlanToTime = fftw_plan_dft_c2r_1d( fTimeSize, fSignalFreq, fSignalTime, aFFTFlags);
+        fPlanToFreqNew = fftw_plan_dft_1d( fTimeSize, fSignalTimeNew, fSignalFreqNew, FFTW_FORWARD, aFFTFlags);
+        fPlanToTimeNew = fftw_plan_dft_1d( fTimeSize, fSignalFreqNew, fSignalTimeNew, FFTW_BACKWARD, aFFTFlags);
+        fLongPlanToFreqNew = fftw_plan_dft_1d( fTimeSize*10, fLongSignalTimeNew, fLongSignalFreqNew, FFTW_FORWARD, aFFTFlags);
+        fLongPlanToTimeNew = fftw_plan_dft_1d( fTimeSize*10, fLongSignalFreqNew, fLongSignalTimeNew, FFTW_BACKWARD, aFFTFlags);
+
 
         fState = kTime;  // pls confused here.
 //        fState = kFreq;
@@ -60,19 +78,34 @@ namespace locust
     {
         delete [] fSignalTime;
         fftw_free( fSignalFreq );
+        fftw_free( fSignalTimeNew );
+        fftw_free( fSignalFreqNew );
+        fftw_free( fLongSignalTimeNew );
+        fftw_free( fLongSignalFreqNew );
+
         if( fDigitalIsSigned ) delete [] fSignalDigital.fSigned;
         else delete [] fSignalDigital.fUnsigned;
 
         fSignalTime = NULL;
         fSignalFreq = NULL;
+        fSignalTimeNew = NULL;
+        fSignalFreqNew = NULL;
+        fLongSignalTimeNew = NULL;
+        fLongSignalFreqNew = NULL;
         fSignalDigital.fUnsigned = NULL;
         fDigitalIsSigned = false;
 
         fftw_destroy_plan( fPlanToFreq );
         fftw_destroy_plan( fPlanToTime );
+        fftw_destroy_plan( fPlanToFreqNew );
+        fftw_destroy_plan( fPlanToTimeNew );
+        fftw_destroy_plan( fLongPlanToFreqNew );
+        fftw_destroy_plan( fLongPlanToTimeNew );
+
 
         fTimeSize = 0;
         fFreqSize = 0;
+        fFreqSizeNew = 0;
         fDigitalSize = 0;
 
         fState = kNotInitialized;
@@ -87,6 +120,8 @@ namespace locust
             for( unsigned index = 0; index < fTimeSize; ++index )
             {
                 fSignalTime[index] = 0.;
+                fSignalTimeNew[index][0] = 0.;
+                fSignalTimeNew[index][1] = 0.;
             }
         }
 
@@ -98,6 +133,37 @@ namespace locust
                 fSignalFreq[index][1] = 0.;
             }
         }
+
+
+        if( fSignalFreqNew != NULL )
+        {
+            for( unsigned index = 0; index < fFreqSizeNew; ++index )
+            {
+                fSignalFreqNew[index][0] = 0.;
+                fSignalFreqNew[index][1] = 0.;
+            }
+        }
+
+        if( fLongSignalTimeNew != NULL )
+        {
+            for( unsigned index = 0; index < fTimeSize*10; ++index )
+            {
+                fLongSignalTimeNew[index][0] = 0.;
+                fLongSignalTimeNew[index][1] = 0.;
+            }
+        }
+
+        if( fLongSignalFreqNew != NULL )
+        {
+            for( unsigned index = 0; index < fFreqSizeNew*10; ++index )
+            {
+                fLongSignalFreqNew[index][0] = 0.;
+                fLongSignalFreqNew[index][1] = 0.;
+            }
+        }
+
+
+
 
         if( fDigitalIsSigned )
         {
@@ -334,6 +400,30 @@ namespace locust
     {
         return fSignalTime;
     }
+
+    const fftw_complex* Signal::SignalTimeNew() const
+    {
+        return fSignalTimeNew;
+    }
+
+    fftw_complex* Signal::SignalTimeNew()
+    {
+        return fSignalTimeNew;
+    }
+
+
+
+    const fftw_complex* Signal::LongSignalTimeNew() const
+    {
+        return fLongSignalTimeNew;
+    }
+
+    fftw_complex* Signal::LongSignalTimeNew()
+    {
+        return fLongSignalTimeNew;
+    }
+
+
 /*
     double Signal::SignalTime( unsigned anIndex ) const
     {

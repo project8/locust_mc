@@ -7,9 +7,6 @@
 
 #include "LMCButterworthLPFGenerator.hh"
 
-#include "LMCGlobalsDeclaration.hh"
-#include <deque>
-
 #include "logger.hh"
 
 using std::string;
@@ -51,82 +48,82 @@ namespace locust
 
     bool ButterworthLPFGenerator::DoGenerateTime( Signal* aSignal ) const
     {
-    	// 8th order Butterworth filter with wc = 70.e6 Hz fs=200 MHz.
+    	// 8th order Butterworth filter with wc = 70.e6 Hz, 100X attenuation at 95 MHz, fs=200 MHz.
 
     	double* ai = new double[20];
     	double* bi = new double[20];
     	int N = 8;  // 8th order digital filter.
     	int M = 8;
 
-        ai[0]=1.0000;
-        ai[1]=-6.8730110236;
-        ai[2]=20.7365964965756;
-        ai[3]=-35.864676348246;
-        ai[4]=38.884394537568;
-        ai[5]=-27.057833592167;
-        ai[6]=11.799329601546;
-        ai[7]=-2.947769270203;
-        ai[8]=0.322972809305;
-        ai[9]=0.0000000;
+// raw coefficients from numerator of G(z) in Mathematica, starting with Butterworth polynomials.
+    	ai[0] = 12.675;
+    	ai[1] = 101.4;
+    	ai[2] = 354.9;
+    	ai[3] = 709.8;
+    	ai[4] = 887.25;
+    	ai[5] = 709.8;
+    	ai[6] = 354.9;
+    	ai[7] = 101.4;
+    	ai[8] = 12.675;
 
-        bi[0]=1.25420323016e-8;
-        bi[1]=1.00336258412e-7;
-        bi[2]=3.511769044450e-7;
-        bi[3]=7.0235380889e-7;
-        bi[4]=8.77942261112e-7;
-        bi[5]=7.0235380889e-7;
-        bi[6]=3.511769044450e-7;
-        bi[7]=1.00336258412e-7;
-        bi[8]=1.25420323016e-8;
-        bi[9]=0.0000000;
-
-
-        //Toss out useless normalization factor
-        for(unsigned int index = 0 ; index < M ; ++index)
-        {
-            ai[index]=ai[index+1];
-        }
-
-        double *FilteredSignal = new double[aSignal->TimeSize()]; // output signal.
-        std::deque<double> InternalSignal(N); // temporary signal
-
-        //Initialize
-        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
-            FilteredSignal[index] = 0.;
-        
-        for( unsigned index = 0; index < N; ++index )
-            InternalSignal[index]=0.0;
-
-        for( unsigned index = 0; index < aSignal->TimeSize() ; ++index)
-        {
-            FilteredSignal[index]=bi[0]*aLongSignal[index]+InternalSignal[0];
-            InternalSignal.pop_front();
-            InternalSignal.push_back(0.);
-            
-            for(unsigned j = 0; j < N; j++)
-            {
-                InternalSignal[j]=InternalSignal[j]+bi[j+1]*aLongSignal[index];
-            }
-
-            for(unsigned j = 0; j < M; j++)
-            {
-                InternalSignal[j]=InternalSignal[j]-ai[j]*FilteredSignal[index];
-            }
+// raw coefficients from denominator of G(z) in Mathematica, starting with Butterworth polynomials.
+    	bi[0] = 160.698;
+    	bi[1] = -511.67;
+    	bi[2] = -832.628;
+    	bi[3] = -837.901;
+    	bi[4] = -561.456;
+    	bi[5] = -252.64;
+    	bi[6] = -73.9998;
+    	bi[7] = -12.8136;
+    	bi[8] = -1.;
 
 
-        }
+double norm = bi[0];
+for (int i=0; i<N+1; i++)
+    {
+	ai[i] /= norm;
+	bi[i] /= norm;
+    }
 
-        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
-        {
-            aLongSignal[index] = FilteredSignal[index];
-        }
+for (int i=0; i<N+1; i++)
+  printf("ai[%d] is %f and bi[%d] is %f\n", i, ai[i], i, bi[i]);
 
-        delete [] FilteredSignal;
-        return true;
+    double FIR_component = 0.;
+    double IIR_component = 0.;
+    double *FilteredSignal = new double[aSignal->TimeSize()]; // temporary signal.
+    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+    	FilteredSignal[index] = 0.;
+
+
+    for( unsigned index = N; index < aSignal->TimeSize(); ++index )
+      {
+
+      FIR_component = 0.;
+      IIR_component = 0.;
+
+      for (int i=0; i<N+1; i++)
+	    FIR_component += ai[i]*aSignal->SignalTime()[index-i];
+	  for (int i=1; i<M+1; i++)
+	    IIR_component += bi[i]*FilteredSignal[index-i];
+
+	  FilteredSignal[index] = FIR_component + IIR_component;
+//      printf("FilteredSignal[%d] is %g\n", index, FilteredSignal[index]); getchar();
+      }
+
+    for( unsigned index = N+1; index < aSignal->TimeSize(); ++index )
+      {
+//      printf("FilteredSignal[%d] is %g\n", index, FilteredSignal[index]); getchar();
+      aSignal->SignalTime()[index] = FilteredSignal[index];
+      }
+
+
+    delete FilteredSignal;
+    return true;
     }
 
     bool ButterworthLPFGenerator::DoGenerateFreq( Signal* aSignal ) const
     {
+
         return true;
     }
 

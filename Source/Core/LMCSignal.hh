@@ -60,8 +60,21 @@ namespace locust
             //double SignalTime( unsigned anIndex ) const;
             //double& SignalTime( unsigned anIndex );
 
+            const fftw_complex* SignalTimeNew() const;
+            fftw_complex* SignalTimeNew();
+
+            const fftw_complex* LongSignalTimeNew() const;
+            fftw_complex* LongSignalTimeNew();
+
+            const fftw_complex* LongSignalFreqNew() const;
+            fftw_complex* LongSignalFreqNew();
+
             const fftw_complex* SignalFreq() const;
             fftw_complex* SignalFreq();
+
+            const fftw_complex* SignalFreqNew() const;
+            fftw_complex* SignalFreqNew();
+
 
             //const fftw_complex& SignalFreq( unsigned anIndex ) const;
             //fftw_complex& SignalFreq( unsigned anIndex );
@@ -98,11 +111,18 @@ namespace locust
 
             unsigned fTimeSize;
             unsigned fFreqSize;
+            unsigned fFreqSizeNew;
             unsigned fDigitalSize;
 
             double* fSignalTime;
             fftw_complex* fSignalFreq;
-//            uint64_t* fSignalDigital;
+            fftw_complex* fSignalTimeNew;
+            fftw_complex* fSignalFreqNew;
+            fftw_complex* fLongSignalTimeNew;
+            fftw_complex* fLongSignalFreqNew;
+
+
+            //            uint64_t* fSignalDigital;
             union SignalDigital
             {
                 int8_t* fSigned;
@@ -112,6 +132,10 @@ namespace locust
 
             fftw_plan fPlanToFreq;
             fftw_plan fPlanToTime;
+            fftw_plan fPlanToFreqNew;
+            fftw_plan fPlanToTimeNew;
+            fftw_plan fLongPlanToFreqNew;
+            fftw_plan fLongPlanToTimeNew;
 
     };
 

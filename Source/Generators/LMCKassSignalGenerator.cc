@@ -103,6 +103,66 @@ namespace locust
         return true;
     }
 
+
+    void* KassSignalGenerator::FilterNegativeFrequenciesNew(Signal* aSignal) const
+    {
+        int nwindows = 80;
+        int windowsize = 10*aSignal->TimeSize()/nwindows;
+
+        fftw_complex *SignalComplex;
+        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
+        fftw_complex *FFTComplex;
+        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
+
+        fftw_plan ForwardPlan;
+        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+        fftw_plan ReversePlan;
+        ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+
+
+        for (int nwin = 0; nwin < nwindows; nwin++)
+        {
+            // Construct complex voltage.
+            for( unsigned index = 0; index < windowsize; ++index )
+            {
+                SignalComplex[index][0] = aSignal->LongSignalTimeNew()[ nwin*windowsize + index ][0];
+                SignalComplex[index][1] = aSignal->LongSignalTimeNew()[ nwin*windowsize + index ][1];
+                //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
+            }
+
+            fftw_execute(ForwardPlan);
+
+            //Complex filter to set power at negative frequencies to 0.
+
+            for( unsigned index = windowsize/2; index < windowsize; ++index )
+            {
+                FFTComplex[index][0] = 0.;
+                FFTComplex[index][1] = 0.;
+            }
+
+            fftw_execute(ReversePlan);
+
+            double norm = (double)(windowsize);
+
+            for( unsigned index = 0; index < windowsize; ++index )
+            {
+                // normalize and take the real part of the reverse transform, for digitization.
+                //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
+                aSignal->LongSignalTimeNew()[ nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
+                //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
+            }
+
+        }
+
+
+
+
+        delete SignalComplex;
+        delete FFTComplex;
+
+    }
+
+
     void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
     {
 
@@ -208,12 +268,13 @@ namespace locust
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
         ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
 
-
         //RealVoltage2 = 0.;  // take out short.
         //ImagVoltage2 = 0.;  // take out short.
         
         aLongSignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
         anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+        aSignal->LongSignalTimeNew()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+        aSignal->LongSignalTimeNew()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
 
         //if (t_old > 0.004)
 /*
@@ -273,7 +334,6 @@ namespace locust
         fRunInProgress = true;
         fKassEventReady = false;
 
-
         for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
@@ -313,8 +373,9 @@ namespace locust
             }
         }  // for loop
 
-        FilterNegativeFrequencies(aSignal, ImaginarySignal);
-        delete ImaginarySignal;
+        FilterNegativeFrequenciesNew(aSignal);
+//        FilterNegativeFrequencies(aSignal, ImaginarySignal);
+//        delete ImaginarySignal;
 
         //fclose(fp);  // timing.txt file.
         //fclose(fp2); // mode excitation file.
