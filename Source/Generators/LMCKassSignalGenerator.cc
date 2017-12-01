@@ -221,7 +221,7 @@ namespace locust
 
     }
 
-    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* anImaginarySignal) const
+    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
     {
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
@@ -271,8 +271,8 @@ namespace locust
         //RealVoltage2 = 0.;  // take out short.
         //ImagVoltage2 = 0.;  // take out short.
         
-        aLongSignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-        anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+//        aLongSignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+//        anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
         aSignal->LongSignalTimeComplex()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
         aSignal->LongSignalTimeComplex()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
 
@@ -368,7 +368,7 @@ namespace locust
                 if (fEventInProgress)
                 {
                     //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                    DriveAntenna(PreEventCounter, index, aSignal, ImaginarySignal);
+                    DriveAntenna(PreEventCounter, index, aSignal);
                     PreEventCounter = 0; // reset
                 }
                 tLock.unlock();
