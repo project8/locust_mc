@@ -10,12 +10,12 @@
     "kass-signal":
     {
         "lo-frequency": 25.2814e9,
-        "xml-filename": "/home/XXX/locust_mc/Config/Tutorial/Project8Phase2_WithRoot_Template.xml"
+        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase2_WithRoot_Template.xml"
     },
 
     "simulation":
     {
-        "egg-filename": "/home/XXX/locust_mc/cbuild/bin/locust_mc.egg",
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1
     },
   
@@ -27,7 +27,8 @@
 
     "digitizer":
     {
-
+    "v-range": 2.0e-7,
+    "v-offset": -1.0e-7
     }
 
 }

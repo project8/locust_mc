@@ -70,10 +70,11 @@ namespace locust
       if (index%fDecimationFactor == 0)
         {
         aSignal->SignalTime()[index/fDecimationFactor] = aLongSignal[index];
-        aSignal->SignalTimeNew()[index/fDecimationFactor][0] =
-        		aSignal->LongSignalTimeNew()[index][0];
-        aSignal->SignalTimeNew()[index/fDecimationFactor][1] =
-        		aSignal->LongSignalTimeNew()[index][1];
+
+        aSignal->SignalTimeComplex()[index/fDecimationFactor][0] =
+        		aSignal->LongSignalTimeComplex()[index][0];
+        aSignal->SignalTimeComplex()[index/fDecimationFactor][1] =
+        		aSignal->LongSignalTimeComplex()[index][1];
         }
       }
 

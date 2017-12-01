@@ -63,6 +63,9 @@ namespace locust
 
     bool EggWriter::PrepareEgg( const RunLengthCalculator* a_rlc, const Digitizer* a_digitizer )
     {
+
+    	bool IQStream = true; // move this into json file as a parameter.
+
         if( f_state != kClosed )
         {
             LERROR( lmclog, "Egg preparation cannot begin while a file is open" );
@@ -101,11 +104,25 @@ namespace locust
         }
 
         std::vector< unsigned > t_chan_vec;
-        uint32_t t_stream_id = header->AddStream( "locust_mc",
+        uint32_t t_stream_id;
+
+        if (!IQStream)
+        {
+            t_stream_id = header->AddStream( "locust_mc",
                 a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), 1,
                 t_data_type_size, t_signed_vals,
                 t_bit_depth, t_bits_right_aligned,
                 &t_chan_vec );
+        }
+        else
+        {
+            t_stream_id = header->AddStream( "locust_mc", 1, 0,
+                a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), 2,
+                t_data_type_size, t_signed_vals,
+                t_bit_depth, t_bits_right_aligned,
+                &t_chan_vec );
+        }
+
 
         for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )
         {
@@ -134,30 +151,44 @@ namespace locust
 
     bool EggWriter::WriteRecord( const Signal* aSignal )
     {
+
+
         static bool t_is_new_acq = true;
+
 
         if( f_state != kWriting && f_state != kPrepared )
         {
             LERROR( lmclog, "Egg file must be opened before writing records" );
             return false;
         }
+
+
         f_state = kWriting;
 
         LDEBUG( lmclog, "Writing record " << f_record_id );
 
+
+
         f_record->SetRecordId( f_record_id );
+
         f_record->SetTime( f_record_time );
+
+
 
         if( aSignal->GetState() != Signal::kDigital )
         {
             LERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
             return false;
         }
+
+
+
         if( aSignal->GetDigitalIsSigned() ) ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalS() ), f_record_n_bytes );
         else ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalUS() ), f_record_n_bytes );
 
         ++f_record_id;
         f_record_time += f_record_length;
+
 
         bool t_return = f_stream->WriteRecord( true ); // pls had to edit false to true
         t_is_new_acq = false;

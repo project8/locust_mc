@@ -125,8 +125,8 @@ namespace locust
             // Construct complex voltage.
             for( unsigned index = 0; index < windowsize; ++index )
             {
-                SignalComplex[index][0] = aSignal->LongSignalTimeNew()[ nwin*windowsize + index ][0];
-                SignalComplex[index][1] = aSignal->LongSignalTimeNew()[ nwin*windowsize + index ][1];
+                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0];
+                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][1];
                 //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
 
@@ -148,7 +148,7 @@ namespace locust
             {
                 // normalize and take the real part of the reverse transform, for digitization.
                 //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                aSignal->LongSignalTimeNew()[ nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
+                aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
                 //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
 
@@ -273,8 +273,10 @@ namespace locust
         
         aLongSignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
         anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
-        aSignal->LongSignalTimeNew()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-        aSignal->LongSignalTimeNew()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+        aSignal->LongSignalTimeComplex()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+        aSignal->LongSignalTimeComplex()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+
+
 
         //if (t_old > 0.004)
 /*
@@ -373,7 +375,7 @@ namespace locust
             }
         }  // for loop
 
-        FilterNegativeFrequenciesNew(aSignal);
+//        FilterNegativeFrequenciesNew(aSignal);
 //        FilterNegativeFrequencies(aSignal, ImaginarySignal);
 //        delete ImaginarySignal;
 

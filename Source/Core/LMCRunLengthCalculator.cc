@@ -36,6 +36,7 @@ namespace locust
 
     bool RunLengthCalculator::Configure( const scarab::param_node* aNode )
     {
+
         if( aNode == NULL ) return false;
 
         // first, configure items that will affect the method for calculating the run length
@@ -48,7 +49,8 @@ namespace locust
 
         // next, configure items that are needed no matter what.
 
-        SetRecordSize( aNode->get_value< unsigned >( "record-size", fRecordSize ) );
+          SetRecordSize( aNode->get_value< unsigned >( "record-size", fRecordSize ) );
+
 
         if( aNode->has( "acquisition-rate" ) )
             SetAcquisitionRate( aNode->get_value< double >( "acquisition-rate" ) );

@@ -109,6 +109,7 @@ namespace locust
             return false;
         }
 
+        bool IQStream = true;  // make this a parameter in the json file.
         unsigned nRecords = fRunLengthCalc.GetNRecords();
         unsigned recordSize = fRunLengthCalc.GetRecordSize();
 
@@ -125,18 +126,35 @@ namespace locust
             }
 
 
+
             if( simulatedSignal->GetDigitalIsSigned() )
             {
                 for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
                 {
-                    LWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalS()[index] );  // pls added (int)
+                	if (!IQStream)
+                	{
+                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalS()[index] );  // pls added (int)
+                	}
+                	else
+                	{
+                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][0] << "  " << (int)simulatedSignal->SignalDigitalS()[index*2] );  // pls added (int)
+                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][1] << "  " << (int)simulatedSignal->SignalDigitalS()[index*2+1] );  // pls added (int)
+                	}
                 }
             }
             else
             {
                 for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
                 {
-                    LWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalUS()[index] );  // pls added (int)
+                	if (!IQStream)
+                	{
+                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTime()[index] << "  " << (int)simulatedSignal->SignalDigitalUS()[index] );  // pls added (int)
+                	}
+                	else
+                	{
+                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][0] << "  " << (int)simulatedSignal->SignalDigitalUS()[index*2] );  // pls added (int)
+                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][1] << "  " << (int)simulatedSignal->SignalDigitalUS()[index*2+1] );  // pls added (int)
+                	}
                 }
             }
 

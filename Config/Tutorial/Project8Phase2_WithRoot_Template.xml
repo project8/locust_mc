@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/home/XXX/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
+    <include name="/home/penny/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -210,7 +210,7 @@
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="88.5" value_max="88.5"/> 
+        <theta_uniform value_min="90.0" value_max="90.0"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -543,9 +543,6 @@
         trajectory="[trajectory]"
         space_navigator="nav_space"
         surface_navigator="nav_surface"
-        writer="write_root"
-        writer="write_vtk"
-        surface_navigator="nav_surface"      
         writer="write_root"
     />
 

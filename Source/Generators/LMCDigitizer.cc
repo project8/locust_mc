@@ -68,11 +68,23 @@ namespace locust
 
     bool Digitizer::DoGenerate( Signal* aSignal ) const
     {
+
+    	bool IQStream = true;  // this could eventually be a parameter in the json file.
+
         unsigned signalSize = aSignal->TimeSize();
+        unsigned signalSizeComplex = 2*aSignal->TimeSize();
 
         double* analogData = aSignal->SignalTime();
 //        uint64_t* digitizedData = new uint64_t[ signalSize ];
+
+        std::complex<double>* analogDataComplex;
+        analogDataComplex = (std::complex<double> *) malloc(signalSize * sizeof(std::complex<double>));
+        memcpy( analogDataComplex, aSignal->SignalTimeComplex(), signalSize * sizeof( std::complex<double> ) );
+
+
         if( fADCValuesSigned )
+        {
+        if (!IQStream)
         {
             int8_t* digitizedData = new int8_t[ signalSize ];
 
@@ -85,9 +97,29 @@ namespace locust
                 }
             }
             aSignal->ToDigital( digitizedData, signalSize );
+        }  // !IQStream
+        else
+        {
+            int8_t* digitizedData = new int8_t[ signalSizeComplex ];
+
+            for( unsigned index = 0; index < signalSize; ++index )
+            {
+                digitizedData[ index*2 ] = a2d< double, int8_t >( analogDataComplex[ index ].real(), &fParams );
+                digitizedData[ index*2+1 ] = a2d< double, int8_t >( analogDataComplex[ index ].imag(), &fParams );
+
+                if( index < 100 )
+                {
+                    LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].real() << " --> " << (int) digitizedData[ index*2 ] );  // pls added (int)
+                    LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].imag() << " --> " << (int) digitizedData[ index*2+1 ] );  // pls added (int)
+                }
+            }
+            aSignal->ToDigital( digitizedData, signalSizeComplex );
+        }  // IQStream
         }
         else
         {
+        	if (!IQStream)
+        	{
             uint8_t* digitizedData = new uint8_t[ signalSize ];
 
             for( unsigned index = 0; index < signalSize; ++index )
@@ -101,6 +133,25 @@ namespace locust
                 }
             }
             aSignal->ToDigital( digitizedData, signalSize );
+        	} // !IQStream
+        	else
+        	{
+                uint8_t* digitizedData = new uint8_t[ signalSizeComplex ];
+
+                for( unsigned index = 0; index < signalSize; ++index )
+                {
+                    digitizedData[ index*2 ] = a2d< double, uint8_t >( analogDataComplex[ index ].real(), &fParams );
+                    digitizedData[ index*2+1 ] = a2d< double, uint8_t >( analogDataComplex[ index ].imag(), &fParams );
+
+                    if( index < 100 )
+                    {
+                        LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].real() << " --> " << (int) digitizedData[ index*2 ] );  // pls added (int)
+                        LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].imag() << " --> " << (int) digitizedData[ index*2+1 ] );  // pls added (int)
+                    }
+                }
+                aSignal->ToDigital( digitizedData, signalSizeComplex );
+
+        	}  // IQStream
         }
 
         return true;

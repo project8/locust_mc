@@ -9,6 +9,8 @@
             { "type": "root-spectrogram-writer", "name":"waterfall-writer" },
             { "type": "basic-root-writer",   "name": "writer" }
 
+
+
         ],
         
         "connections":
@@ -18,17 +20,16 @@
                 "slot": "fft1:header",
                 "order": 0
             },
-           
+
             {
                 "signal": "egg1:ts",
-                "slot": "fft1:ts-real"
+                "slot": "fft1:ts-fftw"
             },
 
             {
                 "signal": "fft1:fft",
                 "slot": "to-ps1:fs-fftw-to-psd"
             },
-           
             
             {
                 "signal": "to-ps1:psd",
@@ -44,7 +45,11 @@
                 "signal": "egg1:egg-done",
                 "slot": "waterfall-writer:write-file"
             }
-          
+
+           
+
+
+             
          
         ],
         
@@ -58,10 +63,16 @@
     {
         "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 2,
+        "number-of-slices": 2000,
         "slice-size": 8192,
-        "stride": 8192
+        "dac":
+        {
+            "time-series-type": "fftw"
+        }
+
     },
+
+
 
     "fft1":
     {
@@ -75,9 +86,11 @@
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
-        "min-freq": 0.0,
-        "max-freq": 100.0e6
+        "min-freq": 0.0e6,
+        "max-freq": 200.0e6
     },
+
+
 
     "writer":
     {
@@ -86,6 +99,5 @@
     }
 
 
-   
 }
 

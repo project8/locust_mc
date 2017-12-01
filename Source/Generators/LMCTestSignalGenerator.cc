@@ -8,6 +8,7 @@
 #include "LMCTestSignalGenerator.hh"
 
 #include "logger.hh"
+#define PI 3.1415926
 
 using std::string;
 
@@ -19,11 +20,11 @@ namespace locust
 
     TestSignalGenerator::TestSignalGenerator( const std::string& aName ) :
             Generator( aName ),
-            fDoGenerateFunc( &TestSignalGenerator::DoGenerateFreq ),
+            fDoGenerateFunc( &TestSignalGenerator::DoGenerateTime ),
             fFrequency( 4000. ),
             fAmplitude( 0.24 )
     {
-        fRequiredSignalState = Signal::kFreq;
+        fRequiredSignalState = Signal::kTime;
     }
 
     TestSignalGenerator::~TestSignalGenerator()
@@ -125,7 +126,11 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTime()[index] += fAmplitude*cos(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));  // T=2PI/A
+
+            aSignal->SignalTimeComplex()[index][0] += 1.e-7*cos(2.*PI*50.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->SignalTimeComplex()[index][1] += 1.e-7*cos(-PI/2. + 2.*PI*50.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+//            printf("acq rate is %g\n", RunLengthCalculator1->GetAcquisitionRate()); getchar();
+
         }
         delete RunLengthCalculator1;
         return true;
