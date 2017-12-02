@@ -304,7 +304,7 @@ namespace locust
     }
 
 
-    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
+    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
     {
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
@@ -435,10 +435,8 @@ namespace locust
 
         double tVoltage = tTotalVoltage / rReceiver.size();
 
-//        aLongSignal[ index ] += tVoltage * cos(phi_LO);
-//        ImaginarySignal[ index ] += -tVoltage * sin(phi_LO);
-        aSignal->LongSignalTimeComplex()[index][0] += tVoltage * cos(phi_LO);
-        aSignal->LongSignalTimeComplex()[index][1] += -tVoltage * sin(phi_LO);
+        aLongSignal[ index ] += tVoltage * cos(phi_LO);
+        ImaginarySignal[ index ] += -tVoltage * sin(phi_LO);
 
         t_old += fDigitizerTimeStep;
 
@@ -550,7 +548,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(PreEventCounter, index, aSignal);
+                        DriveAntenna(PreEventCounter, index, aSignal, ImaginarySignal);
 
                         PreEventCounter = 0; // reset
                     }
@@ -561,7 +559,7 @@ namespace locust
 
         if(fWriteNFD) NFDWrite();
         
-//        FilterNegativeFrequencies(aSignal, ImaginarySignal);
+        FilterNegativeFrequencies(aSignal, ImaginarySignal);
         delete [] ImaginarySignal;
         
         // trigger any remaining events in Kassiopeia so that its thread can finish.

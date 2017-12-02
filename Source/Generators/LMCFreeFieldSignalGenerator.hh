@@ -58,7 +58,7 @@ namespace locust
             std::string fNFD_filename;
 
             bool DoGenerate( Signal* aSignal ) const;
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double *ImaginarySignal) const;
             void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
 
             double AntiAliasingSetup(double fCarrierFrequency, double fBandwidthFrequency) const;
