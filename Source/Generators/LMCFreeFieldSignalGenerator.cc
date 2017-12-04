@@ -304,7 +304,7 @@ namespace locust
     }
 
 
-    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, double* ImaginarySignal) const
+    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
     {
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
@@ -435,8 +435,11 @@ namespace locust
 
         double tVoltage = tTotalVoltage / rReceiver.size();
 
-        aLongSignal[ index ] += tVoltage * cos(phi_LO);
-        ImaginarySignal[ index ] += -tVoltage * sin(phi_LO);
+//        aLongSignal[ index ] += tVoltage * cos(phi_LO);
+//        ImaginarySignal[ index ] += -tVoltage * sin(phi_LO);
+
+        aSignal->LongSignalTimeComplex()[ index ][0] += tVoltage * cos(phi_LO);
+        aSignal->LongSignalTimeComplex()[ index ][1] += -tVoltage * sin(phi_LO);
 
         t_old += fDigitizerTimeStep;
 
@@ -490,14 +493,14 @@ namespace locust
 
     bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
-        double *ImaginarySignal = new double[10*aSignal->TimeSize()];
+//        double *ImaginarySignal = new double[10*aSignal->TimeSize()];
 
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+/*        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
         {
             ImaginarySignal[ index ] = 0.;
             aLongSignal[ index ] = 0.;  // long record for oversampling.
         }
-
+*/
         if(fWriteNFD)
         {
             //Initialize to correct sizes/ all zeros
@@ -548,7 +551,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(PreEventCounter, index, aSignal, ImaginarySignal);
+                        DriveAntenna(PreEventCounter, index, aSignal);
 
                         PreEventCounter = 0; // reset
                     }
@@ -559,8 +562,8 @@ namespace locust
 
         if(fWriteNFD) NFDWrite();
         
-        FilterNegativeFrequencies(aSignal, ImaginarySignal);
-        delete [] ImaginarySignal;
+//        FilterNegativeFrequencies(aSignal, ImaginarySignal);
+//        delete [] ImaginarySignal;
         
         // trigger any remaining events in Kassiopeia so that its thread can finish.
         while (fRunInProgress)
