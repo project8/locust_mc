@@ -21,8 +21,7 @@
 
 
 static std::string gxml_filename = "blank.xml";
-
-double phi_LO=0.;
+const double dx=0.01;
 const int NPreEventSamples = 150000;
 int fNFDIndex=-1;
 
@@ -78,9 +77,8 @@ namespace locust
         {
             //If not, use existing code to generate plane receiver
             HFSSReader HFRead;
-            rReceiver = HFRead.GeneratePlane({0.025,0.025},7);//Argumemts: Size, resolution
+            rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
             rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,0.});//Arguments Normal vector, Position (m)
-            //rReceiver = HFRead.RotateShift(rReceiver,{0.,0.,1.},{0.,0.,0.15});//Arguments Normal vector, Position (m)
         }
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});
 
@@ -309,12 +307,15 @@ namespace locust
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
 
+        static double tVoltagePhase = 0.;
+        static double phi_LO = 0.;
+
         //Receiver Properties
         double tReceiverTime = t_old;
         KGeoBag::KThreeVector tReceiverPosition;
 
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
-        double tTotalVoltage=0.;
+        double tTotalPower=0.;
 
         double tSpaceTimeInterval=99.;
         double dtRetarded=0;
@@ -323,7 +324,6 @@ namespace locust
 
         const int HistorySize = fParticleHistory.size();
 
-        //phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fEventModTimeStep;
         phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
 
        //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
@@ -394,7 +394,18 @@ namespace locust
             PreviousTimes[i].first = CurrentIndex;
             PreviousTimes[i].second = tRetardedTime;
 
-            tTotalVoltage += tCurrentParticle.CalculateVoltage(rReceiver[i]);
+
+            KGeoBag::KThreeVector tECrossH = tCurrentParticle.CalculateElectricField(rReceiver[i]).Cross(tCurrentParticle.CalculateMagneticField(rReceiver[i]));
+            KGeoBag::KThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
+
+            tTotalPower += dx * dx * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;// * (fabs(tCurrentParticle.GetPosition(true).Z())<0.01);
+
+            double tVelZ = tCurrentParticle.GetVelocity(true).Z();
+            double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
+            double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
+            //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
+
+            tVoltagePhase+= tDopplerFrequency * fDigitizerTimeStep;
 
             double tMinHFSS=1e-8;
             const int nHFSSBins=2048;
@@ -405,7 +416,6 @@ namespace locust
                 tmpMagneticField = tCurrentParticle.CalculateMagneticField(rReceiver[i]);
                 
                 //If doing the first receiver
-                //FIXXXXXX MEEEEE....BETTER WAAYYY TO DOO THISSS
                 if(!i) ++fNFDIndex;
 
                 for(int j=0;j<NFDFrequencies.size();j++)
@@ -433,13 +443,11 @@ namespace locust
             }
         }
 
-        double tVoltage = tTotalVoltage / rReceiver.size();
+        //aLongSignal[ index ] += sqrt(tTotalPower) * cos(tVoltagePhase-phi_LO);
+        //ImaginarySignal[ index ] += sqrt(tTotalPower) * sin(tVoltagePhase-phi_LO);
 
-//        aLongSignal[ index ] += tVoltage * cos(phi_LO);
-//        ImaginarySignal[ index ] += -tVoltage * sin(phi_LO);
-
-        aSignal->LongSignalTimeComplex()[ index ][0] += tVoltage * cos(phi_LO);
-        aSignal->LongSignalTimeComplex()[ index ][1] += -tVoltage * sin(phi_LO);
+        aSignal->LongSignalTimeComplex()[index][0] += sqrt(tTotalPower) * cos(tVoltagePhase-phi_LO);
+        aSignal->LongSignalTimeComplex()[index][1] += sqrt(tTotalPower) * sin(tVoltagePhase-phi_LO);
 
         t_old += fDigitizerTimeStep;
 
@@ -493,14 +501,14 @@ namespace locust
 
     bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
-//        double *ImaginarySignal = new double[10*aSignal->TimeSize()];
+        //double *ImaginarySignal = new double[10*aSignal->TimeSize()];
 
-/*        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
-        {
-            ImaginarySignal[ index ] = 0.;
-            aLongSignal[ index ] = 0.;  // long record for oversampling.
-        }
-*/
+        //for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+        //{
+        //    ImaginarySignal[ index ] = 0.;
+        //    aLongSignal[ index ] = 0.;  // long record for oversampling.
+        //}
+
         if(fWriteNFD)
         {
             //Initialize to correct sizes/ all zeros
@@ -562,8 +570,8 @@ namespace locust
 
         if(fWriteNFD) NFDWrite();
         
-//        FilterNegativeFrequencies(aSignal, ImaginarySignal);
-//        delete [] ImaginarySignal;
+        //FilterNegativeFrequencies(aSignal, ImaginarySignal);
+        //delete [] ImaginarySignal;
         
         // trigger any remaining events in Kassiopeia so that its thread can finish.
         while (fRunInProgress)

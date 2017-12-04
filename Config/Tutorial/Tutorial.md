@@ -9,7 +9,6 @@
         <geometry>
             <include name="/home/XXX/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
         </geometry>
-
     ```
 3. Edit the maximum time in the Project8Phase2_WithRoot_Template xml file to 3e-5 s.
     ```
@@ -43,11 +42,10 @@ A VTK window should appear showing the particle track.
 ```
  >.L plotoutput.C
  > fieldmap()
-
 ```
 
 
-##Create a simulated Waterfall Plot with Locust+Katydid
+## Create a simulated Waterfall Plot with Locust+Katydid
 1. Edit LocustTemplate.json so that "xml-filename" points to "Project8Phase2_WithRoot_Template.xml"
 2. Change the max_time field in the xml file to 5e-4.
 3. Comment the kswrite_vtk and vtk_window blocks that you have uncommented in the first exercise. Visualization becomes unwieldy for large simulations.
@@ -57,5 +55,4 @@ A VTK window should appear showing the particle track.
 ```
  >.L plotoutput.C
  > katydidwaterfall()
-
 ```

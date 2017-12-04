@@ -13,8 +13,6 @@ Dependencies
  - GSL (www.gnu.org/software/gsl)
  - HDF5 (required by Monarch3 and for outputing to HDF5 files)
  - ROOT (www.cern.ch/root) version 5.24 or higher (6.x should work too)
-        --enable-minuit2 (if you want to use KaFit)
-        --enable-fftw3 (if you want to use KEMField)
 
 **Optional Dependencies**
  - LibXml2 (xmlsoft.org)
@@ -117,13 +115,11 @@ Instructions for Use
 
 Locust is typically started with a command like:
 ```
-  > LocustSim config=LocustConfigFile.json
+  $ LocustSim config=LocustConfigFile.json
 ```
 
 Documentation
 -------------
-
-There is a reference manual for usage in Documentation.
 
 The Config/Tutorial directory contains an example guiding the user through a Phase II locust simulation.
 
