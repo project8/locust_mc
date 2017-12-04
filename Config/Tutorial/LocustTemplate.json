@@ -1,9 +1,7 @@
 {
     "generators":
     [         
-        "kass-signal",
-        "lpf-fft",
-        "decimate-signal",
+        "test-signal",
         "digitizer"
     ],
     
