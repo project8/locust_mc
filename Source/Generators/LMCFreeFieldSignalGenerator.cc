@@ -156,6 +156,7 @@ namespace locust
     void* FreeFieldSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
     {
 
+/*
         int nwindows = 80;
         int windowsize = 10*aSignal->TimeSize()/nwindows;
 
@@ -174,6 +175,7 @@ namespace locust
         for (int nwin = 0; nwin < nwindows; nwin++)
         {
             // Construct complex voltage.
+
             for( unsigned index = 0; index < windowsize; ++index )
             {
                 SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
@@ -208,6 +210,8 @@ namespace locust
 
         delete SignalComplex;
         delete FFTComplex;
+*/
+
 
     }
 
@@ -324,7 +328,11 @@ namespace locust
 
         const int HistorySize = fParticleHistory.size();
 
+        double temp = phi_LO;
         phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
+
+//        printf("temp is %g and phi_LO is %g\n", temp, phi_LO);
+//        printf("inferred fLO_Frequency is %g\n", (phi_LO-temp)/2./KConst::Pi()/fDigitizerTimeStep);
 
        //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
 
@@ -406,6 +414,7 @@ namespace locust
             //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
 
             tVoltagePhase+= tDopplerFrequency * fDigitizerTimeStep;
+            printf("advancing voltage phase\n");
 
             double tMinHFSS=1e-8;
             const int nHFSSBins=2048;
@@ -448,6 +457,14 @@ namespace locust
 
         aSignal->LongSignalTimeComplex()[index][0] += sqrt(tTotalPower) * cos(tVoltagePhase-phi_LO);
         aSignal->LongSignalTimeComplex()[index][1] += sqrt(tTotalPower) * sin(tVoltagePhase-phi_LO);
+
+        printf("signal at time %g is %g\n\n\n", t_old, aSignal->LongSignalTimeComplex()[index][0]);
+        printf("phi_LO is %g\n", phi_LO);
+        printf("tVoltagePhase is %g\n", tVoltagePhase);
+        printf("fDigitizerTimeStep is %g\n", fDigitizerTimeStep);getchar();
+
+
+        //        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();
 
         t_old += fDigitizerTimeStep;
 
@@ -525,6 +542,8 @@ namespace locust
         int PreEventCounter = 0;
         fPhaseIISimulation = false;
 
+//        printf("fwritenfd is %d\n", fWriteNFD); getchar();
+
         std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
         fRunInProgress = true;
 
@@ -538,7 +557,7 @@ namespace locust
             if (fPreEventInProgress)
             {
                 PreEventCounter += 1;
-                // printf("preeventcounter is %d\n", PreEventCounter);
+//                 printf("preeventcounter is %d\n", PreEventCounter);
                 if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
                 {
                     fPreEventInProgress = false;  // reset.

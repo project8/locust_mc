@@ -165,7 +165,7 @@ namespace locust
 
     void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
     {
-
+/*
         int nwindows = 80;
         int windowsize = 10*aSignal->TimeSize()/nwindows;
 
@@ -218,6 +218,8 @@ namespace locust
 
         delete SignalComplex;
         delete FFTComplex;
+
+        */
 
     }
 
@@ -317,12 +319,15 @@ namespace locust
     bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
         // temporary IQ patch.  Define and initialize ImaginarySignal.
+
+    	/*
         double *ImaginarySignal = new double[10*aSignal->TimeSize()];
         for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
         {
             ImaginarySignal[ index ] = 0.;
             aLongSignal[ index ] = 0.;  // long record for oversampling.
         }
+        */
 
         //n samples for event spacing.
         int PreEventCounter = 0;

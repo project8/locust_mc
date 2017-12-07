@@ -1,10 +1,15 @@
 {
     "generators":
     [         
-        "test-signal",
         "digitizer"
     ],
     
+    "freefield-signal":
+     {
+        "lo-frequency": 25.2814e9,
+        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase2_WithRoot_Template.xml"
+     },
+
     "kass-signal":
     {
         "lo-frequency": 25.2814e9,

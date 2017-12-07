@@ -11,6 +11,8 @@
 #include <fftw3.h>
 #include <complex.h>
 #include <stdint.h>
+#include "LMCGlobalsDeclaration.hh"
+
 
 
 namespace locust

@@ -12,6 +12,8 @@
 #include "param.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCSignal.hh"
+#include "LMCGlobalsDeclaration.hh"
+
 
 #include "time.hh"
 
@@ -64,6 +66,7 @@ namespace locust
     bool EggWriter::PrepareEgg( const RunLengthCalculator* a_rlc, const Digitizer* a_digitizer )
     {
 
+
     	bool IQStream = true; // move this into json file as a parameter.
 
         if( f_state != kClosed )
@@ -103,24 +106,31 @@ namespace locust
             t_bits_right_aligned = a_digitizer->DigitizerParams().bits_right_aligned;
         }
 
+
         std::vector< unsigned > t_chan_vec;
         uint32_t t_stream_id;
 
         if (!IQStream)
         {
+
             t_stream_id = header->AddStream( "locust_mc",
                 a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), 1,
                 t_data_type_size, t_signed_vals,
                 t_bit_depth, t_bits_right_aligned,
                 &t_chan_vec );
+
         }
         else
         {
-            t_stream_id = header->AddStream( "locust_mc", 1, 0,
+            printf("recordsize in eggwriter is %d\n", a_rlc->GetRecordSize()); getchar();
+
+            t_stream_id = header->AddStream( "locust_mc", NCHANNELS, 1,
                 a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), 2,
                 t_data_type_size, t_signed_vals,
                 t_bit_depth, t_bits_right_aligned,
                 &t_chan_vec );
+
+
         }
 
 

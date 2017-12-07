@@ -9,8 +9,6 @@
             { "type": "root-spectrogram-writer", "name":"waterfall-writer" },
             { "type": "basic-root-writer",   "name": "writer" }
 
-
-
         ],
         
         "connections":
@@ -63,8 +61,8 @@
     {
         "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 2000,
-        "slice-size": 8192,
+        "number-of-slices": 1,
+        "slice-size": 5,
         "dac":
         {
             "time-series-type": "fftw"

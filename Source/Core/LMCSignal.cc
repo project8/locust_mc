@@ -9,6 +9,8 @@
 
 #include "logger.hh"
 
+
+
 namespace locust
 {
     LOGGER( lmclog, "Signal" );
@@ -53,10 +55,10 @@ namespace locust
 
         fSignalTime = new double [fTimeSize];
         fSignalFreq = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize );
-        fSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize );
-        fSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex );
-        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize*10 );
-        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex*10 );
+        fSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize *NCHANNELS);
+        fSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex * NCHANNELS);
+        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize*10 *NCHANNELS);
+        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex*10 *NCHANNELS);
 
         ResetValues();
 
@@ -80,11 +82,11 @@ namespace locust
     {
         delete [] fSignalTime;
         fftw_free( fSignalFreq );
-/*        fftw_free( fSignalTimeComplex );
+        fftw_free( fSignalTimeComplex );
         fftw_free( fSignalFreqComplex );
         fftw_free( fLongSignalTimeComplex );
         fftw_free( fLongSignalFreqComplex );
-*/
+
         if( fDigitalIsSigned ) delete [] fSignalDigital.fSigned;
         else delete [] fSignalDigital.fUnsigned;
 

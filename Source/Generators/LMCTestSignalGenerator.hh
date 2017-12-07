@@ -10,6 +10,7 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCGlobalsDeclaration.hh"
 
 
 namespace locust
