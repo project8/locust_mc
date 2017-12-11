@@ -12,11 +12,13 @@ using namespace Kassiopeia;
 namespace locust
 {
 
-    CyclotronRadiationExtractor::CyclotronRadiationExtractor()
+    CyclotronRadiationExtractor::CyclotronRadiationExtractor():
+    		fP8Phase( 0 )
     {
     }
 
-    CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig ) 
+    CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig ):
+    		fP8Phase( 0 )
     {
     }
 
@@ -29,6 +31,11 @@ namespace locust
         return new CyclotronRadiationExtractor( *this );
     }
 
+
+    void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
+    {
+    	fP8Phase = P8Phase;
+    }
 
     bool CyclotronRadiationExtractor::ExecutePreStepModification( KSParticle& anInitialParticle, KSParticleQueue& aQueue )
     {
@@ -299,8 +306,9 @@ namespace locust
         //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
         //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
 
+
         double DeltaE=0.;
-        if(fPhaseIISimulation)
+        if(fP8Phase==2)
         {
             // adjust power with reflections.
             DeltaE = GetDampingFactor(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
@@ -327,7 +335,7 @@ namespace locust
             int tHistoryMaxSize;
 
             //Phase II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
-            if(fPhaseIISimulation)
+            if(fP8Phase==2)
             {
                 // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
                 KSParticle tParticleCopy = aFinalParticle;

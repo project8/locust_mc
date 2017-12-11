@@ -140,7 +140,7 @@ namespace locust
         f_record_id = 0;
         f_record_time = 0;
         f_record_length = ( double )a_rlc->GetRecordSize() / ( 1.e-3 * a_rlc->GetAcquisitionRate() ); // in ns
-        f_record_n_bytes = a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize();
+        f_record_n_bytes = a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
 
         f_state = kPrepared;
 

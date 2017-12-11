@@ -63,7 +63,7 @@
     {
         "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 2000,
+        "number-of-slices": 500,
         "slice-size": 8192,
         "dac":
         {

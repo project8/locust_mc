@@ -327,7 +327,7 @@ namespace locust
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 150000;
-        fPhaseIISimulation = true;
+//        double fPhaseIISimulation = true;  // this is now a parameter in the xml file.
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
         //fprintf(fp, "testing\n");

@@ -313,6 +313,8 @@ namespace locust
         //Receiver Properties
         double tReceiverTime = t_old;
         KGeoBag::KThreeVector tReceiverPosition;
+//        KGeoBag::KThreeVector tReceiverPositionArray[10];
+
 
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
         double tTotalPower=0.;
@@ -330,9 +332,12 @@ namespace locust
 
         //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
 
+
         for(unsigned i=0;i<rReceiver.size();++i)
         {
             tReceiverPosition = rReceiver[i];
+//            tReceiverPositionArray[0] = rReceiverArray[0][i];
+
 
             //Check if there is time for photon to reach receiver if particle is recently created
             if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
@@ -446,8 +451,12 @@ namespace locust
         //aLongSignal[ index ] += sqrt(tTotalPower) * cos(tVoltagePhase-phi_LO);
         //ImaginarySignal[ index ] += sqrt(tTotalPower) * sin(tVoltagePhase-phi_LO);
 
-        aSignal->LongSignalTimeComplex()[index][0] += sqrt(tTotalPower) * cos(tVoltagePhase-phi_LO);
-        aSignal->LongSignalTimeComplex()[index][1] += sqrt(tTotalPower) * sin(tVoltagePhase-phi_LO);
+
+        aSignal->LongSignalTimeComplex()[index][0] += sqrt(tTotalPower) * cos(tVoltagePhase/rReceiver.size()-phi_LO);
+        aSignal->LongSignalTimeComplex()[index][1] += sqrt(tTotalPower) * sin(tVoltagePhase/rReceiver.size()-phi_LO);
+
+
+//        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();
 
         t_old += fDigitizerTimeStep;
 
@@ -523,7 +532,7 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        fPhaseIISimulation = false;
+//        bool fPhaseIISimulation = false;  // this is now a parameter in the xml file.
 
         std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
         fRunInProgress = true;

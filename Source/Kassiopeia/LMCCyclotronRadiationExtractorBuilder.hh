@@ -12,7 +12,7 @@
 #include "LMCCyclotronRadiationExtractor.hh"
 #include "KToolbox.h"
 
-
+using namespace locust;
 namespace katrin
 {
 
@@ -26,7 +26,11 @@ namespace katrin
             aContainer->CopyTo( fObject, &KNamed::SetName );
             return true;
         }
-
+        if( aContainer->GetName() == "P8Phase" )
+        {
+            aContainer->CopyTo( fObject, &CyclotronRadiationExtractor::SetP8Phase );
+            return true;
+        }
         if( aContainer->GetName() == "set_trajectory" )
         {
             fObject->SetTrajectory( KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory >( aContainer->AsReference< std::string >() ) );

@@ -91,7 +91,7 @@ namespace locust
             for( unsigned index = 0; index < signalSize; ++index )
             {
                 digitizedData[ index ] = a2d< double, int8_t >( analogData[ index ], &fParams );
-                if( index < 100 )
+                if( index < 10 )
                 {
                     LWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (int) digitizedData[ index ] );  // pls added (int)
                 }
@@ -107,7 +107,7 @@ namespace locust
                 digitizedData[ index*2 ] = a2d< double, int8_t >( analogDataComplex[ index ].real(), &fParams );
                 digitizedData[ index*2+1 ] = a2d< double, int8_t >( analogDataComplex[ index ].imag(), &fParams );
 
-                if( index < 100 )
+                if( index < 10 )
                 {
                     LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].real() << " --> " << (int) digitizedData[ index*2 ] );  // pls added (int)
                     LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].imag() << " --> " << (int) digitizedData[ index*2+1 ] );  // pls added (int)
@@ -125,7 +125,7 @@ namespace locust
             for( unsigned index = 0; index < signalSize; ++index )
             {
                 digitizedData[ index ] = a2d< double, uint8_t >( analogData[ index ], &fParams );
-                if( index < 100 )
+                if( index < 10 )
                 {
                     LWARN( lmclog, "digitizing: " << index << ": " << analogData[ index ] << " --> " << (unsigned) digitizedData[ index ] );  // pls added (int)
         //            printf("digitized data is %x\n", digitizedData[index]);
@@ -143,7 +143,7 @@ namespace locust
                     digitizedData[ index*2 ] = a2d< double, uint8_t >( analogDataComplex[ index ].real(), &fParams );
                     digitizedData[ index*2+1 ] = a2d< double, uint8_t >( analogDataComplex[ index ].imag(), &fParams );
 
-                    if( index < 100 )
+                    if( index < 10 )
                     {
                         LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].real() << " --> " << (int) digitizedData[ index*2 ] );  // pls added (int)
                         LWARN( lmclog, "digitizing: " << index << ": " << analogDataComplex[ index ].imag() << " --> " << (int) digitizedData[ index*2+1 ] );  // pls added (int)

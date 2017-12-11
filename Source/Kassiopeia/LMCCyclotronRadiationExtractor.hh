@@ -45,6 +45,7 @@ namespace locust
             bool ExecutePostStepModification( Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aQueue );
 
             void SetTrajectory( Kassiopeia::KSTrajectory* aTrajectory );
+            void SetP8Phase( int P8Phase );
 
 
         private:
@@ -59,6 +60,7 @@ namespace locust
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &aFinalParticle);
             Kassiopeia::KSTrajectory* fTrajectory;
+            int fP8Phase; // 1, 2, 3, or 4.
 
 
 

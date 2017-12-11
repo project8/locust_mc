@@ -1,7 +1,9 @@
 {
     "generators":
     [         
-        "test-signal",
+        "freefield-signal",
+        "lpf-fft",
+        "decimate-signal",
         "digitizer"
     ],
     
@@ -9,6 +11,12 @@
     {
         "lo-frequency": 25.2814e9,
         "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase2_WithRoot_Template.xml"
+    },
+
+    "freefield-signal":
+    {
+        "lo-frequency": 25.2814e9,
+        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
     },
 
     "simulation":
