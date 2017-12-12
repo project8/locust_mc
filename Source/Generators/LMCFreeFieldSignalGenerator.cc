@@ -343,7 +343,7 @@ namespace locust
             if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
             {
                 fParticleHistory.front().Interpolate(0);
-                if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), 0. , fParticleHistory.front().GetPosition(true), tReceiverPosition) < 0 )
+                if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), tReceiverPosition) < 0 )
                 {
                     //printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
                     continue;
