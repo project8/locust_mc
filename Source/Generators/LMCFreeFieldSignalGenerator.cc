@@ -306,6 +306,7 @@ namespace locust
     {
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
+        HFSSReader HFRead;
 
         static double tVoltagePhase = 0.;
         static double phi_LO = 0.;
@@ -313,7 +314,6 @@ namespace locust
         //Receiver Properties
         double tReceiverTime = t_old;
         KGeoBag::KThreeVector tReceiverPosition;
-//        KGeoBag::KThreeVector tReceiverPositionArray[10];
 
 
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
@@ -326,11 +326,18 @@ namespace locust
 
         const int HistorySize = fParticleHistory.size();
 
-        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
+        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal summing loop.
 
        //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
 
         //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
+
+
+        for (int z_position = -4; z_position<5; z_position++) // step through antennas along z
+        {
+        tVoltagePhase = 0.;  // this has to be inside this signal summing loop.
+
+        rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,(double)z_position*0.01});//Arguments Normal vector, Position (m)
 
 
         for(unsigned i=0;i<rReceiver.size();++i)
@@ -373,6 +380,7 @@ namespace locust
 
             double tOldSpaceTimeInterval=99.;
 
+
             //Converge to root
             for(int j=0;j<25;++j)
             {
@@ -396,6 +404,10 @@ namespace locust
                 tOldSpaceTimeInterval = tSpaceTimeInterval;
             }
 
+
+//            printf("zposition is %d and i is %d, currentindex is %d and retartedtime is %g\n", z_position, i, CurrentIndex, tRetardedTime);
+
+
             PreviousTimes[i].first = CurrentIndex;
             PreviousTimes[i].second = tRetardedTime;
 
@@ -414,6 +426,8 @@ namespace locust
 
             double tMinHFSS=1e-8;
             const int nHFSSBins=2048;
+
+
             if( fWriteNFD && (fNFDIndex < nHFSSBins) && (tReceiverTime >= tMinHFSS) )
             {
                 KGeoBag::KThreeVector tmpElectricField, tmpMagneticField;
@@ -446,15 +460,16 @@ namespace locust
             {
                 printf("Done! \n");
             }
-        }
 
-        //aLongSignal[ index ] += sqrt(tTotalPower) * cos(tVoltagePhase-phi_LO);
-        //ImaginarySignal[ index ] += sqrt(tTotalPower) * sin(tVoltagePhase-phi_LO);
+        }  // i, rReceiver.size() loop.
 
+        PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});  // reset
 
         aSignal->LongSignalTimeComplex()[index][0] += sqrt(tTotalPower) * cos(tVoltagePhase/rReceiver.size()-phi_LO);
         aSignal->LongSignalTimeComplex()[index][1] += sqrt(tTotalPower) * sin(tVoltagePhase/rReceiver.size()-phi_LO);
 
+
+        } // z_position stepping loop.
 
 //        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();
 

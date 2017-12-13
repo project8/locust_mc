@@ -45,8 +45,7 @@ namespace locust
 
 
         private:
-            std::vector<KGeoBag::KThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
-//            std::vector<KGeoBag::KThreeVector > rReceiverArray[20]; //Array of Vectors that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            mutable std::vector<KGeoBag::KThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
             mutable std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
 
