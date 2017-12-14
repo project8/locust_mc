@@ -308,13 +308,12 @@ namespace locust
         int CurrentIndex;
         HFSSReader HFRead;
 
-        static double tVoltagePhase = 0.;
+        static double tVoltagePhase[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.};
         static double phi_LO = 0.;
 
         //Receiver Properties
         double tReceiverTime = t_old;
         KGeoBag::KThreeVector tReceiverPosition;
-
 
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
         double tTotalPower=0.;
@@ -332,12 +331,10 @@ namespace locust
 
         //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
 
-
-        for (int z_position = -4; z_position<5; z_position++) // step through antennas along z
+        for (int z_position = 4; z_position<5; z_position++) // step through antennas along z
         {
-        tVoltagePhase = 0.;  // this has to be inside this signal summing loop.
 
-        rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,(double)z_position*0.01});//Arguments Normal vector, Position (m)
+        rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,(double)(z_position-4)*0.01});//Arguments Normal vector, Position (m)
 
 
         for(unsigned i=0;i<rReceiver.size();++i)
@@ -422,7 +419,7 @@ namespace locust
             double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
             //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
 
-            tVoltagePhase+= tDopplerFrequency * fDigitizerTimeStep;
+            tVoltagePhase[z_position]+= tDopplerFrequency * fDigitizerTimeStep ;
 
             double tMinHFSS=1e-8;
             const int nHFSSBins=2048;
@@ -465,9 +462,13 @@ namespace locust
 
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});  // reset
 
-        aSignal->LongSignalTimeComplex()[index][0] += sqrt(tTotalPower) * cos(tVoltagePhase/rReceiver.size()-phi_LO);
-        aSignal->LongSignalTimeComplex()[index][1] += sqrt(tTotalPower) * sin(tVoltagePhase/rReceiver.size()-phi_LO);
+        if (fabs(tCurrentParticle.GetPosition().GetZ()) < 0.001 )
+        {
+        aSignal->LongSignalTimeComplex()[index][0] += sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[z_position] - phi_LO);
+        aSignal->LongSignalTimeComplex()[index][1] += sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[z_position] - phi_LO);
+        }
 
+//        printf("tVoltagePhase is %g and phi_LO is %g and baseband freq is %g\n", tVoltagePhase, phi_LO, (tVoltagePhase/rReceiver.size()-phi_LO)/2./PI/t_old); getchar();
 
         } // z_position stepping loop.
 
