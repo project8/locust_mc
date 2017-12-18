@@ -340,8 +340,6 @@ namespace locust
         for(unsigned i=0;i<rReceiver.size();++i)
         {
             tReceiverPosition = rReceiver[i];
-//            tReceiverPositionArray[0] = rReceiverArray[0][i];
-
 
             //Check if there is time for photon to reach receiver if particle is recently created
             if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
@@ -419,7 +417,7 @@ namespace locust
             double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
             //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
 
-            tVoltagePhase[z_position]+= tDopplerFrequency * fDigitizerTimeStep ;
+            tVoltagePhase[z_position]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size() ;
 
             double tMinHFSS=1e-8;
             const int nHFSSBins=2048;
@@ -462,7 +460,7 @@ namespace locust
 
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});  // reset
 
-        if (fabs(tCurrentParticle.GetPosition().GetZ()) < 0.001 )
+        if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
         {
         aSignal->LongSignalTimeComplex()[index][0] += sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[z_position] - phi_LO);
         aSignal->LongSignalTimeComplex()[index][1] += sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[z_position] - phi_LO);
@@ -470,7 +468,7 @@ namespace locust
 
 //        printf("tVoltagePhase is %g and phi_LO is %g and baseband freq is %g\n", tVoltagePhase, phi_LO, (tVoltagePhase/rReceiver.size()-phi_LO)/2./PI/t_old); getchar();
 
-        } // z_position stepping loop.
+        } // z_position waveguide element stepping loop.
 
 //        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();
 

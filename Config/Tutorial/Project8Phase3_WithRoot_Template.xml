@@ -204,13 +204,13 @@
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.003" value_max="0.003"/>
+            <x_uniform value_min="0.00" value_max="0.00"/>
             <y_uniform value_min="0.00" value_max="0.00"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90.0" value_max="90.0"/> 
+        <theta_uniform value_min="89.4" value_max="89.4"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -397,7 +397,7 @@
 -->
 
     <!-- navigators -->
-
+e
 <!--    <ksnav_space name="nav_space" tolerance="1.e-6"/>  -->
     <ksnav_space name="nav_space" enter_split="false" exit_split="false"/>
 <!--    <ksnav_surface name="nav_surface"/>  -->
@@ -550,8 +550,8 @@
 
 </kassiopeia>
 
-<!--
 
+<!--
     <vtk_window
         name="vtk_window"
         enable_display="true"
