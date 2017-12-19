@@ -25,7 +25,8 @@ namespace locust
             fByGeneratorsNRecords( 1 ),
             fByGeneratorsDuration( 1. ),
 //            fRecordSize( 4194304 ),
-            fRecordSize( 10 ),
+            fRecordSize( 20 ),  // debug
+            fSampleSize ( 2 ),
             fBinWidth( 5.e-9 ),
             fAcquisitionRate( 200. )
     {
@@ -264,6 +265,18 @@ namespace locust
         fRecordSize = size;
         return;
     }
+
+    unsigned RunLengthCalculator::GetSampleSize() const
+    {
+        return fSampleSize;
+    }
+
+    void RunLengthCalculator::SetSampleSize( unsigned size )
+    {
+        fSampleSize = size;
+        return;
+    }
+
 
     double RunLengthCalculator::GetAcquisitionRate() const
     {

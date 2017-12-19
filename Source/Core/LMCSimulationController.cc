@@ -147,7 +147,7 @@ namespace locust
             }
             else
             {
-                for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
+                for( unsigned index = 0; index < 20; ++index )  // pls changed loop range to 10.
                 {
                 	if (!IQStream)
                 	{

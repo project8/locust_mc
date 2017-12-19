@@ -61,8 +61,8 @@
     {
         "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 1,
-        "slice-size": 5,
+        "number-of-slices": 500,
+        "slice-size": 10,
         "dac":
         {
             "time-series-type": "fftw"

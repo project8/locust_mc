@@ -1,6 +1,7 @@
 {
     "generators":
     [         
+        "test-signal",
         "digitizer"
     ],
     

@@ -70,6 +70,9 @@ namespace locust
             unsigned GetRecordSize() const;
             void SetRecordSize( unsigned size );
 
+            unsigned GetSampleSize() const;
+            void SetSampleSize( unsigned size );
+
             void SetFirstGenerator( const Generator* firstGen );
 
             RunLengthState GetByGeneratorsState() const;
@@ -107,6 +110,7 @@ namespace locust
             double fByGeneratorsDuration; // sec
 
             unsigned fRecordSize;
+            unsigned fSampleSize;
             double fBinWidth; // sec
             double fAcquisitionRate; // MHz
 
