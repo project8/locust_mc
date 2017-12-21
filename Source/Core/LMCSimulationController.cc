@@ -137,14 +137,17 @@ namespace locust
                 	}
                 	else
                 	{
-                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][0] << "  " << (int)simulatedSignal->SignalDigitalS()[index*2] );  // pls added (int)
-                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][1] << "  " << (int)simulatedSignal->SignalDigitalS()[index*2+1] );  // pls added (int)
+                        for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+                        {
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": I  " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2] );  // pls added (int)
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2+1] );  // pls added (int)
+                        }
                 	}
                 }
             }
             else
             {
-                for( unsigned index = 0; index < 10; ++index )  // pls changed loop range to 10.
+                for( unsigned index = 0; index < 20; ++index )  // pls changed loop range to 10.
                 {
                 	if (!IQStream)
                 	{
@@ -152,8 +155,11 @@ namespace locust
                 	}
                 	else
                 	{
-                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][0] << "  " << (int)simulatedSignal->SignalDigitalUS()[index*2] );  // pls added (int)
-                        LWARN( lmclog, index << "  " << simulatedSignal->SignalTimeComplex()[index][1] << "  " << (int)simulatedSignal->SignalDigitalUS()[index*2+1] );  // pls added (int)
+                        for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+                        {
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": I " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2] );  // pls added (int)
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2+1] );  // pls added (int)
+                        }
                 	}
                 }
             }

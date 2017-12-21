@@ -43,7 +43,7 @@ std::condition_variable fPostEventCondition;
 std::condition_variable fDigitizerCondition;
 std::condition_variable fKassReadyCondition;
 
-double* aLongSignal = new double[41943040];  // pls:  placeholder for oversampled signal.
+//double* aLongSignal = new double[41943040];  // pls:  placeholder for oversampled signal.
 
 
 #endif /* GLOBALSDEFINITION_HH_ */

@@ -1,9 +1,7 @@
 {
     "generators":
     [         
-        "freefield-signal",
-        "lpf-fft",
-        "decimate-signal",
+        "test-signal",
         "digitizer"
     ],
     

@@ -25,7 +25,7 @@ namespace locust
             fByGeneratorsNRecords( 1 ),
             fByGeneratorsDuration( 1. ),
             fRecordSize( 4194304 ),
-//            fRecordSize( 1000 ),  // debug
+//            fRecordSize( 20000 ),  // debug
             fSampleSize ( 2 ),
             fBinWidth( 5.e-9 ),
             fAcquisitionRate( 200. )
