@@ -10,7 +10,7 @@
 #define PI 3.1415926
 #define CENTER_TO_SHORT 0.0760 // m
 #define CENTER_TO_ANTENNA 0.0772 // m
-#define NCHANNELS 2
+#define NCHANNELS 10
 
 
 #include <condition_variable>
