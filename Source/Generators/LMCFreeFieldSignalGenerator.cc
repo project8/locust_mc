@@ -312,8 +312,20 @@ namespace locust
         int CurrentIndex;
         HFSSReader HFRead;
 
-        static double tVoltagePhase[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.};
+        const int nelementsZ = 9;
+        static double tVoltagePhase[nelementsZ*NCHANNELS] = {0.};
+        /*
+        for (int i=0; i<NCHANNELS; i++)
+        	for (int zindex=0; zindex<nelementsZ; zindex++)
+        	{
+            {
+        	printf("tVoltagePhase channel %d zelement %d is %f\n", i, zindex, tVoltagePhase[i*nelementsZ + zindex]);
+            }
+        	}
+        getchar();
+        */
         static double phi_LO = 0.;
+        int signalSize = aSignal->TimeSize();
 
         //Receiver Properties
         double tReceiverTime = t_old;
@@ -329,7 +341,7 @@ namespace locust
 
         const int HistorySize = fParticleHistory.size();
 
-        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal summing loop.
+        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal generating loop.
 
 //        printf("temp is %g and phi_LO is %g\n", temp, phi_LO);
 //        printf("inferred fLO_Frequency is %g\n", (phi_LO-temp)/2./KConst::Pi()/fDigitizerTimeStep);
@@ -338,11 +350,15 @@ namespace locust
 
         //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
 
+        for (int ch=0; ch<NCHANNELS; ch++)
+        {
         for (int z_position = 4; z_position<5; z_position++) // step through antennas along z
         {
-
+        // position waveguide in space:
+        rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
         rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,(double)(z_position-4)*0.01});//Arguments Normal vector, Position (m)
-
+        PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
+        tTotalPower = 0.; // initialize
 
         for(unsigned i=0;i<rReceiver.size();++i)
         {
@@ -365,7 +381,7 @@ namespace locust
                 tCurrentParticle=fParticleHistory[CurrentIndex];
 
                 tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - tReceiverPosition).Magnitude() /  KConst::C();
-            }
+             }
             else
             {
                 CurrentIndex = PreviousTimes[i].first;
@@ -407,9 +423,6 @@ namespace locust
             }
 
 
-//            printf("zposition is %d and i is %d, currentindex is %d and retartedtime is %g\n", z_position, i, CurrentIndex, tRetardedTime);
-
-
             PreviousTimes[i].first = CurrentIndex;
             PreviousTimes[i].second = tRetardedTime;
 
@@ -424,7 +437,17 @@ namespace locust
             double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
             //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
 
-            tVoltagePhase[z_position]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size() ;
+            tVoltagePhase[ch*nelementsZ + z_position]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size();
+
+            /*
+            if (i==0)  // check receiver point 0 for each channel.  It should be the same each time.
+            {
+              printf("rx point 0:  zposition is %d and channel is %d, fcyc is %g and tVelZ is %g, dopplerfreq is %g, costheta is %f\n",
+            		  z_position, ch, tDopplerFrequency, tCurrentParticle.GetCyclotronFrequency(), tVelZ, tCosTheta);
+              printf("current index is %d\n", CurrentIndex);
+            }
+            */
+
 
             double tMinHFSS=1e-8;
             const int nHFSSBins=2048;
@@ -465,24 +488,24 @@ namespace locust
 
         }  // i, rReceiver.size() loop.
 
-        PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});  // reset
 
-        if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
-        {
-        aSignal->LongSignalTimeComplex()[index][0] += sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[z_position] - phi_LO);
-        aSignal->LongSignalTimeComplex()[index][1] += sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[z_position] - phi_LO);
-        }
-
-//        printf("tVoltagePhase is %g and phi_LO is %g and baseband freq is %g\n", tVoltagePhase, phi_LO, (tVoltagePhase/rReceiver.size()-phi_LO)/2./PI/t_old); getchar();
+//        if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
+//        {
+        aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][0] += sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+        aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][1] += sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+//        }
 
         } // z_position waveguide element stepping loop.
+        } // NCHANNELS loop.
 
 //        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();
 
+        /*
         printf("signal at time %g is %g\n\n\n", t_old, aSignal->LongSignalTimeComplex()[index][0]);
         printf("phi_LO is %g\n", phi_LO);
-        printf("tVoltagePhase is %g\n", tVoltagePhase);
+        printf("tVoltagePhase is %f\n", tVoltagePhase);
         printf("fDigitizerTimeStep is %g\n", fDigitizerTimeStep);getchar();
+        */
 
 
         //        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();

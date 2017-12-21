@@ -65,18 +65,21 @@ namespace locust
       */
 
     // Decimate Fs -> Fs/10
-    for( unsigned index = 0; index < 41943040; ++index )
+    for (int ch=0; ch<NCHANNELS; ch++)
+    {
+    for( unsigned index = 0; index < aSignal->TimeSize()*fDecimationFactor; ++index )
       {
       if (index%fDecimationFactor == 0)
         {
 //        aSignal->SignalTime()[index/fDecimationFactor] = aLongSignal[index];
 
-        aSignal->SignalTimeComplex()[index/fDecimationFactor][0] =
-        		aSignal->LongSignalTimeComplex()[index][0];
-        aSignal->SignalTimeComplex()[index/fDecimationFactor][1] =
-        		aSignal->LongSignalTimeComplex()[index][1];
+        aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][0] =
+        		aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][0];
+        aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][1] =
+        		aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][1];
         }
       }
+    }
 
 //    delete aTemporarySignal;
 

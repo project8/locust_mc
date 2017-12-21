@@ -126,17 +126,17 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for (unsigned ch = 0; ch < NCHANNELS; ++ch)
         {
-        for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+        for( unsigned index = 0; index < aSignal->TimeSize()*10; ++index )
         {
         	if (ch==0)
         	{
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += 5.e-8*cos(2.*PI*50.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += 5.e-8*cos(-PI/2. + 2.*PI*50.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][0] += 5.e-8*cos(2.*PI*80.e6*(double)index/10./(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][1] += 5.e-8*cos(-PI/2. + 2.*PI*80.e6*(double)index/10./(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
         	}
         	else
         	{
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += 5.e-8*cos(2.*PI*30.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += 5.e-8*cos(-PI/2. + 2.*PI*30.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][0] += 5.e-8*cos(2.*PI*85.5e6*(double)index/10./(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][1] += 5.e-8*cos(-PI/2. + 2.*PI*85.5e6*(double)index/10./(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
         	}
 //            printf("acq rate is %g\n", RunLengthCalculator1->GetAcquisitionRate()); getchar();
 //            printf("array index is %d\n", ch*aSignal->TimeSize() + index);

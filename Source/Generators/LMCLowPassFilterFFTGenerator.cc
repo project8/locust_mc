@@ -65,13 +65,15 @@ namespace locust
         fftw_plan ReversePlan;
         ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
 
+        for (int ch=0; ch<NCHANNELS; ch++)
+        {
         for (int nwin = 0; nwin < nwindows; nwin++)
         {
             // Construct complex voltage.
             for( unsigned index = 0; index < windowsize; ++index )
             {
-                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0];
-                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][1];
+                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][0];
+                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][1];
                 //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
 
@@ -95,11 +97,12 @@ namespace locust
             for( unsigned index = 0; index < windowsize; ++index )
             {
                 // normalize and take the real part of the reverse transform, for digitization.
-                aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
-                aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
+                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
+                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
                 //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
         }  // nwin
+        }  // NCHANNELS
 
         delete [] SignalComplex;
         delete [] FFTComplex;
