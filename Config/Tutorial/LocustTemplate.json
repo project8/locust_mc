@@ -1,6 +1,6 @@
 {
     "generators":
-    [         
+    [            
         "freefield-signal",
         "lpf-fft",
         "decimate-signal",
@@ -22,7 +22,8 @@
     "simulation":
     {
         "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
-        "n-records": 1
+        "n-records": 1,
+        "record-size": 4194304
     },
   
     "gaussian-noise":

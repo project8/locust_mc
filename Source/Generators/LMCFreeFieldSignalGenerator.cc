@@ -308,26 +308,18 @@ namespace locust
 
     void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
     {
+
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
         HFSSReader HFRead;
 
         const int nelementsZ = 9;
         static double tVoltagePhase[nelementsZ*NCHANNELS] = {0.};
-        /*
-        for (int i=0; i<NCHANNELS; i++)
-        	for (int zindex=0; zindex<nelementsZ; zindex++)
-        	{
-            {
-        	printf("tVoltagePhase channel %d zelement %d is %f\n", i, zindex, tVoltagePhase[i*nelementsZ + zindex]);
-            }
-        	}
-        getchar();
-        */
         static double phi_LO = 0.;
         int signalSize = aSignal->TimeSize();
 
         //Receiver Properties
+
         double tReceiverTime = t_old;
         KGeoBag::KThreeVector tReceiverPosition;
 
@@ -437,7 +429,17 @@ namespace locust
             double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
             //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
 
-            tVoltagePhase[ch*nelementsZ + z_position]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size();
+            if (tRetardedTime>fDigitizerTimeStep)  // if the signal has been present for longer than fDigitizerTimeStep
+              {
+              tVoltagePhase[ch*nelementsZ + z_position]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size();
+              }
+            else  // if this is the first digitizer sample
+              {
+                tVoltagePhase[ch*nelementsZ + z_position]+=
+                		tDopplerFrequency * tRetardedTime / rReceiver.size();
+//                printf("Retarding voltage phase:  fDigitizerTimeStep is %g and tReceiverTime is %g and tRetardedTime is %g\n and t_old is %g\n",
+//                		fDigitizerTimeStep, tReceiverTime, tRetardedTime, t_old); getchar();
+              }
 
             /*
             if (i==0)  // check receiver point 0 for each channel.  It should be the same each time.
@@ -562,13 +564,6 @@ namespace locust
 
     bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
-        //double *ImaginarySignal = new double[10*aSignal->TimeSize()];
-
-        //for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
-        //{
-        //    ImaginarySignal[ index ] = 0.;
-        //    aLongSignal[ index ] = 0.;  // long record for oversampling.
-        //}
 
         if(fWriteNFD)
         {
