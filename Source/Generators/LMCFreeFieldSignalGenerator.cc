@@ -153,6 +153,47 @@ namespace locust
         return fDecimation;
     }
 
+    double m(double angle, double x0, double y0)
+    {
+    angle = 3.1415926*angle/180.;
+    double xprime = cos(angle)*x0 - sin(angle)*y0;
+    double yprime = sin(angle)*x0 + cos(angle)*y0;
+
+    double m = yprime/xprime;
+
+    return m;
+    }
+
+    double b(double m, double x0, double y0)
+    {
+    double b = y0 - m*x0;
+    return b;
+    }
+
+    double directivity(double m1, double m2, double x0, double y0, double x, double y)
+    {
+
+    	// cone shaped directivity with gain=1 and half angle OpeningAngle.
+
+    	double directivity = 0.;
+
+    	if (((y < m1*x + b(m1,x0,y0)) && (y > m2*x + b(m2,x0,y0))) |
+    	   ((y > m1*x + b(m1,x0,y0)) && (y < m2*x + b(m2,x0,y0))))
+    	  {
+    	  if (fabs(atan(m1)-atan(m2)) < 1.57)
+    	    directivity = 1.;
+    	  }
+    	else
+    	  {
+    	  if (fabs(atan(m1)-atan(m2)) > 1.57)
+    	    directivity = 1.;
+    	  }
+    	return directivity;
+
+    }
+
+
+
     void* FreeFieldSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
     {
 
@@ -314,6 +355,12 @@ namespace locust
         HFSSReader HFRead;
 
         const int nelementsZ = 9;
+        double theta = 0.;  // azimuthal angle of each amplifier channel.
+        double radius = 0.05; // radius of each amplifier channel in xy plane.
+        double OpeningAngle = 15.; //degrees, half angle fake directivity angle.
+        double DirectivityFactor = 0.;
+        double m1 = 0.;
+        double m2 = 0.;
         static double tVoltagePhase[nelementsZ*NCHANNELS] = {0.};
         static double phi_LO = 0.;
         int signalSize = aSignal->TimeSize();
@@ -348,9 +395,13 @@ namespace locust
         {
         // position waveguide in space:
         rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
-        rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,(double)(z_position-4)*0.01});//Arguments Normal vector, Position (m)
+        theta = (double)ch*360./NCHANNELS*PI/180.;
+        rReceiver = HFRead.RotateShift(rReceiver,{cos(theta),sin(theta),0.},{radius*cos(theta),radius*sin(theta),(double)(z_position-4)*0.01});//Arguments Normal vector, Position (m)
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
         tTotalPower = 0.; // initialize
+        m1=m(-OpeningAngle*2.,radius*cos(theta), radius*sin(theta));
+        m2=m(OpeningAngle*2.,radius*cos(theta), radius*sin(theta));
+
 
         for(unsigned i=0;i<rReceiver.size();++i)
         {
@@ -428,15 +479,16 @@ namespace locust
             double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
             double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
             //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
+            double tTransitTime = (tReceiverPosition - tCurrentParticle.GetPosition(true)).Magnitude() / KConst::C();
 
-            if (tRetardedTime>fDigitizerTimeStep)  // if the signal has been present for longer than fDigitizerTimeStep
+            if (tRetardedTime+tTransitTime > fDigitizerTimeStep)  // if the signal has been present for longer than fDigitizerTimeStep
               {
               tVoltagePhase[ch*nelementsZ + z_position]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size();
               }
             else  // if this is the first digitizer sample
               {
                 tVoltagePhase[ch*nelementsZ + z_position]+=
-                		tDopplerFrequency * tRetardedTime / rReceiver.size();
+                		tDopplerFrequency * (tReceiverTime - (tRetardedTime+tTransitTime)) / rReceiver.size();
 //                printf("Retarding voltage phase:  fDigitizerTimeStep is %g and tReceiverTime is %g and tRetardedTime is %g\n and t_old is %g\n",
 //                		fDigitizerTimeStep, tReceiverTime, tRetardedTime, t_old); getchar();
               }
@@ -491,10 +543,14 @@ namespace locust
         }  // i, rReceiver.size() loop.
 
 
+
+        DirectivityFactor = directivity(m1, m2, radius*cos(theta*PI/180.), radius*sin(theta*PI/180.),
+        		tCurrentParticle.GetPosition(true).GetX(), tCurrentParticle.GetPosition(true).GetY());
+
 //        if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
 //        {
-        aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][0] += sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
-        aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][1] += sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+          aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][0] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+          aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][1] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
 //        }
 
         } // z_position waveguide element stepping loop.
