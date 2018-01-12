@@ -13,9 +13,6 @@
 #include "KToolbox.h"
 
 
-using namespace Kassiopeia;
-
-using namespace Kassiopeia;
 namespace katrin
 {
 
@@ -32,7 +29,7 @@ namespace katrin
 
         if( aContainer->GetName() == "set_trajectory" )
         {
-            fObject->SetTrajectory( KToolbox::GetInstance().Get< KSTrajectory >( aContainer->AsReference< std::string >() ) );
+            fObject->SetTrajectory( KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory >( aContainer->AsReference< std::string >() ) );
             return true;
         }
 
@@ -54,3 +51,4 @@ namespace katrin
 } /* namespace katrin */
 
 #endif /* LOCUST_LMCCYCLOTRONRADIATIONEXTRACTORBUILDER_HH_ */
+

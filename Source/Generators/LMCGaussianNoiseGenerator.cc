@@ -35,16 +35,18 @@ namespace locust
     {
         if( aParam == NULL) return true;
 
+        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
+
         double tSigma = fSigma;
         if( aParam->has( "noise-floor" ) )
         {
-            //tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * aParam->get_value< double >( "acquisition-rate", 100. ) * 1.e6 );
-            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * 200.e6/2.);  // sampling rate is 200 MHz.  divide by 2 due to nbins->nbins/2 in katydid normalization.
+            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * RunLengthCalculator1->GetAcquisitionRate() * 1.e6);  // sampling rate
         }
         else
         {
             tSigma = aParam->get_value( "sigma", fSigma );
         }
+        delete RunLengthCalculator1;
 
         SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
 
@@ -140,7 +142,8 @@ namespace locust
     {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTime()[index] += fNormDist( fRNG );
+            aSignal->SignalTimeComplex()[index][0] += fNormDist( fRNG );
+            aSignal->SignalTimeComplex()[index][1] += fNormDist( fRNG );
         }
 
         return true;

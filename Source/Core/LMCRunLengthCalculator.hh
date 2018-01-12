@@ -70,6 +70,9 @@ namespace locust
             unsigned GetRecordSize() const;
             void SetRecordSize( unsigned size );
 
+            unsigned GetSampleSize() const;
+            void SetSampleSize( unsigned size );
+
             void SetFirstGenerator( const Generator* firstGen );
 
             RunLengthState GetByGeneratorsState() const;
@@ -86,6 +89,7 @@ namespace locust
 
         private:
             void Visit( const KassSignalGenerator* );
+            void Visit( const FreeFieldSignalGenerator* );
             void Visit( const TrappedElectronGenerator* );
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const TestSignalGenerator* );
@@ -106,6 +110,7 @@ namespace locust
             double fByGeneratorsDuration; // sec
 
             unsigned fRecordSize;
+            unsigned fSampleSize;
             double fBinWidth; // sec
             double fAcquisitionRate; // MHz
 

@@ -67,3 +67,4 @@ namespace locust
 } /* namespace locust */
 
 #endif /* LMC_LMCRUNKASSIOPEIA_HH_ */
+

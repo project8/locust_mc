@@ -23,6 +23,7 @@
                 "signal": "egg1:ts",
                 "slot": "fft1:ts-real"
             },
+
             {
                 "signal": "fft1:fft",
                 "slot": "to-ps1:fs-fftw-to-psd"
@@ -55,11 +56,11 @@
         
     "egg1":
     {
-        "filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc_bathtub2-5_pitch89.8_coiltip2deg.egg",
+        "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 1600,
+        "number-of-slices": 2,
         "slice-size": 8192,
-        "stride": 1024
+        "stride": 8192
     },
 
     "fft1":
@@ -70,7 +71,7 @@
 
     "waterfall-writer":
     {
-        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "/home/penny/locust_mc/cbuild/bin/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
@@ -80,7 +81,7 @@
 
     "writer":
     {
-        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/basic.root",
+        "output-file": "/home/penny/locust_mc/cbuild/bin/basic.root",
         "file-flag": "recreate"
     }
 

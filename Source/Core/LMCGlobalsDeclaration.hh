@@ -10,30 +10,29 @@
 #define PI 3.1415926
 #define CENTER_TO_SHORT 0.0760 // m
 #define CENTER_TO_ANTENNA 0.0772 // m
-
+#define NCHANNELS 10
 
 
 #include <condition_variable>
+#include <vector>
 #include <mutex>
+#include <deque>
+#include "LMCParticle.hh"
 
 
-extern double Z;
-extern double X;
-extern double Y;
-extern double t_poststep;
 extern double t_old;
+extern double t_poststep;
+
 extern double phi_shortTE11;
 extern double* phi_shortTM01;
 extern double* phi_polarizerTM01;
-extern double LarmorPower;
-extern double xvelocity;
-extern double yvelocity;
-extern double zvelocity;
-extern double fcyc;
-extern double GammaZ;
 extern double testvar;
+extern double fDigitizerTimeStep;
 
+extern int fDecimationFactor;
 
+extern std::deque<locust::Particle> fParticleHistory;
+extern std::deque<locust::Particle> fNewParticleHistory;
 
 extern bool fWaitBeforeEvent;
 extern bool fWaitAfterEvent;
@@ -43,7 +42,7 @@ extern bool fRunInProgress;
 extern bool fPreEventInProgress;
 extern bool fFalseStartKassiopeia;
 
-
+extern bool fPhaseIISimulation;
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
 extern std::mutex fKassReadyMutex;  // pls:  this mutex is used for pre and post event mods.
@@ -57,6 +56,13 @@ extern std::condition_variable fDigitizerCondition;
 extern std::condition_variable fKassReadyCondition;
 
 
-extern double* aLongSignal;  // pls:  placeholder for oversampled signal.
+//extern double* aLongSignal;  // pls:  placeholder for oversampled signal.
+
+//3 Dimensional arrays: NFDXXXField[ReceiverIndex][Time Series Index][X, Y, Z components]
+//It looks bad but is actually optimal: std::arrays give preallocated continuous storage: 
+//However, we have indeterminate number of Receiver Points: use std::vector
+//std::vector<std::array<std::array<double, 16384>, 3 > >  NFDElectricField;  // pls:  placeholder for oversampled signal.
+//std::vector<std::array<std::array<double, 16384>, 3 > >  NFDMagneticField;  // pls:  placeholder for oversampled signal.
 
 #endif /* GLOBALSDECLARATION_HH_ */
+

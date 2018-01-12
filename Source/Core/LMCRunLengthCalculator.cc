@@ -25,6 +25,8 @@ namespace locust
             fByGeneratorsNRecords( 1 ),
             fByGeneratorsDuration( 1. ),
             fRecordSize( 4194304 ),
+//            fRecordSize( 20000 ),  // debug
+            fSampleSize ( 2 ),
             fBinWidth( 5.e-9 ),
             fAcquisitionRate( 200. )
     {
@@ -36,6 +38,7 @@ namespace locust
 
     bool RunLengthCalculator::Configure( const scarab::param_node* aNode )
     {
+
         if( aNode == NULL ) return false;
 
         // first, configure items that will affect the method for calculating the run length
@@ -48,7 +51,8 @@ namespace locust
 
         // next, configure items that are needed no matter what.
 
-        SetRecordSize( aNode->get_value< unsigned >( "record-size", fRecordSize ) );
+          SetRecordSize( aNode->get_value< unsigned >( "record-size", fRecordSize ) );
+
 
         if( aNode->has( "acquisition-rate" ) )
             SetAcquisitionRate( aNode->get_value< double >( "acquisition-rate" ) );
@@ -77,6 +81,11 @@ namespace locust
     }
 
     void RunLengthCalculator::Visit( const KassSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+    void RunLengthCalculator::Visit( const FreeFieldSignalGenerator* )
     {
         // nothing to see here, move along, please
         return;
@@ -256,6 +265,18 @@ namespace locust
         fRecordSize = size;
         return;
     }
+
+    unsigned RunLengthCalculator::GetSampleSize() const
+    {
+        return fSampleSize;
+    }
+
+    void RunLengthCalculator::SetSampleSize( unsigned size )
+    {
+        fSampleSize = size;
+        return;
+    }
+
 
     double RunLengthCalculator::GetAcquisitionRate() const
     {

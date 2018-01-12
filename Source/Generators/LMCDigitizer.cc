@@ -68,11 +68,23 @@ namespace locust
 
     bool Digitizer::DoGenerate( Signal* aSignal ) const
     {
+
+    	bool IQStream = true;  // this could eventually be a parameter in the json file.
+
         unsigned signalSize = aSignal->TimeSize();
+        unsigned signalSizeComplex = 2*aSignal->TimeSize()*NCHANNELS;
 
         double* analogData = aSignal->SignalTime();
 //        uint64_t* digitizedData = new uint64_t[ signalSize ];
+
+        std::complex<double>* analogDataComplex;
+        analogDataComplex = (std::complex<double> *) malloc(NCHANNELS*signalSize * sizeof(std::complex<double>));
+        memcpy( analogDataComplex, aSignal->SignalTimeComplex(), NCHANNELS*signalSize * sizeof( std::complex<double> ) );
+
+
         if( fADCValuesSigned )
+        {
+        if (!IQStream)
         {
             int8_t* digitizedData = new int8_t[ signalSize ];
 
@@ -85,9 +97,38 @@ namespace locust
                 }
             }
             aSignal->ToDigital( digitizedData, signalSize );
+        }  // !IQStream
+        else
+        {
+            int8_t* digitizedData = new int8_t[ signalSizeComplex ];
+//            printf("signalSizeComplex is %d\n", signalSizeComplex); getchar();
+
+            for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+            {
+            for( unsigned index = 0; index < signalSize; ++index )
+            {
+//            	printf("2*ch*signalSize+index*2 is %d\n", 2*ch*signalSize+index*2);
+                digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( analogDataComplex[ch*signalSize + index ].real(), &fParams );
+                digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( analogDataComplex[ch*signalSize + index ].imag(), &fParams );
+//                digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
+//                digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
+
+
+                if( index < 10 )
+                {
+
+                    LWARN( lmclog, "digitizing channel " << ch << ": " << index << " I: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][0] << " --> " << (int) digitizedData[2*ch*signalSize + index*2 ] );  // pls added (int)
+                    LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
+                }
+            }
+            }
+            aSignal->ToDigital( digitizedData, signalSizeComplex );
+        }  // IQStream
         }
         else
         {
+        	if (!IQStream)
+        	{
             uint8_t* digitizedData = new uint8_t[ signalSize ];
 
             for( unsigned index = 0; index < signalSize; ++index )
@@ -101,6 +142,38 @@ namespace locust
                 }
             }
             aSignal->ToDigital( digitizedData, signalSize );
+        	} // !IQStream
+        	else
+        	{
+                uint8_t* digitizedData = new uint8_t[ signalSizeComplex ];
+//                printf("signalSizeComplex is %d\n", signalSizeComplex); getchar();
+
+                for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+                {
+                for( unsigned index = 0; index < signalSize; ++index )
+                {
+//                	printf("ch is %d, index is %d, 2*ch*signalSize+index*2 is %d\n", ch, index, 2*ch*signalSize+index*2);
+                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( analogDataComplex[ch*signalSize + index ].real(), &fParams );
+                    digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( analogDataComplex[ch*signalSize + index ].imag(), &fParams );
+//                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
+//                    digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
+
+                	// fake data for debugging.
+//                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( 5.e-8, &fParams );
+//                    digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( 5.e-8, &fParams );
+
+
+
+                    if( index < 20 )
+                    {
+                        LWARN( lmclog, "digitizing channel " << ch << ": " << index << " I: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][0] << " --> " << (int) digitizedData[2*ch*signalSize + index*2 ] );  // pls added (int)
+                        LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
+                    }
+                }
+                }
+                aSignal->ToDigital( digitizedData, signalSizeComplex );
+
+        	}  // IQStream
         }
 
         return true;

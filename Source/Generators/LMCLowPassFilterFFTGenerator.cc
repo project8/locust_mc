@@ -70,8 +70,8 @@ namespace locust
             // Construct complex voltage.
             for( unsigned index = 0; index < windowsize; ++index )
             {
-                SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
-                SignalComplex[index][1] = 0.;
+                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0];
+                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][1];
                 //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
 
@@ -95,14 +95,14 @@ namespace locust
             for( unsigned index = 0; index < windowsize; ++index )
             {
                 // normalize and take the real part of the reverse transform, for digitization.
-                //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
+                aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
+                aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
                 //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
         }  // nwin
 
-        delete SignalComplex;
-        delete FFTComplex;
+        delete [] SignalComplex;
+        delete [] FFTComplex;
 
     	return true;
     }

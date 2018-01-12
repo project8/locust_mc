@@ -8,6 +8,7 @@
 #include "LMCTestSignalGenerator.hh"
 
 #include "logger.hh"
+#define PI 3.1415926
 
 using std::string;
 
@@ -19,11 +20,11 @@ namespace locust
 
     TestSignalGenerator::TestSignalGenerator( const std::string& aName ) :
             Generator( aName ),
-            fDoGenerateFunc( &TestSignalGenerator::DoGenerateFreq ),
+            fDoGenerateFunc( &TestSignalGenerator::DoGenerateTime ),
             fFrequency( 4000. ),
             fAmplitude( 0.24 )
     {
-        fRequiredSignalState = Signal::kFreq;
+        fRequiredSignalState = Signal::kTime;
     }
 
     TestSignalGenerator::~TestSignalGenerator()
@@ -123,9 +124,24 @@ namespace locust
     bool TestSignalGenerator::DoGenerateTime( Signal* aSignal ) const
     {
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
+        for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+        {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTime()[index] += fAmplitude*cos(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));  // T=2PI/A
+        	if (ch==0)
+        	{
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += 5.e-8*cos(2.*PI*50.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += 5.e-8*cos(-PI/2. + 2.*PI*50.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+        	}
+        	else
+        	{
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += 5.e-8*cos(2.*PI*30.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += 5.e-8*cos(-PI/2. + 2.*PI*30.e6*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+        	}
+//            printf("acq rate is %g\n", RunLengthCalculator1->GetAcquisitionRate()); getchar();
+//            printf("array index is %d\n", ch*aSignal->TimeSize() + index);
+//            printf("aSignal->SignalTimeComplex()[0] is %g\n", aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0]); getchar();
+        }
         }
         delete RunLengthCalculator1;
         return true;

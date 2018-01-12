@@ -4,7 +4,9 @@
 [submodule "Scarab"]
 	path = Scarab
 	url = https://github.com/project8/scarab
+
 [submodule "kassiopeia"]
 	path = kassiopeia
-	url = git://github.com/project8/kassiopeia.git
-	branch = feature/eventmod
+	url = https://github.com/project8/kassiopeia.git
+        branch = feature/eventmod
+

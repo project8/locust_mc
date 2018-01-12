@@ -32,8 +32,10 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCException.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
+    Core/LMCHFSSReader.hh
     #Core/LMCParam.hh
     #Core/LMCParser.hh
+    Core/LMCParticle.hh
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
     Core/LMCSimulationController.hh
@@ -41,7 +43,7 @@ set( LOCUST_MC_HEADER_FILES
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
-#    Generators/LMCTestSignalGenerator.hh
+    Generators/LMCTestSignalGenerator.hh
 #    Generators/LMCBasebandTrackGenerator.hh
 #    Generators/LMCTrappedElectronGenerator.hh
 #    Generators/LMCSingleAmpSim.hh
@@ -55,8 +57,10 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCException.cc
     Core/LMCGenerator.cc
     Core/LMCGeneratorToolbox.cc
+    Core/LMCHFSSReader.cc
     #Core/LMCParam.cc
     #Core/LMCParser.cc
+    Core/LMCParticle.cc
     Core/LMCRunLengthCalculator.cc
     Core/LMCSignal.cc
     Core/LMCSimulationController.cc
@@ -64,7 +68,7 @@ set( LOCUST_MC_SOURCE_FILES
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
-#    Generators/LMCTestSignalGenerator.cc
+    Generators/LMCTestSignalGenerator.cc
 #    Generators/LMCBasebandTrackGenerator.cc
 #    Generators/LMCTrappedElectronGenerator.cc
 #    Generators/LMCSingleAmpSim.cc
@@ -72,6 +76,7 @@ set( LOCUST_MC_SOURCE_FILES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+        Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCDecimateSignalGenerator.hh
         Generators/LMCLowPassFilterFFTGenerator.hh
@@ -87,6 +92,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+        Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
         Generators/LMCDecimateSignalGenerator.cc
         Generators/LMCLowPassFilterFFTGenerator.cc

@@ -10,6 +10,8 @@
 
 #include "LMCEggWriter.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCGlobalsDeclaration.hh"
+
 
 namespace scarab
 {

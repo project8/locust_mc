@@ -60,3 +60,4 @@ namespace locust
 } /* namespace locust */
 
 #endif /* LOCUST_LMCEVENTHOLD_HH_ */
+

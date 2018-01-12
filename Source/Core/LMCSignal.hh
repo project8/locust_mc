@@ -11,6 +11,8 @@
 #include <fftw3.h>
 #include <complex.h>
 #include <stdint.h>
+#include "LMCGlobalsDeclaration.hh"
+
 
 
 namespace locust
@@ -60,8 +62,21 @@ namespace locust
             //double SignalTime( unsigned anIndex ) const;
             //double& SignalTime( unsigned anIndex );
 
+            const fftw_complex* SignalTimeComplex() const;
+            fftw_complex* SignalTimeComplex();
+
+            const fftw_complex* LongSignalTimeComplex() const;
+            fftw_complex* LongSignalTimeComplex();
+
+            const fftw_complex* LongSignalFreqComplex() const;
+            fftw_complex* LongSignalFreqComplex();
+
             const fftw_complex* SignalFreq() const;
             fftw_complex* SignalFreq();
+
+            const fftw_complex* SignalFreqComplex() const;
+            fftw_complex* SignalFreqComplex();
+
 
             //const fftw_complex& SignalFreq( unsigned anIndex ) const;
             //fftw_complex& SignalFreq( unsigned anIndex );
@@ -98,11 +113,18 @@ namespace locust
 
             unsigned fTimeSize;
             unsigned fFreqSize;
+            unsigned fFreqSizeComplex;
             unsigned fDigitalSize;
 
             double* fSignalTime;
             fftw_complex* fSignalFreq;
-//            uint64_t* fSignalDigital;
+            fftw_complex* fSignalTimeComplex;
+            fftw_complex* fSignalFreqComplex;
+            fftw_complex* fLongSignalTimeComplex;
+            fftw_complex* fLongSignalFreqComplex;
+
+
+            //            uint64_t* fSignalDigital;
             union SignalDigital
             {
                 int8_t* fSigned;
@@ -112,6 +134,10 @@ namespace locust
 
             fftw_plan fPlanToFreq;
             fftw_plan fPlanToTime;
+            fftw_plan fPlanToFreqComplex;
+            fftw_plan fPlanToTimeComplex;
+            fftw_plan fLongPlanToFreqComplex;
+            fftw_plan fLongPlanToTimeComplex;
 
     };
 

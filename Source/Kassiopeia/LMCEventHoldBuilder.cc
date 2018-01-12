@@ -26,3 +26,4 @@ namespace katrin
             KSRootBuilder::ComplexElement< locust::EventHold >( "mod_event_hold" );
 
 } /* namespace katrin */
+

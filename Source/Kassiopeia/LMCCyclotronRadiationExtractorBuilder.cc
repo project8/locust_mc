@@ -28,3 +28,4 @@ namespace katrin
             KSRootBuilder::ComplexElement< locust::CyclotronRadiationExtractor >( "cycl_rad_extr" );
 
 } /* namespace katrin */
+

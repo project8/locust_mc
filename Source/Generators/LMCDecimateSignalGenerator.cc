@@ -67,9 +67,14 @@ namespace locust
     // Decimate Fs -> Fs/10
     for( unsigned index = 0; index < 41943040; ++index )
       {
-      if (index%10 == 0)
+      if (index%fDecimationFactor == 0)
         {
-        aSignal->SignalTime()[index/10] = aLongSignal[index];
+//        aSignal->SignalTime()[index/fDecimationFactor] = aLongSignal[index];
+
+        aSignal->SignalTimeComplex()[index/fDecimationFactor][0] =
+        		aSignal->LongSignalTimeComplex()[index][0];
+        aSignal->SignalTimeComplex()[index/fDecimationFactor][1] =
+        		aSignal->LongSignalTimeComplex()[index][1];
         }
       }
 

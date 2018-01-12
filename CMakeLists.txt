@@ -26,6 +26,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
     )
     include( KasperDefaults )
+    set( Kommon_DIR ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
+    set( KGeoBag_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
+    set( KEMField_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
+
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
