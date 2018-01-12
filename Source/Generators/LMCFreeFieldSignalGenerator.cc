@@ -173,7 +173,7 @@ namespace locust
     double directivity(double m1, double m2, double x0, double y0, double x, double y)
     {
 
-    	// cone shaped directivity with gain=1 and half angle OpeningAngle.
+    	// cone shaped directivity with gain=1 and half angle OpeningAngle for antenna at x0,y0
 
     	double directivity = 0.;
 
