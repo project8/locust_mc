@@ -544,7 +544,7 @@ namespace locust
 
 
 
-        DirectivityFactor = directivity(m1, m2, radius*cos(theta*PI/180.), radius*sin(theta*PI/180.),
+        DirectivityFactor = directivity(m1, m2, radius*cos(theta), radius*sin(theta),
         		tCurrentParticle.GetPosition(true).GetX(), tCurrentParticle.GetPosition(true).GetY());
 
 //        if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
