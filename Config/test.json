@@ -1,0 +1,45 @@
+{
+    "generators":
+    [
+        "kassiopeia",
+        "digitizer"
+    ],
+    
+    "receiver-transfer-function":
+    {
+
+    },
+
+    "simulation":
+    {
+        "n-records": 1
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor": 20.0e-22,
+    "mean": 0.0,
+    "sigma": 1.0,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+
+    },
+   
+    "test-signal":
+    {
+    "domain": "time",
+    "amplitude": 4.5e-8,
+    "frequency": 8.0e6
+    },
+
+    "baseband-track":
+    {
+    "electron-energy": 30.0,
+    "total-lo-freqs": 26.385015,
+    "domain": "time"
+    }
+}
+
