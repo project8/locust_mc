@@ -1,3 +1,12 @@
+[submodule "monarch"]
+	path = monarch
+	url = git://github.com/project8/monarch.git
+[submodule "Scarab"]
+	path = Scarab
+	url = https://github.com/project8/scarab
+
 [submodule "kassiopeia"]
 	path = kassiopeia
-	url = git://github.com/project8/kassiopeia.git
+	url = https://github.com/project8/kassiopeia.git
+        branch = feature/eventmod
+
