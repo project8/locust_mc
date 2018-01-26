@@ -16,7 +16,6 @@ double* phi_shortTM01 = new double[200];
 double* phi_polarizerTM01 = new double[200];
 double testvar = -99.;
 double fDigitizerTimeStep = 5e-10; //Time step for sampling
-//double fEventModTimeStep = 5e-10; //Exact difference in time for fNewParticle History. 
 
 int fDecimationFactor=10.;
 

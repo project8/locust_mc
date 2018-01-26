@@ -23,18 +23,13 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 set( LOCUST_MC_HEADER_FILES
-    #Core/LMCConfigurator.hh
     Core/LMCGlobalsDeclaration.hh
     Core/LMCGlobalsDefinition.hh
-#    Core/LMCConstants.hh
-#    Core/LMCDefaultConfig.hh
     Core/LMCEggWriter.hh
     Core/LMCException.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
     Core/LMCHFSSReader.hh
-    #Core/LMCParam.hh
-    #Core/LMCParser.hh
     Core/LMCParticle.hh
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
@@ -46,20 +41,15 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCTestSignalGenerator.hh
 #    Generators/LMCBasebandTrackGenerator.hh
 #    Generators/LMCTrappedElectronGenerator.hh
-#    Generators/LMCSingleAmpSim.hh
 )
 
 
 set( LOCUST_MC_SOURCE_FILES
-    #Core/LMCConfigurator.cc
-#    Core/LMCDefaultConfig.cc
     Core/LMCEggWriter.cc
     Core/LMCException.cc
     Core/LMCGenerator.cc
     Core/LMCGeneratorToolbox.cc
     Core/LMCHFSSReader.cc
-    #Core/LMCParam.cc
-    #Core/LMCParser.cc
     Core/LMCParticle.cc
     Core/LMCRunLengthCalculator.cc
     Core/LMCSignal.cc
@@ -71,7 +61,6 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCTestSignalGenerator.cc
 #    Generators/LMCBasebandTrackGenerator.cc
 #    Generators/LMCTrappedElectronGenerator.cc
-#    Generators/LMCSingleAmpSim.cc
 )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
