@@ -17,8 +17,6 @@ double* phi_polarizerTM01 = new double[200];
 double testvar = -99.;
 double fDigitizerTimeStep = 5e-10; //Time step for sampling
 
-int fDecimationFactor=10.;
-
 //running deque for saving previous few ns of particle history 
 //in order to caluclate retarded fields
 std::deque<locust::Particle> fParticleHistory;

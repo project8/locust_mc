@@ -29,8 +29,6 @@ extern double* phi_polarizerTM01;
 extern double testvar;
 extern double fDigitizerTimeStep;
 
-extern int fDecimationFactor;
-
 extern std::deque<locust::Particle> fParticleHistory;
 extern std::deque<locust::Particle> fNewParticleHistory;
 
