@@ -8,9 +8,6 @@
 #ifndef LMCFREEFIELDSIGNALGENERATOR_HH_
 #define LMCFREEFIELDSIGNALGENERATOR_HH_
 
-#define LO_FREQUENCY 0.
-
-
 #include <KThreeVector.hh>
 #include "LMCGenerator.hh"
 
@@ -59,9 +56,7 @@ namespace locust
 
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
-            void* FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const;
 
-            double AntiAliasingSetup(double fCarrierFrequency, double fBandwidthFrequency) const;
             void NFDWrite() const;
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;

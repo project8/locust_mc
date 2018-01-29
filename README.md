@@ -48,11 +48,7 @@ Directory Structure
 *  kassiopeia - Submodule for simulation of charged particle trajectories
 *  monarch - Submodule library for file I/O in Project 8
 *  Scarab - Submodule
-*  Source
-  *  Applications - Source code for locust executables and test programs
-  *  Core - Base classes used for general I/O, data structures, etc.
-  *  Generators - Elements of Project 8 receiver chain (electron signals, filters, noise, etc.)
-  *  Kassiopeia - Framework for connecting kassiopeia with locust
+*  Source - Locust specific receiver chain source code
 
 Installing
 ----------
@@ -63,7 +59,6 @@ The following steps will build locust from scratch.  In the terminal:
   ```
   $ git clone "https://github.com/project8/locust_mc"
   $ cd locust_mc
-  $ git checkout develop
   $ git submodule update --init --recursive
   $ mkdir build
   ```
@@ -96,7 +91,7 @@ The following steps will build locust from scratch.  In the terminal:
 
   Or if you want to take advantage of parallel building to get things done faster:
   ```
-  $ make -j install
+  $ make -j2 install
   ```
 
   If the compiler runs into errors during the build, first check that you've updated the submodules and that you have all of the required dependencies installed (many are called "optional" on this page, but if you want to build without them you must also specify this in the cmake window). If you made a change to the dependencies or submodules, you may have to wipe the build directory and start again from step 1; simply writing `make install` again will not always work. 
@@ -118,9 +113,10 @@ Locust is typically started with a command like:
   $ LocustSim config=LocustConfigFile.json
 ```
 
-Documentation
+Tutorial
 -------------
 
 The Config/Tutorial directory contains an example guiding the user through a Phase II locust simulation.
 
 Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issues).
+

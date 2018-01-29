@@ -10,7 +10,6 @@
     "kass-signal":
     {
         "lo-frequency": 25.937e9,
-        "carrier-frequency": 25.937e9,
         "xml-filename": "Project8_Template.xml",
         "and-filename": "sphere.and"
     },

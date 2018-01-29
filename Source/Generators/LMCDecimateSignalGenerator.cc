@@ -50,38 +50,21 @@ namespace locust
 
     bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) const
     {
-/*
-
-
-    double* aTemporarySignal = new double[aSignal->TimeSize()];
-
-    // first copy then zero the Signal.
-    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
-      {
-      aTemporarySignal[index] = aSignal->SignalTime()[index];
-      aSignal->SignalTime()[index] = 0.;
-      }
-
-      */
-
-    // Decimate Fs -> Fs/10
-    for (int ch=0; ch<NCHANNELS; ch++)
-    {
-    for( unsigned index = 0; index < aSignal->TimeSize()*fDecimationFactor; ++index )
-      {
-      if (index%fDecimationFactor == 0)
+        // Decimate Fs -> Fs/10
+        const int fDecimationFactor = 10;
+        for (int ch=0; ch<NCHANNELS; ch++)
         {
-//        aSignal->SignalTime()[index/fDecimationFactor] = aLongSignal[index];
-
-        aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][0] =
-        		aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][0];
-        aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][1] =
-        		aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][1];
+            for( unsigned index = 0; index < aSignal->TimeSize()*fDecimationFactor; ++index )
+            {
+                if (index % fDecimationFactor == 0)
+                {
+                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][0] =
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][0];
+                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][1] =
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][1];
+                }
+            }
         }
-      }
-    }
-
-//    delete aTemporarySignal;
 
          return true;
     }

@@ -26,8 +26,6 @@ extern double t_poststep;
 extern double testvar;
 extern double fDigitizerTimeStep;
 
-extern int fDecimationFactor;
-
 extern std::deque<locust::Particle> fParticleHistory;
 extern std::deque<locust::Particle> fNewParticleHistory;
 

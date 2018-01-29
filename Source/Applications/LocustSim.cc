@@ -6,7 +6,6 @@
  */
 
 #include "configurator.hh"
-//#include "LMCDefaultConfig.hh"
 #include "LMCException.hh"
 #include "LMCGeneratorToolbox.hh"
 #include "LMCSimulationController.hh"

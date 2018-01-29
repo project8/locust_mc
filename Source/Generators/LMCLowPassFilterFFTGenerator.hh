@@ -36,10 +36,6 @@ class LowPassFilterFFTGenerator : public Generator
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            double GetReceiverGain() const;
-            void SetReceiverGain( double aReceiverGain );
-
-
         private:
             bool DoGenerate( Signal* aSignal ) const;
 
@@ -47,8 +43,6 @@ class LowPassFilterFFTGenerator : public Generator
             bool DoGenerateFreq( Signal* aSignal ) const;
 
             bool (LowPassFilterFFTGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
-
-            double fReceiverGain;
 
     };
 

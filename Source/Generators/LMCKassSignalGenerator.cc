@@ -20,10 +20,6 @@ double phi_t2 = 0.; // reflecting short voltage phase in radians.
 double phiLO_t = 0.; // voltage phase of LO in radians;
 static std::string gxml_filename = "blank.xml";
 
-FILE *fp2 = fopen("modeexctiation.txt","wb");  // time stamp checking.
-FILE *fp3 = fopen("fabsfakemodeexctiation.txt","wb");  // time stamp checking.
-
-
 namespace locust
 {
     LOGGER( lmclog, "KassSignalGenerator" );
@@ -44,7 +40,6 @@ namespace locust
     bool KassSignalGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
-        fLO_Frequency = LO_FREQUENCY;
 
         if( aParam->has( "lo-frequency" ) )
         {
@@ -73,6 +68,8 @@ namespace locust
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
     	RunKassiopeia1->Run(afile);
     	delete RunKassiopeia1;
+
+        return 0;
     }
 
 
@@ -103,126 +100,6 @@ namespace locust
         return true;
     }
 
-
-    void* KassSignalGenerator::FilterNegativeFrequenciesNew(Signal* aSignal) const
-    {
-        int nwindows = 80;
-        int windowsize = 10*aSignal->TimeSize()/nwindows;
-
-        fftw_complex *SignalComplex;
-        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-        fftw_complex *FFTComplex;
-        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-
-        fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
-        fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
-
-
-        for (int nwin = 0; nwin < nwindows; nwin++)
-        {
-            // Construct complex voltage.
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0];
-                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][1];
-                //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-
-            fftw_execute(ForwardPlan);
-
-            //Complex filter to set power at negative frequencies to 0.
-
-            for( unsigned index = windowsize/2; index < windowsize; ++index )
-            {
-                FFTComplex[index][0] = 0.;
-                FFTComplex[index][1] = 0.;
-            }
-
-            fftw_execute(ReversePlan);
-
-            double norm = (double)(windowsize);
-
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                // normalize and take the real part of the reverse transform, for digitization.
-                //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                aSignal->LongSignalTimeComplex()[ nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
-                //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-
-        }
-
-
-
-
-        delete SignalComplex;
-        delete FFTComplex;
-
-    }
-
-
-    void* KassSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
-    {
-/*
-        int nwindows = 80;
-        int windowsize = 10*aSignal->TimeSize()/nwindows;
-
-
-        fftw_complex *SignalComplex;
-        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-        fftw_complex *FFTComplex;
-        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-
-        fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
-        fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
-
-
-        for (int nwin = 0; nwin < nwindows; nwin++)
-        {
-            // Construct complex voltage.
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
-                SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
-                //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-
-            fftw_execute(ForwardPlan);
-
-            //Complex filter to set power at negative frequencies to 0.
-
-            for( unsigned index = windowsize/2; index < windowsize; ++index )
-            {
-                FFTComplex[index][0] = 0.;
-                FFTComplex[index][1] = 0.;
-            }
-
-            fftw_execute(ReversePlan);
-
-            double norm = (double)(windowsize);
-
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                // normalize and take the real part of the reverse transform, for digitization.
-                //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-
-        }
-
-
-        delete SignalComplex;
-        delete FFTComplex;
-
-        */
-
-    }
-
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
     {
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
@@ -248,6 +125,9 @@ namespace locust
 //        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*KConst::Pi()*tCyclotronFrequency); getchar();
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
+
+        const double tCenterToShortDistance = 0.0760;
+        const double tCenterToAntennaDistance = 0.0772;
 
         double tPositionZ = tParticle.GetPosition().Z();
 
@@ -297,6 +177,7 @@ namespace locust
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 
 	  
+        return 0;
     }
 
     double KassSignalGenerator::TE11ModeExcitation() const
@@ -380,12 +261,7 @@ namespace locust
             }
         }  // for loop
 
-//        FilterNegativeFrequenciesNew(aSignal);
-//        FilterNegativeFrequencies(aSignal, ImaginarySignal);
 //        delete ImaginarySignal;
-
-        //fclose(fp);  // timing.txt file.
-        //fclose(fp2); // mode excitation file.
 
         // trigger any remaining events in Kassiopeia so that its thread can finish.
         while (fRunInProgress)
