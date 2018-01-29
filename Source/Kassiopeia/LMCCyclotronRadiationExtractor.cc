@@ -112,11 +112,11 @@ namespace locust
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);
     	double zvelocity = aFinalParticle.GetVelocity().GetZ();
-    	double zposition = aFinalParticle.GetPosition().GetZ();
+    	double zPosition = aFinalParticle.GetPosition().GetZ();
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double phi_short = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+    	double phi_short = 2.*PI*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
 //        double FieldFromShort = cos(phi_short);  // no resonant enhancement.
         double FieldFromShort = cos(0.) + cos(phi_short); // yes resonant enhancement.
 
@@ -137,7 +137,7 @@ namespace locust
     	double TE11FieldAfterOneBounce = 0.;
     	double phi_shortTE11 = 0.;
 
-        phi_shortTE11 = 2.*KConst::Pi()*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+        phi_shortTE11 = 2.*KConst::Pi()*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
         TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
         //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
 
@@ -317,7 +317,7 @@ namespace locust
             int tHistoryMaxSize;
 
             //Phase I or II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
-            if((fP8Phase==2)|(fP8Phase==1))
+            if((fP8Phase==2) || (fP8Phase==1))
             {
                 // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
                 KSParticle tParticleCopy = aFinalParticle;

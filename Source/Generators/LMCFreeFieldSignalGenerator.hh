@@ -46,6 +46,8 @@ namespace locust
             mutable std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
 
+            std::string gxml_filename;
+
             mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the KThreeVectors too.....
             mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
 

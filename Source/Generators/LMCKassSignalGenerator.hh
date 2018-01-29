@@ -44,6 +44,7 @@ namespace locust
             bool DoGenerate( Signal* aSignal ) const;
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
             double TE11ModeExcitation() const;
+            std::string gxml_filename;
 
     };
 
