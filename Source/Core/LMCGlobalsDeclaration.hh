@@ -9,8 +9,8 @@
 #define GLOBALSDECLARATION_HH_
 #define PI 3.1415926
 #define CENTER_TO_SHORT 0.0760 // m
-#define CENTER_TO_ANTENNA 0.0772 // m
-#define NCHANNELS 3
+#define CENTER_TO_ANTENNA 0.07685 // m
+#define NCHANNELS 1
 
 
 #include <condition_variable>
@@ -23,9 +23,6 @@
 extern double t_old;
 extern double t_poststep;
 
-extern double phi_shortTE11;
-extern double* phi_shortTM01;
-extern double* phi_polarizerTM01;
 extern double testvar;
 extern double fDigitizerTimeStep;
 
@@ -55,7 +52,6 @@ extern std::condition_variable fDigitizerCondition;
 extern std::condition_variable fKassReadyCondition;
 
 
-//extern double* aLongSignal;  // pls:  placeholder for oversampled signal.
 
 //3 Dimensional arrays: NFDXXXField[ReceiverIndex][Time Series Index][X, Y, Z components]
 //It looks bad but is actually optimal: std::arrays give preallocated continuous storage: 

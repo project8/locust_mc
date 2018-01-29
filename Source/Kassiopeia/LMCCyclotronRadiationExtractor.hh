@@ -53,11 +53,15 @@ namespace locust
             void DeinitializeComponent();
             double GetGroupVelocityTE11(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
-            double GetDampingFactor(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            double GetGroupVelocityTE01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactorPhase2(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactorPhase1(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTE11(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTE01(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+            double GetTE01FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &aFinalParticle);
             Kassiopeia::KSTrajectory* fTrajectory;
             int fP8Phase; // 1, 2, 3, or 4.

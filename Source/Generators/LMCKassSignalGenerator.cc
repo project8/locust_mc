@@ -256,8 +256,8 @@ namespace locust
             // initialize phases.
             phi_t1 = 2.*KConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
             phi_t2 = 2.*KConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
-            phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
-            phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
+//            phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
+//            phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
         }
 
         //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
@@ -287,7 +287,7 @@ namespace locust
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
             		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
-            index, aLongSignal[ index ], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
+            index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
             getchar();
         }
 
