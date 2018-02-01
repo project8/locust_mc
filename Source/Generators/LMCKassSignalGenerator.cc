@@ -101,7 +101,7 @@ namespace locust
         double ImagVoltage1 = 0.;
         double RealVoltage2 = 0.;
         double ImagVoltage2 = 0.;
-        double tCutOffFrequency = 2. * KConst::Pi() * KConst::C() * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
+        double tCutOffFrequency = 2. * KConst::C() * 1.841 /( 2. * 0.00502920); // rad/s, TE11
 
         static double phi_t1 = 0.; // antenna voltage phase in radians.
         static double phi_t2 = 0.; // reflecting short voltage phase in radians.

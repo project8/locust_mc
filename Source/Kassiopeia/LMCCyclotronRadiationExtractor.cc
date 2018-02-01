@@ -63,7 +63,7 @@ namespace locust
     double CyclotronRadiationExtractor::GetGroupVelocityTE01(KSParticle& aFinalParticle)  // Phase 1
      {
          double SpeedOfLight = 2.99792458e8; // m/s
-         double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m
+         double CutOffFrequency = SpeedOfLight * KConst::Pi() / 10.668e-3; // a in m
          double fcyc = aFinalParticle.GetCyclotronFrequency();
          double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*KConst::Pi()*fcyc), 2.) , 0.5);
  //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
@@ -101,8 +101,7 @@ namespace locust
     	double vx = aFinalParticle.GetVelocity().GetX();
     	double vy = aFinalParticle.GetVelocity().GetY();
     	double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
-//    	double coupling = fabs(vy)*sin(PI*x/dim1_wr42) / (sin(PI*dim1_wr42/2./dim1_wr42) * pow(vx*vx+vy*vy,0.5));
-    	double coupling = 0.63*sin(PI*x/dim1_wr42);  // avg over cyclotron orbit.
+    	double coupling = 0.63*sin(KConst::Pi()*x/dim1_wr42);  // avg over cyclotron orbit.
     	return coupling;
     }
 
@@ -116,7 +115,7 @@ namespace locust
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double phi_short = 2.*PI*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+    	double phi_short = 2.*KConst::Pi()*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
 //        double FieldFromShort = cos(phi_short);  // no resonant enhancement.
         double FieldFromShort = cos(0.) + cos(phi_short); // yes resonant enhancement.
 
@@ -163,7 +162,6 @@ namespace locust
     	double FieldFromShort=0.;  // first doppler shift
     	double FieldFromPolarizer=0.; // other doppler shift
     	double TM01FieldAfterBounces = 0.;
-        double tPI = KConst::Pi();
     	int nbounces = 20;
         double time_decay = 1.;
         double reflection_coefficient = 1.0;
@@ -174,10 +172,10 @@ namespace locust
 
 //        if ((phi_shortTM01[0] == 0.)||(0==0))  // if the event has just started, or always.
 //        {
-            phi_shortTM01 = 2.* tPI *2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
-            phi_polarizerTM01 = 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + tPI;  // starting phi after 0th bounce.
+            phi_shortTM01 = 2.* KConst::Pi() *2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
+            phi_polarizerTM01 = 2.*KConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + KConst::Pi();  // starting phi after 0th bounce.
 
-//   	       	printf("phi_shortTM01[0] is %.10g and tPI is %.10g and z is %.10g and lambda is %.10g\n", phi_shortTM01[0], tPI, tPositionZ, lambda_short);
+//   	       	printf("phi_shortTM01[0] is %.10g and KConst::Pi() is %.10g and z is %.10g and lambda is %.10g\n", phi_shortTM01[0], KConst::Pi(), tPositionZ, lambda_short);
 
             FieldFromShort = cos(0.) + 1./1.4*reflection_coefficient*cos(phi_shortTM01); // starting field, after 0th bounce.
             FieldFromPolarizer = 1./1.4*reflection_coefficient*cos(phi_polarizerTM01); // starting field, after 0th bounce.
@@ -188,11 +186,11 @@ namespace locust
 	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
-                    phi_shortTM01 += 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + tPI;  // phase shift PI
+                    phi_shortTM01 += 2.*KConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + KConst::Pi();  // phase shift PI
                 }
                 else
                 {
-                    phi_shortTM01 += 2.*tPI*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
+                    phi_shortTM01 += 2.*KConst::Pi()*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
                 }
 
                 FieldFromShort += time_decay*cos(phi_shortTM01); // field adds after each bounce.
@@ -204,11 +202,11 @@ namespace locust
 	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
-                    phi_polarizerTM01 += 2.*tPI*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
+                    phi_polarizerTM01 += 2.*KConst::Pi()*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
                 }
                 else
                 {
-                    phi_polarizerTM01 += phi_polarizerTM01 + 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + tPI;  // phase shift PI.
+                    phi_polarizerTM01 += phi_polarizerTM01 + 2.*KConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + KConst::Pi();  // phase shift PI.
                 }
                 FieldFromPolarizer += time_decay*cos(phi_polarizerTM01);
             }
