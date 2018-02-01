@@ -306,7 +306,7 @@ namespace locust
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
 
-    	t_poststep = aFinalParticle.GetTime();
+    	double t_poststep = aFinalParticle.GetTime();
         fNewParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
 
         if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s

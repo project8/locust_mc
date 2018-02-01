@@ -9,14 +9,12 @@
 #define GLOBALSDEFINITION_HH_
 
 double t_old = -99.;
-double t_poststep = -99.;
 
 double fDigitizerTimeStep = 5e-10; //Time step for sampling
 
 //running deque for saving previous few ns of particle history 
 //in order to caluclate retarded fields
 std::deque<locust::Particle> fParticleHistory;
-std::deque<locust::Particle> fNewParticleHistory;
 
 bool fWaitBeforeEvent = true;
 bool fWaitAfterEvent = true;

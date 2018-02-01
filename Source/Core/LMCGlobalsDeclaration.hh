@@ -21,13 +21,11 @@
 
 
 extern double t_old;
-extern double t_poststep;
 
 extern double testvar;
 extern double fDigitizerTimeStep;
 
 extern std::deque<locust::Particle> fParticleHistory;
-extern std::deque<locust::Particle> fNewParticleHistory;
 
 extern bool fWaitBeforeEvent;
 extern bool fWaitAfterEvent;
