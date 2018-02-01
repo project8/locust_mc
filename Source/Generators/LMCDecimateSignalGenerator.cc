@@ -50,28 +50,22 @@ namespace locust
 
     bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) const
     {
-        // Decimate Fs -> Fs/10
-        const int fDecimationFactor = 10;
-        for (int ch=0; ch<NCHANNELS; ch++)
+        // Decimate Fs -> Fs/DecimationFactor
+        for (int ch=0; ch<NCHANNELS; ++ch)
         {
-            for( unsigned index = 0; index < aSignal->TimeSize()*fDecimationFactor; ++index )
+            for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
             {
-                if (index % fDecimationFactor == 0)
+                if (index % aSignal->DecimationFactor() == 0)
                 {
-                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][0] =
-                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][0];
-                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][1] =
-                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][1];
+                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/aSignal->DecimationFactor()][0] =
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0];
+                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/aSignal->DecimationFactor()][1] =
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1];
                 }
             }
         }
 
          return true;
-    }
-
-    bool DecimateSignalGenerator::DoGenerateFreq( Signal* aSignal ) const
-    {
-        return true;
     }
 
 } /* namespace locust */

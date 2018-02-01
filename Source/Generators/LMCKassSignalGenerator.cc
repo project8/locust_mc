@@ -198,15 +198,6 @@ namespace locust
     {
         // temporary IQ patch.  Define and initialize ImaginarySignal.
 
-    	/*
-        double *ImaginarySignal = new double[10*aSignal->TimeSize()];
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
-        {
-            ImaginarySignal[ index ] = 0.;
-            aLongSignal[ index ] = 0.;  // long record for oversampling.
-        }
-        */
-
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 150000;
@@ -219,7 +210,7 @@ namespace locust
         fRunInProgress = true;
         fKassEventReady = false;
 
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
             {

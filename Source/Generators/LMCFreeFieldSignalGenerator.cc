@@ -438,8 +438,8 @@ namespace locust
 
             //if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
             //{
-            aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][0] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
-            aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][1] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+            aSignal->LongSignalTimeComplex()[ch*signalSize*aSignal->DecimationFactor() + index][0] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+            aSignal->LongSignalTimeComplex()[ch*signalSize*aSignal->DecimationFactor() + index][1] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
             //}
 
         } // z_position waveguide element stepping loop.
@@ -517,7 +517,7 @@ namespace locust
         std::thread Kassiopeia (KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
                 {
