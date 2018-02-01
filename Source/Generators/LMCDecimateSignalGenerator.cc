@@ -9,6 +9,7 @@
 
 #include "logger.hh"
 #include "LMCGlobalsDeclaration.hh"
+#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -50,9 +51,13 @@ namespace locust
 
     bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) const
     {
+
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+
         // Decimate Fs -> Fs/10
         const int fDecimationFactor = 10;
-        for (int ch=0; ch<NCHANNELS; ch++)
+        for (int ch=0; ch<nchannels; ch++)
         {
             for( unsigned index = 0; index < aSignal->TimeSize()*fDecimationFactor; ++index )
             {

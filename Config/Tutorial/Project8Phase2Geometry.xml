@@ -124,11 +124,11 @@
       <space name="upstream_pinch_coil" node="upstream_pinch_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {0.0221742}"/>
-	</space>
-        <space name="center_pinch_coil" node="center_pinch_coil_space">
+      </space>
+      <space name="center_pinch_coil" node="center_pinch_coil_space">
       	  <transformation rotation_euler="0. 0. 0."/>
 	  <transformation displacement="{0.} {0.} {0.0}"/>
-        </space>
+      </space>
       <space name="downstream_pinch_coil" node="downstream_pinch_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {-0.0221742}"/>
@@ -145,6 +145,9 @@
 
       <space name="cylindricalwaveguide" tree="cylindricalwaveguide_assembly"/>
 <!--        <space name="cell" tree="cell_assembly"/>  -->
+
+
+<!-- I think these surfaces are being defined twice.  Check it. -->
         <surface name="upstream_endcap_piece" node="upstream_endcap">
             <transformation displacement="0. 0. 0."/>
         </surface>
@@ -155,11 +158,7 @@
             <transformation displacement="0. 0. 0."/>
         </surface>
 
-
-
     </space>
-
-
 
     <cylinder_space name="world_space" z1="-50" z2="50" r="20"/>
     <space name="world" node="world_space">

@@ -18,13 +18,13 @@
 
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCHFSSReader.hh"
+#include "LMCSimulationController.hh"
 
 
 static std::string gxml_filename = "blank.xml";
 const double dx=0.01;
 const int NPreEventSamples = 150000;
 int fNFDIndex=-1;
-
 namespace locust
 {
     LOGGER( lmclog, "FreeFieldSignalGenerator" );
@@ -254,14 +254,16 @@ namespace locust
         int CurrentIndex;
         HFSSReader HFRead;
 
-        const int nelementsZ = 9;
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+        const unsigned nelementsZ = 9;
         double theta = 0.;  // azimuthal angle of each amplifier channel.
         double radius = 0.05; // radius of each amplifier channel in xy plane.
         double OpeningAngle = 15.; //degrees, half angle fake directivity angle.
         double DirectivityFactor = 0.;
         double m1 = 0.;
         double m2 = 0.;
-        static double tVoltagePhase[nelementsZ*NCHANNELS] = {0.};
+        static double tVoltagePhase[10000] = {0.};
         static double phi_LO = 0.;
         int signalSize = aSignal->TimeSize();
 
@@ -283,13 +285,13 @@ namespace locust
 
         //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
 
-        for (int ch=0; ch<NCHANNELS; ch++)
+        for (int ch=0; ch<nchannels; ch++)
         {
         for (int z_position = 4; z_position<5; z_position++) // step through antennas along z
         {
         // position waveguide in space:
         rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
-        theta = (double)ch*360./NCHANNELS*KConst::Pi()/180.;
+        theta = (double)ch*360./nchannels*KConst::Pi()/180.;
         rReceiver = HFRead.RotateShift(rReceiver,{cos(theta),sin(theta),0.},{radius*cos(theta),radius*sin(theta),(double)(z_position-4)*0.01});//Arguments Normal vector, Position (m)
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
         tTotalPower = 0.; // initialize
@@ -444,7 +446,7 @@ namespace locust
             //}
 
         } // z_position waveguide element stepping loop.
-        } // NCHANNELS loop.
+        } // nchannels loop.
 
         t_old += fDigitizerTimeStep;
 

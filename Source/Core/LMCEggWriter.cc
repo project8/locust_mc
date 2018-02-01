@@ -12,6 +12,7 @@
 #include "param.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCSignal.hh"
+#include "LMCSimulationController.hh"
 
 #include "time.hh"
 
@@ -66,6 +67,10 @@ namespace locust
 
     	bool IQStream = true; // move this into json file as a parameter.
 
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+
+
         if( f_state != kClosed )
         {
             LERROR( lmclog, "Egg preparation cannot begin while a file is open" );
@@ -116,7 +121,7 @@ namespace locust
         }
         else
         {
-            t_stream_id = header->AddStream( "locust_mc", NCHANNELS, 1,
+            t_stream_id = header->AddStream( "locust_mc", nchannels, 1,
                 a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), a_rlc->GetSampleSize(),
                 t_data_type_size, t_signed_vals,
                 t_bit_depth, t_bits_right_aligned,
@@ -140,7 +145,7 @@ namespace locust
         f_record_id = 0;
         f_record_time = 0;
         f_record_length = ( double )a_rlc->GetRecordSize() / ( 1.e-3 * a_rlc->GetAcquisitionRate() ); // in ns
-        f_record_n_bytes = NCHANNELS * a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
+        f_record_n_bytes = nchannels * a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
 
 
         f_state = kPrepared;

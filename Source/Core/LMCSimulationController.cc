@@ -19,7 +19,8 @@ namespace locust
     SimulationController::SimulationController() :
             fFirstGenerator( NULL ),
             fRunLengthCalc(),
-            fEggWriter()
+            fEggWriter(),
+            fNChannels(2)
     {
         SetRNGSeed();
     }
@@ -36,6 +37,14 @@ namespace locust
         {
             SetRNGSeed( aNode->get_value< int >( "rng-seed" ) );
         }
+
+        if( aNode->has( "n-channels" ) )
+        {
+            unsigned nChannels = aNode->get_value< int >( "n-channels" );
+        }
+
+
+
 
         // configure the run-length calculator
         if( ! fRunLengthCalc.Configure( aNode ) )
@@ -137,7 +146,7 @@ namespace locust
                 	}
                 	else
                 	{
-                        for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+                        for (unsigned ch = 0; ch < fNChannels; ++ch)
                         {
                         LWARN( lmclog, "channel " << ch << ": " << index << ": I  " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2] );  // pls added (int)
                         LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2+1] );  // pls added (int)
@@ -155,7 +164,7 @@ namespace locust
                 	}
                 	else
                 	{
-                        for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+                        for (unsigned ch = 0; ch < fNChannels; ++ch)
                         {
                         LWARN( lmclog, "channel " << ch << ": " << index << ": I " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2] );  // pls added (int)
                         LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2+1] );  // pls added (int)

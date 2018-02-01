@@ -9,6 +9,7 @@
 
 #include "logger.hh"
 #include "LMCGlobalsDeclaration.hh"
+#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -50,6 +51,11 @@ namespace locust
 
     bool LowPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal ) const
     {
+
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+
+
         double CutoffFreq = 85.e6;
         int nwindows = 80;
         int windowsize = 10*aSignal->TimeSize()/nwindows;
@@ -65,7 +71,7 @@ namespace locust
         fftw_plan ReversePlan;
         ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
 
-        for (int ch=0; ch<NCHANNELS; ch++)
+        for (int ch=0; ch<nchannels; ch++)
         {
         for (int nwin = 0; nwin < nwindows; nwin++)
         {

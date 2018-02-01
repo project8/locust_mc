@@ -69,6 +69,8 @@ namespace locust
         return fADCValuesSigned;
     }
 
+
+
 } /* namespace locust */
 
 #endif /* LMCDIGITIZER_HH_ */

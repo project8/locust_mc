@@ -1,6 +1,6 @@
 {
     "generators":
-    [            
+    [          
         "freefield-signal",
         "lpf-fft",
         "decimate-signal",

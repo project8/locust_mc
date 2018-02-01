@@ -30,7 +30,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
     Core/LMCHFSSReader.hh
-    Core/LMCParticle.hh
+#    Core/LMCParticle.hh
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
     Core/LMCSimulationController.hh
@@ -65,6 +65,7 @@ set( LOCUST_MC_SOURCE_FILES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCDecimateSignalGenerator.hh

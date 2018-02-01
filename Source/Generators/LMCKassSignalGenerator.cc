@@ -8,6 +8,8 @@
 #include "LMCKassSignalGenerator.hh"
 #include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
+#include "LMCSimulationController.hh"
+
 
 #include "logger.hh"
 #include <thread>
@@ -50,6 +52,8 @@ namespace locust
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
         }
+
+
 
         return true;
     }
@@ -200,15 +204,6 @@ namespace locust
     bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
         // temporary IQ patch.  Define and initialize ImaginarySignal.
-
-    	/*
-        double *ImaginarySignal = new double[10*aSignal->TimeSize()];
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
-        {
-            ImaginarySignal[ index ] = 0.;
-            aLongSignal[ index ] = 0.;  // long record for oversampling.
-        }
-        */
 
         //n samples for event spacing.
         int PreEventCounter = 0;

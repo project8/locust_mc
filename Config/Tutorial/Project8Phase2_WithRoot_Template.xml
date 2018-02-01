@@ -204,13 +204,13 @@
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.003" value_max="0.003"/>
+            <x_uniform value_min="0.001" value_max="0.001"/>
             <y_uniform value_min="0.00" value_max="0.00"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90.0" value_max="90.0"/> 
+        <theta_uniform value_min="89.96" value_max="89.96"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -406,7 +406,7 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="5.e-5"/>
+    <ksterm_max_time name="term_max_time" time="5.e-7"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
@@ -498,22 +498,6 @@
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
         <command parent="write_root" field="add_step_output" child="component_step_world"/> 
 
-        <geo_space name="space_waveguide" spaces="world/project8/cylindricalwaveguide">
-
-        <geo_surface name="upstream_endcap_death" surfaces="world/project8/cylindricalwaveguide/upstream_endcap_piece">
-            <command parent="root_terminator" field="add_terminator" child="term_upstream_endcap_death"/>
-        </geo_surface>
-
-        <geo_surface name="downstream_endcap_death" surfaces="world/project8/cylindricalwaveguide/downstream_endcap_piece">
-            <command parent="root_terminator" field="add_terminator" child="term_downstream_endcap_death"/>
-        </geo_surface>
-
-
-        <geo_surface name="waveguide_death" surfaces="world/project8/cylindricalwaveguide/jacket">
-            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
-
-        </geo_surface>
-
 
 <!--            <command parent="root_space_interaction" field="add_space_interaction" child="int_scattering"/>  -->
 
@@ -522,8 +506,7 @@
             <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_64"/>
 -->
 
-          
-        </geo_space>
+         
     </ksgeo_space>
 
 

@@ -137,7 +137,7 @@ namespace locust
     	double TE11FieldAfterOneBounce = 0.;
     	double phi_shortTE11 = 0.;
 
-        phi_shortTE11 = 2.*KConst::Pi()*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+        phi_shortTE11 = 2.*KConst::Pi()*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
         TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
         //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
 
