@@ -68,9 +68,4 @@ namespace locust
          return true;
     }
 
-    bool DecimateSignalGenerator::DoGenerateFreq( Signal* aSignal ) const
-    {
-        return true;
-    }
-
 } /* namespace locust */
