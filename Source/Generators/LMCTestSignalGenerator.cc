@@ -132,21 +132,21 @@ namespace locust
 
         for (unsigned ch = 0; ch < NCHANNELS; ++ch)
         {
-        for( unsigned index = 0; index < aSignal->TimeSize()*10; ++index )
+        for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
 
-        	LO_phase = 2.*PI*LO_frequency*(double)index/10./(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-            voltage_phase = 2.*PI*test_frequency*(double)index/10./(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+        	LO_phase = 2.*PI*LO_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+            voltage_phase = 2.*PI*test_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
 
         	if (ch==0)
         	{
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][0] += 5.e-8*cos(voltage_phase-LO_phase);
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][1] += 5.e-8*cos(-PI/2. + voltage_phase-LO_phase);
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += 5.e-8*cos(voltage_phase-LO_phase);
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 5.e-8*cos(-PI/2. + voltage_phase-LO_phase);
         	}
         	else
         	{
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][0] += 5.e-8*cos(voltage_phase-LO_phase);
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*10 + index][1] += 5.e-8*cos(-PI/2. + voltage_phase-LO_phase);
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += 5.e-8*cos(voltage_phase-LO_phase);
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 5.e-8*cos(-PI/2. + voltage_phase-LO_phase);
         	}
 //            printf("acq rate is %g\n", RunLengthCalculator1->GetAcquisitionRate()); getchar();
 //            printf("array index is %d\n", ch*aSignal->TimeSize() + index);
