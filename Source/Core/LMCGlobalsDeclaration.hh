@@ -21,7 +21,6 @@
 
 extern double t_old;
 
-extern double testvar;
 extern double fDigitizerTimeStep;
 
 extern std::deque<locust::Particle> fParticleHistory;
