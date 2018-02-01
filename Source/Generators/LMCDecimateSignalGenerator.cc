@@ -43,12 +43,12 @@ namespace locust
     }
 
 
-    bool DecimateSignalGenerator::DoGenerate( Signal* aSignal ) const
+    bool DecimateSignalGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) 
     {
         // Decimate Fs -> Fs/DecimationFactor
         for (int ch=0; ch<NCHANNELS; ++ch)

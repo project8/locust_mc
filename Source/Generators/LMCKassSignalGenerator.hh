@@ -41,10 +41,14 @@ namespace locust
 
         private:
             double fLO_Frequency;  // typically defined by a parameter in json file.
-            bool DoGenerate( Signal* aSignal ) const;
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
+            bool DoGenerate( Signal* aSignal );
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
             double TE11ModeExcitation() const;
             std::string gxml_filename;
+            double phi_t1; // antenna voltage phase in radians.
+            double phi_t2; // reflecting short voltage phase in radians.
+            double phiLO_t; // voltage phase of LO in radians;
+
 
     };
 

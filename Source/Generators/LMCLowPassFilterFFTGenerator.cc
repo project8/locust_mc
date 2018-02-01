@@ -43,12 +43,12 @@ namespace locust
     }
 
 
-    bool LowPassFilterFFTGenerator::DoGenerate( Signal* aSignal ) const
+    bool LowPassFilterFFTGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool LowPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool LowPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal )
     {
         double CutoffFreq = 85.e6;
         int nwindows = 80;
@@ -110,7 +110,7 @@ namespace locust
     	return true;
     }
 
-    bool LowPassFilterFFTGenerator::DoGenerateFreq( Signal* aSignal ) const
+    bool LowPassFilterFFTGenerator::DoGenerateFreq( Signal* aSignal )
     {
         return true;
     }

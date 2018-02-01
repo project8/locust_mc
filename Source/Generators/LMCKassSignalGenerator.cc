@@ -23,7 +23,10 @@ namespace locust
     KassSignalGenerator::KassSignalGenerator( const std::string& aName ) :
             Generator( aName ),
             fLO_Frequency( 0.),
-            gxml_filename("blank.xml")
+            gxml_filename("blank.xml"),
+            phi_t1(0.),
+            phi_t2(0.),
+            phiLO_t(0.)
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -93,7 +96,7 @@ namespace locust
         return true;
     }
 
-    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
+    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) 
     {
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
@@ -102,10 +105,6 @@ namespace locust
         double RealVoltage2 = 0.;
         double ImagVoltage2 = 0.;
         double tCutOffFrequency = 2. * KConst::C() * 1.841 /( 2. * 0.00502920); // rad/s, TE11
-
-        static double phi_t1 = 0.; // antenna voltage phase in radians.
-        static double phi_t2 = 0.; // reflecting short voltage phase in radians.
-        static double phiLO_t = 0.; // voltage phase of LO in radians;
 
         locust::Particle tParticle = fParticleHistory.back();
 
@@ -194,7 +193,7 @@ namespace locust
     }
 
 
-    bool KassSignalGenerator::DoGenerate( Signal* aSignal ) const
+    bool KassSignalGenerator::DoGenerate( Signal* aSignal )
     {
         // temporary IQ patch.  Define and initialize ImaginarySignal.
 

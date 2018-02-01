@@ -42,24 +42,24 @@ namespace locust
 
 
         private:
-            mutable std::vector<KGeoBag::KThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
-            mutable std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
+            std::vector<KGeoBag::KThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
 
             std::string gxml_filename;
 
-            mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the KThreeVectors too.....
-            mutable std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
+            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the KThreeVectors too.....
+            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
 
             bool fWriteNFD;
             std::vector<double> NFDFrequencies;
             std::string fAND_filename;
             std::string fNFD_filename;
 
-            bool DoGenerate( Signal* aSignal ) const;
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const;
+            bool DoGenerate( Signal* aSignal );
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
 
-            void NFDWrite() const;
+            void NFDWrite();
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
 

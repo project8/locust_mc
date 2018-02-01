@@ -32,7 +32,7 @@ namespace locust
     {
     }
 
-    Signal* Generator::Run( unsigned aTimeSize ) const
+    Signal* Generator::Run( unsigned aTimeSize ) 
     {
         Signal* newSignal = new Signal();
         newSignal->Initialize( aTimeSize );
@@ -44,7 +44,7 @@ namespace locust
         return newSignal;
     }
 
-    bool Generator::Run( Signal* aSignal ) const
+    bool Generator::Run( Signal* aSignal )
     {
         if(! Generate( aSignal ) )
         {
@@ -55,7 +55,7 @@ namespace locust
         return true;
     }
 
-    bool Generator::Generate( Signal* aSignal ) const
+    bool Generator::Generate( Signal* aSignal )
     {
         if( ! aSignal->ToState( fRequiredSignalState ) )
         {

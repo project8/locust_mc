@@ -51,7 +51,7 @@ namespace locust
             bool GetADCValuesSigned() const;
 
         protected:
-            bool DoGenerate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal );
 
             struct scarab::dig_calib_params fParams;
 

@@ -61,12 +61,12 @@ namespace locust
             void SetDomain( Signal::State aDomain );
 
         private:
-            bool DoGenerate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal );
 
-            bool DoGenerateTime( Signal* aSignal ) const;
-            bool DoGenerateFreq( Signal* aSignal ) const;
+            bool DoGenerateTime( Signal* aSignal );
+            bool DoGenerateFreq( Signal* aSignal );
 
-            bool (GaussianNoiseGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
+            bool (GaussianNoiseGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             double fMean;
             double fSigma;

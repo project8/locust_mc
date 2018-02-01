@@ -116,12 +116,12 @@ namespace locust
     }
 
 
-    bool TestSignalGenerator::DoGenerate( Signal* aSignal ) const
+    bool TestSignalGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool TestSignalGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool TestSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
 
@@ -157,7 +157,7 @@ namespace locust
         return true;
     }
 
-    bool TestSignalGenerator::DoGenerateFreq( Signal* aSignal ) const
+    bool TestSignalGenerator::DoGenerateFreq( Signal* aSignal )
     {
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
