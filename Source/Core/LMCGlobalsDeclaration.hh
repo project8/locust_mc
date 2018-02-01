@@ -7,7 +7,6 @@
 
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
-#define PI 3.1415926
 #define CENTER_TO_SHORT 0.0760 // m
 #define CENTER_TO_ANTENNA 0.07685 // m
 //#define NCHANNELS 1
@@ -21,13 +20,10 @@
 
 
 extern double t_old;
-extern double t_poststep;
 
-extern double testvar;
 extern double fDigitizerTimeStep;
 
 extern std::deque<locust::Particle> fParticleHistory;
-extern std::deque<locust::Particle> fNewParticleHistory;
 
 extern bool fWaitBeforeEvent;
 extern bool fWaitAfterEvent;

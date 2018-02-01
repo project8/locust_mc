@@ -8,6 +8,7 @@
 #include "LMCSignal.hh"
 
 #include "logger.hh"
+#include "LMCSimulationController.hh"
 
 
 
@@ -19,6 +20,7 @@ namespace locust
             fState( kNotInitialized ),
             fTimeSize( 0 ),
             fFreqSize( 0 ),
+            fDecimationFactor(10),
             fFreqSizeComplex( 0 ),
             fDigitalSize( 0 ),
             fSignalTime( NULL ),
@@ -49,7 +51,8 @@ namespace locust
     {
         Reset();
 
-        const unsigned nchannels = 10;
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
 
         fTimeSize = aTimeSize;
         fFreqSize = fTimeSize / 2 + 1;
@@ -59,8 +62,9 @@ namespace locust
         fSignalFreq = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize );
         fSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize *nchannels);
         fSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex * nchannels);
-        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize*10 *nchannels);
-        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex*10 *nchannels);
+        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * TimeSize()*DecimationFactor() *nchannels);
+        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex*DecimationFactor() *nchannels);
+
 
         ResetValues();
 
@@ -68,8 +72,8 @@ namespace locust
         fPlanToTime = fftw_plan_dft_c2r_1d( fTimeSize, fSignalFreq, fSignalTime, aFFTFlags);
         fPlanToFreqComplex = fftw_plan_dft_1d( fTimeSize, fSignalTimeComplex, fSignalFreqComplex, FFTW_FORWARD, aFFTFlags);
         fPlanToTimeComplex = fftw_plan_dft_1d( fTimeSize, fSignalFreqComplex, fSignalTimeComplex, FFTW_BACKWARD, aFFTFlags);
-        fLongPlanToFreqComplex = fftw_plan_dft_1d( fTimeSize*10, fLongSignalTimeComplex, fLongSignalFreqComplex, FFTW_FORWARD, aFFTFlags);
-        fLongPlanToTimeComplex = fftw_plan_dft_1d( fTimeSize*10, fLongSignalFreqComplex, fLongSignalTimeComplex, FFTW_BACKWARD, aFFTFlags);
+        fLongPlanToFreqComplex = fftw_plan_dft_1d( TimeSize()*DecimationFactor(), fLongSignalTimeComplex, fLongSignalFreqComplex, FFTW_FORWARD, aFFTFlags);
+        fLongPlanToTimeComplex = fftw_plan_dft_1d( TimeSize()*DecimationFactor(), fLongSignalFreqComplex, fLongSignalTimeComplex, FFTW_BACKWARD, aFFTFlags);
 
 
         fState = kTime;  // pls confused here.
@@ -152,7 +156,7 @@ namespace locust
 
         if( fLongSignalTimeComplex != NULL )
         {
-            for( unsigned index = 0; index < fTimeSize*10; ++index )
+            for( unsigned index = 0; index < TimeSize()*DecimationFactor(); ++index )
             {
                 fLongSignalTimeComplex[index][0] = 0.;
                 fLongSignalTimeComplex[index][1] = 0.;
@@ -161,7 +165,7 @@ namespace locust
 
         if( fLongSignalFreqComplex != NULL )
         {
-            for( unsigned index = 0; index < fFreqSizeComplex*10; ++index )
+            for( unsigned index = 0; index < fFreqSizeComplex*DecimationFactor(); ++index )
             {
                 fLongSignalFreqComplex[index][0] = 0.;
                 fLongSignalFreqComplex[index][1] = 0.;
@@ -317,6 +321,11 @@ namespace locust
     unsigned Signal::FreqSize() const
     {
         return fFreqSize;
+    }
+    
+    unsigned Signal::DecimationFactor() const
+    {
+      return fDecimationFactor;
     }
 
     unsigned Signal::DigitalSize() const

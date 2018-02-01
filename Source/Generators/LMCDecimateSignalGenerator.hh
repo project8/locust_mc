@@ -40,7 +40,6 @@ class DecimateSignalGenerator : public Generator
             bool DoGenerate( Signal* aSignal ) const;
 
             bool DoGenerateTime( Signal* aSignal ) const;
-            bool DoGenerateFreq( Signal* aSignal ) const;
 
             bool (DecimateSignalGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
 

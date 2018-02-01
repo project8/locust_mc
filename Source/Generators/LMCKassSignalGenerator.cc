@@ -16,12 +16,6 @@
 
 #include "LMCGlobalsDeclaration.hh"
 
-
-double phi_t1 = 0.; // antenna voltage phase in radians.
-double phi_t2 = 0.; // reflecting short voltage phase in radians.
-double phiLO_t = 0.; // voltage phase of LO in radians;
-static std::string gxml_filename = "blank.xml";
-
 namespace locust
 {
     LOGGER( lmclog, "KassSignalGenerator" );
@@ -30,7 +24,8 @@ namespace locust
 
     KassSignalGenerator::KassSignalGenerator( const std::string& aName ) :
             Generator( aName ),
-            fLO_Frequency( 0.)
+            fLO_Frequency( 0.),
+            gxml_filename("blank.xml")
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -65,12 +60,10 @@ namespace locust
     }
 
 
-  static void* KassiopeiaInit()
+  static void* KassiopeiaInit(const std::string &aFile)
     {
-        //cout << gxml_filename; getchar();
-        const std::string & afile = gxml_filename;
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-    	RunKassiopeia1->Run(afile);
+    	RunKassiopeia1->Run(aFile);
     	delete RunKassiopeia1;
 
         return 0;
@@ -112,7 +105,11 @@ namespace locust
         double ImagVoltage1 = 0.;
         double RealVoltage2 = 0.;
         double ImagVoltage2 = 0.;
-        double tCutOffFrequency = 2. * KConst::Pi() * KConst::C() * 1.841 / 2. / PI / 0.00502920; // rad/s, TE11
+        double tCutOffFrequency = 2. * KConst::C() * 1.841 /( 2. * 0.00502920); // rad/s, TE11
+
+        static double phi_t1 = 0.; // antenna voltage phase in radians.
+        static double phi_t2 = 0.; // reflecting short voltage phase in radians.
+        static double phiLO_t = 0.; // voltage phase of LO in radians;
 
         locust::Particle tParticle = fParticleHistory.back();
 
@@ -208,16 +205,16 @@ namespace locust
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 150000;
-//        double fPhaseIISimulation = true;  // this is now a parameter in the xml file.
+        //double fPhaseIISimulation = true;  // this is now a parameter in the xml file.
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
         //fprintf(fp, "testing\n");
 
-        std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
+        std::thread Kassiopeia (KassiopeiaInit,gxml_filename);     // spawn new thread
         fRunInProgress = true;
         fKassEventReady = false;
 
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
             {

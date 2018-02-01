@@ -58,7 +58,7 @@ namespace locust
 
         double CutoffFreq = 85.e6;
         int nwindows = 80;
-        int windowsize = 10*aSignal->TimeSize()/nwindows;
+        int windowsize = aSignal->DecimationFactor()*aSignal->TimeSize()/nwindows;
 
 
       	fftw_complex *SignalComplex;
@@ -78,8 +78,8 @@ namespace locust
             // Construct complex voltage.
             for( unsigned index = 0; index < windowsize; ++index )
             {
-                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][0];
-                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][1];
+                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0];
+                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1];
                 //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
 
@@ -103,8 +103,8 @@ namespace locust
             for( unsigned index = 0; index < windowsize; ++index )
             {
                 // normalize and take the real part of the reverse transform, for digitization.
-                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
-                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*10 + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
+                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
+                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
                 //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
             }
         }  // nwin

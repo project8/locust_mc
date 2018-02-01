@@ -13,20 +13,13 @@
 # serve to show the default.
 
 # Customize the following:
-#  * the location of scarab's documentation directory (sys.path.append(...); uncomment if it's commented out)
-#  * the targets for ms.build (arguments 2)
-#  * the exclusions for ms.build (argument 3)
+#  * the doxygen-related environment variables
 #  * the project, copyright, and author variables
 #  * the arguments used to assign variables htmlhelp_basename, latex_documents, man_pages, and texinfo_documents
 
 import sys
 import os
-import shlex
 from subprocess import call, check_output
-
-# replace the contents of sys.path.append() with the path to make_source.py, which is probably in the documentation directory of scarab
-sys.path.append("../Scarab/documentation")
-import make_source
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -34,35 +27,31 @@ import make_source
 #sys.path.insert(0, os.path.abspath('.'))
 
 # version
-this_version = 'none'
+this_version = 'v?.?.?'
 try:
     this_version = check_output(['git', 'describe', '--abbrev=0', '--tags'])
 except:
     pass
 
-# doxygen
-call(['doxygen', 'Doxyfile'])
+# environment variables used by Doxygen
+os.environ['PROJECT_NAME'] = 'Locust'
+os.environ['PROJECT_NUMBER'] = this_version
+os.environ['PROJECT_BRIEF_DESC'] = 'Project 8 Signal Simulations Package'
+# located in your documentation directory, or give the relative path from the documentation directory
+os.environ['PROJECT_LOGO'] = ''
+
+# directories in which doxygen should look for source files; if you have a `doxfiles` directory in your documentation, that should go here; string with space-separated directories
+os.environ['DOXYGEN_INPUT'] = 'DoxFiles ../Source'
+# directories within DOXYGEN_INPUT that you want to exclude from doxygen (e.g. if there's  a submodule included that you don't want to index); string with space-separated directories
+os.environ['DOXYGEN_EXCLUDE'] = ''
+# directories outside of DOXYGEN_INPUT that you want the C preprocessor to look in for macro definitions (e.g. if there's a submodule not included that has relevant macros); string with space-separated directories
+os.environ['PREPROC_INCLUDE_PATH'] = '../Scarab/library/utility ../Scarab/library/logger'
+
+# Doxygen
+call(['doxygen', '../Scarab/documentation/cpp/Doxyfile'])
 call(['mv', './user_doxygen_out/html', './_static'])
-call(['echo', '... doxygen_out/xml ...'])
-call(['ls', './user_doxygen_out/xml'])
-
-ms = make_source.site_builder()
-# build source
-# arguments:
-#   1: directory in which to make the documentation (recommendation: leave as '.')
-#   2: list of directories in which to look for source files
-#   3: list of directories to exclude from the search for source files
-ms.build('.', ['../Source'], [])
-call(['echo', '====== make source complete ====='])
-
-call(['cat', 'index.rst'])
-call(['echo', "===== files ====="])
-call(['ls'])
-call(['echo', 'Api index ==='])
-call(['cat', 'API_Ref/index.rst'])
 
 
-breathe_projects = { "myproject" : "./user_doxygen_out/xml/" }
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 if on_rtd:
   html_theme = 'default'
@@ -70,7 +59,7 @@ else:
   import sphinx_rtd_theme
   html_theme = "sphinx_rtd_theme"
   html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-breathe_default_project = "myproject"
+
 
 
 # -- General configuration ------------------------------------------------
@@ -81,7 +70,7 @@ breathe_default_project = "myproject"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['breathe']
+extensions = []
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -20,11 +20,6 @@
 #include "LMCHFSSReader.hh"
 #include "LMCSimulationController.hh"
 
-
-static std::string gxml_filename = "blank.xml";
-const double dx=0.01;
-const int NPreEventSamples = 150000;
-int fNFDIndex=-1;
 namespace locust
 {
     LOGGER( lmclog, "FreeFieldSignalGenerator" );
@@ -34,7 +29,8 @@ namespace locust
     FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
             Generator( aName ),
             fWriteNFD(0.),
-            fLO_Frequency( 0.)
+            fLO_Frequency( 0.),
+            gxml_filename("blank.xml")
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -70,7 +66,7 @@ namespace locust
         {
             //If not, use existing code to generate plane receiver
             HFSSReader HFRead;
-            rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
+            rReceiver = HFRead.GeneratePlane({0.01,0.01},7);//Argumemts: Size, resolution
             rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,0.});//Arguments Normal vector, Position (m)
         }
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});
@@ -85,12 +81,10 @@ namespace locust
     }
 
 
-  static void* KassiopeiaInit()
+  static void* KassiopeiaInit(const std::string &aFile)
     {
-        //cout << gxml_filename; getchar();
-        const std::string & afile = gxml_filename;
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-    	RunKassiopeia1->Run(afile);
+    	RunKassiopeia1->Run(aFile);
     	delete RunKassiopeia1;
 
         return 0;
@@ -120,7 +114,7 @@ namespace locust
 
     double m(double angle, double x0, double y0)
     {
-        angle = 3.1415926*angle/180.;
+        angle = KConst::Pi() * angle / 180.;
         double xprime = cos(angle)*x0 - sin(angle)*y0;
         double yprime = sin(angle)*x0 + cos(angle)*y0;
 
@@ -137,7 +131,6 @@ namespace locust
 
     double directivity(double m1, double m2, double x0, double y0, double x, double y)
     {
-
     	// cone shaped directivity with gain=1 and half angle OpeningAngle for antenna at x0,y0
 
     	double directivity = 0.;
@@ -145,12 +138,12 @@ namespace locust
     	if (((y < m1*x + b(m1,x0,y0)) && (y > m2*x + b(m2,x0,y0))) |
     	   ((y > m1*x + b(m1,x0,y0)) && (y < m2*x + b(m2,x0,y0))))
     	  {
-    	  if (fabs(atan(m1)-atan(m2)) < 1.57)
+    	  if (fabs(atan(m1)-atan(m2)) < KConst::Pi()/2 )
     	    directivity = 1.;
     	  }
     	else
     	  {
-    	  if (fabs(atan(m1)-atan(m2)) > 1.57)
+    	  if (fabs(atan(m1)-atan(m2)) > KConst::Pi()/2 )
     	    directivity = 1.;
     	  }
     	return directivity;
@@ -254,18 +247,26 @@ namespace locust
         int CurrentIndex;
         HFSSReader HFRead;
 
+
     	SimulationController SimulationController1;
         const unsigned nchannels = SimulationController1.GetNChannels();
-        const unsigned nelementsZ = 9;
+        const double dx=0.01;
+
+        const int nelementsZ = 9;
+
         double theta = 0.;  // azimuthal angle of each amplifier channel.
         double radius = 0.05; // radius of each amplifier channel in xy plane.
         double OpeningAngle = 15.; //degrees, half angle fake directivity angle.
         double DirectivityFactor = 0.;
+
         double m1 = 0.;
         double m2 = 0.;
         static double tVoltagePhase[10000] = {0.};
         static double phi_LO = 0.;
-        int signalSize = aSignal->TimeSize();
+
+        static int fNFDIndex =- 1;
+
+        const int signalSize = aSignal->TimeSize();
 
         //Receiver Properties
         double tReceiverTime = t_old;
@@ -441,8 +442,8 @@ namespace locust
 
             //if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
             //{
-            aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][0] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
-            aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][1] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+            aSignal->LongSignalTimeComplex()[ch*signalSize*aSignal->DecimationFactor() + index][0] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+            aSignal->LongSignalTimeComplex()[ch*signalSize*aSignal->DecimationFactor() + index][1] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
             //}
 
         } // z_position waveguide element stepping loop.
@@ -499,7 +500,6 @@ namespace locust
 
     bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const
     {
-
         if(fWriteNFD)
         {
             //Initialize to correct sizes/ all zeros
@@ -514,13 +514,14 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
+        const int NPreEventSamples = 150000;
 
         //printf("fwritenfd is %d\n", fWriteNFD); getchar();
 
-        std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
+        std::thread Kassiopeia (KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
                 {
