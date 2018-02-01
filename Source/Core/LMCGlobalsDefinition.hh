@@ -11,9 +11,6 @@
 double t_old = -99.;
 double t_poststep = -99.;
 
-double phi_shortTE11 = 0.;
-double* phi_shortTM01 = new double[200];
-double* phi_polarizerTM01 = new double[200];
 double fDigitizerTimeStep = 5e-10; //Time step for sampling
 
 //running deque for saving previous few ns of particle history 
