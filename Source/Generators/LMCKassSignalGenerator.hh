@@ -18,6 +18,7 @@ namespace locust
      @author N. S. Oblath
 
      @brief
+     Generates a Phase I/ Phase II like signal in waveguide
 
      @details
      Operates in time space
@@ -25,7 +26,8 @@ namespace locust
      Configuration name: "kass-signal"
 
      Available configuration options:
-     - "param-name": type -- Description
+     - "lo-frequency": double -- Frequency of downmixer
+     - "xml-filename": string -- Name of the locust config file
 
     */
     class KassSignalGenerator : public Generator
