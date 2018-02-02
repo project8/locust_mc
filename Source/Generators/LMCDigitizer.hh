@@ -23,7 +23,7 @@ namespace locust
 
      @brief Digitize the data
 
-     @details
+     @details Converts voltage float to Uint8, analog voltage is "quantized" to (one of 2^bit-depth values) discrete values within v-range
 
      Configuration name: "digitizer"
 
@@ -68,8 +68,6 @@ namespace locust
     {
         return fADCValuesSigned;
     }
-
-
 
 } /* namespace locust */
 
