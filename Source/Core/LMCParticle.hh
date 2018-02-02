@@ -3,7 +3,7 @@
  *
  *  Created on: Jan 13, 2017
  *      Author: nbuzinsky
- */
+ * /
 
 #ifndef LMCPARTICLE_HH_
 #define LMCPARTICLE_HH_
@@ -15,7 +15,14 @@
 
 namespace locust
 {
-
+ /*!
+ @class Particle
+ @author N. Businsky
+ @brief Used to describe the properties of a particle
+ @details
+ Available configuration options:
+ No input parameters
+ */
     class Particle
     {
 
