@@ -11,7 +11,7 @@
 #include "LMCGenerator.hh"
 
 #include "digital.hh"
-#include "LMCGlobalsDeclaration.hh"
+
 
 
 namespace locust

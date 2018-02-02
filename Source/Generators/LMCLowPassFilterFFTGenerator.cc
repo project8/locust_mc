@@ -8,7 +8,6 @@
 #include "LMCLowPassFilterFFTGenerator.hh"
 
 #include "logger.hh"
-#include "LMCGlobalsDeclaration.hh"
 #include "LMCSimulationController.hh"
 
 

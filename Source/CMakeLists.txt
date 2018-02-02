@@ -23,13 +23,13 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 set( LOCUST_MC_HEADER_FILES
-    Core/LMCGlobalsDeclaration.hh
-    Core/LMCGlobalsDefinition.hh
+#    Core/LMCGlobalsDeclaration.hh
+#    Core/LMCGlobalsDefinition.hh
     Core/LMCEggWriter.hh
     Core/LMCException.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
-    Core/LMCHFSSReader.hh
+#    Core/LMCHFSSReader.hh
 #    Core/LMCParticle.hh
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
@@ -39,6 +39,10 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCTestSignalGenerator.hh
+    Generators/LMCDecimateSignalGenerator.hh
+    Generators/LMCLowPassFilterFFTGenerator.hh
+    Generators/LMCButterworthLPFGenerator.hh
+
 #    Generators/LMCBasebandTrackGenerator.hh
 #    Generators/LMCTrappedElectronGenerator.hh
 )
@@ -49,8 +53,8 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCException.cc
     Core/LMCGenerator.cc
     Core/LMCGeneratorToolbox.cc
-    Core/LMCHFSSReader.cc
-    Core/LMCParticle.cc
+#    Core/LMCHFSSReader.cc
+#    Core/LMCParticle.cc
     Core/LMCRunLengthCalculator.cc
     Core/LMCSignal.cc
     Core/LMCSimulationController.cc
@@ -59,6 +63,10 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCTestSignalGenerator.cc
+    Generators/LMCDecimateSignalGenerator.cc
+    Generators/LMCLowPassFilterFFTGenerator.cc
+    Generators/LMCButterworthLPFGenerator.cc
+
 #    Generators/LMCBasebandTrackGenerator.cc
 #    Generators/LMCTrappedElectronGenerator.cc
 )
@@ -68,10 +76,11 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
-        Generators/LMCDecimateSignalGenerator.hh
-        Generators/LMCLowPassFilterFFTGenerator.hh
-        Generators/LMCButterworthLPFGenerator.hh
 
+    Core/LMCGlobalsDeclaration.hh
+    Core/LMCGlobalsDefinition.hh
+    Core/LMCParticle.hh
+    Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
@@ -84,10 +93,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
-        Generators/LMCDecimateSignalGenerator.cc
-        Generators/LMCLowPassFilterFFTGenerator.cc
-        Generators/LMCButterworthLPFGenerator.cc
 
+    Core/LMCHFSSReader.cc
+    Core/LMCParticle.cc
 
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
