@@ -5,6 +5,7 @@
  *      Author: nbuzinsky
  */
 
+#include "LMCConst.hh"
 #include "LMCHFSSReader.hh"
 
 #include <algorithm>
@@ -15,7 +16,6 @@
 
 #include <stdlib.h>
 #include <time.h>
-#include <KConst.h>
 
 #include "logger.hh"
 
@@ -338,7 +338,7 @@ namespace locust
         double zRings[nRings];
         double rRings[nRings];
         double RingCount[nRings];
-        double tPI = KConst::Pi();
+        double tPI = LMCConst::Pi();
 
         for(int i=0;i<nRings;i++)
         {
@@ -373,7 +373,7 @@ namespace locust
         double SizeRatio[2]={1.,1.};
         int MinIndex=(GeometryScale[0] < GeometryScale[1]) ? 0 : 1;
         SizeRatio[(MinIndex+1)%2]=GeometryScale[(MinIndex+1)%2]/GeometryScale[MinIndex];
-        double tPI = KConst::Pi();
+        double tPI = LMCConst::Pi();
 
         int N[2]; double dz[2];
         for(int i=0;i<2;i++)
@@ -449,7 +449,7 @@ namespace locust
         //If Both XY normals are 0, do not do phi rotation
         double Phi=0.;
         if(tNormal[0])Phi=atan(tNormal[1]/tNormal[0]);
-        else if(tNormal[1])Phi=KConst::Pi() / 2.;
+        else if(tNormal[1])Phi=LMCConst::Pi() / 2.;
 
 
         ///Perform Rotation on surface

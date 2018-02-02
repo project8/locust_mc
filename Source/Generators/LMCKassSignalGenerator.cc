@@ -108,21 +108,21 @@ namespace locust
         double ImagVoltage1 = 0.;
         double RealVoltage2 = 0.;
         double ImagVoltage2 = 0.;
-        double tCutOffFrequency = 2. * KConst::C() * 1.841 /( 2. * 0.00502920); // rad/s, TE11
+        double tCutOffFrequency = 2. * LMCConst::C() * 1.841 /( 2. * 0.00502920); // rad/s, TE11
 
         locust::Particle tParticle = fParticleHistory.back();
 
         //Set as positive, even though really negative
         double tLarmorPower = tParticle.GetLarmorPower();
-        double tCyclotronFrequency = tParticle.GetCyclotronFrequency()/2./KConst::Pi();
+        double tCyclotronFrequency = tParticle.GetCyclotronFrequency()/2./LMCConst::Pi();
         if (tCyclotronFrequency < 15.e9) {printf("check 2PI in fcyc\n"); getchar();}
         double tVelocityZ = tParticle.GetVelocity().Z();
-        double tGroupVelocity = KConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*KConst::Pi()*tCyclotronFrequency  ), 2.) );
+        double tGroupVelocity = LMCConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*LMCConst::Pi()*tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
         //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
 
-//        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*KConst::Pi()*tCyclotronFrequency); getchar();
+//        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*LMCConst::Pi()*tCyclotronFrequency); getchar();
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
 
@@ -134,17 +134,17 @@ namespace locust
         if (PreEventCounter > 0)
         {
             // initialize phases.
-            phi_t1 = 2.*KConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
-            phi_t2 = 2.*KConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
+            phi_t1 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
+            phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
 //            phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
 //            phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
         }
 
         //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
 
-        phi_t1 += 2.*KConst::Pi()*tDopplerFrequencyAntenna * fDigitizerTimeStep;
-        phi_t2 += 2.*KConst::Pi()*tDopplerFrequencyShort * fDigitizerTimeStep;
-        phiLO_t += 2.* KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
+        phi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * fDigitizerTimeStep;
+        phi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * fDigitizerTimeStep;
+        phiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
         RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
         ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
@@ -190,7 +190,7 @@ namespace locust
 
         // fraction of emitted power that goes into TE11.
         // XXX
-        double tCoupling = 119116./168.2 * 2./KConst::Pi() * 4./(2. * KConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
+        double tCoupling = 119116./168.2 * 2./LMCConst::Pi() * 4./(2. * LMCConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
                 (j0(kc*r) + jn(2, kc*r)) );
 
         return sqrt(tCoupling);  // field amplitude is sqrt of power going into field.
