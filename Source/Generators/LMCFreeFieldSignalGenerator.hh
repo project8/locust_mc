@@ -18,7 +18,7 @@ namespace locust
      @class FreeFieldSignalGenerator
      @author N. S. Oblath
 
-     @brief
+     @brief Generate signal in free space(without wave guide) for phase III
 
      @details
      Operates in time space
@@ -27,6 +27,10 @@ namespace locust
 
      Available configuration options:
      - "param-name": type -- Description
+     - "lo-frequency" : double -- the special value tuned down by the local oscillator, e.g., the 24.something giga hertz.
+     - "xml-filename" : std::string -- the name of the xml locust config file.
+     - "and-filename" : std::string -- the file of the hfss config file.
+     
 
     */
     class FreeFieldSignalGenerator : public Generator
