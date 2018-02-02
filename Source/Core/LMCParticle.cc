@@ -100,7 +100,7 @@ namespace locust
     }
     double Particle::GetKineticEnergy() const //In SI
     {
-       return (fGamma - 1.) * fMass * pow(KConst::C() , 2.); 
+       return (fGamma - 1.) * fMass * pow(LMCConst::C() , 2.); 
     }
 
     void Particle::SetMass(double aMass)
@@ -130,9 +130,9 @@ namespace locust
         fAcceleration = fCharge/fMass*fNewVelocity.Cross(fMagneticField);
         fNewAcceleration = fAcceleration;
 
-        fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (KConst::FourPiEps() * pow( KConst::C() , 3.) );
+        fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (LMCConst::FourPiEps() * pow( LMCConst::C() , 3.) );
 
-        double tBeta = fVelocity.Magnitude() / KConst::C();
+        double tBeta = fVelocity.Magnitude() / LMCConst::C();
         fGamma = 1. / sqrt(( 1. - tBeta ) * ( 1. + tBeta ));
 
         fVelocityParallel=fVelocity.Dot(fMagneticField.Unit());
@@ -177,7 +177,7 @@ namespace locust
 
     KGeoBag::KThreeVector Particle::CalculateElectricField(const KGeoBag::KThreeVector &aFieldPosition) const
     {
-        double c=KConst::C();
+        double c=LMCConst::C();
 
         KGeoBag::KThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
         KGeoBag::KThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
@@ -187,7 +187,7 @@ namespace locust
         KGeoBag::KThreeVector tNormalMinusBeta = tFieldPositionNormal - 1./ c * fNewVelocity;
 
         //Lienard-Wiechert Equations
-        KGeoBag::KThreeVector E = fCharge * (tFieldPositionNormal.Cross(tNormalMinusBeta.Cross(tBetaDot) ) ) / ( KConst::FourPiEps() * c *pow( 1. - tFieldPositionNormal.Dot(fNewVelocity) / c, 3. ) * tFieldPositionDistance );
+        KGeoBag::KThreeVector E = fCharge * (tFieldPositionNormal.Cross(tNormalMinusBeta.Cross(tBetaDot) ) ) / ( LMCConst::FourPiEps() * c *pow( 1. - tFieldPositionNormal.Dot(fNewVelocity) / c, 3. ) * tFieldPositionDistance );
         return E;
     }
 
@@ -196,7 +196,7 @@ namespace locust
         KGeoBag::KThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
         KGeoBag::KThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
         
-        KGeoBag::KThreeVector H = tFieldPositionNormal.Cross(CalculateElectricField(aFieldPosition)) / ( KConst::MuNull() * KConst::C() );
+        KGeoBag::KThreeVector H = tFieldPositionNormal.Cross(CalculateElectricField(aFieldPosition)) / ( LMCConst::MuNull() * LMCConst::C() );
 
         return H;
     }
@@ -208,7 +208,7 @@ namespace locust
         KGeoBag::KThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
         double tFieldPositionDistance = tFieldPositionVector.Magnitude();
 
-        double V=fCharge / (KConst::FourPiEps()*tFieldPositionDistance*(1.- tFieldPositionNormal.Dot(fNewVelocity)/KConst::C()));
+        double V=fCharge / (LMCConst::FourPiEps()*tFieldPositionDistance*(1.- tFieldPositionNormal.Dot(fNewVelocity)/LMCConst::C()));
         return V;
 
     }

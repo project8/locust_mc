@@ -15,6 +15,19 @@
 using namespace locust;
 namespace katrin
 {
+    /*!
+     @class 
+     @author N. S. Oblath
+
+     @brief bindings for CyclotronExtractor for the locust xml file
+
+     @details
+
+     Available configuration options:
+     - "name": string -- name of xml object
+     - "P8Phase": int -- phase of P8 experiment. Currently 1, 2, 3 are supported
+     - "set_trajectrory": string -- used for interpolation
+    */
 
     typedef KComplexElement< locust::CyclotronRadiationExtractor > CyclotronRadiationExtractorBuilder;
 

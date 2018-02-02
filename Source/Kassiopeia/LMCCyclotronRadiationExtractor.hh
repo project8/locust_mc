@@ -3,6 +3,7 @@
  *
  *  Created on: Mar 13, 2016
  *      Author: nsoblath
+ * @brief It transfers particle track information from Kassiopiea to Locust for field calculation. 
  */
 
 #ifndef LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_

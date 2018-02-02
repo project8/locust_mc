@@ -114,7 +114,7 @@ namespace locust
 
     double m(double angle, double x0, double y0)
     {
-        angle = KConst::Pi() * angle / 180.;
+        angle = LMCConst::Pi() * angle / 180.;
         double xprime = cos(angle)*x0 - sin(angle)*y0;
         double yprime = sin(angle)*x0 + cos(angle)*y0;
 
@@ -138,12 +138,12 @@ namespace locust
     	if (((y < m1*x + b(m1,x0,y0)) && (y > m2*x + b(m2,x0,y0))) |
     	   ((y > m1*x + b(m1,x0,y0)) && (y < m2*x + b(m2,x0,y0))))
     	  {
-    	  if (fabs(atan(m1)-atan(m2)) < KConst::Pi()/2 )
+    	  if (fabs(atan(m1)-atan(m2)) < LMCConst::Pi()/2 )
     	    directivity = 1.;
     	  }
     	else
     	  {
-    	  if (fabs(atan(m1)-atan(m2)) > KConst::Pi()/2 )
+    	  if (fabs(atan(m1)-atan(m2)) > LMCConst::Pi()/2 )
     	    directivity = 1.;
     	  }
     	return directivity;
@@ -190,15 +190,15 @@ namespace locust
 
     double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const KGeoBag::KThreeVector &aParticlePosition, const KGeoBag::KThreeVector &aReceiverPosition )
     {
-        //return pow(aReceiverTime - aParticleTime,2.) - (aReceiverPosition - aParticlePosition).MagnitudeSquared() / pow(KConst::C() , 2.);
-        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / KConst::C();
+        //return pow(aReceiverTime - aParticleTime,2.) - (aReceiverPosition - aParticlePosition).MagnitudeSquared() / pow(LMCConst::C() , 2.);
+        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
     }
 
     double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, KGeoBag::KThreeVector aReceiverPosition, double aSpaceTimeInterval, const int aStepOrder = 0)
     {
         double tRetardedTime = aParticle.GetTime(true); //interpolate!!!
 
-        double c=KConst::C();
+        double c=LMCConst::C();
 
         if(aStepOrder==0)
         {
@@ -282,7 +282,7 @@ namespace locust
 
         const int HistorySize = fParticleHistory.size();
 
-        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal generating loop.
+        phi_LO+= 2. * LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal generating loop.
 
         //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
 
@@ -292,7 +292,7 @@ namespace locust
         {
         // position waveguide in space:
         rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
-        theta = (double)ch*360./nchannels*KConst::Pi()/180.;
+        theta = (double)ch*360./nchannels*LMCConst::Pi()/180.;
         rReceiver = HFRead.RotateShift(rReceiver,{cos(theta),sin(theta),0.},{radius*cos(theta),radius*sin(theta),(double)(z_position-4)*0.01});//Arguments Normal vector, Position (m)
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
         tTotalPower = 0.; // initialize
@@ -320,7 +320,7 @@ namespace locust
                 CurrentIndex=FindNode(tReceiverTime,dtStepSize,HistorySize-1);
                 tCurrentParticle=fParticleHistory[CurrentIndex];
 
-                tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - tReceiverPosition).Magnitude() /  KConst::C();
+                tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - tReceiverPosition).Magnitude() /  LMCConst::C();
              }
             else
             {
@@ -374,8 +374,8 @@ namespace locust
 
             double tVelZ = tCurrentParticle.GetVelocity(true).Z();
             double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
-            double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
-            double tTransitTime = (tReceiverPosition - tCurrentParticle.GetPosition(true)).Magnitude() / KConst::C();
+            double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
+            double tTransitTime = (tReceiverPosition - tCurrentParticle.GetPosition(true)).Magnitude() / LMCConst::C();
 
             if (tRetardedTime+tTransitTime > fDigitizerTimeStep)  // if the signal has been present for longer than fDigitizerTimeStep
               {
@@ -419,7 +419,7 @@ namespace locust
                         //Complex factors for Downmixing/ DFT sums
                         double DownConvert[2] = { cos(phi_LO) , - sin(phi_LO) };
                         int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fDigitizerTimeStep;
-                        double DFTFactor[2] = { cos(2. * KConst::Pi() * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * KConst::Pi() * kFreq * fNFDIndex / nHFSSBins ) };
+                        double DFTFactor[2] = { cos(2. * LMCConst::Pi() * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * LMCConst::Pi() * kFreq * fNFDIndex / nHFSSBins ) };
 
                         NFDElectricFieldFreq[j][i][k][0] += tmpElectricField[k] * ( DownConvert[0] * DFTFactor[0] - DownConvert[1] * DFTFactor[1] ) / nHFSSBins;
                         NFDElectricFieldFreq[j][i][k][1] += tmpElectricField[k] * ( DownConvert[0] * DFTFactor[1] + DownConvert[1] * DFTFactor[0] ) / nHFSSBins;

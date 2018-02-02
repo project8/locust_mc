@@ -23,8 +23,7 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 set( LOCUST_MC_HEADER_FILES
-#    Core/LMCGlobalsDeclaration.hh
-#    Core/LMCGlobalsDefinition.hh
+    Core/LMCConst.hh
     Core/LMCEggWriter.hh
     Core/LMCException.hh
     Core/LMCGenerator.hh

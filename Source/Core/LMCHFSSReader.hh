@@ -11,7 +11,13 @@
 
 namespace locust
 {
-
+    /*!
+         @class HFSSReader
+         @author N. Buzinsky
+         @brief Parses the HFSS .and file
+         @details Peak phasor quantities (specific frequencies) at 3D positions of points at which the fields are calculated. Points on surface of sphere, box, or cylinder
+    */
+    
     class HFSSReader 
     {
         public:
@@ -25,7 +31,7 @@ namespace locust
 
         private:
             //std::string fAND_filename;
-            std::vector< KGeoBag::KThreeVector> rSurfacePoints; //vector of 3D positions of points at which the fields are calculated at. Points form one of surrfaces below
+            std::vector< KGeoBag::KThreeVector> rSurfacePoints; //vector of 3D positions of points at which the fields are calculated at. Points form one of surfaces below
             KGeoBag::KThreeVector GeometryCenter; 
             KGeoBag::KThreeVector GeometryScale; 
             KGeoBag::KThreeVector GeometryAxis; 

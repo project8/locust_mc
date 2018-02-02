@@ -8,14 +8,21 @@
 #ifndef LMCPARTICLE_HH_
 #define LMCPARTICLE_HH_
 
+#include "LMCConst.hh"
 #include <stdint.h>
 #include <KThreeVector.hh>
-#include <KConst.h>
 
 
 namespace locust
 {
-
+ /*!
+ @class Particle
+ @author N. Buzinsky
+ @brief Used to describe the properties of a particle
+ @details
+ Available configuration options:
+ No input parameters
+ */
     class Particle
     {
 
