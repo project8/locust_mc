@@ -37,11 +37,11 @@ class DecimateSignalGenerator : public Generator
             void Accept( GeneratorVisitor* aVisitor ) const;
 
         private:
-            bool DoGenerate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal );
 
-            bool DoGenerateTime( Signal* aSignal ) const;
+            bool DoGenerateTime( Signal* aSignal );
 
-            bool (DecimateSignalGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
+            bool (DecimateSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
     };
 

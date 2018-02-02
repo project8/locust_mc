@@ -44,12 +44,12 @@ namespace locust
     }
 
 
-    bool DecimateSignalGenerator::DoGenerate( Signal* aSignal ) const
+    bool DecimateSignalGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) 
     {
     	SimulationController SimulationController1;
         const unsigned nchannels = SimulationController1.GetNChannels();

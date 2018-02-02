@@ -133,12 +133,12 @@ namespace locust
     }
 
 
-    bool GaussianNoiseGenerator::DoGenerate( Signal* aSignal ) const
+    bool GaussianNoiseGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
@@ -149,7 +149,7 @@ namespace locust
         return true;
     }
 
-    bool GaussianNoiseGenerator::DoGenerateFreq( Signal* aSignal ) const
+    bool GaussianNoiseGenerator::DoGenerateFreq( Signal* aSignal )
     {
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {

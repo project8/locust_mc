@@ -38,7 +38,7 @@ namespace locust
         return;
     }
 
-    bool [name]Generator::DoGenerate( Signal* aSignal ) const
+    bool [name]Generator::DoGenerate( Signal* aSignal )
     {
         for( unsigned index = 0; index < aSignal->[domain]Size(); ++index )
         {

@@ -41,12 +41,12 @@ namespace locust
     }
 
 
-    bool ButterworthLPFGenerator::DoGenerate( Signal* aSignal ) const
+    bool ButterworthLPFGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool ButterworthLPFGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool ButterworthLPFGenerator::DoGenerateTime( Signal* aSignal )
     {
     	// 8th order Butterworth filter with wc = 70.e6 Hz, 100X attenuation at 95 MHz, fs=200 MHz.
 
@@ -121,7 +121,7 @@ for (int i=0; i<N+1; i++)
     return true;
     }
 
-    bool ButterworthLPFGenerator::DoGenerateFreq( Signal* aSignal ) const
+    bool ButterworthLPFGenerator::DoGenerateFreq( Signal* aSignal )
     {
 
         return true;

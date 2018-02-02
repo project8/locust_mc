@@ -150,7 +150,7 @@ namespace locust
 
     }
 
-    void FreeFieldSignalGenerator::NFDWrite() const
+    void FreeFieldSignalGenerator::NFDWrite() 
     {
             std::ofstream fNFDOutput;
             fNFDOutput.open(fNFD_filename,std::ios::out | std::ios::trunc);
@@ -240,7 +240,7 @@ namespace locust
     }
 
 
-    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
+    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
     {
 
         locust::Particle tCurrentParticle = fParticleHistory.back();
@@ -498,7 +498,7 @@ namespace locust
         return tNodeIndex;
     }
 
-    bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const
+    bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal )
     {
         if(fWriteNFD)
         {

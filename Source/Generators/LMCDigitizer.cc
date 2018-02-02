@@ -68,7 +68,7 @@ namespace locust
         return fParams;
     }
 
-    bool Digitizer::DoGenerate( Signal* aSignal ) const
+    bool Digitizer::DoGenerate( Signal* aSignal )
     {
 
     	bool IQStream = true;  // this could eventually be a parameter in the json file.
