@@ -34,7 +34,12 @@ namespace katrin
 
 namespace locust
 {
-
+    /*!
+     @class RunKassiopeia
+     @author N. S. Oblath
+     @brief Locust and Kassiopeia interface
+     @details How Locust controls the Kassiopeia submodule 
+    */
     class RunKassiopeia
     {
         public:
