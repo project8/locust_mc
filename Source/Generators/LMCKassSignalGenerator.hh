@@ -46,6 +46,7 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
             double TE11ModeExcitation() const;
+            double TE01ModeExcitation() const;
             std::string gxml_filename;
             double phi_t1; // antenna voltage phase in radians.
             double phi_t2; // reflecting short voltage phase in radians.

@@ -108,7 +108,19 @@ namespace locust
         double ImagVoltage1 = 0.;
         double RealVoltage2 = 0.;
         double ImagVoltage2 = 0.;
-        double tCutOffFrequency = 2. * LMCConst::C() * 1.841 /( 2. * 0.00502920); // rad/s, TE11
+        double tCutOffFrequency = 0.;
+        if (Project8Phase == 2)
+          {
+          tCutOffFrequency = 2. * LMCConst::C() * 1.841 /( 2. * 0.00502920); // rad/s, TE11
+          }
+        else if (Project8Phase == 1)
+          {
+          tCutOffFrequency = LMCConst::C() * LMCConst::Pi() / 10.668e-3; // a in m
+          }
+        else
+          {
+          printf("Please check the P8Phase parameter in the xml file.\n"); getchar();
+          }
 
         locust::Particle tParticle = fParticleHistory.back();
 
@@ -126,9 +138,6 @@ namespace locust
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
 
-        const double tCenterToShortDistance = 0.0760;
-        const double tCenterToAntennaDistance = 0.0772;
-
         double tPositionZ = tParticle.GetPosition().Z();
 
         if (PreEventCounter > 0)
@@ -136,8 +145,6 @@ namespace locust
             // initialize phases.
             phi_t1 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
             phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
-//            phi_shortTM01[0] = 0.;  // this gets advanced in the step modifier.
-//            phi_polarizerTM01[0] = 0.;  // this gets advanced in the step modifier.
         }
 
         //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
@@ -150,32 +157,32 @@ namespace locust
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
         ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
 
-        //RealVoltage2 = 0.;  // take out short.
-        //ImagVoltage2 = 0.;  // take out short.
+        //RealVoltage2 = 0.;  // take out short?
+        //ImagVoltage2 = 0.;  // take out short?
         
-//        aLongSignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-//        anImaginarySignal[ index ] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
-        aSignal->LongSignalTimeComplex()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-        aSignal->LongSignalTimeComplex()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+        if (Project8Phase == 2)
+          {
+          aSignal->LongSignalTimeComplex()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+          }
+        else if (Project8Phase == 1)
+          {
+          aSignal->LongSignalTimeComplex()[ index ][0] += TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][1] += TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+          }
 
 
-
-        //if (t_old > 0.004)
 /*
-        {
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
             		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
             index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
             getchar();
-        }
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
 */
-
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
-
 	  
         return 0;
     }
@@ -188,13 +195,23 @@ namespace locust
         double tPositionY = tParticle.GetPosition().Y();
         double r = sqrt( tPositionX*tPositionX + tPositionY*tPositionY);
 
-        // fraction of emitted power that goes into TE11.
-        // XXX
+        // field amplitude in TE11.  Apply this factor to Larmor Power and propagate it to the amplifier.
         double tCoupling = 119116./168.2 * 2./LMCConst::Pi() * 4./(2. * LMCConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
                 (j0(kc*r) + jn(2, kc*r)) );
 
-        return sqrt(tCoupling);  // field amplitude is sqrt of power going into field.
+        return tCoupling;  // field amplitude is sqrt of power going into field.
     }
+
+
+    double KassSignalGenerator::TE01ModeExcitation() const
+    {
+   	    double dim1_wr42 = 10.668e-3; // a in m
+        locust::Particle tParticle = fParticleHistory.back();
+	    double tPositionX = tParticle.GetPosition().X() + dim1_wr42/2.;
+	    double coupling = 0.63*sin(LMCConst::Pi()*tPositionX/dim1_wr42);  // avg over cyclotron orbit.
+	    return coupling;
+    }
+
 
 
     bool KassSignalGenerator::DoGenerate( Signal* aSignal )

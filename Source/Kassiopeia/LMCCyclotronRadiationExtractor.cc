@@ -35,6 +35,7 @@ namespace locust
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
     	fP8Phase = P8Phase;
+    	Project8Phase = P8Phase;
     }
 
     bool CyclotronRadiationExtractor::ExecutePreStepModification( KSParticle& anInitialParticle, KSParticleQueue& aQueue )
@@ -96,10 +97,7 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetCouplingFactorTE01(KSParticle& aFinalParticle)  // Phase 1
     {
-
     	double dim1_wr42 = 10.668e-3; // a in m
-    	double vx = aFinalParticle.GetVelocity().GetX();
-    	double vy = aFinalParticle.GetVelocity().GetY();
     	double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
     	double coupling = 0.63*sin(LMCConst::Pi()*x/dim1_wr42);  // avg over cyclotron orbit.
     	return coupling;
@@ -221,7 +219,7 @@ namespace locust
     {
         double TE01FieldFromShort = GetTE01FieldAfterOneBounce(anInitialParticle, aFinalParticle);
         double CouplingFactorTE01 = GetCouplingFactorTE01(aFinalParticle);
-        double DampingFactorTE01 = CouplingFactorTE01*(1. - TE01FieldFromShort*TE01FieldFromShort);  // can be > 0 or < 0.
+        double DampingFactorTE01 = CouplingFactorTE01*CouplingFactorTE01*(1. - TE01FieldFromShort*TE01FieldFromShort);  // can be > 0 or < 0.
 
     	return DampingFactorTE01;
     }
@@ -236,8 +234,8 @@ namespace locust
         double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
         double CouplingFactorTM01 = GetCouplingFactorTM01(aFinalParticle);
 
-        double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
-        double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
+        double DampingFactorTE11 = CouplingFactorTE11*CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
+        double DampingFactorTM01 = CouplingFactorTM01*CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
         double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
 
     	return DampingFactor;

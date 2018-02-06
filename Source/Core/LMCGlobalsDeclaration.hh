@@ -9,7 +9,6 @@
 #define GLOBALSDECLARATION_HH_
 #define CENTER_TO_SHORT 0.0760 // m
 #define CENTER_TO_ANTENNA 0.07685 // m
-//#define NCHANNELS 1
 
 
 #include <condition_variable>
@@ -19,6 +18,7 @@
 #include "LMCParticle.hh"
 
 
+extern int Project8Phase; // 1, 2, or 3
 extern double t_old;
 
 extern double fDigitizerTimeStep;

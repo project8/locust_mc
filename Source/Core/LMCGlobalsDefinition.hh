@@ -8,6 +8,9 @@
 #ifndef GLOBALSDEFINITION_HH_
 #define GLOBALSDEFINITION_HH_
 
+int Project8Phase = 0; // 1, 2, or 3, defined with the step modifier instance in the xml file.
+
+
 double t_old = -99.;
 double fDigitizerTimeStep = 5e-10; //Time step for sampling
 
