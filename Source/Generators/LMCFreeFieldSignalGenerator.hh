@@ -8,7 +8,7 @@
 #ifndef LMCFREEFIELDSIGNALGENERATOR_HH_
 #define LMCFREEFIELDSIGNALGENERATOR_HH_
 
-#include <KThreeVector.hh>
+#include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 
 namespace locust
@@ -23,7 +23,7 @@ namespace locust
      @details
      Operates in time space
 
-     Configuration name: "kass-signal"
+     Configuration name: "freefield-signal"
 
      Available configuration options:
      - "param-name": type -- Description
@@ -46,13 +46,13 @@ namespace locust
 
 
         private:
-            std::vector<KGeoBag::KThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
             std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
 
             std::string gxml_filename;
 
-            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the KThreeVectors too.....
+            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the LMCThreeVectors too.....
             std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
 
             bool fWriteNFD;

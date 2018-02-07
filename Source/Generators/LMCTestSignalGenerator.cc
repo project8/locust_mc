@@ -7,9 +7,9 @@
 
 #include <cmath>
 #include "LMCTestSignalGenerator.hh"
-
 #include "logger.hh"
 #include "LMCSimulationController.hh"
+#include "LMCConst.hh"
 
 
 using std::string;
@@ -142,18 +142,18 @@ namespace locust
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
 
-        	LO_phase = 2.*std::acos(-1)*LO_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-            voltage_phase = 2.*std::acos(-1)*test_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+        	LO_phase = 2.*LMCConst::Pi()*LO_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+            voltage_phase = 2.*LMCConst::Pi()*test_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
 
         	if (ch==0)
         	{
             aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += 5.e-8*cos(voltage_phase-LO_phase);
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 5.e-8*cos(-std::acos(-1)/2. + voltage_phase-LO_phase);
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 5.e-8*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
         	}
         	else
         	{
             aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += 5.e-8*cos(voltage_phase-LO_phase);
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 5.e-8*cos(-std::acos(-1)/2. + voltage_phase-LO_phase);
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 5.e-8*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
         	}
 //            printf("acq rate is %g\n", RunLengthCalculator1->GetAcquisitionRate()); getchar();
 //            printf("array index is %d\n", ch*aSignal->TimeSize() + index);
@@ -169,8 +169,8 @@ namespace locust
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {
-            aSignal->SignalFreq()[index][0] += fAmplitude*cos(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
-            aSignal->SignalFreq()[index][1] += fAmplitude*sin(2.*3.1415926*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->SignalFreq()[index][0] += fAmplitude*cos(2.*LMCConst::Pi()*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
+            aSignal->SignalFreq()[index][1] += fAmplitude*sin(2.*LMCConst::Pi()*fFrequency*(double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6));
         }
         delete RunLengthCalculator1;
         return true;

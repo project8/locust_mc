@@ -254,9 +254,9 @@ namespace locust
 
     locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( KSParticle &aFinalParticle)
     {
-        KGeoBag::KThreeVector tPosition = aFinalParticle.GetPosition();
-        KGeoBag::KThreeVector tVelocity = aFinalParticle.GetVelocity();
-        KGeoBag::KThreeVector tMagneticField = aFinalParticle.GetMagneticField();
+        LMCThreeVector tPosition(aFinalParticle.GetPosition().Components());
+        LMCThreeVector tVelocity(aFinalParticle.GetVelocity().Components());
+        LMCThreeVector tMagneticField(aFinalParticle.GetMagneticField().Components());
         double tMass = aFinalParticle.GetMass();
         double tCharge = aFinalParticle.GetCharge();
         double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();

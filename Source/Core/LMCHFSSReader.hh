@@ -1,7 +1,7 @@
 #ifndef LMCHFSSREADER_HH_
 #define LMCHFSSREADER_HH_
 
-#include <KThreeVector.hh>
+#include "LMCThreeVector.hh"
 #include "LMCException.hh"
 
 #include <string>
@@ -23,29 +23,29 @@ namespace locust
         public:
             HFSSReader();
             void ParseANDFile(std::string fAND_filename);
-            std::vector< KGeoBag::KThreeVector> GetSurfacePoints();
-            std::vector< KGeoBag::KThreeVector> GeneratePlane(std::array<double, 2> GeometryScale, int nResolution);
-            std::vector< KGeoBag::KThreeVector> RotateShift(std::vector<KGeoBag::KThreeVector> rPointVector, KGeoBag::KThreeVector tNormal, KGeoBag::KThreeVector rCenter);
+            std::vector< LMCThreeVector> GetSurfacePoints();
+            std::vector< LMCThreeVector> GeneratePlane(std::array<double, 2> GeometryScale, int nResolution);
+            std::vector< LMCThreeVector> RotateShift(std::vector<LMCThreeVector> rPointVector, LMCThreeVector tNormal, LMCThreeVector rCenter);
             std::vector<double> GetFrequencies();
             std::string GetNFDFilename();
 
         private:
             //std::string fAND_filename;
-            std::vector< KGeoBag::KThreeVector> rSurfacePoints; //vector of 3D positions of points at which the fields are calculated at. Points form one of surfaces below
-            KGeoBag::KThreeVector GeometryCenter; 
-            KGeoBag::KThreeVector GeometryScale; 
-            KGeoBag::KThreeVector GeometryAxis; 
+            std::vector< LMCThreeVector> rSurfacePoints; //vector of 3D positions of points at which the fields are calculated at. Points form one of surfaces below
+            LMCThreeVector GeometryCenter; 
+            LMCThreeVector GeometryScale; 
+            LMCThreeVector GeometryAxis; 
 
             std::string fNFD_filename;
             std::vector<double> NFDFrequencies;
 
             double ParseUnits(std::string TextInput); //Gets numerical value for units
             void StringClean(std::string &InputString); //Removes commas/ unnecessary text from line
-            void ArrayParse(std::string InputString, KGeoBag::KThreeVector (&X) ); //Parses lists of numbers: "a, b, c"
+            void ArrayParse(std::string InputString, LMCThreeVector (&X) ); //Parses lists of numbers: "a, b, c"
 
-            std::vector< KGeoBag::KThreeVector> GenerateSphere(double Radius, int nResolution);
-            std::vector< KGeoBag::KThreeVector> GenerateBox(KGeoBag::KThreeVector GeometryScale, int nResolution);
-            std::vector< KGeoBag::KThreeVector> GenerateCylinder(std::array<double, 2> GeometryScale, int nResolution);
+            std::vector< LMCThreeVector> GenerateSphere(double Radius, int nResolution);
+            std::vector< LMCThreeVector> GenerateBox(LMCThreeVector GeometryScale, int nResolution);
+            std::vector< LMCThreeVector> GenerateCylinder(std::array<double, 2> GeometryScale, int nResolution);
 
 
     };
