@@ -33,6 +33,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
     Core/LMCSimulationController.hh
+    Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
     
     Generators/LMCDigitizer.hh
@@ -57,6 +58,7 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCRunLengthCalculator.cc
     Core/LMCSignal.cc
     Core/LMCSimulationController.cc
+    Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
 
     Generators/LMCDigitizer.cc
@@ -76,10 +78,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
 
-    Core/LMCGlobalsDeclaration.hh
-    Core/LMCGlobalsDefinition.hh
-    Core/LMCParticle.hh
-    Core/LMCHFSSReader.hh
+        Core/LMCGlobalsDeclaration.hh
+        Core/LMCGlobalsDefinition.hh
+        Core/LMCParticle.hh
+        Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
@@ -93,8 +95,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
 
-    Core/LMCHFSSReader.cc
-    Core/LMCParticle.cc
+        Core/LMCHFSSReader.cc
+        Core/LMCParticle.cc
 
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
