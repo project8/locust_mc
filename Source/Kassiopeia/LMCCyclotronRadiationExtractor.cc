@@ -234,8 +234,8 @@ namespace locust
         double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
         double CouplingFactorTM01 = GetCouplingFactorTM01(aFinalParticle);
 
-        double DampingFactorTE11 = CouplingFactorTE11*CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
-        double DampingFactorTM01 = CouplingFactorTM01*CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
+        double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
+        double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
         double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
 
     	return DampingFactor;

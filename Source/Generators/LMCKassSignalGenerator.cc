@@ -166,13 +166,13 @@ namespace locust
           aSignal->LongSignalTimeComplex()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
           }
         else if (Project8Phase == 1)
-          {
-          aSignal->LongSignalTimeComplex()[ index ][0] += TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-          aSignal->LongSignalTimeComplex()[ index ][1] += TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+          {  // assume 50 ohm impedance
+	    aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+	    aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
           }
 
 
-/*
+	/*
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
@@ -181,7 +181,8 @@ namespace locust
             getchar();
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-*/
+	*/
+
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 	  
         return 0;
@@ -220,7 +221,7 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        int NPreEventSamples = 150000;
+        int NPreEventSamples = 1500000;
         //double fPhaseIISimulation = true;  // this is now a parameter in the xml file.
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
