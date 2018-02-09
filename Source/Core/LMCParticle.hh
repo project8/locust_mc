@@ -34,6 +34,7 @@ namespace locust
             void SetPosition(double,double,double);
             void SetVelocityVector(double,double,double);
             void SetMagneticFieldVector(double,double,double);
+            void SetPitchAngle(double);
             void SetCyclotronFrequency(double);
             void SetMass(double);
             void SetCharge(double);
@@ -46,6 +47,7 @@ namespace locust
             KGeoBag::KThreeVector GetPosition(const bool &aInterpolated = false ) const;
             KGeoBag::KThreeVector GetVelocity(const bool &aInterpolated = false) const;
             KGeoBag::KThreeVector GetAcceleration(const bool &aInterpolated = false) const;
+            double GetPitchAngle() const;
             double GetCyclotronFrequency() const;
             double GetKineticEnergy() const;
             double GetCharge() const;
@@ -74,6 +76,7 @@ namespace locust
 
             KGeoBag::KThreeVector fGuidingCenterPosition;
             KGeoBag::KThreeVector fMagneticField;
+            double fPitchAngle;
 
             //2 perp. vectors which define helical motion
             KGeoBag::KThreeVector fAlpha;

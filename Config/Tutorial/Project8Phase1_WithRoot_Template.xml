@@ -3,8 +3,8 @@
 
 <external_define name="simulation" value="1"/>
 
-<external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="2.0"/>  <!-- 1.0 for bathtub -->
+<external_define name="pinch" value="1.e-5"/> <!-- e.g. +0.05 for bathtub, -1.0 for harmonic, 1.e-5 for off. -->
+<external_define name="bathtub" value="1.0"/>  <!-- e.g. +1.0 for bathtub -->
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
 <!--<external_define name="fieldZ" value="0.9581540"/> -->
 <external_define name="fieldX" value="0.0"/>  <!-- earth's horiz. field in Seattle -->
@@ -17,7 +17,7 @@
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
-<!-- <external_define name="trajectory" value="traj_magnetic"/>  -->
+<!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 
 <external_define name="count" value="1"/>
@@ -194,8 +194,8 @@
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.001" value_max="0.001"/>
-            <y_uniform value_min="0.00" value_max="0.00"/>
+            <x_uniform value_min="0.00" value_max="0.00"/>
+            <y_uniform value_min="0.00" value_max="0.0"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
@@ -393,10 +393,8 @@
 <!--    <ksnav_surface name="nav_surface"/>  -->
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
-
-
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="5.e-6"/>
+    <ksterm_max_time name="term_max_time" time="5.e-7"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
@@ -481,12 +479,21 @@
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
 
+
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+
+
+
+        <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
+            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
+        </geo_surface>
+
+
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
-        <command parent="write_root" field="add_step_output" child="component_step_world"/> 
+        <command parent="write_root" field="add_step_output" child="component_step_world"/>
 
 
 
@@ -511,7 +518,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="1"
+        events="2"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"
