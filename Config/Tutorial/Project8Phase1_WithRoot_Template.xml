@@ -19,7 +19,7 @@
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
-<!-- <external_define name="trajectory" value="traj_magnetic"/>  -->
+<!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 
 <external_define name="count" value="1"/>
@@ -196,13 +196,13 @@
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="-0.001" value_max="0.001"/>
-            <y_uniform value_min="0.00" value_max="0.00"/>
-            <z_uniform value_min="0.0" value_max="0.0"/>
+            <x_uniform value_min="-0.005" value_max="0.005"/>
+            <y_uniform value_min="-0.002" value_max="0.002"/>
+            <z_uniform value_min="-0.026" value_max="0.026"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="89.85" value_max="90.0"/> 
+        <theta_uniform value_min="0." value_max="360."/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -395,8 +395,6 @@
 <!--    <ksnav_surface name="nav_surface"/>  -->
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
-
-
     <!-- terminators -->
     <ksterm_max_time name="term_max_time" time="1.e-3"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
@@ -409,7 +407,7 @@
 
     
     <!-- modifiers -->
-    <cycl_rad_extr name="my_rad_extr" P8Phase="1" /> 
+    <cycl_rad_extr name="my_rad_extr" P8Phase="1" />
 
 
     <!-- writers -->
@@ -478,13 +476,22 @@
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
+        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> 
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
 
+
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+
+
+
+        <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
+            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
+        </geo_surface>
+
+
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
@@ -513,7 +520,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="10"
+        events="40"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"

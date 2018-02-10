@@ -49,7 +49,7 @@ In this tutorial, we will be simulating a 89.96 degree electron in a Phase II Pr
 A VTK window should appear showing the particle track.
 
 ## Visualize the Field Map (requires VTK)
-1. Edit LocustTemplate.json so that the "xml-filename" points to the "Project8Phase2_FieldMap.xml" file in the current directory.
+1. Edit LocustTemplate.json so that the "xml-filename" points to the "Project8Phase2_FieldMap.xml" file in the current directory.  Alternatively, make the following edits in "Project8Phase2_WithRoot_Template.xml":  define the "generator" field to be gen_bfieldlines, define the trajectory field to be "traj_magnetic", and set P8Phase=0 in the step modifier "cycl_rad_extr".
 2. Look at the parameters in the field "gen_bfieldlines":
 
     ```

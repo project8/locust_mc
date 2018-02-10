@@ -26,9 +26,13 @@ namespace locust
             Generator( aName ),
             fLO_Frequency( 0.),
             gxml_filename("blank.xml"),
+            gpitchangle_filename("blank.xml"),
             phi_t1(0.),
             phi_t2(0.),
-            phiLO_t(0.)
+            phiLO_t(0.),
+            EventStartTime(-99.),
+            EventToFile(0)
+
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -49,6 +53,7 @@ namespace locust
         if( aParam->has( "xml-filename" ) )
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
+            gpitchangle_filename = aParam->get_value< std::string >( "pitchangle-filename" );
         }
 
 
@@ -100,7 +105,7 @@ namespace locust
         return true;
     }
 
-    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) 
+    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
     {
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
@@ -117,24 +122,20 @@ namespace locust
           {
           tCutOffFrequency = LMCConst::C() * LMCConst::Pi() / 10.668e-3; // a in m
           }
-        else
-          {
-          printf("Please check the P8Phase parameter in the xml file.\n"); getchar();
-          }
 
         locust::Particle tParticle = fParticleHistory.back();
+        RunLengthCalculator RunLengthCalculator1;
 
-        //Set as positive, even though really negative
+
+        //Set as positive, even though really negative for the particle.
         double tLarmorPower = tParticle.GetLarmorPower();
         double tCyclotronFrequency = tParticle.GetCyclotronFrequency()/2./LMCConst::Pi();
         if (tCyclotronFrequency < 15.e9) {printf("check 2PI in fcyc\n"); getchar();}
         double tVelocityZ = tParticle.GetVelocity().Z();
+        double tPitchAngle = tParticle.GetPitchAngle();
         double tGroupVelocity = LMCConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*LMCConst::Pi()*tCyclotronFrequency  ), 2.) );
-        double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
+        double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) );
 
-        //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
-
-//        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*LMCConst::Pi()*tCyclotronFrequency); getchar();
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
 
@@ -145,9 +146,20 @@ namespace locust
             // initialize phases.
             phi_t1 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
             phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
+            EventStartTime = (double)index/RunLengthCalculator1.GetAcquisitionRate()/1.e6/aSignal->DecimationFactor();
+            EventToFile = false;
+	    tParticle.SetPitchAngle(-99.);
         }
 
-        //printf("PreEventCounter is %d and phi_t1 is %f and phi_t2 is %f\n", PreEventCounter, phi_t1, phi_t2); getchar();
+
+        if ((tPitchAngle>0.)&&(EventToFile==false))
+          {
+          fprintf(fp, "%10.4g   %g\n", EventStartTime, tPitchAngle);
+	  //          printf("\n\nstart time %g and pitch angle %g\n\n\n", EventStartTime, tPitchAngle); 
+          EventToFile = true;
+          }
+
+
 
         phi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * fDigitizerTimeStep;
         phi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * fDigitizerTimeStep;
@@ -172,16 +184,16 @@ namespace locust
           }
 
 
-	/*
+	
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
             		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
             index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-            getchar();
+	    //            getchar();
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-	*/
+	
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 	  
@@ -217,22 +229,22 @@ namespace locust
 
     bool KassSignalGenerator::DoGenerate( Signal* aSignal )
     {
-        // temporary IQ patch.  Define and initialize ImaginarySignal.
-
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 1500000;
-        //double fPhaseIISimulation = true;  // this is now a parameter in the xml file.
+        FILE *fp = fopen(gpitchangle_filename.c_str(), "w");
 
-        //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
-        //fprintf(fp, "testing\n");
 
         std::thread Kassiopeia (KassiopeiaInit,gxml_filename);     // spawn new thread
+
+		
         fRunInProgress = true;
         fKassEventReady = false;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
+	  //	  printf("index is %d\n", index);
+	 
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
             {
                 if (ReceivedKassReady()) fPreEventInProgress = true;
@@ -263,14 +275,13 @@ namespace locust
                 if (fEventInProgress)
                 {
                     //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                    DriveAntenna(PreEventCounter, index, aSignal);
+		  //		  		                      DriveAntenna(PreEventCounter, index, aSignal, fp);
                     PreEventCounter = 0; // reset
                 }
                 tLock.unlock();
             }
         }  // for loop
-
-//        delete ImaginarySignal;
+	printf("done with loop\n");
 
         // trigger any remaining events in Kassiopeia so that its thread can finish.
         while (fRunInProgress)
@@ -279,8 +290,12 @@ namespace locust
             if (ReceivedKassReady()) WakeBeforeEvent();
         }
 
-        Kassiopeia.join();  // wait for Kassiopeia to finish.
+	printf("check 2\n");
 
+        Kassiopeia.join();  // wait for Kassiopeia to finish.
+        fclose(fp);
+	
+	
         return true;
     }
 

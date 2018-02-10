@@ -188,13 +188,13 @@ namespace locust
 
     }
 
-    double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const KGeoBag::KThreeVector &aParticlePosition, const KGeoBag::KThreeVector &aReceiverPosition )
+    double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition )
     {
         //return pow(aReceiverTime - aParticleTime,2.) - (aReceiverPosition - aParticlePosition).MagnitudeSquared() / pow(LMCConst::C() , 2.);
         return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
     }
 
-    double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, KGeoBag::KThreeVector aReceiverPosition, double aSpaceTimeInterval, const int aStepOrder = 0)
+    double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval, const int aStepOrder = 0)
     {
         double tRetardedTime = aParticle.GetTime(true); //interpolate!!!
 
@@ -210,10 +210,10 @@ namespace locust
             //return tRetardedTime + tSign * aSpaceTimeInterval;
         }
 
-        KGeoBag::KThreeVector tNewPosition = aParticle.GetPosition(true);
-        KGeoBag::KThreeVector tNewVelocity = aParticle.GetVelocity(true);
+        LMCThreeVector tNewPosition = aParticle.GetPosition(true);
+        LMCThreeVector tNewVelocity = aParticle.GetVelocity(true);
 
-        KGeoBag::KThreeVector tReceiverVector = aReceiverPosition - tNewPosition;
+        LMCThreeVector tReceiverVector = aReceiverPosition - tNewPosition;
         double tReceiverDistance = tReceiverVector.Magnitude();
 
         //Newtons Method X_{n+1} = X_{n} - f(X_{n}) / f'(X_{n})
@@ -227,7 +227,7 @@ namespace locust
         }
 
         //Householders Method
-        KGeoBag::KThreeVector tNewAcceleration = aParticle.GetAcceleration(true);
+        LMCThreeVector tNewAcceleration = aParticle.GetAcceleration(true);
         double fZeroDoublePrime = 2. * (1. - tNewVelocity.Dot(tNewVelocity)/(c*c)-tNewAcceleration.Dot(tNewPosition-aReceiverPosition)/(c*c));
 
         if(aStepOrder==2)
@@ -270,7 +270,7 @@ namespace locust
 
         //Receiver Properties
         double tReceiverTime = t_old;
-        KGeoBag::KThreeVector tReceiverPosition;
+        LMCThreeVector tReceiverPosition;
 
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
         double tTotalPower=0.;
@@ -367,8 +367,8 @@ namespace locust
             PreviousTimes[i].second = tRetardedTime;
 
 
-            KGeoBag::KThreeVector tECrossH = tCurrentParticle.CalculateElectricField(rReceiver[i]).Cross(tCurrentParticle.CalculateMagneticField(rReceiver[i]));
-            KGeoBag::KThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
+            LMCThreeVector tECrossH = tCurrentParticle.CalculateElectricField(rReceiver[i]).Cross(tCurrentParticle.CalculateMagneticField(rReceiver[i]));
+            LMCThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
 
             tTotalPower += dx * dx * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;// * (fabs(tCurrentParticle.GetPosition(true).Z())<0.01);
 
@@ -405,7 +405,7 @@ namespace locust
 
             if( fWriteNFD && (fNFDIndex < nHFSSBins) && (tReceiverTime >= tMinHFSS) )
             {
-                KGeoBag::KThreeVector tmpElectricField, tmpMagneticField;
+                LMCThreeVector tmpElectricField, tmpMagneticField;
                 tmpElectricField = tCurrentParticle.CalculateElectricField(rReceiver[i]);
                 tmpMagneticField = tCurrentParticle.CalculateMagneticField(rReceiver[i]);
                 
@@ -514,7 +514,7 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
+        const int NPreEventSamples = 1500000;
 
         //printf("fwritenfd is %d\n", fWriteNFD); getchar();
 
@@ -552,7 +552,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(PreEventCounter, index, aSignal);
+		     DriveAntenna(PreEventCounter, index, aSignal);
 
                         PreEventCounter = 0; // reset
                     }

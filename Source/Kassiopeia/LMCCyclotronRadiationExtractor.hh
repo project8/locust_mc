@@ -63,10 +63,11 @@ namespace locust
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE01FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
-            locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &aFinalParticle);
+            locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &anInitialParticle, Kassiopeia::KSParticle &aFinalParticle);
             Kassiopeia::KSTrajectory* fTrajectory;
             int fP8Phase; // 1, 2, 3, or 4.
             std::deque<locust::Particle> fNewParticleHistory;
+            double fPitchAngle;
 
 
 
