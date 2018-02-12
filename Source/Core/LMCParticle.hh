@@ -75,14 +75,10 @@ namespace locust
             LMCThreeVector fNewVelocity;
             LMCThreeVector fNewAcceleration;
 
-<<<<<<< HEAD
-            KGeoBag::KThreeVector fGuidingCenterPosition;
-            KGeoBag::KThreeVector fMagneticField;
-            double fPitchAngle;
-=======
             LMCThreeVector fGuidingCenterPosition;
             LMCThreeVector fMagneticField;
->>>>>>> 614a35118d6b936952ca77c22bd3977ee38712f5
+
+            double fPitchAngle;
 
             //2 perp. vectors which define helical motion
             LMCThreeVector fAlpha;
