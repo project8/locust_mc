@@ -325,6 +325,14 @@ namespace locust
 
             int tHistoryMaxSize;
 
+            //Dont want to check .back() of history if it is empty! -> Segfault
+            if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
+            {
+                //printf("New Particle!\n");
+                t_poststep = 0.;
+                fParticleHistory.clear();
+            }
+
             //Phase I or II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
             if((fP8Phase==2) || (fP8Phase==1))
             {
