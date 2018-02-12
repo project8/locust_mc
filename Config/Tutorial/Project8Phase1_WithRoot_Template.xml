@@ -3,6 +3,7 @@
 
 <external_define name="simulation" value="1"/>
 
+<<<<<<< HEAD
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
 <external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
  to apparent slow performance with 0.0 value -->
@@ -19,7 +20,7 @@
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
-<!-- <external_define name="trajectory" value="traj_magnetic"/>  -->
+<!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 
 <external_define name="count" value="1"/>
@@ -395,8 +396,6 @@
 <!--    <ksnav_surface name="nav_surface"/>  -->
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
-
-
     <!-- terminators -->
     <ksterm_max_time name="term_max_time" time="1.e-3"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
@@ -483,8 +482,17 @@
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
 
+
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+
+
+
+        <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
+            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
+        </geo_surface>
+
+
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>

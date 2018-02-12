@@ -10,7 +10,7 @@
 
 #include "LMCConst.hh"
 #include <stdint.h>
-#include <KThreeVector.hh>
+#include "LMCThreeVector.hh"
 
 
 namespace locust
@@ -34,6 +34,7 @@ namespace locust
             void SetPosition(double,double,double);
             void SetVelocityVector(double,double,double);
             void SetMagneticFieldVector(double,double,double);
+            void SetPitchAngle(double);
             void SetCyclotronFrequency(double);
             void SetMass(double);
             void SetCharge(double);
@@ -43,17 +44,19 @@ namespace locust
             void Interpolate(double);
 
             double GetTime(const bool &aInterpolated = false) const;
-            KGeoBag::KThreeVector GetPosition(const bool &aInterpolated = false ) const;
-            KGeoBag::KThreeVector GetVelocity(const bool &aInterpolated = false) const;
-            KGeoBag::KThreeVector GetAcceleration(const bool &aInterpolated = false) const;
+            LMCThreeVector GetPosition(const bool &aInterpolated = false ) const;
+            LMCThreeVector GetVelocity(const bool &aInterpolated = false) const;
+            LMCThreeVector GetAcceleration(const bool &aInterpolated = false) const;
+
+            double GetPitchAngle() const;
             double GetCyclotronFrequency() const;
             double GetKineticEnergy() const;
             double GetCharge() const;
             double GetLarmorPower() const;
 
-            double CalculateVoltage(const KGeoBag::KThreeVector&) const;
-            KGeoBag::KThreeVector CalculateElectricField(const KGeoBag::KThreeVector&) const;
-            KGeoBag::KThreeVector CalculateMagneticField(const KGeoBag::KThreeVector&) const;
+            double CalculateVoltage(const LMCThreeVector&) const;
+            LMCThreeVector CalculateElectricField(const LMCThreeVector&) const;
+            LMCThreeVector CalculateMagneticField(const LMCThreeVector&) const;
 
             void Print() const;
             void SetSpline(Particle);
@@ -63,21 +66,23 @@ namespace locust
             double fTimeDisplacement;//Allows us to interpolate particle locally around node
             double fTimeStep;//Time Step to next node
 
-            KGeoBag::KThreeVector fPosition;
-            KGeoBag::KThreeVector fVelocity;
-            KGeoBag::KThreeVector fAcceleration;
+            LMCThreeVector fPosition;
+            LMCThreeVector fVelocity;
+            LMCThreeVector fAcceleration;
             double fVelocityParallel;
 
-            KGeoBag::KThreeVector fNewPosition;
-            KGeoBag::KThreeVector fNewVelocity;
-            KGeoBag::KThreeVector fNewAcceleration;
+            LMCThreeVector fNewPosition;
+            LMCThreeVector fNewVelocity;
+            LMCThreeVector fNewAcceleration;
 
-            KGeoBag::KThreeVector fGuidingCenterPosition;
-            KGeoBag::KThreeVector fMagneticField;
+            LMCThreeVector fGuidingCenterPosition;
+            LMCThreeVector fMagneticField;
+
+            double fPitchAngle;
 
             //2 perp. vectors which define helical motion
-            KGeoBag::KThreeVector fAlpha;
-            KGeoBag::KThreeVector fBeta;
+            LMCThreeVector fAlpha;
+            LMCThreeVector fBeta;
 
             double fMass;
             double fCharge;
@@ -86,8 +91,8 @@ namespace locust
             double fCyclotronRadius;
             double fLarmorPower;
 
-            KGeoBag::KThreeVector fSplineC;
-            KGeoBag::KThreeVector fSplineD;
+            LMCThreeVector fSplineC;
+            LMCThreeVector fSplineD;
 
 };
 
