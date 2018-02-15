@@ -2,8 +2,6 @@
 
 
 <external_define name="simulation" value="1"/>
-
-<<<<<<< HEAD
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
 <external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
  to apparent slow performance with 0.0 value -->
@@ -197,13 +195,13 @@
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="-0.001" value_max="0.001"/>
-            <y_uniform value_min="0.00" value_max="0.00"/>
-            <z_uniform value_min="0.0" value_max="0.0"/>
+            <x_uniform value_min="-0.005" value_max="0.005"/>
+            <y_uniform value_min="-0.002" value_max="0.002"/>
+            <z_uniform value_min="0.02" value_max="0.02"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="89.85" value_max="90.0"/> 
+        <theta_uniform value_min="0.0" value_max="360.0"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -397,7 +395,7 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.e-3"/>
+    <ksterm_max_time name="term_max_time" time="5.e-7"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
@@ -486,12 +484,13 @@
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
 
+        <geo_space name="space_waveguide" spaces="world/project8/rectangularwaveguide">
 
-
+<!--
         <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
             <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
         </geo_surface>
-
+-->
 
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
@@ -509,6 +508,7 @@
 -->
 
           
+        </geo_space>
 
     </ksgeo_space>
 
@@ -521,7 +521,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="10"
+        events="100"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"
