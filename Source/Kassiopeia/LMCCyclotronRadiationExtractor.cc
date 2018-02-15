@@ -281,6 +281,8 @@ namespace locust
         if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
           {
           fPitchAngle = aFinalParticle.GetPolarAngleToB();
+//      	printf("pitch angle is %f\n", fPitchAngle); getchar();
+
           }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
@@ -315,6 +317,10 @@ namespace locust
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
 
+        if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
+        {
+
+        if (t_old == 0.) fPitchAngle = -99.;  // new electron needs central pitch angle reset.
     	double t_poststep = aFinalParticle.GetTime();
         fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
@@ -328,7 +334,7 @@ namespace locust
             //Dont want to check .back() of history if it is empty! -> Segfault
             if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
             {
-                //printf("New Particle!\n");
+//                printf("New Particle!, t_old is %g\n", t_old); getchar();
                 t_poststep = 0.;
                 fParticleHistory.clear();
             }
@@ -374,6 +380,7 @@ namespace locust
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
         }
+        } // fDoneWithSignalGeneration
 
         return true;
     }

@@ -25,6 +25,8 @@ bool fEventInProgress = false;
 bool fRunInProgress = false;
 bool fPreEventInProgress = false;
 bool fFalseStartKassiopeia = true; // flag to avoid false start on some Macs.
+bool fDoneWithSignalGeneration = false;  // do not continue to generate voltages and advance digitizer time.
+
 
 std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
 std::mutex fKassReadyMutex;  

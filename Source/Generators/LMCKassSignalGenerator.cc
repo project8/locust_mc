@@ -9,6 +9,7 @@
 #include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 #include "LMCSimulationController.hh"
+#include <chrono>
 
 
 #include "logger.hh"
@@ -88,18 +89,20 @@ namespace locust
 
     static bool ReceivedKassReady()
     {
+    	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		printf("LMC about to wait, fEventInProgress is %d\n", fEventInProgress);
 
         if( !fKassEventReady)
         {
             std::unique_lock< std::mutex >tLock( fKassReadyMutex );
             fKassReadyCondition.wait( tLock );
-            printf("LMC Got the fKassReadyCondition signal\n");
         }
 
         if (fFalseStartKassiopeia)  // workaround for some Macs
         {
             std::unique_lock< std::mutex >tLock( fKassReadyMutex );
             fKassReadyCondition.wait( tLock );
+
         }
 
         return true;
@@ -193,10 +196,11 @@ namespace locust
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
             		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
             index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-            getchar();
+//            getchar();
+
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-<<<<<<< HEAD
+
 	*/
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
@@ -257,7 +261,7 @@ namespace locust
             if (fPreEventInProgress)
             {
                 PreEventCounter += 1;
-                //printf("preeventcounter is %d\n", PreEventCounter);
+//                printf("preeventcounter is %d\n", PreEventCounter);
 
                 if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
                 {
@@ -285,11 +289,19 @@ namespace locust
             }
         }  // for loop
 
+        fclose(fp);
+
         // trigger any remaining events in Kassiopeia so that its thread can finish.
+        fDoneWithSignalGeneration = true;
         while (fRunInProgress)
         {
             if (fRunInProgress)
-            if (ReceivedKassReady()) WakeBeforeEvent();
+            {
+            	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            	if (!fEventInProgress)
+                  if (ReceivedKassReady())
+            	    WakeBeforeEvent();
+            }
         }
 
         Kassiopeia.join();  // wait for Kassiopeia to finish.
