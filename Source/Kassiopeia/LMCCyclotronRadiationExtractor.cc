@@ -13,12 +13,14 @@ namespace locust
 {
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor():
-    		fP8Phase( 0 )
+    		fP8Phase( 0 ),
+    		fPitchAngle( -99. )
     {
     }
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig ):
-    		fP8Phase( 0 )
+    		fP8Phase( 0 ),
+    		fPitchAngle( -99. )
     {
     }
 
@@ -219,7 +221,7 @@ namespace locust
     {
         double TE01FieldFromShort = GetTE01FieldAfterOneBounce(anInitialParticle, aFinalParticle);
         double CouplingFactorTE01 = GetCouplingFactorTE01(aFinalParticle);
-        double DampingFactorTE01 = CouplingFactorTE01*CouplingFactorTE01*(1. - TE01FieldFromShort*TE01FieldFromShort);  // can be > 0 or < 0.
+        double DampingFactorTE01 = CouplingFactorTE01*(1. - TE01FieldFromShort*TE01FieldFromShort);  // can be > 0 or < 0.
 
     	return DampingFactorTE01;
     }
@@ -234,8 +236,8 @@ namespace locust
         double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
         double CouplingFactorTM01 = GetCouplingFactorTM01(aFinalParticle);
 
-        double DampingFactorTE11 = CouplingFactorTE11*CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
-        double DampingFactorTM01 = CouplingFactorTM01*CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
+        double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
+        double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
         double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
 
     	return DampingFactor;
@@ -252,7 +254,7 @@ namespace locust
         return;
     }
 
-    locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( KSParticle &aFinalParticle)
+    locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( KSParticle &anInitialParticle, KSParticle &aFinalParticle)
     {
         LMCThreeVector tPosition(aFinalParticle.GetPosition().Components());
         LMCThreeVector tVelocity(aFinalParticle.GetVelocity().Components());
@@ -260,6 +262,7 @@ namespace locust
         double tMass = aFinalParticle.GetMass();
         double tCharge = aFinalParticle.GetCharge();
         double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
+        double tPitchAngle = aFinalParticle.GetPolarAngleToB();
     	double tTime = aFinalParticle.GetTime();
 
 
@@ -272,7 +275,19 @@ namespace locust
         aNewParticle.SetTime(tTime);
         aNewParticle.SetCyclotronFrequency(2.*LMCConst::Pi()*tCyclotronFrequency);
         aNewParticle.SetKinematicProperties();
-        
+
+        if (fPitchAngle == -99.)  // first crossing of center
+        {
+        if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
+          {
+          fPitchAngle = aFinalParticle.GetPolarAngleToB();
+//      	printf("pitch angle is %f\n", fPitchAngle); getchar();
+
+          }
+        }
+        aNewParticle.SetPitchAngle(fPitchAngle);
+
+
         return aNewParticle;
 
     }
@@ -302,8 +317,12 @@ namespace locust
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
 
+        if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
+        {
+
+        if (t_old == 0.) fPitchAngle = -99.;  // new electron needs central pitch angle reset.
     	double t_poststep = aFinalParticle.GetTime();
-        fNewParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
+        fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
         if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s
         {
@@ -312,13 +331,21 @@ namespace locust
 
             int tHistoryMaxSize;
 
+            //Dont want to check .back() of history if it is empty! -> Segfault
+            if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
+            {
+//                printf("New Particle!, t_old is %g\n", t_old); getchar();
+                t_poststep = 0.;
+                fParticleHistory.clear();
+            }
+
             //Phase I or II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
             if((fP8Phase==2) || (fP8Phase==1))
             {
                 // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
                 KSParticle tParticleCopy = aFinalParticle;
                 katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old + fDigitizerTimeStep, tParticleCopy);
-                fParticleHistory.push_back(ExtractKassiopeiaParticle(tParticleCopy));
+                fParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, tParticleCopy));
 
                 tHistoryMaxSize = 5;
 
@@ -339,14 +366,18 @@ namespace locust
 
             fNewParticleHistory.clear();
 
-            //Purge fParticleHistory of overly old entries
-            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
-                fParticleHistory.pop_front();
-
+            //Purge fParticleHistory of overly old entries	    
+	    while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
+	      {
+	      fParticleHistory.pop_front();
+	      }
+	     //	    printf("done purging\n");
+	    
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
         }
+        } // fDoneWithSignalGeneration
 
         return true;
     }

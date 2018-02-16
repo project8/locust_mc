@@ -82,7 +82,11 @@
 
     "waterfall-writer":
     {
+<<<<<<< HEAD
         "output-file": "/cmn/p8/locust_mc/cbuild/bin/katydidwaterfall.root",
+=======
+        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
+>>>>>>> 5c80c82f8a91b2755d2b74889e757679614bd27a
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
@@ -94,7 +98,11 @@
 
     "writer":
     {
+<<<<<<< HEAD
         "output-file": "/cmn/p8/locust_mc/cbuild/bin/basic.root",
+=======
+        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/basic.root",
+>>>>>>> 5c80c82f8a91b2755d2b74889e757679614bd27a
         "file-flag": "recreate"
     }
 

@@ -34,6 +34,7 @@ namespace locust
             void SetPosition(double,double,double);
             void SetVelocityVector(double,double,double);
             void SetMagneticFieldVector(double,double,double);
+            void SetPitchAngle(double);
             void SetCyclotronFrequency(double);
             void SetMass(double);
             void SetCharge(double);
@@ -46,6 +47,8 @@ namespace locust
             LMCThreeVector GetPosition(const bool &aInterpolated = false ) const;
             LMCThreeVector GetVelocity(const bool &aInterpolated = false) const;
             LMCThreeVector GetAcceleration(const bool &aInterpolated = false) const;
+
+            double GetPitchAngle() const;
             double GetCyclotronFrequency() const;
             double GetKineticEnergy() const;
             double GetCharge() const;
@@ -74,6 +77,8 @@ namespace locust
 
             LMCThreeVector fGuidingCenterPosition;
             LMCThreeVector fMagneticField;
+
+            double fPitchAngle;
 
             //2 perp. vectors which define helical motion
             LMCThreeVector fAlpha;

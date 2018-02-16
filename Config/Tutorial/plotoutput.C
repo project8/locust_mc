@@ -266,7 +266,7 @@ void fieldmap() {
     double Bz_array[200000];
     double x=0., y=0.;
 
-    TFile *f = TFile::Open("~/locust_mc/cbuild/output/Kassiopeia/Phase2Output.root");
+    TFile *f = TFile::Open("~/locust_mc/cbuild/output/Kassiopeia/Phase1Output.root");
 
     // Create a TTreeReader for the tree, for instance by passing the
     // TTree's name and the TDirectory / TFile it is in.

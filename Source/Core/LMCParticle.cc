@@ -24,6 +24,7 @@ namespace locust
             fNewAcceleration( -99., -99., -99. ),
             fGuidingCenterPosition( -99., -99., -99. ),
             fMagneticField( -99., -99., -99. ),
+            fPitchAngle( -99. ),
             fAlpha( -99., -99., -99. ),
             fBeta( -99., -99., -99. ),
             fMass( -99. ),
@@ -98,10 +99,20 @@ namespace locust
     {
         return fCyclotronFrequency;
     }
-    double Particle::GetKineticEnergy() const //In SI
+
+    void Particle::SetPitchAngle(double aPitchAngle)
     {
-       return (fGamma - 1.) * fMass * pow(LMCConst::C() , 2.); 
+        fPitchAngle=aPitchAngle;
+        return;
     }
+
+
+
+    double Particle::GetPitchAngle() const
+    {
+        return fPitchAngle;
+    }
+
 
     void Particle::SetMass(double aMass)
     {
