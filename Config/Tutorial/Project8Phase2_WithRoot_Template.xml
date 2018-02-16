@@ -504,10 +504,6 @@
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
         <command parent="write_root" field="add_step_output" child="component_step_world"/> 
 
-
-
-        <geo_space name="space_waveguide" spaces="world/project8/cylindricalwaveguide">
-
         <geo_surface name="upstream_endcap_death" surfaces="world/project8/cylindricalwaveguide/upstream_endcap_piece">
             <command parent="root_terminator" field="add_terminator" child="term_upstream_endcap_death"/>
         </geo_surface>
@@ -531,7 +527,7 @@
 -->
 
           
-        </geo_space> 
+ 
     </ksgeo_space>
 
 
@@ -543,7 +539,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="38"
+        events="10000"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"

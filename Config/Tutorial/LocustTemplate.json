@@ -11,7 +11,7 @@
     "kass-signal":
     {
         "lo-frequency": 25.3106e9,
-        "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase2_WithRoot_Template.xml",
+        "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml",
         "pitchangle-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/pitchangles.txt"
     },
 
@@ -30,7 +30,7 @@
   
     "gaussian-noise":
     {
-    "noise-floor": 20.0e-23,
+    "noise-floor": 4.0e-23,
     "domain": "time"
     },
 

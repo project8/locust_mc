@@ -90,7 +90,7 @@ namespace locust
     static bool ReceivedKassReady()
     {
     	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		printf("LMC about to wait, fEventInProgress is %d\n", fEventInProgress);
+		printf("LMC about to wait ..\n");
 
         if( !fKassEventReady)
         {
@@ -239,7 +239,7 @@ namespace locust
     {
         //n samples for event spacing.
         int PreEventCounter = 0;
-        int NPreEventSamples = 1500000;
+        int NPreEventSamples = 150000;
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
         //fprintf(fp, "testing\n");

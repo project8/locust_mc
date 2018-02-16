@@ -367,12 +367,9 @@ namespace locust
             fNewParticleHistory.clear();
 
             //Purge fParticleHistory of overly old entries	    
-	    //	    printf("purging ... %g %g %d %d\n", t_poststep, fParticleHistory.front().GetTime(), fParticleHistory.size(), tHistoryMaxSize);
 	    while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
 	      {
-		printf("fParticleHistory.size() is %d and particletime is %g\n", fParticleHistory.size(), fParticleHistory.front().GetTime());
 	      fParticleHistory.pop_front();
-	      printf("check\n"); 
 	      }
 	     //	    printf("done purging\n");
 	    
