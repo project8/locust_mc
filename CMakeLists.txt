@@ -16,7 +16,7 @@ pbuilder_prepare_project()
 
 set_option( USE_CPP11 TRUE )
 
-option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" TRUE )
+option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     # Keep KasperDefaults from overriding the install prefix

@@ -7,10 +7,8 @@
 
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
-#define PI 3.1415926
 #define CENTER_TO_SHORT 0.0760 // m
 #define CENTER_TO_ANTENNA 0.07685 // m
-#define NCHANNELS 1
 
 
 #include <condition_variable>
@@ -20,16 +18,12 @@
 #include "LMCParticle.hh"
 
 
+extern int Project8Phase; // 1, 2, or 3
 extern double t_old;
-extern double t_poststep;
 
-extern double testvar;
 extern double fDigitizerTimeStep;
 
-extern int fDecimationFactor;
-
 extern std::deque<locust::Particle> fParticleHistory;
-extern std::deque<locust::Particle> fNewParticleHistory;
 
 extern bool fWaitBeforeEvent;
 extern bool fWaitAfterEvent;
@@ -38,6 +32,7 @@ extern bool fEventInProgress;
 extern bool fRunInProgress;
 extern bool fPreEventInProgress;
 extern bool fFalseStartKassiopeia;
+extern bool fDoneWithSignalGeneration;
 
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.

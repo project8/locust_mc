@@ -2,14 +2,14 @@
 
 
 <external_define name="simulation" value="1"/>
-
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub -->
+<external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
+ to apparent slow performance with 0.0 value -->
+
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
 <!--<external_define name="fieldZ" value="0.9581540"/> -->
 <external_define name="fieldX" value="0.0"/>  <!-- earth's horiz. field in Seattle -->
 <external_define name="fieldY" value="0.0"/>
-
 
 <external_define name="alignment" value="0."/>
 
@@ -18,25 +18,25 @@
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
-<!-- <external_define name="trajectory" value="traj_magnetic"/>  -->
+<!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
 
 <external_define name="output_path" value="[KASPERSYS]/output/Kassiopeia"/> 
-<external_define name="file" value="Phase2Output"/>
+<external_define name="file" value="Phase1Output"/>
 
 
 
 <geometry>
-    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
+    <include name="/cmn/p8/locust_mc/Config/Tutorial/Project8Phase1Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
 
-    <define name="pinch_turns" value="63.0"/>
-    <define name="bathtub_turns" value="63.0"/>
+    <define name="pinch_turns" value="61.0"/>
+    <define name="bathtub_turns" value="51.0"/>
 
 
 <geometry>
@@ -45,16 +45,7 @@
 
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
-
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
-
-
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
-
-
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
-
-
 
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
@@ -198,30 +189,25 @@
     </ksgen_generator_composite>
 -->
 
+
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="-0.005" value_max="0.005"/>
-            <y_uniform value_min="-0.002" value_max="0.002"/>
-            <z_uniform value_min="-0.026" value_max="0.026"/>
+            <x_uniform value_min="0." value_max="0.0"/>
+            <y_uniform value_min="0." value_max="0.0"/>
+            <z_uniform value_min="0." value_max="0."/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="0.0" value_max="360.0"/>
+        <theta_uniform value_min="89.9" value_max="90.1"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
             <time_fix value="0."/>
         </time_composite>
     </ksgen_generator_composite>
-
-
-
-
-
- 
 
 
 <!--
@@ -408,10 +394,8 @@
 <!--    <ksnav_surface name="nav_surface"/>  -->
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
-
-
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="5.e-7"/>
+    <ksterm_max_time name="term_max_time" time="1.e-3"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
@@ -422,7 +406,7 @@
 
     
     <!-- modifiers -->
-    <cycl_rad_extr name="my_rad_extr" P8Phase="2" /> 
+    <cycl_rad_extr name="my_rad_extr" P8Phase="1" /> 
 
 
     <!-- writers -->
@@ -489,7 +473,6 @@
 
 
     <!-- navigation -->
-    <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
         <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
@@ -497,26 +480,24 @@
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
 
+
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+
+        <geo_space name="space_waveguide" spaces="world/project8/rectangularwaveguide">
+
+<!--
+        <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
+            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
+        </geo_surface>
+-->
+
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
-        <command parent="write_root" field="add_step_output" child="component_step_world"/> 
-
-        <geo_surface name="upstream_endcap_death" surfaces="world/project8/cylindricalwaveguide/upstream_endcap_piece">
-            <command parent="root_terminator" field="add_terminator" child="term_upstream_endcap_death"/>
-        </geo_surface>
-
-        <geo_surface name="downstream_endcap_death" surfaces="world/project8/cylindricalwaveguide/downstream_endcap_piece">
-            <command parent="root_terminator" field="add_terminator" child="term_downstream_endcap_death"/>
-        </geo_surface>
+<!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> --> 
 
 
-        <geo_surface name="waveguide_death" surfaces="world/project8/cylindricalwaveguide/jacket">
-            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
-
-        </geo_surface>
 
 
 <!--            <command parent="root_space_interaction" field="add_space_interaction" child="int_scattering"/>  -->
@@ -527,7 +508,8 @@
 -->
 
           
- 
+        </geo_space>
+
     </ksgeo_space>
 
 
@@ -539,7 +521,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="10000"
+        events="10"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"
@@ -554,8 +536,8 @@
 
 </kassiopeia>
 
-<!--
 
+<!--
     <vtk_window
         name="vtk_window"
         enable_display="true"

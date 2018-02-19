@@ -3,6 +3,7 @@
  *
  *  Created on: Mar 13, 2016
  *      Author: nsoblath
+ * @brief It transfers particle track information from Kassiopiea to Locust for field calculation. 
  */
 
 #ifndef LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
@@ -62,9 +63,11 @@ namespace locust
             double GetTM01FieldAfterBounces(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE01FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
-            locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &aFinalParticle);
+            locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &anInitialParticle, Kassiopeia::KSParticle &aFinalParticle);
             Kassiopeia::KSTrajectory* fTrajectory;
             int fP8Phase; // 1, 2, 3, or 4.
+            std::deque<locust::Particle> fNewParticleHistory;
+            double fPitchAngle;
 
 
 

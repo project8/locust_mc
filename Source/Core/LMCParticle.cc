@@ -24,6 +24,7 @@ namespace locust
             fNewAcceleration( -99., -99., -99. ),
             fGuidingCenterPosition( -99., -99., -99. ),
             fMagneticField( -99., -99., -99. ),
+            fPitchAngle( -99. ),
             fAlpha( -99., -99., -99. ),
             fBeta( -99., -99., -99. ),
             fMass( -99. ),
@@ -60,7 +61,7 @@ namespace locust
         return;
     }
 
-    KGeoBag::KThreeVector Particle::GetPosition(const bool &aInterpolated ) const
+    LMCThreeVector Particle::GetPosition(const bool &aInterpolated ) const
     {
         return aInterpolated ? fNewPosition : fPosition;
     }
@@ -72,12 +73,12 @@ namespace locust
         return;
     }
 
-    KGeoBag::KThreeVector Particle::GetVelocity(const bool &aInterpolated ) const
+    LMCThreeVector Particle::GetVelocity(const bool &aInterpolated ) const
     {
         return aInterpolated ? fNewVelocity : fVelocity;
     }
 
-    KGeoBag::KThreeVector Particle::GetAcceleration(const bool &aInterpolated ) const
+    LMCThreeVector Particle::GetAcceleration(const bool &aInterpolated ) const
     {
         return aInterpolated ? fNewAcceleration : fNewAcceleration;
     }
@@ -98,10 +99,20 @@ namespace locust
     {
         return fCyclotronFrequency;
     }
-    double Particle::GetKineticEnergy() const //In SI
+
+    void Particle::SetPitchAngle(double aPitchAngle)
     {
-       return (fGamma - 1.) * fMass * pow(KConst::C() , 2.); 
+        fPitchAngle=aPitchAngle;
+        return;
     }
+
+
+
+    double Particle::GetPitchAngle() const
+    {
+        return fPitchAngle;
+    }
+
 
     void Particle::SetMass(double aMass)
     {
@@ -130,18 +141,18 @@ namespace locust
         fAcceleration = fCharge/fMass*fNewVelocity.Cross(fMagneticField);
         fNewAcceleration = fAcceleration;
 
-        fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (KConst::FourPiEps() * pow( KConst::C() , 3.) );
+        fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (LMCConst::FourPiEps() * pow( LMCConst::C() , 3.) );
 
-        double tBeta = fVelocity.Magnitude() / KConst::C();
+        double tBeta = fVelocity.Magnitude() / LMCConst::C();
         fGamma = 1. / sqrt(( 1. - tBeta ) * ( 1. + tBeta ));
 
         fVelocityParallel=fVelocity.Dot(fMagneticField.Unit());
-        KGeoBag::KThreeVector vPerp = fVelocity - fVelocityParallel * fMagneticField.Unit();
+        LMCThreeVector vPerp = fVelocity - fVelocityParallel * fMagneticField.Unit();
         fBeta=vPerp.Unit();
 
         fCyclotronRadius = fGamma * fMass * vPerp.Magnitude() / (fabs(fCharge) * fMagneticField.Magnitude());
 
-        KGeoBag::KThreeVector tCrossRadial = (fVelocity.Cross(fMagneticField)).Unit();
+        LMCThreeVector tCrossRadial = (fVelocity.Cross(fMagneticField)).Unit();
 
         if(fCharge<0) tCrossRadial *= -1.;
 
@@ -175,40 +186,40 @@ namespace locust
     }
 
 
-    KGeoBag::KThreeVector Particle::CalculateElectricField(const KGeoBag::KThreeVector &aFieldPosition) const
+    LMCThreeVector Particle::CalculateElectricField(const LMCThreeVector &aFieldPosition) const
     {
-        double c=KConst::C();
+        double c=LMCConst::C();
 
-        KGeoBag::KThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
-        KGeoBag::KThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
+        LMCThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
+        LMCThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
         double tFieldPositionDistance = tFieldPositionVector.Magnitude();
         //Lorentz Equation
-        KGeoBag::KThreeVector tBetaDot = fNewAcceleration / c;
-        KGeoBag::KThreeVector tNormalMinusBeta = tFieldPositionNormal - 1./ c * fNewVelocity;
+        LMCThreeVector tBetaDot = fNewAcceleration / c;
+        LMCThreeVector tNormalMinusBeta = tFieldPositionNormal - 1./ c * fNewVelocity;
 
         //Lienard-Wiechert Equations
-        KGeoBag::KThreeVector E = fCharge * (tFieldPositionNormal.Cross(tNormalMinusBeta.Cross(tBetaDot) ) ) / ( KConst::FourPiEps() * c *pow( 1. - tFieldPositionNormal.Dot(fNewVelocity) / c, 3. ) * tFieldPositionDistance );
+        LMCThreeVector E = fCharge * (tFieldPositionNormal.Cross(tNormalMinusBeta.Cross(tBetaDot) ) ) / ( LMCConst::FourPiEps() * c *pow( 1. - tFieldPositionNormal.Dot(fNewVelocity) / c, 3. ) * tFieldPositionDistance );
         return E;
     }
 
-    KGeoBag::KThreeVector Particle::CalculateMagneticField(const KGeoBag::KThreeVector &aFieldPosition) const
+    LMCThreeVector Particle::CalculateMagneticField(const LMCThreeVector &aFieldPosition) const
     {
-        KGeoBag::KThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
-        KGeoBag::KThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
+        LMCThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
+        LMCThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
         
-        KGeoBag::KThreeVector H = tFieldPositionNormal.Cross(CalculateElectricField(aFieldPosition)) / ( KConst::MuNull() * KConst::C() );
+        LMCThreeVector H = tFieldPositionNormal.Cross(CalculateElectricField(aFieldPosition)) / ( LMCConst::MuNull() * LMCConst::C() );
 
         return H;
     }
 
-    double Particle::CalculateVoltage(const KGeoBag::KThreeVector &aFieldPosition) const
+    double Particle::CalculateVoltage(const LMCThreeVector &aFieldPosition) const
     {
         //Lienard-Wiechert Equations
-        KGeoBag::KThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
-        KGeoBag::KThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
+        LMCThreeVector tFieldPositionVector =  aFieldPosition - fNewPosition;
+        LMCThreeVector tFieldPositionNormal =  tFieldPositionVector.Unit();
         double tFieldPositionDistance = tFieldPositionVector.Magnitude();
 
-        double V=fCharge / (KConst::FourPiEps()*tFieldPositionDistance*(1.- tFieldPositionNormal.Dot(fNewVelocity)/KConst::C()));
+        double V=fCharge / (LMCConst::FourPiEps()*tFieldPositionDistance*(1.- tFieldPositionNormal.Dot(fNewVelocity)/LMCConst::C()));
         return V;
 
     }

@@ -397,7 +397,7 @@
 -->
 
     <!-- navigators -->
-e
+
 <!--    <ksnav_space name="nav_space" tolerance="1.e-6"/>  -->
     <ksnav_space name="nav_space" enter_split="false" exit_split="false"/>
 <!--    <ksnav_surface name="nav_surface"/>  -->
@@ -406,7 +406,7 @@ e
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.e-4"/>
+    <ksterm_max_time name="term_max_time" time="5.e-7"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>

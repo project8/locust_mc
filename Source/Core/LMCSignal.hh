@@ -11,7 +11,6 @@
 #include <fftw3.h>
 #include <complex.h>
 #include <stdint.h>
-#include "LMCGlobalsDeclaration.hh"
 
 
 
@@ -45,6 +44,7 @@ namespace locust
 
             unsigned TimeSize() const;
             unsigned FreqSize() const;
+            unsigned DecimationFactor() const;
             unsigned DigitalSize() const;
 
             bool ToState( State aState );
@@ -113,6 +113,7 @@ namespace locust
 
             unsigned fTimeSize;
             unsigned fFreqSize;
+            unsigned fDecimationFactor;
             unsigned fFreqSizeComplex;
             unsigned fDigitalSize;
 

@@ -10,7 +10,6 @@
 
 #include "LMCEggWriter.hh"
 #include "LMCRunLengthCalculator.hh"
-#include "LMCGlobalsDeclaration.hh"
 
 
 namespace scarab
@@ -56,6 +55,9 @@ namespace locust
             void SetRNGSeed(int seed);
             void SetRNGSeed();
 
+            unsigned GetNChannels() const;
+
+
             void SetFirstGenerator( Generator* firstGen );
 
         private:
@@ -66,7 +68,18 @@ namespace locust
             RunLengthCalculator fRunLengthCalc;
 
             EggWriter fEggWriter;
+
+            const unsigned fNChannels;
+
     };
+
+
+    inline unsigned SimulationController::GetNChannels() const
+    {
+        return fNChannels;
+    }
+
+
 
 } /* namespace locust */
 

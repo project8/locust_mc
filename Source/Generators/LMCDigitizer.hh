@@ -11,7 +11,7 @@
 #include "LMCGenerator.hh"
 
 #include "digital.hh"
-#include "LMCGlobalsDeclaration.hh"
+
 
 
 namespace locust
@@ -23,7 +23,8 @@ namespace locust
 
      @brief Digitize the data
 
-     @details
+     @details 
+     Converts voltage float to Uint8, analog voltage is "quantized" to (one of 2^bit-depth values) discrete values within v-range
 
      Configuration name: "digitizer"
 
@@ -51,7 +52,7 @@ namespace locust
             bool GetADCValuesSigned() const;
 
         protected:
-            bool DoGenerate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal );
 
             struct scarab::dig_calib_params fParams;
 

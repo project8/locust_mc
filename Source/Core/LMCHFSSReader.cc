@@ -5,6 +5,7 @@
  *      Author: nbuzinsky
  */
 
+#include "LMCConst.hh"
 #include "LMCHFSSReader.hh"
 
 #include <algorithm>
@@ -15,7 +16,6 @@
 
 #include <stdlib.h>
 #include <time.h>
-#include <KConst.h>
 
 #include "logger.hh"
 
@@ -205,7 +205,7 @@ namespace locust
         return;
     }
 
-    std::vector<KGeoBag::KThreeVector> HFSSReader::GetSurfacePoints()
+    std::vector<LMCThreeVector> HFSSReader::GetSurfacePoints()
     {
         return rSurfacePoints;
     }
@@ -246,7 +246,7 @@ namespace locust
         InputString.erase(std::remove(InputString.begin(), InputString.end(), ','), InputString.end());
     }
 
-    void HFSSReader::ArrayParse(std::string InputString,  KGeoBag::KThreeVector &X )
+    void HFSSReader::ArrayParse(std::string InputString,  LMCThreeVector &X )
     {
         StringClean(InputString);
         std::stringstream InputStream(InputString);
@@ -260,9 +260,9 @@ namespace locust
     }
 
 
-    std::vector<KGeoBag::KThreeVector> HFSSReader::GeneratePlane(std::array<double, 2> GeometryScale, int nResolution)
+    std::vector<LMCThreeVector> HFSSReader::GeneratePlane(std::array<double, 2> GeometryScale, int nResolution)
     {
-        std::vector< KGeoBag::KThreeVector > rPointVector;
+        std::vector< LMCThreeVector > rPointVector;
 
         double SizeRatio[2]={1.,1.};
         int MinIndex=(GeometryScale[0] < GeometryScale[1]) ? 0 : 1;
@@ -275,7 +275,7 @@ namespace locust
             dx[i]=double(GeometryScale[i])/double(N[i]-1);
         }
 
-        KGeoBag::KThreeVector rPointVectorBuffer;
+        LMCThreeVector rPointVectorBuffer;
         rPointVectorBuffer[2]=0.;
         for(int i=0;i<N[0];i++)
         {
@@ -291,9 +291,9 @@ namespace locust
         return rPointVector;
     }
 
-    std::vector<KGeoBag::KThreeVector > HFSSReader::GenerateBox(KGeoBag::KThreeVector GeometryScale, int nResolution)
+    std::vector<LMCThreeVector > HFSSReader::GenerateBox(LMCThreeVector GeometryScale, int nResolution)
     {
-        std::vector<KGeoBag::KThreeVector> rPointVector;
+        std::vector<LMCThreeVector> rPointVector;
 
         double SizeRatio[3]={1.,1.,1.};
         int MinIndex=0.;
@@ -310,7 +310,7 @@ namespace locust
             dx[i]=double(GeometryScale[i])/double(N[i]-1);
         }
 
-        KGeoBag::KThreeVector rPointVectorBuffer;
+        LMCThreeVector rPointVectorBuffer;
         for(int i=0;i<N[0];i++)
         {
             rPointVectorBuffer[0]=dx[0]*(double(i)-double(N[0]-1.)/2.);
@@ -330,15 +330,15 @@ namespace locust
 
     }
 
-    std::vector<KGeoBag::KThreeVector > HFSSReader::GenerateSphere(double Radius, int nResolution)
+    std::vector<LMCThreeVector > HFSSReader::GenerateSphere(double Radius, int nResolution)
     {
-        std::vector<KGeoBag::KThreeVector> rPointVector;
+        std::vector<LMCThreeVector> rPointVector;
         int nRings=2.*nResolution+3;
         double dz=2.*(1.-1./double(nRings))/double(nRings-1.);
         double zRings[nRings];
         double rRings[nRings];
         double RingCount[nRings];
-        double tPI = KConst::Pi();
+        double tPI = LMCConst::Pi();
 
         for(int i=0;i<nRings;i++)
         {
@@ -348,7 +348,7 @@ namespace locust
         }
         double Phi=0.;
 
-        KGeoBag::KThreeVector rPointVectorBuffer;
+        LMCThreeVector rPointVectorBuffer;
         for(int i=0;i<nRings;i++)
         {
             Phi=0.;
@@ -366,14 +366,14 @@ namespace locust
         return rPointVector;
     }
 
-    std::vector<KGeoBag::KThreeVector > HFSSReader::GenerateCylinder(std::array<double, 2> GeometryScale, int nResolution)
+    std::vector<LMCThreeVector > HFSSReader::GenerateCylinder(std::array<double, 2> GeometryScale, int nResolution)
     {
-        std::vector<KGeoBag::KThreeVector > rPointVector;
+        std::vector<LMCThreeVector > rPointVector;
 
         double SizeRatio[2]={1.,1.};
         int MinIndex=(GeometryScale[0] < GeometryScale[1]) ? 0 : 1;
         SizeRatio[(MinIndex+1)%2]=GeometryScale[(MinIndex+1)%2]/GeometryScale[MinIndex];
-        double tPI = KConst::Pi();
+        double tPI = LMCConst::Pi();
 
         int N[2]; double dz[2];
         for(int i=0;i<2;i++)
@@ -389,7 +389,7 @@ namespace locust
         double dPhi=2.*tPI/double(RingCount);
         double Phi=0.; double Z=0.;
         //Fill in outer surface of cylinder
-        KGeoBag::KThreeVector rPointVectorBuffer;
+        LMCThreeVector rPointVectorBuffer;
         for(int i=0;i<nRings;i++)
         {
             Phi=0.;
@@ -404,7 +404,7 @@ namespace locust
             Z+=dz[1];
         }
         //Fill in end caps
-        std::vector<KGeoBag::KThreeVector> rPointVectorEnd;
+        std::vector<LMCThreeVector> rPointVectorEnd;
         rPointVectorBuffer[0]=0.; rPointVectorBuffer[1]=0.; rPointVectorBuffer[2]=0.;
         rPointVectorEnd.push_back(rPointVectorBuffer);
         for(int i=1;i<N[0]-1;i++)
@@ -430,7 +430,7 @@ namespace locust
 
     }
 
-    std::vector<KGeoBag::KThreeVector> HFSSReader::RotateShift(std::vector<KGeoBag::KThreeVector> rPointVector, KGeoBag::KThreeVector tNormal, KGeoBag::KThreeVector rCenter)
+    std::vector<LMCThreeVector> HFSSReader::RotateShift(std::vector<LMCThreeVector> rPointVector, LMCThreeVector tNormal, LMCThreeVector rCenter)
     {
         double tNormalization=0.;
         for(int i=0;i<3;i++)tNormalization+=pow(tNormal[i],2.);
@@ -449,7 +449,7 @@ namespace locust
         //If Both XY normals are 0, do not do phi rotation
         double Phi=0.;
         if(tNormal[0])Phi=atan(tNormal[1]/tNormal[0]);
-        else if(tNormal[1])Phi=KConst::Pi() / 2.;
+        else if(tNormal[1])Phi=LMCConst::Pi() / 2.;
 
 
         ///Perform Rotation on surface

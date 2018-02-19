@@ -10,7 +10,6 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
-#include "LMCGlobalsDeclaration.hh"
 
 
 namespace locust
@@ -56,12 +55,12 @@ namespace locust
             void SetDomain( Signal::State aDomain );
 
         private:
-            bool DoGenerate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal );
 
-            bool DoGenerateTime( Signal* aSignal ) const;
-            bool DoGenerateFreq( Signal* aSignal ) const;
+            bool DoGenerateTime( Signal* aSignal );
+            bool DoGenerateFreq( Signal* aSignal );
 
-            bool (TestSignalGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
+            bool (TestSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             double fFrequency;
             double fAmplitude;

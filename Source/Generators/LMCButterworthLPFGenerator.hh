@@ -36,20 +36,13 @@ class ButterworthLPFGenerator : public Generator
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            double GetReceiverGain() const;
-            void SetReceiverGain( double aReceiverGain );
-
-
         private:
-            bool DoGenerate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal );
 
-            bool DoGenerateTime( Signal* aSignal ) const;
-            bool DoGenerateFreq( Signal* aSignal ) const;
+            bool DoGenerateTime( Signal* aSignal );
+            bool DoGenerateFreq( Signal* aSignal );
 
-            bool (ButterworthLPFGenerator::*fDoGenerateFunc)( Signal* aSignal ) const;
-
-            double fReceiverGain;
-
+            bool (ButterworthLPFGenerator::*fDoGenerateFunc)( Signal* aSignal );
     };
 
 } /* namespace locust */

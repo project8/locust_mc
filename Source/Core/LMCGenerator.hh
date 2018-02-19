@@ -29,8 +29,8 @@ namespace locust
 
             virtual void Accept( GeneratorVisitor* aVisitor ) const = 0;
 
-            Signal* Run( unsigned aTimeSize ) const;
-            bool Run( Signal* aSignal ) const;
+            Signal* Run( unsigned aTimeSize );
+            bool Run( Signal* aSignal );
 
             const std::string& GetName() const;
             void SetName( const std::string& aName );
@@ -44,8 +44,8 @@ namespace locust
             static std::mt19937_64& RNG();
 
         protected:
-            bool Generate( Signal* aSignal ) const;
-            virtual bool DoGenerate( Signal* aSignal ) const = 0;
+            bool Generate( Signal* aSignal );
+            virtual bool DoGenerate( Signal* aSignal ) = 0;
 
             std::string fName;
 

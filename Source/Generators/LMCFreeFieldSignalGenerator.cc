@@ -18,12 +18,7 @@
 
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCHFSSReader.hh"
-
-
-static std::string gxml_filename = "blank.xml";
-const double dx=0.01;
-const int NPreEventSamples = 150000;
-int fNFDIndex=-1;
+#include "LMCSimulationController.hh"
 
 namespace locust
 {
@@ -34,7 +29,8 @@ namespace locust
     FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
             Generator( aName ),
             fWriteNFD(0.),
-            fLO_Frequency( 0.)
+            fLO_Frequency( 0.),
+            gxml_filename("blank.xml")
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -46,17 +42,10 @@ namespace locust
     bool FreeFieldSignalGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
-        fLO_Frequency = LO_FREQUENCY;
+
         if( aParam->has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
-        }
-        if( aParam->has( "carrier-frequency" ) )
-        {
-            double fCarrier_Frequency = aParam->get_value< double >( "carrier-frequency" );
-            fDecimationFactor = AntiAliasingSetup(fCarrier_Frequency,1.e9);
-            LDEBUG( lmclog, "Changing Decimation Factor to: "<< fDecimationFactor);
-            fDigitizerTimeStep*= 10. / double(fDecimationFactor);
         }
         if( aParam->has( "xml-filename" ) )
         {
@@ -77,7 +66,7 @@ namespace locust
         {
             //If not, use existing code to generate plane receiver
             HFSSReader HFRead;
-            rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
+            rReceiver = HFRead.GeneratePlane({0.01,0.01},7);//Argumemts: Size, resolution
             rReceiver = HFRead.RotateShift(rReceiver,{1.,0.,0.},{0.05,0.,0.});//Arguments Normal vector, Position (m)
         }
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.});
@@ -92,13 +81,13 @@ namespace locust
     }
 
 
-  static void* KassiopeiaInit()
+  static void* KassiopeiaInit(const std::string &aFile)
     {
-        //cout << gxml_filename; getchar();
-        const std::string & afile = gxml_filename;
     	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-    	RunKassiopeia1->Run(afile);
+    	RunKassiopeia1->Run(aFile);
     	delete RunKassiopeia1;
+
+        return 0;
     }
 
 
@@ -123,56 +112,25 @@ namespace locust
     }
 
 
-    //Change decimation factor/ (and therefore the sampling rate) to guarantee no aliasing of signal
-    double FreeFieldSignalGenerator::AntiAliasingSetup(double fCarrierFrequency, double fBandwidthFrequency) const
-    {
-        double fSampleMin = 2. * fBandwidthFrequency;
-        int fDecimationRange[2] = {10 , 100};
-        int fDecimation = fDecimationRange[0];
-
-        double fSampleFrequency;
-        int mFactor;
-
-        while(fDecimation <= fDecimationRange[1])
-        {
-            fSampleFrequency = fSampleMin *  fDecimation  / fDecimationRange[0];
-            mFactor = floor( ( 2. * fCarrierFrequency - fBandwidthFrequency ) / fSampleFrequency);
-            if(fSampleFrequency >= ( 2. * fCarrierFrequency + fBandwidthFrequency ) / (mFactor + 1.))
-            {
-                break;
-            }
-
-            ++fDecimation;
-        }
-
-        if(fDecimation==fDecimationRange[1])
-        {
-                LERROR( lmclog, "Cannot find Decimation Factor. Are you sure about your carrier frequency?");
-        }
-
-        return fDecimation;
-    }
-
     double m(double angle, double x0, double y0)
     {
-    angle = 3.1415926*angle/180.;
-    double xprime = cos(angle)*x0 - sin(angle)*y0;
-    double yprime = sin(angle)*x0 + cos(angle)*y0;
+        angle = LMCConst::Pi() * angle / 180.;
+        double xprime = cos(angle)*x0 - sin(angle)*y0;
+        double yprime = sin(angle)*x0 + cos(angle)*y0;
 
-    double m = yprime/xprime;
+        double m = yprime/xprime;
 
-    return m;
+        return m;
     }
 
     double b(double m, double x0, double y0)
     {
-    double b = y0 - m*x0;
-    return b;
+        double b = y0 - m*x0;
+        return b;
     }
 
     double directivity(double m1, double m2, double x0, double y0, double x, double y)
     {
-
     	// cone shaped directivity with gain=1 and half angle OpeningAngle for antenna at x0,y0
 
     	double directivity = 0.;
@@ -180,84 +138,19 @@ namespace locust
     	if (((y < m1*x + b(m1,x0,y0)) && (y > m2*x + b(m2,x0,y0))) |
     	   ((y > m1*x + b(m1,x0,y0)) && (y < m2*x + b(m2,x0,y0))))
     	  {
-    	  if (fabs(atan(m1)-atan(m2)) < 1.57)
+    	  if (fabs(atan(m1)-atan(m2)) < LMCConst::Pi()/2 )
     	    directivity = 1.;
     	  }
     	else
     	  {
-    	  if (fabs(atan(m1)-atan(m2)) > 1.57)
+    	  if (fabs(atan(m1)-atan(m2)) > LMCConst::Pi()/2 )
     	    directivity = 1.;
     	  }
     	return directivity;
 
     }
 
-
-
-    void* FreeFieldSignalGenerator::FilterNegativeFrequencies(Signal* aSignal, double *ImaginarySignal) const
-    {
-
-/*
-        int nwindows = 80;
-        int windowsize = 10*aSignal->TimeSize()/nwindows;
-
-
-        fftw_complex *SignalComplex;
-        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-        fftw_complex *FFTComplex;
-        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-
-        fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
-        fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
-
-
-        for (int nwin = 0; nwin < nwindows; nwin++)
-        {
-            // Construct complex voltage.
-
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                SignalComplex[index][0] = aLongSignal[ nwin*windowsize + index ];
-                SignalComplex[index][1] = ImaginarySignal[ nwin*windowsize + index ];
-                //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-
-            fftw_execute(ForwardPlan);
-
-            //Complex filter to set power at negative frequencies to 0.
-
-            for( unsigned index = windowsize/2; index < windowsize; ++index )
-            {
-                FFTComplex[index][0] = 0.;
-                FFTComplex[index][1] = 0.;
-            }
-
-            fftw_execute(ReversePlan);
-
-            double norm = (double)(windowsize);
-
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                // normalize and take the real part of the reverse transform, for digitization.
-                //aSignal->SignalTime()[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                aLongSignal[ nwin*windowsize + index ] = SignalComplex[index][0]/norm;
-                //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-
-        }
-
-
-        delete SignalComplex;
-        delete FFTComplex;
-*/
-
-
-    }
-
-
-    void FreeFieldSignalGenerator::NFDWrite() const
+    void FreeFieldSignalGenerator::NFDWrite() 
     {
             std::ofstream fNFDOutput;
             fNFDOutput.open(fNFD_filename,std::ios::out | std::ios::trunc);
@@ -295,17 +188,17 @@ namespace locust
 
     }
 
-    double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const KGeoBag::KThreeVector &aParticlePosition, const KGeoBag::KThreeVector &aReceiverPosition )
+    double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition )
     {
-        //return pow(aReceiverTime - aParticleTime,2.) - (aReceiverPosition - aParticlePosition).MagnitudeSquared() / pow(KConst::C() , 2.);
-        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / KConst::C();
+        //return pow(aReceiverTime - aParticleTime,2.) - (aReceiverPosition - aParticlePosition).MagnitudeSquared() / pow(LMCConst::C() , 2.);
+        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
     }
 
-    double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, KGeoBag::KThreeVector aReceiverPosition, double aSpaceTimeInterval, const int aStepOrder = 0)
+    double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval, const int aStepOrder = 0)
     {
         double tRetardedTime = aParticle.GetTime(true); //interpolate!!!
 
-        double c=KConst::C();
+        double c=LMCConst::C();
 
         if(aStepOrder==0)
         {
@@ -317,10 +210,10 @@ namespace locust
             //return tRetardedTime + tSign * aSpaceTimeInterval;
         }
 
-        KGeoBag::KThreeVector tNewPosition = aParticle.GetPosition(true);
-        KGeoBag::KThreeVector tNewVelocity = aParticle.GetVelocity(true);
+        LMCThreeVector tNewPosition = aParticle.GetPosition(true);
+        LMCThreeVector tNewVelocity = aParticle.GetVelocity(true);
 
-        KGeoBag::KThreeVector tReceiverVector = aReceiverPosition - tNewPosition;
+        LMCThreeVector tReceiverVector = aReceiverPosition - tNewPosition;
         double tReceiverDistance = tReceiverVector.Magnitude();
 
         //Newtons Method X_{n+1} = X_{n} - f(X_{n}) / f'(X_{n})
@@ -334,7 +227,7 @@ namespace locust
         }
 
         //Householders Method
-        KGeoBag::KThreeVector tNewAcceleration = aParticle.GetAcceleration(true);
+        LMCThreeVector tNewAcceleration = aParticle.GetAcceleration(true);
         double fZeroDoublePrime = 2. * (1. - tNewVelocity.Dot(tNewVelocity)/(c*c)-tNewAcceleration.Dot(tNewPosition-aReceiverPosition)/(c*c));
 
         if(aStepOrder==2)
@@ -347,28 +240,37 @@ namespace locust
     }
 
 
-    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal) const
+    void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
     {
 
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
         HFSSReader HFRead;
 
+
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+        const double dx=0.01;
+
         const int nelementsZ = 9;
+
         double theta = 0.;  // azimuthal angle of each amplifier channel.
         double radius = 0.05; // radius of each amplifier channel in xy plane.
         double OpeningAngle = 15.; //degrees, half angle fake directivity angle.
         double DirectivityFactor = 0.;
+
         double m1 = 0.;
         double m2 = 0.;
-        static double tVoltagePhase[nelementsZ*NCHANNELS] = {0.};
+        static double tVoltagePhase[10000] = {0.};
         static double phi_LO = 0.;
-        int signalSize = aSignal->TimeSize();
+
+        static int fNFDIndex =- 1;
+
+        const int signalSize = aSignal->TimeSize();
 
         //Receiver Properties
-
         double tReceiverTime = t_old;
-        KGeoBag::KThreeVector tReceiverPosition;
+        LMCThreeVector tReceiverPosition;
 
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
         double tTotalPower=0.;
@@ -380,22 +282,17 @@ namespace locust
 
         const int HistorySize = fParticleHistory.size();
 
-        phi_LO+= 2. * KConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal generating loop.
-
-//        printf("temp is %g and phi_LO is %g\n", temp, phi_LO);
-//        printf("inferred fLO_Frequency is %g\n", (phi_LO-temp)/2./KConst::Pi()/fDigitizerTimeStep);
-
-       //printf("Size: %d %d\n",HistorySize, fParticleHistory.size());
+        phi_LO+= 2. * LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal generating loop.
 
         //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
 
-        for (int ch=0; ch<NCHANNELS; ch++)
+        for (int ch=0; ch<nchannels; ch++)
         {
         for (int z_position = 4; z_position<5; z_position++) // step through antennas along z
         {
         // position waveguide in space:
         rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
-        theta = (double)ch*360./NCHANNELS*PI/180.;
+        theta = (double)ch*360./nchannels*LMCConst::Pi()/180.;
         rReceiver = HFRead.RotateShift(rReceiver,{cos(theta),sin(theta),0.},{radius*cos(theta),radius*sin(theta),(double)(z_position-4)*0.01});//Arguments Normal vector, Position (m)
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
         tTotalPower = 0.; // initialize
@@ -423,7 +320,7 @@ namespace locust
                 CurrentIndex=FindNode(tReceiverTime,dtStepSize,HistorySize-1);
                 tCurrentParticle=fParticleHistory[CurrentIndex];
 
-                tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - tReceiverPosition).Magnitude() /  KConst::C();
+                tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - tReceiverPosition).Magnitude() /  LMCConst::C();
              }
             else
             {
@@ -470,16 +367,15 @@ namespace locust
             PreviousTimes[i].second = tRetardedTime;
 
 
-            KGeoBag::KThreeVector tECrossH = tCurrentParticle.CalculateElectricField(rReceiver[i]).Cross(tCurrentParticle.CalculateMagneticField(rReceiver[i]));
-            KGeoBag::KThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
+            LMCThreeVector tECrossH = tCurrentParticle.CalculateElectricField(rReceiver[i]).Cross(tCurrentParticle.CalculateMagneticField(rReceiver[i]));
+            LMCThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
 
             tTotalPower += dx * dx * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;// * (fabs(tCurrentParticle.GetPosition(true).Z())<0.01);
 
             double tVelZ = tCurrentParticle.GetVelocity(true).Z();
             double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
-            double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / KConst::C() * tCosTheta);
-            //double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency();
-            double tTransitTime = (tReceiverPosition - tCurrentParticle.GetPosition(true)).Magnitude() / KConst::C();
+            double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
+            double tTransitTime = (tReceiverPosition - tCurrentParticle.GetPosition(true)).Magnitude() / LMCConst::C();
 
             if (tRetardedTime+tTransitTime > fDigitizerTimeStep)  // if the signal has been present for longer than fDigitizerTimeStep
               {
@@ -509,7 +405,7 @@ namespace locust
 
             if( fWriteNFD && (fNFDIndex < nHFSSBins) && (tReceiverTime >= tMinHFSS) )
             {
-                KGeoBag::KThreeVector tmpElectricField, tmpMagneticField;
+                LMCThreeVector tmpElectricField, tmpMagneticField;
                 tmpElectricField = tCurrentParticle.CalculateElectricField(rReceiver[i]);
                 tmpMagneticField = tCurrentParticle.CalculateMagneticField(rReceiver[i]);
                 
@@ -523,7 +419,7 @@ namespace locust
                         //Complex factors for Downmixing/ DFT sums
                         double DownConvert[2] = { cos(phi_LO) , - sin(phi_LO) };
                         int kFreq = ( NFDFrequencies[j] - fLO_Frequency ) * nHFSSBins * fDigitizerTimeStep;
-                        double DFTFactor[2] = { cos(2. * KConst::Pi() * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * KConst::Pi() * kFreq * fNFDIndex / nHFSSBins ) };
+                        double DFTFactor[2] = { cos(2. * LMCConst::Pi() * kFreq * fNFDIndex  / nHFSSBins), -sin(2. * LMCConst::Pi() * kFreq * fNFDIndex / nHFSSBins ) };
 
                         NFDElectricFieldFreq[j][i][k][0] += tmpElectricField[k] * ( DownConvert[0] * DFTFactor[0] - DownConvert[1] * DFTFactor[1] ) / nHFSSBins;
                         NFDElectricFieldFreq[j][i][k][1] += tmpElectricField[k] * ( DownConvert[0] * DFTFactor[1] + DownConvert[1] * DFTFactor[0] ) / nHFSSBins;
@@ -532,8 +428,6 @@ namespace locust
                         NFDMagneticFieldFreq[j][i][k][1] += tmpMagneticField[k] * ( DownConvert[0] * DFTFactor[1] + DownConvert[1] * DFTFactor[0] ) / nHFSSBins;
                     }
                 }
-                //if(fNFDIndex%100==0 && i==0)printf("%d\n",fNFDIndex);
-
             }
             else if(fWriteNFD && fNFDIndex >=nHFSSBins)
             {
@@ -543,33 +437,21 @@ namespace locust
         }  // i, rReceiver.size() loop.
 
 
+            DirectivityFactor = directivity(m1, m2, radius*cos(theta), radius*sin(theta),
+            tCurrentParticle.GetPosition(true).GetX(), tCurrentParticle.GetPosition(true).GetY());
 
-        DirectivityFactor = directivity(m1, m2, radius*cos(theta), radius*sin(theta),
-        		tCurrentParticle.GetPosition(true).GetX(), tCurrentParticle.GetPosition(true).GetY());
-
-//        if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
-//        {
-          aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][0] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
-          aSignal->LongSignalTimeComplex()[ch*signalSize*10 + index][1] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
-//        }
+            //if (fabs(tCurrentParticle.GetPosition(true).GetZ()-(double)(z_position-4)*0.01) < 0.005 )
+            //{
+            aSignal->LongSignalTimeComplex()[ch*signalSize*aSignal->DecimationFactor() + index][0] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * cos(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+            aSignal->LongSignalTimeComplex()[ch*signalSize*aSignal->DecimationFactor() + index][1] += DirectivityFactor * sqrt(50.)*sqrt(tTotalPower) * sin(tVoltagePhase[ch*nelementsZ + z_position] - phi_LO);
+            //}
 
         } // z_position waveguide element stepping loop.
-        } // NCHANNELS loop.
-
-//        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();
-
-        /*
-        printf("signal at time %g is %g\n\n\n", t_old, aSignal->LongSignalTimeComplex()[index][0]);
-        printf("phi_LO is %g\n", phi_LO);
-        printf("tVoltagePhase is %f\n", tVoltagePhase);
-        printf("fDigitizerTimeStep is %g\n", fDigitizerTimeStep);getchar();
-        */
-
-
-        //        printf("tTotalPower at time %g is %g\n\n\n", t_old, tTotalPower); getchar();
+        } // nchannels loop.
 
         t_old += fDigitizerTimeStep;
 
+        return 0;
     }
 
 
@@ -608,8 +490,6 @@ namespace locust
         }
         
         int tNodeIndex = it - fParticleHistory.begin();
-        //printf("%d %e %e %e\n",tNodeIndex, tNew, fParticleHistory.front().GetTime(), fParticleHistory.back().GetTime());
-        //cout<<tNodeIndex<<endl;
         //if(tNodeIndex < 0 || tNodeIndex > (tHistorySize - 1))
         //{
         //    LERROR(lmclog, "OUT OF INDEX SEARCH");
@@ -618,9 +498,8 @@ namespace locust
         return tNodeIndex;
     }
 
-    bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal ) const
+    bool FreeFieldSignalGenerator::DoGenerate( Signal* aSignal )
     {
-
         if(fWriteNFD)
         {
             //Initialize to correct sizes/ all zeros
@@ -635,14 +514,14 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-//        bool fPhaseIISimulation = false;  // this is now a parameter in the xml file.
+        const int NPreEventSamples = 150000;
 
-//        printf("fwritenfd is %d\n", fWriteNFD); getchar();
+        //printf("fwritenfd is %d\n", fWriteNFD); getchar();
 
-        std::thread Kassiopeia (KassiopeiaInit);     // spawn new thread
+        std::thread Kassiopeia (KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
-        for( unsigned index = 0; index < 10*aSignal->TimeSize(); ++index )
+        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
                 {
@@ -684,7 +563,6 @@ namespace locust
 
         if(fWriteNFD) NFDWrite();
         
-        //FilterNegativeFrequencies(aSignal, ImaginarySignal);
         //delete [] ImaginarySignal;
         
         // trigger any remaining events in Kassiopeia so that its thread can finish.

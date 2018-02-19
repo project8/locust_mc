@@ -8,6 +8,8 @@
 #include "LMCDigitizer.hh"
 
 #include "logger.hh"
+#include "LMCSimulationController.hh"
+
 
 using scarab::get_calib_params;
 using scarab::dig_calib_params;
@@ -66,21 +68,26 @@ namespace locust
         return fParams;
     }
 
-    bool Digitizer::DoGenerate( Signal* aSignal ) const
+    bool Digitizer::DoGenerate( Signal* aSignal )
     {
 
     	bool IQStream = true;  // this could eventually be a parameter in the json file.
 
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+
+
         unsigned signalSize = aSignal->TimeSize();
-        unsigned signalSizeComplex = 2*aSignal->TimeSize()*NCHANNELS;
+        unsigned signalSizeComplex = 2*aSignal->TimeSize()*nchannels;
 
         double* analogData = aSignal->SignalTime();
 //        uint64_t* digitizedData = new uint64_t[ signalSize ];
 
+/*
         std::complex<double>* analogDataComplex;
-        analogDataComplex = (std::complex<double> *) malloc(NCHANNELS*signalSize * sizeof(std::complex<double>));
-        memcpy( analogDataComplex, aSignal->SignalTimeComplex(), NCHANNELS*signalSize * sizeof( std::complex<double> ) );
-
+        analogDataComplex = (std::complex<double> *) malloc(nchannels*signalSize * sizeof(std::complex<double>));
+        memcpy( analogDataComplex, aSignal->SignalTimeComplex(), nchannels*signalSize * sizeof( std::complex<double> ) );
+*/
 
         if( fADCValuesSigned )
         {
@@ -103,15 +110,15 @@ namespace locust
             int8_t* digitizedData = new int8_t[ signalSizeComplex ];
 //            printf("signalSizeComplex is %d\n", signalSizeComplex); getchar();
 
-            for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+            for (unsigned ch = 0; ch < nchannels; ++ch)
             {
             for( unsigned index = 0; index < signalSize; ++index )
             {
 //            	printf("2*ch*signalSize+index*2 is %d\n", 2*ch*signalSize+index*2);
-                digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( analogDataComplex[ch*signalSize + index ].real(), &fParams );
-                digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( analogDataComplex[ch*signalSize + index ].imag(), &fParams );
-//                digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
-//                digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
+//                digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( analogDataComplex[ch*signalSize + index ].real(), &fParams );
+//                digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( analogDataComplex[ch*signalSize + index ].imag(), &fParams );
+                digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
+                digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
 
                 if( index < 10 )
                 {
@@ -147,15 +154,15 @@ namespace locust
                 uint8_t* digitizedData = new uint8_t[ signalSizeComplex ];
 //                printf("signalSizeComplex is %d\n", signalSizeComplex); getchar();
 
-                for (unsigned ch = 0; ch < NCHANNELS; ++ch)
+                for (unsigned ch = 0; ch < nchannels; ++ch)
                 {
                 for( unsigned index = 0; index < signalSize; ++index )
                 {
 //                	printf("ch is %d, index is %d, 2*ch*signalSize+index*2 is %d\n", ch, index, 2*ch*signalSize+index*2);
-                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( analogDataComplex[ch*signalSize + index ].real(), &fParams );
-                    digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( analogDataComplex[ch*signalSize + index ].imag(), &fParams );
-//                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
-//                    digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
+//                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( analogDataComplex[ch*signalSize + index ].real(), &fParams );
+//                    digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( analogDataComplex[ch*signalSize + index ].imag(), &fParams );
+                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
+                    digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
 
                 	// fake data for debugging.
 //                    digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( 5.e-8, &fParams );

@@ -8,7 +8,7 @@
 #include "LMCDecimateSignalGenerator.hh"
 
 #include "logger.hh"
-#include "LMCGlobalsDeclaration.hh"
+#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -43,52 +43,32 @@ namespace locust
     }
 
 
-    bool DecimateSignalGenerator::DoGenerate( Signal* aSignal ) const
+    bool DecimateSignalGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) const
+    bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) 
     {
-/*
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
 
-
-    double* aTemporarySignal = new double[aSignal->TimeSize()];
-
-    // first copy then zero the Signal.
-    for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
-      {
-      aTemporarySignal[index] = aSignal->SignalTime()[index];
-      aSignal->SignalTime()[index] = 0.;
-      }
-
-      */
-
-    // Decimate Fs -> Fs/10
-    for (int ch=0; ch<NCHANNELS; ch++)
-    {
-    for( unsigned index = 0; index < aSignal->TimeSize()*fDecimationFactor; ++index )
-      {
-      if (index%fDecimationFactor == 0)
+        // Decimate Fs -> Fs/10
+        for (int ch=0; ch<nchannels; ch++)
         {
-//        aSignal->SignalTime()[index/fDecimationFactor] = aLongSignal[index];
-
-        aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][0] =
-        		aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][0];
-        aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/fDecimationFactor][1] =
-        		aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*fDecimationFactor + index][1];
+            for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
+            {
+                if (index % aSignal->DecimationFactor() == 0)
+                {
+                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/aSignal->DecimationFactor()][0] =
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0];
+                    aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/aSignal->DecimationFactor()][1] =
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1];
+                }
+            }
         }
-      }
-    }
-
-//    delete aTemporarySignal;
 
          return true;
-    }
-
-    bool DecimateSignalGenerator::DoGenerateFreq( Signal* aSignal ) const
-    {
-        return true;
     }
 
 } /* namespace locust */

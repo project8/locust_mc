@@ -13,12 +13,14 @@ namespace locust
 {
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor():
-    		fP8Phase( 0 )
+    		fP8Phase( 0 ),
+    		fPitchAngle( -99. )
     {
     }
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aOrig ):
-    		fP8Phase( 0 )
+    		fP8Phase( 0 ),
+    		fPitchAngle( -99. )
     {
     }
 
@@ -35,6 +37,7 @@ namespace locust
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
     	fP8Phase = P8Phase;
+    	Project8Phase = P8Phase;
     }
 
     bool CyclotronRadiationExtractor::ExecutePreStepModification( KSParticle& anInitialParticle, KSParticleQueue& aQueue )
@@ -44,29 +47,28 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetGroupVelocityTM01(KSParticle& aFinalParticle)
     {
-        double SpeedOfLight = KConst::C();
-        double CutOffFrequency = 2. * KConst::Pi() * SpeedOfLight * 2.405 / 2. / KConst::Pi() / 0.00502920; // rad/s
-        double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*KConst::Pi()*fcyc), 2.) );
-//        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
+        const double SpeedOfLight = LMCConst::C();
+        double CutOffFrequency = 2. * LMCConst::Pi() * SpeedOfLight * 2.405 / 2. / LMCConst::Pi() / 0.00502920; // rad/s
+        double cyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
+        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2. * LMCConst::Pi() * cyclotronFrequency), 2.) );
     	return GroupVelocity;
     }
+
     double CyclotronRadiationExtractor::GetGroupVelocityTE11(KSParticle& aFinalParticle)
     {
-        double SpeedOfLight = KConst::C(); // m/s
-        double CutOffFrequency = 2. * KConst::Pi() * SpeedOfLight * 1.841 / 2. / KConst::Pi() / 0.00502920; // rad/s
-        double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency/(2.*KConst::Pi()*fcyc), 2.) );
-        //("GroupVelocity is %g\n", GroupVelocity); getchar();
+        const double SpeedOfLight = LMCConst::C(); // m/s
+        double CutOffFrequency = 2. * LMCConst::Pi() * SpeedOfLight * 1.841 / 2. / LMCConst::Pi() / 0.00502920; // rad/s
+        double cyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
+        double GroupVelocity = SpeedOfLight * sqrt( 1. - pow(CutOffFrequency / (2. * LMCConst::Pi() * cyclotronFrequency), 2.) );
     	return GroupVelocity;
     }
 
     double CyclotronRadiationExtractor::GetGroupVelocityTE01(KSParticle& aFinalParticle)  // Phase 1
      {
          double SpeedOfLight = 2.99792458e8; // m/s
-         double CutOffFrequency = SpeedOfLight * PI / 10.668e-3; // a in m
+         double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / 10.668e-3; // a in m
          double fcyc = aFinalParticle.GetCyclotronFrequency();
-         double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*KConst::Pi()*fcyc), 2.) , 0.5);
+         double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*LMCConst::Pi()*fcyc), 2.) , 0.5);
  //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
      	return GroupVelocity;
      }
@@ -78,31 +80,10 @@ namespace locust
     	double kc = 1.841/0.00502920;
     	double x = aFinalParticle.GetPosition().GetX();
     	double y = aFinalParticle.GetPosition().GetY();
-    	double dx = 0.;
-    	double dy = 0.;
-        //double kassgcpx = aFinalParticle.GetGuidingCenterPosition().GetX();
-        //double kassgcpy = aFinalParticle.GetGuidingCenterPosition().GetY();
-        //double vx = aFinalParticle.GetVelocity().GetX();
-        //double vy = aFinalParticle.GetVelocity().GetY();
-        //double v = aFinalParticle.GetTransVelocity();
-        //double cyc_radius = aFinalParticle.GetTransVelocity()/(2.*PI*aFinalParticle.GetCyclotronFrequency());
-        //if (vx/vy > 0.) dx = cyc_radius*vx/v;
-        //else dx = -cyc_radius*vx/v;
-        //if (vx/vy < 0.) dy = cyc_radius*vy/v;
-        //else dy = -cyc_radius*vy/v;
-
-        //x = x + dx;
-        //y = y + dy;
-        //printf("cyc_radius is %f\n", cyc_radius);
-        //printf("x is %f and y is %f\n", x, y);
-
-        //printf("gcpx = %f and gcpy = %f\n", gcpx, gcpy);
-        //printf("kass gcpx = %f and kass gcpy = %f\n", kassgcpx, kassgcpy); getchar();
-        //printf("dx is %f and dy is %f\n", dx, dy);
-    	double r = sqrt( x*x + y*y);
-    	double coupling = 119116./168.2 * 2./KConst::Pi() * 4./(2.*KConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
+        
+    	double r = sqrt( x * x + y * y);
+    	double coupling = 119116./168.2 * 2./LMCConst::Pi() * 4./(2.*LMCConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
     			(j0(kc*r) + jn(2, kc*r)) );
-        //printf("TE11 coupling at r=%f is %f\n", r, coupling); //getchar();
     	return coupling;
     }
 
@@ -112,21 +93,15 @@ namespace locust
     	double x = aFinalParticle.GetPosition().GetX();
     	double y = aFinalParticle.GetPosition().GetY();
     	double r = sqrt(x*x + y*y);
-    	double coupling =   146876.5/168.2 * 2./KConst::Pi() * 4./(2.*KConst::Pi()) / kc * j1(kc*r);
-        //printf("tm01 coupling at r=%f is %f\n", r, coupling); //getchar();
-        //printf("guiding center z is %f\n", aFinalParticle.GetGuidingCenterPosition().GetZ());
+    	double coupling =   146876.5/168.2 * 2./LMCConst::Pi() * 4./(2.*LMCConst::Pi()) / kc * j1(kc*r);
     	return coupling;
     }
 
     double CyclotronRadiationExtractor::GetCouplingFactorTE01(KSParticle& aFinalParticle)  // Phase 1
     {
-
     	double dim1_wr42 = 10.668e-3; // a in m
-    	double vx = aFinalParticle.GetVelocity().GetX();
-    	double vy = aFinalParticle.GetVelocity().GetY();
     	double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
-//    	double coupling = fabs(vy)*sin(PI*x/dim1_wr42) / (sin(PI*dim1_wr42/2./dim1_wr42) * pow(vx*vx+vy*vy,0.5));
-    	double coupling = 0.63*sin(PI*x/dim1_wr42);  // avg over cyclotron orbit.
+    	double coupling = 0.63*sin(LMCConst::Pi()*x/dim1_wr42);  // avg over cyclotron orbit.
     	return coupling;
     }
 
@@ -136,11 +111,11 @@ namespace locust
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);
     	double zvelocity = aFinalParticle.GetVelocity().GetZ();
-    	double zposition = aFinalParticle.GetPosition().GetZ();
+    	double zPosition = aFinalParticle.GetPosition().GetZ();
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double phi_short = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+    	double phi_short = 2.*LMCConst::Pi()*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
 //        double FieldFromShort = cos(phi_short);  // no resonant enhancement.
         double FieldFromShort = cos(0.) + cos(phi_short); // yes resonant enhancement.
 
@@ -148,21 +123,20 @@ namespace locust
 
     }
 
-
     double CyclotronRadiationExtractor::GetTE11FieldAfterOneBounce(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
     	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-        double fcyc = aFinalParticle.GetCyclotronFrequency();
+        double cyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTE11(aFinalParticle);
 
-    	double zvelocity = aFinalParticle.GetVelocity().GetZ();
-    	double zposition = aFinalParticle.GetPosition().GetZ();
-        double GammaZ = 1.0/pow(1.0-pow(zvelocity/GroupVelocity,2.),0.5);
-    	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
+    	double zVelocity = aFinalParticle.GetVelocity().GetZ();
+    	double zPosition = aFinalParticle.GetPosition().GetZ();
+        double GammaZ = 1.0/ pow( 1.0 - pow( zVelocity / GroupVelocity,2.),0.5);
+    	double fprime_short = cyclotronFrequency*GammaZ*(1.+zVelocity / GroupVelocity);
     	double TE11FieldAfterOneBounce = 0.;
     	double phi_shortTE11 = 0.;
 
-        phi_shortTE11 = 2.*KConst::Pi()*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+        phi_shortTE11 = 2.*LMCConst::Pi()*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
         TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
         //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
 
@@ -188,7 +162,6 @@ namespace locust
     	double FieldFromShort=0.;  // first doppler shift
     	double FieldFromPolarizer=0.; // other doppler shift
     	double TM01FieldAfterBounces = 0.;
-        double tPI = KConst::Pi();
     	int nbounces = 20;
         double time_decay = 1.;
         double reflection_coefficient = 1.0;
@@ -199,10 +172,10 @@ namespace locust
 
 //        if ((phi_shortTM01[0] == 0.)||(0==0))  // if the event has just started, or always.
 //        {
-            phi_shortTM01 = 2.* tPI *2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
-            phi_polarizerTM01 = 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + tPI;  // starting phi after 0th bounce.
+            phi_shortTM01 = 2.* LMCConst::Pi() *2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
+            phi_polarizerTM01 = 2.*LMCConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + LMCConst::Pi();  // starting phi after 0th bounce.
 
-//   	       	printf("phi_shortTM01[0] is %.10g and tPI is %.10g and z is %.10g and lambda is %.10g\n", phi_shortTM01[0], tPI, tPositionZ, lambda_short);
+//   	       	printf("phi_shortTM01[0] is %.10g and LMCConst::Pi() is %.10g and z is %.10g and lambda is %.10g\n", phi_shortTM01[0], LMCConst::Pi(), tPositionZ, lambda_short);
 
             FieldFromShort = cos(0.) + 1./1.4*reflection_coefficient*cos(phi_shortTM01); // starting field, after 0th bounce.
             FieldFromPolarizer = 1./1.4*reflection_coefficient*cos(phi_polarizerTM01); // starting field, after 0th bounce.
@@ -213,11 +186,11 @@ namespace locust
 	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
-                    phi_shortTM01 += 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + tPI;  // phase shift PI
+                    phi_shortTM01 += 2.*LMCConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + LMCConst::Pi();  // phase shift PI
                 }
                 else
                 {
-                    phi_shortTM01 += 2.*tPI*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
+                    phi_shortTM01 += 2.*LMCConst::Pi()*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
                 }
 
                 FieldFromShort += time_decay*cos(phi_shortTM01); // field adds after each bounce.
@@ -229,25 +202,17 @@ namespace locust
 	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
                 if (i%2==0)
                 {
-                    phi_polarizerTM01 += 2.*tPI*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
+                    phi_polarizerTM01 += 2.*LMCConst::Pi()*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
                 }
                 else
                 {
-                    phi_polarizerTM01 += phi_polarizerTM01 + 2.*tPI*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + tPI;  // phase shift PI.
+                    phi_polarizerTM01 += phi_polarizerTM01 + 2.*LMCConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + LMCConst::Pi();  // phase shift PI.
                 }
                 FieldFromPolarizer += time_decay*cos(phi_polarizerTM01);
             }
 //        } // phi_shortTM01 == 0.  This loop defines the initial standing wave on the first tracking step.
 
-//        printf("fieldfromshort is %.10g\n", FieldFromShort);
-//        printf("fieldfrompolarizer is %.10g\n", FieldFromPolarizer);
-//        getchar();
-
         TM01FieldAfterBounces = FieldFromShort + FieldFromPolarizer;
-
-        //printf("x y z is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), tPositionZ);
-        //printf("lambda_short is %g and lambda_polarizer is %g\n", lambda_short, lambda_polarizer);
-        //printf("TM01FieldAfterBounces is %g\n", TM01FieldAfterBounces); //getchar();
 
     	return TM01FieldAfterBounces;
     }
@@ -266,39 +231,14 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetDampingFactorPhase2(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
-        //double fcyc = aFinalParticle.GetCyclotronFrequency();
-        //double GroupVelocity = GetGroupVelocityTE11(aFinalParticle);
-        //double zvelocity = aFinalParticle.GetVelocity().GetZ();
-        //double zposition = aFinalParticle.GetPosition().GetZ();
-        //double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE11(aFinalParticle),2.),0.5);
-
-        //double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-
-        //double phi_short = 2.*PI*2.*(zposition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
-        //double TE11FieldFromShort = cos(0.) + cos(phi_short); // resonant enhancement.
         double TE11FieldFromShort = GetTE11FieldAfterOneBounce(anInitialParticle, aFinalParticle);
         double TM01FieldAfterBounces = GetTM01FieldAfterBounces(anInitialParticle, aFinalParticle);
         double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
         double CouplingFactorTM01 = GetCouplingFactorTM01(aFinalParticle);
 
-//        printf("TE11FieldFromShort is %.10g and TM01FieldAfterBounces is %.10g and CouplingTE11 is %.10g and CouplingTM01 is %.10g\n",
-//        		TE11FieldFromShort, TM01FieldAfterBounces, CouplingFactorTE11, CouplingFactorTM01); getchar();
-
         double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
         double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
         double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
-		//double DampingFactor = DampingFactorTE11;
-
-	/*	
-        if (fabs(DampingFactor)>0.)
-        {
-	      printf("elapsed time is %g\n", aFinalParticle.GetTime());
-            printf("x, y, z position is %f %f %f\n", aFinalParticle.GetPosition().GetX(), aFinalParticle.GetPosition().GetY(), aFinalParticle.GetPosition().GetZ());
-            printf("couplingTM01 is %f\n", CouplingFactorTM01);
-            printf("damping factor total = %f, DampingFactorTE11 is %g and DampingFactorTM01 is %g\n", DampingFactor, DampingFactorTE11, DampingFactorTM01);
-            getchar();
-        }
-	*/	                   
 
     	return DampingFactor;
     }
@@ -314,17 +254,17 @@ namespace locust
         return;
     }
 
-    locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( KSParticle &aFinalParticle)
+    locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( KSParticle &anInitialParticle, KSParticle &aFinalParticle)
     {
-        KGeoBag::KThreeVector tPosition = aFinalParticle.GetPosition();
-        KGeoBag::KThreeVector tVelocity = aFinalParticle.GetVelocity();
-        KGeoBag::KThreeVector tMagneticField = aFinalParticle.GetMagneticField();
+        LMCThreeVector tPosition(aFinalParticle.GetPosition().Components());
+        LMCThreeVector tVelocity(aFinalParticle.GetVelocity().Components());
+        LMCThreeVector tMagneticField(aFinalParticle.GetMagneticField().Components());
         double tMass = aFinalParticle.GetMass();
         double tCharge = aFinalParticle.GetCharge();
         double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
+        double tPitchAngle = aFinalParticle.GetPolarAngleToB();
     	double tTime = aFinalParticle.GetTime();
 
-        //printf("%e \n",fcyc);
 
         locust::Particle aNewParticle;
         aNewParticle.SetPosition(tPosition.X(),tPosition.Y(),tPosition.Z());
@@ -333,9 +273,21 @@ namespace locust
         aNewParticle.SetMass(tMass);
         aNewParticle.SetCharge(tCharge);
         aNewParticle.SetTime(tTime);
-        aNewParticle.SetCyclotronFrequency(2.*KConst::Pi()*tCyclotronFrequency);
+        aNewParticle.SetCyclotronFrequency(2.*LMCConst::Pi()*tCyclotronFrequency);
         aNewParticle.SetKinematicProperties();
-        
+
+        if (fPitchAngle == -99.)  // first crossing of center
+        {
+        if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
+          {
+          fPitchAngle = aFinalParticle.GetPolarAngleToB();
+//      	printf("pitch angle is %f\n", fPitchAngle); getchar();
+
+          }
+        }
+        aNewParticle.SetPitchAngle(fPitchAngle);
+
+
         return aNewParticle;
 
     }
@@ -365,34 +317,35 @@ namespace locust
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
 
+        if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
+        {
 
-//        printf("z is %f and DeltaE is %g and post fix kinetic energy is %g and fcyc is %.9g\n", aFinalParticle.GetPosition().Z(), DeltaE, aFinalParticle.GetKineticEnergy() - 4.84338e-15, aFinalParticle.GetCyclotronFrequency()); getchar();
-
-    	t_poststep = aFinalParticle.GetTime();
-
-        fNewParticleHistory.push_back(ExtractKassiopeiaParticle(aFinalParticle));
+        if (t_old == 0.) fPitchAngle = -99.;  // new electron needs central pitch angle reset.
+    	double t_poststep = aFinalParticle.GetTime();
+        fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
         if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s
         {
-
             std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
             tLock.lock();
 
-//            t_poststep = t_old + fDigitizerTimeStep;
-
-
             int tHistoryMaxSize;
 
+            //Dont want to check .back() of history if it is empty! -> Segfault
+            if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
+            {
+//                printf("New Particle!, t_old is %g\n", t_old); getchar();
+                t_poststep = 0.;
+                fParticleHistory.clear();
+            }
+
             //Phase I or II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
-            if((fP8Phase==2)|(fP8Phase==1))
+            if((fP8Phase==2) || (fP8Phase==1))
             {
                 // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
                 KSParticle tParticleCopy = aFinalParticle;
-                katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old+fDigitizerTimeStep, tParticleCopy);
-                fParticleHistory.push_back(ExtractKassiopeiaParticle(tParticleCopy));
-//                printf("t_old is %g and t_poststep is %g\n", t_old, t_poststep);
-//                printf("\n\n\nAbout to digitize:  z is %g and DeltaE is %g and post fix kinetic energy is %g and fcyc is %.9g\n",
-//                		tParticleCopy.GetPosition().Z(), DeltaE, tParticleCopy.GetKineticEnergy() - 4.84338e-15, tParticleCopy.GetCyclotronFrequency()); getchar();
+                katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old + fDigitizerTimeStep, tParticleCopy);
+                fParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, tParticleCopy));
 
                 tHistoryMaxSize = 5;
 
@@ -401,39 +354,30 @@ namespace locust
             {
                 //Put in new entries in global ParticleHistory
                 fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
-                //Set Spline coefficients -
+
                 for(int i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
                 {
                     fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
                 }
+
                 tHistoryMaxSize = 5000;
 
             }
 
             fNewParticleHistory.clear();
 
-
-            //Purge fParticleHistory of overly old entries
-            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
-                fParticleHistory.pop_front();
-
-
+            //Purge fParticleHistory of overly old entries	    
+	    while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
+	      {
+	      fParticleHistory.pop_front();
+	      }
+	     //	    printf("done purging\n");
+	    
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
-//            t_old = t_poststep;  // get ready to look for next sample.
-
-
-             //printf("de is %g and dt is %g and LarmorPower is %g\n", de, dt, LarmorPower);
-          	 //printf("Kassiopeia says:  tick has happened; continuous time is %g and zvelocity is %f\n", t_poststep, zvelocity);
-          	 //printf("Kassiopeia says:  fcyc is %g\n", fcyc);
-          	 //printf("  initial particle momentum: %g\n", anInitialParticle.GetMomentum().Z());
-             //printf("Mass is %g\n", anInitialParticle.GetMass());
-             //printf("k.e. = %g eV\n", anInitialParticle.GetKineticEnergy_eV());
-             //printf("Lorentz factor is %f\n", anInitialParticle.GetLorentzFactor());
-             //printf("1/(sqrt(1-v^2/c^2) is %f\n", 1.0/pow(1.0-pow(anInitialParticle.GetSpeed()/2.99792e8,2.),0.5));
-             //printf("FinalParticle().IsActive() is %d\n", aFinalParticle.IsActive());
         }
+        } // fDoneWithSignalGeneration
 
         return true;
     }

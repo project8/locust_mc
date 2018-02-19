@@ -1,16 +1,18 @@
 {
     "generators":
-    [            
-        "freefield-signal",
+    [          
+        "kass-signal",
         "lpf-fft",
         "decimate-signal",
+        "gaussian-noise",
         "digitizer"
     ],
     
     "kass-signal":
     {
-        "lo-frequency": 25.2814e9,
-        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase2_WithRoot_Template.xml"
+        "lo-frequency": 25.3106e9,
+        "xml-filename": "/cmn/p8/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml",
+        "pitchangle-filename": "/cmn/p8/locust_mc/cbuild/bin/pitchangles.txt"
     },
 
     "freefield-signal":
@@ -21,21 +23,21 @@
 
     "simulation":
     {
-        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "egg-filename": "/cmn/p8/locust_mc/cbuild/bin/locust_mc_josh.egg",
         "n-records": 1,
         "record-size": 4194304
     },
   
     "gaussian-noise":
     {
-    "noise-floor": 20.0e-26,
+    "noise-floor": 4.0e-23,
     "domain": "time"
     },
 
     "digitizer":
     {
-    "v-range": 2.0e-7,
-    "v-offset": -1.0e-7
+    "v-range": 6.0e-6,
+    "v-offset": -3.0e-6
     }
 
 }
