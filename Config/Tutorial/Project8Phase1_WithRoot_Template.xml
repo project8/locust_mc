@@ -406,7 +406,7 @@
 
     
     <!-- modifiers -->
-    <cycl_rad_extr name="my_rad_extr" P8Phase="1" /> 
+    <cycl_rad_extr name="my_rad_extr" P8Phase="1" />
 
 
     <!-- writers -->
@@ -475,7 +475,7 @@
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
+        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> 
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
@@ -490,7 +490,6 @@
         <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
             <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
         </geo_surface>
--->
 
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
@@ -521,7 +520,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="10"
+        events="40"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"

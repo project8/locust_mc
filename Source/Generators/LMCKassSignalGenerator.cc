@@ -137,11 +137,8 @@ namespace locust
         double tVelocityZ = tParticle.GetVelocity().Z();
         double tPitchAngle = tParticle.GetPitchAngle();
         double tGroupVelocity = LMCConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*LMCConst::Pi()*tCyclotronFrequency  ), 2.) );
-        double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
+        double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) );
 
-        //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
-
-//        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*LMCConst::Pi()*tCyclotronFrequency); getchar();
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
 
@@ -154,6 +151,7 @@ namespace locust
             phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
             EventStartTime = (double)index/RunLengthCalculator1.GetAcquisitionRate()/1.e6/aSignal->DecimationFactor();
             EventToFile = false;
+	    tParticle.SetPitchAngle(-99.);
         }
 
 
@@ -190,7 +188,7 @@ namespace locust
           }
 
 
-	/*
+	
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
@@ -202,6 +200,7 @@ namespace locust
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
 
 	*/
+
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 	  
@@ -247,11 +246,15 @@ namespace locust
 
 
         std::thread Kassiopeia (KassiopeiaInit,gxml_filename);     // spawn new thread
+
+		
         fRunInProgress = true;
         fKassEventReady = false;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
+	  //	  printf("index is %d\n", index);
+	 
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
             {
                 if (ReceivedKassReady()) fPreEventInProgress = true;
@@ -291,6 +294,7 @@ namespace locust
 
         fclose(fp);
 
+
         // trigger any remaining events in Kassiopeia so that its thread can finish.
         fDoneWithSignalGeneration = true;
         while (fRunInProgress)
@@ -304,8 +308,12 @@ namespace locust
             }
         }
 
-        Kassiopeia.join();  // wait for Kassiopeia to finish.
+	printf("check 2\n");
 
+        Kassiopeia.join();  // wait for Kassiopeia to finish.
+        fclose(fp);
+	
+	
         return true;
     }
 
