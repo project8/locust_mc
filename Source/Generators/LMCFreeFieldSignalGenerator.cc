@@ -514,7 +514,7 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
+        const int NPreEventSamples = 1500000;
 
         //printf("fwritenfd is %d\n", fWriteNFD); getchar();
 
@@ -552,7 +552,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(PreEventCounter, index, aSignal);
+		     DriveAntenna(PreEventCounter, index, aSignal);
 
                         PreEventCounter = 0; // reset
                     }

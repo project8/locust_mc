@@ -84,6 +84,7 @@ namespace locust
             LMCThreeVector fAlpha;
             LMCThreeVector fBeta;
 
+            double fPitchAngle;
             double fMass;
             double fCharge;
             double fGamma;

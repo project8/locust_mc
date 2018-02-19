@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/home/penny/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -204,13 +204,13 @@
             <energy_fix value="30472.3"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.00" value_max="0.00"/>
-            <y_uniform value_min="0.00" value_max="0.00"/>
+            <x_uniform value_min="-0.003" value_max="0.003"/>
+            <y_uniform value_min="-0.003" value_max="0.003"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="89.4" value_max="89.4"/> 
+        <theta_uniform value_min="0." value_max="360."/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -411,6 +411,8 @@
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
     <ksterm_max_z name="term_max_z" z=".07"/>
+    <ksterm_max_r name="term_max_r" r=".0065"/>
+
     <ksterm_death name="term_upstream_endcap_death"/>
     <ksterm_death name="term_downstream_endcap_death"/>
     <ksterm_death name="term_waveguide_jacket_death"/>
@@ -493,6 +495,9 @@
 
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+	<command parent="root_terminator" field="add_terminator" child="term_max_r"/>
+
+
 <!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
@@ -515,6 +520,8 @@
         </geo_surface>
 
 
+
+
 <!--            <command parent="root_space_interaction" field="add_space_interaction" child="int_scattering"/>  -->
 
 <!--
@@ -535,7 +542,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="1"
+        events="100"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"
