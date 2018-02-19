@@ -275,21 +275,17 @@ namespace locust
         aNewParticle.SetTime(tTime);
         aNewParticle.SetCyclotronFrequency(2.*LMCConst::Pi()*tCyclotronFrequency);
         aNewParticle.SetKinematicProperties();
-        if (tTime < 1.e-9)  // This should be reset in an event modifier. 
-	  {
-          fPitchAngle = -99.;
-	  }
 
         if (fPitchAngle == -99.)  // first crossing of center
         {
         if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
           {
           fPitchAngle = aFinalParticle.GetPolarAngleToB();
-	  //	  printf("setting pitchangle to %f\n", fPitchAngle); getchar();
+//      	printf("pitch angle is %f\n", fPitchAngle); getchar();
+
           }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
-    
 
 
         return aNewParticle;
@@ -323,6 +319,10 @@ namespace locust
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
 
+        if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
+        {
+
+        if (t_old == 0.) fPitchAngle = -99.;  // new electron needs central pitch angle reset.
     	double t_poststep = aFinalParticle.GetTime();
         fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
@@ -332,6 +332,14 @@ namespace locust
             tLock.lock();
 
             int tHistoryMaxSize;
+
+            //Dont want to check .back() of history if it is empty! -> Segfault
+            if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
+            {
+//                printf("New Particle!, t_old is %g\n", t_old); getchar();
+                t_poststep = 0.;
+                fParticleHistory.clear();
+            }
 
             //Phase I or II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
             if((fP8Phase==2) || (fP8Phase==1))
@@ -360,15 +368,19 @@ namespace locust
 
             fNewParticleHistory.clear();
 
-            //Purge fParticleHistory of overly old entries
-            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
-                fParticleHistory.pop_front();
-
+            //Purge fParticleHistory of overly old entries	    
+	    while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
+	      {
+	      fParticleHistory.pop_front();
+	      }
+	     //	    printf("done purging\n");
+	    
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
         }
-      
+        } // fDoneWithSignalGeneration
+
         return true;
     }
 

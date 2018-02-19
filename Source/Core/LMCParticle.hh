@@ -74,9 +74,11 @@ namespace locust
             LMCThreeVector fNewPosition;
             LMCThreeVector fNewVelocity;
             LMCThreeVector fNewAcceleration;
+
             LMCThreeVector fGuidingCenterPosition;
             LMCThreeVector fMagneticField;
 
+            double fPitchAngle;
 
             //2 perp. vectors which define helical motion
             LMCThreeVector fAlpha;

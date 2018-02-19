@@ -9,6 +9,7 @@
 #include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 #include "LMCSimulationController.hh"
+#include <chrono>
 
 
 #include "logger.hh"
@@ -88,18 +89,20 @@ namespace locust
 
     static bool ReceivedKassReady()
     {
+    	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		printf("LMC about to wait ..\n");
 
         if( !fKassEventReady)
         {
             std::unique_lock< std::mutex >tLock( fKassReadyMutex );
             fKassReadyCondition.wait( tLock );
-            printf("LMC Got the fKassReadyCondition signal\n");
         }
 
         if (fFalseStartKassiopeia)  // workaround for some Macs
         {
             std::unique_lock< std::mutex >tLock( fKassReadyMutex );
             fKassReadyCondition.wait( tLock );
+
         }
 
         return true;
@@ -155,7 +158,7 @@ namespace locust
         if ((tPitchAngle>0.)&&(EventToFile==false))
           {
           fprintf(fp, "%10.4g   %g\n", EventStartTime, tPitchAngle);
-	  //          printf("\n\nstart time %g and pitch angle %g\n\n\n", EventStartTime, tPitchAngle); 
+//          printf("start time %g and pitch angle %g\n", EventStartTime, tPitchAngle);
           EventToFile = true;
           }
 
@@ -181,6 +184,7 @@ namespace locust
           {  // assume 50 ohm impedance
 	    aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
 	    aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+
           }
 
 
@@ -190,10 +194,13 @@ namespace locust
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
             		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
             index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-	    //            getchar();
+//            getchar();
+
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-	
+
+	*/
+
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 	  
@@ -232,6 +239,9 @@ namespace locust
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 1500000;
+
+        //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
+        //fprintf(fp, "testing\n");
         FILE *fp = fopen(gpitchangle_filename.c_str(), "w");
 
 
@@ -254,7 +264,7 @@ namespace locust
             if (fPreEventInProgress)
             {
                 PreEventCounter += 1;
-                //printf("preeventcounter is %d\n", PreEventCounter);
+//                printf("preeventcounter is %d\n", PreEventCounter);
 
                 if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
                 {
@@ -275,19 +285,27 @@ namespace locust
                 if (fEventInProgress)
                 {
                     //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-		  //		  		                      DriveAntenna(PreEventCounter, index, aSignal, fp);
+                    DriveAntenna(PreEventCounter, index, aSignal, fp);
                     PreEventCounter = 0; // reset
                 }
                 tLock.unlock();
             }
         }  // for loop
-	printf("done with loop\n");
+
+        fclose(fp);
+
 
         // trigger any remaining events in Kassiopeia so that its thread can finish.
+        fDoneWithSignalGeneration = true;
         while (fRunInProgress)
         {
             if (fRunInProgress)
-            if (ReceivedKassReady()) WakeBeforeEvent();
+            {
+            	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            	if (!fEventInProgress)
+                  if (ReceivedKassReady())
+            	    WakeBeforeEvent();
+            }
         }
 
 	printf("check 2\n");

@@ -32,6 +32,7 @@ extern bool fEventInProgress;
 extern bool fRunInProgress;
 extern bool fPreEventInProgress;
 extern bool fFalseStartKassiopeia;
+extern bool fDoneWithSignalGeneration;
 
 
 extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
