@@ -239,7 +239,7 @@ namespace locust
     {
         //n samples for event spacing.
         int PreEventCounter = 0;
-        int NPreEventSamples = 150000;
+        int NPreEventSamples = 1500000;
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
         //fprintf(fp, "testing\n");

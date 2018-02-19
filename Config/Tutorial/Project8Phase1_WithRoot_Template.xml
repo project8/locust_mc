@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase1Geometry.xml"/>
+    <include name="/cmn/p8/locust_mc/Config/Tutorial/Project8Phase1Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -201,7 +201,7 @@
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90.0" value_max="90.0"/> 
+        <theta_uniform value_min="89.9" value_max="90.1"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -521,7 +521,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="1"
+        events="10"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"
