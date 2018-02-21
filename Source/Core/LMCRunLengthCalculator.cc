@@ -90,6 +90,11 @@ namespace locust
         // nothing to see here, move along, please
         return;
     }
+    void RunLengthCalculator::Visit( const PatchSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
 
     void RunLengthCalculator::Visit( const TrappedElectronGenerator* )
     {
