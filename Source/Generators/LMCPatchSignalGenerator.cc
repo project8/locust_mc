@@ -164,6 +164,23 @@ namespace locust
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
     }
 
+    double ZPositionPatch(unsigned z_index)
+    {
+    	double PatchOffset = 0.;
+    	double ZPosition = 0.;
+    	if (NPATCHES_PER_STRIP%2==1)
+    	  {
+    	  PatchOffset = -(NPATCHES_PER_STRIP-1.)/2. * PATCH_SPACING;  // far left patch.
+    	  ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+    	  }
+    	else
+    	  {
+          PatchOffset = -(PATCH_SPACING)/2. - ((NPATCHES_PER_STRIP/2.) - 1.) * PATCH_SPACING;
+          ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+    	  }
+    	return ZPosition;
+    }
+
 
 
     void* PatchSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
@@ -181,7 +198,6 @@ namespace locust
         const int nelementsZ = 9;
 
         double theta = 0.;  // azimuthal angle of each antenna element.
-        double radius = 0.05; // radius of each antenna element in xy plane.
         static double tVoltagePhase[10000] = {0.};  // this is not resetting at the beginning of each event.  big problem.
         static double phi_LO = 0.;
 
@@ -209,16 +225,16 @@ namespace locust
 
         for (int ch=0; ch<nchannels; ch++)  // number of patch strips and amplifier channels.
         {
-        for (int z_index = 4; z_index<5; z_index++) // step through patch elements along z.  fix this.
+        for (unsigned z_index = 4; z_index<5; z_index++) // step through patch elements along z.  derive z_patch from this.
         {
         // position patches in space:
         rReceiver = HFRead.GeneratePlane({dx,dx},7);//Argumemts: Size, resolution
         theta = (double)ch*360./nchannels*LMCConst::Pi()/180.;
-        rReceiver = HFRead.RotateShift(rReceiver,{cos(theta),sin(theta),0.},{radius*cos(theta),radius*sin(theta),(double)(z_index-4)*0.01});//Arguments Normal vector, Position (m)
+        rReceiver = HFRead.RotateShift(rReceiver,{cos(theta),sin(theta),0.},{PATCH_RADIUS*cos(theta),PATCH_RADIUS*sin(theta),ZPositionPatch(z_index)});//Arguments Normal vector, Position (m)
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
         tTotalPower = 0.; // initialize
-        patchindex = ch*nelementsZ + z_index;  // which patch element.
-        channelindex = ch*signalSize*aSignal->DecimationFactor() + index;  // tells us which multichannel digitizer sample.
+        patchindex = ch*nelementsZ + z_index;  // which patch element (any strip (a.k.a. any channel).
+        channelindex = ch*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample.
 
 
         for(unsigned i=0;i<rReceiver.size();++i)
