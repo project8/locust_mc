@@ -163,11 +163,12 @@ namespace locust
 
     double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, double PatchPhi, double DopplerFrequency)
     {
-    	double AntennaFactor = 1./400.;  // placeholder
+    	double AntennaFactor = 1./600.;  // 1/m, placeholder
     	double MismatchFactor = GetMismatchFactor(DopplerFrequency);
     	LMCThreeVector PatchPolarizationVector;
     	PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
-    	double VoltageAmplitude = AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor;
+    	double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor);
+//    	printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();
     	return VoltageAmplitude;
     }
 
@@ -378,7 +379,7 @@ namespace locust
 
         } // z_index waveguide element stepping loop.
 
-        printf("signal %d is %g\n", index, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
+        //        printf("signal %d is %g\n", index, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
 
 
         } // nchannels loop.
