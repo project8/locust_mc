@@ -1,10 +1,9 @@
 {
     "generators":
     [          
-        "kass-signal",
+        "patch-signal",
         "lpf-fft",
         "decimate-signal",
-        "gaussian-noise",
         "digitizer"
     ],
     
@@ -15,6 +14,12 @@
         "pitchangle-filename": "/cmn/p8/locust_mc/cbuild/bin/pitchangles.txt"
     },
 
+    "patch-signal":
+    {
+        "lo-frequency": 25.2814e9,
+        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
+    },
+
     "freefield-signal":
     {
         "lo-frequency": 25.2814e9,
@@ -23,7 +28,7 @@
 
     "simulation":
     {
-        "egg-filename": "/cmn/p8/locust_mc/cbuild/bin/locust_mc_josh.egg",
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1,
         "record-size": 4194304
     },

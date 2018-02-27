@@ -51,23 +51,11 @@ namespace locust
 
             std::string gxml_filename;
 
-            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the LMCThreeVectors too.....
-            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
-
-            bool fWriteNFD;
-            std::vector<double> NFDFrequencies;
-            std::string fAND_filename;
-            std::string fNFD_filename;
 
             bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
-
-            void NFDWrite();
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
-            double m(double angle, double x0, double y0);
-            double b(double m, double x0, double y0);
-            double directivity(double m1, double m2, double x0, double y0, double x, double y);
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
 
 

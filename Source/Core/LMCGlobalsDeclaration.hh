@@ -12,7 +12,7 @@
 #define CENTER_TO_ANTENNA 0.07685 // m, Phases 1-2
 
 #define NPATCHES_PER_STRIP 11
-#define PATCH_SPACING 0.01 // m.  Spacing along Z.
+#define PATCH_SPACING 0.018 // m.  Spacing along Z.
 #define PATCH_RADIUS 0.05 // m.  Radius of patch ring.
 
 

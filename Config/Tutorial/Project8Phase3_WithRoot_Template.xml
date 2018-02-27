@@ -210,7 +210,7 @@
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="89.4" value_max="89.4"/> 
+        <theta_uniform value_min="90.0" value_max="90.0"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -406,7 +406,7 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="5.e-7"/>
+    <ksterm_max_time name="term_max_time" time="5.e-5"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
