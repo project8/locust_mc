@@ -154,9 +154,10 @@ namespace locust
     	// placeholder = 1 - mag(S11)
     	f /= 2.*LMCConst::Pi();
     	// fit to HFSS output
-    	double MismatchFactor = 1. - (-5.39e16 / ((f-25.317e9)*(f-25.317e9) + 7.23e16) + 0.88);
+	//    	double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
 
-//    	printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);
+	//	    	printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
+	double MismatchFactor = 0.85;
     	return MismatchFactor;
     }
 
@@ -244,7 +245,7 @@ namespace locust
 
         for (int ch=0; ch<nchannels; ch++)  // number of patch strips and amplifier channels.
         {
-        for (unsigned z_index = 5; z_index < NPATCHES_PER_STRIP; z_index++) // step through patch elements along z.  derive z_patch from this.
+        for (unsigned z_index = 0; z_index < NPATCHES_PER_STRIP; z_index++) // step through patch elements along z.  derive z_patch from this.
         {
         // position patches in space:
         rReceiver = HFRead.GeneratePlane({dx,dy},7);//Argumemts: Size, resolution

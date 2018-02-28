@@ -10,14 +10,14 @@
     "kass-signal":
     {
         "lo-frequency": 25.3106e9,
-        "xml-filename": "/cmn/p8/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml",
+        "xml-filename": "/home/slocum/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml",
         "pitchangle-filename": "/cmn/p8/locust_mc/cbuild/bin/pitchangles.txt"
     },
 
     "patch-signal":
     {
-        "lo-frequency": 25.2814e9,
-        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
+        "lo-frequency": 25.8781e9,
+        "xml-filename": "/home/slocum/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
     },
 
     "freefield-signal":
@@ -28,7 +28,7 @@
 
     "simulation":
     {
-        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "egg-filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc_pitch90.egg",
         "n-records": 1,
         "record-size": 4194304
     },
@@ -41,8 +41,8 @@
 
     "digitizer":
     {
-    "v-range": 6.0e-6,
-    "v-offset": -3.0e-6
+    "v-range": 2.0e-8,
+    "v-offset": -1.0e-8
     }
 
 }

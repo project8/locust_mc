@@ -20,7 +20,7 @@ namespace locust
             fFirstGenerator( NULL ),
             fRunLengthCalc(),
             fEggWriter(),
-            fNChannels(1)
+            fNChannels(17)
     {
         SetRNGSeed();
     }

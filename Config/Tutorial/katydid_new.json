@@ -61,7 +61,7 @@
         
     "egg1":
     {
-        "filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
         "number-of-slices": 500,
         "slice-size": 8192,
@@ -82,7 +82,7 @@
 
     "waterfall-writer":
     {
-        "output-file": "/home/penny/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "/home/slocum/locust_mc/cbuild/bin/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
@@ -94,7 +94,7 @@
 
     "writer":
     {
-        "output-file": "/home/penny/locust_mc/cbuild/bin/basic.root",
+        "output-file": "/home/slocum/locust_mc/cbuild/bin/basic.root",
         "file-flag": "recreate"
     }
 
