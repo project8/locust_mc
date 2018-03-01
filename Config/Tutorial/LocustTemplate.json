@@ -17,7 +17,7 @@
     "patch-signal":
     {
         "lo-frequency": 25.8781e9,
-        "xml-filename": "/home/slocum/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
+        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
     },
 
     "freefield-signal":
@@ -28,7 +28,7 @@
 
     "simulation":
     {
-        "egg-filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc_pitch90.egg",
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc_pitch90.egg",
         "n-records": 1,
         "record-size": 4194304
     },
@@ -41,8 +41,8 @@
 
     "digitizer":
     {
-    "v-range": 2.0e-8,
-    "v-offset": -1.0e-8
+    "v-range": 1.0e-8,
+    "v-offset": -0.5e-8
     }
 
 }

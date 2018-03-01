@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/home/slocum/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
+    <include name="/home/penny/locust_mc/Config/Tutorial/Project8Phase2Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->

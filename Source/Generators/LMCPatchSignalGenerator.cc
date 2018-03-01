@@ -154,10 +154,10 @@ namespace locust
     	// placeholder = 1 - mag(S11)
     	f /= 2.*LMCConst::Pi();
     	// fit to HFSS output
-	//    	double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
+	    	double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
 
-	//	    	printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
-	double MismatchFactor = 0.85;
+//		    	printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
+//	double MismatchFactor = 0.85;  // punt.
     	return MismatchFactor;
     }
 
