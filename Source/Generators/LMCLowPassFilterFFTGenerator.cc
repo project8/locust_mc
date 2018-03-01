@@ -101,7 +101,7 @@ namespace locust
 
             for( unsigned index = 0; index < windowsize; ++index )
             {
-                // normalize and take the real part of the reverse transform, for digitization.
+                // normalize
                 aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
                 aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
                 //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
