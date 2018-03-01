@@ -160,14 +160,24 @@ namespace locust
     	return MismatchFactor;
     }
 
+    double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
+    {
+    LMCThreeVector PatchNormalVector;
+    PatchNormalVector.SetComponents(cos(PatchPhi), sin(PatchPhi), 0.0);
+    double AOIFactor = IncidentKVector.Unit().Dot(PatchNormalVector);
+//    printf("cos aoi is %f\n", AOIFactor);
+    return AOIFactor;
+    }
 
-    double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, double PatchPhi, double DopplerFrequency)
+
+    double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
     	double AntennaFactor = 1./600.;  // 1/m, placeholder
     	double MismatchFactor = GetMismatchFactor(DopplerFrequency);
+    	double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
     	LMCThreeVector PatchPolarizationVector;
     	PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
-    	double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor);
+    	double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
 //    	printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();
     	return VoltageAmplitude;
     }
@@ -228,6 +238,7 @@ namespace locust
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
         double tTotalPower = 0.;
         LMCThreeVector tIncidentElectricField;
+        LMCThreeVector tIncidentKVector;
         double tAverageDopplerFrequency = 0.;
 
         double tSpaceTimeInterval=99.;
@@ -244,19 +255,22 @@ namespace locust
 
         for (int ch=0; ch<nchannels; ch++)  // number of patch strips and amplifier channels.
         {
-        for (unsigned z_index = 5; z_index < NPATCHES_PER_STRIP; z_index++) // step through patch elements along z.  derive z_patch from this.
+        for (unsigned z_index = 0; z_index < NPATCHES_PER_STRIP; z_index++) // step through patch elements along z.  derive z_patch from this.
         {
         // position patches in space:
-        rReceiver = HFRead.GeneratePlane({dx,dy},7);//Argumemts: Size, resolution
+        rReceiver = HFRead.GeneratePlane({dx,dy},4);//Argumemts: Size, resolution
         PatchPhi = (double)ch*360./nchannels*LMCConst::Pi()/180.; // radians.
         rReceiver = HFRead.RotateShift(rReceiver,{cos(PatchPhi),sin(PatchPhi),0.},{PATCH_RADIUS*cos(PatchPhi),PATCH_RADIUS*sin(PatchPhi),ZPositionPatch(z_index)});//Arguments Normal vector, Position (m)
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
         tTotalPower = 0.; // initialize for this patch.
         tAverageDopplerFrequency = 0.;  // initialize for this patch.
+        tIncidentElectricField.SetComponents(0.,0.,0.);  // init
+        tIncidentKVector.SetComponents(0.,0.,0.);  // init
+
         patchindex = ch*NPATCHES_PER_STRIP + z_index;  // which patch element (any strip (a.k.a. any channel).
         channelindex = ch*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample.
 
-//        printf("zposition of the patch is %f\n", ZPositionPatch(z_index)); getchar();
+//        printf("zposition of the patch is %f\n", ZPositionPatch(z_index));
 
 
 
@@ -332,6 +346,7 @@ namespace locust
 
             tTotalPower += dx * dy * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;// * (fabs(tCurrentParticle.GetPosition(true).Z())<0.01);
             tIncidentElectricField += tCurrentParticle.CalculateElectricField(rReceiver[i]) / rReceiver.size();
+            tIncidentKVector += tECrossH / rReceiver.size();
 
             double tVelZ = tCurrentParticle.GetVelocity(true).Z();
             double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
@@ -369,7 +384,7 @@ namespace locust
 //        printf("average Doppler freq is %g\n", tAverageDopplerFrequency);
 //        tVoltagePhaseMark[patchindex] = tAverageDopplerFrequency*2.*LMCConst::Pi()*(tReceiverPosition - tCurrentParticle.GetPosition(true)).Magnitude()/LMCConst::C();
 
-        double tVoltageAmplitude = GetVoltageAmplitude(tIncidentElectricField, PatchPhi, tAverageDopplerFrequency);
+        double tVoltageAmplitude = GetVoltageAmplitude(tIncidentElectricField, tIncidentKVector, PatchPhi, tAverageDopplerFrequency);
         AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, tVoltagePhase[patchindex], phi_LO, channelindex);
 
 //        printf("writing phases to file.  tVoltagePhase[%d] is %g\n", patchindex, tVoltagePhase[patchindex]);
@@ -379,7 +394,7 @@ namespace locust
 
         } // z_index waveguide element stepping loop.
 
-        //        printf("signal %d is %g\n", index, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
+//                printf("signal %d is %g\n", index, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
 
 
         } // nchannels loop.
