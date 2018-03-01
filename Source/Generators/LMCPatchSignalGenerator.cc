@@ -165,7 +165,7 @@ namespace locust
     {
     LMCThreeVector PatchNormalVector;
     PatchNormalVector.SetComponents(cos(PatchPhi), sin(PatchPhi), 0.0);
-    double AOIFactor = IncidentKVector.Unit().Dot(PatchNormalVector);
+    double AOIFactor = fabs(IncidentKVector.Unit().Dot(PatchNormalVector));
 //    printf("cos aoi is %f\n", AOIFactor);
     return AOIFactor;
     }
