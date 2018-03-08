@@ -14,6 +14,8 @@
 #define NPATCHES_PER_STRIP 11
 #define PATCH_SPACING 0.0108 // m.  Spacing along Z.
 #define PATCH_RADIUS 0.0516 // m.  Radius of patch ring.
+#define PATCH_RING_OFFSET 0.0 // m.  Offset of entire array in X direction
+
 
 
 #include <condition_variable>

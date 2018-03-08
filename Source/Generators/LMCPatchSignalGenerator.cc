@@ -261,7 +261,7 @@ namespace locust
         // position patches in space:
         rReceiver = HFRead.GeneratePlane({dx,dy},4);//Argumemts: Size, resolution
         PatchPhi = (double)ch*360./nchannels*LMCConst::Pi()/180.; // radians.
-        rReceiver = HFRead.RotateShift(rReceiver,{cos(PatchPhi),sin(PatchPhi),0.},{PATCH_RADIUS*cos(PatchPhi),PATCH_RADIUS*sin(PatchPhi),ZPositionPatch(z_index)});//Arguments Normal vector, Position (m)
+        rReceiver = HFRead.RotateShift(rReceiver,{cos(PatchPhi),sin(PatchPhi),0.},{PATCH_RING_OFFSET+PATCH_RADIUS*cos(PatchPhi),PATCH_RADIUS*sin(PatchPhi),ZPositionPatch(z_index)});//Arguments Normal vector, Position (m)
         PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
         tTotalPower = 0.; // initialize for this patch.
         tAverageDopplerFrequency = 0.;  // initialize for this patch.
