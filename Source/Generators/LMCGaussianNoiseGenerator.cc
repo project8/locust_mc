@@ -8,6 +8,8 @@
 #include "LMCGaussianNoiseGenerator.hh"
 
 #include "logger.hh"
+#include "LMCSimulationController.hh"
+
 
 using std::string;
 
@@ -140,10 +142,16 @@ namespace locust
 
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+
+        for (int ch=0; ch<nchannels; ch++)
+        {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTimeComplex()[index][0] += fNormDist( fRNG );
-            aSignal->SignalTimeComplex()[index][1] += fNormDist( fRNG );
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += fNormDist( fRNG );
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += fNormDist( fRNG );
+        }
         }
 
         return true;
