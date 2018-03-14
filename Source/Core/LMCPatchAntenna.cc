@@ -1,0 +1,104 @@
+/*
+ * LMCPatchAntenna.cc
+ *
+ *  Created on: Mar 1, 2018
+ *      Author: nbuzinsky
+ */
+
+#include "LMCPatchAntenna.hh"
+
+
+namespace locust
+{
+
+    PatchAntenna::PatchAntenna():
+        antennaFactorSpline(antennaFactor.begin(), antennaFactor.end(), lowerBoundFrequency, frequencySpacingSpline ),
+        gainSpline(gain.begin(), gain.end(), lowerBoundAngle, angularSpacingSpline),
+        previousRetardedIndex(-99),
+        previousRetardedTime(-99)
+    {
+    }
+
+    PatchAntenna::~PatchAntenna()
+    {
+    }
+    LMCThreeVector PatchAntenna::GetPosition()
+    {
+        return centerPosition;
+    }
+
+    void PatchAntenna::SetIncidentElectricField(const LMCThreeVector &incomingElectricField)
+    {
+        incidentElectricField = incomingElectricField;
+    }
+
+    void PatchAntenna::SetIncidentMagneticField(const LMCThreeVector &incomingMagneticField)
+    {
+        incidentMagneticField = incomingMagneticField;
+    }
+    void PatchAntenna::SetInstantaneousFrequency(const double &dopplerFrequency)
+    {
+        instantaneousFrequency = dopplerFrequency;
+    }
+
+    unsigned PatchAntenna::GetPreviousRetardedIndex()
+    {
+        return previousRetardedIndex;
+    }
+
+    double PatchAntenna::GetPreviousRetardedTime()
+    {
+        return previousRetardedTime;
+    }
+
+    double PatchAntenna::GetAnalogTimeDelay()
+    {
+        return timeDelay;
+    }
+
+    void PatchAntenna::SetPreviousRetardedIndex(const int& index)
+    {
+        previousRetardedIndex = index;
+    }
+    void PatchAntenna::SetPreviousRetardedTime(const double &time)
+    {
+        previousRetardedTime = time;
+    }
+
+
+    double PatchAntenna::GetVoltage()
+    {
+        return GetAntennaFactor() * GetCopolarizationFactor() * GetGainFactor();
+    }
+
+    double PatchAntenna::GetAntennaFactor()
+    {
+        return antennaFactorSpline(instantaneousFrequency);
+    }
+
+    double PatchAntenna::GetGainFactor()
+    {
+        LMCThreeVector waveVector = incidentElectricField.Cross(incidentMagneticField);
+        waveVector = waveVector.Unit(); //Normalize
+        double incidentAngle =  acos(waveVector.Dot(normalDirection));
+
+        return sqrt( gainSpline(incidentAngle)/gainSpline(0.) );
+    }
+
+    double PatchAntenna::GetCopolarizationFactor()
+    {
+      return incidentElectricField.Dot(copolarizationDirection);
+    }
+
+    void PatchAntenna::SetCenterPosition(const LMCThreeVector &newPosition)
+    {
+        centerPosition = newPosition;
+    }
+    void PatchAntenna::SetPolarizationDirection(const LMCThreeVector &copolDirection)
+    {
+        copolarizationDirection = copolDirection;
+    }
+
+
+
+} /* namespace locust */
