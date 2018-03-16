@@ -35,8 +35,12 @@
                 "signal": "to-ps1:psd",
                 "slot": "writer:psd"
             },
-           
-                      
+
+            {
+                "signal": "fft1:fft",
+                "slot": "writer:fs-fftw-phase"
+            },
+                                
             {
                 "signal": "to-ps1:psd",
                 "slot": "waterfall-writer:psd"
@@ -63,7 +67,7 @@
     {
         "filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 500,
+        "number-of-slices": 4,
         "slice-size": 8192,
         "dac":
         {
@@ -82,7 +86,7 @@
 
     "waterfall-writer":
     {
-        "output-file": "/home/slocum/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "/home/penny/locust_mc/cbuild/bin/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
@@ -94,7 +98,7 @@
 
     "writer":
     {
-        "output-file": "/home/slocum/locust_mc/cbuild/bin/basic.root",
+        "output-file": "/home/penny/locust_mc/cbuild/bin/basic.root",
         "file-flag": "recreate"
     }
 
