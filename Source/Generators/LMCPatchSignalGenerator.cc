@@ -80,18 +80,13 @@ namespace locust
         return;
     }
 
-
     static bool ReceivedKassReady()
     {
-    	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		printf("LMC about to wait ..\n");
 
-        if( !fKassEventReady)
-        {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
-            printf("LMC Got the fKassReadyCondition signal\n");
-        }
+        std::unique_lock< std::mutex >tLock( fKassReadyMutex);
+        fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
+        printf("LMC Got the fKassReadyCondition signal\n");
 
         return true;
     }

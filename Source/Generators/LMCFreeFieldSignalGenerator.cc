@@ -98,19 +98,16 @@ namespace locust
         return;
     }
 
-
     static bool ReceivedKassReady()
     {
-        if( !fKassEventReady)
-        {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
-            printf("LMC Got the fKassReadyCondition signal\n");
-        }
+		printf("LMC about to wait ..\n");
+
+        std::unique_lock< std::mutex >tLock( fKassReadyMutex);
+        fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
+        printf("LMC Got the fKassReadyCondition signal\n");
 
         return true;
     }
-
 
     double m(double angle, double x0, double y0)
     {
