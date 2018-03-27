@@ -13,12 +13,12 @@
 
 <external_define name="alignment" value="0."/>
 
-<!-- <external_define name="generator" value="gen_uniform"/> -->
+ <external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
- <external_define name="generator" value="gen_bfieldlines" /> 
-<!-- <external_define name="trajectory" value="traj_adiabaticsynchrotron"/> -->
+<!-- <external_define name="generator" value="gen_bfieldlines" /> -->
+ <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
- <external_define name="trajectory" value="traj_magnetic"/> 
+<!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 
 <external_define name="count" value="1"/>
@@ -485,7 +485,7 @@
 <!--        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> -->
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
-<!--        <command parent="root_terminator" field="add_terminator" child="term_max_time"/>-->
+        <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
 
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>

@@ -84,7 +84,7 @@ namespace locust
     	double r = sqrt( x * x + y * y);
     	double coupling = 119116./168.2 * 2./LMCConst::Pi() * 4./(2.*LMCConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
     			(j0(kc*r) + jn(2, kc*r)) );
-    	return coupling;
+    	return coupling*coupling;
     }
 
     double CyclotronRadiationExtractor::GetCouplingFactorTM01(KSParticle& aFinalParticle)
@@ -94,7 +94,7 @@ namespace locust
     	double y = aFinalParticle.GetPosition().GetY();
     	double r = sqrt(x*x + y*y);
     	double coupling =   146876.5/168.2 * 2./LMCConst::Pi() * 4./(2.*LMCConst::Pi()) / kc * j1(kc*r);
-    	return coupling;
+    	return coupling*coupling;
     }
 
     double CyclotronRadiationExtractor::GetCouplingFactorTE01(KSParticle& aFinalParticle)  // Phase 1
@@ -102,7 +102,7 @@ namespace locust
     	double dim1_wr42 = 10.668e-3; // a in m
     	double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
     	double coupling = 0.63*sin(LMCConst::Pi()*x/dim1_wr42);  // avg over cyclotron orbit.
-    	return coupling;
+    	return coupling*coupling;
     }
 
 
