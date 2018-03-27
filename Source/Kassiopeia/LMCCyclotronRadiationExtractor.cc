@@ -115,9 +115,9 @@ namespace locust
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double phi_short = 2.*LMCConst::Pi()*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
-//        double FieldFromShort = cos(phi_short);  // no resonant enhancement.
-        double FieldFromShort = cos(0.) + cos(phi_short); // yes resonant enhancement.
+    	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+//        double FieldFromShort = cos(phi_shortTM01);  // no resonant enhancement.
+        double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.
 
         return FieldFromShort;  // Phase 1
 
@@ -136,7 +136,7 @@ namespace locust
     	double TE11FieldAfterOneBounce = 0.;
     	double phi_shortTE11 = 0.;
 
-        phi_shortTE11 = 2.*LMCConst::Pi()*2.*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+        phi_shortTE11 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
         TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
         //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
 
@@ -159,58 +159,71 @@ namespace locust
     	double lambda_short = GroupVelocity/fprime_short;
 //    	printf("GroupVelocity is %.10g and fprime_short is %.10g\n", GroupVelocity, fprime_short);
     	double lambda_polarizer = GroupVelocity/fprime_polarizer;
+        double lambda_short_phasevelocity;
     	double FieldFromShort=0.;  // first doppler shift
     	double FieldFromPolarizer=0.; // other doppler shift
     	double TM01FieldAfterBounces = 0.;
-    	int nbounces = 20;
+    	int nbounces = 20;  // even number please.
         double time_decay = 1.;
         double reflection_coefficient = 1.0;
         double phi_shortTM01 = 0.;
         double phi_polarizerTM01 = 0.;
-
-        //printf("TM01 l1 is %g and l2 is %g\n", GroupVelocity/fprime_short, GroupVelocity/fprime_polarizer); getchar();
-
-//        if ((phi_shortTM01[0] == 0.)||(0==0))  // if the event has just started, or always.
-//        {
-            phi_shortTM01 = 2.* LMCConst::Pi() *2.*(tPositionZ+CENTER_TO_SHORT)/lambda_short;  // starting phi after 0th bounce.
-            phi_polarizerTM01 = 2.*LMCConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + LMCConst::Pi();  // starting phi after 0th bounce.
+        double dphi = 0.;
 
 //   	       	printf("phi_shortTM01[0] is %.10g and LMCConst::Pi() is %.10g and z is %.10g and lambda is %.10g\n", phi_shortTM01[0], LMCConst::Pi(), tPositionZ, lambda_short);
 
-            FieldFromShort = cos(0.) + 1./1.4*reflection_coefficient*cos(phi_shortTM01); // starting field, after 0th bounce.
-            FieldFromPolarizer = 1./1.4*reflection_coefficient*cos(phi_polarizerTM01); // starting field, after 0th bounce.
+            FieldFromShort = cos(0.); // starting field, after no reflections
+            FieldFromPolarizer = 0.; // starting field, after no reflections
 
 
             for (int i=0; i<nbounces; i++)  // short-going wave, initially.
             {
-	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
-                if (i%2==0)
-                {
-                    phi_shortTM01 += 2.*LMCConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short + LMCConst::Pi();  // phase shift PI
-                }
-                else
-                {
-                    phi_shortTM01 += 2.*LMCConst::Pi()*2.*(tPositionZ + CENTER_TO_SHORT)/lambda_short;
-                }
-
-                FieldFromShort += time_decay*cos(phi_shortTM01); // field adds after each bounce.
+            	if (i%2==0) // now toward polarizer.
+            	  {
+            	  phi_shortTM01 += 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA)/lambda_short + LMCConst::Pi();  // group velocity, with phase shift
+            	  }
+            	else  // now toward short.
+            	  {
+            	  if (fabs(cos(LMCConst::Pi()/2.*round((phi_shortTM01+LMCConst::Pi())/(LMCConst::Pi()/2.)))) < 1.e-4)  // find next zero.
+            	    {
+            	     dphi = LMCConst::Pi()/2.*round((phi_shortTM01+LMCConst::Pi())/(LMCConst::Pi()/2.)) - phi_shortTM01;
+            	     phi_shortTM01 += dphi;
+            	    }
+            	  else  // try again.
+            	    {
+            	     dphi = LMCConst::Pi()/2.*round((phi_shortTM01+LMCConst::Pi()/2.)/(LMCConst::Pi()/2.)) - phi_shortTM01;
+            	     phi_shortTM01 += dphi;
+            	    }
+            	  }
+            	  // get back to electron and calculate field there:
+            	  FieldFromShort += cos(phi_shortTM01 + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + tPositionZ)/lambda_short);
             }
+
 
 
             for (int i=0; i<nbounces; i++)  // polarizer-going wave, initially.
             {
-	      //	      time_decay = exp(-(double)i*2./(double)nbounces);
-                if (i%2==0)
-                {
-                    phi_polarizerTM01 += 2.*LMCConst::Pi()*2.*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer;
-                }
-                else
-                {
-                    phi_polarizerTM01 += phi_polarizerTM01 + 2.*LMCConst::Pi()*2.*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + LMCConst::Pi();  // phase shift PI.
-                }
-                FieldFromPolarizer += time_decay*cos(phi_polarizerTM01);
+            	if (i%2==0)  // toward short.
+            	  {
+            	  if (fabs(cos(LMCConst::Pi()/2.*round((phi_polarizerTM01+LMCConst::Pi())/(LMCConst::Pi()/2.)))) < 1.e-4)  // find next zero.
+            	    {
+            	      dphi = LMCConst::Pi()/2.*round((phi_polarizerTM01+LMCConst::Pi())/(LMCConst::Pi()/2.)) - phi_polarizerTM01;
+            	      phi_polarizerTM01 += dphi;
+             	    }
+            	  else
+            	    {
+            	      dphi = LMCConst::Pi()/2.*round((phi_polarizerTM01+LMCConst::Pi()/2.)/(LMCConst::Pi()/2.)) - phi_polarizerTM01;
+            	      phi_polarizerTM01 += dphi;
+            	    }
+            	  }
+            	else  // toward polarizer.
+            	  {
+            	  phi_polarizerTM01 += 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA)/lambda_polarizer + LMCConst::Pi();  // phase shift.
+            	  }
+            	// get back to electron and calculate field there.
+          	  FieldFromPolarizer += cos(phi_polarizerTM01 + dphi*(CENTER_TO_SHORT+tPositionZ)/(CENTER_TO_SHORT+CENTER_TO_ANTENNA));
+
             }
-//        } // phi_shortTM01 == 0.  This loop defines the initial standing wave on the first tracking step.
 
         TM01FieldAfterBounces = FieldFromShort + FieldFromPolarizer;
 
