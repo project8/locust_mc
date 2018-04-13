@@ -180,7 +180,7 @@ namespace locust
             	  {
             	  phi_shortTM01 += 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA)/lambda_short + LMCConst::Pi();  // group velocity, with phase shift
             	  // BACK UP toward short, stop at electron and calculate field there:
-            	  FieldFromShort += cos(phi_shortTM01 - 2.*LMCConst::Pi()*(CENTER_TO_POLARIZER - tPositionZ)/lambda_short);
+            	  FieldFromShort += cos(phi_shortTM01 - 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short);
             	  }
             	else  // now toward short.  find next 0.
             	  {
