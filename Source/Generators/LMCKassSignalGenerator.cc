@@ -179,8 +179,8 @@ namespace locust
         
         if (Project8Phase == 2)
           {
-          aSignal->LongSignalTimeComplex()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-          aSignal->LongSignalTimeComplex()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
           }
         else if (Project8Phase == 1)
           {  // assume 50 ohm impedance
@@ -190,7 +190,7 @@ namespace locust
           }
 
 
-	/*
+/*
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
@@ -200,8 +200,8 @@ namespace locust
 
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
+*/
 
-	*/
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 	  
