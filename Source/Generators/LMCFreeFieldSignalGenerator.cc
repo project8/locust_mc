@@ -1,8 +1,8 @@
 /*
  * LMCFreeFieldSignalGenerator.cc
  *
- *  Created on: Mar 12, 2014
- *      Author: nsoblath
+ *  Created on: Mar 12, 2017
+ *      Author: buzinsky 
  */
 
 #include "LMCFreeFieldSignalGenerator.hh"
@@ -72,16 +72,14 @@ namespace locust
         fPreEventCondition.notify_one();
         return;
     }
-
-
+    
     static bool ReceivedKassReady()
     {
-        if( !fKassEventReady)
-        {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
-            printf("LMC Got the fKassReadyCondition signal\n");
-        }
+		printf("LMC about to wait ..\n");
+
+        std::unique_lock< std::mutex >tLock( fKassReadyMutex);
+        fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
+        printf("LMC Got the fKassReadyCondition signal\n");
 
         return true;
     }
@@ -100,17 +98,17 @@ namespace locust
 
     void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
     {
+
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
 
         const int signalSize = aSignal->TimeSize();
 
         const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
-        const int HistorySize = fParticleHistory.size();
+        const int historySize = fParticleHistory.size();
 
         //Receiver Properties
         double tReceiverTime = t_old;
-        LMCThreeVector tReceiverPosition;
 
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
 
@@ -138,7 +136,7 @@ namespace locust
 
                     if(currentPatch->GetPreviousRetardedIndex() == -99.)
                     {
-                        CurrentIndex=FindNode(tReceiverTime, kassiopeiaTimeStep, HistorySize-1);
+                        CurrentIndex=FindNode(tReceiverTime, kassiopeiaTimeStep, historySize-1);
                         tCurrentParticle = fParticleHistory[CurrentIndex];
                         tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  LMCConst::C();
                     }
@@ -147,14 +145,13 @@ namespace locust
                         CurrentIndex = currentPatch->GetPreviousRetardedIndex();
                         tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
                     }
-
-                    CurrentIndex = std::min(std::max(CurrentIndex,0) , HistorySize - 1);
-
+                    
                     CurrentIndex = FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
+                    CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
 
                     tCurrentParticle = fParticleHistory[CurrentIndex];
                     tCurrentParticle.Interpolate(tRetardedTime);
-                    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), tReceiverPosition);
+                    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
 
                     double tOldSpaceTimeInterval=99.;
 
@@ -163,7 +160,7 @@ namespace locust
                     {
                         //++tAverageIterations;
 
-                        tRetardedTime = GetStepRoot(tCurrentParticle, tReceiverTime, tReceiverPosition, tSpaceTimeInterval);
+                        tRetardedTime = GetStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
                         tCurrentParticle.Interpolate(tRetardedTime);
 
                         //Change the kassiopeia step we expand around if the interpolation time displacement is too large
@@ -174,14 +171,12 @@ namespace locust
                             tCurrentParticle.Interpolate(tRetardedTime);
                         }
 
-                        tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), tReceiverPosition);
+                        tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
                         tOldSpaceTimeInterval = tSpaceTimeInterval;
                     }
 
-
                     currentPatch->SetPreviousRetardedIndex(CurrentIndex);
                     currentPatch->SetPreviousRetardedTime(tRetardedTime);
-
 
                     LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
                     double tVelZ = tCurrentParticle.GetVelocity(true).Z();
@@ -192,7 +187,6 @@ namespace locust
                     currentPatch->SetIncidentElectricField( tCurrentParticle.CalculateElectricField(currentPatch->GetPosition() ));
                     currentPatch->SetIncidentMagneticField( tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition() ));
 
-                    //Remember to Downmix!!!
                     aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
                     aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 

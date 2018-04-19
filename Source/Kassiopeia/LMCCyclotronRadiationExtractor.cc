@@ -295,32 +295,21 @@ namespace locust
 
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
-//      printf("fcyc before coupling is %.9g and Bz is %.10g\n\n", aFinalParticle.GetCyclotronFrequency(), aFinalParticle.GetMagneticField().GetZ());
-
-        //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
-        //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
-
         double DeltaE=0.;
 
         if(fP8Phase==1)
         {
-            // adjust power with reflections.
             DeltaE = GetDampingFactorPhase1(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-            //printf("poststep says DeltaE is %g\n", DeltaE);
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
         if(fP8Phase==2)
         {
-            // adjust power with reflections.
             DeltaE = GetDampingFactorPhase2(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-            //printf("poststep says DeltaE is %g\n", DeltaE);
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
 
-        if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
-        {
-
         if (t_old == 0.) fPitchAngle = -99.;  // new electron needs central pitch angle reset.
+
     	double t_poststep = aFinalParticle.GetTime();
         fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
@@ -334,7 +323,6 @@ namespace locust
             //Dont want to check .back() of history if it is empty! -> Segfault
             if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
             {
-//                printf("New Particle!, t_old is %g\n", t_old); getchar();
                 t_poststep = 0.;
                 fParticleHistory.clear();
             }
@@ -348,7 +336,6 @@ namespace locust
                 fParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, tParticleCopy));
 
                 tHistoryMaxSize = 5;
-
             }
             else
             {
@@ -367,17 +354,15 @@ namespace locust
             fNewParticleHistory.clear();
 
             //Purge fParticleHistory of overly old entries	    
-	    while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
-	      {
-	      fParticleHistory.pop_front();
-	      }
-	     //	    printf("done purging\n");
+            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
+            {
+                fParticleHistory.pop_front();
+            }
 	    
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
         }
-        } // fDoneWithSignalGeneration
 
         return true;
     }

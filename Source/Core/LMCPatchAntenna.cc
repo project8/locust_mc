@@ -41,7 +41,7 @@ namespace locust
         instantaneousFrequency = dopplerFrequency;
     }
 
-    unsigned PatchAntenna::GetPreviousRetardedIndex()
+    int PatchAntenna::GetPreviousRetardedIndex()
     {
         return previousRetardedIndex;
     }
@@ -68,7 +68,7 @@ namespace locust
 
     double PatchAntenna::GetVoltage()
     {
-        return GetAntennaFactor() * GetCopolarizationFactor() * GetGainFactor();
+        return GetCopolarizationFactor() * GetGainFactor() / GetAntennaFactor();
     }
 
     double PatchAntenna::GetAntennaFactor()

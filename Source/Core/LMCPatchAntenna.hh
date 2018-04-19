@@ -41,7 +41,7 @@ namespace locust
 
             LMCThreeVector GetPosition();
 
-            unsigned GetPreviousRetardedIndex();
+            int GetPreviousRetardedIndex();
             double  GetPreviousRetardedTime();
 
             void SetPreviousRetardedIndex(const int& index);
