@@ -9,13 +9,8 @@
 
 namespace locust
 {
-    Receiver::Receiver()
-    {
-    }
-
-    Receiver::~Receiver()
-    {
-    }
+    Receiver::Receiver() {}
+    Receiver::~Receiver() {}
 
 } /* namespace locust */
 

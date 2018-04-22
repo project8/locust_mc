@@ -191,6 +191,9 @@ namespace locust
                     aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
             } // z_position waveguide element stepping loop.
+
+            //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += allChannels[channelIndex].PhasedSum();
+
         } // nChannels loop.
 
         t_old += fDigitizerTimeStep;
@@ -263,8 +266,8 @@ namespace locust
             {
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
-                modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); //Set directions to be clockwise
-                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); //CHECK!!!
+                modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); //Set directions to be clockwise //CHECK!
+                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
                 allChannels[channelIndex].AddReceiver(modelPatch);
             }
         }

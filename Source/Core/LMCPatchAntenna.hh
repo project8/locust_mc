@@ -10,6 +10,7 @@
 
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include "LMCThreeVector.hh"
+#include "LMCConst.hh"
 #include "LMCReceiver.hh"
 
 namespace locust
@@ -78,16 +79,12 @@ namespace locust
 
             const std::vector<double> gain= {4.010465406, 3.858038578, 3.399096589, 2.73347503, 2.009885519, 1.364161623, 0.869458575, 0.533070658, 0.324008154, 0.201512165};
             const double lowerBoundAngle = 0;
-            const double angularSpacingSpline = 10; ///CHANGE TO RADIANS?
+            const double angularSpacingSpline = 10 * LMCConst::Pi() / 180.; //Angular spacing in radians
 
             boost::math::cubic_b_spline<double> antennaFactorSpline;
             boost::math::cubic_b_spline<double> gainSpline;
 
-};
-
-
-
-
+    };
 
 
 } /* namespace locust */

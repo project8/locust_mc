@@ -14,8 +14,15 @@ namespace locust
     PatchAntenna::PatchAntenna():
         antennaFactorSpline(antennaFactor.begin(), antennaFactor.end(), lowerBoundFrequency, frequencySpacingSpline ),
         gainSpline(gain.begin(), gain.end(), lowerBoundAngle, angularSpacingSpline),
+        copolarizationDirection(0,0,0),
+        normalDirection(0,0,0),
+        centerPosition(0,0,0),
+        incidentElectricField(0,0,0),
+        incidentMagneticField(0,0,0),
+        instantaneousFrequency(0.),
         previousRetardedIndex(-99),
-        previousRetardedTime(-99)
+        previousRetardedTime(-99),
+        timeDelay(0.)
     {
     }
 
