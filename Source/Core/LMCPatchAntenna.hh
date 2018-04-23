@@ -50,7 +50,7 @@ namespace locust
 
             void SetCenterPosition(const LMCThreeVector &newPosition);
             void SetPolarizationDirection(const LMCThreeVector &copolDirection);
-
+            void SetNormalDirection(const LMCThreeVector &normDirection);
 
 
         private:

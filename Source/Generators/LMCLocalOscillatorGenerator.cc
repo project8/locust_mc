@@ -35,6 +35,12 @@ namespace locust
     bool LocalOscillatorGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
+
+        if( aParam->has( "LO-Frequency" ) )
+        {
+            fLOFrequency = aParam->get_value< double >( "LO-Frequency" );
+        }
+
         return true;
     }
 
