@@ -88,6 +88,8 @@ namespace locust
         LMCThreeVector waveVector = incidentElectricField.Cross(incidentMagneticField);
         waveVector = waveVector.Unit(); //Normalize
         double incidentAngle =  acos(waveVector.Dot(normalDirection));
+        if(incidentAngle > LMCConst::Pi() / 2.)
+            incidentAngle=LMCConst::Pi() - incidentAngle;
 
         return sqrt( gainSpline(incidentAngle)/gainSpline(0.) );
     }
