@@ -117,7 +117,7 @@ namespace locust
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
     	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
 //        double FieldFromShort = cos(phi_shortTM01);  // no resonant enhancement.
-        double FieldFromShort = 0.5*(cos(0.) + cos(phi_shortTE01)); // yes resonant enhancement.
+        double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.
 
         return FieldFromShort;  // Phase 1
 
@@ -138,7 +138,7 @@ namespace locust
 
     	// Cu boundary condition gives PI/2 phase advancement to short.
         phi_shortTE11 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
-        TE11FieldAfterOneBounce = 0.5*(cos(0.) + cos(phi_shortTE11));
+        TE11FieldAfterOneBounce = (cos(0.) + cos(phi_shortTE11));
         //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
 
     	return TE11FieldAfterOneBounce;
@@ -393,7 +393,6 @@ namespace locust
         {
             // adjust power with reflections.
             DeltaE = GetDampingFactorPhase1(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-            //printf("poststep says DeltaE is %g\n", DeltaE);
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
         if(fP8Phase==2)
