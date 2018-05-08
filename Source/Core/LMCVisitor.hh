@@ -19,6 +19,7 @@ namespace locust
     class TrappedElectronGenerator;
     class KassSignalGenerator;
     class FreeFieldSignalGenerator;
+    class PatchSignalGenerator;
     class DecimateSignalGenerator;
 
     class GeneratorVisitor
@@ -31,6 +32,7 @@ namespace locust
 
             virtual void Visit( const KassSignalGenerator* ) = 0;
             virtual void Visit( const FreeFieldSignalGenerator* ) = 0;
+            virtual void Visit( const PatchSignalGenerator* ) = 0;
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
             virtual void Visit( const TrappedElectronGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;

@@ -8,6 +8,8 @@
 #include "LMCGaussianNoiseGenerator.hh"
 
 #include "logger.hh"
+#include "LMCSimulationController.hh"
+
 
 using std::string;
 
@@ -22,6 +24,7 @@ namespace locust
     fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),
     fMean( 0. ),
     fSigma( 1. ),
+    fUniDist( 0., 360. ),
     fNormDist( fMean, fSigma )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -103,6 +106,7 @@ namespace locust
     void GaussianNoiseGenerator::SetMeanAndSigma( double aMean, double aSigma )
     {
         fNormDist = std::normal_distribution< double >( aMean, aSigma );
+        fUniDist = std::uniform_real_distribution< double >(0.,360.);
         fMean = aMean;
         fSigma = aSigma;
         return;
@@ -140,10 +144,20 @@ namespace locust
 
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
+    	SimulationController SimulationController1;
+        const unsigned nchannels = SimulationController1.GetNChannels();
+        double phi = 0.;  // voltage phase
+        double mag = 0.;  // voltage mag
+
+        for (int ch=0; ch<nchannels; ch++)
+        {
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            aSignal->SignalTimeComplex()[index][0] += fNormDist( fRNG );
-            aSignal->SignalTimeComplex()[index][1] += fNormDist( fRNG );
+        	phi = fUniDist( fRNG );
+        	mag = fNormDist( fRNG );
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)* mag * cos(phi*LMCConst::Pi()/180.);
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)* mag * sin(phi*LMCConst::Pi()/180.);
+        }
         }
 
         return true;

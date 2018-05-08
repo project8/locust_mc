@@ -151,7 +151,17 @@ namespace locust
         {
             // initialize phases.
             phi_t1 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
-            phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / (tGroupVelocity / tDopplerFrequencyShort);
+	    //            printf("center_to_antenna is %f and tPositionZ is %f\n", CENTER_TO_ANTENNA, tPositionZ);
+            if (Project8Phase==1)
+              {
+              phi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA) / 
+                (tGroupVelocity / tDopplerFrequencyShort);  // phase of reflected field at antenna.
+              }
+            if (Project8Phase==2)
+	      {
+	      phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / 
+                (tGroupVelocity / tDopplerFrequencyShort);  // terminator in
+	      }
             EventStartTime = (double)index/RunLengthCalculator1.GetAcquisitionRate()/1.e6/aSignal->DecimationFactor();
             EventToFile = false;
         }
@@ -159,8 +169,7 @@ namespace locust
 
         if ((tPitchAngle>0.)&&(EventToFile==false))
           {
-          fprintf(fp, "%10.4g   %g\n", EventStartTime, tPitchAngle);
-//          printf("start time %g and pitch angle %g\n", EventStartTime, tPitchAngle);
+	    fprintf(fp, "%10.4g   %g\n", EventStartTime, tPitchAngle);
           EventToFile = true;
           }
 
@@ -174,13 +183,13 @@ namespace locust
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
         ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
 
-        //RealVoltage2 = 0.;  // take out short?
-        //ImagVoltage2 = 0.;  // take out short?
         
         if (Project8Phase == 2)
           {
-          aSignal->LongSignalTimeComplex()[ index ][0] += TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-          aSignal->LongSignalTimeComplex()[ index ][1] += TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+	    RealVoltage2 *= 0.03;  // replace short with terminator.                        
+	    ImagVoltage2 *= 0.03;  // replace short with terminator.                                          
+          aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
           }
         else if (Project8Phase == 1)
           {  // assume 50 ohm impedance
@@ -190,9 +199,10 @@ namespace locust
           }
 
 
-	/*
+	/*					
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
+            printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
             printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
             		"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
             index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
@@ -200,7 +210,7 @@ namespace locust
 
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-
+		
 	*/
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
@@ -293,8 +303,10 @@ namespace locust
 
         // trigger any remaining events in Kassiopeia so that its thread can finish.
         fDoneWithSignalGeneration = true;
+        printf("finished signal loop.\n");
         while (fRunInProgress)
         {
+	    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
             if (fRunInProgress)
             {
             	std::this_thread::sleep_for(std::chrono::milliseconds(100));

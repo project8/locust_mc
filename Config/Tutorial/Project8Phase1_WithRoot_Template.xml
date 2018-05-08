@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/cmn/p8/locust_mc/Config/Tutorial/Project8Phase1Geometry.xml"/>
+    <include name="/home/penny/locust_mc/Config/Tutorial/Project8Phase1Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -192,7 +192,7 @@
 
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="30472.3"/>
+            <energy_fix value="31000."/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
             <x_uniform value_min="0." value_max="0.0"/>
@@ -201,7 +201,7 @@
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="89.9" value_max="90.1"/> 
+        <theta_uniform value_min="90." value_max="90."/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>

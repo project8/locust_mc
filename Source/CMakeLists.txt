@@ -76,6 +76,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
 
         Generators/LMCFreeFieldSignalGenerator.hh
+        Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
 
         Core/LMCGlobalsDeclaration.hh
@@ -93,6 +94,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
+        Generators/LMCPatchSignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
 
         Core/LMCHFSSReader.cc
