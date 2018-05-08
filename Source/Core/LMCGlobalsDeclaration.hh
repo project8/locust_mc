@@ -8,9 +8,6 @@
 #ifndef GLOBALSDECLARATION_HH_
 #define GLOBALSDECLARATION_HH_
 
-#define CENTER_TO_SHORT 0.075 // m, 0.075 for Phase 2, 0.04 for Phase 1
-#define CENTER_TO_ANTENNA 0.075 // m, 0.075 for Phase 2, 0.045 for Phase 1
-
 #define NPATCHES_PER_STRIP 11
 #define PATCH_SPACING 0.0108 // m.  Spacing along Z.
 #define PATCH_RADIUS 0.0516 // m.  Radius of patch ring.
@@ -26,6 +23,8 @@
 
 
 extern int Project8Phase; // 1, 2, or 3
+extern double CENTER_TO_SHORT;
+extern double CENTER_TO_ANTENNA;
 extern double t_old;
 
 extern double fDigitizerTimeStep;

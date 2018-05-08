@@ -38,6 +38,16 @@ namespace locust
     {
     	fP8Phase = P8Phase;
     	Project8Phase = P8Phase;
+        if (P8Phase==1)
+          {
+	    CENTER_TO_SHORT = 0.047; // m
+            CENTER_TO_ANTENNA = 0.045; // m
+          }
+	if (P8Phase==2)
+	  {
+	    CENTER_TO_SHORT = 0.075; // m
+	    CENTER_TO_ANTENNA = 0.075; // m  
+          }
     }
 
     bool CyclotronRadiationExtractor::ExecutePreStepModification( KSParticle& anInitialParticle, KSParticleQueue& aQueue )
@@ -65,7 +75,7 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetGroupVelocityTE01(KSParticle& aFinalParticle)  // Phase 1
      {
-         double SpeedOfLight = 2.99792458e8; // m/s
+       double SpeedOfLight = LMCConst::C(); // m/s
          double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / 10.668e-3; // a in m
          double fcyc = aFinalParticle.GetCyclotronFrequency();
          double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*LMCConst::Pi()*fcyc), 2.) , 0.5);
@@ -115,9 +125,14 @@ namespace locust
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
+    	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.
 //        double FieldFromShort = cos(phi_shortTM01);  // no resonant enhancement.
-        double FieldFromShort = 0.5*(cos(0.) + cos(phi_shortTE01)); // yes resonant enhancement.
+        double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.
+	//        printf("\n phi_shortTE01 is %f and phi_shortTE01/(2PI) is %f\n", phi_shortTE01, phi_shortTE01/2./LMCConst::Pi());
+        //printf("phi_shortTE01 at antenna should be %f\n", phi_shortTE01+2.*LMCConst::Pi()*(0.045/(GroupVelocity/fprime_short)));
+        //printf("phi_otherdirection should be %f\n", 2.*LMCConst::Pi()*(0.045/(GroupVelocity/fprime_short)));
+	//printf("field after short is %f\n\n", FieldFromShort); getchar();
+ 
 
         return FieldFromShort;  // Phase 1
 
@@ -138,7 +153,7 @@ namespace locust
 
     	// Cu boundary condition gives PI/2 phase advancement to short.
         phi_shortTE11 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
-        TE11FieldAfterOneBounce = 0.5*(cos(0.) + cos(phi_shortTE11));
+        TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
         //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
 
     	return TE11FieldAfterOneBounce;
@@ -224,8 +239,7 @@ namespace locust
             	  }
             }
 
-        // sum and divide by 2 because we just propagated the full (not half) field in both directions.
-        TM01FieldAfterBounces = (FieldFromShort + FieldFromPolarizer)/2.;
+	    TM01FieldAfterBounces = (FieldFromShort + FieldFromPolarizer);
 
     	return TM01FieldAfterBounces;
     }
@@ -233,74 +247,27 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetTM01FieldWithTerminator(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
+      double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
+      double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
+      double GroupVelocity = GetGroupVelocityTM01(aFinalParticle);
+      double tVelocityZ = aFinalParticle.GetVelocity().GetZ();
+      double tPositionZ = aFinalParticle.GetPosition().GetZ();
+      double GammaZ = 1.0/sqrt(1.0-pow(tVelocityZ / GetGroupVelocityTM01(aFinalParticle),2.) );
+      //      printf("tcyc is %g and GammaZ is %g and tVelocityZ is %g\n", tCyclotronFrequency, GammaZ, tVelocityZ);             
+      double fprime_polarizer = tCyclotronFrequency*GammaZ*(1.-tVelocityZ/GroupVelocity);
+      //      printf("GroupVelocity is %.10g and fprime_short is %.10g\n", GroupVelocity, fprime_short);                         
+      double lambda_polarizer = GroupVelocity/fprime_polarizer;
+      double FieldFromPolarizer=0.; // other doppler shift                                                               
+      double TM01FieldAfterBounces = 0.;
+      double phi_polarizerTM01 = 0.;
 
-    	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-        double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = GetGroupVelocityTM01(aFinalParticle);
-        double tVelocityZ = aFinalParticle.GetVelocity().GetZ();
-        double tPositionZ = aFinalParticle.GetPosition().GetZ();
-        double GammaZ = 1.0/sqrt(1.0-pow(tVelocityZ / GetGroupVelocityTM01(aFinalParticle),2.) );
+      phi_polarizerTM01 = 2.*LMCConst::Pi()*(2.*(CENTER_TO_ANTENNA-tPositionZ))
+	/(GroupVelocity/fprime_polarizer);
+      TM01FieldAfterBounces = cos(0.) + cos(phi_polarizerTM01);
+      //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);                                              
+      return TM01FieldAfterBounces;
 
-    	double fprime_short = tCyclotronFrequency*GammaZ*(1.+tVelocityZ/GroupVelocity);
-//    	printf("tcyc is %g and GammaZ is %g and tVelocityZ is %g\n", tCyclotronFrequency, GammaZ, tVelocityZ);
-    	double fprime_polarizer = tCyclotronFrequency*GammaZ*(1.-tVelocityZ/GroupVelocity);
-    	double lambda_short = GroupVelocity/fprime_short;
-//    	printf("GroupVelocity is %.10g and fprime_short is %.10g\n", GroupVelocity, fprime_short);
-    	double lambda_polarizer = GroupVelocity/fprime_polarizer;
-    	double FieldFromShort=0.;  // first doppler shift
-    	double FieldFromPolarizer=0.; // other doppler shift
-    	double TM01FieldAfterBounces = 0.;
-    	int nbounces = 20;  // even number please.
-    	double reflection_coefficient = 0.03; // at terminator.  -15 dB.
-        double phi_shortTM01 = 0.;
-        double phi_polarizerTM01 = 0.;
-        double dphi = 0.;
-
-//   	       	printf("phi_shortTM01[0] is %.10g and LMCConst::Pi() is %.10g and z is %.10g and lambda is %.10g\n", phi_shortTM01[0], LMCConst::Pi(), tPositionZ, lambda_short);
-
-            FieldFromShort = cos(0.); // starting field, after no reflections.  divide by 2 later.
-            FieldFromPolarizer = cos(0.); // starting field, after no reflections.  divide by 2 later.
-
-            phi_shortTM01 = 2.*LMCConst::Pi()*(CENTER_TO_SHORT + tPositionZ)/lambda_short;  // group velocity, with phase shift
-            phi_polarizerTM01 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer + LMCConst::Pi();  // group velocity, with phase shift
-            FieldFromShort *= reflection_coefficient;
-
-            for (int i=0; i<nbounces; i++)  // terminator-going wave, initially.  It already hit the term.
-            {
-            	if (i%2==0) // now toward polarizer.
-            	  {
-            	  phi_shortTM01 += 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA)/lambda_short + LMCConst::Pi();  // phase shift.
-            	  // BACK UP toward short, stop at electron and calculate field there:
-            	  FieldFromShort += cos(phi_shortTM01 - 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ)/lambda_short);
-            	  }
-            	else  // now toward short.
-            	  {
-            	  phi_shortTM01 += 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA)/lambda_short;  // group velocity
-            	  // continue toward polarizer, stop at electron and calculate field there:
-            	  FieldFromShort += reflection_coefficient*cos(phi_shortTM01 + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + tPositionZ)/lambda_short);
-            	  } // end short.
-            }
-
-            for (int i=0; i<nbounces; i++)  // polarizer-going wave, initially.  It already hit the polarizer.
-            {
-            	if (i%2==0)  // toward short.
-            	  {
-              	  phi_polarizerTM01 += 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA)/lambda_polarizer;
-            	  // continue toward polarizer, stop at electron and calculate field there:
-            	  FieldFromPolarizer += reflection_coefficient*cos(phi_polarizerTM01 + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + tPositionZ)/lambda_polarizer);
-            	  } // end toward short loop.
-            	else  // toward polarizer.
-            	  {
-            	  phi_polarizerTM01 += 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA)/lambda_polarizer + LMCConst::Pi();  // phase shift.
-            	  // BACK UP toward short, stop at electron and calculate field there:
-            	  FieldFromPolarizer += cos(phi_polarizerTM01 - 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ)/lambda_polarizer);
-            	  }
-            }
-
-        // sum and divide by 2 because we just propagated the full (not half) field in both directions.
-        TM01FieldAfterBounces = (FieldFromShort + FieldFromPolarizer)/2.;
-
-    	return TM01FieldAfterBounces;
+ 
     }
 
 
@@ -319,13 +286,13 @@ namespace locust
     double CyclotronRadiationExtractor::GetDampingFactorPhase2(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double TE11FieldFromShort = GetTE11FieldAfterOneBounce(anInitialParticle, aFinalParticle);
-        double TM01FieldAfterBounces = GetTM01FieldAfterBounces(anInitialParticle, aFinalParticle);
+        double TM01FieldWithTerminator = GetTM01FieldWithTerminator(anInitialParticle, aFinalParticle);
         double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
         double CouplingFactorTM01 = GetCouplingFactorTM01(aFinalParticle);
 
-        double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
-        double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldAfterBounces*TM01FieldAfterBounces);  // can be > 0 or < 0.
-        double DampingFactor = DampingFactorTM01 + DampingFactorTE11;
+	//        double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
+        double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldWithTerminator*TM01FieldWithTerminator);  // can be > 0 or < 0.
+        double DampingFactor = DampingFactorTM01;
 
     	return DampingFactor;
     }
@@ -382,18 +349,11 @@ namespace locust
 
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
-//      printf("fcyc before coupling is %.9g and Bz is %.10g\n\n", aFinalParticle.GetCyclotronFrequency(), aFinalParticle.GetMagneticField().GetZ());
-
-        //printf("pre step kinetic energy - 4.84338e-15 is %g\n", anInitialParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
-        //printf("post step kinetic energy - 4.84338e-15 is %g\n", aFinalParticle.GetKineticEnergy()- 4.84338e-15); //getchar();
-
         double DeltaE=0.;
-
         if(fP8Phase==1)
         {
             // adjust power with reflections.
             DeltaE = GetDampingFactorPhase1(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-            //printf("poststep says DeltaE is %g\n", DeltaE);
             aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
         }
         if(fP8Phase==2)
