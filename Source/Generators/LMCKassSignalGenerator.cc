@@ -259,7 +259,6 @@ namespace locust
         std::thread Kassiopeia (KassiopeiaInit,gxml_filename);     // spawn new thread
         fRunInProgress = true;
         fKassEventReady = false;
-	getchar();
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
