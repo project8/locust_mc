@@ -128,11 +128,6 @@ namespace locust
     	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.
 //        double FieldFromShort = cos(phi_shortTM01);  // no resonant enhancement.
         double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.
-	//        printf("\n phi_shortTE01 is %f and phi_shortTE01/(2PI) is %f\n", phi_shortTE01, phi_shortTE01/2./LMCConst::Pi());
-        //printf("phi_shortTE01 at antenna should be %f\n", phi_shortTE01+2.*LMCConst::Pi()*(0.045/(GroupVelocity/fprime_short)));
-        //printf("phi_otherdirection should be %f\n", 2.*LMCConst::Pi()*(0.045/(GroupVelocity/fprime_short)));
-	//printf("field after short is %f\n\n", FieldFromShort); getchar();
- 
 
         return FieldFromShort;  // Phase 1
 
@@ -154,7 +149,6 @@ namespace locust
     	// Cu boundary condition gives PI/2 phase advancement to short.
         phi_shortTE11 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);
         TE11FieldAfterOneBounce = cos(0.) + cos(phi_shortTE11);
-        //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);
 
     	return TE11FieldAfterOneBounce;
     }

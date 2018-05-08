@@ -21,8 +21,8 @@
 <external_define name="pressure" value="1.e0"/>
 <external_define name="cut" value="1.e3"/>
 
- <external_define name="generator" value="gen_uniform"/>
-<!-- <external_define name="generator" value="gen_krypton"/> -->
+<!-- <external_define name="generator" value="gen_uniform"/> -->
+ <external_define name="generator" value="gen_krypton"/> 
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="traj_magnetic"/>  -->
@@ -361,8 +361,8 @@
     <ksnav_surface name="nav_surface"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.0e-6"/>
-    <ksterm_min_energy name="term_min_energy" energy="[cut]"/>
+    <ksterm_max_time name="term_max_time" time="1.0e-7"/>
+    <ksterm_min_energy name="term_min_energy" energy="25000."/>
     <ksterm_min_z name="term_min_z" z="-.0482"/>
     <ksterm_max_z name="term_max_z" z=".0482"/>
 
@@ -442,7 +442,7 @@
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
-<!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> -->
+        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
         <geo_space name="space_waveguide" spaces="world/project8/waveguide">
 <!--            <command parent="root_space_interaction" field="add_space_interaction" child="int_hydrogen"/> -->
 	    <!--<command parent="root_terminator" field="add_terminator" child="term_max_time"/>-->
@@ -464,7 +464,7 @@
     <ks_simulation
         run="1"
         seed="[seed]"
-        events="1"
+        events="20"
         magnetic_field="field_magnetic_traps"
         magnetic_field="field_magnetic_main"
         space="space_world"

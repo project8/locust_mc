@@ -1,17 +1,17 @@
 {
     "generators":
     [          
-        "patch-signal",
-        "lpf-fft",
-        "decimate-signal",
-        "digitizer"
+       "kass-signal",
+       "lpf-fft",
+       "decimate-signal", 
+       "digitizer"
     ],
     
     "kass-signal":
     {
         "lo-frequency": 25.3106e9,
-        "xml-filename": "/home/slocum/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml",
-        "pitchangle-filename": "/cmn/p8/locust_mc/cbuild/bin/pitchangles.txt"
+        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml",
+        "pitchangle-filename": "/home/penny/locust_mc/cbuild/bin/pitchangles.txt"
     },
 
     "patch-signal":
@@ -41,8 +41,8 @@
 
     "digitizer":
     {
-    "v-range": 1.0e-8,
-    "v-offset": -0.5e-8
+    "v-range": 1.0e-5,
+    "v-offset": -0.5e-5
     }
 
 }
