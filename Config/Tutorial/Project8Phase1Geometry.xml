@@ -79,11 +79,11 @@
 	  <transformation displacement="{0.} {0.} {0.0}"/>
         </space>
         <space name="upstream_bathtub_coil" node="upstream_bathtub_coil_space">
-    	  <transformation rotation_euler="0. 0. 0."/>
+    	  <transformation rotation_euler="0. 1. 0."/>
 	  <transformation displacement="{0.} {0.} {0.027051}"/>
 	</space>
         <space name="downstream_bathtub_coil" node="downstream_bathtub_coil_space">
-    	  <transformation rotation_euler="0. 0. 0."/> 
+    	  <transformation rotation_euler="0. -1. 0."/> 
 	  <transformation displacement="{0.} {0.} {-0.027051}"/>
 	</space>
 

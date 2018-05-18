@@ -3,15 +3,16 @@
     [          
        "kass-signal",
        "lpf-fft",
-       "decimate-signal", 
+       "decimate-signal",
+       "gaussian-noise",
        "digitizer"
     ],
     
     "kass-signal":
     {
         "lo-frequency": 25.3106e9,
-        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml",
-        "pitchangle-filename": "/home/penny/locust_mc/cbuild/bin/pitchangles.txt"
+        "pitchangle-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/pitchangles.txt",
+        "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase1_WithRoot_Template.xml"
     },
 
     "patch-signal":
@@ -28,21 +29,21 @@
 
     "simulation":
     {
-        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "egg-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1,
         "record-size": 4194304
     },
   
     "gaussian-noise":
     {
-    "noise-floor": 4.0e-23,
+    "noise-floor": 4.0e-24,
     "domain": "time"
     },
 
     "digitizer":
     {
-    "v-range": 1.0e-5,
-    "v-offset": -0.5e-5
+    "v-range": 1.0e-6,
+    "v-offset": -0.5e-6
     }
 
 }

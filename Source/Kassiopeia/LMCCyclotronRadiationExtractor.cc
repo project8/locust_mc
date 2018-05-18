@@ -40,7 +40,7 @@ namespace locust
     	Project8Phase = P8Phase;
         if (P8Phase==1)
           {
-	    CENTER_TO_SHORT = 0.047; // m
+	    CENTER_TO_SHORT = 0.0468; // m, 0.047 is tuned.
             CENTER_TO_ANTENNA = 0.045; // m
           }
 	if (P8Phase==2)
@@ -126,8 +126,10 @@ namespace locust
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
     	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.
-//        double FieldFromShort = cos(phi_shortTM01);  // no resonant enhancement.
-        double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.
+        double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.  with reflection coefficient.
+
+	//		        printf("field sum at trap min is %f\n", FieldFromShort); 
+	//getchar();
 
         return FieldFromShort;  // Phase 1
 
@@ -279,9 +281,9 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetDampingFactorPhase2(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
-        double TE11FieldFromShort = GetTE11FieldAfterOneBounce(anInitialParticle, aFinalParticle);
+      //        double TE11FieldFromShort = GetTE11FieldAfterOneBounce(anInitialParticle, aFinalParticle);
         double TM01FieldWithTerminator = GetTM01FieldWithTerminator(anInitialParticle, aFinalParticle);
-        double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
+	//        double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
         double CouplingFactorTM01 = GetCouplingFactorTM01(aFinalParticle);
 
 	//        double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
@@ -344,6 +346,7 @@ namespace locust
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
         double DeltaE=0.;
+	//printf("fcyc is %g\n", anInitialParticle.GetCyclotronFrequency()); //getchar();
         if(fP8Phase==1)
         {
             // adjust power with reflections.

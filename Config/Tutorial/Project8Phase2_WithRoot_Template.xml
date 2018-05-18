@@ -3,7 +3,7 @@
 
 <external_define name="simulation" value="1"/>
 
-<external_define name="pinch" value="-0.03125"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
+<external_define name="pinch" value="-0.025"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
 <external_define name="bathtub" value="1.e-5"/>  <!-- 1.0 for bathtub -->
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
 <!--<external_define name="fieldZ" value="0.9581540"/> -->
@@ -13,11 +13,12 @@
 <external_define name="alignment" value="0."/>
 
 <!-- <external_define name="generator" value="gen_uniform"/> -->
-<!-- <external_define name="generator" value="gen_betadecay"/>  -->
- <external_define name="generator" value="gen_bfieldlines" />
-<!-- <external_define name="trajectory" value="traj_adiabaticsynchrotron"/> -->
+<!-- <external_define name="generator" value="gen_betadecay"/> -->
+<external_define name="generator" value="gen_krypton"/>
+<!-- <external_define name="generator" value="gen_bfieldlines" /> -->
+ <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
- <external_define name="trajectory" value="traj_magnetic"/> 
+<!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 
 <external_define name="count" value="1"/>
@@ -245,16 +246,16 @@
  
 
 
-<!--
+
     <ksgen_generator_composite name="gen_krypton">
         <energy_krypton_event force_conversion="true" do_conversion="true" do_auger="false"/>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="-.005334" value_max=".005334"/>
-            <y_uniform value_min="-.002159" value_max=".002159"/>
-            <z_uniform value_min="-.0381" value_max=".0381"/>
+            <x_uniform value_min="-.00503" value_max=".00503"/>
+            <y_uniform value_min="-.00503" value_max=".00503"/>
+            <z_uniform value_min="-.0" value_max=".0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
-            <theta_spherical angle_min="85." angle_max="95."/>
+            <theta_spherical angle_min="90." angle_max="90."/>
             <phi_uniform value_min="0." value_max="360"/>
         </direction_spherical_composite>
         <time_composite>
@@ -262,7 +263,7 @@
         </time_composite>
     </ksgen_generator_composite>
 
--->
+
 
 
 
@@ -432,9 +433,10 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-7"/>
+    <ksterm_max_time name="term_max_time" time="0.5e-3"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
-    <ksterm_min_energy name="term_min_energy" energy="0."/>
+    <ksterm_min_energy name="term_min_energy" energy="17000."/>
+    <ksterm_max_energy name="term_max_energy" energy="19000."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
     <ksterm_max_z name="term_max_z" z=".07"/>
     <ksterm_max_r name="term_max_r" r=".005"/>
@@ -444,7 +446,7 @@
 
     
     <!-- modifiers -->
-<!--    <cycl_rad_extr name="my_rad_extr" P8Phase="2" /> -->
+    <cycl_rad_extr name="my_rad_extr" P8Phase="2" />
 
 
     <!-- writers -->
@@ -514,18 +516,20 @@
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-<!--        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> -->
+        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
-<!--        <command parent="root_terminator" field="add_terminator" child="term_max_time"/> -->
+        <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
 
-<!--        <command parent="root_terminator" field="add_terminator" child="term_max_r"/> -->
+        <command parent="root_terminator" field="add_terminator" child="term_max_r"/>
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
-<!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
+        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
+        <command parent="root_terminator" field="add_terminator" child="term_max_energy"/>
+
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
-        <command parent="write_root" field="add_step_output" child="component_step_world"/>
+<!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> -->
 
         <geo_surface name="upstream_endcap_death" surfaces="world/project8/cylindricalwaveguide/upstream_endcap_piece">
             <command parent="root_terminator" field="add_terminator" child="term_upstream_endcap_death"/>
@@ -535,10 +539,8 @@
             <command parent="root_terminator" field="add_terminator" child="term_downstream_endcap_death"/>
         </geo_surface>
 
-
         <geo_surface name="waveguide_death" surfaces="world/project8/cylindricalwaveguide/jacket">
             <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
-
         </geo_surface>
 
 
@@ -562,7 +564,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="25"
+        events="100"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"
@@ -578,7 +580,7 @@
 </kassiopeia>
 
 
-
+<!--
     <vtk_window
         name="vtk_window"
         enable_display="true"
@@ -612,7 +614,7 @@
         /> 
 
     </vtk_window> 
-
+-->
 
 
 <!--

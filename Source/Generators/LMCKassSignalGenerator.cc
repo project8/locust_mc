@@ -193,6 +193,8 @@ namespace locust
           }
         else if (Project8Phase == 1)
           {  // assume 50 ohm impedance
+
+	    //	    RealVoltage2 *= 0.25; // some loss at short.
 	    aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
 	    aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
 
