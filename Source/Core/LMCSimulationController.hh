@@ -69,7 +69,14 @@ namespace locust
 
             EggWriter fEggWriter;
 
-            const unsigned fNChannels;
+            unsigned fNChannels;
+
+            void SetNChannels(unsigned nchannels)
+             {
+	     fNChannels = nchannels;                                           
+             }
+
+
 
     };
 
@@ -78,6 +85,9 @@ namespace locust
     {
         return fNChannels;
     }
+
+
+
 
 
 

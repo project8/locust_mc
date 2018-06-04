@@ -2,8 +2,8 @@
 
 
 <external_define name="simulation" value="1"/>
-<external_define name="pinch" value="0.040"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
+<external_define name="pinch" value="0.01"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
+<external_define name="bathtub" value="0.5"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
  to apparent slow performance with 0.0 value -->
 
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
@@ -219,7 +219,7 @@
             <z_uniform value_min="-.0" value_max=".0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
-            <theta_spherical angle_min="89.9" angle_max="90.1"/>
+            <theta_spherical angle_min="88." angle_max="91."/>
             <phi_uniform value_min="0." value_max="360"/>
         </direction_spherical_composite>
         <time_composite>
@@ -398,6 +398,7 @@
     <ksterm_max_time name="term_max_time" time="0.5e-3"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="25000."/>
+    <ksterm_max_energy name="term_max_energy" energy="30430."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
     <ksterm_max_z name="term_max_z" z=".07"/>
     <ksterm_death name="term_upstream_endcap_death"/>
@@ -491,6 +492,8 @@
 
 
         <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
+<!--        <command parent="root_terminator" field="add_terminator" child="term_max_energy"/> -->
+
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
 <!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> --> 

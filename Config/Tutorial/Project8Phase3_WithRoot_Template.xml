@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/home/penny/locust_mc/Config/Tutorial/Project8Phase3LargeGeometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3LargeGeometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -419,7 +419,7 @@
     <!-- writers -->
 
     <kswrite_root name="write_root" path="[output_path]" base="[file].root"/>
-    <kswrite_vtk name="write_vtk" path="[output_path]" base="Project8"/>
+<!--    <kswrite_vtk name="write_vtk" path="[output_path]" base="Project8"/> -->
 
     <!-- output -->
 

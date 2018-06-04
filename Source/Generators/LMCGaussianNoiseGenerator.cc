@@ -144,7 +144,8 @@ namespace locust
 
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
-    	SimulationController SimulationController1;
+      double gain=1.;
+     	SimulationController SimulationController1;
         const unsigned nchannels = SimulationController1.GetNChannels();
         double phi = 0.;  // voltage phase
         double mag = 0.;  // voltage mag
@@ -155,8 +156,9 @@ namespace locust
         {
         	phi = fUniDist( fRNG );
         	mag = fNormDist( fRNG );
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)* mag * cos(phi*LMCConst::Pi()/180.);
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)* mag * sin(phi*LMCConst::Pi()/180.);
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag * cos(phi*LMCConst::Pi()/180.);
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag * sin(phi*LMCConst::Pi()/180.);
+	    //	    printf("noise signal is %g\n", aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1]); getchar();
         }
         }
 

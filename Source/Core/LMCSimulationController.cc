@@ -41,6 +41,7 @@ namespace locust
         if( aNode->has( "n-channels" ) )
         {
             unsigned nChannels = aNode->get_value< int >( "n-channels" );
+            SetNChannels( aNode->get_value< unsigned >( "n-channels" ) );
         }
 
 

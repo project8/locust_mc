@@ -87,7 +87,7 @@
 
     "waterfall-writer":
     {
-        "output-file": "/home/penny/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
@@ -99,7 +99,7 @@
 
     "writer":
     {
-        "output-file": "/home/penny/locust_mc/cbuild/bin/basic.root",
+        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/basic.root",
         "file-flag": "recreate"
     }
 
