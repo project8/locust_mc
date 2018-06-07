@@ -91,7 +91,7 @@ namespace locust
         if(incidentAngle > LMCConst::Pi() / 2.)
             incidentAngle=LMCConst::Pi() - incidentAngle;
 
-        return sqrt( gainSpline(incidentAngle)/gainSpline(0.) );
+        return  gainSpline(0.) / gainSpline(incidentAngle);
     }
 
     double PatchAntenna::GetCopolarizationFactor()
