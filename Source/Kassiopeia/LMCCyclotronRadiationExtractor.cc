@@ -40,7 +40,7 @@ namespace locust
     	Project8Phase = P8Phase;
         if (P8Phase==1)
           {
-	    CENTER_TO_SHORT = 0.0478; // m, 0.047 is tuned.
+	    CENTER_TO_SHORT = 0.0485; // m, 0.047 is tuned.
             CENTER_TO_ANTENNA = 0.045; // m
           }
 	if (P8Phase==2)
@@ -119,17 +119,17 @@ namespace locust
     double CyclotronRadiationExtractor::GetTE01FieldAfterOneBounce(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);
+        double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);   
     	double zvelocity = aFinalParticle.GetVelocity().GetZ();
     	double zPosition = aFinalParticle.GetPosition().GetZ();
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.
+	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition)+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.          
         double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.  with reflection coefficient.
 
-	//			        printf("field sum at trap min is %f\n", FieldFromShort); 
-	//getchar();
+	//	printf("field sum at z=%g is %f with zvelocity %g\n", zPosition, FieldFromShort, zvelocity); 
+	//	getchar();
 
         return FieldFromShort;  // Phase 1
 

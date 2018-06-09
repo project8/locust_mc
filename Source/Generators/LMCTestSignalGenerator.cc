@@ -7,8 +7,8 @@
 
 #include <cmath>
 #include "LMCTestSignalGenerator.hh"
+#include "LMCDigitizer.hh"
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 #include "LMCConst.hh"
 
 
@@ -33,35 +33,48 @@ namespace locust
     {
     }
 
-    bool TestSignalGenerator::Configure( const scarab::param_node* aParam )
-    {
-        if( aParam == NULL) return true;
 
-        SetFrequency( aParam->get_value< double >( "frequency", fFrequency ) );
-        SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
+  bool TestSignalGenerator::Configure( const scarab::param_node* aParam )
+  {
+    if( aParam == NULL) return true;
+
+    SetFrequency( aParam->get_value< double >( "frequency", fFrequency ) );
+    SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
 
 
-        if( aParam->has( "domain" ) )
-        {
-            string domain = aParam->get_value( "domain" );
-            if( domain == "time" )
-            {
-                SetDomain( Signal::kTime );
-                LDEBUG( lmclog, "Domain is equal to time.");
-            }
-            else if( domain == "freq" )
-            {
-                SetDomain( Signal::kFreq );
-            }
-            else
-            {
-                LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
-                return false;
-            }
-        }
+    if( aParam->has( "domain" ) )
+      {
+	string domain = aParam->get_value( "domain" );
+	if( domain == "time" )
+	  {
+	    SetDomain( Signal::kTime );
+	    LDEBUG( lmclog, "Domain is equal to time.");
+	  }
+	else if( domain == "freq" )
+	  {
+	    SetDomain( Signal::kFreq );
+	  }
+	else
+	  {
+	    LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+	    return false;
+	  }
+      }
 
-        return true;
-    }
+    //    scarab::factory< Generator >* genFactory = scarab::factory< Generator >::get_instance();
+    //    const scarab::param_array* generatorList = aNode->array_at( "generators" );
+
+ 
+
+
+
+
+    return true;
+
+
+
+  }
+
 
     void TestSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
@@ -128,9 +141,12 @@ namespace locust
 
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
 
-
-        SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+	//	scarab::factory< Generator >* genFactory = scarab::factory< Generator >::get_instance();
+	//       const scarab::param_array* generatorList = aNode->array_at( "generators" );
+ 
+        //Digitizer* aDigitizer;
+        
+        const unsigned nchannels = fNChannels;
 
         double LO_phase = 0.;
         double voltage_phase = 0.;

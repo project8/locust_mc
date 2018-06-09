@@ -12,7 +12,6 @@
 #include "param.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCSignal.hh"
-#include "LMCSimulationController.hh"
 
 #include "time.hh"
 
@@ -65,10 +64,7 @@ namespace locust
     bool EggWriter::PrepareEgg( const RunLengthCalculator* a_rlc, const Digitizer* a_digitizer )
     {
 
-    	bool IQStream = true; // move this into json file as a parameter.
-
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+    	bool IQStream = true; // get rid of this.
 
 
         if( f_state != kClosed )
@@ -100,6 +96,7 @@ namespace locust
         bool t_signed_vals = false;
         unsigned t_bit_depth = 8;
         bool t_bits_right_aligned = false;
+        unsigned n_channels = a_rlc->GetNChannels();
         if( a_digitizer != NULL )
         {
             t_data_type_size = a_digitizer->DigitizerParams().data_type_size;
@@ -121,7 +118,7 @@ namespace locust
         }
         else
         {
-            t_stream_id = header->AddStream( "locust_mc", nchannels, 1,
+            t_stream_id = header->AddStream( "locust_mc", n_channels, 1,
                 a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), a_rlc->GetSampleSize(),
                 t_data_type_size, t_signed_vals,
                 t_bit_depth, t_bits_right_aligned,
@@ -145,8 +142,7 @@ namespace locust
         f_record_id = 0;
         f_record_time = 0;
         f_record_length = ( double )a_rlc->GetRecordSize() / ( 1.e-3 * a_rlc->GetAcquisitionRate() ); // in ns
-        f_record_n_bytes = nchannels * a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
-
+        f_record_n_bytes = n_channels * a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
 
         f_state = kPrepared;
 
@@ -171,7 +167,7 @@ namespace locust
 
         f_state = kWriting;
 
-        LDEBUG( lmclog, "Writing record " << f_record_id );
+        LINFO( lmclog, "Writing record " << f_record_id );
 
 
 
@@ -194,7 +190,6 @@ namespace locust
 
         ++f_record_id;
         f_record_time += f_record_length;
-
 
         bool t_return = f_stream->WriteRecord( true ); // pls had to edit false to true
         t_is_new_acq = false;

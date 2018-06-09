@@ -2,8 +2,8 @@
 
 
 <external_define name="simulation" value="1"/>
-<external_define name="pinch" value="0.01"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="0.5"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
+<external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
+<external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
  to apparent slow performance with 0.0 value -->
 
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
@@ -219,7 +219,7 @@
             <z_uniform value_min="-.0" value_max=".0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
-            <theta_spherical angle_min="88." angle_max="91."/>
+            <theta_spherical angle_min="89." angle_max="91."/>
             <phi_uniform value_min="0." value_max="360"/>
         </direction_spherical_composite>
         <time_composite>

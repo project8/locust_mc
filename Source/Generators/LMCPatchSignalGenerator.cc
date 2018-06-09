@@ -18,7 +18,7 @@
 
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCHFSSReader.hh"
-#include "LMCSimulationController.hh"
+#include "LMCDigitizer.hh"
 #include <chrono>
 
 
@@ -52,6 +52,9 @@ namespace locust
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
         }
+
+
+
 
         return true;
     }
@@ -144,15 +147,15 @@ namespace locust
         return 0;
     }
 
-    double GetMismatchFactor(double f)
+    double GetMismatchFactor(double f)  
     {
-    	// placeholder = 1 - mag(S11)
-    	f /= 2.*LMCConst::Pi();
-    	// fit to HFSS output
-	    	double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
 
-//		    	printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
-//	double MismatchFactor = 0.85;  // punt.
+      f /= 2.*LMCConst::Pi();
+    	// placeholder = 1 - mag(S11)
+    	// fit to HFSS output
+	//double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
+		//		    	printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
+	double MismatchFactor = 0.85;  // punt.
     	return MismatchFactor;
     }
 
@@ -168,7 +171,7 @@ namespace locust
 
     double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
-    	double AntennaFactor = 1./600.;  // 1/m, placeholder
+    	double AntennaFactor = 1./400.;  // 1/m, placeholder
     	double MismatchFactor = GetMismatchFactor(DopplerFrequency);
     	double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
     	LMCThreeVector PatchPolarizationVector;
@@ -211,9 +214,7 @@ namespace locust
         int CurrentIndex;
         HFSSReader HFRead;
 
-
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+        const unsigned nchannels = fNChannels;
         const double dx = 0.00375; // m
         const double dy = 0.002916; // m
 
@@ -265,6 +266,7 @@ namespace locust
 
         patchindex = ch*NPATCHES_PER_STRIP + z_index;  // which patch element (any strip (a.k.a. any channel).
         channelindex = ch*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample.
+       
 
 //        printf("zposition of the patch is %f\n", ZPositionPatch(z_index));
 
@@ -340,7 +342,8 @@ namespace locust
             LMCThreeVector tECrossH = tCurrentParticle.CalculateElectricField(rReceiver[i]).Cross(tCurrentParticle.CalculateMagneticField(rReceiver[i]));
             LMCThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
 
-            tTotalPower += dx * dy * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;// * (fabs(tCurrentParticle.GetPosition(true).Z())<0.01);
+            tTotalPower = dx * dy * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;
+	    //             printf("total power hitting patch is %g\n", tTotalPower); getchar();
             tIncidentElectricField += tCurrentParticle.CalculateElectricField(rReceiver[i]) / rReceiver.size();
             tIncidentKVector += tECrossH / rReceiver.size();
 
@@ -348,6 +351,7 @@ namespace locust
             double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
             double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
             tAverageDopplerFrequency += tDopplerFrequency / rReceiver.size();
+	    //	    printf("tDopplerFrequency is %g and fcyc is %g\n", tDopplerFrequency, tCurrentParticle.GetCyclotronFrequency());
 
             if (tRetardedTime > fDigitizerTimeStep)  // if the signal has been present for longer than fDigitizerTimeStep
               {
@@ -355,13 +359,8 @@ namespace locust
               }
             else  // if this is the first digitizer sample, the voltage phase doesn't advance for the full dt.
               {
-//                tVoltagePhase[patchindex]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size();
-
                 tVoltagePhase[patchindex]+=  // compressing
                 		tDopplerFrequency * tRetardedTime / rReceiver.size();
-//                printf("Retarding voltage phase:  fDigitizerTimeStep is %g and tReceiverTime is %g and tRetardedTime is %g\n and t_old is %g\n",
-//                		fDigitizerTimeStep, tReceiverTime, tRetardedTime, t_old);
-//                printf("after retarding, tVoltagePhase[%d] is %g\n", patchindex, tVoltagePhase[patchindex]); getchar();
               }
 
 /*
@@ -377,20 +376,13 @@ namespace locust
 
         }  // i, rReceiver.size() loop.
 
-//        printf("average Doppler freq is %g\n", tAverageDopplerFrequency);
-//        tVoltagePhaseMark[patchindex] = tAverageDopplerFrequency*2.*LMCConst::Pi()*(tReceiverPosition - tCurrentParticle.GetPosition(true)).Magnitude()/LMCConst::C();
-
         double tVoltageAmplitude = GetVoltageAmplitude(tIncidentElectricField, tIncidentKVector, PatchPhi, tAverageDopplerFrequency);
         AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, tVoltagePhase[patchindex], phi_LO, channelindex);
-
-//        printf("writing phases to file.  tVoltagePhase[%d] is %g\n", patchindex, tVoltagePhase[patchindex]);
-//        fprintf(fp, "%g   %g\n", tVoltagePhaseMark[patchindex], tVoltagePhase[patchindex]);
-
 
 
         } // z_index waveguide element stepping loop.
 
-//                printf("signal %d is %g\n", index, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
+	//		printf("signal %d with frequency %g is %g\n", channelindex, tAverageDopplerFrequency, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
 
 
         } // nchannels loop.

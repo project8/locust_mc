@@ -67,9 +67,9 @@
     {
         "filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 500,
+        "number-of-slices": 20,
         "slice-size": 8192,
-        "stride": 2048,
+        "stride": 8192,
         "dac":
         {
             "time-series-type": "fftw"

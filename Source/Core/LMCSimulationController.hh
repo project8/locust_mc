@@ -55,9 +55,6 @@ namespace locust
             void SetRNGSeed(int seed);
             void SetRNGSeed();
 
-            unsigned GetNChannels() const;
-
-
             void SetFirstGenerator( Generator* firstGen );
 
         private:
@@ -69,22 +66,10 @@ namespace locust
 
             EggWriter fEggWriter;
 
-            unsigned fNChannels;
-
-            void SetNChannels(unsigned nchannels)
-             {
-	     fNChannels = nchannels;                                           
-             }
 
 
 
     };
-
-
-    inline unsigned SimulationController::GetNChannels() const
-    {
-        return fNChannels;
-    }
 
 
 

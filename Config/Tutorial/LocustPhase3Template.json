@@ -4,7 +4,6 @@
        "patch-signal",
        "lpf-fft",
        "decimate-signal", 
-       "gaussian-noise",
        "digitizer"
     ],
     
@@ -32,7 +31,7 @@
         "egg-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1,
         "record-size": 4194304,
-        "n-channels": 2
+        "n-channels": 3
     },
   
     "gaussian-noise":
@@ -43,8 +42,8 @@
 
     "digitizer":
     {
-    "v-range": 1.0e-6,
-    "v-offset": -0.5e-6
+    "v-range": 1.0e-7,
+    "v-offset": -0.5e-7
     }
 
 }

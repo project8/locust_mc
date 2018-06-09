@@ -4,7 +4,7 @@
 <external_define name="simulation" value="1"/>
 
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="5.0"/>  <!-- 1.0 for bathtub -->
+<external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub -->
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
 <external_define name="fieldX" value="0.0"/>  <!-- earth's horiz. field in Seattle -->
 <external_define name="fieldY" value="0.0"/>
@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3LargeGeometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase2AuxCoilGeometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -210,7 +210,7 @@
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="88.5" value_max="88.5"/> 
+        <theta_uniform value_min="90." value_max="90."/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -406,7 +406,7 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.e-6"/>
+    <ksterm_max_time name="term_max_time" time="1.e-4"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-.3"/>
@@ -482,7 +482,7 @@
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-<!--        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> -->
+        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
@@ -533,7 +533,7 @@
 </kassiopeia>
 
 
-
+<!--
     <vtk_window
         name="vtk_window"
         enable_display="true"
@@ -567,7 +567,7 @@
         /> 
 
     </vtk_window> 
-
+-->
 
 
 

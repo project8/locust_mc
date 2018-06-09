@@ -8,7 +8,6 @@
 #include "LMCGaussianNoiseGenerator.hh"
 
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -145,8 +144,7 @@ namespace locust
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
       double gain=1.;
-     	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+      const unsigned nchannels = fNChannels;
         double phi = 0.;  // voltage phase
         double mag = 0.;  // voltage mag
 

@@ -24,6 +24,7 @@ namespace locust
             fByGeneratorsState( kUnknown ),
             fByGeneratorsNRecords( 1 ),
             fByGeneratorsDuration( 1. ),
+            frlcChannels( 1 ),
             fRecordSize( 4194304 ),
 //            fRecordSize( 20000 ),  // debug
             fSampleSize ( 2 ),
@@ -59,6 +60,10 @@ namespace locust
         if( aNode->has( "bin-width" ) )
             SetBinWidth( aNode->get_value< double >( "bin-width" ) );
 
+        if(aNode->has( "n-channels" ) )
+	  SetNChannels( aNode->get_value< unsigned >( "n-channels" ) );
+
+
         return true;
     }
 
@@ -73,12 +78,14 @@ namespace locust
         const Generator* nextGenerator = fFirstGenerator;
         while( nextGenerator != NULL )
         {
+	    nextGenerator->ConfigureNChannels(frlcChannels);
             nextGenerator->Accept( this );
             nextGenerator = nextGenerator->GetNextGenerator();
         }
 
         return true;
     }
+
 
     void RunLengthCalculator::Visit( const KassSignalGenerator* )
     {
@@ -190,6 +197,7 @@ namespace locust
         }
 
         LINFO( lmclog, "Final run length parameters:\n" <<
+	         "\t\tNumber of channels: " << frlcChannels << '\n' <<
                  "\t\tNumber of records: " << fNRecords << '\n' <<
                  "\t\tDuration: " << fDuration << " seconds\n" <<
                  "\t\tRecord size: " << fRecordSize << " samples\n" <<
@@ -265,6 +273,7 @@ namespace locust
         return fRecordSize;
     }
 
+
     void RunLengthCalculator::SetRecordSize( unsigned size )
     {
         fRecordSize = size;
@@ -281,6 +290,21 @@ namespace locust
         fSampleSize = size;
         return;
     }
+
+  unsigned RunLengthCalculator::GetNChannels() const
+  {
+    return frlcChannels;
+  }
+
+
+
+    void RunLengthCalculator::SetNChannels( unsigned nchannels )
+    {
+        frlcChannels = nchannels;
+        return;
+    }
+
+
 
 
     double RunLengthCalculator::GetAcquisitionRate() const

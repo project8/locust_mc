@@ -73,6 +73,9 @@ namespace locust
             unsigned GetSampleSize() const;
             void SetSampleSize( unsigned size );
 
+            unsigned GetNChannels() const;
+            void SetNChannels( unsigned size );
+
             void SetFirstGenerator( const Generator* firstGen );
 
             RunLengthState GetByGeneratorsState() const;
@@ -102,6 +105,8 @@ namespace locust
             RunLengthState fState;
 
             unsigned fNRecords;
+            unsigned frlcChannels;
+
 
             double fDuration; // sec
 
