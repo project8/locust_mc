@@ -71,7 +71,7 @@ namespace locust
 
             bool (TestSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
-            double fFrequency;
+            double fLO_frequency;
             double fAmplitude;
 
             

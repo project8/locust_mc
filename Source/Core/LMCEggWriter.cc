@@ -15,6 +15,11 @@
 
 #include "time.hh"
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <stdlib.h>
+
 #include <vector>
 
 namespace locust
@@ -57,6 +62,18 @@ namespace locust
         f_filename = aNode->get_value( "egg-filename", f_filename );
         f_date = aNode->get_value( "date", f_date );
         f_description = aNode->get_value( "description", f_description );
+
+        if (f_filename=="locust_mc.egg") // placeholder egg file.
+          {
+	  const char *homedir;
+          char fname[200];
+	  if ((homedir = getenv("HOME")) == NULL) 
+	    {
+	    homedir = getpwuid(getuid())->pw_dir;
+            }	              
+          int n = sprintf(fname, "%s/locust_mc/cbuild/bin/locust_mc.egg", homedir);
+          f_filename = fname;
+          }
 
         return true;
     }

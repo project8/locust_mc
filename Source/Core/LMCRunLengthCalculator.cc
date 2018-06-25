@@ -54,7 +54,6 @@ namespace locust
 
           SetRecordSize( aNode->get_value< unsigned >( "record-size", fRecordSize ) );
 
-
         if( aNode->has( "acquisition-rate" ) )
             SetAcquisitionRate( aNode->get_value< double >( "acquisition-rate" ) );
         if( aNode->has( "bin-width" ) )
