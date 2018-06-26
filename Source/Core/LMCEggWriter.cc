@@ -71,7 +71,7 @@ namespace locust
 	    {
 	    homedir = getpwuid(getuid())->pw_dir;
             }	              
-          int n = sprintf(fname, "%s/locust_mc/cbuild/bin/locust_mc.egg", homedir);
+          int n = sprintf(fname, "%s/data/Simulation/Tutorial/locust_mc.egg", homedir);
           f_filename = fname;
           }
 

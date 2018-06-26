@@ -24,13 +24,13 @@
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
 
-<external_define name="output_path" value="[KASPERSYS]/../../data/Simulation/Phase1/"/> 
+<external_define name="output_path" value="./"/> 
 <external_define name="file" value="Phase1Seed[seed]Output"/>
 
 
 
 <geometry>
-    <include name="[KASPERSYS]/../Config/NNPSSTutorial/Project8Phase1Geometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/NNPSSTutorial/Project8Phase1Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -412,7 +412,7 @@
 
     <!-- writers -->
 
-    <kswrite_root name="write_root" path="[output_path]" base="[file].root"/>
+    <kswrite_root name="write_root" path="./" base="[file].root"/>
 <!--    <kswrite_vtk name="write_vtk" path="[output_path]" base="Project8"/> -->
 
     <!-- output -->

@@ -24,13 +24,13 @@
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
 
-<external_define name="output_path" value="[KASPERSYS]/../../data/Simulation/Tutorial/"/> 
+<external_define name="output_path" value="./"/> 
 <external_define name="file" value="Phase3Output"/>
 
 
 
 <geometry>
-    <include name="[KASPERSYS]/../Config/NNPSSTutorial/Project8Phase3LargeGeometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/NNPSSTutorial/Project8Phase3LargeGeometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
