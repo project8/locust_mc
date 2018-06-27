@@ -40,7 +40,7 @@ namespace locust
     	Project8Phase = P8Phase;
         if (P8Phase==1)
           {
-	    CENTER_TO_SHORT = 0.0468; // m, 0.047 is tuned.
+	    CENTER_TO_SHORT = 0.0485; // m, 0.047 is tuned.
             CENTER_TO_ANTENNA = 0.045; // m
           }
 	if (P8Phase==2)
@@ -119,17 +119,17 @@ namespace locust
     double CyclotronRadiationExtractor::GetTE01FieldAfterOneBounce(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double fcyc = aFinalParticle.GetCyclotronFrequency();
-        double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);
+        double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);   
     	double zvelocity = aFinalParticle.GetVelocity().GetZ();
     	double zPosition = aFinalParticle.GetPosition().GetZ();
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(zPosition+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.
+	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition)+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.          
         double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.  with reflection coefficient.
 
-	//		        printf("field sum at trap min is %f\n", FieldFromShort); 
-	//getchar();
+	//	printf("field sum at z=%g is %f with zvelocity %g\n", zPosition, FieldFromShort, zvelocity); 
+	//	getchar();
 
         return FieldFromShort;  // Phase 1
 
@@ -270,8 +270,8 @@ namespace locust
     double CyclotronRadiationExtractor::GetDampingFactorPhase1(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double TE01FieldFromShort = GetTE01FieldAfterOneBounce(anInitialParticle, aFinalParticle);
-        double CouplingFactorTE01 = GetCouplingFactorTE01(aFinalParticle);
-        double DampingFactorTE01 = CouplingFactorTE01*(1. - TE01FieldFromShort*TE01FieldFromShort);  // can be > 0 or < 0.
+        double A10squ = GetCouplingFactorTE01(aFinalParticle);
+        double DampingFactorTE01 = 1. - A10squ + A10squ*TE01FieldFromShort*TE01FieldFromShort;  // = P'/P
 
     	return DampingFactorTE01;
     }
@@ -281,13 +281,9 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetDampingFactorPhase2(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
-      //        double TE11FieldFromShort = GetTE11FieldAfterOneBounce(anInitialParticle, aFinalParticle);
         double TM01FieldWithTerminator = GetTM01FieldWithTerminator(anInitialParticle, aFinalParticle);
-	//        double CouplingFactorTE11 = GetCouplingFactorTE11(aFinalParticle);
-        double CouplingFactorTM01 = GetCouplingFactorTM01(aFinalParticle);
-
-	//        double DampingFactorTE11 = CouplingFactorTE11*(1. - TE11FieldFromShort*TE11FieldFromShort);  // can be > 0 or < 0.
-        double DampingFactorTM01 = CouplingFactorTM01*(1. - TM01FieldWithTerminator*TM01FieldWithTerminator);  // can be > 0 or < 0.
+        double A01squ = GetCouplingFactorTM01(aFinalParticle);
+        double DampingFactorTM01 = 1. - A01squ + A01squ*TM01FieldWithTerminator*TM01FieldWithTerminator;  // can be > 0 or < 0.
         double DampingFactor = DampingFactorTM01;
 
     	return DampingFactor;
@@ -351,14 +347,15 @@ namespace locust
         {
             // adjust power with reflections.
             DeltaE = GetDampingFactorPhase1(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-            aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+            //aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+            aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
         if(fP8Phase==2)
         {
             // adjust power with reflections.
             DeltaE = GetDampingFactorPhase2(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             //printf("poststep says DeltaE is %g\n", DeltaE);
-            aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
+            aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
 
         if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.

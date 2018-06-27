@@ -65,7 +65,7 @@
         
     "egg1":
     {
-        "filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc.egg",
+        "filename": "~/data/Simulation/Tutorial/locust_mc.egg",
         "egg-reader": "egg3",
         "number-of-slices": 20,
         "slice-size": 8192,
@@ -87,7 +87,7 @@
 
     "waterfall-writer":
     {
-        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "~/data/Simulation/Tutorial/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
@@ -99,7 +99,7 @@
 
     "writer":
     {
-        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/basic.root",
+        "output-file": "~/data/Simulation/Tutorial/basic.root",
         "file-flag": "recreate"
     }
 

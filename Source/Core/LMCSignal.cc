@@ -8,7 +8,6 @@
 #include "LMCSignal.hh"
 
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 
 
 
@@ -47,12 +46,9 @@ namespace locust
         Reset();
     }
 
-    bool Signal::Initialize( unsigned aTimeSize, unsigned aFFTFlags )
+  bool Signal::Initialize( unsigned aTimeSize, unsigned nchannels, unsigned aFFTFlags )
     {
         Reset();
-
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
 
         fTimeSize = aTimeSize;
         fFreqSize = fTimeSize / 2 + 1;

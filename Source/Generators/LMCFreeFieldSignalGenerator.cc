@@ -18,7 +18,6 @@
 
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCHFSSReader.hh"
-#include "LMCSimulationController.hh"
 
 namespace locust
 {
@@ -245,8 +244,7 @@ namespace locust
         HFSSReader HFRead;
 
 
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+        const unsigned nchannels = 1;
         const double dx=0.01;
 
         const int nelementsZ = 9;

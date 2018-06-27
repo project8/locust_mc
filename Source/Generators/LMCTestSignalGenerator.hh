@@ -12,8 +12,14 @@
 #include "LMCRunLengthCalculator.hh"
 
 
+namespace scarab
+{
+  class param_node;
+}
+
 namespace locust
 {
+  class Digitizer;
 
     /*!
      @class TestSignalGenerator
@@ -42,6 +48,8 @@ namespace locust
             virtual ~TestSignalGenerator();
 
             bool Configure( const scarab::param_node* aNode );
+      bool Configure2( const Digitizer* aDig );
+
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
@@ -54,6 +62,7 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
 
+
         private:
             bool DoGenerate( Signal* aSignal );
 
@@ -62,7 +71,7 @@ namespace locust
 
             bool (TestSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
-            double fFrequency;
+            double fLO_frequency;
             double fAmplitude;
 
             

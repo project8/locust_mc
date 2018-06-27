@@ -8,7 +8,6 @@
 #include "LMCDecimateSignalGenerator.hh"
 
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -50,8 +49,7 @@ namespace locust
 
     bool DecimateSignalGenerator::DoGenerateTime( Signal* aSignal ) 
     {
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+        const unsigned nchannels = fNChannels;
 
         // Decimate Fs -> Fs/10
         for (int ch=0; ch<nchannels; ch++)

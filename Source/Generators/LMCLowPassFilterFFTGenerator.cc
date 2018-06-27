@@ -8,7 +8,6 @@
 #include "LMCLowPassFilterFFTGenerator.hh"
 
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -51,8 +50,7 @@ namespace locust
     bool LowPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+        const unsigned nchannels = fNChannels;
 
 
         double CutoffFreq = 85.e6;

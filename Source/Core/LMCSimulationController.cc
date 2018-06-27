@@ -19,8 +19,7 @@ namespace locust
     SimulationController::SimulationController() :
             fFirstGenerator( NULL ),
             fRunLengthCalc(),
-            fEggWriter(),
-            fNChannels(1)
+            fEggWriter()
     {
         SetRNGSeed();
     }
@@ -38,13 +37,6 @@ namespace locust
             SetRNGSeed( aNode->get_value< int >( "rng-seed" ) );
         }
 
-        if( aNode->has( "n-channels" ) )
-        {
-            unsigned nChannels = aNode->get_value< int >( "n-channels" );
-        }
-
-
-
 
         // configure the run-length calculator
         if( ! fRunLengthCalc.Configure( aNode ) )
@@ -52,6 +44,7 @@ namespace locust
             LERROR( lmclog, "Error configuring the run length calculator" );
             return false;
         }
+
 
         // configure the egg writer
         if( ! fEggWriter.Configure( aNode ) )
@@ -85,6 +78,7 @@ namespace locust
 
     bool SimulationController::Prepare()
     {
+
         LINFO( lmclog, "Preparing for run" );
 
         if( ! fRunLengthCalc.VisitGenerators() )
@@ -93,12 +87,14 @@ namespace locust
             return false;
         }
 
+
         // do the final determination of the run length
         if( ! fRunLengthCalc.CalculateRunLength() )
         {
             LERROR( lmclog, "Error while the run-length calculator was calculating the run length" );
             return false;
         }
+
 
         // prepare the egg file (writes header, allocates record memory, etc)
         if( ! fEggWriter.PrepareEgg( &fRunLengthCalc, FindDigitizer() ) )
@@ -118,9 +114,10 @@ namespace locust
             return false;
         }
 
-        bool IQStream = true;  // make this a parameter in the json file.
+        bool IQStream = true;  // get rid of this.
         unsigned nRecords = fRunLengthCalc.GetNRecords();
         unsigned recordSize = fRunLengthCalc.GetRecordSize();
+        unsigned nchannels = fRunLengthCalc.GetNChannels();
 
         LINFO( lmclog, "Commencing the run" );
 
@@ -146,7 +143,7 @@ namespace locust
                 	}
                 	else
                 	{
-                        for (unsigned ch = 0; ch < fNChannels; ++ch)
+                        for (unsigned ch = 0; ch < nchannels; ++ch)
                         {
                         LWARN( lmclog, "channel " << ch << ": " << index << ": I  " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2] );  // pls added (int)
                         LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2+1] );  // pls added (int)
@@ -164,7 +161,7 @@ namespace locust
                 	}
                 	else
                 	{
-                        for (unsigned ch = 0; ch < fNChannels; ++ch)
+                        for (unsigned ch = 0; ch < nchannels; ++ch)
                         {
                         LWARN( lmclog, "channel " << ch << ": " << index << ": I " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2] );  // pls added (int)
                         LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2+1] );  // pls added (int)
@@ -172,6 +169,7 @@ namespace locust
                 	}
                 }
             }
+
 
             if( ! fEggWriter.WriteRecord( simulatedSignal ) )
             {
@@ -181,7 +179,8 @@ namespace locust
             }
 
             // temporarily, immediately cleanup
-            delete simulatedSignal;
+	    delete simulatedSignal;
+
         }
 
         return true;
@@ -202,7 +201,7 @@ namespace locust
 
     const Digitizer* SimulationController::FindDigitizer() const
     {
-        const Generator* thisGenerator = fFirstGenerator;
+      const Generator* thisGenerator = fFirstGenerator;
         const Digitizer* asDigitizer = dynamic_cast< const Digitizer* >( thisGenerator );
         while( thisGenerator != NULL && asDigitizer == NULL )
         {

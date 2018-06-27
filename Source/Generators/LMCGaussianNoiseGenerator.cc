@@ -8,7 +8,6 @@
 #include "LMCGaussianNoiseGenerator.hh"
 
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -144,8 +143,8 @@ namespace locust
 
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+      double gain=1.;
+      const unsigned nchannels = fNChannels;
         double phi = 0.;  // voltage phase
         double mag = 0.;  // voltage mag
 
@@ -155,8 +154,9 @@ namespace locust
         {
         	phi = fUniDist( fRNG );
         	mag = fNormDist( fRNG );
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)* mag * cos(phi*LMCConst::Pi()/180.);
-            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)* mag * sin(phi*LMCConst::Pi()/180.);
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag * cos(phi*LMCConst::Pi()/180.);
+            aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag * sin(phi*LMCConst::Pi()/180.);
+	    //	    printf("noise signal is %g\n", aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1]); getchar();
         }
         }
 

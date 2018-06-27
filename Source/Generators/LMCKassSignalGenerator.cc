@@ -110,6 +110,7 @@ namespace locust
 
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
     {
+      double gain=1.;  //voltage gain
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
         double RealVoltage1 = 0.;
@@ -188,20 +189,21 @@ namespace locust
           {
 	    RealVoltage2 *= 0.03;  // replace short with terminator.                        
 	    ImagVoltage2 *= 0.03;  // replace short with terminator.                                          
-          aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-          aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
           }
         else if (Project8Phase == 1)
           {  // assume 50 ohm impedance
 
 	    //	    RealVoltage2 *= 0.25; // some loss at short.
-	    aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-	    aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+	    aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
+	    aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+	    
 
           }
 
 
-	/*					
+	/*						
             printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
             printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
             printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
@@ -212,8 +214,8 @@ namespace locust
 
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-		
-	*/
+*/		
+	
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 	  
