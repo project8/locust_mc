@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="[KASPERSYS]/../Config/NNPSSTutorial/Project8Phase1Geometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/NNPSSTutorial/Project8Phase1Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
