@@ -40,7 +40,7 @@ namespace locust
     	Project8Phase = P8Phase;
         if (P8Phase==1)
           {
-	    CENTER_TO_SHORT = 0.0485; // m, 0.047 is tuned.
+	    CENTER_TO_SHORT = 0.0488; // m, 0.047 is tuned.
             CENTER_TO_ANTENNA = 0.045; // m
           }
 	if (P8Phase==2)
@@ -125,8 +125,8 @@ namespace locust
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE01(aFinalParticle),2.),0.5);
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition)+CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.          
-        double FieldFromShort = cos(0.) + cos(phi_shortTE01); // yes resonant enhancement.  with reflection coefficient.
+	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition) + CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.          
+        double FieldFromShort = cos(0.) + cos(phi_shortTE01);
 
 	//	printf("field sum at z=%g is %f with zvelocity %g\n", zPosition, FieldFromShort, zvelocity); 
 	//	getchar();
@@ -243,23 +243,15 @@ namespace locust
 
     double CyclotronRadiationExtractor::GetTM01FieldWithTerminator(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
-      double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
       double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
       double GroupVelocity = GetGroupVelocityTM01(aFinalParticle);
       double tVelocityZ = aFinalParticle.GetVelocity().GetZ();
       double tPositionZ = aFinalParticle.GetPosition().GetZ();
       double GammaZ = 1.0/sqrt(1.0-pow(tVelocityZ / GetGroupVelocityTM01(aFinalParticle),2.) );
-      //      printf("tcyc is %g and GammaZ is %g and tVelocityZ is %g\n", tCyclotronFrequency, GammaZ, tVelocityZ);             
       double fprime_polarizer = tCyclotronFrequency*GammaZ*(1.-tVelocityZ/GroupVelocity);
-      //      printf("GroupVelocity is %.10g and fprime_short is %.10g\n", GroupVelocity, fprime_short);                         
-      double lambda_polarizer = GroupVelocity/fprime_polarizer;
-      double FieldFromPolarizer=0.; // other doppler shift                                                               
-      double TM01FieldAfterBounces = 0.;
-      double phi_polarizerTM01 = 0.;
 
-      phi_polarizerTM01 = 2.*LMCConst::Pi()*(2.*(CENTER_TO_ANTENNA-tPositionZ))
-	/(GroupVelocity/fprime_polarizer);
-      TM01FieldAfterBounces = cos(0.) + cos(phi_polarizerTM01);
+      double phi_polarizerTM01 = 2.*LMCConst::Pi()*(2.*(CENTER_TO_ANTENNA-fabs(tPositionZ)))/(GroupVelocity/fprime_polarizer);
+      double TM01FieldAfterBounces = cos(0.) + cos(phi_polarizerTM01);
       //printf("TE11FieldAfterOneBounce is %f\n", TE11FieldAfterOneBounce);                                              
       return TM01FieldAfterBounces;
 
@@ -342,6 +334,7 @@ namespace locust
     bool CyclotronRadiationExtractor::ExecutePostStepModification( KSParticle& anInitialParticle, KSParticle& aFinalParticle, KSParticleQueue& aQueue )
     {
         double DeltaE=0.;
+
 	//printf("fcyc is %g\n", anInitialParticle.GetCyclotronFrequency()); //getchar();
         if(fP8Phase==1)
         {
@@ -361,7 +354,10 @@ namespace locust
         if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
 
-        if (t_old == 0.) fPitchAngle = -99.;  // new electron needs central pitch angle reset.
+        if (t_old == 0.) 
+          {
+          fPitchAngle = -99.;  // new electron needs central pitch angle reset.
+          }
     	double t_poststep = aFinalParticle.GetTime();
         fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
