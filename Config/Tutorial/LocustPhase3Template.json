@@ -1,10 +1,9 @@
 {
     "generators":
     [          
-       "kass-signal",
+       "patch-signal",
        "lpf-fft",
-       "decimate-signal",
-       "gaussian-noise",
+       "decimate-signal", 
        "digitizer"
     ],
     
@@ -18,7 +17,7 @@
     "patch-signal":
     {
         "lo-frequency": 25.8781e9,
-        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
+        "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
     },
 
     "freefield-signal":
@@ -31,7 +30,8 @@
     {
         "egg-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1,
-        "record-size": 4194304
+        "record-size": 4194304,
+        "n-channels": 3
     },
   
     "gaussian-noise":
@@ -42,8 +42,8 @@
 
     "digitizer":
     {
-    "v-range": 1.0e-6,
-    "v-offset": -0.5e-6
+    "v-range": 1.0e-7,
+    "v-offset": -0.5e-7
     }
 
 }

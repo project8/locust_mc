@@ -8,7 +8,6 @@
 #include "LMCDigitizer.hh"
 
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 
 
 using scarab::get_calib_params;
@@ -44,6 +43,7 @@ namespace locust
         unsigned dataTypeSize = aNode->get_value( "data-type-size", fParams.data_type_size );
         double vRange = aNode->get_value( "v-range", fParams.v_range );
         double vMin = aNode->get_value( "v-offset", fParams.v_offset );
+      
 
         get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
 
@@ -71,12 +71,10 @@ namespace locust
     bool Digitizer::DoGenerate( Signal* aSignal )
     {
 
-    	bool IQStream = true;  // this could eventually be a parameter in the json file.
-
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
-
-
+    	bool IQStream = true;  // get rid of this.
+  
+        unsigned nchannels = fNChannels;
+	printf("digi says nchannels is %d\n", nchannels);
         unsigned signalSize = aSignal->TimeSize();
         unsigned signalSizeComplex = 2*aSignal->TimeSize()*nchannels;
 

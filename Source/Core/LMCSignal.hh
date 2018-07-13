@@ -33,7 +33,7 @@ namespace locust
             Signal();
             virtual ~Signal();
 
-            bool Initialize( unsigned aTimeSize, unsigned aFFTFlags = FFTW_ESTIMATE );
+      bool Initialize( unsigned aTimeSize, unsigned nchannels, unsigned aFFTFlags = FFTW_ESTIMATE );
             void Reset();
             void ResetValues();
 

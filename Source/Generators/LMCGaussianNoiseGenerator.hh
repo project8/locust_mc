@@ -10,6 +10,8 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCConst.hh"
+
 
 #include <random>
 
@@ -72,6 +74,8 @@ namespace locust
             double fSigma;
 
             mutable std::normal_distribution< double > fNormDist;
+            mutable std::uniform_real_distribution<double> fUniDist;
+
 
     };
 

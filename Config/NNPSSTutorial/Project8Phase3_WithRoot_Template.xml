@@ -1,88 +1,68 @@
-<!-- definitions -->
-
-
-
 <!-- parameters -->
 
 
-
 <external_define name="simulation" value="1"/>
-<external_define name="previs" value="0"/>
-<external_define name="postvis" value="0"/>
 
-<external_define name="pinch" value="0.05"/>  <!-- nominally -1.0 -->
-<external_define name="bathtub" value="-2.0"/>
-<external_define name="field" value="0.9583"/>
+<external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
+<external_define name="bathtub" value="5.0"/>  <!-- 1.0 for bathtub -->
+<external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
+<external_define name="fieldX" value="0.0"/>  <!-- earth's horiz. field in Seattle -->
+<external_define name="fieldY" value="0.0"/>
+<external_define name="PatchOffset" value="0.0"/> <!-- meters to shift patch array -->
+
+
 <external_define name="alignment" value="0."/>
 
-<external_define name="energy" value="18000."/>
-<external_define name="pitch" value="89.0"/>
-<external_define name="radius" value="1.0e-3"/>
-<external_define name="pressure" value="1.e0"/>
-<external_define name="cut" value="1.e3"/>
-
-<!-- <external_define name="generator" value="gen_uniform"/> -->
- <external_define name="generator" value="gen_krypton"/> 
-<!-- <external_define name="generator" value="gen_bfieldlines" />  -->
+ <external_define name="generator" value="gen_uniform"/>
+<!-- <external_define name="generator" value="gen_krypton"/> -->
+<!-- <external_define name="generator" value="gen_bfieldlines" /> -->
  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
-<!-- <external_define name="trajectory" value="traj_magnetic"/>  -->
+<!-- <external_define name="trajectory" value="trajectory_exact"/> -->
+<!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 
 <external_define name="count" value="1"/>
-<external_define name="seed" value="70"/>
+<external_define name="seed" value="112377"/>
 
-<define name="cyclotron_radius" value="{3.3356e-9 * sqrt( [energy] * [energy] + 2. * [energy] * 510999. ) / [field]}"/>
-<define name="cyclotron_frequency" value="{1.4304e16 * [field] / ( [energy] + 510999.)}"/>
-<define name="cyclotron_period" value="{1. / [cyclotron_frequency]}"/>
-
-<!--<external_define name="path" value="/home/penny/project8"/> -->
-<external_define name="file" value="Project8Kass"/>
-
-
-<include name="/home/penny/project8/Project8Geometry.xml"/>
+<external_define name="output_path" value="./"/> 
+<external_define name="file" value="Phase3Output"/>
 
 
 
 <geometry>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/NNPSSTutorial/Project8Phase3LargeGeometry.xml"/>
+</geometry>
     
     <!-- solenoid turns -->
 
-    <define name="pinch_turns" value="61.0"/>
-    <define name="bathtub_turns" value="51.0"/>
+    <define name="pinch_turns" value="63.0"/>
+    <define name="bathtub_turns" value="63.0"/>
 
-    <!-- solenoid -->
-
-    <electromagnet
-        spaces="project8_assembly/pinch_coil"
-        current="[pinch]"
-        scaling_factor="[pinch_turns]"
-        direction="clockwise"
-    />
-    <electromagnet
-        spaces="project8_assembly/upstream_bathtub_coil"
-        current="[bathtub]"
-        scaling_factor="[bathtub_turns]"
-        direction="counter_clockwise"
-    />
-    <electromagnet
-        spaces="project8_assembly/downstream_bathtub_coil"
-        current="[bathtub]"
-        scaling_factor="51.0"
-        direction="counter_clockwise"
-    />
-
-</geometry>
 
 <geometry>
 
-    <cylinder_space name="world_space" z1="-50" z2="50" r="20"/>
-    <space name="world" node="world_space">
-        <space name="project8" tree="project8_assembly">
-            <transformation rotation_axis_angle="[alignment] 90. 90."/>
-        </space>
-    </space>
+    <!-- electromagnets -->
+
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
+
+<!--
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
+
+
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
+
+
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
+-->
+
+
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
+
+
 
 </geometry>
+
+
 
 
  
@@ -90,12 +70,14 @@
 
     <!-- fields -->
 
+
     <ksfield_electromagnet
-        name="field_magnetic_traps"
+        name="field_electromagnet"
+        directory="[KEMFIELD_CACHE]"
         file="Project8Magnets.kbd"
         system="world/project8"
-        spaces="world/project8/@magnet_tag">
-
+        spaces="world/project8/@magnet_tag"
+    >
         <zonal_harmonic_field_solver
             number_of_bifurcations="-1"
             convergence_ratio=".99"
@@ -111,9 +93,10 @@
         />
     </ksfield_electromagnet>
 
+
     <ksfield_magnetic_constant
         name="field_magnetic_main"
-        field="0. 0. [field]"
+        field="[fieldX] [fieldY]  [fieldZ]"
     />
 
     <!-- generators -->
@@ -126,7 +109,7 @@
         <position_cylindrical_composite>
             <r_list add_value="0.0"/>
             <phi_list add_value="0.0"/>
-            <z_list add_value="-0.04"/>
+            <z_list add_value="-0.3"/>
         </position_cylindrical_composite>
         <direction_spherical_composite>
             <theta_fix value="0."/>
@@ -138,7 +121,7 @@
     </ksgen_generator_composite>
 
 
-
+<!--
     <ksgen_generator_composite name="gen_fix1">
         <energy_composite>
             <energy_fix value="18000."/>
@@ -213,14 +196,16 @@
             <time_fix value="0."/>
         </time_composite>
     </ksgen_generator_composite>
+-->
 
-    <ksgen_generator_composite name="gen_uniform">
+
+    <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="30472.3"/>
+            <energy_fix value="18000.0"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.0" value_max="0.0"/>
-            <y_uniform value_min="0.0" value_max="0.0"/>
+            <x_uniform value_min="-0.005" value_max="-0.005"/>
+            <y_uniform value_min="-0.04" value_max="-0.04"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
@@ -233,6 +218,8 @@
         </time_composite>
     </ksgen_generator_composite>
 
+
+<!--
     <ksgen_generator_composite name="gen_krypton">
         <energy_krypton_event force_conversion="true" do_conversion="true" do_auger="false"/>
         <position_rectangular_composite space="world/project8">
@@ -249,7 +236,41 @@
         </time_composite>
     </ksgen_generator_composite>
 
+-->
+
+
+
+
+<!--
+    <ksgen_generator_composite name="generator_uniform" pid="11">
+        <energy_composite>
+            <energy_fix value="2."/>
+        </energy_composite>
+        <position_cylindrical_composite surface="world/project8/start">
+            <r_cylindrical radius_min="0." radius_max="1.e-3"/>
+            <phi_uniform value_min="0." value_max="360."/>
+            <z_fix value="0."/>
+        </position_cylindrical_composite>
+        <direction_spherical_composite surface="world/project8/start">
+            <theta_fix value="90."/>
+            <phi_uniform value_min="0." value_max="360"/>
+        </direction_spherical_composite>
+        <time_composite>
+            <time_fix value="0."/>
+        </time_composite>
+    </ksgen_generator_composite>
+
+-->
+
     <!-- trajectories -->
+
+    <kstraj_trajectory_exact name="trajectory_exact">
+        <integrator_rk8 name="integrator_rk8"/>
+        <term_propagation name="term_propagation"/>
+    </kstraj_trajectory_exact>
+
+
+
 
     <kstraj_trajectory_exact name="traj_exact">
         <integrator_rk8/>
@@ -290,6 +311,13 @@
         <control_cyclotron name="control_cyclotron_1_16" fraction="{1. / 32.}"/>
     </kstraj_trajectory_exact>
 
+
+    <kstraj_control_cyclotron name="control_cyclotron_1_16" fraction="{1. / 16.}"/>
+    <kstraj_control_cyclotron name="control_cyclotron_1_64" fraction="{1. / 64.}"/>
+
+
+
+
     <kstraj_trajectory_adiabatic name="traj_adiabatic">
         <integrator_rk8/>
         <term_propagation/>
@@ -327,13 +355,14 @@
 
     <kstraj_trajectory_adiabatic name="traj_adiabaticsynchrotron">
         <integrator_rk8/> 
+        <interpolator_hermite name="interpolator_hermite"/>
 <!--        <integrator_rk54/> -->
         <term_propagation/>
         <term_synchrotron/>
         <term_gyration/>
         <term_drift/>
-   <!--     <control_cyclotron name="control_cyclotron_1_16" fraction="{1. / 8.}"/>  -->   
-   <control_cyclotron name="control_cyclotron_arbitrary" fraction="1.125"/> 
+<!--        <control_cyclotron name="control_cyclotron_arbitrary" fraction="0.0156250"/> -->
+   <control_cyclotron name="control_cyclotron_arbitrary" fraction="1.125"/>
     </kstraj_trajectory_adiabatic>
 
     <kstraj_trajectory_magnetic name="traj_magnetic">
@@ -347,6 +376,18 @@
 
     <!-- interactions -->
 
+	<!-- space interactions -->
+
+    <ksint_scattering name="int_scattering" split="true">
+        <density_constant temperature="300." pressure="3.e-10"/>
+        <calculator_constant cross_section="1.e-18"/>
+    </ksint_scattering>
+
+    <!-- surface interactions -->
+
+    <ksint_surface_diffuse name="int_surface_diffuse" probability=".3" reflection_loss="0." transmission_loss="1."/>
+
+
 
 <!--
     <ksint_scattering name="int_hydrogen" split="true">
@@ -357,28 +398,28 @@
 
     <!-- navigators -->
 
-    <ksnav_space name="nav_space" tolerance="1.e-6"/>
-    <ksnav_surface name="nav_surface"/>
+<!--    <ksnav_space name="nav_space" tolerance="1.e-6"/>  -->
+    <ksnav_space name="nav_space" enter_split="false" exit_split="false"/>
+<!--    <ksnav_surface name="nav_surface"/>  -->
+    <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
+
+
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.0e-7"/>
-    <ksterm_min_energy name="term_min_energy" energy="25000."/>
-    <ksterm_min_z name="term_min_z" z="-.0482"/>
-    <ksterm_max_z name="term_max_z" z=".0482"/>
-
-    <ksterm_death name="term_waveguide_death"/>
-    <ksterm_death name="term_upstream_kapton_death"/>
-    <ksterm_death name="term_downstream_kapton_death"/>
-    <ksterm_max_steps name="term_max_steps" steps="50000"/>
+    <ksterm_max_time name="term_max_time" time="0.5e-4"/>
+    <ksterm_max_steps name="term_max_steps" steps="10000"/>
+    <ksterm_min_energy name="term_min_energy" energy="0."/>
+    <ksterm_min_z name="term_min_z" z="-.3"/>
+    <ksterm_max_z name="term_max_z" z=".3"/>
     
     <!-- modifiers -->
-<!--    <cycl_rad_extr name="my_rad_extr"  />  -->
+    <cycl_rad_extr name="my_rad_extr" P8Phase="3" /> 
 
 
     <!-- writers -->
 
-    <kswrite_root name="write_root" base="[file].root"/> 
-    <kswrite_vtk name="write_vtk" base="Project8_vtkoutput.vtk"/>
+    <kswrite_root name="write_root" path="[output_path]" base="[file].root"/>
+<!--    <kswrite_vtk name="write_vtk" path="[output_path]" base="Project8"/> -->
 
     <!-- output -->
 
@@ -427,45 +468,57 @@
         <component_member name="polar_angle_to_z" field="polar_angle_to_z" parent="component_step_final_particle"/>
         <component_member name="polar_angle_to_b" field="polar_angle_to_b" parent="component_step_final_particle"/>
         <component_member name="cyclotron_frequency" field="cyclotron_frequency" parent="component_step_final_particle"/>
+        <component_member name="lorentz_factor" field="lorentz_factor" parent="component_step_final_particle"/>
+        <component_member name="speed" field="speed" parent="component_step_final_particle"/>
         <component_member name="orbital_magnetic_moment" field="orbital_magnetic_moment" parent="component_step_final_particle"/>
+        <component_member name="guiding_center_position" field="guiding_center_position" parent="component_step_final_particle"/>
+
     </ks_component_group>
+
+
 
 
 
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-<!--        <command parent="root_stepmodifier" field="add_modifier" child="my_rad_extr"/>  -->
-           
+        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
+<!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
+
+        <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
+
+        <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
+        <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+<!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
+<!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
         <command parent="write_root" field="add_step_output" child="component_step_world"/> 
-        <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
-        <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
-        <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
-        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
-        <geo_space name="space_waveguide" spaces="world/project8/waveguide">
-<!--            <command parent="root_space_interaction" field="add_space_interaction" child="int_hydrogen"/> -->
-	    <!--<command parent="root_terminator" field="add_terminator" child="term_max_time"/>-->
-            <geo_side name="side_upstream_kapton" surfaces="world/project8/waveguide/bottom">
-                <command parent="root_terminator" field="add_terminator" child="term_upstream_kapton_death"/>    
-            </geo_side>
-            <geo_side name="side_downstream_kapton" surfaces="world/project8/waveguide/top">
-                <command parent="root_terminator" field="add_terminator" child="term_downstream_kapton_death"/>    
-            </geo_side>
-            <geo_side name="side_waveguide" surfaces="world/project8/waveguide/jacket">
-                <command parent="root_terminator" field="add_terminator" child="term_waveguide_death"/>    
-            </geo_side>
-        </geo_space>
+
+
+
+
+<!--            <command parent="root_space_interaction" field="add_space_interaction" child="int_scattering"/>  -->
+
+<!--
+            <command parent="trajectory_exact" field="remove_control" child="control_cyclotron_1_16"/>
+            <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_64"/>
+-->
+
+          
+
     </ksgeo_space>
-     
+
+
+
   
     <!-- simulation -->
 
     <ks_simulation
+        name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="20"
-        magnetic_field="field_magnetic_traps"
+        events="1"
+        magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"
         generator="[generator]"
@@ -473,13 +526,14 @@
         space_navigator="nav_space"
         surface_navigator="nav_surface"
         writer="write_root"
-        writer="write_vtk"
     />
+
 
 
 </kassiopeia>
 
 
+<!--
     <vtk_window
         name="vtk_window"
         enable_display="true"
@@ -500,16 +554,20 @@
             file="Project8.vtp"
             surfaces="world/project8/#"
         />
+
+
         <vtk_track_painter
             name="track_painter"
+            path="[output_path]"
             file="[file].root"
             point_object="component_step_world"
             point_variable="position"
             color_object="component_step_world"
             color_variable="kinetic_energy"
         /> 
-    </vtk_window> 
 
+    </vtk_window> 
+-->
 
 
 

@@ -23,7 +23,8 @@ namespace locust
 
     Generator::Generator( const std::string& aName ) :
             fName( aName ),
-            fRequiredSignalState( Signal::kFreq ),  // pls confused here.
+            fRequiredSignalState( Signal::kFreq ),
+            fNChannels( 1 ),
             fNext( NULL )
     {
     }
@@ -35,7 +36,7 @@ namespace locust
     Signal* Generator::Run( unsigned aTimeSize ) 
     {
         Signal* newSignal = new Signal();
-        newSignal->Initialize( aTimeSize );
+        newSignal->Initialize( aTimeSize , fNChannels );
         if( ! Run( newSignal ) )
         {
             delete newSignal;
@@ -75,6 +76,13 @@ namespace locust
         fName = aName;
         return;
     }
+
+  void Generator::ConfigureNChannels( unsigned nchannels ) const
+  {
+    fNChannels = nchannels;
+  }
+
+
 
     Signal::State Generator::GetRequiredSignalState() const
     {

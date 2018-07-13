@@ -8,7 +8,6 @@
 #include "LMCLowPassFilterFFTGenerator.hh"
 
 #include "logger.hh"
-#include "LMCSimulationController.hh"
 
 
 using std::string;
@@ -51,8 +50,7 @@ namespace locust
     bool LowPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-    	SimulationController SimulationController1;
-        const unsigned nchannels = SimulationController1.GetNChannels();
+        const unsigned nchannels = fNChannels;
 
 
         double CutoffFreq = 85.e6;
@@ -101,7 +99,7 @@ namespace locust
 
             for( unsigned index = 0; index < windowsize; ++index )
             {
-                // normalize and take the real part of the reverse transform, for digitization.
+                // normalize
                 aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
                 aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
                 //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}

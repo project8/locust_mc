@@ -18,7 +18,6 @@
 
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCHFSSReader.hh"
-#include "LMCSimulationController.hh"
 
 namespace locust
 {
@@ -77,6 +76,7 @@ namespace locust
     {
 		printf("LMC about to wait ..\n");
 
+
         std::unique_lock< std::mutex >tLock( fKassReadyMutex);
         fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
         printf("LMC Got the fKassReadyCondition signal\n");
@@ -101,7 +101,6 @@ namespace locust
 
         locust::Particle tCurrentParticle = fParticleHistory.back();
         int CurrentIndex;
-
         const int signalSize = aSignal->TimeSize();
 
         const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
