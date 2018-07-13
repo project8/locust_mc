@@ -58,8 +58,8 @@ namespace locust
 
     bool LocalOscillatorGenerator::DoGenerateTime( Signal* aSignal )
     {
-    	SimulationController SimulationController1;
-        const unsigned nChannels = SimulationController1.GetNChannels();
+
+        const unsigned nChannels = fNChannels;
 
         RunLengthCalculator *simpleCalculator =  new RunLengthCalculator();
         const double acquisitionTimeStep = 1. / ( simpleCalculator->GetAcquisitionRate() * 1.e6); //Rate is in MHz

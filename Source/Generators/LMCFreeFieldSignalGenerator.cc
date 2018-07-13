@@ -243,8 +243,8 @@ namespace locust
 
     void FreeFieldSignalGenerator::InitializePatchArray()
     {
-    	SimulationController SimulationController1;
-        const unsigned nChannels = SimulationController1.GetNChannels();
+   
+        const unsigned nChannels = fNChannels;
         const int nReceivers = 13; //Number of receivers per channel
 
         const double patchSpacingZ = 0.108;
