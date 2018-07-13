@@ -11,6 +11,9 @@
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 
+#include "LMCChannel.hh"
+#include "LMCPatchAntenna.hh"
+
 namespace locust
 {
 
@@ -46,24 +49,16 @@ namespace locust
 
 
         private:
-            std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+
             std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
 
             std::string gxml_filename;
 
-            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDElectricFieldFreq;  //Should use the LMCThreeVectors too.....
-            std::vector<std::vector<std::array<std::array<double,2>, 3 > > > NFDMagneticFieldFreq;
-
-            bool fWriteNFD;
-            std::vector<double> NFDFrequencies;
-            std::string fAND_filename;
-            std::string fNFD_filename;
-
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
-
-            void NFDWrite();
+            void InitializePatchArray();
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
 
