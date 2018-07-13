@@ -7,6 +7,7 @@
 
 #ifndef LMCCHANNEL_HH_
 #define LMCCHANNEL_HH_
+#include <vector>
 
 namespace locust
 {
