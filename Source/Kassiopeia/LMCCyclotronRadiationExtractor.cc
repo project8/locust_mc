@@ -338,14 +338,11 @@ namespace locust
 	//printf("fcyc is %g\n", anInitialParticle.GetCyclotronFrequency()); //getchar();
         if(fP8Phase==1)
         {
-            // adjust power with reflections.
             DeltaE = GetDampingFactorPhase1(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-            //aFinalParticle.SetKineticEnergy((aFinalParticle.GetKineticEnergy() - DeltaE));
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
         if(fP8Phase==2)
         {
-            // adjust power with reflections.
             DeltaE = GetDampingFactorPhase2(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             //printf("poststep says DeltaE is %g\n", DeltaE);
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
@@ -371,7 +368,6 @@ namespace locust
             //Dont want to check .back() of history if it is empty! -> Segfault
             if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
             {
-//                printf("New Particle!, t_old is %g\n", t_old); getchar();
                 t_poststep = 0.;
                 fParticleHistory.clear();
             }
@@ -385,7 +381,6 @@ namespace locust
                 fParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, tParticleCopy));
 
                 tHistoryMaxSize = 5;
-
             }
             else
             {
@@ -404,17 +399,16 @@ namespace locust
             fNewParticleHistory.clear();
 
             //Purge fParticleHistory of overly old entries	    
-	    while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
-	      {
-	      fParticleHistory.pop_front();
-	      }
-	     //	    printf("done purging\n");
+            while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
+            {
+                fParticleHistory.pop_front();
+            }
 	    
             tLock.unlock();
             fDigitizerCondition.notify_one();  // notify Locust after writing.
 
         }
-        } // fDoneWithSignalGeneration
+        } // DoneWithSignalGeneration
 
         return true;
     }

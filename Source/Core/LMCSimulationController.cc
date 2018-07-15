@@ -19,6 +19,7 @@ namespace locust
     SimulationController::SimulationController() :
             fFirstGenerator( NULL ),
             fRunLengthCalc(),
+
             fEggWriter()
     {
         SetRNGSeed();
