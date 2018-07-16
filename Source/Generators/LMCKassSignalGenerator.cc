@@ -275,15 +275,8 @@ namespace locust
                   {
 		    if ((index-StartEventTimer) > 1000) 
 		    {
-		      printf("index-StartEventTimer-nPre is %d\n", index-StartEventTimer);
                     break;
 		    }
-                    else 
-                      {
-                      printf("index-StartEventTimer is %d\n", index-StartEventTimer);
-                      getchar();
-                      }
-
                   }
             }
 
@@ -316,15 +309,16 @@ namespace locust
             }
         }  // for loop
 
+        printf("finished signal loop.\n");
+
+
         fclose(fp);
 	fRunInProgress = false;  // tell Kassiopeia to finish.
         fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-	if (!fEventInProgress)
-	  if (ReceivedKassReady())
+	//	if (fEventInProgress)
+	//  if (ReceivedKassReady())
 	    WakeBeforeEvent();
-	
-		       
-        printf("finished signal loop.\n");
+			     
          
         Kassiopeia.join();  // wait for Kassiopeia to finish.
 	
