@@ -273,7 +273,7 @@ namespace locust
                 printf("LMC says it ReceivedKassReady()\n");                
 		if (Project8Phase == 2)
                   {
-		    if ((index-StartEventTimer) > 1000) 
+		    if ((index-StartEventTimer) > 1e6) 
 		    {
                     break;
 		    }

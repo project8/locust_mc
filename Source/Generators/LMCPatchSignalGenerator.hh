@@ -50,6 +50,7 @@ namespace locust
             double fLO_Frequency;  // typically defined by a parameter in json file.
 
             std::string gxml_filename;
+            bool fCorporateFeed;
 
 
             bool DoGenerate( Signal* aSignal );

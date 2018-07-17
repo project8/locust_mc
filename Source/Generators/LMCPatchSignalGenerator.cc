@@ -31,6 +31,7 @@ namespace locust
     PatchSignalGenerator::PatchSignalGenerator( const std::string& aName ) :
             Generator( aName ),
             fLO_Frequency( 0.),
+            fCorporateFeed( 0 ),
             gxml_filename("blank.xml")
     {
         fRequiredSignalState = Signal::kTime;
@@ -52,6 +53,18 @@ namespace locust
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
         }
+        if( aParam->has( "feed" ) )
+	{
+          if (aParam->get_value< std::string >( "feed" ) == "corporate")                    
+            fCorporateFeed = 1;  // default
+          else if (aParam->get_value< std::string >( "feed" ) == "series")
+            fCorporateFeed = 0;
+          else
+            fCorporateFeed = 1;  // default
+
+
+	}
+
 
 
 
@@ -182,8 +195,11 @@ namespace locust
     }
 
 
-    void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex)
+  void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index)
     {
+      double LinePhaseCorr = 0.;
+      VoltagePhase += LinePhaseCorr;     
+
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
     }
@@ -359,8 +375,8 @@ namespace locust
               }
             else  // if this is the first digitizer sample, the voltage phase doesn't advance for the full dt.
               {
-                tVoltagePhase[patchindex]+=  // compressing
-                		tDopplerFrequency * tRetardedTime / rReceiver.size();
+              tVoltagePhase[patchindex]+=  // compressing
+                 tDopplerFrequency * tRetardedTime / rReceiver.size();
               }
 
 /*
@@ -377,7 +393,7 @@ namespace locust
         }  // i, rReceiver.size() loop.
 
         double tVoltageAmplitude = GetVoltageAmplitude(tIncidentElectricField, tIncidentKVector, PatchPhi, tAverageDopplerFrequency);
-        AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, tVoltagePhase[patchindex], phi_LO, channelindex);
+        AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, tVoltagePhase[patchindex], phi_LO, channelindex, z_index);
 
 
         } // z_index waveguide element stepping loop.
