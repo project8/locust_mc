@@ -1,0 +1,43 @@
+{
+    "generators":
+    [          
+       "fake-track",
+       "lpf-fft",
+       "decimate-signal",
+       "gaussian-noise",
+       "digitizer"
+    ],
+
+    "fake-track":
+    {
+    "signal-power": 1.0e-15,
+    "start-frequency": 20.05e9,
+    "start-vphase": 0.0,
+    "slope": 0.6,
+    "start-time": 0.001,
+    "end-time": 0.005,
+    "lo-frequency": 20.0e9
+    },
+    
+    "simulation":
+    {
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "n-records": 1,
+        "n-channels": 1,
+        "record-size": 1228800
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor": 4.0e-21,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 1.0e-5,
+    "v-offset": -0.5e-5
+    }
+
+}
+
