@@ -189,15 +189,15 @@ namespace locust
           {
 	    RealVoltage2 *= 0.03;  // replace short with terminator.                        
 	    ImagVoltage2 *= 0.03;  // replace short with terminator.                                          
-          aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-          aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
           }
         else if (Project8Phase == 1)
           {  // assume 50 ohm impedance
 
 	    //	    RealVoltage2 *= 0.25; // some loss at short.
-	    aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-	    aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+	    aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
+	    aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
 	    
 
           }

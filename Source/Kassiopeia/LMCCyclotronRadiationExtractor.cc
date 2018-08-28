@@ -126,6 +126,7 @@ namespace locust
 
     	double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
 	double phi_shortTE01 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition) + CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.          
+  
         double FieldFromShort = cos(0.) + cos(phi_shortTE01);
 
 	//	printf("field sum at z=%g is %f with zvelocity %g\n", zPosition, FieldFromShort, zvelocity); 
@@ -275,7 +276,7 @@ namespace locust
     {
         double TM01FieldWithTerminator = GetTM01FieldWithTerminator(anInitialParticle, aFinalParticle);
         double A01squ = GetCouplingFactorTM01(aFinalParticle);
-        double DampingFactorTM01 = 1. - A01squ + A01squ*TM01FieldWithTerminator*TM01FieldWithTerminator;  // can be > 0 or < 0.
+        double DampingFactorTM01 = 1. - A01squ + A01squ*TM01FieldWithTerminator*TM01FieldWithTerminator;  // = P'/P
         double DampingFactor = DampingFactorTM01;
 
     	return DampingFactor;
@@ -335,7 +336,8 @@ namespace locust
     {
         double DeltaE=0.;
 
-	//printf("fcyc is %g\n", anInitialParticle.GetCyclotronFrequency()); //getchar();
+	//        printf("dE/dt is %g\n", (aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy())/(aFinalParticle.GetTime() - anInitialParticle.GetTime())); //getchar();
+
         if(fP8Phase==1)
         {
             DeltaE = GetDampingFactorPhase1(anInitialParticle, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());

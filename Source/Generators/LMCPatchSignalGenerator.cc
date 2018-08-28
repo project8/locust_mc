@@ -55,19 +55,14 @@ namespace locust
         }
         if( aParam->has( "feed" ) )
 	{
-          if (aParam->get_value< std::string >( "feed" ) == "corporate")                    
+          if (aParam->get_value< std::string >( "feed" ) == "corporate")
             fCorporateFeed = 1;  // default
           else if (aParam->get_value< std::string >( "feed" ) == "series")
             fCorporateFeed = 0;
           else
             fCorporateFeed = 1;  // default
 
-
 	}
-
-
-
-
 
         return true;
     }
@@ -181,44 +176,85 @@ namespace locust
     return AOIFactor;
     }
 
+  double GetVoltageAmpFromPlaneWave()
+  {
+    double AntennaFactor = 1./420.;
+    double epsilon0 = 8.854e-12; //  C^2/N/m^2
+    double c = 3.e8; // m/s
+
+    // S = epsilon0 c E0^2 / 2.  // power/area
+    //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
+    // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
+    // E0 = sqrt(2.*S/epsilon0/c)
+    // effective patch area 0.00004583662 m^2 
+
+    //    double S = 0.6e-21*24.e3/(0.00004583662);  // W/m^2, effective aperture.
+    //    double E0 = pow(2.*S/epsilon0/c, 0.5);
+    double E0 = 1.0; // V/m, test case
+    double amplitude = E0*AntennaFactor;  // volts
+    return amplitude;
+
+
+  }
+
 
     double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
-    	double AntennaFactor = 1./400.;  // 1/m, placeholder
+      //        double AntennaFactor = 1.32*1.2*0.683*0.23*1./400.;  // 1/m, placeholder
+      double AntennaFactor = 1./1607.5;
     	double MismatchFactor = GetMismatchFactor(DopplerFrequency);
     	double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
     	LMCThreeVector PatchPolarizationVector;
     	PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
-    	double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
-//    	printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();
+	double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
+
+	//    	if (VoltageAmplitude>0.) {printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();}
     	return VoltageAmplitude;
     }
 
+  double ZPositionPatch(unsigned z_index)
+  {
+    double PatchOffset = 0.;
+    double ZPosition = 0.;
+    if (NPATCHES_PER_STRIP%2==1)
+      {
+	PatchOffset = -(NPATCHES_PER_STRIP-1.)/2. * PATCH_SPACING;  // far left patch.                  
+	ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+      }
+    else
+      {
+	PatchOffset = -(PATCH_SPACING)/2. - ((NPATCHES_PER_STRIP/2.) - 1.) * PATCH_SPACING;
+	ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+      }
+    return ZPosition;
+  }
 
-  void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index)
+
+
+
+  double GetLinePhaseCorr(unsigned z_index, double DopplerFrequency)
+  {
+    double D = 0.007711*0.95; // m.  18.0 keV 90 degree electron, lambda in kapton.
+    double c_n = LMCConst::C()/1.5;  // speed of light in Kapton.
+    double lambda = c_n/(DopplerFrequency/(2.*LMCConst::Pi()));
+    double dphi = 2.*LMCConst::Pi() * D * z_index / lambda;
+    return dphi;
+  }
+
+
+
+  void PatchSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency)
     {
       double LinePhaseCorr = 0.;
-      VoltagePhase += LinePhaseCorr;     
+      if (fCorporateFeed == false)
+        {
+	LinePhaseCorr = GetLinePhaseCorr(z_index, DopplerFrequency);
+        VoltagePhase += LinePhaseCorr;     
+        }
 
+      //      if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
-    }
-
-    double ZPositionPatch(unsigned z_index)
-    {
-    	double PatchOffset = 0.;
-    	double ZPosition = 0.;
-    	if (NPATCHES_PER_STRIP%2==1)
-    	  {
-    	  PatchOffset = -(NPATCHES_PER_STRIP-1.)/2. * PATCH_SPACING;  // far left patch.
-    	  ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
-    	  }
-    	else
-    	  {
-          PatchOffset = -(PATCH_SPACING)/2. - ((NPATCHES_PER_STRIP/2.) - 1.) * PATCH_SPACING;
-          ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
-    	  }
-    	return ZPosition;
     }
 
 
@@ -359,7 +395,8 @@ namespace locust
             LMCThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
 
             tTotalPower = dx * dy * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;
-	    //             printf("total power hitting patch is %g\n", tTotalPower); getchar();
+	    // 	    printf("total power hitting patch is %g\n", tTotalPower*rReceiver.size()); getchar();
+
             tIncidentElectricField += tCurrentParticle.CalculateElectricField(rReceiver[i]) / rReceiver.size();
             tIncidentKVector += tECrossH / rReceiver.size();
 
@@ -392,13 +429,16 @@ namespace locust
 
         }  // i, rReceiver.size() loop.
 
-        double tVoltageAmplitude = GetVoltageAmplitude(tIncidentElectricField, tIncidentKVector, PatchPhi, tAverageDopplerFrequency);
-        AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, tVoltagePhase[patchindex], phi_LO, channelindex, z_index);
+		double tVoltageAmplitude = GetVoltageAmplitude(tIncidentElectricField, tIncidentKVector, PatchPhi, tAverageDopplerFrequency);
+		//		if (tAverageDopplerFrequency>0.) {printf("tAverageDopplerFrequency is %g\n", tAverageDopplerFrequency); getchar();}
+	//        double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
+	//printf("tvoltageamp is %g\n", tVoltageAmplitude); getchar();
+        AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, tVoltagePhase[patchindex], phi_LO, channelindex, z_index, tAverageDopplerFrequency);
 
 
         } // z_index waveguide element stepping loop.
 
-	//		printf("signal %d with frequency %g is %g\n", channelindex, tAverageDopplerFrequency, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
+	//	printf("signal %d with frequency %g is %g\n", channelindex, tAverageDopplerFrequency, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
 
 
         } // nchannels loop.
