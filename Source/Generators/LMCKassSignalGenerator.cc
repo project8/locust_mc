@@ -189,15 +189,15 @@ namespace locust
           {
 	    RealVoltage2 *= 0.03;  // replace short with terminator.                        
 	    ImagVoltage2 *= 0.03;  // replace short with terminator.                                          
-          aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-          aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
+          aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
           }
         else if (Project8Phase == 1)
           {  // assume 50 ohm impedance
 
 	    //	    RealVoltage2 *= 0.25; // some loss at short.
-	    aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (RealVoltage1 + RealVoltage2);
-	    aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower) * (ImagVoltage1 + ImagVoltage2);
+	    aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
+	    aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
 	    
 
           }
@@ -263,25 +263,33 @@ namespace locust
         std::thread Kassiopeia (KassiopeiaInit,gxml_filename);     // spawn new thread
         fRunInProgress = true;
         fKassEventReady = false;
+        int StartEventTimer = 0;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
             {
                 if (ReceivedKassReady()) fPreEventInProgress = true;
-                printf("LMC says it ReceivedKassReady()\n");
+                printf("LMC says it ReceivedKassReady()\n");                
+		if (Project8Phase == 2)
+                  {
+		    if ((index-StartEventTimer) > 1e6) 
+		    {
+                    break;
+		    }
+                  }
             }
 
             if (fPreEventInProgress)
             {
-                PreEventCounter += 1;
-//                printf("preeventcounter is %d\n", PreEventCounter);
+	        PreEventCounter += 1;
 
                 if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
                 {
                     fPreEventInProgress = false;  // reset.
                     fEventInProgress = true;
                     printf("LMC about to WakeBeforeEvent()\n");
+                    StartEventTimer = index;
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }
@@ -289,13 +297,11 @@ namespace locust
             if (fEventInProgress)  // fEventInProgress
             if (fEventInProgress)  // check again.
             {
-                //printf("waiting for digitizer trigger ... index is %d\n", index);
                 std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
                 tLock.lock();
                 fDigitizerCondition.wait( tLock );
                 if (fEventInProgress)
                 {
-                    //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
                     DriveAntenna(PreEventCounter, index, aSignal, fp);
                     PreEventCounter = 0; // reset
                 }
@@ -303,24 +309,19 @@ namespace locust
             }
         }  // for loop
 
-        fclose(fp);
-
-        // trigger any remaining events in Kassiopeia so that its thread can finish.
-        fDoneWithSignalGeneration = true;
         printf("finished signal loop.\n");
-        while (fRunInProgress)
-        {
-	    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-            if (fRunInProgress)
-            {
-            	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            	if (!fEventInProgress)
-                  if (ReceivedKassReady())
-            	    WakeBeforeEvent();
-            }
-        }
 
+
+        fclose(fp);
+	fRunInProgress = false;  // tell Kassiopeia to finish.
+        fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
+	//	if (fEventInProgress)
+	//  if (ReceivedKassReady())
+	    WakeBeforeEvent();
+			     
+         
         Kassiopeia.join();  // wait for Kassiopeia to finish.
+	
 
         return true;
     }

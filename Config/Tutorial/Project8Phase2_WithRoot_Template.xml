@@ -433,7 +433,7 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-3"/>
+    <ksterm_max_time name="term_max_time" time="1.e-6"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="17000."/>
     <ksterm_max_energy name="term_max_energy" energy="19000."/>

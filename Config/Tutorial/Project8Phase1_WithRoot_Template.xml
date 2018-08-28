@@ -3,7 +3,7 @@
 
 <external_define name="simulation" value="1"/>
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
+<external_define name="bathtub" value="0.5"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
  to apparent slow performance with 0.0 value -->
 
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->

@@ -114,6 +114,12 @@ namespace locust
         return;
     }
 
+    void RunLengthCalculator::Visit( const LocalOscillatorGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
     void RunLengthCalculator::Visit( const GaussianNoiseGenerator* )
     {
         // nothing to see here, move along, please
@@ -132,6 +138,11 @@ namespace locust
      }
 
 
+    void RunLengthCalculator::Visit( const FakeTrackGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
 
     void RunLengthCalculator::Visit( const TestSignalGenerator* )
     {

@@ -16,7 +16,8 @@
 
     "patch-signal":
     {
-        "lo-frequency": 25.8781e9,
+        "lo-frequency": 26.0681e9,
+        "feed": "corporate",
         "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
     },
 
@@ -30,13 +31,13 @@
     {
         "egg-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1,
-        "record-size": 4194304,
-        "n-channels": 3
+        "record-size": 81920,
+        "n-channels": 30
     },
   
     "gaussian-noise":
     {
-    "noise-floor": 4.0e-24,
+    "noise-floor": 2.0e-22,
     "domain": "time"
     },
 
