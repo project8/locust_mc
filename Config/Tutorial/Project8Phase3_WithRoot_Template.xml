@@ -4,7 +4,7 @@
 <external_define name="simulation" value="1"/>
 
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="1.0"/>  <!-- 1.0 for bathtub -->
+<external_define name="bathtub" value="5.0"/>  <!-- 1.0 for bathtub -->
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
 <external_define name="fieldX" value="0.0"/>  <!-- earth's horiz. field in Seattle -->
 <external_define name="fieldY" value="0.0"/>
@@ -24,14 +24,18 @@
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
 
-<external_define name="output_path" value="[KASPERSYS]/output/Kassiopeia"/> 
-<external_define name="file" value="Phase3Output"/>
+<external_define name="output_path" value="/home/hep/baker/ps48/data/Simulation/Phase3/"/>
+<external_define name="file" value="Phase3Seed[seed]Output"/>
 
 
 
 <geometry>
-    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase2AuxCoilGeometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3LargeGeometry.xml"/>
 </geometry>
+
+
+
+
     
     <!-- solenoid turns -->
 
@@ -201,16 +205,16 @@
 
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="18000.0"/>
+            <energy_fix value="18600.0"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
             <x_uniform value_min="0.0" value_max="0.0"/>
-            <y_uniform value_min="0.00" value_max="0.00"/>
+            <y_uniform value_min="0.0" value_max="0.0"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90." value_max="90."/> 
+        <theta_uniform value_min="90.0" value_max="90.0"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
