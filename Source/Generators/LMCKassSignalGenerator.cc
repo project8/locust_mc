@@ -140,7 +140,7 @@ namespace locust
         double tGroupVelocity = LMCConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*LMCConst::Pi()*tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
-        //printf("paused in Locust! zvelocity is %g\n", zvelocity); getchar();
+	//        printf("paused in Locust! Larmorpower is %g\n", tLarmorPower); getchar();
 
 //        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*LMCConst::Pi()*tCyclotronFrequency); getchar();
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
@@ -161,7 +161,7 @@ namespace locust
             if (Project8Phase==2)
 	      {
 	      phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / 
-                (tGroupVelocity / tDopplerFrequencyShort);  // terminator in
+                (tGroupVelocity / tDopplerFrequencyShort);  // get phase now, set amplitude below.
 	      }
             EventStartTime = (double)index/RunLengthCalculator1.GetAcquisitionRate()/1.e6/aSignal->DecimationFactor();
             EventToFile = false;
@@ -271,13 +271,14 @@ namespace locust
             {
                 if (ReceivedKassReady()) fPreEventInProgress = true;
                 printf("LMC says it ReceivedKassReady()\n");                
-		if (Project8Phase == 2)
+		/*		if (Project8Phase == 2)
                   {
 		    if ((index-StartEventTimer) > 1e6) 
 		    {
-                    break;
+		      break;  // if breaking after just one event
 		    }
-                  }
+		  }
+                */
             }
 
             if (fPreEventInProgress)

@@ -107,16 +107,18 @@ namespace locust
         {
                
                 uint8_t* digitizedData = new uint8_t[ signalSizeComplex ];
-		//		FILE *fp = fopen("/home/hep/baker/ps48/data/Simulation/Phase3/timedata.txt", "w");  // write raw time series for testing.
+		//FILE *fp = fopen("/home/hep/baker/ps48/data/Simulation/Phase3/timedata.txt", "w");  // write raw time series for testing.
 
 
                 for (unsigned ch = 0; ch < nchannels; ++ch)
                 {
-		  //		fprintf(fp, "[%d]\n", ch);
+		  //fprintf(fp, "[%d]\n", ch);
                 for( unsigned index = 0; index < signalSize; ++index )
                 {
 
-		  //		fprintf(fp, "%g %g\n", aSignal->SignalTimeComplex()[ch*signalSize + index ][0], aSignal->SignalTimeComplex()[ch*signalSize + index ][1]);
+		  //fprintf(fp, "%g %g\n", aSignal->SignalTimeComplex()[ch*signalSize + index ][0], aSignal->SignalTimeComplex()[ch*signalSize + index ][1]);
+		  // if (aSignal->SignalTimeComplex()[ch*signalSize + index ][0]>0.){printf("%g %g\n", aSignal->SignalTimeComplex()[ch*signalSize + index ][0], aSignal->SignalTimeComplex()[ch*signalSize + index ][1]); getchar();}
+
 
                     digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
                     digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
@@ -129,7 +131,7 @@ namespace locust
                     }
                 } // signalsize
                 } // channels
-		//		fclose(fp);
+		  //fclose(fp);
                 aSignal->ToDigital( digitizedData, signalSizeComplex );
 
         }  // unsigned

@@ -82,7 +82,7 @@
 	 />
       </tag>
 
-
+<!--
  <flattened_poly_loop_surface name="patch_surface" z="0." flattened_mesh_count="10" flattened_mesh_power="1.">
         <poly_loop>
             <start_point x="-1.875e-3" y="1.458e-3"/>
@@ -92,9 +92,9 @@
             <last_line line_mesh_count="10" line_mesh_power="1."/>
         </poly_loop>
     </flattened_poly_loop_surface>
+-->
 
-
-
+<!--
     <space name="endcap_assembly">
     <surface name="patch" node="patch_surface">
     	<transformation rotation_euler="90. 0. 0."/>
@@ -145,9 +145,9 @@
     </surface>
 
     </space>
+-->
 
-
-
+<!--
     <space name="patch_assembly">
 
     <surface name="patch" node="patch_surface">
@@ -361,7 +361,7 @@
 	<transformation displacement="{[PatchOffset]} {0.} {0.}"/>
     </surface>
     </space>
-
+-->
 
     <space name="project8_assembly">
 
@@ -369,6 +369,7 @@
 	<transformation displacement="{0.} {0.} {0.}"/>
     </space> -->
 
+<!--
     <space name="patch_array" tree="patch_assembly">
 	<transformation displacement="{0.} {0.} {0.}"/>
     </space> 
@@ -401,7 +402,7 @@
     </space> 
     <space name="patch_array" tree="patch_assembly">
 	<transformation displacement="{0.} {0.} {-0.0516}"/>
-    </space> 
+    </space> -->
 
 
 
@@ -446,7 +447,7 @@
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/center_pinch_coil/#"/> 
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_pinch_coil/#"/>  -->
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_bathtub_coil/#"/> 
-    <appearance name="app_patch" color="10 255 96 96" arc="72" surfaces="patch_assembly/patch"/> 
+<!--    <appearance name="app_patch" color="10 255 96 96" arc="72" surfaces="patch_assembly/patch"/> -->
 
 
 
