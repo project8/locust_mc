@@ -122,6 +122,7 @@ namespace locust
             for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
             {
                 currentPatch = &allChannels[channelIndex][patchIndex]; 
+                //tReceiverTime = t_old - fabs(currentPatch->GetPosition().Z()) / LMCConst::C();
 
                     if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
                     {
@@ -137,13 +138,20 @@ namespace locust
                     {
                         CurrentIndex=FindNode(tReceiverTime, kassiopeiaTimeStep, historySize-1);
                         tCurrentParticle = fParticleHistory[CurrentIndex];
-                        tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  LMCConst::C();
+                        const double vGroup = 1.674e8;
+                        tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  vGroup;
+                        if(tRetardedTime < 0) 
+                        {
+                            tRetardedTime = 0;
+                            CurrentIndex = 0;
+                        }
                     }
                     else
                     {
                         CurrentIndex = currentPatch->GetPreviousRetardedIndex();
                         tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
                     }
+
                     
                     CurrentIndex = FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
                     CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
@@ -182,17 +190,16 @@ namespace locust
                     double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
                     double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
-                    currentPatch->SetInstantaneousFrequency( tDopplerFrequency);
+                    currentPatch->SetInstantaneousFrequency( tDopplerFrequency / (2. * LMCConst::Pi() ));
                     currentPatch->SetIncidentElectricField( tCurrentParticle.CalculateElectricField(currentPatch->GetPosition() ));
                     currentPatch->SetIncidentMagneticField( tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition() ));
 
                     aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
                     aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
+
+
             } // z_position waveguide element stepping loop.
-
-            //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += allChannels[channelIndex].PhasedSum();
-
         } // nChannels loop.
 
         t_old += fDigitizerTimeStep;
@@ -205,6 +212,8 @@ namespace locust
     //Make simpler!!!
     int FreeFieldSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
     {
+        if(tNew <= 0) return 0;
+
         int tHistorySize = fParticleHistory.size();
 
         //Make sure we are not out of bounds of array!!!
@@ -234,6 +243,10 @@ namespace locust
                 it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
                 break;
             }
+            else
+            {
+                it = fParticleHistory.begin();
+            }
         }
         
         int tNodeIndex = it - fParticleHistory.begin();
@@ -245,9 +258,10 @@ namespace locust
     {
    
         const unsigned nChannels = fNChannels;
-        const int nReceivers = 13; //Number of receivers per channel
+        const int nReceivers = 41; //Number of receivers per channel
 
-        const double patchSpacingZ = 0.108;
+        //const double patchSpacingZ = 0.01167;
+        const double patchSpacingZ = 6.512e-3;
         const double patchRadius = 0.05;
         double zPosition;
         double theta;
