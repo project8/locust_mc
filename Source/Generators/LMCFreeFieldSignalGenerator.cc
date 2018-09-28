@@ -15,6 +15,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <ctime>
 
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCHFSSReader.hh"
@@ -29,6 +31,8 @@ namespace locust
             Generator( aName ),
             //fWriteNFD(0.),
             fLO_Frequency( 0.),
+            fPileupSeed( 0.),
+            fPileupMode( false),
             gxml_filename("blank.xml")
     {
         fRequiredSignalState = Signal::kTime;
@@ -45,6 +49,16 @@ namespace locust
         if( aParam->has( "xml-filename" ) )
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
+        }
+
+        if( aParam->has( "pileup" ) )
+        {
+            fPileupMode = aParam->get_value< bool>( "pileup" );
+        }
+
+        if( aParam->has( "pileup-seed" ) )
+        {
+            fPileupSeed = aParam->get_value< int>( "pileup-seed" );
         }
 
         return true;
@@ -75,7 +89,6 @@ namespace locust
     static bool ReceivedKassReady()
     {
 		printf("LMC about to wait ..\n");
-
 
         std::unique_lock< std::mutex >tLock( fKassReadyMutex);
         fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
@@ -195,7 +208,7 @@ namespace locust
                     currentPatch->SetIncidentMagneticField( tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition() ));
 
                     aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
-                    aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
+                    //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
 
 
@@ -208,45 +221,25 @@ namespace locust
     }
 
 
-    //Return iterator of fParticleHistory particle closest to the time we are evaluating
-    //Make simpler!!!
+    //Return index of fParticleHistory particle closest to the time we are evaluating
     int FreeFieldSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
     {
-        if(tNew <= 0) return 0;
-
         int tHistorySize = fParticleHistory.size();
 
         //Make sure we are not out of bounds of array!!!
         kIndexOld = std::min( std::max(kIndexOld,0) , tHistorySize - 1 );
-
         double tOld = fParticleHistory[ kIndexOld ].GetTime();
 
-        int kIndexMid=round((tNew-tOld)/kassiopeiaTimeStep) + kIndexOld;
-        kIndexMid = std::min( std::max(kIndexMid,0) , tHistorySize - 1 );
-
-        int kIndexSearchWidth;
-        int kIndexRange[2];
         std::deque<locust::Particle>::iterator it;
 
-        for(int i = 0 ; i < 15 ; ++i){
-
-            kIndexSearchWidth = pow( 2 , i );
-            kIndexRange[0] = kIndexMid - kIndexSearchWidth;
-            kIndexRange[1] = kIndexMid + kIndexSearchWidth;
-
-            kIndexRange[0] = std::max(kIndexRange[0], 0 );
-            kIndexRange[1] = std::min(kIndexRange[1], tHistorySize - 1);
-
-            if( tNew >= fParticleHistory[ kIndexRange[0] ].GetTime() && tNew <= fParticleHistory[ kIndexRange[1] ].GetTime())
-            {
-                //Get iterator pointing to particle step closest to tNew
-                it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
-                break;
-            }
-            else
-            {
-                it = fParticleHistory.begin();
-            }
+        if( tNew >= fParticleHistory.front().GetTime() && tNew <= fParticleHistory.back().GetTime())
+        {
+            //Get iterator pointing to particle step closest to tNew
+            it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
+        }
+        else
+        {
+            it = fParticleHistory.begin();
         }
         
         int tNodeIndex = it - fParticleHistory.begin();
@@ -291,14 +284,25 @@ namespace locust
     {
         InitializePatchArray();
 
+        // Initialize random number generator for pileup
+       if(fPileupMode)
+       { 
+           if(fPileupSeed!=0)
+               srand(fPileupSeed);
+           else 
+               srand(time(NULL));
+       }
+
         //n samples for event spacing.
         int PreEventCounter = 0;
         const int NPreEventSamples = 150000;
 
         std::thread Kassiopeia (KassiopeiaInit, gxml_filename);     // spawn new thread
-        fRunInProgress = true;
 
-        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+        fRunInProgress = true;
+        unsigned index = 0;
+
+        while( index < aSignal->DecimationFactor()*aSignal->TimeSize() && fRunInProgress)
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
                 {
@@ -313,6 +317,11 @@ namespace locust
                     fPreEventInProgress = false;  // reset.
                     fEventInProgress = true;
                     WakeBeforeEvent();  // trigger Kass event.
+                    if(fPileupMode)
+                    {
+                        index = rand() % aSignal->DecimationFactor()*aSignal->TimeSize();
+                    }
+
                 }
             }
 
@@ -333,6 +342,8 @@ namespace locust
                     }
                     tLock.unlock();
                 }
+
+                ++index;
 
             }  // for loop
 

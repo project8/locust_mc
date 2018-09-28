@@ -53,6 +53,8 @@ namespace locust
 
             std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
+            bool fPileupMode; //simulate tracks in sequence or as piling up?
+            int fPileupSeed; 
 
             std::string gxml_filename;
 
