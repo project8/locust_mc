@@ -252,7 +252,9 @@ namespace locust
     {
         double DeltaE=0.;
 
-	//	        printf("dE/dt is %g\n", (aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy())/(aFinalParticle.GetTime() - anInitialParticle.GetTime())); getchar();
+	//		       printf("fcyc is %g\n", aFinalParticle.GetCyclotronFrequency()); getchar();
+
+	//	printf("dE/dt is %g\n", (aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy())/(aFinalParticle.GetTime() - anInitialParticle.GetTime())); getchar();
 
         if(fP8Phase==1)
         {

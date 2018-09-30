@@ -24,18 +24,14 @@
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
 
-<external_define name="output_path" value="/home/hep/baker/ps48/data/Simulation/Phase3/"/>
-<external_define name="file" value="Phase3Seed[seed]Output"/>
+<external_define name="output_path" value="[KASPERSYS]/output/Kassiopeia"/> 
+<external_define name="file" value="Phase3Output"/>
 
 
 
 <geometry>
-    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3LargeGeometry.xml"/>
+    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase4LargeGeometry.xml"/>
 </geometry>
-
-
-
-
     
     <!-- solenoid turns -->
 
@@ -208,8 +204,8 @@
             <energy_fix value="18600.0"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.0125" value_max="0.0125"/>
-            <y_uniform value_min="0.0" value_max="0.0"/>
+            <x_uniform value_min="0.08" value_max="0.08"/>
+            <y_uniform value_min="0.08" value_max="0.08"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
@@ -413,10 +409,10 @@
     <ksterm_max_time name="term_max_time" time="0.5e-4"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
-    <ksterm_min_z name="term_min_z" z="-.3"/>
-    <ksterm_max_z name="term_max_z" z=".3"/>
+    <ksterm_min_z name="term_min_z" z="-2."/>
+    <ksterm_max_z name="term_max_z" z="2."/>
     
-g    <!-- modifiers -->
+    <!-- modifiers -->
     <cycl_rad_extr name="my_rad_extr" P8Phase="3" /> 
 
 
@@ -486,7 +482,7 @@ g    <!-- modifiers -->
     <!-- navigation -->
 
     <ksgeo_space name="space_world" spaces="world">
-        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/> 
+        <command parent="root_step_modifier" field="add_modifier" child="my_rad_extr"/>
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_steps"/> -->
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>

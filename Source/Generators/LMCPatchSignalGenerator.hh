@@ -55,6 +55,8 @@ namespace locust
             std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
             double fLO_Frequency;  // typically defined by a parameter in json file.
             double fArrayRadius;  // from json file.
+            int fNPatchesPerStrip; // from json file.
+            double fPatchSpacing; // from json file.
             std::string gxml_filename;
             bool fCorporateFeed;
 
@@ -65,6 +67,8 @@ namespace locust
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
+      double ZPositionPatch(unsigned z_index);
+
   
 
 

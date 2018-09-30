@@ -32,6 +32,8 @@ namespace locust
             Generator( aName ),
             fLO_Frequency( 0.),
             fArrayRadius( 0. ),
+            fNPatchesPerStrip( 0. ),
+            fPatchSpacing( 0. ),
             fCorporateFeed( 0 ),
             gxml_filename("blank.xml"),
             phiLO_t(0.),
@@ -58,6 +60,14 @@ namespace locust
         {
             fArrayRadius = aParam->get_value< double >( "array-radius" );
         }
+        if( aParam->has( "npatches-per-strip" ) )
+	  {
+            fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+	  }
+        if( aParam->has( "patch-spacing" ) )
+	  {
+            fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+	  }
         if( aParam->has( "xml-filename" ) )
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
@@ -197,19 +207,19 @@ namespace locust
     	return VoltageAmplitude;
     }
 
-  double ZPositionPatch(unsigned z_index)
+  double PatchSignalGenerator::ZPositionPatch(unsigned z_index)
   {
     double PatchOffset = 0.;
     double ZPosition = 0.;
-    if (NPATCHES_PER_STRIP%2==1)
+    if (fNPatchesPerStrip%2==1)
       {
-	PatchOffset = -(NPATCHES_PER_STRIP-1.)/2. * PATCH_SPACING;  // far left patch.                  
-	ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+	PatchOffset = -(fNPatchesPerStrip-1.)/2. * fPatchSpacing;  // far left patch.                  
+	ZPosition = PatchOffset + (double)(z_index)*fPatchSpacing;
       }
     else
       {
-	PatchOffset = -(PATCH_SPACING)/2. - ((NPATCHES_PER_STRIP/2.) - 1.) * PATCH_SPACING;
-	ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+	PatchOffset = -(fPatchSpacing)/2. - ((fNPatchesPerStrip/2.) - 1.) * fPatchSpacing;
+	ZPosition = PatchOffset + (double)(z_index)*fPatchSpacing;
       }
     return ZPosition;
   }
@@ -347,30 +357,31 @@ namespace locust
 	    double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
 
-            if (SignalArrived_t[channelIndex*NPATCHES_PER_STRIP+patchIndex] == false)
+            if (SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] == false)
               {
-              SignalArrivalIndex_t[channelIndex*NPATCHES_PER_STRIP+patchIndex] = index;
-              SignalArrived_t[channelIndex*NPATCHES_PER_STRIP+patchIndex] = true;
-              //printf("signal arrived for channel %d, index is %d\n", channelIndex, index); getchar();
+              SignalArrivalIndex_t[channelIndex*fNPatchesPerStrip+patchIndex] = index;
+              SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] = true;
               }
 
-            if (VoltagePhase_t[channelIndex*NPATCHES_PER_STRIP+patchIndex]>0.)  // not first sample                                                        
+            if (VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]>0.)  // not first sample                                                        
               {
-              VoltagePhase_t[channelIndex*NPATCHES_PER_STRIP+patchIndex] += 
+              VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += 
                 tDopplerFrequency * fDigitizerTimeStep;
               }
-            else  // if this is the first digitizer sample, the voltage phase doesn't advance for the full dt.
+            else  // if this is the first light at this channelIndex, the voltage phase doesn't advance for the full dt.
               {              
-		if ( (1 + index - SignalArrivalIndex_t[channelIndex*NPATCHES_PER_STRIP+patchIndex])*fDigitizerTimeStep > tRetardedTime)  // long enough?
-                  VoltagePhase_t[channelIndex*NPATCHES_PER_STRIP+patchIndex] += 
+                VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] +=
                 tDopplerFrequency * tRetardedTime;
-	      }
+                //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
+              }	      
 
 	    double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
+            //printf("tVoltageAmplitude is %g\n", tVoltageAmplitude); getchar();
 
-	    AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*NPATCHES_PER_STRIP+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
+	    AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
 
 	  } // patch loop
+	//	printf("channel %d voltage is %g\n", channelIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
       } // channels loop
 
@@ -385,7 +396,8 @@ namespace locust
 
 
     //Return iterator of fParticleHistory particle closest to the time we are evaluating
-    int PatchSignalGenerator::FindNode(double tNew, double dtStepSize, int kIndexOld) const
+  /*
+    int OldFindNode(double tNew, double dtStepSize, int kIndexOld) const
     {
         int tHistorySize = fParticleHistory.size();
 
@@ -426,14 +438,63 @@ namespace locust
 
         return tNodeIndex;
     }
+  */
+
+    //Return iterator of fParticleHistory particle closest to the time we are evaluating
+    //Make simpler!!!
+    int PatchSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
+    {
+        if(tNew <= 0) return 0;
+
+        int tHistorySize = fParticleHistory.size();
+
+        //Make sure we are not out of bounds of array!!!
+        kIndexOld = std::min( std::max(kIndexOld,0) , tHistorySize - 1 );
+
+        double tOld = fParticleHistory[ kIndexOld ].GetTime();
+
+        int kIndexMid=round((tNew-tOld)/kassiopeiaTimeStep) + kIndexOld;
+        kIndexMid = std::min( std::max(kIndexMid,0) , tHistorySize - 1 );
+
+        int kIndexSearchWidth;
+        int kIndexRange[2];
+        std::deque<locust::Particle>::iterator it;
+
+        for(int i = 0 ; i < 15 ; ++i){
+
+            kIndexSearchWidth = pow( 2 , i );
+            kIndexRange[0] = kIndexMid - kIndexSearchWidth;
+            kIndexRange[1] = kIndexMid + kIndexSearchWidth;
+
+            kIndexRange[0] = std::max(kIndexRange[0], 0 );
+            kIndexRange[1] = std::min(kIndexRange[1], tHistorySize - 1);
+
+            if( tNew >= fParticleHistory[ kIndexRange[0] ].GetTime() && tNew <= fParticleHistory[ kIndexRange[1] ].GetTime())
+            {
+                //Get iterator pointing to particle step closest to tNew
+                it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
+                break;
+            }
+            else
+            {
+                it = fParticleHistory.begin();
+            }
+        }
+        
+        int tNodeIndex = it - fParticleHistory.begin();
+
+        return tNodeIndex;
+    }
+
+
 
   void PatchSignalGenerator::InitializePatchArray()
   {
    
     const unsigned nChannels = fNChannels;
-    const int nReceivers = NPATCHES_PER_STRIP;
+    const int nReceivers = fNPatchesPerStrip;
 
-    const double patchSpacingZ = PATCH_SPACING;
+    const double patchSpacingZ = fPatchSpacing;
     const double patchRadius = fArrayRadius;
     double zPosition;
     double theta;

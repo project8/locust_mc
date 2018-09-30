@@ -4,6 +4,7 @@
        "patch-signal",
        "lpf-fft",
        "decimate-signal", 
+       "gaussian-noise",
        "digitizer"
     ],
     
@@ -18,6 +19,8 @@
     {
         "lo-frequency": 25.8781e9,
         "array-radius": 0.05,
+        "npatches-per-strip": 21,
+        "patch-spacing": 0.0054,
         "feed": "corporate",
         "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
     },
@@ -44,8 +47,8 @@
 
     "digitizer":
     {
-    "v-range": 1.0e-7,
-    "v-offset": -0.5e-7
+    "v-range": 1.6e-5,
+    "v-offset": -0.8e-5
     }
 
 }

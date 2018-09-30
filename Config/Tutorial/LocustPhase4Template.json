@@ -3,7 +3,7 @@
     [          
        "patch-signal",
        "lpf-fft",
-       "decimate-signal",
+       "decimate-signal", 
        "digitizer"
     ],
     
@@ -16,9 +16,10 @@
 
     "patch-signal":
     {
-        "lo-frequency": 25.8781e9,
-        "array-radius": 0.43,
-        "feed": "corporate",
+        "lo-frequency": 25.8397e9,
+        "array-radius": 0.2,
+        "npatches-per-strip": 1,
+        "patch-spacing": 0.0054,
         "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase4_WithRoot_Template.xml"
     },
 
@@ -33,12 +34,12 @@
         "egg-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1,
         "record-size": 81920,
-        "n-channels": 250
+        "n-channels": 230
     },
   
     "gaussian-noise":
     {
-    "noise-floor": 4.2e-22,
+    "noise-floor": 4.0e-24,
     "domain": "time"
     },
 

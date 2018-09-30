@@ -67,7 +67,7 @@
     {
         "filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 20,
+        "number-of-slices": 3,
         "slice-size": 8192,
         "stride": 8192,
         "dac":
