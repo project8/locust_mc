@@ -31,8 +31,15 @@ namespace locust
     PatchSignalGenerator::PatchSignalGenerator( const std::string& aName ) :
             Generator( aName ),
             fLO_Frequency( 0.),
+            fArrayRadius( 0. ),
+            fNPatchesPerStrip( 0. ),
+            fPatchSpacing( 0. ),
             fCorporateFeed( 0 ),
-            gxml_filename("blank.xml")
+            gxml_filename("blank.xml"),
+            phiLO_t(0.),
+            VoltagePhase_t {0.},
+            SignalArrived_t {0},
+            SignalArrivalIndex_t {0}
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -49,6 +56,18 @@ namespace locust
         {
             fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
         }
+        if( aParam->has( "array-radius" ) )
+        {
+            fArrayRadius = aParam->get_value< double >( "array-radius" );
+        }
+        if( aParam->has( "npatches-per-strip" ) )
+	  {
+            fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+	  }
+        if( aParam->has( "patch-spacing" ) )
+	  {
+            fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+	  }
         if( aParam->has( "xml-filename" ) )
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
@@ -76,9 +95,11 @@ namespace locust
 
   static void* KassiopeiaInit(const std::string &aFile)
     {
-    	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-    	RunKassiopeia1->Run(aFile);
-    	delete RunKassiopeia1;
+      //    	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
+        RunKassiopeia RunKassiopeia1;
+    	RunKassiopeia1.Run(aFile);
+        RunKassiopeia1.~RunKassiopeia();
+	//    	delete RunKassiopeia1;
 
         return 0;
     }
@@ -93,13 +114,23 @@ namespace locust
 
     static bool ReceivedKassReady()
     {
-		printf("LMC about to wait ..\n");
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      printf("LMC about to wait ..\n");
 
-        std::unique_lock< std::mutex >tLock( fKassReadyMutex);
-        fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
-        printf("LMC Got the fKassReadyCondition signal\n");
+      if( !fKassEventReady)
+        {
+	  std::unique_lock< std::mutex >tLock( fKassReadyMutex );
+	  fKassReadyCondition.wait( tLock );
+        }
 
-        return true;
+      if (fFalseStartKassiopeia)  // workaround for some Macs
+        {
+	  std::unique_lock< std::mutex >tLock( fKassReadyMutex );
+	  fKassReadyCondition.wait( tLock );
+
+        }
+
+      return true;
     }
 
 
@@ -110,50 +141,13 @@ namespace locust
         return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
     }
 
-    double PatchGetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval, const int aStepOrder = 0)
-    {
-        double tRetardedTime = aParticle.GetTime(true); //interpolate!!!
 
-        double c=LMCConst::C();
+  double GetPatchStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
+  {
+    double tRetardedTime = aParticle.GetTime(true);
+    return tRetardedTime + aSpaceTimeInterval;
+  }
 
-        if(aStepOrder==0)
-        {
-            double tCorrection = sqrt(fabs(aSpaceTimeInterval));
-            double tSign;
-            (aSpaceTimeInterval > 0) ? tSign = 1. : tSign = -1.;
-            
-            return tRetardedTime + aSpaceTimeInterval;
-            //return tRetardedTime + tSign * aSpaceTimeInterval;
-        }
-
-        LMCThreeVector tNewPosition = aParticle.GetPosition(true);
-        LMCThreeVector tNewVelocity = aParticle.GetVelocity(true);
-
-        LMCThreeVector tReceiverVector = aReceiverPosition - tNewPosition;
-        double tReceiverDistance = tReceiverVector.Magnitude();
-
-        //Newtons Method X_{n+1} = X_{n} - f(X_{n}) / f'(X_{n})
-        double fZero=pow((aReceiverTime - tRetardedTime),2.)-pow(tReceiverDistance,2.)/(c*c);
-        double fZeroPrime=2.*((tRetardedTime-aReceiverTime)-tNewVelocity.Dot(tNewPosition)/(c*c)+tNewVelocity.Dot(aReceiverPosition)/(c*c));
-        double tNewtonRatio = fZero / fZeroPrime;
-
-        if(aStepOrder==1)
-        {
-            return tRetardedTime-tNewtonRatio;
-        }
-
-        //Householders Method
-        LMCThreeVector tNewAcceleration = aParticle.GetAcceleration(true);
-        double fZeroDoublePrime = 2. * (1. - tNewVelocity.Dot(tNewVelocity)/(c*c)-tNewAcceleration.Dot(tNewPosition-aReceiverPosition)/(c*c));
-
-        if(aStepOrder==2)
-        {
-            return tRetardedTime-tNewtonRatio* ( 1. + ( tNewtonRatio * fZeroDoublePrime) / ( 2. * fZeroPrime));
-        }
-
-        LERROR( lmclog, "Need to put root finding method with order 0-2!" );
-        return 0;
-    }
 
     double GetMismatchFactor(double f)  
     {
@@ -188,9 +182,9 @@ namespace locust
     // E0 = sqrt(2.*S/epsilon0/c)
     // effective patch area 0.00004583662 m^2 
 
-    //    double S = 0.6e-21*24.e3/(0.00004583662);  // W/m^2, effective aperture.
-    //    double E0 = pow(2.*S/epsilon0/c, 0.5);
-    double E0 = 1.0; // V/m, test case
+        double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
+        double E0 = pow(2.*S/epsilon0/c, 0.5);
+    //    double E0 = 1.0; // V/m, test case
     double amplitude = E0*AntennaFactor;  // volts
     return amplitude;
 
@@ -200,31 +194,32 @@ namespace locust
 
     double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
-      //        double AntennaFactor = 1.32*1.2*0.683*0.23*1./400.;  // 1/m, placeholder
-      double AntennaFactor = 1./1607.5;
+      double AntennaFactor = 1./400.;
     	double MismatchFactor = GetMismatchFactor(DopplerFrequency);
     	double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
     	LMCThreeVector PatchPolarizationVector;
     	PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
 	double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
+	//double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Magnitude()); // test case.  
+
 
 	//    	if (VoltageAmplitude>0.) {printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();}
     	return VoltageAmplitude;
     }
 
-  double ZPositionPatch(unsigned z_index)
+  double PatchSignalGenerator::ZPositionPatch(unsigned z_index)
   {
     double PatchOffset = 0.;
     double ZPosition = 0.;
-    if (NPATCHES_PER_STRIP%2==1)
+    if (fNPatchesPerStrip%2==1)
       {
-	PatchOffset = -(NPATCHES_PER_STRIP-1.)/2. * PATCH_SPACING;  // far left patch.                  
-	ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+	PatchOffset = -(fNPatchesPerStrip-1.)/2. * fPatchSpacing;  // far left patch.                  
+	ZPosition = PatchOffset + (double)(z_index)*fPatchSpacing;
       }
     else
       {
-	PatchOffset = -(PATCH_SPACING)/2. - ((NPATCHES_PER_STRIP/2.) - 1.) * PATCH_SPACING;
-	ZPosition = PatchOffset + (double)(z_index)*PATCH_SPACING;
+	PatchOffset = -(fPatchSpacing)/2. - ((fNPatchesPerStrip/2.) - 1.) * fPatchSpacing;
+	ZPosition = PatchOffset + (double)(z_index)*fPatchSpacing;
       }
     return ZPosition;
   }
@@ -255,202 +250,154 @@ namespace locust
       //      if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
+
     }
 
 
-
-    void* PatchSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
-    {
-
-        locust::Particle tCurrentParticle = fParticleHistory.back();
-        int CurrentIndex;
-        HFSSReader HFRead;
-
-        const unsigned nchannels = fNChannels;
-        const double dx = 0.00375; // m
-        const double dy = 0.002916; // m
-
-        double PatchPhi = 0.;  // azimuthal angle of each antenna element.
-        static double tVoltagePhase[10000] = {0.};  // this is not resetting at the beginning of each event.  big problem.
-        static double tVoltagePhaseMark[10000] = {0.};  // this is not resetting at the beginning of each event.  big problem.
-
-        static double phi_LO = 0.;
-
-        const int signalSize = aSignal->TimeSize();
-        unsigned patchindex = 0;
-        unsigned channelindex = 0;
-
-        //Receiver Properties
-        double tReceiverTime = t_old;
-        LMCThreeVector tReceiverPosition;
-
-        double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
-        double tTotalPower = 0.;
-        LMCThreeVector tIncidentElectricField;
-        LMCThreeVector tIncidentKVector;
-        double tAverageDopplerFrequency = 0.;
-
-        double tSpaceTimeInterval=99.;
-        double dtRetarded = 0;
-        double tTolerance = 1e-23;
-        const double dtStepSize = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
-
-        const int HistorySize = fParticleHistory.size();
-
-        phi_LO+= 2. * LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep;  // this has to happen outside the signal generating loop.
+  void* PatchSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
+  {
 
 
-        //int tAverageIterations=0; //Performance tracker. Count number of iterations to converge....
+    if (PreEventCounter > 0)  // new event starting.                                                    
+      {
+	// initialize patch voltage phases.                                                             
+	for (unsigned i=0; i < sizeof(VoltagePhase_t)/sizeof(VoltagePhase_t[0]); i++)
+	  {
+	    VoltagePhase_t[i] = {0.};
+            SignalArrived_t[i] = false;
+            SignalArrivalIndex_t[i] = 0;
+	  }
+      }
 
-        for (int ch=0; ch<nchannels; ch++)  // number of patch strips and amplifier channels.
-        {
-        for (unsigned z_index = 0; z_index < NPATCHES_PER_STRIP; z_index++) // step through patch elements along z.  derive z_patch from this.
-        {
-        // position patches in space:
-        rReceiver = HFRead.GeneratePlane({dx,dy},4);//Argumemts: Size, resolution
-        PatchPhi = (double)ch*360./nchannels*LMCConst::Pi()/180.; // radians.
-        rReceiver = HFRead.RotateShift(rReceiver,{cos(PatchPhi),sin(PatchPhi),0.},{PATCH_RING_OFFSET+PATCH_RADIUS*cos(PatchPhi),PATCH_RADIUS*sin(PatchPhi),ZPositionPatch(z_index)});//Arguments Normal vector, Position (m)
-        PreviousTimes = std::vector<std::pair<int,double> >(rReceiver.size(),{-99.,-99.}); // initialize
-        tTotalPower = 0.; // initialize for this patch.
-        tAverageDopplerFrequency = 0.;  // initialize for this patch.
-        tIncidentElectricField.SetComponents(0.,0.,0.);  // init
-        tIncidentKVector.SetComponents(0.,0.,0.);  // init
+    locust::Particle tCurrentParticle = fParticleHistory.back();
+    int CurrentIndex;
+    const int signalSize = aSignal->TimeSize();
 
-        patchindex = ch*NPATCHES_PER_STRIP + z_index;  // which patch element (any strip (a.k.a. any channel).
-        channelindex = ch*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample.
-       
+    const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
+    const int historySize = fParticleHistory.size();
+    unsigned sampleIndex = 0;
 
-//        printf("zposition of the patch is %f\n", ZPositionPatch(z_index));
+    //Receiver Properties
+    phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep; 
+    double tReceiverTime = t_old;
+    double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
 
+    double tSpaceTimeInterval=99.;
+    double dtRetarded=0;
+    double tTolerance=1e-23;
 
+    PatchAntenna *currentPatch;
 
-        for(unsigned i=0;i<rReceiver.size();++i)
-        {
-            tReceiverPosition = rReceiver[i];
+    for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
+      {
+	double PatchPhi = (double)channelIndex*360./allChannels.size()*LMCConst::Pi()/180.; // radians.    
+	for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
+	  {
+	    currentPatch = &allChannels[channelIndex][patchIndex]; 
+	    sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-            //Check if there is time for photon to reach receiver if particle is recently created
-            if(fParticleHistory.front().GetTime()<=3.*dtStepSize)
-            {
-                fParticleHistory.front().Interpolate(0);
-                if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), tReceiverPosition) < 0 )
-                {
-//                    printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
-                    continue;
-                }
-            }
+	    if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
+	      {
+		fParticleHistory.front().Interpolate(0);
+		if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), currentPatch->GetPosition() ) < 0 )
+		  {
+		    //printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
+		    continue;
+		  }
+	      }
 
-            if(PreviousTimes[i].first == -99.)
-            {
-                CurrentIndex=FindNode(tReceiverTime,dtStepSize,HistorySize-1);
-                tCurrentParticle=fParticleHistory[CurrentIndex];
+	    if(currentPatch->GetPreviousRetardedIndex() == -99.)
+	      {
+		CurrentIndex=FindNode(tReceiverTime, kassiopeiaTimeStep, historySize-1);
+		tCurrentParticle = fParticleHistory[CurrentIndex];
+		tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  LMCConst::C();
+	      }
+	    else
+	      {
+		CurrentIndex = currentPatch->GetPreviousRetardedIndex();
+		tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
+	      }
+                    
+	    CurrentIndex = FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
+	    CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
 
-                tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - tReceiverPosition).Magnitude() /  LMCConst::C();
-             }
-            else
-            {
-                CurrentIndex = PreviousTimes[i].first;
-                tRetardedTime = PreviousTimes[i].second + fDigitizerTimeStep;
-            }
+	    tCurrentParticle = fParticleHistory[CurrentIndex];
+	    tCurrentParticle.Interpolate(tRetardedTime);
+	    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
 
+	    double tOldSpaceTimeInterval=99.;
 
-            CurrentIndex = std::min(std::max(CurrentIndex,0) , HistorySize - 1);
+	    //Converge to root
+	    for(int j=0;j<25;++j)
+	      {
+		//++tAverageIterations;
 
-            CurrentIndex = FindNode(tRetardedTime,dtStepSize,CurrentIndex);
+		tRetardedTime = GetPatchStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
+		tCurrentParticle.Interpolate(tRetardedTime);
 
-            tCurrentParticle = fParticleHistory[CurrentIndex];
-            tCurrentParticle.Interpolate(tRetardedTime);
-            tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), tReceiverPosition);
+		//Change the kassiopeia step we expand around if the interpolation time displacement is too large
+		if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
+		  {
+		    CurrentIndex=FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
+		    tCurrentParticle=fParticleHistory[CurrentIndex];
+		    tCurrentParticle.Interpolate(tRetardedTime);
+		  }
 
-            double tOldSpaceTimeInterval=99.;
-
-            //Converge to root
-            for(int j=0;j<25;++j)
-            {
-                //++tAverageIterations;
-
-                tRetardedTime = PatchGetStepRoot(tCurrentParticle, tReceiverTime, tReceiverPosition, tSpaceTimeInterval,0);
-
-                tCurrentParticle.Interpolate(tRetardedTime);
-
-                //Change the kassiopeia step we expand around if the interpolation time displacement is too large
-                if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > dtStepSize)
-                {
-                    CurrentIndex=FindNode(tRetardedTime,dtStepSize,CurrentIndex);
-                    tCurrentParticle=fParticleHistory[CurrentIndex];
-                    tCurrentParticle.Interpolate(tRetardedTime);
-                }
-                //printf("%e %e\n",tCurrentParticle.GetTimeDisplacement(),dtStepSize*0.75);
-
-                tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), tReceiverPosition);
-
-                tOldSpaceTimeInterval = tSpaceTimeInterval;
-            }
+		tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
+		tOldSpaceTimeInterval = tSpaceTimeInterval;
+	      }
 
 
-            PreviousTimes[i].first = CurrentIndex;
-            PreviousTimes[i].second = tRetardedTime;
+	    currentPatch->SetPreviousRetardedIndex(CurrentIndex);
+	    currentPatch->SetPreviousRetardedTime(tRetardedTime);
+
+	    LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
+	    double tVelZ = tCurrentParticle.GetVelocity(true).Z();
+	    double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
+	    double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
 
-            LMCThreeVector tECrossH = tCurrentParticle.CalculateElectricField(rReceiver[i]).Cross(tCurrentParticle.CalculateMagneticField(rReceiver[i]));
-            LMCThreeVector tDirection = tReceiverPosition - tCurrentParticle.GetPosition(true);
-
-            tTotalPower = dx * dy * tECrossH.Dot(tDirection.Unit()) / rReceiver.size() ;
-	    // 	    printf("total power hitting patch is %g\n", tTotalPower*rReceiver.size()); getchar();
-
-            tIncidentElectricField += tCurrentParticle.CalculateElectricField(rReceiver[i]) / rReceiver.size();
-            tIncidentKVector += tECrossH / rReceiver.size();
-
-            double tVelZ = tCurrentParticle.GetVelocity(true).Z();
-            double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
-            double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
-            tAverageDopplerFrequency += tDopplerFrequency / rReceiver.size();
-	    //	    printf("tDopplerFrequency is %g and fcyc is %g\n", tDopplerFrequency, tCurrentParticle.GetCyclotronFrequency());
-
-            if (tRetardedTime > fDigitizerTimeStep)  // if the signal has been present for longer than fDigitizerTimeStep
+            if (SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] == false)
               {
-              tVoltagePhase[patchindex]+= tDopplerFrequency * fDigitizerTimeStep / rReceiver.size();
-              }
-            else  // if this is the first digitizer sample, the voltage phase doesn't advance for the full dt.
-              {
-              tVoltagePhase[patchindex]+=  // compressing
-                 tDopplerFrequency * tRetardedTime / rReceiver.size();
+              SignalArrivalIndex_t[channelIndex*fNPatchesPerStrip+patchIndex] = index;
+              SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] = true;
               }
 
-/*
-            if (i==0)  // check receiver point 0 for each channel.  It should be the same each time.
-            {
-              printf("rx point 0:  zposition is %d and channel is %d, fcyc is %g and tVelZ is %g, dopplerfreq is %g, costheta is %f\n",
-            		  z_index, ch, tDopplerFrequency, tCurrentParticle.GetCyclotronFrequency(), tVelZ, tCosTheta);
-              printf("tVoltagePhase[%d] is %g\n", patchindex, tVoltagePhase[patchindex]);
-              printf("digitizer index is %d\n", index); getchar();
-            }
-*/
+            if (VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]>0.)  // not first sample                                                        
+              {
+              VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += 
+                tDopplerFrequency * fDigitizerTimeStep;
+              }
+            else  // if this is the first light at this channelIndex, the voltage phase doesn't advance for the full dt.
+              {              
+                VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] +=
+                tDopplerFrequency * tRetardedTime;
+                //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
+              }	      
 
+	    double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
+            //printf("tVoltageAmplitude is %g\n", tVoltageAmplitude); getchar();
 
-        }  // i, rReceiver.size() loop.
+	    AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
 
-		double tVoltageAmplitude = GetVoltageAmplitude(tIncidentElectricField, tIncidentKVector, PatchPhi, tAverageDopplerFrequency);
-		//		if (tAverageDopplerFrequency>0.) {printf("tAverageDopplerFrequency is %g\n", tAverageDopplerFrequency); getchar();}
-	//        double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
-	//printf("tvoltageamp is %g\n", tVoltageAmplitude); getchar();
-        AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, tVoltagePhase[patchindex], phi_LO, channelindex, z_index, tAverageDopplerFrequency);
+	  } // patch loop
+	//	printf("channel %d voltage is %g\n", channelIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
+      } // channels loop
 
-        } // z_index waveguide element stepping loop.
+    t_old += fDigitizerTimeStep;
 
-	//	printf("signal %d with frequency %g is %g\n", channelindex, tAverageDopplerFrequency, aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();
+    return 0;
+  }
 
-
-        } // nchannels loop.
-
-        t_old += fDigitizerTimeStep;
-
-        return 0;
-    }
+     
+        
+                
 
 
     //Return iterator of fParticleHistory particle closest to the time we are evaluating
-    int PatchSignalGenerator::FindNode(double tNew, double dtStepSize, int kIndexOld) const
+  /*
+    int OldFindNode(double tNew, double dtStepSize, int kIndexOld) const
     {
         int tHistorySize = fParticleHistory.size();
 
@@ -491,16 +438,106 @@ namespace locust
 
         return tNodeIndex;
     }
+  */
+
+    //Return iterator of fParticleHistory particle closest to the time we are evaluating
+    //Make simpler!!!
+    int PatchSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
+    {
+        if(tNew <= 0) return 0;
+
+        int tHistorySize = fParticleHistory.size();
+
+        //Make sure we are not out of bounds of array!!!
+        kIndexOld = std::min( std::max(kIndexOld,0) , tHistorySize - 1 );
+
+        double tOld = fParticleHistory[ kIndexOld ].GetTime();
+
+        int kIndexMid=round((tNew-tOld)/kassiopeiaTimeStep) + kIndexOld;
+        kIndexMid = std::min( std::max(kIndexMid,0) , tHistorySize - 1 );
+
+        int kIndexSearchWidth;
+        int kIndexRange[2];
+        std::deque<locust::Particle>::iterator it;
+
+        for(int i = 0 ; i < 15 ; ++i){
+
+            kIndexSearchWidth = pow( 2 , i );
+            kIndexRange[0] = kIndexMid - kIndexSearchWidth;
+            kIndexRange[1] = kIndexMid + kIndexSearchWidth;
+
+            kIndexRange[0] = std::max(kIndexRange[0], 0 );
+            kIndexRange[1] = std::min(kIndexRange[1], tHistorySize - 1);
+
+            if( tNew >= fParticleHistory[ kIndexRange[0] ].GetTime() && tNew <= fParticleHistory[ kIndexRange[1] ].GetTime())
+            {
+                //Get iterator pointing to particle step closest to tNew
+                it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
+                break;
+            }
+            else
+            {
+                it = fParticleHistory.begin();
+            }
+        }
+        
+        int tNodeIndex = it - fParticleHistory.begin();
+
+        return tNodeIndex;
+    }
+
+
+
+  void PatchSignalGenerator::InitializePatchArray()
+  {
+   
+    const unsigned nChannels = fNChannels;
+    const int nReceivers = fNPatchesPerStrip;
+
+    const double patchSpacingZ = fPatchSpacing;
+    const double patchRadius = fArrayRadius;
+    double zPosition;
+    double theta;
+    const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
+
+    PatchAntenna modelPatch;
+
+    allChannels.resize(nChannels);
+
+    for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
+      {
+	theta = channelIndex * dThetaArray;
+
+	for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
+	  {
+	    zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
+
+	    modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
+	    modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); 
+	    modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+	    allChannels[channelIndex].AddReceiver(modelPatch);
+	  }
+      }
+  }
+
+
 
     bool PatchSignalGenerator::DoGenerate( Signal* aSignal )
     {
-        FILE *fp = fopen("phases.txt", "w");
+
+      InitializePatchArray();
+
+            FILE *fp = fopen("intensities.dat","wb");  // time stamp checking.
+      //fprintf(fp, "testing\n");
+
 
     	//n samples for event spacing.
         int PreEventCounter = 0;
         const int NPreEventSamples = 150000;
+      
 
-        std::thread Kassiopeia (KassiopeiaInit, gxml_filename);     // spawn new thread
+
+	std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
@@ -534,7 +571,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(PreEventCounter, index, aSignal, fp);
+		      DriveAntenna(PreEventCounter, index, aSignal);
 
                         PreEventCounter = 0; // reset
                     }
@@ -543,22 +580,18 @@ namespace locust
 
             }  // for loop
 
-        // trigger any remaining events in Kassiopeia so that its thread can finish.
-        while (fRunInProgress)
-        {
-            if (fRunInProgress)
-            {
-            	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            	if (!fEventInProgress)
-                  if (ReceivedKassReady())
-            	    WakeBeforeEvent();
-            }
-        }
+        //fclose(fp);
 
-        Kassiopeia.join();  // wait for Kassiopeia to finish.
+        printf("finished signal loop\n");
 
-        fclose(fp);
-
+	fRunInProgress = false;  // tell Kassiopeia to finish.
+        fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
+	//if (fEventInProgress)
+	//  if (ReceivedKassReady())
+	WakeBeforeEvent();
+        Kassiopeia.join();
+	                       
+        
 
         return true;
     }

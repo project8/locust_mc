@@ -80,6 +80,8 @@ namespace locust
 
     double PatchAntenna::GetAntennaFactor()
     {
+        if(instantaneousFrequency <= 25.1e9 || instantaneousFrequency>=26.1e9)
+            return 600;
         return antennaFactorSpline(instantaneousFrequency);
     }
 

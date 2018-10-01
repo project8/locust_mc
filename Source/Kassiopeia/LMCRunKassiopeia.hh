@@ -11,25 +11,9 @@
 #include <vector>
 #include <string>
 
-//#include "KElementProcessor.hh"
 
-/*
-namespace katrin
-{
-    class KConditionProcessor;
-    class KIncludeProcessor;
-    class KLoopProcessor;
-    class KPrintProcessor;
-    class KTagProcessor;
-    class KVariableProcessor;
-    class KXMLTokenizer;
-    class KCommandLineTokenizer;
-//#ifdef Kommon_USE_ROOT
-    class KFormulaProcessor;
-    class KSaveSettingsProcessor;
-//#endif
-}
-*/
+
+
 
 
 namespace locust
@@ -50,21 +34,7 @@ namespace locust
             int Run( const std::string& aFile );
 
         private:
-            /*
-            katrin::KXMLTokenizer* fTokenizer;
-            katrin::KCommandLineTokenizer* fCommandLineTokenizer;
-            katrin::KVariableProcessor* fVariableProcessor;
-            katrin::KIncludeProcessor* fIncludeProcessor;
-            katrin::KLoopProcessor* fLoopProcessor;
-            katrin::KConditionProcessor* fConditionProcessor;
-            katrin::KPrintProcessor* fPrintProcessor;
-            katrin::KTagProcessor* fTagProcessor;
-            katrin::KElementProcessor* fElementProcessor;
-
-//#ifdef Kommon_USE_ROOT
-            katrin::KFormulaProcessor* fFormulaProcessor;
-//#endif
-*/
+           
 
 
     };

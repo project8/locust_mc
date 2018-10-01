@@ -10,6 +10,9 @@
 
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
+#include "LMCChannel.hh"
+#include "LMCPatchAntenna.hh"
+
 
 namespace locust
 {
@@ -48,19 +51,32 @@ namespace locust
 
 
         private:
+            std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
             std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
-            std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
-
+            double fArrayRadius;  // from json file.
+            int fNPatchesPerStrip; // from json file.
+            double fPatchSpacing; // from json file.
             std::string gxml_filename;
             bool fCorporateFeed;
 
 
             bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
+      void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
+      void InitializePatchArray();
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
+      double ZPositionPatch(unsigned z_index);
+
+  
+
+
+            double phiLO_t; // voltage phase of LO in radians;
+            double VoltagePhase_t[10000];
+            bool SignalArrived_t[10000];
+            int SignalArrivalIndex_t[10000];
+
 
 
 

@@ -55,7 +55,6 @@
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_pinch_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
 
-
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
 
@@ -252,11 +251,11 @@
         <position_rectangular_composite space="world/project8">
             <x_uniform value_min="-.00503" value_max=".00503"/>
             <y_uniform value_min="-.00503" value_max=".00503"/>
-            <z_uniform value_min="-.0" value_max=".0"/>
+            <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
-            <theta_spherical angle_min="90.0" angle_max="90.0"/>
-            <phi_uniform value_min="0." value_max="360"/>
+            <theta_spherical angle_min="88.0" angle_max="92.0"/>
+            <phi_uniform value_min="0." value_max="360."/>
         </direction_spherical_composite>
         <time_composite>
             <time_fix value="0."/>
@@ -433,10 +432,10 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.e-6"/>
+    <ksterm_max_time name="term_max_time" time="0.5e-3"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
-    <ksterm_min_energy name="term_min_energy" energy="17000."/>
-    <ksterm_max_energy name="term_max_energy" energy="19000."/>
+    <ksterm_min_energy name="term_min_energy" energy="19000."/>
+    <ksterm_max_energy name="term_max_energy" energy="34000."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
     <ksterm_max_z name="term_max_z" z=".07"/>
     <ksterm_max_r name="term_max_r" r=".005"/>

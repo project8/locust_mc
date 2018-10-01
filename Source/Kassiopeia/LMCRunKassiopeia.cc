@@ -41,67 +41,16 @@ using namespace katrin;
 namespace locust
 {
 
-    RunKassiopeia::RunKassiopeia()/*:
-    fTokenizer( new KXMLTokenizer() ),
-    fCommandLineTokenizer( new KCommandLineTokenizer() ),
-    fVariableProcessor( new KVariableProcessor(fCommandLineTokenizer->GetVariables()) ),
-    fIncludeProcessor( new KIncludeProcessor() ),
-    fFormulaProcessor( new KFormulaProcessor() ),
-    fLoopProcessor( new KLoopProcessor() ),
-    fConditionProcessor( new KConditionProcessor() ),
-    fPrintProcessor( new KPrintProcessor() ),
-    fTagProcessor( new KTagProcessor() ),
-    fElementProcessor( new KElementProcessor() )*/
+    RunKassiopeia::RunKassiopeia()
     {
-/*
-    	char* dummy_args[] = { "dummyname", "/home/penny/locust_mc/Config/Project8Phase2_WithRoot.xml", NULL};
-        fCommandLineTokenizer->ProcessCommandLine(2, dummy_args);
-        fCommandLineTokenizer->GetVariables();
 
-
-
-
-    	fVariableProcessor->InsertAfter( fTokenizer );
-        fIncludeProcessor->InsertAfter( fVariableProcessor );
-
-
-//    #ifdef Kommon_USE_ROOT
-        fFormulaProcessor->InsertAfter( fVariableProcessor );
-        fIncludeProcessor->InsertAfter( fFormulaProcessor );
-//    #endif
-
-
-
-        fLoopProcessor->InsertAfter( fIncludeProcessor );
-        fConditionProcessor->InsertAfter( fLoopProcessor );
-        fPrintProcessor->InsertAfter( fConditionProcessor );
-        fTagProcessor->InsertAfter( fPrintProcessor );
-        fElementProcessor->InsertAfter( fTagProcessor );
-*/
     }
 
 
     RunKassiopeia::~RunKassiopeia()
     {
-    	/*
-        delete fTokenizer;
-        delete fVariableProcessor;
-        delete fIncludeProcessor;
-        delete fLoopProcessor;
-        delete fConditionProcessor;
-        delete fPrintProcessor;
-        delete fTagProcessor;
-        delete fElementProcessor;
-
-//#ifdef Kommon_USE_ROOT
-        delete fFormulaProcessor;
-//#endif
-  */
-
         KToolbox::GetInstance().Clear();
     }
-
-
 
 
     int RunKassiopeia::Run( const std::vector< std::string >& aFiles )
@@ -129,11 +78,11 @@ namespace locust
     	tVariableProcessor.InsertAfter( &tTokenizer );
     	tIncludeProcessor.InsertAfter( &tVariableProcessor );
 
-//#ifdef Kassiopeia_USE_ROOT
+	//#ifdef Kassiopeia_USE_ROOT
 	KFormulaProcessor tFormulaProcessor;
 	tFormulaProcessor.InsertAfter( &tVariableProcessor );
 	tIncludeProcessor.InsertAfter( &tFormulaProcessor );
-//#endif
+	//#endif
 
 
     tLoopProcessor.InsertAfter( &tIncludeProcessor );
@@ -143,29 +92,24 @@ namespace locust
 
     tElementProcessor.InsertAfter( &tTagProcessor );
 
-
-
        mainmsg( eNormal ) << "starting ..." << eom;
        KToolbox::GetInstance();
 
-
-
         KTextFile* tFile;
-
-
-
+	
         for( std::vector< std::string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
-
-
         {
             tFile = new KTextFile();
             tFile->AddToNames( *tIter );
             tTokenizer.ProcessFile( tFile );
             delete tFile;
         }
-
+	
         mainmsg( eNormal ) << "... finished" << eom;
+         
+	//	tTokenizer.~KXMLTokenizer();
 
+	KToolbox::GetInstance().Clear();
 
         return 0;
     }
