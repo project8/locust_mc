@@ -6,9 +6,7 @@
             { "type": "egg-processor",          "name": "egg1" },
             { "type": "forward-fftw",           "name": "fft1" },
             { "type": "convert-to-power",       "name": "to-ps1" },
-            { "type": "root-spectrogram-writer", "name":"waterfall-writer" },
-            { "type": "basic-root-writer",   "name": "writer" }
-
+            { "type": "root-spectrogram-writer", "name":"waterfall-writer" }
 
 
         ],
@@ -29,16 +27,6 @@
             {
                 "signal": "fft1:fft",
                 "slot": "to-ps1:fs-fftw-to-psd"
-            },
-            
-            {
-                "signal": "to-ps1:psd",
-                "slot": "writer:psd"
-            },
-
-            {
-                "signal": "fft1:fft",
-                "slot": "writer:fs-fftw-phase"
             },
                                 
             {
@@ -65,7 +53,7 @@
         
     "egg1":
     {
-        "filename": "/home/slocum/locust_mc/cbuild/bin/locust_mc.egg",
+        "filename": "locust_faketrack.egg",
         "egg-reader": "egg3",
         "number-of-slices": 100,
         "slice-size": 8192,
@@ -87,20 +75,12 @@
 
     "waterfall-writer":
     {
-        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/katydidwaterfall.root",
+        "output-file": "locust_faketrack_waterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
         "min-freq": 0.0e6,
         "max-freq": 200.0e6
-    },
-
-
-
-    "writer":
-    {
-        "output-file": "/home/hep/baker/ps48/locust_mc/cbuild/bin/basic.root",
-        "file-flag": "recreate"
     }
 
 
