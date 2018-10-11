@@ -31,6 +31,10 @@ namespace locust
             Generator( aName ),
             //fWriteNFD(0.),
             fLO_Frequency( 0.),
+            fArrayRadius(0.),
+            fPatchSpacing(0.),
+            fNPatchesPerStrip(0.),
+            fCorporateFeed(1),
             fPileupSeed( 0.),
             fPileupMode( false),
             gxml_filename("blank.xml")
@@ -51,6 +55,21 @@ namespace locust
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
         }
 
+        if( aParam->has( "array-radius" ) )
+        {
+            fArrayRadius = aParam->get_value< double>( "array-radius" );
+        }
+
+        if( aParam->has( "npatches-per-strip" ) )
+        {
+            fNPatchesPerStrip = aParam->get_value< double>( "npatches-per-strip" );
+        }
+
+        if( aParam->has( "patch-spacing" ) )
+        {
+            fPatchSpacing = aParam->get_value< double>( "patch-spacing" );
+        }
+
         if( aParam->has( "pileup" ) )
         {
             fPileupMode = aParam->get_value< bool>( "pileup" );
@@ -60,6 +79,13 @@ namespace locust
         {
             fPileupSeed = aParam->get_value< int>( "pileup-seed" );
         }
+        if( aParam->has( "feed" ) )
+        {
+            std::string feedInput = aParam->get_value< std::string>( "feed" );
+            if(feedInput == "series")
+                fCorporateFeed = false;
+        }
+
 
         return true;
     }
@@ -251,11 +277,10 @@ namespace locust
     {
    
         const unsigned nChannels = fNChannels;
-        const int nReceivers = 41; //Number of receivers per channel
+        const int nReceivers = fNPatchesPerStrip; //Number of receivers per channel
 
-        //const double patchSpacingZ = 0.01167;
-        const double patchSpacingZ = 6.512e-3;
-        const double patchRadius = 0.05;
+        const double patchSpacingZ = fPatchSpacing;
+        const double patchRadius = fArrayRadius;
         double zPosition;
         double theta;
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels

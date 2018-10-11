@@ -24,122 +24,119 @@
 
 namespace locust
 {
-    LOGGER( lmclog, "PatchSignalGenerator" );
+  LOGGER( lmclog, "PatchSignalGenerator" );
 
-    MT_REGISTER_GENERATOR(PatchSignalGenerator, "patch-signal");
+  MT_REGISTER_GENERATOR(PatchSignalGenerator, "patch-signal");
 
-    PatchSignalGenerator::PatchSignalGenerator( const std::string& aName ) :
-            Generator( aName ),
-            fLO_Frequency( 0.),
-            fArrayRadius( 0. ),
-            fNPatchesPerStrip( 0. ),
-            fPatchSpacing( 0. ),
-            fCorporateFeed( 0 ),
-            gxml_filename("blank.xml"),
-            phiLO_t(0.),
-            VoltagePhase_t {0.},
-            SignalArrived_t {0},
-            SignalArrivalIndex_t {0}
+  PatchSignalGenerator::PatchSignalGenerator( const std::string& aName ) :
+    Generator( aName ),
+    fLO_Frequency( 0.),
+    fArrayRadius( 0. ),
+    fNPatchesPerStrip( 0. ),
+    fPatchSpacing( 0. ),
+    fCorporateFeed( 0 ),
+    gxml_filename("blank.xml"),
+    phiLO_t(0.),
+    VoltagePhase_t {0.},
+    SignalArrived_t {0},
+    SignalArrivalIndex_t {0}
     {
-        fRequiredSignalState = Signal::kTime;
+      fRequiredSignalState = Signal::kTime;
     }
 
-    PatchSignalGenerator::~PatchSignalGenerator()
-    {
-    }
+  PatchSignalGenerator::~PatchSignalGenerator()
+  {
+  }
 
-    bool PatchSignalGenerator::Configure( const scarab::param_node* aParam )
-    {
-        if( aParam == NULL) return true;
+  bool PatchSignalGenerator::Configure( const scarab::param_node* aParam )
+  {
+    if( aParam == NULL) return true;
 
-        if( aParam->has( "lo-frequency" ) )
-        {
-            fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
-        }
-        if( aParam->has( "array-radius" ) )
-        {
-            fArrayRadius = aParam->get_value< double >( "array-radius" );
-        }
-        if( aParam->has( "npatches-per-strip" ) )
-	  {
-            fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
-	  }
-        if( aParam->has( "patch-spacing" ) )
-	  {
-            fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
-	  }
-        if( aParam->has( "xml-filename" ) )
-        {
-            gxml_filename = aParam->get_value< std::string >( "xml-filename" );
-        }
-        if( aParam->has( "feed" ) )
-	{
-          if (aParam->get_value< std::string >( "feed" ) == "corporate")
-            fCorporateFeed = 1;  // default
-          else if (aParam->get_value< std::string >( "feed" ) == "series")
-            fCorporateFeed = 0;
-          else
-            fCorporateFeed = 1;  // default
+    if( aParam->has( "lo-frequency" ) )
+      {
+	fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
+      }
+    if( aParam->has( "array-radius" ) )
+      {
+	fArrayRadius = aParam->get_value< double >( "array-radius" );
+      }
+    if( aParam->has( "npatches-per-strip" ) )
+      {
+	fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+      }
+    if( aParam->has( "patch-spacing" ) )
+      {
+	fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+      }
+    if( aParam->has( "xml-filename" ) )
+      {
+	gxml_filename = aParam->get_value< std::string >( "xml-filename" );
+      }
+    if( aParam->has( "feed" ) )
+      {
+	if (aParam->get_value< std::string >( "feed" ) == "corporate")
+	  fCorporateFeed = 1;  // default
+	else if (aParam->get_value< std::string >( "feed" ) == "series")
+	  fCorporateFeed = 0;
+	else
+	  fCorporateFeed = 1;  // default
+      }
 
-	}
+    return true;
+  }
 
-        return true;
-    }
-
-    void PatchSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
-    {
-        aVisitor->Visit( this );
-        return;
-    }
+  void PatchSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
+  {
+    aVisitor->Visit( this );
+    return;
+  }
 
 
   static void* KassiopeiaInit(const std::string &aFile)
-    {
-      //    	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-        RunKassiopeia RunKassiopeia1;
-    	RunKassiopeia1.Run(aFile);
-        RunKassiopeia1.~RunKassiopeia();
-	//    	delete RunKassiopeia1;
+  {
+    //RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
+    RunKassiopeia RunKassiopeia1;
+    RunKassiopeia1.Run(aFile);
+    RunKassiopeia1.~RunKassiopeia();
+    //delete RunKassiopeia1;
 
-        return 0;
-    }
-
-
-
-    static void WakeBeforeEvent()
-    {
-        fPreEventCondition.notify_one();
-        return;
-    }
-
-    static bool ReceivedKassReady()
-    {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      printf("LMC about to wait ..\n");
-
-      if( !fKassEventReady)
-        {
-	  std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-	  fKassReadyCondition.wait( tLock );
-        }
-
-      if (fFalseStartKassiopeia)  // workaround for some Macs
-        {
-	  std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-	  fKassReadyCondition.wait( tLock );
-
-        }
-
-      return true;
-    }
+    return 0;
+  }
 
 
 
-    double PatchSignalGenerator::GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition )
-    {
-        //return pow(aReceiverTime - aParticleTime,2.) - (aReceiverPosition - aParticlePosition).MagnitudeSquared() / pow(LMCConst::C() , 2.);
-        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
-    }
+  static void WakeBeforeEvent()
+  {
+    fPreEventCondition.notify_one();
+    return;
+  }
+
+  static bool ReceivedKassReady()
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    printf("LMC about to wait ..\n");
+
+    if( !fKassEventReady)
+      {
+	std::unique_lock< std::mutex >tLock( fKassReadyMutex );
+	fKassReadyCondition.wait( tLock );
+      }
+
+    if (fFalseStartKassiopeia)  // workaround for some Macs
+      {
+	std::unique_lock< std::mutex >tLock( fKassReadyMutex );
+	fKassReadyCondition.wait( tLock );
+      }
+
+    return true;
+  }
+
+
+
+  double PatchSignalGenerator::GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition )
+  {
+    return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
+  }
 
 
   double GetPatchStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
@@ -149,32 +146,29 @@ namespace locust
   }
 
 
-    double GetMismatchFactor(double f)  
-    {
+  double GetMismatchFactor(double f)  
+  {
+    //f /= 2.*LMCConst::Pi();
+    // placeholder = 1 - mag(S11)
+    // fit to HFSS output
+    //double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
+    //    printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
+    double MismatchFactor = 0.85;  // punt.
+    return MismatchFactor;
+  }
 
-      f /= 2.*LMCConst::Pi();
-    	// placeholder = 1 - mag(S11)
-    	// fit to HFSS output
-	//double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
-		//		    	printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
-	double MismatchFactor = 0.85;  // punt.
-    	return MismatchFactor;
-    }
-
-    double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
-    {
+  double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
+  {
     LMCThreeVector PatchNormalVector;
     PatchNormalVector.SetComponents(cos(PatchPhi), sin(PatchPhi), 0.0);
     double AOIFactor = fabs(IncidentKVector.Unit().Dot(PatchNormalVector));
-//    printf("cos aoi is %f\n", AOIFactor);
+    //printf("cos aoi is %f\n", AOIFactor);
     return AOIFactor;
-    }
+  }
 
   double GetVoltageAmpFromPlaneWave()
   {
     double AntennaFactor = 1./420.;
-    double epsilon0 = 8.854e-12; //  C^2/N/m^2
-    double c = 3.e8; // m/s
 
     // S = epsilon0 c E0^2 / 2.  // power/area
     //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
@@ -182,8 +176,8 @@ namespace locust
     // E0 = sqrt(2.*S/epsilon0/c)
     // effective patch area 0.00004583662 m^2 
 
-        double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
-        double E0 = pow(2.*S/epsilon0/c, 0.5);
+    double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
+    double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
     //    double E0 = 1.0; // V/m, test case
     double amplitude = E0*AntennaFactor;  // volts
     return amplitude;
@@ -192,20 +186,19 @@ namespace locust
   }
 
 
-    double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
-    {
-      double AntennaFactor = 1./400.;
-    	double MismatchFactor = GetMismatchFactor(DopplerFrequency);
-    	double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
-    	LMCThreeVector PatchPolarizationVector;
-    	PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
-	double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
-	//double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Magnitude()); // test case.  
+  double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+  {
+    double AntennaFactor = 1./400.;
+    double MismatchFactor = GetMismatchFactor(DopplerFrequency);
+    double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
+    LMCThreeVector PatchPolarizationVector;
+    PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
+    double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
+    //double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Magnitude()); // test case.  
 
-
-	//    	if (VoltageAmplitude>0.) {printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();}
-    	return VoltageAmplitude;
-    }
+    //    if (VoltageAmplitude>0.) {printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();}
+    return VoltageAmplitude;
+  }
 
   double PatchSignalGenerator::ZPositionPatch(unsigned z_index)
   {
@@ -226,7 +219,6 @@ namespace locust
 
 
 
-
   double GetLinePhaseCorr(unsigned z_index, double DopplerFrequency)
   {
     double D = 0.007711*0.95; // m.  18.0 keV 90 degree electron, lambda in kapton.
@@ -239,33 +231,31 @@ namespace locust
 
 
   void PatchSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency)
-    {
-      double LinePhaseCorr = 0.;
-      if (fCorporateFeed == false)
-        {
+  {
+    double LinePhaseCorr = 0.;
+    if (fCorporateFeed == false)
+      {
 	LinePhaseCorr = GetLinePhaseCorr(z_index, DopplerFrequency);
-        VoltagePhase += LinePhaseCorr;     
-        }
+	VoltagePhase += LinePhaseCorr;     
+      }
 
-      //      if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
-        aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
-        aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
+    //if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
+    aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
+    aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
 
-    }
+  }
 
 
   void* PatchSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
   {
-
-
     if (PreEventCounter > 0)  // new event starting.                                                    
       {
 	// initialize patch voltage phases.                                                             
 	for (unsigned i=0; i < sizeof(VoltagePhase_t)/sizeof(VoltagePhase_t[0]); i++)
 	  {
 	    VoltagePhase_t[i] = {0.};
-            SignalArrived_t[i] = false;
-            SignalArrivalIndex_t[i] = 0;
+	    SignalArrived_t[i] = false;
+	    SignalArrivalIndex_t[i] = 0;
 	  }
       }
 
@@ -317,7 +307,7 @@ namespace locust
 		CurrentIndex = currentPatch->GetPreviousRetardedIndex();
 		tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
 	      }
-                    
+
 	    CurrentIndex = FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
 	    CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
 
@@ -330,8 +320,6 @@ namespace locust
 	    //Converge to root
 	    for(int j=0;j<25;++j)
 	      {
-		//++tAverageIterations;
-
 		tRetardedTime = GetPatchStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
 		tCurrentParticle.Interpolate(tRetardedTime);
 
@@ -357,31 +345,29 @@ namespace locust
 	    double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
 
-            if (SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] == false)
-              {
-              SignalArrivalIndex_t[channelIndex*fNPatchesPerStrip+patchIndex] = index;
-              SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] = true;
-              }
+	    if (SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] == false)
+	      {
+		SignalArrivalIndex_t[channelIndex*fNPatchesPerStrip+patchIndex] = index;
+		SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] = true;
+	      }
 
-            if (VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]>0.)  // not first sample                                                        
-              {
-              VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += 
-                tDopplerFrequency * fDigitizerTimeStep;
-              }
-            else  // if this is the first light at this channelIndex, the voltage phase doesn't advance for the full dt.
-              {              
-                VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] +=
-                tDopplerFrequency * tRetardedTime;
-                //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
-              }	      
+	    if (VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]>0.)  // not first sample                                                        
+	      {
+		VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * fDigitizerTimeStep;
+	      }
+	    else  // if this is the first light at this channelIndex, the voltage phase doesn't advance for the full dt.
+	      {              
+		VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * tRetardedTime;
+		//printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
+	      }      
 
 	    double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
-            //printf("tVoltageAmplitude is %g\n", tVoltageAmplitude); getchar();
+	    //printf("tVoltageAmplitude is %g\n", tVoltageAmplitude); getchar();
 
 	    AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
 
 	  } // patch loop
-	//	printf("channel %d voltage is %g\n", channelIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
+            //printf("channel %d voltage is %g\n", channelIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
       } // channels loop
 
@@ -390,8 +376,6 @@ namespace locust
     return 0;
   }
 
-     
-        
   //Return index of fParticleHistory particle closest to the time we are evaluating
   int PatchSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
   {
@@ -417,8 +401,6 @@ namespace locust
 
     return tNodeIndex;
   }
- 
-
 
   void PatchSignalGenerator::InitializePatchArray()
   {
@@ -454,86 +436,78 @@ namespace locust
 
 
 
-    bool PatchSignalGenerator::DoGenerate( Signal* aSignal )
-    {
+  bool PatchSignalGenerator::DoGenerate( Signal* aSignal )
+  {
 
-      InitializePatchArray();
+    InitializePatchArray();
 
-            FILE *fp = fopen("intensities.dat","wb");  // time stamp checking.
-      //fprintf(fp, "testing\n");
+    FILE *fp = fopen("intensities.dat","wb");  // time stamp checking.
+    //fprintf(fp, "testing\n");
 
-
-    	//n samples for event spacing.
-        int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
+    //n samples for event spacing.
+    int PreEventCounter = 0;
+    const int NPreEventSamples = 150000;
       
+    std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
+    fRunInProgress = true;
 
+    int npileups = 0; // temporary pileup test
+    //for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+    unsigned index = 0;  // temporary pileup test
 
-	std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
-        fRunInProgress = true;
+    while ( index < aSignal->DecimationFactor()*aSignal->TimeSize() )  // temporary pileup test
+      {
+	if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
+	  {
+	    if (ReceivedKassReady()) fPreEventInProgress = true;
+	  }
 
-    
-	//        int npileups = 0; // temporary pileup test
-        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-	//	    unsigned index = 0;  // temporary pileup test
+	if (fPreEventInProgress)
+	  {
+	    PreEventCounter += 1;
+	    //printf("preeventcounter is %d\n", PreEventCounter);
+	    if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
+	      {
+		fPreEventInProgress = false;  // reset.
+		fEventInProgress = true;
+		//printf("LMC about to wakebeforeevent\n");
+		npileups++;  // temporary pileup test
+		if (npileups>1) {index=NPreEventSamples;};  // reset for temporary pileup test
+		WakeBeforeEvent();  // trigger Kass event.
+	      }
+	  }
 
-	    //	    while ( index < aSignal->DecimationFactor()*aSignal->TimeSize() )  // temporary pileup test
+	if (fEventInProgress)  // fEventInProgress
+	  if (fEventInProgress)  // check again.
+	    {
+	      //printf("waiting for digitizer trigger ... index is %d\n", index);
+	      std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
+	      tLock.lock();
+	      fDigitizerCondition.wait( tLock );
+	      if (fEventInProgress)
+		{
+		  //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
+		  DriveAntenna(PreEventCounter, index, aSignal);
+		  PreEventCounter = 0; // reset
+		}
+	      tLock.unlock();
+	    }
 
-        {
-            if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
-                {
-                    if (ReceivedKassReady()) fPreEventInProgress = true;
-                }
+	++index; // temporary pileup test
+      }  // for loop
 
-            if (fPreEventInProgress)
-            {
-                PreEventCounter += 1;
-//                 printf("preeventcounter is %d\n", PreEventCounter);
-                if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
-                {
-                    fPreEventInProgress = false;  // reset.
-                    fEventInProgress = true;
-                    //printf("LMC about to wakebeforeevent\n");
-		    //                    npileups++;  // temporary pileup test
-                    //if (npileups>1) {index=NPreEventSamples;};  // reset for temporary pileup test
-                    WakeBeforeEvent();  // trigger Kass event.
-                }
-            }
+    //fclose(fp);
 
+    printf("finished signal loop\n");
 
-            if (fEventInProgress)  // fEventInProgress
-                if (fEventInProgress)  // check again.
-                {
-                    //printf("waiting for digitizer trigger ... index is %d\n", index);
-                    std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
-                    tLock.lock();
-                    fDigitizerCondition.wait( tLock );
-                    if (fEventInProgress)
-                    {
-                        //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-		      DriveAntenna(PreEventCounter, index, aSignal);
-                      PreEventCounter = 0; // reset
-                    }
-                    tLock.unlock();
-                }
+    fRunInProgress = false;  // tell Kassiopeia to finish.
+    fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
+    //if (fEventInProgress)
+    //  if (ReceivedKassReady())
+    WakeBeforeEvent();
+    Kassiopeia.join();
 
-	    //            index++; // temporary pileup test
-            }  // for loop
-
-        //fclose(fp);
-
-        printf("finished signal loop\n");
-
-	fRunInProgress = false;  // tell Kassiopeia to finish.
-        fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-	//if (fEventInProgress)
-	//  if (ReceivedKassReady())
-	WakeBeforeEvent();
-        Kassiopeia.join();
-	                       
-        
-
-        return true;
-    }
+    return true;
+  }
 
 } /* namespace locust */
