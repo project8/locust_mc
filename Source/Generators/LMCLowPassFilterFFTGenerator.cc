@@ -19,8 +19,8 @@ namespace locust
     MT_REGISTER_GENERATOR(LowPassFilterFFTGenerator, "lpf-fft");
 
     LowPassFilterFFTGenerator::LowPassFilterFFTGenerator( const std::string& aName ) :
-            Generator( aName ),
-            fDoGenerateFunc( &LowPassFilterFFTGenerator::DoGenerateTime )
+        Generator( aName ),
+        fDoGenerateFunc( &LowPassFilterFFTGenerator::DoGenerateTime )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -58,9 +58,9 @@ namespace locust
         int windowsize = aSignal->DecimationFactor()*aSignal->TimeSize()/nwindows;
 
 
-      	fftw_complex *SignalComplex;
+        fftw_complex *SignalComplex;
         SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-      	fftw_complex *FFTComplex;
+        fftw_complex *FFTComplex;
         FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
 
         fftw_plan ForwardPlan;
@@ -70,47 +70,47 @@ namespace locust
 
         for (int ch=0; ch<nchannels; ch++)
         {
-        for (int nwin = 0; nwin < nwindows; nwin++)
-        {
-            // Construct complex voltage.
-            for( unsigned index = 0; index < windowsize; ++index )
+            for (int nwin = 0; nwin < nwindows; nwin++)
             {
-                SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0];
-                SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1];
-                //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-
-            fftw_execute(ForwardPlan);
-
-            // Low Pass FilterFFT
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                if ( (index > windowsize/2.*CutoffFreq/1.e9) && (index < windowsize/2. * (1. + (1.e9-CutoffFreq)/1.e9)))
+                // Construct complex voltage.
+                for( unsigned index = 0; index < windowsize; ++index )
                 {
-                    //printf("index is %d\n", index);
-                    FFTComplex[index][0] = 0.;
-                    FFTComplex[index][1] = 0.;
+                    SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0];
+                    SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1];
+                    //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
                 }
-            }
 
-            fftw_execute(ReversePlan);
+                fftw_execute(ForwardPlan);
 
-            double norm = (double)(windowsize);
+                // Low Pass FilterFFT
+                for( unsigned index = 0; index < windowsize; ++index )
+                {
+                    if ( (index > windowsize/2.*CutoffFreq/1.e9) && (index < windowsize/2. * (1. + (1.e9-CutoffFreq)/1.e9)))
+                    {
+                        //printf("index is %d\n", index);
+                        FFTComplex[index][0] = 0.;
+                        FFTComplex[index][1] = 0.;
+                    }
+                }
 
-            for( unsigned index = 0; index < windowsize; ++index )
-            {
-                // normalize
-                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
-                aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
-                //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
-            }
-        }  // nwin
+                fftw_execute(ReversePlan);
+
+                double norm = (double)(windowsize);
+
+                for( unsigned index = 0; index < windowsize; ++index )
+                {
+                    // normalize
+                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
+                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
+                    //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
+                }
+            }  // nwin
         }  // NCHANNELS
 
         delete [] SignalComplex;
         delete [] FFTComplex;
 
-    	return true;
+        return true;
     }
 
     bool LowPassFilterFFTGenerator::DoGenerateFreq( Signal* aSignal )

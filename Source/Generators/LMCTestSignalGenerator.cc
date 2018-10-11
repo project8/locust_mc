@@ -21,10 +21,10 @@ namespace locust
     MT_REGISTER_GENERATOR(TestSignalGenerator, "test-signal");
 
     TestSignalGenerator::TestSignalGenerator( const std::string& aName ) :
-            Generator( aName ),
-            fDoGenerateFunc( &TestSignalGenerator::DoGenerateTime ),
-            fLO_frequency( 0. ),
-            fAmplitude( 0.24 )
+        Generator( aName ),
+        fDoGenerateFunc( &TestSignalGenerator::DoGenerateTime ),
+        fLO_frequency( 0. ),
+        fAmplitude( 0.24 )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -34,39 +34,39 @@ namespace locust
     }
 
 
-  bool TestSignalGenerator::Configure( const scarab::param_node* aParam )
-  {
-    if( aParam == NULL) return true;
+    bool TestSignalGenerator::Configure( const scarab::param_node* aParam )
+    {
+        if( aParam == NULL) return true;
 
-    SetFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
-    SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
-
-
-    if( aParam->has( "domain" ) )
-      {
-	string domain = aParam->get_value( "domain" );
-	if( domain == "time" )
-	  {
-	    SetDomain( Signal::kTime );
-	    LDEBUG( lmclog, "Domain is equal to time.");
-	  }
-	else if( domain == "freq" )
-	  {
-	    SetDomain( Signal::kFreq );
-	  }
-	else
-	  {
-	    LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
-	    return false;
-	  }
-      }
-
- 
-    return true;
+        SetFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
+        SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
 
 
+        if( aParam->has( "domain" ) )
+        {
+            string domain = aParam->get_value( "domain" );
+            if( domain == "time" )
+            {
+                SetDomain( Signal::kTime );
+                LDEBUG( lmclog, "Domain is equal to time.");
+            }
+            else if( domain == "freq" )
+            {
+                SetDomain( Signal::kFreq );
+            }
+            else
+            {
+                LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                return false;
+            }
+        }
 
-  }
+
+        return true;
+
+
+
+    }
 
 
     void TestSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
@@ -97,7 +97,7 @@ namespace locust
         return;
     }
 
- 
+
 
     Signal::State TestSignalGenerator::GetDomain() const
     {
@@ -133,7 +133,7 @@ namespace locust
     {
 
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
-        
+
         const unsigned nchannels = fNChannels;
 
         double LO_phase = 0.;
@@ -142,17 +142,17 @@ namespace locust
 
         for (unsigned ch = 0; ch < nchannels; ++ch)
         {
-        for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
-        {
+            for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
+            {
 
-        	LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-            voltage_phase = 2.*LMCConst::Pi()*test_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+                voltage_phase = 2.*LMCConst::Pi()*test_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
 
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*5.e-8*cos(voltage_phase-LO_phase);
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*5.e-8*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-        	
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*5.e-8*cos(voltage_phase-LO_phase);
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*5.e-8*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
 
-        }
+
+            }
         }
         delete RunLengthCalculator1;
         return true;

@@ -28,16 +28,16 @@ namespace locust
     MT_REGISTER_GENERATOR(FreeFieldSignalGenerator, "freefield-signal");
 
     FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
-            Generator( aName ),
-            //fWriteNFD(0.),
-            fLO_Frequency( 0.),
-            fArrayRadius(0.),
-            fPatchSpacing(0.),
-            fNPatchesPerStrip(0.),
-            fCorporateFeed(1),
-            fPileupSeed( 0.),
-            fPileupMode( false),
-            gxml_filename("blank.xml")
+        Generator( aName ),
+        //fWriteNFD(0.),
+        fLO_Frequency( 0.),
+        fArrayRadius(0.),
+        fPatchSpacing(0.),
+        fNPatchesPerStrip(0.),
+        fCorporateFeed(1),
+        fPileupSeed( 0.),
+        fPileupMode( false),
+        gxml_filename("blank.xml")
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -97,11 +97,11 @@ namespace locust
     }
 
 
-  static void* KassiopeiaInit(const std::string &aFile)
+    static void* KassiopeiaInit(const std::string &aFile)
     {
-    	RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-    	RunKassiopeia1->Run(aFile);
-    	delete RunKassiopeia1;
+        RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
+        RunKassiopeia1->Run(aFile);
+        delete RunKassiopeia1;
 
         return 0;
     }
@@ -111,10 +111,10 @@ namespace locust
         fPreEventCondition.notify_one();
         return;
     }
-    
+
     static bool ReceivedKassReady()
     {
-		printf("LMC about to wait ..\n");
+        printf("LMC about to wait ..\n");
 
         std::unique_lock< std::mutex >tLock( fKassReadyMutex);
         fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
@@ -163,78 +163,78 @@ namespace locust
                 currentPatch = &allChannels[channelIndex][patchIndex]; 
                 //tReceiverTime = t_old - fabs(currentPatch->GetPosition().Z()) / LMCConst::C();
 
-                    if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
+                if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
+                {
+                    fParticleHistory.front().Interpolate(0);
+                    if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), currentPatch->GetPosition() ) < 0 )
                     {
-                        fParticleHistory.front().Interpolate(0);
-                        if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), currentPatch->GetPosition() ) < 0 )
-                        {
-                            //printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
-                            continue;
-                        }
+                        //printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
+                        continue;
                     }
+                }
 
-                    if(currentPatch->GetPreviousRetardedIndex() == -99.)
-                    {
-                        CurrentIndex=FindNode(tReceiverTime, kassiopeiaTimeStep, historySize-1);
-                        tCurrentParticle = fParticleHistory[CurrentIndex];
-                        const double vGroup = 1.674e8;
-                        tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  vGroup;
-                        if(tRetardedTime < 0) 
-                        {
-                            tRetardedTime = 0;
-                            CurrentIndex = 0;
-                        }
-                    }
-                    else
-                    {
-                        CurrentIndex = currentPatch->GetPreviousRetardedIndex();
-                        tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
-                    }
-
-                    
-                    CurrentIndex = FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
-                    CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
-
+                if(currentPatch->GetPreviousRetardedIndex() == -99.)
+                {
+                    CurrentIndex=FindNode(tReceiverTime, kassiopeiaTimeStep, historySize-1);
                     tCurrentParticle = fParticleHistory[CurrentIndex];
-                    tCurrentParticle.Interpolate(tRetardedTime);
-                    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
-
-                    double tOldSpaceTimeInterval=99.;
-
-                    //Converge to root
-                    for(int j=0;j<25;++j)
+                    const double vGroup = 1.674e8;
+                    tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  vGroup;
+                    if(tRetardedTime < 0) 
                     {
-                        //++tAverageIterations;
+                        tRetardedTime = 0;
+                        CurrentIndex = 0;
+                    }
+                }
+                else
+                {
+                    CurrentIndex = currentPatch->GetPreviousRetardedIndex();
+                    tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
+                }
 
-                        tRetardedTime = GetStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
+
+                CurrentIndex = FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
+                CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
+
+                tCurrentParticle = fParticleHistory[CurrentIndex];
+                tCurrentParticle.Interpolate(tRetardedTime);
+                tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
+
+                double tOldSpaceTimeInterval=99.;
+
+                //Converge to root
+                for(int j=0;j<25;++j)
+                {
+                    //++tAverageIterations;
+
+                    tRetardedTime = GetStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
+                    tCurrentParticle.Interpolate(tRetardedTime);
+
+                    //Change the kassiopeia step we expand around if the interpolation time displacement is too large
+                    if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
+                    {
+                        CurrentIndex=FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
+                        tCurrentParticle=fParticleHistory[CurrentIndex];
                         tCurrentParticle.Interpolate(tRetardedTime);
-
-                        //Change the kassiopeia step we expand around if the interpolation time displacement is too large
-                        if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
-                        {
-                            CurrentIndex=FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
-                            tCurrentParticle=fParticleHistory[CurrentIndex];
-                            tCurrentParticle.Interpolate(tRetardedTime);
-                        }
-
-                        tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
-                        tOldSpaceTimeInterval = tSpaceTimeInterval;
                     }
 
-                    currentPatch->SetPreviousRetardedIndex(CurrentIndex);
-                    currentPatch->SetPreviousRetardedTime(tRetardedTime);
+                    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
+                    tOldSpaceTimeInterval = tSpaceTimeInterval;
+                }
 
-                    LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
-                    double tVelZ = tCurrentParticle.GetVelocity(true).Z();
-                    double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
-                    double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
+                currentPatch->SetPreviousRetardedIndex(CurrentIndex);
+                currentPatch->SetPreviousRetardedTime(tRetardedTime);
 
-                    currentPatch->SetInstantaneousFrequency( tDopplerFrequency / (2. * LMCConst::Pi() ));
-                    currentPatch->SetIncidentElectricField( tCurrentParticle.CalculateElectricField(currentPatch->GetPosition() ));
-                    currentPatch->SetIncidentMagneticField( tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition() ));
+                LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
+                double tVelZ = tCurrentParticle.GetVelocity(true).Z();
+                double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
+                double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
-                    aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
-                    //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
+                currentPatch->SetInstantaneousFrequency( tDopplerFrequency / (2. * LMCConst::Pi() ));
+                currentPatch->SetIncidentElectricField( tCurrentParticle.CalculateElectricField(currentPatch->GetPosition() ));
+                currentPatch->SetIncidentMagneticField( tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition() ));
+
+                aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
+                //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
 
 
@@ -267,7 +267,7 @@ namespace locust
         {
             it = fParticleHistory.begin();
         }
-        
+
         int tNodeIndex = it - fParticleHistory.begin();
 
         return tNodeIndex;
@@ -275,7 +275,7 @@ namespace locust
 
     void FreeFieldSignalGenerator::InitializePatchArray()
     {
-   
+
         const unsigned nChannels = fNChannels;
         const int nReceivers = fNPatchesPerStrip; //Number of receivers per channel
 
@@ -310,13 +310,13 @@ namespace locust
         InitializePatchArray();
 
         // Initialize random number generator for pileup
-       if(fPileupMode)
-       { 
-           if(fPileupSeed!=0)
-               srand(fPileupSeed);
-           else 
-               srand(time(NULL));
-       }
+        if(fPileupMode)
+        { 
+            if(fPileupSeed!=0)
+                srand(fPileupSeed);
+            else 
+                srand(time(NULL));
+        }
 
         //n samples for event spacing.
         int PreEventCounter = 0;
@@ -330,9 +330,9 @@ namespace locust
         while( index < aSignal->DecimationFactor()*aSignal->TimeSize() && fRunInProgress)
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
-                {
-                    if (ReceivedKassReady()) fPreEventInProgress = true;
-                }
+            {
+                if (ReceivedKassReady()) fPreEventInProgress = true;
+            }
 
             if (fPreEventInProgress)
             {
@@ -368,14 +368,14 @@ namespace locust
                     tLock.unlock();
                 }
 
-                ++index;
+            ++index;
 
-            }  // for loop
+        }  // for loop
 
         //if(fWriteNFD) NFDWrite();
-        
+
         //delete [] ImaginarySignal;
-        
+
         // trigger any remaining events in Kassiopeia so that its thread can finish.
         while (fRunInProgress)
         {
