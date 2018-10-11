@@ -1,33 +1,31 @@
-#locust_mc
+locust_mc
 --------------------
 
 locust_mc is a monte carlo simulation package of the receiver chain for Project 8.
 
 
-##Quick Start: 
+Quick Start: 
 --------------------
 
-###Instructions For Use:
---------------------
+### Instructions For Use:
 
 Locust is typically started with a command like:
 ```
   $ LocustSim config=LocustConfigFile.json
 ```
 
-###Tutorial
--------------
+### Tutorial
 
-The [Config/Tutorial](https://github.com/project8/locust_mc/tree/master/Config/Tutorial) directory contains an example guiding the user through the full simulation/ processing of beta electrons in Phases I-IV.
+The [Config/Tutorial](https://github.com/project8/locust_mc/tree/master/Config/Tutorial) directory contains an example guiding the user through the full simulation of electrons in Phases I-IV, with configuration files `Config/Tutorial/PhaseNTemplate.json`, followed by a guide on processing with [Katydid](https://github.com/project8/katydid) (recommended). In addition, the tutorial demonstrates how to generate "fake tracks", which simulate electron signals without detailed particle tracking.
 
 Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issues).
 
 
-##Installation
+Installation
 ---------------
 
-###Dependencies
-------------
+### Dependencies
+
 **External**
  - Boost (www.boost.org) version 1.46 or higher (date_time, filesystem, program_options, system, thread)
  - CMake (www.cmake.org) version 2.8 or higher
@@ -56,15 +54,13 @@ Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issue
 - [Kassiopeia](https://github.com/project8/kassiopeia)
 
 
-###Operating System Support
-------------------------
+### Operating System Support
 
 * Mac OS X (usually tested on OS X 10.12)
 * Linux (usually tested on Ubuntu)
 
 
-###Installing
-----------
+### Installing
 
 The following steps will build locust from scratch.  In the terminal:
 
@@ -117,7 +113,7 @@ The following steps will build locust from scratch.  In the terminal:
   If you have another kassiopeia installation on your computer, you should ensure that locust is not using the environmental variables of the independent kassiopeia installation by removing this line from your .bashrc.
 
 
-##Directory Structure
+Directory Structure
 -------------------
 
 *  Config - Example configuration files, tutorials
