@@ -1,12 +1,12 @@
 /*
- * LMCFakeTrackGenerator.cc
+ * LMCFakeTrackSignalGenerator.cc
  *
  *  Created on: Aug 8 2018
  *      Author: plslocum
  */
 
 #include <cmath>
-#include "LMCFakeTrackGenerator.hh"
+#include "LMCFakeTrackSignalGenerator.hh"
 #include "LMCDigitizer.hh"
 #include "logger.hh"
 #include "LMCConst.hh"
@@ -16,13 +16,13 @@ using std::string;
 
 namespace locust
 {
-    LOGGER( lmclog, "FakeTrackGenerator" );
+    LOGGER( lmclog, "FakeTrackSignalGenerator" );
 
-    MT_REGISTER_GENERATOR(FakeTrackGenerator, "fake-track");
+    MT_REGISTER_GENERATOR(FakeTrackSignalGenerator, "fake-track");
 
-    FakeTrackGenerator::FakeTrackGenerator( const std::string& aName ) :
+    FakeTrackSignalGenerator::FakeTrackSignalGenerator( const std::string& aName ) :
             Generator( aName ),
-            fDoGenerateFunc( &FakeTrackGenerator::DoGenerateTime ),
+            fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
             fSignalPower( 0. ),
             fStartFrequency( 0. ),
             fStartVPhase( 0. ),
@@ -34,12 +34,12 @@ namespace locust
         fRequiredSignalState = Signal::kTime;
     }
 
-    FakeTrackGenerator::~FakeTrackGenerator()
+    FakeTrackSignalGenerator::~FakeTrackSignalGenerator()
     {
     }
 
 
-  bool FakeTrackGenerator::Configure( const scarab::param_node* aParam )
+  bool FakeTrackSignalGenerator::Configure( const scarab::param_node* aParam )
   {
     if( aParam == NULL) return true;
 
@@ -93,84 +93,84 @@ namespace locust
   }
 
 
-    void FakeTrackGenerator::Accept( GeneratorVisitor* aVisitor ) const
+    void FakeTrackSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
         return;
     }
 
-    double FakeTrackGenerator::GetSignalPower() const
+    double FakeTrackSignalGenerator::GetSignalPower() const
     {
         return fSignalPower;
     }
 
-    void FakeTrackGenerator::SetSignalPower( double aPower )
+    void FakeTrackSignalGenerator::SetSignalPower( double aPower )
     {
         fSignalPower = aPower;
         return;
     }
 
-    double FakeTrackGenerator::GetStartFrequency() const
+    double FakeTrackSignalGenerator::GetStartFrequency() const
     {
         return fStartFrequency;
     }
 
-    void FakeTrackGenerator::SetStartFrequency( double aFrequency )
+    void FakeTrackSignalGenerator::SetStartFrequency( double aFrequency )
     {
         fStartFrequency = aFrequency;
         return;
     }
 
-    double FakeTrackGenerator::GetStartVPhase() const
+    double FakeTrackSignalGenerator::GetStartVPhase() const
     {
         return fStartVPhase;
     }
 
-    void FakeTrackGenerator::SetStartVPhase( double aPhase )
+    void FakeTrackSignalGenerator::SetStartVPhase( double aPhase )
     {
         fStartVPhase = aPhase;
         return;
     }
 
-    double FakeTrackGenerator::GetSlope() const
+    double FakeTrackSignalGenerator::GetSlope() const
     {
         return fSlope;
     }
 
-    void FakeTrackGenerator::SetSlope( double aSlope )
+    void FakeTrackSignalGenerator::SetSlope( double aSlope )
     {
         fSlope = aSlope;
         return;
     }
 
-    double FakeTrackGenerator::GetStartTime() const
+    double FakeTrackSignalGenerator::GetStartTime() const
     {
         return fStartTime;
     }
 
-    void FakeTrackGenerator::SetStartTime( double aTime )
+    void FakeTrackSignalGenerator::SetStartTime( double aTime )
     {
         fStartTime = aTime;
         return;
     }
 
-    double FakeTrackGenerator::GetEndTime() const
+    double FakeTrackSignalGenerator::GetEndTime() const
     {
         return fEndTime;
     }
 
-    void FakeTrackGenerator::SetEndTime( double aTime )
+    void FakeTrackSignalGenerator::SetEndTime( double aTime )
     {
         fEndTime = aTime;
         return;
     }
 
-    double FakeTrackGenerator::GetFrequency() const
+    double FakeTrackSignalGenerator::GetFrequency() const
     {
         return fLO_frequency;
     }
 
-    void FakeTrackGenerator::SetFrequency( double aFrequency )
+    void FakeTrackSignalGenerator::SetFrequency( double aFrequency )
     {
         fLO_frequency = aFrequency;
         return;
@@ -179,22 +179,22 @@ namespace locust
 
  
 
-    Signal::State FakeTrackGenerator::GetDomain() const
+    Signal::State FakeTrackSignalGenerator::GetDomain() const
     {
         return fRequiredSignalState;
     }
 
-    void FakeTrackGenerator::SetDomain( Signal::State aDomain )
+    void FakeTrackSignalGenerator::SetDomain( Signal::State aDomain )
     {
         if( aDomain == fRequiredSignalState ) return;
         fRequiredSignalState = aDomain;  // pls changed == to =.
         if( fRequiredSignalState == Signal::kTime )
         {
-            fDoGenerateFunc = &FakeTrackGenerator::DoGenerateTime;
+            fDoGenerateFunc = &FakeTrackSignalGenerator::DoGenerateTime;
         }
         else if( fRequiredSignalState == Signal::kFreq )
         {
-            fDoGenerateFunc = &FakeTrackGenerator::DoGenerateFreq;
+            fDoGenerateFunc = &FakeTrackSignalGenerator::DoGenerateFreq;
         }
         else
         {
@@ -204,12 +204,12 @@ namespace locust
     }
 
 
-    bool FakeTrackGenerator::DoGenerate( Signal* aSignal )
+    bool FakeTrackSignalGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    bool FakeTrackGenerator::DoGenerateTime( Signal* aSignal )
+    bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
@@ -246,7 +246,7 @@ namespace locust
         return true;
     }
 
-    bool FakeTrackGenerator::DoGenerateFreq( Signal* aSignal )
+    bool FakeTrackSignalGenerator::DoGenerateFreq( Signal* aSignal )
     {
         return true;
     }

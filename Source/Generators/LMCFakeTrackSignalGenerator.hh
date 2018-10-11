@@ -1,12 +1,12 @@
 /*
- * LMCFakeTrackGenerator.hh
+ * LMCFakeTrackSignalGenerator.hh
  *
  *  Created on: Aug 8 2018
  *      Author: plslocum
  */
 
-#ifndef LMCFAKETRACKGENERATOR_HH_
-#define LMCFAKETRACKGENERATOR_HH_
+#ifndef LMCFAKETRACKSIGNALGENERATOR_HH_
+#define LMCFAKETRACKSIGNALGENERATOR_HH_
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
@@ -23,7 +23,7 @@ namespace locust
   class Digitizer;
 
     /*!
-     @class FakeTrackGenerator
+     @class FakeTrackSignalGenerator
      @author P. L. Slocum
 
      @brief Add Sine Wave to the signal.
@@ -41,11 +41,11 @@ namespace locust
     
 
     */
-    class FakeTrackGenerator : public Generator
+    class FakeTrackSignalGenerator : public Generator
     {
         public:
-            FakeTrackGenerator( const std::string& aName = "fake-track" );
-            virtual ~FakeTrackGenerator();
+            FakeTrackSignalGenerator( const std::string& aName = "fake-track" );
+            virtual ~FakeTrackSignalGenerator();
 
             bool Configure( const scarab::param_node* aNode );
       bool Configure2( const Digitizer* aDig );
@@ -85,7 +85,7 @@ namespace locust
             bool DoGenerateTime( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
 
-            bool (FakeTrackGenerator::*fDoGenerateFunc)( Signal* aSignal );
+            bool (FakeTrackSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             double fSignalPower;
             double fStartFrequency;
@@ -101,5 +101,5 @@ namespace locust
 
 } /* namespace locust */
 
-#endif /* LMCFakeTrackGENERATOR_HH_ */
+#endif /* LMCFAKETRACKSIGNALGENERATOR_HH_ */
 
