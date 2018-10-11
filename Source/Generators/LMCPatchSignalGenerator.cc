@@ -377,7 +377,7 @@ namespace locust
     }
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
-    int FreeFieldSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
+    int PatchSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
     {
         int tHistorySize = fParticleHistory.size();
 
