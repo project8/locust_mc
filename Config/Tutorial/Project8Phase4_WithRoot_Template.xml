@@ -201,16 +201,16 @@
 
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="18600.0"/>
+            <energy_fix value="18000.0"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.08" value_max="0.08"/>
-            <y_uniform value_min="0.08" value_max="0.08"/>
+            <x_uniform value_min="0.15" value_max="0.15"/>
+            <y_uniform value_min="0.15" value_max="0.15"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90.0" value_max="90.0"/> 
+        <theta_uniform value_min="89.3" value_max="89.3"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -406,7 +406,7 @@
 
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-4"/>
+    <ksterm_max_time name="term_max_time" time="3.e-6"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_min_z name="term_min_z" z="-2."/>

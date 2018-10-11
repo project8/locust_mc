@@ -392,57 +392,32 @@ namespace locust
 
      
         
-              
+  //Return index of fParticleHistory particle closest to the time we are evaluating
+  int PatchSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
+  {
+    int tHistorySize = fParticleHistory.size();
 
+    //Make sure we are not out of bounds of array!!!
+    kIndexOld = std::min( std::max(kIndexOld,0) , tHistorySize - 1 );
+    double tOld = fParticleHistory[ kIndexOld ].GetTime();
 
-     
-    //Return iterator of fParticleHistory particle closest to the time we are evaluating
-    //Make simpler!!!
+    std::deque<locust::Particle>::iterator it;
 
-    int PatchSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
-    {
-        if(tNew <= 0) return 0;
-
-        int tHistorySize = fParticleHistory.size();
-
-        //Make sure we are not out of bounds of array!!!
-        kIndexOld = std::min( std::max(kIndexOld,0) , tHistorySize - 1 );
-
-        double tOld = fParticleHistory[ kIndexOld ].GetTime();
-
-        int kIndexMid=round((tNew-tOld)/kassiopeiaTimeStep) + kIndexOld;
-        kIndexMid = std::min( std::max(kIndexMid,0) , tHistorySize - 1 );
-
-        int kIndexSearchWidth;
-        int kIndexRange[2];
-        std::deque<locust::Particle>::iterator it;
-
-        for(int i = 0 ; i < 15 ; ++i){
-
-            kIndexSearchWidth = pow( 2 , i );
-            kIndexRange[0] = kIndexMid - kIndexSearchWidth;
-            kIndexRange[1] = kIndexMid + kIndexSearchWidth;
-
-            kIndexRange[0] = std::max(kIndexRange[0], 0 );
-            kIndexRange[1] = std::min(kIndexRange[1], tHistorySize - 1);
-
-            if( tNew >= fParticleHistory[ kIndexRange[0] ].GetTime() && tNew <= fParticleHistory[ kIndexRange[1] ].GetTime())
-            {
-                //Get iterator pointing to particle step closest to tNew
-                it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
-                break;
-            }
-            else
-            {
-                it = fParticleHistory.begin();
-            }
-        }
+    if( tNew >= fParticleHistory.front().GetTime() && tNew <= fParticleHistory.back().GetTime())
+      {
+	//Get iterator pointing to particle step closest to tNew
+	it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
+      }
+    else
+      {
+	it = fParticleHistory.begin();
+      }
         
-        int tNodeIndex = it - fParticleHistory.begin();
+    int tNodeIndex = it - fParticleHistory.begin();
 
-        return tNodeIndex;
-    }
-
+    return tNodeIndex;
+  }
+ 
 
 
   void PatchSignalGenerator::InitializePatchArray()
@@ -498,11 +473,11 @@ namespace locust
         fRunInProgress = true;
 
     
-        int npileups = 0; // temporary pileup test
-	    //        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-	    unsigned index = 0;  // temporary pileup test
+	//        int npileups = 0; // temporary pileup test
+        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+	//	    unsigned index = 0;  // temporary pileup test
 
-	    while ( index < aSignal->DecimationFactor()*aSignal->TimeSize() )  // temporary pileup test
+	    //	    while ( index < aSignal->DecimationFactor()*aSignal->TimeSize() )  // temporary pileup test
 
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
@@ -519,8 +494,8 @@ namespace locust
                     fPreEventInProgress = false;  // reset.
                     fEventInProgress = true;
                     //printf("LMC about to wakebeforeevent\n");
-                    npileups++;  // temporary pileup test
-                    if (npileups>1) {index=NPreEventSamples;};  // reset for temporary pileup test
+		    //                    npileups++;  // temporary pileup test
+                    //if (npileups>1) {index=NPreEventSamples;};  // reset for temporary pileup test
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }
@@ -542,7 +517,7 @@ namespace locust
                     tLock.unlock();
                 }
 
-            index++; // temporary pileup test
+	    //            index++; // temporary pileup test
             }  // for loop
 
         //fclose(fp);

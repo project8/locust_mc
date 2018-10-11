@@ -24,7 +24,7 @@
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
 
-<external_define name="output_path" value="/home/hep/baker/ps48/data/Simulation/Phase3/"/>
+<external_define name="output_path" value="./"/>
 <external_define name="file" value="Phase3Seed[seed]Output"/>
 
 
@@ -208,7 +208,7 @@
             <energy_fix value="18600.0"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="-0.03" value_max="-0.03"/>
+            <x_uniform value_min="0.029" value_max="0.029"/>
             <y_uniform value_min="0.0" value_max="0.0"/>
             <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
