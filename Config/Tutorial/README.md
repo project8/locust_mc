@@ -1,30 +1,79 @@
-# Configuration - Number of channels and physical dimensions
-Number of amplifier channels "nchannels" is defined in LMCSimulationController.
-CENTER_TO_SHORT:  distance, defined in LMCGlobals.
-CENTER_TO_ANTENNA:  distance, defined in LMCGlobals.
+# Running Locust
+----------------
 
-nominal values:
-Test Signal:  nchannels = 5
-Phase 1:  nchannels = 1, CENTER_TO_SHORT = 0.045 m, CENTER_TO_ANTENNA = 0.045 m 
-Phase 2:  nchannels = 1, CENTER_TO_SHORT = 0.075 m, CENTER_TO_ANTENNA = 0.075 m
-Phase 3:  nchannels = 10+
+## Phase 1
 
-# Tutorial -- Simulate a Test Signal.
-The LMCTestSignalGenerator defines a sinusoidal signal that generates a time series of complex voltages.  In the generator it is mixed with a sinusoidal local oscillator signal and is sampled in the resulting intermediate band.  After low-pass filtering, decimation, digitization (all in subsequent Locust generators) and fft (in Katydid) it results in a single test pulse at the intermediate frequency.
+Run the	simulation like this:
+```
+/path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustPhase1Template.json
+```
 
-First, compile Locust without Kassiopeia by switching the ccmake option locust_mc_BUILD_WITH_KASSIOPEIA to "OFF".  After compiling, edit the "generators" field of LocustTemplate.json to contain:  "test-signal", "lpf-fft", "decimate-signal", "digitizer".  Run the simulation as
-    ```
-         /path/to/LocustSim config=/path/to/LocustTemplate.json
-    ```
-The result will be an egg file containing a time series of complex voltages.  Process the egg file with Katydid as:
-    ```
-         /path/to/Katydid config=/path/to/katydid_new.json
-    ```
-which will generate a file called basic.root.  Open the file and verify that the test pulse in each channel has the correct frequency and power.
+In the LocustPhase1Template.json file, the "generators" field should contain these generators (in order):  "kass-signal", "lpf-fft", "decimate-signal", "gaussian-noise", "digitizer".  The "gaussian-noise" generator can be omitted as needed.
 
 
-# Tutorial -- Phase II Simulation
-In this tutorial, we will be simulating a 89.96 degree electron in a Phase II Project 8 setup. This tutorial assumes that the user has already successfully installed locust and added the executables to their $PATH. Installation instructions and prerequisites can be found in locust_mc/README.md. In addition, this tutorial uses the optional dependency VTK, for visualization.
+Check or configure the following Kassiopeia fields in Project8Phase1_WithRoot_Template.xml:
+
+- Select a kinematic generator (gen_krypton, gen_uniform, etc.) near the top of the xml file.
+- Check that the path to the *Geometry*.xml file is correct, also near the top of the xml file.
+- Trap currents are specified near the top of the xml file.
+- Set the range of starting positions and pitch angles in the generator field.
+- "max_time" (max time per electron)
+- The number of electrons that will be generated is defined near the bottom of the xml file, in the "Simulation" field.
+
+
+Check these fields in LocustPhase1Template.json:
+- The generator we are using for this application is "kass-signal".  Paths to I/O files for this generator need to be edited.
+- If Gaussian noise is to be included, then the "gaussian-noise" generator should be listed in the "generators" field.
+- "n-records" is usually 1.  We have not been actively testing multi-record runs.
+- "record-size" can be shortened to fit around a single electron track, or can be as long as 4194304.
+- In the "digitizer" field, check the voltage range and offset.  They should be optimized for your signal + noise power.
+
+There are two tuning distances that are hard-coded into the Phase 1 simulation:  CENTER_TO_SHORT and CENTER_TO_ANTENNA.  They are global in scope and are defined in LMCCyclotronRadiationExtractor.cc .
+
+## Phase 2
+Run the	simulation like this:
+```
+/path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustPhase2Template.json
+```
+The details in the Phase 1 section apply similarly to Phase 2.  The two tuning distances CENTER_TO_SHORT and CENTER_TO_ANTENNA have definitions unique to Phase 2, also defined in LMCCyclotronRadiationExtractor.cc .
+
+## Phase 3
+Run the	simulation like this:
+```
+/path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustPhase3Template.json
+```
+
+In the LocustPhase3Template.json file, the "generators" field should contain these generators (in order):  "patch-signal", "lpf-fft", "decimate-signal", "gaussian-noise", "digitizer".  The "gaussian-noise" generator can be omitted as needed.  Configuration of the Kassiopeia xml file is similar to Phases 1-2, except that a path to a Phase 3 Geometry xml file should be specified near the top of the xml file.
+
+The patch antenna array is configured from the LocustPhase3Template.json file.  The patch array populates itself based on the parameters in the json file.  The fields to check are:
+- The generator we are using for this application is "patch-signal".  Paths to I/O files for this generator need to be edited.
+- nchannels in the "simulation" field is usually 30.
+- "array-radius": 0.05,
+- "npatches-per-strip": 21,
+- "patch-spacing": 0.0054,
+- "feed": "corporate",
+- If Gaussian noise is to be included, then the "gaussian-noise" generator should be listed in the "generators" field.
+- "n-records" is usually 1.  We have not been actively testing multi-record runs.
+- "record-size" can be shortened to fit around a single electron track, or can be as long as 4194304.
+- In the "digitizer" field, check the voltage range and offset.  They should be optimized for your signal + noise power.
+
+## Phase 4
+Run the	simulation like this:
+```
+/path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustPhase4Template.json
+```
+Configuration options are similar to those in Phase 3, except that for these fields in the LocustPhase4Template.json file:
+- nchannels in the "simulation" field has been tested up to 240.
+- "array-radius": 0.2.  
+The file Project8Phase4_WithRoot_Template.xml presently references a large placeholder trap in Project8Phase4Geometry.xml .
+
+## Fake Tracks
+Run like this:
+```
+/path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustFakeTrack.json
+```
+There is a pdf to describe this generator here:  https://github.com/project8/locust_mc/blob/develop/Config/Tutorial/locust_faketrack_tutorial.pdf
+
 
 ## Visualize the Electron Trajectory (requires VTK)
 1. Open LocustTemplate.json with your preferred text editor. Edit the "xml-filename" and "egg-filename" paths to point to the locust_mc directory on your machine.
@@ -70,24 +119,16 @@ A VTK window should appear showing the particle track.
 ```
 
 
-## Create a simulated Waterfall Plot with Locust+Katydid
-1. Edit LocustTemplate.json so that "xml-filename" points to "Project8Phase2_WithRoot_Template.xml"
-2. Change the max_time field in the xml file to 5e-4.
-3. Comment the kswrite_vtk and vtk_window blocks that you have uncommented in the first exercise. Visualization becomes unwieldy for large simulations.
-4. Run the simulation as before. The expected run time is about half an hour!  Make sure the following generators are listed in the "generators" field of LocustTemplate.json:  "kass-signal", "lpf-fft", "decimate-signal", "digitizer".
-5. Process the resulting egg file of IQ voltages using Katydid and the config file katydid_new.json with:
-
+## Plot a waterfall spectrogram
+Process the simulated file of IQ voltages using Katydid and the config file katydid_locust.json :
     ```
-         /path/to/Katydid config=/path/to/katydid_new.json
+         /path/to/Katydid config=/path/to/katydid_locust.json
     ```
 This will result in 2 root files:  katydidwaterfall.root and basic.root .
-6. Open the file plotoutput.C and edit any paths to point to the correct ones on your machine. 
-7. Start root:
+Open the file plotoutput.C and edit any paths to point to the correct ones on your machine. 
+Start root:
 ```
  >.L plotoutput.C
  > katydidwaterfall()
 ```
-
-# Tutorial -- Phase I Simulation
-Follow the instructions for the Phase II simulation above.  Filenames should be changed to Project8Phase1_WithRoot_Template.xml and Project8Phase1Geometry.xml .  The LO will need to be retuned.
 
