@@ -1,9 +1,32 @@
-locust_mc
-=========
+#locust_mc
+--------------------
 
 locust_mc is a monte carlo simulation package of the receiver chain for Project 8.
 
-Dependencies
+
+##Quick Start: 
+--------------------
+
+###Instructions For Use:
+--------------------
+
+Locust is typically started with a command like:
+```
+  $ LocustSim config=LocustConfigFile.json
+```
+
+###Tutorial
+-------------
+
+The [Config/Tutorial](https://github.com/project8/locust_mc/tree/master/Config/Tutorial) directory contains an example guiding the user through the full simulation/ processing of beta electrons in Phases I-IV.
+
+Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issues).
+
+
+##Installation
+---------------
+
+###Dependencies
 ------------
 **External**
  - Boost (www.boost.org) version 1.46 or higher (date_time, filesystem, program_options, system, thread)
@@ -33,24 +56,14 @@ Dependencies
 - [Kassiopeia](https://github.com/project8/kassiopeia)
 
 
-Operating System Support
+###Operating System Support
 ------------------------
 
 * Mac OS X (usually tested on OS X 10.12)
 * Linux (usually tested on Ubuntu)
 
 
-Directory Structure
--------------------
-
-*  Config - Example configuration files, tutorials
-*  Documentation - Doxygen-based code documentation.
-*  kassiopeia - Submodule for simulation of charged particle trajectories
-*  monarch - Submodule library for file I/O in Project 8
-*  Scarab - Submodule
-*  Source - Locust specific receiver chain source code
-
-Installing
+###Installing
 ----------
 
 The following steps will build locust from scratch.  In the terminal:
@@ -104,19 +117,12 @@ The following steps will build locust from scratch.  In the terminal:
   If you have another kassiopeia installation on your computer, you should ensure that locust is not using the environmental variables of the independent kassiopeia installation by removing this line from your .bashrc.
 
 
+##Directory Structure
+-------------------
 
-Instructions for Use
---------------------
-
-Locust is typically started with a command like:
-```
-  $ LocustSim config=LocustConfigFile.json
-```
-
-Tutorial
--------------
-
-The Config/Tutorial directory contains an example guiding the user through a Phase II locust simulation.
-
-Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issues).
-
+*  Config - Example configuration files, tutorials
+*  Documentation - Doxygen-based code documentation.
+*  kassiopeia - Submodule for simulation of charged particle trajectories
+*  monarch - Submodule library for file I/O in Project 8
+*  Scarab - Submodule
+*  Source - Locust specific receiver chain source code
