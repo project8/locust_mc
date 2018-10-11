@@ -15,32 +15,32 @@
 
 namespace scarab
 {
-  class param_node;
+    class param_node;
 }
 
 namespace locust
 {
-  class Digitizer;
+    class Digitizer;
 
     /*!
-     @class FakeTrackSignalGenerator
-     @author P. L. Slocum
+      @class FakeTrackSignalGenerator
+      @author P. L. Slocum
 
-     @brief Add Sine Wave to the signal.
+      @brief Add Sine Wave to the signal.
 
-     @details
-     Operates in time.
+      @details
+      Operates in time.
 
-     Configuration name: "fake-track"
+      Configuration name: "fake-track"
 
-     Available configuration options:
-     - "frequency": double -- Frequency of the sine wave.
-     - "amplitude": double -- Amplitude of the sine wave.
-     - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
-            or frequency domain
-    
+      Available configuration options:
+      - "frequency": double -- Frequency of the sine wave.
+      - "amplitude": double -- Amplitude of the sine wave.
+      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
+      or frequency domain
 
-    */
+
+*/
     class FakeTrackSignalGenerator : public Generator
     {
         public:
@@ -48,7 +48,7 @@ namespace locust
             virtual ~FakeTrackSignalGenerator();
 
             bool Configure( const scarab::param_node* aNode );
-      bool Configure2( const Digitizer* aDig );
+            bool Configure2( const Digitizer* aDig );
 
 
             void Accept( GeneratorVisitor* aVisitor ) const;
@@ -95,7 +95,7 @@ namespace locust
             double fEndTime;
             double fLO_frequency;
 
-            
+
 
     };
 

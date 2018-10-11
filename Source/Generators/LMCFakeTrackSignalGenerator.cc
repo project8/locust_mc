@@ -21,15 +21,15 @@ namespace locust
     MT_REGISTER_GENERATOR(FakeTrackSignalGenerator, "fake-track");
 
     FakeTrackSignalGenerator::FakeTrackSignalGenerator( const std::string& aName ) :
-            Generator( aName ),
-            fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
-            fSignalPower( 0. ),
-            fStartFrequency( 0. ),
-            fStartVPhase( 0. ),
-            fSlope( 0. ),
-            fStartTime( 0. ),
-            fEndTime( 0. ),
-            fLO_frequency( 0. )
+        Generator( aName ),
+        fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
+        fSignalPower( 0. ),
+        fStartFrequency( 0. ),
+        fStartVPhase( 0. ),
+        fSlope( 0. ),
+        fStartTime( 0. ),
+        fEndTime( 0. ),
+        fLO_frequency( 0. )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -39,58 +39,58 @@ namespace locust
     }
 
 
-  bool FakeTrackSignalGenerator::Configure( const scarab::param_node* aParam )
-  {
-    if( aParam == NULL) return true;
+    bool FakeTrackSignalGenerator::Configure( const scarab::param_node* aParam )
+    {
+        if( aParam == NULL) return true;
 
-    if( aParam->has( "signal-power" ) )
-    SetSignalPower( aParam->get_value< double >( "signal-power", fSignalPower ) );
+        if( aParam->has( "signal-power" ) )
+            SetSignalPower( aParam->get_value< double >( "signal-power", fSignalPower ) );
 
-    if( aParam->has( "start-frequency" ) )
-    SetStartFrequency( aParam->get_value< double >( "start-frequency", fStartFrequency ) );
+        if( aParam->has( "start-frequency" ) )
+            SetStartFrequency( aParam->get_value< double >( "start-frequency", fStartFrequency ) );
 
-    if( aParam->has( "start-vphase" ) )
-    SetStartVPhase( aParam->get_value< double >( "start-vphase", fStartVPhase ) );
+        if( aParam->has( "start-vphase" ) )
+            SetStartVPhase( aParam->get_value< double >( "start-vphase", fStartVPhase ) );
 
-    if( aParam->has( "slope" ) )
-    SetSlope( aParam->get_value< double >( "slope", fSlope ) );
+        if( aParam->has( "slope" ) )
+            SetSlope( aParam->get_value< double >( "slope", fSlope ) );
 
-    if( aParam->has( "start-time" ) )
-    SetStartTime( aParam->get_value< double >( "start-time", fStartTime ) );
+        if( aParam->has( "start-time" ) )
+            SetStartTime( aParam->get_value< double >( "start-time", fStartTime ) );
 
-    if( aParam->has( "end-time" ) )
-    SetEndTime( aParam->get_value< double >( "end-time", fEndTime ) );
+        if( aParam->has( "end-time" ) )
+            SetEndTime( aParam->get_value< double >( "end-time", fEndTime ) );
 
-    if( aParam->has( "lo-frequency" ) )
-    SetFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
-
-
-
-    if( aParam->has( "domain" ) )
-      {
-	string domain = aParam->get_value( "domain" );
-	if( domain == "time" )
-	  {
-	    SetDomain( Signal::kTime );
-	    LDEBUG( lmclog, "Domain is equal to time.");
-	  }
-	else if( domain == "freq" )
-	  {
-	    SetDomain( Signal::kFreq );
-	  }
-	else
-	  {
-	    LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
-	    return false;
-	  }
-      }
-
- 
-    return true;
+        if( aParam->has( "lo-frequency" ) )
+            SetFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
 
 
 
-  }
+        if( aParam->has( "domain" ) )
+        {
+            string domain = aParam->get_value( "domain" );
+            if( domain == "time" )
+            {
+                SetDomain( Signal::kTime );
+                LDEBUG( lmclog, "Domain is equal to time.");
+            }
+            else if( domain == "freq" )
+            {
+                SetDomain( Signal::kFreq );
+            }
+            else
+            {
+                LERROR( lmclog, "Unable to use domain requested: <" << domain << ">" );
+                return false;
+            }
+        }
+
+
+        return true;
+
+
+
+    }
 
 
     void FakeTrackSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
@@ -177,7 +177,7 @@ namespace locust
     }
 
 
- 
+
 
     Signal::State FakeTrackSignalGenerator::GetDomain() const
     {
@@ -213,34 +213,34 @@ namespace locust
     {
 
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
-        
+
         const unsigned nchannels = fNChannels;
         double LO_phase = 0.;
         double dt = 1./aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
 
         for (unsigned ch = 0; ch < nchannels; ++ch)
         {
-        double voltage_phase = fStartVPhase;
-        double track_frequency = fStartFrequency;
+            double voltage_phase = fStartVPhase;
+            double track_frequency = fStartFrequency;
 
-        for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
+            for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
 
-        {
-        double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+            {
+                double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
 
-    	LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
+                LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
-        if ((time > fStartTime) && (time < fEndTime))
-        {
-            track_frequency += fSlope*1.e6/1.e-3*dt;
-            voltage_phase += 2.*LMCConst::Pi()*track_frequency*(dt);
+                if ((time > fStartTime) && (time < fEndTime))
+                {
+                    track_frequency += fSlope*1.e6/1.e-3*dt;
+                    voltage_phase += 2.*LMCConst::Pi()*track_frequency*(dt);
 
 
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
-            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-        }
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
+                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                }
 
-        }
+            }
         }
         delete RunLengthCalculator1;
         return true;
