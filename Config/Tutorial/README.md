@@ -19,7 +19,7 @@ Check or configure the following Kassiopeia fields in Project8Phase1_WithRoot_Te
 - Trap currents are specified near the top of the xml file.
 - Set the range of starting positions and pitch angles in the generator field.
 - "max_time" (max time per electron)
-- The number of electrons that will be generated is defined near the bottom of the xml file, in the "Simulation" field.
+- The number of electrons that will be generated in Kassiopeia is defined near the bottom of the xml file, in the "Simulation:events" field.  The electrons are generated sequentially in time and are spaced by a parameter presently defined inside the Locust generators.
 
 
 Check these fields in LocustPhase1Template.json:
