@@ -7,6 +7,7 @@
 #include "KToolbox.h"
 
 #include "LMCCyclotronRadiationExtractor.hh"
+#include "LMCFieldCalculator.hh"
 
 #include "KEMToolbox.hh"
 #include "KElectricField.hh"

@@ -10,6 +10,7 @@
 #define LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 
 #include "LMCParticle.hh"
+//#include "LMCFieldCalculator.hh"
 
 #include "KSTrajectory.h"
 
@@ -70,10 +71,9 @@ namespace locust
             double fPitchAngle;
 
 
-
-        protected:
-            virtual void PullDeupdateComponent();
-            virtual void PushDeupdateComponent();
+    protected:
+      virtual void PullDeupdateComponent();
+      virtual void PushDeupdateComponent();
 
     };
 

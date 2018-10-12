@@ -46,7 +46,7 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
-      void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
+            void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
 
 
 
@@ -62,25 +62,18 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-      void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
-      void InitializePatchArray();
+            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
+            void InitializePatchArray();
 
             int FindNode(double tNew, double dtStepSize, int IndexOld) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
-      double ZPositionPatch(unsigned z_index);
-
-  
+            double ZPositionPatch(unsigned z_index);
 
 
             double phiLO_t; // voltage phase of LO in radians;
             double VoltagePhase_t[10000];
             bool SignalArrived_t[10000];
             int SignalArrivalIndex_t[10000];
-
-
-
-
-
 
     };
 

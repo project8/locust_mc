@@ -18,10 +18,10 @@ namespace locust
     MT_REGISTER_GENERATOR(BasebandTrackGenerator, "baseband-track");
 
     BasebandTrackGenerator::BasebandTrackGenerator( const std::string& aName ) :
-            Generator( aName ),
-            fDoGenerateFunc( &BasebandTrackGenerator::DoGenerateFreq ),
-            fElectronEnergy( 30.0 ), // keV
-            fTotalLOFreqs( 26. ) // GHz
+        Generator( aName ),
+        fDoGenerateFunc( &BasebandTrackGenerator::DoGenerateFreq ),
+        fElectronEnergy( 30.0 ), // keV
+        fTotalLOFreqs( 26. ) // GHz
     {
         fRequiredSignalState = Signal::kFreq;
     }
@@ -88,7 +88,7 @@ namespace locust
         return;
     }
 
- 
+
 
     Signal::State BasebandTrackGenerator::GetDomain() const
     {
@@ -116,27 +116,27 @@ namespace locust
 
     double BasebandTrackGenerator::CalculateLarmorPower( double gamma ) const  
     {
-    double power = 1./(4.*PI*8.85e-12)*(2./3.)*pow(1.602e-19,4.)/pow(9.11e-31,2.)/3.e8*
-      pow(1.,2.)*(gamma*gamma-1.)*pow(sin(90.*PI/180.),2.)*(1./1.6027e-16);  // keV/s, B = 1 T, pitch angle = 90 deg.
-    return power;
+        double power = 1./(4.*PI*8.85e-12)*(2./3.)*pow(1.602e-19,4.)/pow(9.11e-31,2.)/3.e8*
+            pow(1.,2.)*(gamma*gamma-1.)*pow(sin(90.*PI/180.),2.)*(1./1.6027e-16);  // keV/s, B = 1 T, pitch angle = 90 deg.
+        return power;
     }
 
     double BasebandTrackGenerator::CalculateGamma( double KineticEnergy ) const
     {
-    double Gamma = 1. + KineticEnergy/511.;  // 511. keV
-    return Gamma;
+        double Gamma = 1. + KineticEnergy/511.;  // 511. keV
+        return Gamma;
     }
 
     double BasebandTrackGenerator::CalculateCyclotronFrequency( double Gamma ) const
     {
-    double Frequency = 1.602e-19*1./(2.*PI*Gamma*9.11e-31);  // Hz, B = 1 T
-    return Frequency;
+        double Frequency = 1.602e-19*1./(2.*PI*Gamma*9.11e-31);  // Hz, B = 1 T
+        return Frequency;
     }
 
     double BasebandTrackGenerator::CalculateBasebandFrequency( double CyclotronFrequency ) const
     {
-    double BasebandFrequency = (CyclotronFrequency - fTotalLOFreqs*1.e9);  // Hz
-    return BasebandFrequency;
+        double BasebandFrequency = (CyclotronFrequency - fTotalLOFreqs*1.e9);  // Hz
+        return BasebandFrequency;
     }
 
     bool BasebandTrackGenerator::DoGenerate( Signal* aSignal ) const
@@ -160,17 +160,17 @@ namespace locust
         {
             time = (double)index/(RunLengthCalculator1->GetAcquisitionRate()*1.e6); // seconds
             if (time > ElectronStartTime && time< ElectronStartTime+ElectronDuration)  // typical track length in seconds.
-              {
-              LarmorPower = this->CalculateLarmorPower(this->CalculateGamma(TimeDependentEnergy));  // keV/s
-              // Now lose LarmorPower*dt in keV          
-              TimeDependentEnergy -= LarmorPower*RunLengthCalculator1->GetBinWidth(); 
-              TimeDependentAmplitude = pow(LarmorPower*1.602e-16, 0.5); // keV/s * 1.6e-19 J/eV * 1.e3 eV/keV = W.
-              BBFreq = this->CalculateBasebandFrequency(this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy)));
-//              printf("bbfreq is %g\n", BBFreq);
-//              printf("cyclotron freq is %g\n", this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy))); getchar();
-//              printf("amplitude is %g\n", TimeDependentAmplitude*TimeDependentAmplitude); getchar();
-              aSignal->SignalTime()[index] += TimeDependentAmplitude*cos(2.*PI*BBFreq*(time-ElectronStartTime));
-              }
+            {
+                LarmorPower = this->CalculateLarmorPower(this->CalculateGamma(TimeDependentEnergy));  // keV/s
+                // Now lose LarmorPower*dt in keV          
+                TimeDependentEnergy -= LarmorPower*RunLengthCalculator1->GetBinWidth(); 
+                TimeDependentAmplitude = pow(LarmorPower*1.602e-16, 0.5); // keV/s * 1.6e-19 J/eV * 1.e3 eV/keV = W.
+                BBFreq = this->CalculateBasebandFrequency(this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy)));
+                //              printf("bbfreq is %g\n", BBFreq);
+                //              printf("cyclotron freq is %g\n", this->CalculateCyclotronFrequency(this->CalculateGamma(TimeDependentEnergy))); getchar();
+                //              printf("amplitude is %g\n", TimeDependentAmplitude*TimeDependentAmplitude); getchar();
+                aSignal->SignalTime()[index] += TimeDependentAmplitude*cos(2.*PI*BBFreq*(time-ElectronStartTime));
+            }
         }
         delete RunLengthCalculator1;
         return true;
@@ -178,7 +178,7 @@ namespace locust
 
     bool BasebandTrackGenerator::DoGenerateFreq( Signal* aSignal ) const
     {
-// This is not finished.
+        // This is not finished.
         RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
         {

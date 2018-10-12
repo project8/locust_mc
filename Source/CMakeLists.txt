@@ -38,7 +38,7 @@ set( LOCUST_MC_HEADER_FILES
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
-    Generators/LMCFakeTrackGenerator.hh    
+    Generators/LMCFakeTrackSignalGenerator.hh    
     Generators/LMCTestSignalGenerator.hh
     Generators/LMCDecimateSignalGenerator.hh
     Generators/LMCLowPassFilterFFTGenerator.hh
@@ -65,7 +65,7 @@ set( LOCUST_MC_SOURCE_FILES
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
-    Generators/LMCFakeTrackGenerator.cc    
+    Generators/LMCFakeTrackSignalGenerator.cc    
     Generators/LMCTestSignalGenerator.cc
     Generators/LMCDecimateSignalGenerator.cc
     Generators/LMCLowPassFilterFFTGenerator.cc
@@ -93,6 +93,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
+        Kassiopeia/LMCFieldCalculator.hh
+        Kassiopeia/LMCFieldCalculatorBuilder.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
         Kassiopeia/LMCRootBuilder.hh
@@ -110,8 +112,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Core/LMCPatchAntenna.cc
         Core/LMCReceiver.cc
 
-        Kassiopeia/LMCCyclotronRadiationExtractor.cc
-        Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
+        Kassiopeia/LMCFieldCalculator.cc
+        Kassiopeia/LMCFieldCalculatorBuilder.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
         Kassiopeia/LMCRootBuilder.cc

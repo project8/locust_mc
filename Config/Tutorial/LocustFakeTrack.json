@@ -21,7 +21,7 @@
     
     "simulation":
     {
-        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "egg-filename": "/path/to/output/locust_faketrack.egg",
         "n-records": 1,
         "n-channels": 1,
         "record-size": 1228800

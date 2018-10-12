@@ -19,8 +19,8 @@ namespace locust
     MT_REGISTER_GENERATOR(DecimateSignalGenerator, "decimate-signal");
 
     DecimateSignalGenerator::DecimateSignalGenerator( const std::string& aName ) :
-            Generator( aName ),
-            fDoGenerateFunc( &DecimateSignalGenerator::DoGenerateTime )
+        Generator( aName ),
+        fDoGenerateFunc( &DecimateSignalGenerator::DoGenerateTime )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -59,14 +59,14 @@ namespace locust
                 if (index % aSignal->DecimationFactor() == 0)
                 {
                     aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/aSignal->DecimationFactor()][0] =
-                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0];
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0];
                     aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/aSignal->DecimationFactor()][1] =
-                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1];
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1];
                 }
             }
         }
 
-         return true;
+        return true;
     }
 
 } /* namespace locust */

@@ -138,7 +138,7 @@ namespace locust
      }
 
 
-    void RunLengthCalculator::Visit( const FakeTrackGenerator* )
+    void RunLengthCalculator::Visit( const FakeTrackSignalGenerator* )
     {
         // nothing to see here, move along, please
         return;
