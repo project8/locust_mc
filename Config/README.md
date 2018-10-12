@@ -1,7 +1,7 @@
 Directory Structure
 -------------------
 
-*  Tutorial - Tutorial outlining usage of locust in Phase II
+*  Tutorial - Tutorial outlining usage of locust in Phases I-IV and fake track generation
 
 File Conventions
 -------------------
