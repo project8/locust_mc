@@ -26,6 +26,7 @@ Process the egg files with Katydid, as
 ```
    $ Katydid -c ~/locust_mc/Config/Tutorial/katydid_locust.json
 ```
+After running Katydid, the processed fft spectra will have a span from 0 to 200 MHz where DC corresponds to 100 MHz.  This is because the Katydid RSA settings are applied to the Locust processing.  For exammple, signals that are mixed down to an intermediate frequency of 50 MHz in Locust will appear at 150 MHz after Katydid.
 
 ### Tutorial
 
