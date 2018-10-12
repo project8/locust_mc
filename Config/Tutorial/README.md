@@ -68,7 +68,8 @@ Configuration options are similar to those in Phase 3, except that for these fie
 The file Project8Phase4_WithRoot_Template.xml presently references a large placeholder trap in Project8Phase4Geometry.xml .
 
 ## Fake Tracks
-Run like this:
+1. Open LocustFakeTrack.json with your preferred text editor. Edit the "egg-filename" path under the "simulation" processor to the location where you wish the egg file be written.
+2. Run like this:
 ```
 /path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustFakeTrack.json
 ```
