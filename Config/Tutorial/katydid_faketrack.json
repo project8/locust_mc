@@ -55,7 +55,7 @@
     {
         "filename": "locust_faketrack.egg",
         "egg-reader": "egg3",
-        "number-of-slices": 100,
+        "number-of-slices": 500,
         "slice-size": 8192,
         "stride": 8192,
         "dac":

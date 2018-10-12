@@ -2,7 +2,7 @@
  * LMCFakeTrackSignalGenerator.hh
  *
  *  Created on: Aug 8 2018
- *      Author: plslocum
+ *      Author: plslocum, L. Saldana
  */
 
 #ifndef LMCFAKETRACKSIGNALGENERATOR_HH_
@@ -24,9 +24,9 @@ namespace locust
 
     /*!
       @class FakeTrackSignalGenerator
-      @author P. L. Slocum
+      @author P. L. Slocum, L. Saldana
 
-      @brief Add Sine Wave to the signal.
+      @brief Generate custom, aka "fake", CRES track.
 
       @details
       Operates in time.
@@ -34,10 +34,16 @@ namespace locust
       Configuration name: "fake-track"
 
       Available configuration options:
-      - "frequency": double -- Frequency of the sine wave.
-      - "amplitude": double -- Amplitude of the sine wave.
-      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
-      or frequency domain
+      - "signal-power": double -- PSD of signal (W/Hz).
+      - "start-frequency-max": double -- Upper bound for start frequency of signal (Hz); distribution: uniform.
+      - "start-frequency-min": double -- Lower bound for start frequency of signal (Hz); distribution: uniform.
+      - "track-length-mean": double -- Average of track length (s); distribution: exponential.
+      - "start-vphase": double -- Starting voltage phase (V).
+      - "slope-mean": double -- Mean value of Gaussian slope distribution (MHz/ms); distribution: gaussian.
+      - "slope-std": double -- Standard deviation of Gaussian slope distribution (MHz/ms); distribution: gaussian.
+      - "lo-frequency": double -- Frequency of local oscillator (Hz).
+      - "start-time-max": double -- Upper bound for track start time (s); distribution: uniform.
+      - "start-time-min": double -- Lower bound for track start time (s); distribution: uniform.
 
 
 */
@@ -59,20 +65,29 @@ namespace locust
             double GetSignalPower() const;
             void SetSignalPower( double aPower );
 
-            double GetStartFrequency() const;
-            void SetStartFrequency( double aFrequency );
+            double GetStartFrequencyMax() const;
+            void SetStartFrequencyMax( double aFrequencyMax );
+
+            double GetStartFrequencyMin() const;
+            void SetStartFrequencyMin( double aFrequencyMin );
+
+            double GetTrackLengthMean() const;
+            void SetTrackLengthMean( double aTrackLengthMean );
 
             double GetStartVPhase() const;
             void SetStartVPhase( double aPhase );
 
-            double GetSlope() const;
-            void SetSlope( double aSlope );
+            double GetSlopeMean() const;
+            void SetSlopeMean( double aSlopeMean );
 
-            double GetStartTime() const;
-            void SetStartTime( double aTime );
+            double GetSlopeStd() const;
+            void SetSlopeStd( double aSlopeStd );
 
-            double GetEndTime() const;
-            void SetEndTime( double aTime );
+            double GetStartTimeMax() const;
+            void SetStartTimeMax( double aTimeMax );
+
+            double GetStartTimeMin() const;
+            void SetStartTimeMin( double aTimeMin );
 
 
             Signal::State GetDomain() const;
@@ -88,12 +103,15 @@ namespace locust
             bool (FakeTrackSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             double fSignalPower;
-            double fStartFrequency;
+            double fStartFrequencyMax;
+            double fStartFrequencyMin;
             double fStartVPhase;
-            double fSlope;
-            double fStartTime;
-            double fEndTime;
+            double fSlopeMean;
+            double fSlopeStd;
+            double fStartTimeMax;
+            double fStartTimeMin;
             double fLO_frequency;
+            double fTrackLengthMean;
 
 
 
