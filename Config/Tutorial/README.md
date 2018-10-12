@@ -172,11 +172,14 @@ or in batch mode as
 ```sbatch ProcessEggFilesBatch```
 There should now be processed root tree files in your directory ~/data/Simulation/Phase1.  You will have to delete or remove the raw egg files and any root spectrogram files, as they are bulky and we do not yet have space allocated for data storage on Grace.  
 
-There are data processing macros in ~/project8/managePhaseN that can be used to generate rough figures.  For Phases 1-2, first get onto an interactive compute node (with x11 forwarding include --x11) like this:
+There are data processing macros in ~/project8/managePhaseN that can be used to generate rough figures for inspection.  For Phases 1-2, first get onto an interactive compute node (with x11 forwarding include --x11) like this:
 ```srun --pty --x11 -p interactive -c4 bash```
-Then start root and run the macro: 
+Then start root and run the macro: ```
 ```root -l
 .L PlotSpectrum.c
 PlotKrypton()
 ```
-
+If you would rather look at the processed data files locally on your laptop, then use scp to download them
+```
+scp netID@grace.hpc.yale.edu:~/data/Simulation/PhaseN/*filename*.root .
+```
