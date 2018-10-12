@@ -110,7 +110,8 @@ There is a pdf to describe this generator here:  https://github.com/project8/loc
     ```
 A VTK window should appear showing the particle track.
 
-## Visualize the Field Map (requires VTK)
+## Visualize the Field Map
+
 1. Edit LocustTemplate.json so that the "xml-filename" points to the "Project8Phase2_FieldMap.xml" file in the current directory.  Alternatively, make the following edits in "Project8Phase2_WithRoot_Template.xml":  define the "generator" field to be gen_bfieldlines, define the trajectory field to be "traj_magnetic", and set P8Phase=0 in the step modifier "cycl_rad_extr".
 2. Look at the parameters in the field "gen_bfieldlines":
 
@@ -124,7 +125,7 @@ A VTK window should appear showing the particle track.
     ```
          /path/to/LocustSim config=/path/to/LocustTemplate.json
     ```
-4. Look at the resulting field map in the VTK window. Now there will be a ROOT file with the magnetic field information.
+4. Now there will be a ROOT file with the magnetic field information.
 5. Plot the field map in ROOT. In the root terminal:
 ```
  >.L plotoutput.C
@@ -133,7 +134,8 @@ A VTK window should appear showing the particle track.
 
 
 ## Plot a waterfall spectrogram
-Process the simulated file of IQ voltages using Katydid and the config file katydid_locust.json :
+
+Process the simulated egg file using Katydid and the config file katydid_locust.json :
     ```
          /path/to/Katydid config=/path/to/katydid_locust.json
     ```
@@ -146,36 +148,57 @@ Start root:
 ```
 
 # Instructions for running on Yale cluster
+
 Log in to the grace cluster either like this:
 ```ssh netID@grace.hpc.yale.edu```
 or, if you want to be able to pull up Xwindows for plotting, like this:
 ```ssh -Y netID@grace.hpc.yale.edu```
 
 Copy the setup script into your home directory on Grace:
-```cp ~ps48/setup_script .```
+```
+cp ~ps48/setup_script .
+```
+
 It should only need to be run one time, like this:
-```./setup_script```
+```
+./setup_script
+```
 After you have run the setup_script, the files in your directories are yours to edit.  The next step will have to be run every time you log into a session on Grace, so you may want to put this command into your .bashrc file:
-```module load Tools/project8```
+```
+module load Tools/project8
+```
 
 To run a Locust simulation as a batch job with the Slurm queue https://research.computing.yale.edu/support/hpc/user-guide/slurm , first cd into the directory ~/project8/managePhaseN where 1<N<4.  For Phase 1,
-```cd ~/project8/managePhase1```
+```
+cd ~/project8/managePhase1
+```
 Edit the file SimulateSeed to set the range of Monte Carlo seeds to be run.  Each seed will have a separate parallel batch job and will take 3 hours.  30 seeds at a time has been manageable; 1 seed is a good place to start.  Start the job like this:
-```./SimulateSeed```
+```
+./SimulateSeed
+```
 Check your job status like this:
-```squeue -u netID```
+```
+squeue -u netID
+```
 Also, while the job with e.g. Seed = 55 is running, the file ~/project8/managePhase1/locust_jobSeed55 should be growing as it collects the terminal output.  When the job is finished, check that the egg file has been written in ~/data/Simulation/Phase1 directory, as
-```ls -l ~/data/Simulation/Phase1/*.egg```
+```
+ls -l ~/data/Simulation/Phase1/*.egg
+```
 Next, process the egg files with Katydid using the script ProcessEggFiles (edit it to check the seed range), either interactively as
-```./ProcessEggFiles```
+```
+./ProcessEggFiles
+```
 or in batch mode as
 ```sbatch ProcessEggFilesBatch```
 There should now be processed root tree files in your directory ~/data/Simulation/Phase1.  You will have to delete or remove the raw egg files and any root spectrogram files, as they are bulky and we do not yet have space allocated for data storage on Grace.  
 
-There are data processing macros in ~/project8/managePhaseN that can be used to generate rough figures for inspection.  For Phases 1-2, first get onto an interactive compute node (with x11 forwarding include --x11) like this:
-```srun --pty --x11 -p interactive -c4 bash```
+There are data processing macros in ~/project8/managePhase(N) that can be used to generate rough figures for inspection.  For Phases 1-2, first get onto an interactive compute node (with x11 forwarding include --x11) like this:
+```
+srun --pty --x11 -p interactive -c4 bash
+```
 Then start root and run the macro: ```
-```root -l
+```
+root -l
 .L PlotSpectrum.c
 PlotKrypton()
 ```
