@@ -153,6 +153,7 @@ Log in to the grace cluster either like this:
 ```ssh netID@grace.hpc.yale.edu```
 or, if you want to be able to pull up Xwindows for plotting, like this:
 ```ssh -Y netID@grace.hpc.yale.edu```
+From a Mac OS laptop, you may have to install XQuarts to pull up XWindows.  Test your XWindow by logging into Grace and then typing ```xclock```.  You should see a clock.
 
 Copy the setup script into your home directory on Grace:
 ```
