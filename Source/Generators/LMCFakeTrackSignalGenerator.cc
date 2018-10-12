@@ -33,7 +33,8 @@ namespace locust
         fStartTimeMin( 0. ),
         fStartTimeMax( 0. ),
         fLO_frequency( 0. ),
-        fTrackLengthMean( 0. )
+        fTrackLengthMean( 0. ),
+        fNTracksMean(1 )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -76,6 +77,9 @@ namespace locust
 
         if( aParam->has( "track-length-mean" ) )
             SetTrackLengthMean( aParam->get_value< double >( "track-length-mean", fTrackLengthMean ) );
+
+        if (aParam->has( "ntracks-mean") )
+            SetNTracksMean( aParam->get_value< double>( "ntracks-mean",fNTracksMean) );
 
 
 
@@ -222,6 +226,16 @@ namespace locust
         return;
     }
 
+    double FakeTrackSignalGenerator::GetNTracksMean() const
+    {
+        return fNTracksMean;
+    }
+
+    void FakeTrackSignalGenerator::SetNTracksMean( double aNTracksMean )
+    {
+        fNTracksMean = aNTracksMean;
+        return;
+    }
 
 
     Signal::State FakeTrackSignalGenerator::GetDomain() const
@@ -265,46 +279,61 @@ namespace locust
         std::random_device rd;
         std::default_random_engine generator(rd());
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
-        double slope_val = slope_distribution(generator);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
-        double startfreq_val = startfreq_distribution(generator);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
-        double tracklength_val = tracklength_distribution(generator);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
+        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
+
+        int ntracks_val = round(ntracks_distribution(generator));
+        double slope_val = slope_distribution(generator);
+        double tracklength_val = tracklength_distribution(generator);
         double starttime_val = starttime_distribution(generator);
         double endtime_val = starttime_val + tracklength_val/sqrt(1+slope_val*slope_val);
-        double endfreq_val = startfreq_val + tracklength_val*slope_val/sqrt(1+slope_val*slope_val);
-        /* 
-        printf("slope_val: %f\n", slope_val);
-        printf("tracklength_val: %f\n", tracklength_val);
-        printf("starttime_val: %f\n", starttime_val);
-        printf("startfreq_val: %f\n", startfreq_val);
-        printf("endtime_val: %f\n", endtime_val);
-        printf("endfreq_val: %f\n", endfreq_val); getchar();
-        */ 
-        for (unsigned ch = 0; ch < nchannels; ++ch)
+        double startfreq_val = startfreq_distribution(generator);
+        //double endfreq_val = startfreq_val + tracklength_val*slope_val/sqrt(1+slope_val*slope_val);
+        double jumpsize_val = 0.002e9; // this should come from a pdf as well
+
+        for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
         {
             double voltage_phase = fStartVPhase;
-            double track_frequency = startfreq_val;
+            bool nexttrack_flag = false; 
 
-            for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
-
+            for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
             {
-                double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-
+                double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);           
                 LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
-                if ((time > starttime_val) && (time < endtime_val))
+                if ( nexttrack_flag == false ) // if on same track
                 {
-                    track_frequency += slope_val*1.e6/1.e-3*dt;
-                    voltage_phase += 2.*LMCConst::Pi()*track_frequency*(dt);
- 
-
+                    if ( (time >= starttime_val) && (time <= endtime_val) )
+                    {
+                        startfreq_val += slope_val*1.e6/1.e-3*dt;
+                        voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                    }
+                    else if ( time>endtime_val )
+                    {
+                        startfreq_val+=jumpsize_val; // increment only the start frequency by the jump size
+                        voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                        nexttrack_flag = true; // we move onto the next track
+                    }
+                }
+                else if ( nexttrack_flag == true )
+                {
+                    slope_val = slope_distribution(generator);
+                    tracklength_val = tracklength_distribution(generator);
+                    endtime_val += (time + tracklength_val/sqrt(1+slope_val*slope_val));
+                    //endfreq_val = startfreq_val + tracklength_val*slope_val/sqrt(1+slope_val*slope_val);
+                    startfreq_val += slope_val*1.e6/1.e-3*dt;
+                    voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
                     aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
                     aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                    nexttrack_flag = false; // now we stay on this track
                 }
-
-            }
+            }   
         }
         delete RunLengthCalculator1;
         return true;

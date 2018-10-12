@@ -92,7 +92,7 @@ for (int seed=55; seed<56; seed++)
     PrintLabels(grlabels);  // print labels to terminal.
 
     //hspectrogram->GetXaxis()->SetRangeUser(0.,0.006);
-    hspectrogram->GetYaxis()->SetRangeUser(149.e6, 155.e6);
+    hspectrogram->GetYaxis()->SetRangeUser(149.e6, 170.e6);
 
     TCanvas *c = new TCanvas;
     n=sprintf(buffertext, "hspectrogram_%d.png", seed);

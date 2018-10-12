@@ -19,7 +19,8 @@
     "start-time-min": 0.001,
     "start-time-max": 0.004,
     "lo-frequency": 20.0e9,
-    "track-length-mean": 0.01
+    "track-length-mean": 0.005,
+    "ntracks-mean": 4
     },
     
     "simulation":

@@ -44,6 +44,7 @@ namespace locust
       - "lo-frequency": double -- Frequency of local oscillator (Hz).
       - "start-time-max": double -- Upper bound for track start time (s); distribution: uniform.
       - "start-time-min": double -- Lower bound for track start time (s); distribution: uniform.
+      - "ntracks-mean": double -- Average number of tracks per event (integer); distribution: exponential.
 
 
 */
@@ -89,6 +90,9 @@ namespace locust
             double GetStartTimeMin() const;
             void SetStartTimeMin( double aTimeMin );
 
+            double GetNTracksMean() const;
+            void SetNTracksMean( double aNTracksMean );
+
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -112,7 +116,7 @@ namespace locust
             double fStartTimeMin;
             double fLO_frequency;
             double fTrackLengthMean;
-
+            double fNTracksMean;
 
 
     };
