@@ -19,7 +19,7 @@ Check or configure the following Kassiopeia fields in Project8Phase1_WithRoot_Te
 - Trap currents are specified near the top of the xml file.
 - Set the range of starting positions and pitch angles in the generator field.
 - "max_time" (max time per electron)
-- The number of electrons that will be generated is defined near the bottom of the xml file, in the "Simulation" field.
+- The number of electrons that will be generated in Kassiopeia is defined near the bottom of the xml file, in the "Simulation:events" field.  The electrons are generated sequentially in time and are spaced by a parameter presently defined inside the Locust generators.
 
 
 Check these fields in LocustPhase1Template.json:
@@ -73,6 +73,7 @@ Run the	simulation like this:
 Configuration options are similar to those in Phase 3, except that for these fields in the LocustPhase4Template.json file:
 - nchannels in the "simulation" field has been tested up to 240.
 - "array-radius": 0.2.  
+
 The file Project8Phase4_WithRoot_Template.xml presently references a large placeholder trap in Project8Phase4Geometry.xml .  Make sure that you have specified Phase 4 in the file Project8Phase4_WithRoot_Template.xml, like this:
 ```
 <cycl_rad_extr name="my_rad_extr" P8Phase="4" /> 
