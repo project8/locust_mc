@@ -73,6 +73,7 @@ Run the	simulation like this:
 Configuration options are similar to those in Phase 3, except that for these fields in the LocustPhase4Template.json file:
 - nchannels in the "simulation" field has been tested up to 240.
 - "array-radius": 0.2.  
+
 The file Project8Phase4_WithRoot_Template.xml presently references a large placeholder trap in Project8Phase4Geometry.xml .  Make sure that you have specified Phase 4 in the file Project8Phase4_WithRoot_Template.xml, like this:
 ```
 <cycl_rad_extr name="my_rad_extr" P8Phase="4" /> 
