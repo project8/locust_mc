@@ -137,7 +137,7 @@ namespace locust
     }
 
 
-    double FieldCalculator::GetDampingFactorPhase1(Kassiopeia::Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetDampingFactorPhase1(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle)
     {
         double TE01FieldFromShort = GetTE01FieldAfterOneBounce(anInitialParticle, aFinalParticle);
         double A10squ = GetCouplingFactorTE01(aFinalParticle);

@@ -175,7 +175,7 @@ namespace locust
 
                 if(currentPatch->GetPreviousRetardedIndex() == -99.)
                 {
-                    CurrentIndex=FindNode(tReceiverTime, kassiopeiaTimeStep, historySize-1);
+                    CurrentIndex=FindNode(tReceiverTime);
                     tCurrentParticle = fParticleHistory[CurrentIndex];
                     const double vGroup = 1.674e8;
                     tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  vGroup;
@@ -192,8 +192,7 @@ namespace locust
                 }
 
 
-                CurrentIndex = FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
-                CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
+                CurrentIndex = FindNode(tRetardedTime);
 
                 tCurrentParticle = fParticleHistory[CurrentIndex];
                 tCurrentParticle.Interpolate(tRetardedTime);
@@ -212,7 +211,7 @@ namespace locust
                     //Change the kassiopeia step we expand around if the interpolation time displacement is too large
                     if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
                     {
-                        CurrentIndex=FindNode(tRetardedTime,kassiopeiaTimeStep,CurrentIndex);
+                        CurrentIndex=FindNode(tRetardedTime);
                         tCurrentParticle=fParticleHistory[CurrentIndex];
                         tCurrentParticle.Interpolate(tRetardedTime);
                     }
@@ -248,25 +247,12 @@ namespace locust
 
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
-    int FreeFieldSignalGenerator::FindNode(double tNew, double kassiopeiaTimeStep, int kIndexOld) const
+    int FreeFieldSignalGenerator::FindNode(double tNew) const
     {
-        int tHistorySize = fParticleHistory.size();
-
-        //Make sure we are not out of bounds of array!!!
-        kIndexOld = std::min( std::max(kIndexOld,0) , tHistorySize - 1 );
-        double tOld = fParticleHistory[ kIndexOld ].GetTime();
-
         std::deque<locust::Particle>::iterator it;
 
-        if( tNew >= fParticleHistory.front().GetTime() && tNew <= fParticleHistory.back().GetTime())
-        {
-            //Get iterator pointing to particle step closest to tNew
-            it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
-        }
-        else
-        {
-            it = fParticleHistory.begin();
-        }
+        //Get iterator pointing to particle step closest to tNew
+        it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
 
         int tNodeIndex = it - fParticleHistory.begin();
 
