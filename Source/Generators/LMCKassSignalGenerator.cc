@@ -127,7 +127,10 @@ namespace locust
             tCutOffFrequency = LMCConst::C() * LMCConst::Pi() / 10.668e-3; // a in m
         }
 
-        locust::Particle tParticle = fParticleHistory.back();
+        int currentIndex = FindNode(t_old);
+        locust::Particle tParticle = fParticleHistory[currentIndex];
+        tParticle.Interpolate(t_old);
+
         RunLengthCalculator RunLengthCalculator1;
 
 
@@ -221,6 +224,18 @@ namespace locust
 
         return 0;
     }
+
+    //Return index of fParticleHistory particle closest to the time we are evaluating
+    int KassSignalGenerator::FindNode(double tNew) const
+    {
+        std::deque<locust::Particle>::iterator it;
+        it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
+
+        int tNodeIndex = it - fParticleHistory.begin();
+
+        return tNodeIndex;
+    }
+
 
     double KassSignalGenerator::TE11ModeExcitation() const
     {
