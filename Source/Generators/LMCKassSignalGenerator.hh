@@ -45,6 +45,7 @@ namespace locust
             double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
+            int FindNode(double tNew) const;
             double TE11ModeExcitation() const;
             double TE01ModeExcitation() const;
             std::string gxml_filename;

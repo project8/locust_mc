@@ -151,29 +151,16 @@ namespace locust
                     fParticleHistory.clear();
                 }
 
-                //Phase I or II Setup: Put only last particle in fParticleHistory. Use interpolated value for the particle
-                if((fP8Phase==2) || (fP8Phase==1))
+
+                //Put in new entries in global ParticleHistory
+                fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
+
+                for(int i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
                 {
-                    // interpolate particle state.  Have to pull trajectory out of toolbox due to binding problem in SetTrajectory above.
-                    KSParticle tParticleCopy = aFinalParticle;
-                    katrin::KToolbox::GetInstance().Get< Kassiopeia::KSTrajectory  >( "root_trajectory" )->GetInterpolatedParticleState(t_old + fDigitizerTimeStep, tParticleCopy);
-                    fParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, tParticleCopy));
-
-                    tHistoryMaxSize = 5;
+                    fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
                 }
-                else
-                {
-                    //Put in new entries in global ParticleHistory
-                    fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
 
-                    for(int i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
-                    {
-                        fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
-                    }
-
-                    tHistoryMaxSize = 5000;
-
-                }
+                tHistoryMaxSize = 5000;
 
                 fNewParticleHistory.clear();
 
