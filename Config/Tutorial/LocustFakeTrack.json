@@ -11,20 +11,24 @@
     "fake-track":
     {
     "signal-power": 1.0e-15,
-    "start-frequency": 20.05e9,
+    "start-frequency-max": 20.049e9,
+    "start-frequency-min": 20.053e9,
     "start-vphase": 0.0,
-    "slope": 0.6,
-    "start-time": 0.001,
-    "end-time": 0.005,
-    "lo-frequency": 20.0e9
+    "slope-mean": 0.6,
+    "slope-std": 0.1,
+    "start-time-min": 0.001,
+    "start-time-max": 0.004,
+    "lo-frequency": 20.0e9,
+    "track-length-mean": 0.005,
+    "ntracks-mean": 4
     },
     
     "simulation":
     {
-        "egg-filename": "/path/to/output/locust_faketrack.egg",
+        "egg-filename": "/home/les67/locust_faketrack.egg",
         "n-records": 1,
         "n-channels": 1,
-        "record-size": 1228800
+        "record-size": 4194304
     },
   
     "gaussian-noise":

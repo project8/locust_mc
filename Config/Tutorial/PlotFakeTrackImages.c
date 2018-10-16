@@ -78,7 +78,7 @@ char buffertext[100];
 
 for (int seed=55; seed<56; seed++)
   {
-    int n=sprintf(buffer, "/path/to/locust_faketrack_waterfall.root");
+    int n=sprintf(buffer, "/home/les67/locust_faketrack_waterfall.root");
 
     const char *file = buffer;
 
@@ -87,12 +87,12 @@ for (int seed=55; seed<56; seed++)
     {
 
     TH2D* hspectrogram = GetSpectrogram(file);
-    TH2D* hlabels = GetLabels(hspectrogram, 10.e-21);  // threshold for labeling goes here.
+    TH2D* hlabels = GetLabels(hspectrogram, 40e-21);  // threshold for labeling goes here.
     TGraph* grlabels = GetLabelGraph(hlabels);
-//    PrintLabels(grlabels);  // print labels to terminal.
+    PrintLabels(grlabels);  // print labels to terminal.
 
-    hspectrogram->GetXaxis()->SetRangeUser(0.,0.006);
-    hspectrogram->GetYaxis()->SetRangeUser(149.e6, 153.e6);
+    //hspectrogram->GetXaxis()->SetRangeUser(0.,0.006);
+    hspectrogram->GetYaxis()->SetRangeUser(149.e6, 170.e6);
 
     TCanvas *c = new TCanvas;
     n=sprintf(buffertext, "hspectrogram_%d.png", seed);
