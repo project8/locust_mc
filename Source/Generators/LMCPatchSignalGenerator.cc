@@ -441,8 +441,6 @@ namespace locust
 
         InitializePatchArray();
 
-        FILE *fp = fopen("intensities.dat","wb");  // time stamp checking.
-        //fprintf(fp, "testing\n");
 
         //n samples for event spacing.
         int PreEventCounter = 0;
@@ -451,11 +449,7 @@ namespace locust
         std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
-        int npileups = 0; // temporary pileup test
-        //for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-        unsigned index = 0;  // temporary pileup test
-
-        while ( index < aSignal->DecimationFactor()*aSignal->TimeSize() )  // temporary pileup test
+        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
             {
@@ -471,8 +465,6 @@ namespace locust
                     fPreEventInProgress = false;  // reset.
                     fEventInProgress = true;
                     //printf("LMC about to wakebeforeevent\n");
-                    npileups++;  // temporary pileup test
-                    if (npileups>1) {index=NPreEventSamples;};  // reset for temporary pileup test
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }
@@ -493,10 +485,7 @@ namespace locust
                     tLock.unlock();
                 }
 
-            ++index; // temporary pileup test
         }  // for loop
-
-        //fclose(fp);
 
         printf("finished signal loop\n");
 
