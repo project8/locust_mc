@@ -94,6 +94,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
         Kassiopeia/LMCFieldCalculator.hh
+        Kassiopeia/LMCFieldCalculatorBuilder.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
         Kassiopeia/LMCRootBuilder.hh
@@ -112,6 +113,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Core/LMCReceiver.cc
 
         Kassiopeia/LMCFieldCalculator.cc
+        Kassiopeia/LMCFieldCalculatorBuilder.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
         Kassiopeia/LMCRootBuilder.cc

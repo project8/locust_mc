@@ -5,10 +5,12 @@
  *      Author: pslocum
  */
 
+
+
 #include "LMCFieldCalculator.hh"
 #include "LMCGlobalsDeclaration.hh"
 
-//using namespace Kassiopeia;
+using namespace Kassiopeia;
 namespace locust
 {
 
@@ -16,7 +18,26 @@ namespace locust
     {
     }
 
-    double FieldCalculator::GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle)
+    FieldCalculator::FieldCalculator( const FieldCalculator& aOrig ):  
+        Kassiopeia::KSComponent(),
+        Kassiopeia::KSComponentTemplate< FieldCalculator, Kassiopeia::KSSpaceInteraction >( aOrig )
+    {
+    }
+
+
+    FieldCalculator::~FieldCalculator()
+    {
+    }
+
+
+    FieldCalculator* FieldCalculator::Clone() const
+    {
+        return new FieldCalculator( *this );
+    }
+
+
+
+    double FieldCalculator::GetGroupVelocityTM01(KSParticle& aFinalParticle)
     {
         const double SpeedOfLight = LMCConst::C();
         double CutOffFrequency = 2. * LMCConst::Pi() * SpeedOfLight * 2.405 / 2. / LMCConst::Pi() / 0.00502920; // rad/s
@@ -25,7 +46,7 @@ namespace locust
         return GroupVelocity;
     }
 
-    double FieldCalculator::GetGroupVelocityTE11(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetGroupVelocityTE11(KSParticle& aFinalParticle)
     {
         const double SpeedOfLight = LMCConst::C(); // m/s
         double CutOffFrequency = 2. * LMCConst::Pi() * SpeedOfLight * 1.841 / 2. / LMCConst::Pi() / 0.00502920; // rad/s
@@ -34,7 +55,7 @@ namespace locust
         return GroupVelocity;
     }
 
-    double FieldCalculator::GetGroupVelocityTE01(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
+    double FieldCalculator::GetGroupVelocityTE01(KSParticle& aFinalParticle)  // Phase 1
     {
         double SpeedOfLight = LMCConst::C(); // m/s
         double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / 10.668e-3; // a in m
@@ -46,7 +67,7 @@ namespace locust
 
 
 
-    double FieldCalculator::GetCouplingFactorTE11(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetCouplingFactorTE11(KSParticle& aFinalParticle)
     {
         double kc = 1.841/0.00502920;
         double x = aFinalParticle.GetPosition().GetX();
@@ -58,7 +79,7 @@ namespace locust
         return coupling*coupling;
     }
 
-    double FieldCalculator::GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetCouplingFactorTM01(KSParticle& aFinalParticle)
     {
         double kc = 2.405/0.00502920;
         double x = aFinalParticle.GetPosition().GetX();
@@ -68,7 +89,7 @@ namespace locust
         return coupling*coupling;
     }
 
-    double FieldCalculator::GetCouplingFactorTE01(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
+    double FieldCalculator::GetCouplingFactorTE01(KSParticle& aFinalParticle)  // Phase 1
     {
         double dim1_wr42 = 10.668e-3; // a in m
         double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
@@ -77,7 +98,7 @@ namespace locust
     }
 
 
-    double FieldCalculator::GetTE01FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetTE01FieldAfterOneBounce(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);   
@@ -97,7 +118,7 @@ namespace locust
 
     }
 
-    double FieldCalculator::GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetTE11FieldAfterOneBounce(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
         double cyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
@@ -118,7 +139,7 @@ namespace locust
     }
 
 
-    double FieldCalculator::GetTM01FieldWithTerminator(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetTM01FieldWithTerminator(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTM01(aFinalParticle);
@@ -137,7 +158,7 @@ namespace locust
     }
 
 
-    double FieldCalculator::GetDampingFactorPhase1(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetDampingFactorPhase1(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double TE01FieldFromShort = GetTE01FieldAfterOneBounce(anInitialParticle, aFinalParticle);
         double A10squ = GetCouplingFactorTE01(aFinalParticle);
@@ -149,7 +170,7 @@ namespace locust
 
 
 
-    double FieldCalculator::GetDampingFactorPhase2(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetDampingFactorPhase2(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
     {
         double TM01FieldWithTerminator = GetTM01FieldWithTerminator(anInitialParticle, aFinalParticle);
         double A01squ = GetCouplingFactorTM01(aFinalParticle);
@@ -158,5 +179,36 @@ namespace locust
 
         return DampingFactor;
     }
+
+
+
+
+
+
+
+
+    void FieldCalculator::CalculateInteraction(
+            const Kassiopeia::KSTrajectory& aTrajectory,
+            const Kassiopeia::KSParticle& aTrajectoryInitialParticle,
+            const Kassiopeia::KSParticle& aTrajectoryFinalParticle,
+            const KThreeVector& aTrajectoryCenter,
+            const double& aTrajectoryRadius,
+            const double& aTrajectoryTimeStep,
+            Kassiopeia::KSParticle& anInteractionParticle,
+            double& anInteractionStep, bool& anInteractionFlag
+            )
+    {
+    }
+
+    void FieldCalculator::ExecuteInteraction(
+            const Kassiopeia::KSParticle& anInitialParticle,
+            Kassiopeia::KSParticle& aFinalParticle,
+            Kassiopeia::KSParticleQueue& aSecondaries
+            ) const
+    {
+    }
+
+
+
 
 }  /* namespace locust */

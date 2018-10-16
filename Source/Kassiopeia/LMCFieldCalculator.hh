@@ -2,7 +2,7 @@
  * LMCFieldCalculator.hh
  *
  *  Created on: Oct 4, 2018
- *      Author: pslocum, buzinsky
+ *      Author: pslocum
  */
 
 #ifndef LMCFIELDCALCULATOR_HH_
@@ -15,6 +15,9 @@
 #include "KSTrajectory.h"
 #include "KSParticle.h"
 #include <vector>
+using std::vector;
+
+
 
 namespace locust
 {
@@ -27,11 +30,17 @@ namespace locust
       No input parameters
       */
 
-    class FieldCalculator 
+
+    class FieldCalculator:  public Kassiopeia::KSComponentTemplate< FieldCalculator , Kassiopeia::KSSpaceInteraction >
+
     {
 
         public:
             FieldCalculator();
+            FieldCalculator( const FieldCalculator& aOrig );
+            FieldCalculator* Clone() const;
+            virtual ~FieldCalculator();
+
 
             double GetGroupVelocityTE11(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
@@ -45,7 +54,29 @@ namespace locust
             double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE01FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
 
+
+
+        public:
+            virtual void CalculateInteraction(
+                    const Kassiopeia::KSTrajectory& aTrajectory,
+                    const Kassiopeia::KSParticle& aTrajectoryInitialParticle,
+                    const Kassiopeia::KSParticle& aTrajectoryFinalParticle,
+                    const KThreeVector& aTrajectoryCenter,
+                    const double& aTrajectoryRadius,
+                    const double& aTrajectoryTimeStep,
+                    Kassiopeia::KSParticle& anInteractionParticle,
+                    double& anInteractionStep, bool& anInteractionFlag
+                    );
+
+            virtual void ExecuteInteraction(
+                    const Kassiopeia::KSParticle& anInitialParticle,
+                    Kassiopeia::KSParticle& aFinalParticle,
+                    Kassiopeia::KSParticleQueue& aSecondaries
+                    ) const;
+
     };
+
+
 
 } /* namespace locust */
 
