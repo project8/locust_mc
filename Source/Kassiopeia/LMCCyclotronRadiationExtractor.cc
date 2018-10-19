@@ -133,6 +133,7 @@ namespace locust
             if (t_old == 0.) 
             {
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
+                if (fParticleHistory.size()) fParticleHistory.clear();
             }
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));

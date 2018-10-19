@@ -37,9 +37,7 @@ namespace locust
         fCorporateFeed( 0 ),
         gxml_filename("blank.xml"),
         phiLO_t(0.),
-        VoltagePhase_t {0.},
-        SignalArrived_t {0},
-        SignalArrivalIndex_t {0}
+        VoltagePhase_t {0.}
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -254,8 +252,6 @@ namespace locust
             for (unsigned i=0; i < sizeof(VoltagePhase_t)/sizeof(VoltagePhase_t[0]); i++)
             {
                 VoltagePhase_t[i] = {0.};
-                SignalArrived_t[i] = false;
-                SignalArrivalIndex_t[i] = 0;
             }
         }
 
@@ -345,17 +341,11 @@ namespace locust
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
 
-                if (SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] == false)
-                {
-                    SignalArrivalIndex_t[channelIndex*fNPatchesPerStrip+patchIndex] = index;
-                    SignalArrived_t[channelIndex*fNPatchesPerStrip+patchIndex] = true;
-                }
-
                 if (VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]>0.)  // not first sample                                                        
                 {
                     VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * fDigitizerTimeStep;
                 }
-                else  // if this is the first light at this channelIndex, the voltage phase doesn't advance for the full dt.
+                else  // if this is the first light at this patch, the voltage phase doesn't advance for the full dt.
                 {              
                     VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * tRetardedTime;
                     //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();

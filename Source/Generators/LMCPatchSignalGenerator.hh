@@ -72,8 +72,6 @@ namespace locust
 
             double phiLO_t; // voltage phase of LO in radians;
             double VoltagePhase_t[10000];
-            bool SignalArrived_t[10000];
-            int SignalArrivalIndex_t[10000];
 
     };
 

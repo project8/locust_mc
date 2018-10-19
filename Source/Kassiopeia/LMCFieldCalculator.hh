@@ -2,7 +2,7 @@
  * LMCFieldCalculator.hh
  *
  *  Created on: Oct 4, 2018
- *      Author: pslocum
+ *      Author: pslocum, nbuzinsky
  */
 
 #ifndef LMCFIELDCALCULATOR_HH_
@@ -14,6 +14,7 @@
 #include "LMCConst.hh"
 #include "KSTrajectory.h"
 #include "KSParticle.h"
+#include "LMCThreeVector.hh"
 #include <vector>
 using std::vector;
 
@@ -42,17 +43,20 @@ namespace locust
             virtual ~FieldCalculator();
 
 
-            double GetGroupVelocityTE11(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTE01(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase1(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
-            double GetCouplingFactorTE11(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTE01(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
-            double GetTE11FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
             double GetTE01FieldAfterOneBounce(Kassiopeia::KSParticle& anInitialParticle, Kassiopeia::KSParticle& aFinalParticle);
+      double GetRetardedTE01FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
+
+            int FindNode(double tNew) const;
+      double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition, double GroupVelocity);
+
+
 
 
 
