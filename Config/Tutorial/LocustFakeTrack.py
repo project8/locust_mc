@@ -1,11 +1,22 @@
+'''
+Script to run Locust fake track simulation many times. Each time it generates two waterfall root files: A fake track with and without noise
+Run: python LocustFakeTrack.py
+
+Author: L. Saldana
+Date: 10/30/2018
+'''
+
+
 import json
 import random
 import subprocess
 import os
 
 # Working directory
-working_dir = '/home/les67/temp/'
+working_dir = '/home/les67/temp/' # where you want the egg, json, and root files to be created and/or saved 
 locust_binary_path = '/home/les67/locust_mc/build/bin/LocustSim'
+katydid_binary_path = '/home/les67/katydid/build/bin/Katydid'
+katydid_config_path = '/home/les67/locust_mc/Config/Tutorial/katydid_faketrack.json'
 
 # Generator lists
 generators = ['fake-track','lpf-fft','decimate-signal','digitizer']
@@ -47,8 +58,12 @@ for ii_sim in range(n_sims):
 
     # Setting up JSON configs
     fake_track_gen['random-seed'] = rand_seed
-    simulation_gen['egg-filename'] = working_dir + 'locust_faketrack' + '_{}'.format(ii_sim) + '.egg'
-    simulation_wnoise_gen['egg-filename'] = working_dir + 'locust_faketrack_wnoise' + '_{}'.format(ii_sim) + '.egg'
+    locust_egg_file = working_dir + 'locust_faketrack' + '_{}'.format(ii_sim) + '.egg'
+    locust_egg_wnoise_file = working_dir + 'locust_faketrack_wnoise' + '_{}'.format(ii_sim) + '.egg'
+    waterfall_file = working_dir + 'locust_faketrack' + '_{}'.format(ii_sim) + '.root'
+    waterfall_wnoise_file = working_dir + 'locust_faketrack_wnoise' + '_{}'.format(ii_sim) + '.root'
+    simulation_gen['egg-filename'] = locust_egg_file
+    simulation_wnoise_gen['egg-filename'] = locust_egg_wnoise_file
     faketrack_config['fake-track'] = fake_track_gen
     faketrack_wnoise_config['fake-track'] = fake_track_gen
     faketrack_config['simulation'] = simulation_gen
@@ -58,16 +73,22 @@ for ii_sim in range(n_sims):
     locust_config_path = '{}LocustFakeTrack_{}.json'.format(working_dir,ii_sim)
     locust_wnoise_config_path = '{}LocustFakeTrack_wnoise_{}.json'.format(working_dir,ii_sim)
     
-    # Creating JSON file and running simulation
+    # Creating JSON file, run simulation, process with Katydid
     locust_config = open(locust_config_path,'a')
     locust_config.write(faketrack_config_json)
     locust_config.close()
     print('Created: {}'.format(locust_config_path))
     print('\tRunning simultion without noise')
-    try:
+    try: # Locust
         output = subprocess.check_output("{} config={}".format(locust_binary_path,locust_config_path), shell=True, stderr=subprocess.STDOUT)
         os.remove(locust_config_path)  
         print('\t\tSucessful! Removed JSON file') 
+    except subprocess.CalledProcessError as e:
+        print("Error: {}".format(e.output))
+    try: # Katydid
+        print('\tRunning Katydid...')
+        output = subprocess.check_output("{} -c {} -e {} --waterfall-writer.output-file={}".format(katydid_binary_path,katydid_config_path,locust_egg_file,waterfall_file),shell=True,stderr=subprocess.STDOUT)
+        print('\t\tSucessfully created: {}'.format(waterfall_file))
     except subprocess.CalledProcessError as e:
         print("Error: {}".format(e.output))
 
@@ -77,10 +98,16 @@ for ii_sim in range(n_sims):
     locust_wnoise_config.close()
     print('Created: {}'.format(locust_wnoise_config_path)) 
     print('\tRunning simultion with noise')
-    try:
+    try: # Locust
         output_wnoise = subprocess.check_output("{} config={}".format(locust_binary_path,locust_wnoise_config_path), shell=True, stderr=subprocess.STDOUT)
         os.remove(locust_wnoise_config_path)  
         print('\t\tSucessful! Removed JSON file') 
+    except subprocess.CalledProcessError as e:
+        print("Error: {}".format(e.output))
+    try: # Katydid
+        print('\tRunning Katydid...')
+        output = subprocess.check_output("{} -c {} -e {} --waterfall-writer.output-file={}".format(katydid_binary_path,katydid_config_path,locust_egg_wnoise_file,waterfall_wnoise_file),shell=True,stderr=subprocess.STDOUT)
+        print('\t\tSucessfully created: {}'.format(waterfall_wnoise_file))
     except subprocess.CalledProcessError as e:
         print("Error: {}".format(e.output)) 
 
