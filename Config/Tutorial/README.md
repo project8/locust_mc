@@ -88,6 +88,22 @@ The file Project8Phase4_WithRoot_Template.xml presently references a large place
 ```
 There is a pdf to describe this generator here:  https://github.com/project8/locust_mc/blob/develop/Config/Tutorial/locust_faketrack_tutorial.pdf
 
+The fake track parameters are defined in the LMCFakeTrackSignalGenerator class through probability distribution functions (PDF) whose parameters may be set through the LocustFakeTrack.json file. The following parameters use configurable PDFs:
+- Start frequency: Uniform PDF
+    - "start-frequency-min" in Hz
+    - "start-frequency-max" in Hz
+- Track slope: Gaussian PDF
+    - "slope-mean" in MHz/ms
+    - "slope-std" in MHz/ms
+- Track start sime: Uniform PDF
+    - "start-time-min" in s
+    - "start-time-max" in s
+- Track length: Exponential PDF
+    - "track-length-mean" in s
+- Number of tracks in event: Exponential PDF
+    - "ntracks-mean" unitless double
+- Random generator seed
+    - "random-seed" unitless integer
 
 ## Visualize the Electron Trajectory (requires VTK)
 1. Open LocustTemplate.json with your preferred text editor. Edit the "xml-filename" and "egg-filename" paths to point to the locust_mc directory on your machine.
