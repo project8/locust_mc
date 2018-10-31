@@ -1,12 +1,19 @@
 import json
+import random
+import subprocess
+import os
 
-# Generator list
-generators = ['fake-track','lpf-fft','decimate-signal','gaussian-noise','digitizer']
+# Working directory
+working_dir = '/home/les67/temp/'
+locust_binary_path = '/home/les67/locust_mc/build/bin/LocustSim'
+
+# Generator lists
+generators = ['fake-track','lpf-fft','decimate-signal','digitizer']
+generators_wnoise = ['fake-track','lpf-fft','decimate-signal','gaussian-noise','digitizer']
 
 # Generator properties
 fake_track_gen = {'lo-frequency': 20e9,
                   'ntracks-mean': 2.0,
-                  'random-seed': 0,
                   'signal-power': 1e-15,
                   'slope-mean': 0.6,
                   'slope-std': 0.025,
@@ -18,20 +25,63 @@ fake_track_gen = {'lo-frequency': 20e9,
                   'track-length-mean': 0.001}
 gaussian_noise_gen = {'domain': 'time',
                       'noise-floor': 4e-21}
-simulation_gen = {'egg-filename': '/home/les67/locust_faketrack.egg',
-                  'n-channels': 1,
+simulation_gen = {'n-channels': 1,
                   'n-records': 1,
                   'record-size': 4194304}
-digitizer_gen = {'v-offset': -5e-06,
+simulation_wnoise_gen = simulation_gen.copy()
+digitizer_gen = {'v-offset': -0.5e-05,
                  'v-range': 1e-05}
 
-# Generate Locust JSON config file
+# Generate Locust JSON config files
 faketrack_config = {'generators': generators,
-                    'fake_track': fake_track_gen,
-                    'simulation': simulation_gen,
-                    'gaussian-noise': gaussian_noise_gen,
                     'digitizer': digitizer_gen}
-faketrack_config_json = json.dumps(faketrack_config,indent=4,sort_keys=True,separators=(',',':'))
-config_file = open('/home/les67/locust_mc/Config/Tutorial/LocustFakeTrack_temp.json','a')
-config_file.write(faketrack_config_json)
-config_file.close()
+faketrack_wnoise_config = {'generators': generators_wnoise,
+                           'gaussian-noise': gaussian_noise_gen,
+                           'digitizer': digitizer_gen}
+
+# Run Simulations
+n_sims = 1 # number of simulations to perform
+for ii_sim in range(n_sims):
+
+    rand_seed = random.randint(540559518,1325542009) # choose random seed
+
+    # Setting up JSON configs
+    fake_track_gen['random-seed'] = rand_seed
+    simulation_gen['egg-filename'] = working_dir + 'locust_faketrack' + '_{}'.format(ii_sim) + '.egg'
+    simulation_wnoise_gen['egg-filename'] = working_dir + 'locust_faketrack_wnoise' + '_{}'.format(ii_sim) + '.egg'
+    faketrack_config['fake-track'] = fake_track_gen
+    faketrack_wnoise_config['fake-track'] = fake_track_gen
+    faketrack_config['simulation'] = simulation_gen
+    faketrack_wnoise_config['simulation'] = simulation_wnoise_gen
+    faketrack_config_json = json.dumps(faketrack_config,indent=4,sort_keys=True,separators=(',',':'))
+    faketrack_wnoise_config_json = json.dumps(faketrack_wnoise_config,indent=4,sort_keys=True,separators=(',',':'))
+    locust_config_path = '{}LocustFakeTrack_{}.json'.format(working_dir,ii_sim)
+    locust_wnoise_config_path = '{}LocustFakeTrack_wnoise_{}.json'.format(working_dir,ii_sim)
+    
+    # Creating JSON file and running simulation
+    locust_config = open(locust_config_path,'a')
+    locust_config.write(faketrack_config_json)
+    locust_config.close()
+    print('Created: {}'.format(locust_config_path))
+    print('\tRunning simultion without noise')
+    try:
+        output = subprocess.check_output("{} config={}".format(locust_binary_path,locust_config_path), shell=True, stderr=subprocess.STDOUT)
+        os.remove(locust_config_path)  
+        print('\t\tSucessful! Removed JSON file') 
+    except subprocess.CalledProcessError as e:
+        print("Error: {}".format(e.output))
+
+    # Creating JSON file and running simulation w/ noise
+    locust_wnoise_config = open(locust_wnoise_config_path,'a')
+    locust_wnoise_config.write(faketrack_wnoise_config_json)
+    locust_wnoise_config.close()
+    print('Created: {}'.format(locust_wnoise_config_path)) 
+    print('\tRunning simultion with noise')
+    try:
+        output_wnoise = subprocess.check_output("{} config={}".format(locust_binary_path,locust_wnoise_config_path), shell=True, stderr=subprocess.STDOUT)
+        os.remove(locust_wnoise_config_path)  
+        print('\t\tSucessful! Removed JSON file') 
+    except subprocess.CalledProcessError as e:
+        print("Error: {}".format(e.output)) 
+
+    print("\n")
