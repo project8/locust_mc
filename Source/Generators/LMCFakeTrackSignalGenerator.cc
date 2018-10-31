@@ -325,47 +325,52 @@ namespace locust
         {
             double voltage_phase = fStartVPhase;
             bool nexttrack_flag = false;
-            int event_tracks_counter = 0; 
+            int event_tracks_counter = 0;
+            bool eventdone_flag = false; 
 
             for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
             {
                 double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);           
                 LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
-                if ( nexttrack_flag == false ) // if on same track
+                if ( eventdone_flag == false ) // if not done with event
                 {
-                    if ( (time >= starttime_val) && (time <= endtime_val) )
+                    if ( nexttrack_flag == false ) // if on same track
                     {
+                        if ( (time >= starttime_val) && (time <= endtime_val) )
+                        {
+                            startfreq_val += slope_val*1.e6/1.e-3*dt;
+                            voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
+                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
+                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                        }
+                        else if ( time>endtime_val )
+                        {
+                            event_tracks_counter += 1;
+                            if (event_tracks_counter > ntracks_val) // if done with all tracks in event
+                            {
+                                eventdone_flag = true; // mark end of event   
+                                continue;  
+                            }
+                            startfreq_val+=jumpsize_val; // increment only the start frequency by the jump size
+                            voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
+                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
+                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                            nexttrack_flag = true; // we move onto the next track
+                        }
+                    }
+                    else if ( nexttrack_flag == true )
+                    {
+                        slope_val = slope_distribution(generator);
+                        tracklength_val = tracklength_distribution(generator);
+                        endtime_val += (time + tracklength_val/sqrt(1+slope_val*slope_val));
+                        //endfreq_val = startfreq_val + tracklength_val*slope_val/sqrt(1+slope_val*slope_val);
                         startfreq_val += slope_val*1.e6/1.e-3*dt;
                         voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                        nexttrack_flag = false; // now we stay on this track
                     }
-                    else if ( time>endtime_val )
-                    {
-                        event_tracks_counter += 1;
-                        if (event_tracks_counter > ntracks_val) // if done with all tracks in event
-                        {
-                            break; //     
-                        }
-                        startfreq_val+=jumpsize_val; // increment only the start frequency by the jump size
-                        voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
-                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
-                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                        nexttrack_flag = true; // we move onto the next track
-                    }
-                }
-                else if ( nexttrack_flag == true )
-                {
-                    slope_val = slope_distribution(generator);
-                    tracklength_val = tracklength_distribution(generator);
-                    endtime_val += (time + tracklength_val/sqrt(1+slope_val*slope_val));
-                    //endfreq_val = startfreq_val + tracklength_val*slope_val/sqrt(1+slope_val*slope_val);
-                    startfreq_val += slope_val*1.e6/1.e-3*dt;
-                    voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
-                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
-                    aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                    nexttrack_flag = false; // now we stay on this track
                 }
             }   
         }
