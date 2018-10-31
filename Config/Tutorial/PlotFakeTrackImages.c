@@ -91,7 +91,7 @@ for (int seed=55; seed<56; seed++)
     TGraph* grlabels = GetLabelGraph(hlabels);
     PrintLabels(grlabels);  // print labels to terminal.
 
-    //hspectrogram->GetXaxis()->SetRangeUser(0.,0.006);
+    hspectrogram->GetXaxis()->SetRangeUser(0.,0.02);
     hspectrogram->GetYaxis()->SetRangeUser(149.e6, 170.e6);
 
     TCanvas *c = new TCanvas;

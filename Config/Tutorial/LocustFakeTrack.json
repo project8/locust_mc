@@ -11,16 +11,17 @@
     "fake-track":
     {
     "signal-power": 1.0e-15,
-    "start-frequency-max": 20.049e9,
-    "start-frequency-min": 20.053e9,
+    "start-frequency-max": 20.053e9,
+    "start-frequency-min": 20.049e9,
     "start-vphase": 0.0,
     "slope-mean": 0.6,
-    "slope-std": 0.1,
+    "slope-std": 0.025,
     "start-time-min": 0.001,
-    "start-time-max": 0.004,
+    "start-time-max": 0.003,
     "lo-frequency": 20.0e9,
-    "track-length-mean": 0.005,
-    "ntracks-mean": 4
+    "track-length-mean": 0.001,
+    "ntracks-mean": 2.0,
+    "random-seed": 0
     },
     
     "simulation":
@@ -44,4 +45,3 @@
     }
 
 }
-

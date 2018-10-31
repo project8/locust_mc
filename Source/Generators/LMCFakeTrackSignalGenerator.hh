@@ -45,6 +45,7 @@ namespace locust
       - "start-time-max": double -- Upper bound for track start time (s); distribution: uniform.
       - "start-time-min": double -- Lower bound for track start time (s); distribution: uniform.
       - "ntracks-mean": double -- Average number of tracks per event (integer); distribution: exponential.
+      - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used. 
 
 
 */
@@ -93,6 +94,9 @@ namespace locust
             double GetNTracksMean() const;
             void SetNTracksMean( double aNTracksMean );
 
+            int GetRandomSeed() const;
+            void SetRandomSeed(  int aRandomSeed );
+
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -117,6 +121,7 @@ namespace locust
             double fLO_frequency;
             double fTrackLengthMean;
             double fNTracksMean;
+            int fRandomSeed;
 
 
     };
