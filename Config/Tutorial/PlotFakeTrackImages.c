@@ -88,8 +88,8 @@ for (int seed=55; seed<56; seed++)
 
     TH2D* hspectrogram = GetSpectrogram(file);
     TH2D* hlabels = GetLabels(hspectrogram, 40e-21);  // threshold for labeling goes here.
-    TGraph* grlabels = GetLabelGraph(hlabels);
-    PrintLabels(grlabels);  // print labels to terminal.
+//    TGraph* grlabels = GetLabelGraph(hlabels);
+//    PrintLabels(grlabels);  // print labels to terminal.
 
     hspectrogram->GetXaxis()->SetRangeUser(0.,0.02);
     hspectrogram->GetYaxis()->SetRangeUser(149.e6, 170.e6);
@@ -100,13 +100,14 @@ for (int seed=55; seed<56; seed++)
     hspectrogram->GetYaxis()->SetTitleOffset(1.25);
     hspectrogram->DrawCopy("colz");
 
-
+/*
     grlabels->SetMarkerColor(2);
     grlabels->SetMarkerStyle(8);
     grlabels->SetMarkerSize(0.6);
     grlabels->SetLineWidth(3.);
     grlabels->SetLineColor(2);
     grlabels->Draw("psame");
+*/
 
 
  /*  

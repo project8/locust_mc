@@ -81,14 +81,10 @@ The file Project8Phase4_WithRoot_Template.xml presently references a large place
 
 
 ## Fake Tracks
-1. Open LocustFakeTrack.json with your preferred text editor. Edit the "egg-filename" path under the "simulation" processor to the location where you wish the egg file be written.
-2. Run like this:
-```
-/path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustFakeTrack.json
-```
-There is a pdf to describe this generator here:  https://github.com/project8/locust_mc/blob/develop/Config/Tutorial/locust_faketrack_tutorial.pdf
 
-The fake track parameters are defined in the LMCFakeTrackSignalGenerator class through probability distribution functions (PDF) whose parameters may be set through the LocustFakeTrack.json file. The following parameters use configurable PDFs:
+There are two ways to generate fake events/tracks: 1. One event/track at a time using Locust directly and 2. Using the LocustFakeTrack.py script. There is a tutorial pdf to describe these options in detail here:  https://github.com/project8/locust_mc/blob/develop/Config/Tutorial/locust_faketrack_tutorial.pdf
+
+Note that the fake track parameters are defined in the LMCFakeTrackSignalGenerator class through probability distribution functions (PDF) whose parameters may be set through the LocustFakeTrack.json file. The following parameters use configurable PDFs:
 - Start frequency: Uniform PDF
     - "start-frequency-min" in Hz
     - "start-frequency-max" in Hz
