@@ -51,7 +51,6 @@ def RunSimulation(n_sims,working_dir,locust_binary_path,katydid_binary_path,katy
                                'digitizer': digitizer_gen}
 
     # Run Simulations
-    n_sims = 1 # number of simulations to perform
     for ii_sim in range(n_sims):
 
         rand_seed = random.randint(540559518,1325542009) # choose random seed
