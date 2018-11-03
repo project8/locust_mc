@@ -1,40 +1,50 @@
-/*
- * LMCFieldCalculator.cc
- *
- *  Created on: Oct 4, 2018
- *      Author: pslocum, nbuzinsky
- */
-
-
-
 #include "LMCFieldCalculator.hh"
+#include "KSParticleFactory.h"
 #include "LMCGlobalsDeclaration.hh"
 #include <algorithm>
+
+#include "KSInteractionsMessage.h"
+#include <limits>
+
+using std::numeric_limits;
 
 using namespace Kassiopeia;
 namespace locust
 {
 
-    FieldCalculator::FieldCalculator()
+    FieldCalculator::FieldCalculator() :
+            fSpaceInteractions( 128 ),
+            fSpaceInteraction( NULL ),
+            fStep( NULL ),
+            fTerminatorParticle( NULL ),
+            fTrajectoryParticle( NULL ),
+            fInteractionParticle( NULL ),
+            fFinalParticle( NULL ),
+            fParticleQueue( NULL ),
+            fTrajectory( NULL )
     {
     }
-
-    FieldCalculator::FieldCalculator( const FieldCalculator& aOrig ):  
-      Kassiopeia::KSComponent(),
-      Kassiopeia::KSComponentTemplate< FieldCalculator, Kassiopeia::KSSpaceInteraction >( aOrig )
+    FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
+            KSComponent(),
+            fSpaceInteractions( aCopy.fSpaceInteractions ),
+            fSpaceInteraction( aCopy.fSpaceInteraction ),
+            fStep( aCopy.fStep ),
+            fTerminatorParticle( aCopy.fTerminatorParticle ),
+            fTrajectoryParticle( aCopy.fTrajectoryParticle ),
+            fInteractionParticle( aCopy.fInteractionParticle ),
+            fFinalParticle( aCopy.fFinalParticle ),
+            fParticleQueue( aCopy.fParticleQueue ),
+            fTrajectory( aCopy.fTrajectory )
     {
     }
-
-
-    FieldCalculator::~FieldCalculator()
-    {
-    }
-
-
     FieldCalculator* FieldCalculator::Clone() const
     {
         return new FieldCalculator( *this );
     }
+    FieldCalculator::~FieldCalculator()
+    {
+    }
+
 
 
 
@@ -56,7 +66,7 @@ namespace locust
   }
 
 
-  double GetFieldStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
+  double GetFieldStepRoot(const locust::Particle aParticle, double aSpaceTimeInterval)
   {
     double tRetardedTime = aParticle.GetTime(true);
     //    printf("tr = %g and  sti = %g\n", tRetardedTime, aSpaceTimeInterval);
@@ -109,7 +119,7 @@ namespace locust
     }
 
 
-    double FieldCalculator::GetTE01FieldAfterOneBounce(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
+    double FieldCalculator::GetTE01FieldAfterOneBounce(KSParticle& aFinalParticle)
     {
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTE01(aFinalParticle);   
@@ -144,8 +154,6 @@ namespace locust
     static double fPreviousRetardedTime = 99.;
     static int fPreviousRetardedIndex = -99;
     double tSpaceTimeInterval=0.;
-    double dtRetarded=0;
-    double tTolerance=1e-23;
     double rxPosition = -2.*CENTER_TO_SHORT - aFinalParticle.GetPosition().GetZ();  // calculate tRetardedTime at grid point on other side of short by -CENTER_TO_SHORT - (z_now - (-CENTER_TO_SHORT))
     LMCThreeVector testPoint(0.,0.,rxPosition);  // electron is at z-now.
 
@@ -186,12 +194,11 @@ namespace locust
     tCurrentParticle.Interpolate(tRetardedTime);
     tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), testPoint, GetGroupVelocityTE01(aFinalParticle));
 
-    double tOldSpaceTimeInterval=99.;
 
     //Converge to root
     for(int j=0;j<25;++j)
       {
-	tRetardedTime = GetFieldStepRoot(tCurrentParticle, tReceiverTime, testPoint, tSpaceTimeInterval);
+	tRetardedTime = GetFieldStepRoot(tCurrentParticle, tSpaceTimeInterval);
 	tCurrentParticle.Interpolate(tRetardedTime);
 
 	//Change the kassiopeia step we expand around if the interpolation time displacement is too large
@@ -203,7 +210,6 @@ namespace locust
 	  }
 
 	tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), testPoint, GetGroupVelocityTE01(aFinalParticle));
-	tOldSpaceTimeInterval = tSpaceTimeInterval;
       }
 
 
@@ -235,7 +241,7 @@ return FieldFromShort;
 
 
 
-    double FieldCalculator::GetTM01FieldWithTerminator(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
+    double FieldCalculator::GetTM01FieldWithTerminator(KSParticle& aFinalParticle)
     {
         double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = GetGroupVelocityTM01(aFinalParticle);
@@ -254,7 +260,7 @@ return FieldFromShort;
     }
 
 
-    double FieldCalculator::GetDampingFactorPhase1(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
+    double FieldCalculator::GetDampingFactorPhase1(KSParticle& aFinalParticle)
     {
       double TE01FieldFromShort = 0.;
       if (fParticleHistory.size()&&(0==0)) // if fParticleHistory has some entries.
@@ -263,7 +269,7 @@ return FieldFromShort;
         }
       else  // if fParticleHistory has not been filled at all yet.
         {
-	TE01FieldFromShort = GetTE01FieldAfterOneBounce(anInitialParticle, aFinalParticle);
+	TE01FieldFromShort = GetTE01FieldAfterOneBounce(aFinalParticle);
 	}
 
       //      if (fParticleHistory.size()) {printf("FieldFromShort is %g\n", TE01FieldFromShort); getchar();}
@@ -278,9 +284,9 @@ return FieldFromShort;
 
 
 
-    double FieldCalculator::GetDampingFactorPhase2(KSParticle& anInitialParticle, KSParticle& aFinalParticle)
+    double FieldCalculator::GetDampingFactorPhase2(KSParticle& aFinalParticle)
     {
-        double TM01FieldWithTerminator = GetTM01FieldWithTerminator(anInitialParticle, aFinalParticle);
+        double TM01FieldWithTerminator = GetTM01FieldWithTerminator(aFinalParticle);
         double A01squ = GetCouplingFactorTM01(aFinalParticle);
         double DampingFactorTM01 = 1. - A01squ + A01squ*TM01FieldWithTerminator*TM01FieldWithTerminator;  // = P'/P
         double DampingFactor = DampingFactorTM01;
@@ -293,30 +299,188 @@ return FieldFromShort;
 
 
 
-
-
-    void FieldCalculator::CalculateInteraction(
-            const Kassiopeia::KSTrajectory& aTrajectory,
-            const Kassiopeia::KSParticle& aTrajectoryInitialParticle,
-            const Kassiopeia::KSParticle& aTrajectoryFinalParticle,
-            const KThreeVector& aTrajectoryCenter,
-            const double& aTrajectoryRadius,
-            const double& aTrajectoryTimeStep,
-            Kassiopeia::KSParticle& anInteractionParticle,
-            double& anInteractionStep, bool& anInteractionFlag
-            )
+    void FieldCalculator::CalculateInteraction( const KSTrajectory& aTrajectory, const KSParticle& aTrajectoryInitialParticle, const KSParticle& aTrajectoryFinalParticle, const KThreeVector& aTrajectoryCenter, const double& aTrajectoryRadius, const double& aTrajectoryStep, KSParticle& anInteractionParticle, double& anInteractionStep, bool& anInteractionFlag )
     {
+        KSParticle tInteractionParticle;
+        double tInteractionStep;
+        bool tInteractionFlag;
+
+        anInteractionParticle = aTrajectoryFinalParticle;
+        anInteractionStep = aTrajectoryStep;
+        anInteractionFlag = false;
+        for( int tIndex = 0; tIndex < fSpaceInteractions.End(); tIndex++ )
+        {
+            fSpaceInteractions.ElementAt( tIndex )->CalculateInteraction( aTrajectory, aTrajectoryInitialParticle, aTrajectoryFinalParticle, aTrajectoryCenter, aTrajectoryRadius, aTrajectoryStep, tInteractionParticle, tInteractionStep, tInteractionFlag );
+            if( tInteractionFlag == true )
+            {
+                anInteractionFlag = true;
+                if( tInteractionStep < anInteractionStep )
+                {
+                    anInteractionParticle = tInteractionParticle;
+                    fSpaceInteraction = fSpaceInteractions.ElementAt( tIndex );
+                }
+            }
+        }
+        return;
+    }
+    void FieldCalculator::ExecuteInteraction( const KSParticle& anInteractionParticle, KSParticle& aFinalParticle, KSParticleQueue& aSecondaries ) const
+    {
+        if( fSpaceInteraction != NULL )
+        {
+            fSpaceInteraction->ExecuteInteraction( anInteractionParticle, aFinalParticle, aSecondaries );
+        }
+        else
+        {
+            aFinalParticle = anInteractionParticle;
+        }
+        return;
     }
 
-    void FieldCalculator::ExecuteInteraction(
-            const Kassiopeia::KSParticle& anInitialParticle,
-            Kassiopeia::KSParticle& aFinalParticle,
-            Kassiopeia::KSParticleQueue& aSecondaries
-            ) const
+    void FieldCalculator::AddSpaceInteraction( KSSpaceInteraction* aSpaceInteraction )
     {
+        if( fSpaceInteractions.AddElement( aSpaceInteraction ) == -1 )
+        {
+            intmsg( eError ) << "<" << GetName() << "> could not add space interaction <" << aSpaceInteraction->GetName() << ">" << eom;
+            return;
+        }
+        intmsg_debug( "<" << GetName() << "> adding space interaction <" << aSpaceInteraction->GetName() << ">" << eom )
+        return;
+    }
+    void FieldCalculator::RemoveSpaceInteraction( KSSpaceInteraction* aSpaceInteraction )
+    {
+        if( fSpaceInteractions.RemoveElement( aSpaceInteraction ) == -1 )
+        {
+            intmsg( eError ) << "<" << GetName() << "> could not remove space interaction <" << aSpaceInteraction->GetName() << ">" << eom;
+            return;
+        }
+        intmsg_debug( "<" << GetName() << "> removing space interaction <" << aSpaceInteraction->GetName() << ">" << eom )
+        return;
     }
 
+    void FieldCalculator::SetStep( KSStep* aStep )
+    {
+        fStep = aStep;
+        fTerminatorParticle = &(aStep->TerminatorParticle());
+        fTrajectoryParticle = &(aStep->TrajectoryParticle());
+        fInteractionParticle = &(aStep->InteractionParticle());
+        fFinalParticle = &(aStep->FinalParticle());
+        fParticleQueue = &(aStep->ParticleQueue());
+        return;
+    }
+    void FieldCalculator::SetTrajectory( KSTrajectory* aTrajectory )
+    {
+        fTrajectory = aTrajectory;
+        return;
+    }
 
+    void FieldCalculator::CalculateInteraction()
+    {
+        *fInteractionParticle = *fTrajectoryParticle;
 
+        if( fSpaceInteractions.End() == 0 )
+        {
+            intmsg_debug( "space interaction calculation:" << eom )
+            intmsg_debug( "  no space interactions active" << eom )
+            intmsg_debug( "  interaction name: <" << fStep->GetSpaceInteractionName() << ">" << eom )
+            intmsg_debug( "  interaction step: <" << fStep->GetSpaceInteractionStep() << ">" << eom )
+            intmsg_debug( "  interaction flag: <" << fStep->GetSpaceInteractionFlag() << ">" << eom )
 
-}  /* namespace locust */
+            intmsg_debug( "space interaction calculation interaction particle state: " << eom )
+            intmsg_debug( "  final particle space: <" << (fInteractionParticle->GetCurrentSpace() ? fInteractionParticle->GetCurrentSpace()->GetName() : "" ) << ">" << eom )
+            intmsg_debug( "  final particle surface: <" << (fInteractionParticle->GetCurrentSurface() ? fInteractionParticle->GetCurrentSurface()->GetName() : "" ) << ">" << eom )
+            intmsg_debug( "  final particle time: <" << fInteractionParticle->GetTime() << ">" << eom )
+            intmsg_debug( "  final particle length: <" << fInteractionParticle->GetLength() << ">" << eom )
+            intmsg_debug( "  final particle position: <" << fInteractionParticle->GetPosition().X() << ", " << fInteractionParticle->GetPosition().Y() << ", " << fInteractionParticle->GetPosition().Z() << ">" << eom )
+            intmsg_debug( "  final particle momentum: <" << fInteractionParticle->GetMomentum().X() << ", " << fInteractionParticle->GetMomentum().Y() << ", " << fInteractionParticle->GetMomentum().Z() << ">" << eom )
+            intmsg_debug( "  final particle kinetic energy: <" << fInteractionParticle->GetKineticEnergy_eV() << ">" << eom )
+            intmsg_debug( "  final particle electric field: <" << fInteractionParticle->GetElectricField().X() << "," << fInteractionParticle->GetElectricField().Y() << "," << fInteractionParticle->GetElectricField().Z() << ">" << eom )
+            intmsg_debug( "  final particle magnetic field: <" << fInteractionParticle->GetMagneticField().X() << "," << fInteractionParticle->GetMagneticField().Y() << "," << fInteractionParticle->GetMagneticField().Z() << ">" << eom )
+            intmsg_debug( "  final particle angle to magnetic field: <" << fInteractionParticle->GetPolarAngleToB() << ">" << eom )
+
+            return;
+        }
+
+        CalculateInteraction( *fTrajectory, *fTerminatorParticle, *fTrajectoryParticle, fStep->TrajectoryCenter(), fStep->TrajectoryRadius(), fStep->TrajectoryStep(), *fInteractionParticle, fStep->SpaceInteractionStep(), fStep->SpaceInteractionFlag() );
+
+        if( fStep->SpaceInteractionFlag() == true )
+        {
+            intmsg_debug( "space interaction calculation:" << eom )
+            intmsg_debug( "  space interaction may occur" << eom )
+        }
+        else
+        {
+            intmsg_debug( "space interaction calculation:" << eom )
+            intmsg_debug( "  space interaction will not occur" << eom )
+        }
+
+        intmsg_debug( "space interaction calculation interaction particle state: " << eom )
+        intmsg_debug( "  interaction particle space: <" << (fInteractionParticle->GetCurrentSpace() ? fInteractionParticle->GetCurrentSpace()->GetName() : "" ) << ">" << eom )
+        intmsg_debug( "  interaction particle surface: <" << (fInteractionParticle->GetCurrentSurface() ? fInteractionParticle->GetCurrentSurface()->GetName() : "" ) << ">" << eom )
+        intmsg_debug( "  interaction particle time: <" << fInteractionParticle->GetTime() << ">" << eom )
+        intmsg_debug( "  interaction particle length: <" << fInteractionParticle->GetLength() << ">" << eom )
+        intmsg_debug( "  interaction particle position: <" << fInteractionParticle->GetPosition().X() << ", " << fInteractionParticle->GetPosition().Y() << ", " << fInteractionParticle->GetPosition().Z() << ">" << eom )
+        intmsg_debug( "  interaction particle momentum: <" << fInteractionParticle->GetMomentum().X() << ", " << fInteractionParticle->GetMomentum().Y() << ", " << fInteractionParticle->GetMomentum().Z() << ">" << eom )
+        intmsg_debug( "  interaction particle kinetic energy: <" << fInteractionParticle->GetKineticEnergy_eV() << ">" << eom )
+        intmsg_debug( "  interaction particle electric field: <" << fInteractionParticle->GetElectricField().X() << "," << fInteractionParticle->GetElectricField().Y() << "," << fInteractionParticle->GetElectricField().Z() << ">" << eom )
+        intmsg_debug( "  interaction particle magnetic field: <" << fInteractionParticle->GetMagneticField().X() << "," << fInteractionParticle->GetMagneticField().Y() << "," << fInteractionParticle->GetMagneticField().Z() << ">" << eom )
+        intmsg_debug( "  interaction particle angle to magnetic field: <" << fInteractionParticle->GetPolarAngleToB() << ">" << eom );
+
+        return;
+    }
+
+    void FieldCalculator::ExecuteInteraction()
+    {
+        ExecuteInteraction( *fInteractionParticle, *fFinalParticle, *fParticleQueue );
+        fFinalParticle->ReleaseLabel( fStep->SpaceInteractionName() );
+
+        fStep->ContinuousTime() = fInteractionParticle->GetTime() - fTerminatorParticle->GetTime();
+        fStep->ContinuousLength() = fInteractionParticle->GetLength() - fTerminatorParticle->GetLength();
+        fStep->ContinuousEnergyChange() = fInteractionParticle->GetKineticEnergy_eV() - fTerminatorParticle->GetKineticEnergy_eV();
+        fStep->ContinuousMomentumChange() = (fInteractionParticle->GetMomentum() - fTerminatorParticle->GetMomentum()).Magnitude();
+        fStep->DiscreteSecondaries() = fParticleQueue->size();
+        fStep->DiscreteEnergyChange() = fFinalParticle->GetKineticEnergy_eV() - fInteractionParticle->GetKineticEnergy_eV();
+        fStep->DiscreteMomentumChange() = (fFinalParticle->GetMomentum() - fInteractionParticle->GetMomentum()).Magnitude();
+
+        intmsg_debug( "space interaction execution:" << eom )
+        intmsg_debug( "  space interaction name: <" << fStep->SpaceInteractionName() << ">" << eom )
+        intmsg_debug( "  step continuous time: <" << fStep->ContinuousTime() << ">" << eom )
+        intmsg_debug( "  step continuous length: <" << fStep->ContinuousLength() << ">" << eom )
+        intmsg_debug( "  step continuous energy change: <" << fStep->ContinuousEnergyChange() << ">" << eom )
+        intmsg_debug( "  step continuous momentum change: <" << fStep->ContinuousMomentumChange() << ">" << eom )
+        intmsg_debug( "  step discrete secondaries: <" << fStep->DiscreteSecondaries() << ">" << eom )
+        intmsg_debug( "  step discrete energy change: <" << fStep->DiscreteEnergyChange() << ">" << eom )
+        intmsg_debug( "  step discrete momentum change: <" << fStep->DiscreteMomentumChange() << ">" << eom );
+
+        intmsg_debug( "space interaction execution final particle state: " << eom )
+        intmsg_debug( "  final particle space: <" << (fFinalParticle->GetCurrentSpace() ? fFinalParticle->GetCurrentSpace()->GetName() : "" ) << ">" << eom )
+        intmsg_debug( "  final particle surface: <" << (fFinalParticle->GetCurrentSurface() ? fFinalParticle->GetCurrentSurface()->GetName() : "" ) << ">" << eom )
+        intmsg_debug( "  final particle time: <" << fFinalParticle->GetTime() << ">" << eom )
+        intmsg_debug( "  final particle length: <" << fFinalParticle->GetLength() << ">" << eom )
+        intmsg_debug( "  final particle position: <" << fFinalParticle->GetPosition().X() << ", " << fFinalParticle->GetPosition().Y() << ", " << fFinalParticle->GetPosition().Z() << ">" << eom )
+        intmsg_debug( "  final particle momentum: <" << fFinalParticle->GetMomentum().X() << ", " << fFinalParticle->GetMomentum().Y() << ", " << fFinalParticle->GetMomentum().Z() << ">" << eom )
+        intmsg_debug( "  final particle kinetic energy: <" << fFinalParticle->GetKineticEnergy_eV() << ">" << eom )
+        intmsg_debug( "  final particle electric field: <" << fFinalParticle->GetElectricField().X() << "," << fFinalParticle->GetElectricField().Y() << "," << fFinalParticle->GetElectricField().Z() << ">" << eom )
+        intmsg_debug( "  final particle magnetic field: <" << fFinalParticle->GetMagneticField().X() << "," << fFinalParticle->GetMagneticField().Y() << "," << fFinalParticle->GetMagneticField().Z() << ">" << eom )
+        intmsg_debug( "  final particle angle to magnetic field: <" << fFinalParticle->GetPolarAngleToB() << ">" << eom );
+
+        return;
+    }
+
+    void FieldCalculator::PushUpdateComponent()
+    {
+        for( int tIndex = 0; tIndex < fSpaceInteractions.End(); tIndex++ )
+        {
+            fSpaceInteractions.ElementAt( tIndex )->PushUpdate();
+        }
+    }
+    void FieldCalculator::PushDeupdateComponent()
+    {
+        for( int tIndex = 0; tIndex < fSpaceInteractions.End(); tIndex++ )
+        {
+            fSpaceInteractions.ElementAt( tIndex )->PushDeupdate();
+        }
+    }
+
+    STATICINT sFieldCalculatorDict = KSDictionary< FieldCalculator >::AddCommand( &FieldCalculator::AddSpaceInteraction, &FieldCalculator::RemoveSpaceInteraction, "add_space_interaction", "remove_space_interaction" );
+
+}

@@ -1,16 +1,9 @@
-/*
- * LMCFieldCalculatorBuilder.cc
- *
- *  Created on: Oct 4, 2018
- *      Author: pslocum
- */
-
 #include "LMCFieldCalculatorBuilder.hh"
-
 #include "KSRootBuilder.h"
-using namespace std;
 
 using namespace Kassiopeia;
+using namespace std;
+
 namespace katrin
 {
 
@@ -19,11 +12,11 @@ namespace katrin
     {
     }
 
-    STATICINT SLMCFieldCalcStructure =
-      FieldCalculatorBuilder::Attribute< std::string >( "name" );
+    STATICINT sFieldCalculator =
+      KSRootBuilder::ComplexElement< locust::FieldCalculator >( "field_calculator" );
 
-    STATICINT sLMCFieldCalculator =
-            KSRootBuilder::ComplexElement< locust::FieldCalculator >( "field_calc" );
+    STATICINT sFieldCalculatorStructure =
+        FieldCalculatorBuilder::Attribute< string >( "name" ) +
+        FieldCalculatorBuilder::Attribute< string >( "add_space_interaction" );
 
-} /* namespace katrin */
-
+}
