@@ -1,6 +1,6 @@
 FROM project8/p8compute_dependencies:v0.1.0 as locust_common
 
-ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust-1.8.0
+ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust-v1.8.0
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
     cd $LOCUST_BUILD_PREFIX &&\
