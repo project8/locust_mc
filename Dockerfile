@@ -1,4 +1,4 @@
-FROM project8/p8compute_dependencies:v0.1.0 as locust_common
+FROM project8/p8compute_dependencies:v0.2.0 as locust_common
 
 ENV LOCUST_TAG=v1.8.0
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
