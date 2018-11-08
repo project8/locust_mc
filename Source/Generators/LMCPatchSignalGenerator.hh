@@ -65,15 +65,13 @@ namespace locust
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
             void InitializePatchArray();
 
-            int FindNode(double tNew, double dtStepSize, int IndexOld) const;
+            int FindNode(double tNew) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
             double ZPositionPatch(unsigned z_index);
 
 
             double phiLO_t; // voltage phase of LO in radians;
             double VoltagePhase_t[10000];
-            bool SignalArrived_t[10000];
-            int SignalArrivalIndex_t[10000];
 
     };
 
