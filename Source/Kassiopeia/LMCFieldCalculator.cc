@@ -1,3 +1,4 @@
+
 #include "LMCFieldCalculator.hh"
 #include "KSParticleFactory.h"
 #include "LMCGlobalsDeclaration.hh"
@@ -263,7 +264,7 @@ return FieldFromShort;
     double FieldCalculator::GetDampingFactorPhase1(KSParticle& aFinalParticle)
     {
       double TE01FieldFromShort = 0.;
-      if (fParticleHistory.size()&&(0==0)) // if fParticleHistory has some entries.
+      if (fParticleHistory.size()&&(0==1)) // if fParticleHistory has some entries.
 	{
         TE01FieldFromShort = GetRetardedTE01FieldAfterOneBounce(aFinalParticle);
         }
