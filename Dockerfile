@@ -22,12 +22,13 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
     cd /tmp_install &&\
     git clone https://github.com/project8/locust_mc &&\
     cd locust_mc &&\
-    git checkout develop &&\
+    git fetch && git fetch --tags &&\
+    git checkout $LOCUST_TAG &&\
     git submodule update --init --recursive &&\
     mkdir build &&\
     cd build &&\
-    cmake -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX .. &&\
-    cmake -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX .. &&\
+    cmake -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
+    cmake -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
     make -j3 install &&\
     /bin/true
 
