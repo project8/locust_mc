@@ -4,7 +4,6 @@
        "patch-signal",
        "lpf-fft",
        "decimate-signal", 
-       "gaussian-noise",
        "digitizer"
     ],
     
