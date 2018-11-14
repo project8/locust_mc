@@ -80,7 +80,7 @@ The file Project8Phase4_WithRoot_Template.xml presently references a large place
 ```
 
 
-## Fake Tracks
+## Fake Events/Tracks
 
 There are two ways to generate fake events/tracks: 1. One event/track at a time using Locust directly or 2. Multiple events/tracks using the LocustFakeEvent.py script (available in project8 scripts repo). There is a tutorial pdf to describe these options in detail here:  https://github.com/project8/locust_mc/blob/develop/Config/Tutorial/locust_faketrack_tutorial.pdf
 
