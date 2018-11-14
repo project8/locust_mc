@@ -42,7 +42,7 @@ Installation
 ### Dependencies
 
 **External**
- - Boost (www.boost.org) version 1.46 or higher (date_time, filesystem, program_options, system, thread)
+ - Boost (www.boost.org) version 1.65 or higher (date_time, filesystem, program_options, system, thread)
  - CMake (www.cmake.org) version 2.8 or higher
  - FFTW3 (3.3 or newer)
  - G++ version 4.5 or higher (if compiling with GCC)
