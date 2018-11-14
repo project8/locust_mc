@@ -301,6 +301,7 @@ namespace locust
             std::random_device rd;
             random_seed_val = rd();
         }
+        //LINFO( lmclog, "random_seed: " << random_seed_val ); // debugging
         std::default_random_engine generator(random_seed_val);
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
