@@ -308,7 +308,6 @@ namespace locust
           {
           starttime_val = starttime_distribution(generator);
           startfreq_val = startfreq_distribution(generator);
-          printf("startfreq is %g and starttime is %g\n", startfreq_val, starttime_val);
           }
         else
           {
@@ -320,6 +319,7 @@ namespace locust
         endtime_val = starttime_val + tracklength_val;  // reset endtime.
         jumpsize_val = 0.002e9; // this should come from a pdf as well
         startfreq_val += jumpsize_val;
+	//	printf("tracklength is %g\n", tracklength_val);
 
     }
 
@@ -342,6 +342,8 @@ namespace locust
             std::random_device rd;
             random_seed_val = rd();
         }
+
+        //LINFO( lmclog, "random_seed: " << random_seed_val ); // debugging
 
         std::default_random_engine generator(random_seed_val);
         std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
