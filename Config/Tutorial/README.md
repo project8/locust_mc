@@ -80,9 +80,9 @@ The file Project8Phase4_WithRoot_Template.xml presently references a large place
 ```
 
 
-## Fake Tracks
+## Fake Events/Tracks
 
-There are two ways to generate fake events/tracks: 1. One event/track at a time using Locust directly or 2. Multiple events/tracks using the LocustFakeTrack.py script. There is a tutorial pdf to describe these options in detail here:  https://github.com/project8/locust_mc/blob/develop/Config/Tutorial/locust_faketrack_tutorial.pdf
+There are two ways to generate fake events/tracks: 1. One event/track at a time using Locust directly or 2. Multiple events/tracks using the LocustFakeEvent.py script (available in project8 scripts repo under scripts/FakeEventGenerator). There is a tutorial pdf to describe these options in detail here:  https://github.com/project8/locust_mc/blob/develop/Config/Tutorial/locust_faketrack_tutorial.pdf
 
 Note that the fake track parameters are defined in the LMCFakeTrackSignalGenerator class through probability distribution functions (PDF) whose parameters may be set through the LocustFakeTrack.json file. The following parameters use configurable PDFs:
 - Start frequency: Uniform PDF

@@ -101,6 +101,16 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
 
+            void SetTrackProperties(bool firsttrack) const;
+
+            mutable double slope_val = 0.;
+            mutable double tracklength_val = 0.;
+            mutable double starttime_val = 0.;
+            mutable double endtime_val = 0.;
+            mutable double startfreq_val = 0.;
+            mutable double jumpsize_val = 0.002e9;
+
+
 
         private:
             bool DoGenerate( Signal* aSignal );
@@ -122,6 +132,7 @@ namespace locust
             double fTrackLengthMean;
             double fNTracksMean;
             int fRandomSeed;
+
 
 
     };
