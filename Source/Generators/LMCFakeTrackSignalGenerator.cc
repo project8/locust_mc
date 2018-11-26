@@ -283,6 +283,47 @@ namespace locust
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
+
+    void FakeTrackSignalGenerator::SetTrackProperties(bool firsttrack) const
+    {
+
+        int random_seed_val;
+        if ( fRandomSeed != 0 )
+        {
+            random_seed_val = fRandomSeed;
+        }
+        else
+        {   
+            std::random_device rd;
+            random_seed_val = rd();
+        }
+
+        std::default_random_engine generator(random_seed_val);
+        std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
+        std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
+        std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
+        std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
+
+	if (firsttrack)
+          {
+          starttime_val = starttime_distribution(generator);
+          startfreq_val = startfreq_distribution(generator);
+          printf("startfreq is %g and starttime is %g\n", startfreq_val, starttime_val);
+          }
+        else
+          {
+	  starttime_val = endtime_val+4.e-5;  // old track endtime + margin.
+          }
+
+        slope_val = slope_distribution(generator);
+        tracklength_val = tracklength_distribution(generator);
+        endtime_val = starttime_val + tracklength_val;  // reset endtime.
+        jumpsize_val = 0.002e9; // this should come from a pdf as well
+        startfreq_val += jumpsize_val;
+
+    }
+
+
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
@@ -301,25 +342,16 @@ namespace locust
             std::random_device rd;
             random_seed_val = rd();
         }
-        std::default_random_engine generator(random_seed_val);
-        std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
-        std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
-        std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
-        std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
-        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
 
+        std::default_random_engine generator(random_seed_val);
+        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
         int ntracks_val = round(ntracks_distribution(generator));
         if ( ntracks_val == 0 ) // if we rounded to 0, let's simulate at least one tracks
         {
             ntracks_val = 1;
         }
-        double slope_val = slope_distribution(generator);
-        double tracklength_val = tracklength_distribution(generator);
-        double starttime_val = starttime_distribution(generator);
-        double endtime_val = starttime_val + tracklength_val/sqrt(1+slope_val*slope_val);
-        double startfreq_val = startfreq_distribution(generator);
-        //double endfreq_val = startfreq_val + tracklength_val*slope_val/sqrt(1+slope_val*slope_val);
-        double jumpsize_val = 0.002e9; // this should come from a pdf as well
+   
+        SetTrackProperties(1);
 
         for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
         {
@@ -352,20 +384,14 @@ namespace locust
                                 eventdone_flag = true; // mark end of event   
                                 continue;  
                             }
-                            startfreq_val+=jumpsize_val; // increment only the start frequency by the jump size
-                            voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
-                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
-                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                            nexttrack_flag = true; // we move onto the next track
+                            nexttrack_flag = true; // next track
+                            voltage_phase = 0.;  // interrupt phase.
+                            SetTrackProperties(0);
                         }
                     }
                     else if ( nexttrack_flag == true )
                     {
-                        slope_val = slope_distribution(generator);
-                        tracklength_val = tracklength_distribution(generator);
-                        endtime_val += (time + tracklength_val/sqrt(1+slope_val*slope_val));
-                        //endfreq_val = startfreq_val + tracklength_val*slope_val/sqrt(1+slope_val*slope_val);
-                        startfreq_val += slope_val*1.e6/1.e-3*dt;
+		        startfreq_val += slope_val*1.e6/1.e-3*dt;
                         voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
