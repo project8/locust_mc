@@ -311,7 +311,7 @@ namespace locust
           }
         else
           {
-	  starttime_val = endtime_val+4.e-5;  // old track endtime + margin.
+	  starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
           }
 
         slope_val = slope_distribution(generator);
