@@ -1,6 +1,9 @@
 FROM project8/p8compute_dependencies:v0.2.0 as locust_common
 
-ENV LOCUST_TAG=v1.8.0
+ARG build_type=Release
+ENV LOCUST_BUILD_TYPE=$build_type
+
+ENV LOCUST_TAG=v1.8.2
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
@@ -27,8 +30,12 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
     git submodule update --init --recursive &&\
     mkdir build &&\
     cd build &&\
-    cmake -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
-    cmake -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
+    cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
+          -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
+    cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
+          -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
     make -j3 install &&\
     /bin/true
 
