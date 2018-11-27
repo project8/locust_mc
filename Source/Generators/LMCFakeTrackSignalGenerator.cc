@@ -312,14 +312,14 @@ namespace locust
         else
           {
 	  starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
+          jumpsize_val = 0.002e9; // this should come from a pdf as well
+          startfreq_val += jumpsize_val;
           }
 
         slope_val = slope_distribution(generator);
         tracklength_val = tracklength_distribution(generator);
         endtime_val = starttime_val + tracklength_val;  // reset endtime.
-        jumpsize_val = 0.002e9; // this should come from a pdf as well
-        startfreq_val += jumpsize_val;
-	//	printf("tracklength is %g\n", tracklength_val);
+	//		printf("startfreq is %g\n", startfreq_val);
 
     }
 
