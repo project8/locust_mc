@@ -1,9 +1,9 @@
-FROM project8/p8compute_dependencies:v0.2.0 as locust_common
+FROM project8/p8compute_dependencies:v0.3.0 as locust_common
 
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
 
-ENV LOCUST_TAG=v1.8.2
+ENV LOCUST_TAG=v1.8.3
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
