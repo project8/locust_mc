@@ -1,9 +1,9 @@
-FROM project8/p8compute_dependencies:v0.2.0 as locust_common
+FROM project8/p8compute_dependencies:v0.3.0 as locust_common
 
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
 
-ENV LOCUST_TAG=v1.8.2
+ENV LOCUST_TAG=v1.8.3
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
@@ -19,15 +19,16 @@ RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
 ########################
 FROM locust_common as locust_done
 
+COPY kassiopeia /tmp_source/kassiopeia
+COPY monarch /tmp_source/monarch
+COPY Scarab /tmp_source/Scarab
+COPY Source /tmp_source/Source
+COPY CMakeLists.txt /tmp_source/CMakeLists.txt
+COPY .git /tmp_source/.git
+
 # repeat the cmake command to get the change of install prefix to set correctly (a package_builder known issue)
 RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
-    mkdir /tmp_install &&\
-    cd /tmp_install &&\
-    git clone https://github.com/project8/locust_mc &&\
-    cd locust_mc &&\
-    git fetch && git fetch --tags &&\
-    git checkout $LOCUST_TAG &&\
-    git submodule update --init --recursive &&\
+    cd /tmp_source &&\
     mkdir build &&\
     cd build &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
