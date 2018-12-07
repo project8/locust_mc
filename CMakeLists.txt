@@ -42,10 +42,10 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 
 
-
+#  Check root build.
 if (locust_mc_BUILD_WITH_ROOT)
     find_package (ROOT 6.00 COMPONENTS RIO)
-#    include(${ROOT_USE_FILE})
+    include(${ROOT_USE_FILE})
     message("**************** root_use_file is " ${ROOT_USE_FILE})
     
     
