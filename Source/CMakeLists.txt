@@ -76,6 +76,13 @@ set( LOCUST_MC_SOURCE_FILES
 #    Generators/LMCTrappedElectronGenerator.cc
 )
 
+if (locust_mc_BUILD_WITH_ROOT)
+    set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+        Core/LMCEvent.hh)
+    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+        Core/LMCEvent.cc)
+endif (locust_mc_BUILD_WITH_ROOT)
+
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
 
