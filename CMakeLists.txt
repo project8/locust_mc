@@ -43,6 +43,41 @@ include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 
 
 
+if (locust_mc_BUILD_WITH_ROOT)
+    find_package (ROOT 6.00 COMPONENTS RIO)
+#    include(${ROOT_USE_FILE})
+    message("**************** root_use_file is " ${ROOT_USE_FILE})
+    
+    
+  if (CMAKE_COMPILER_IS_GNUCXX)
+      option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
+    if( GCC_FORCE_LINKING )
+        set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
+    endif( )
+  endif()
+
+    pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
+    message(STATUS "${ROOT_LIBRARIES}")
+
+    set (EVENT_DICT_HEADERFILES ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh)
+    set (EVENT_LINKDEF_HEADERFILE ${PROJECT_SOURCE_DIR}/Source/Core/LMCEventLinkDef.hh)
+    set (EVENT_DICT_OUTFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx)
+    set (EVENT_DICT_PCMFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm)
+
+   message ("starting to generate root dictionary.  %%%%%%%%%%%%%%%%%%%%%%%%%")   
+    ROOT_GENERATE_DICTIONARY(EventDict "${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh" LINKDEF "${PROJECT_SOURCE_DIR}/Source/Core/LMCEventLinkDef.hh")   
+    message ("finished generating root dictionary. %%%%%%%%%%%%%%%%%%%%%%%%%")   
+ 
+else (locust_mc_BUILD_WITH_ROOT)
+    set (ROOT_FOUND FALSE)
+endif (locust_mc_BUILD_WITH_ROOT)
+
+
+
+
+
+
+
 #####################
 # locust submodules #
 #####################
@@ -130,35 +165,6 @@ endif (NOT FFTW_THREADS_FOUND)
     message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
 message (STATUS "FFTW_LIBRARIES is ${FFTW_LIBRARIES}")
 include_directories (${FFTW_INCLUDE_DIR})
-
-
-
-if (locust_mc_BUILD_WITH_ROOT)
-    find_package (ROOT 6.00 COMPONENTS RIO)
-    
-  if (CMAKE_COMPILER_IS_GNUCXX)
-      option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
-    if( GCC_FORCE_LINKING )
-        set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
-    endif( )
-  endif()
-
-    pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
-    message(STATUS "${ROOT_LIBRARIES}")
-
-    set (EVENT_DICT_HEADERFILES ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh)
-    set (EVENT_LINKDEF_HEADERFILE ${PROJECT_SOURCE_DIR}/Source/Core/LMCEventLinkDef.hh)
-    set (EVENT_DICT_OUTFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx)
-    set (EVENT_DICT_PCMFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm)
-
-   message ("starting to generate root dictionary.  %%%%%%%%%%%%%%%%%%%%%%%%%")   
-    ROOT_GENERATE_DICTIONARY(EventDict "${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh" LINKDEF "${PROJECT_SOURCE_DIR}/Source/Core/LMCEventLinkDef.hh")   
-    message ("finished generating root dictionary. %%%%%%%%%%%%%%%%%%%%%%%%%")   
- 
-else (locust_mc_BUILD_WITH_ROOT)
-    set (ROOT_FOUND FALSE)
-endif (locust_mc_BUILD_WITH_ROOT)
-
 
 
 

@@ -1,6 +1,8 @@
 /*
  * LMCEvent.hh
  *
+ * This class has access to both locust and ROOT libraries.  The syntax is
+ * consistent with KTROOTData.hh and the instructions in https://root.cern.ch/root/Using.html .
  *  Created on: Dec 5, 2018
  *      Author: pslocum
  */
@@ -24,7 +26,7 @@ namespace locust
             Event();
             virtual ~Event();
 
-   ClassDef(Event,2)  // Root syntax.
+   ClassDef(Event,1)  // Root syntax.
 
 };
 
