@@ -132,6 +132,7 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 #  Check root build.
 if (ROOT_FOUND)
+
   if (CMAKE_COMPILER_IS_GNUCXX)
       option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
     if( GCC_FORCE_LINKING )
@@ -143,19 +144,18 @@ if (ROOT_FOUND)
     message(STATUS "${ROOT_LIBRARIES}")
 
     set (EVENT_DICT_HEADERFILES ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh)
-    set (EVENT_LINKDEF_HEADERFILE ${PROJECT_SOURCE_DIR}/Source/Core/LMCEventLinkDef.hh)
-    set (EVENT_DICT_OUTFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx)
-    set (EVENT_DICT_PCMFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm)
+    set (EVENT_LINKDEF_HEADERFILE ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh)
+    set (EVENT_DICT_OUTFILE ${PROJECT_SOURCE_DIR}/Source/EventDict.cxx)
+    set (EVENT_DICT_PCMFILE ${PROJECT_SOURCE_DIR}/Source/EventDict_rdict.pcm)
 
-    message ("starting to generate root dictionary.  %%%%%%%%%%%%%%%%%%%%%%%%%")   
-    ROOT_GENERATE_DICTIONARY(EventDict "${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh" LINKDEF "${PROJECT_SOURCE_DIR}/Source/Core/LMCEventLinkDef.hh")   
-    message ("finished generating root dictionary. %%%%%%%%%%%%%%%%%%%%%%%%%")   
+    ROOT_GENERATE_DICTIONARY(EventDict "${EVENT_DICT_HEADERFILES}" LINKDEF "${EVENT_LINKDEF_HEADERFILE}")   
+#    rootcint -f EventDict.cxx -c ../Source/Core/LMCEvent.hh ../Source/Core/LinkDef/LMCEventLinkDef.hh 
 
-    pbuilder_add_ext_libraries(${EVENT_DICT_OUTFILE})
+    pbuilder_install_files (${LIB_INSTALL_DIR}  ${EVENT_DICT_PCMFILE})
         
 endif(ROOT_FOUND)
 
-pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
+pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE )
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 
 

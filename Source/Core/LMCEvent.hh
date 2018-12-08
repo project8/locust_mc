@@ -2,7 +2,8 @@
  * LMCEvent.hh
  *
  * This class has access to both locust and ROOT libraries.  The syntax is
- * consistent with KTROOTData.hh and the instructions in https://root.cern.ch/root/Using.html .
+ * consistent with KTROOTData.hh and the instructions in
+ * https://root.cern.ch/root/Using.html .  It is also mentioned in LMCEventLinkDef.hh .
  *  Created on: Dec 5, 2018
  *      Author: pslocum
  */
