@@ -19,7 +19,6 @@
 namespace locust
 {
 
-    class Event;
     class Event : public TObject 
     {
 
@@ -27,9 +26,9 @@ namespace locust
             Event();
             virtual ~Event();
 
-   ClassDef(Event,1)  // Root syntax.
+            ClassDef(Event,1)  // Root syntax.
 
-};
+    };
 
 }
 #endif /* LMCEVENT_HH_ */
