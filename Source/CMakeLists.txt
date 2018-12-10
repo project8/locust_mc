@@ -142,13 +142,14 @@ if (ROOT_FOUND)
 
     pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
     message(STATUS "${ROOT_LIBRARIES}")
+    
 
-    set (EVENT_DICT_HEADERFILES ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh)
-    set (EVENT_LINKDEF_HEADERFILE ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh)
-    set (EVENT_DICT_OUTFILE ${PROJECT_SOURCE_DIR}/Source/EventDict.cxx)
-    set (EVENT_DICT_PCMFILE ${PROJECT_SOURCE_DIR}/Source/EventDict_rdict.pcm)
+    set (EVENT_DICT_HEADERFILES LMCEvent.hh)
+    set (EVENT_LINKDEF_HEADERFILE LinkDef/LMCEventLinkDef.hh)
+    set (EVENT_DICT_OUTFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx)
+    set (EVENT_DICT_PCMFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm)
 
-    ROOT_GENERATE_DICTIONARY(EventDict "${EVENT_DICT_HEADERFILES}" LINKDEF "${EVENT_LINKDEF_HEADERFILE}")   
+    ROOT_GENERATE_DICTIONARY(EventDict ${EVENT_DICT_HEADERFILES} LINKDEF ${EVENT_LINKDEF_HEADERFILE})   
 #    rootcint -f EventDict.cxx -c ../Source/Core/LMCEvent.hh ../Source/Core/LinkDef/LMCEventLinkDef.hh 
 
     pbuilder_install_files (${LIB_INSTALL_DIR}  ${EVENT_DICT_PCMFILE})
