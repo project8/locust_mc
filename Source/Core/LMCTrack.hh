@@ -21,7 +21,7 @@ namespace locust
  Available configuration options:
  No input parameters
  */
-    class Track;
+
     class Track : public TObject
     {
 
