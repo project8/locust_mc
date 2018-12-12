@@ -156,16 +156,10 @@ namespace locust
             // initialize phases.
             phi_t1 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
             //            printf("center_to_antenna is %f and tPositionZ is %f\n", CENTER_TO_ANTENNA, tPositionZ);
-            if (Project8Phase==1)
-            {
-                phi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA) / 
+
+            phi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA) /
                     (tGroupVelocity / tDopplerFrequencyShort);  // phase of reflected field at antenna.
-            }
-            if (Project8Phase==2)
-            {
-                phi_t2 = 2.*LMCConst::Pi()*(tPositionZ + 2.*CENTER_TO_SHORT + CENTER_TO_ANTENNA) / 
-                    (tGroupVelocity / tDopplerFrequencyShort);  // get phase now, set amplitude below.
-            }
+
             EventStartTime = (double)index/RunLengthCalculator1.GetAcquisitionRate()/1.e6/aSignal->DecimationFactor();
             EventToFile = false;
         }
@@ -182,9 +176,9 @@ namespace locust
         phi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * fDigitizerTimeStep;
         phi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * fDigitizerTimeStep;
         phiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
-        RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));
+        RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));  // antenna
         ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
-        RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));
+        RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));  // short
         ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
 
 
@@ -199,8 +193,8 @@ namespace locust
         {  // assume 50 ohm impedance
 
             //	    RealVoltage2 *= 0.25; // some loss at short.
-            aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
-            aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE01ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
+            aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
+            aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
 
 
         }
@@ -245,21 +239,26 @@ namespace locust
         double tPositionY = tParticle.GetPosition().Y();
         double r = sqrt( tPositionX*tPositionX + tPositionY*tPositionY);
 
-        // field amplitude in TE11.  Apply this factor to Larmor Power and propagate it to the amplifier.
-        double tCoupling = 119116./168.2 * 2./LMCConst::Pi() * 4./(2. * LMCConst::Pi()) / kc/2. * ( (j0(kc*r) - jn(2,kc*r)) +
+    // sqrt of power fraction plotted in the Locust simulation paper.
+    // factor of 813.2 is numerical normalization
+    // of Bessel functions after time averaging as in Collin IEEE paper.
+    // tCoupling is the sqrt of the power fraction plotted in the Locust paper.
+
+        double tCoupling = 813.2 * 2./LMCConst::Pi() * 4./(2. * LMCConst::Pi()) / kc/2. *
+        		( (j0(kc*r) - jn(2,kc*r)) +
                 (j0(kc*r) + jn(2, kc*r)) );
 
-        return tCoupling;  // field amplitude is sqrt of power going into field.
+        return tCoupling;  // field amplitude is sqrt of power fraction.
     }
 
 
-    double KassSignalGenerator::TE01ModeExcitation() const
+    double KassSignalGenerator::TE10ModeExcitation() const
     {
         double dim1_wr42 = 10.668e-3; // a in m
         locust::Particle tParticle = fParticleHistory.back();
         double tPositionX = tParticle.GetPosition().X() + dim1_wr42/2.;
         double coupling = 0.63*sin(LMCConst::Pi()*tPositionX/dim1_wr42);  // avg over cyclotron orbit.
-        return coupling;
+        return coupling;  // 0.63*0.63 = 0.4 = power fraction in WR42.
     }
 
 

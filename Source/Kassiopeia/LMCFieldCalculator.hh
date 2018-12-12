@@ -40,14 +40,14 @@ namespace locust
 
 
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
-            double GetGroupVelocityTE01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase1(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
-            double GetCouplingFactorTE01(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
-            double GetTE01FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-      double GetRetardedTE01FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
+            double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
+      double GetRetardedTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
 
             int FindNode(double tNew) const;
       double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition, double GroupVelocity);
