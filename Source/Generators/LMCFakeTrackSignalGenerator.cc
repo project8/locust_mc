@@ -35,7 +35,8 @@ namespace locust
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
         fNTracksMean(1 ),
-        fRandomSeed(0),
+        fBField(1.0),
+        fRandomSeed(0)
         fNEvents(1),
         fRoot_filename("LocustEvent.root")
 
@@ -84,6 +85,9 @@ namespace locust
 
         if (aParam->has( "ntracks-mean") )
             SetNTracksMean( aParam->get_value< double >( "ntracks-mean",fNTracksMean) );
+
+        if (aParam->has("magnetic-field") )
+            SetBField(  aParam->get_value< double >("magnetic-field", fBField) );
 
         if (aParam->has( "random-seed") )
             SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
@@ -251,6 +255,17 @@ namespace locust
         return;
     }
 
+    double FakeTrackSignalGenerator::GetBField() const
+    {
+        return fBField;
+    }
+
+    void FakeTrackSignalGenerator::SetBField( double aBField )
+    {
+        fBField = aBField;
+        return;
+    }
+
     int FakeTrackSignalGenerator::GetRandomSeed() const
     {
         return fRandomSeed;
@@ -304,11 +319,68 @@ namespace locust
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
+    double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field)
+    {
+        double cyc_freq = (q_C)*b_field/m_kg;
+        double rel_cyc_freq = cyc_freq/(1+(energy/me_keV))/(2*PI);
+        return rel_cyc_freq; // takes energy in keV, magnetic field in T, returns in Hz
+    }
 
-    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, bool firsttrack, double TimeOffset) const
+    double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field)
+    {
+        double cyc_freq = (q_C)*b_field/m_kg;
+        double rel_energy = (cyc_freq/(2*PI*frequency)-1)*me_keV;
+        return rel_energy; // takes frequency in Hz, magnetic field in T, returns in keV        
+    }
+
+    float FakeTrackSignalGenerator::myErfInv(float x) // tolerance under +-6e-3, approximate inverse error function from "A handy approximation for the error function and its inverse" by Sergei Winitzki
+    {
+       float tt1, tt2, lnx, sgn;
+       sgn = (x < 0) ? -1.0f : 1.0f;
+       x = (1 - x)*(1 + x);        // x = 1 - x*x;
+       lnx = logf(x);
+       tt1 = 2/(PI*0.147) + 0.5f * lnx;
+       tt2 = 1/(0.147) * lnx;
+
+       return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
+    }
+
+    double FakeTrackSignalGenerator::scattering_inverseCDF(double p)
+    {
+        // Fit params from Aseev et al. paper
+        double A1 = 0.204; // +/- 0.001 eV^-1
+        double w1 = 1.85; // +/- 0.02 eV
+        double eps1 = 12.6; // eV
+        double A2 = 0.0556; // +/- 0.0003 eV^-1
+        double w2 = 12.5; // +/- 0.1 eV
+        double eps2 = 14.30; // +/- 0.02 eV
+
+        double eps_c = 14.08948948948949; // calculated where the pieces of the PDF meet (eV)
+        double inv_eps_c = 0.4476144865289551; // calculated as CDF @ epsilon_c
+        double alpha, beta, energy_loss; 
+
+        if (p < inv_eps_c)
+        {
+            energy_loss = w1/pow(2,0.5)*myErfInv(pow(2/PI,0.5)*(2*p/(A1*w1))-1)+eps1;
+        }
+        else
+        {
+            alpha = pow(PI/2,0.5)*A1*w1/2*(erf(pow(2,0.5)*(eps_c-eps1)/w1)+1);
+            beta = A2*w2/2*atan(2*(eps_c-eps2)/w2);
+            energy_loss = w2/2*tan(2/(A2*w2)*(p-alpha+beta))+eps2;
+        }
+        return energy_loss; // input must be random continuous variable following uniform(0,1), returns in eV
+    }
+
+    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset) const
     {
 
         int random_seed_val;
+        double current_energy = 0.;
+        double scattering_cdf_val = 0.;
+        double energy_loss = 0.;
+        double new_energy = 0.;
+
         if ( fRandomSeed != 0 )
         {
             random_seed_val = fRandomSeed;
@@ -320,12 +392,14 @@ namespace locust
         }
 
         std::default_random_engine generator(random_seed_val);
+        std::default_random_engine generator2(random_seed_val+TrackID); // get new random value, different from above properties
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
+        std::uniform_real_distribution<double> dist(0,0.9798681926077586); // for scattering inverse cdf input, upper bound is cdf @ 100 eV
 
-	if (firsttrack)
+	if (TrackID==0)
           {
           starttime_val = starttime_distribution(generator) + TimeOffset;
           startfreq_val = startfreq_distribution(generator);
@@ -334,8 +408,12 @@ namespace locust
           }
         else
           {
-	      starttime_val = endtime_val + 0.;  // old track endtime + jump margin=0.
-          jumpsize_val = 0.002e9; // this should come from a pdf as well
+  	      starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
+          current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
+          scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
+          energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
+          new_energy = current_energy - energy_loss; // new energy after loss, in keV
+          jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz   
           startfreq_val += jumpsize_val;
           aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
           aTrack.StartFrequency += jumpsize_val;
@@ -426,7 +504,7 @@ namespace locust
         Event* anEvent = new Event();
         InitiateEvent(anEvent, eventID);
         Track aTrack;
-        SetTrackProperties(aTrack, 1, TimeOffset);
+        SetTrackProperties(aTrack, 0, TimeOffset);
         PackEvent(aTrack, anEvent, 0);
 
         for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
@@ -464,7 +542,7 @@ namespace locust
                             }
                             else
                             {
-                                SetTrackProperties(aTrack, 0, 0.); // jump.
+                                SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
                                 PackEvent(aTrack, anEvent, event_tracks_counter);
                             }
                             nexttrack_flag = true; // next track
