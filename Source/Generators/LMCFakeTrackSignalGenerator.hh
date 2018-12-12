@@ -8,9 +8,15 @@
 #ifndef LMCFAKETRACKSIGNALGENERATOR_HH_
 #define LMCFAKETRACKSIGNALGENERATOR_HH_
 
+#include "TFile.h"  // order of includes matters.
+#include "TTree.h"  // include these first.
+
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 #include <random>
+#include <vector>
+#include "LMCEvent.hh"
+
 
 const double PI = 3.141592653589793;
 double m_kg = 9.10938291*1e-31; // electron mass in kg
@@ -105,11 +111,15 @@ namespace locust
             int GetRandomSeed() const;
             void SetRandomSeed(  int aRandomSeed );
 
+            int GetNEvents() const;
+            void SetNEvents(  int aNEvents );
+
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-
-            void SetTrackProperties(bool firsttrack, int event_tracks_counter = 0);
+            void SetTrackProperties(Track &aTrack, bool firsttrack, double TimeOffset) const;
+            void InitiateEvent(Event* anEvent, int eventID) const;
+            void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
 
             mutable double slope_val = 0.;
             mutable double tracklength_val = 0.;
@@ -117,6 +127,7 @@ namespace locust
             mutable double endtime_val = 0.;
             mutable double startfreq_val = 0.;
             mutable double jumpsize_val = 0.002e9;
+            mutable int ntracks_val = 0;
 
 
 
@@ -127,7 +138,6 @@ namespace locust
             double scattering_inverseCDF(double p);
 
             bool DoGenerate( Signal* aSignal );
-
             bool DoGenerateTime( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
 
@@ -146,6 +156,9 @@ namespace locust
             double fNTracksMean;
             double fBField;
             int fRandomSeed;
+            int fNEvents;
+            std::string fRoot_filename;
+
 
 
 
