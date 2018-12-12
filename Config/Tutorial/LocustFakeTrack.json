@@ -21,12 +21,14 @@
     "lo-frequency": 20.0e9,
     "track-length-mean": 0.001,
     "ntracks-mean": 2.0,
-    "random-seed": 0
+    "random-seed": 0,
+    "n-events": 1,
+    "root-filename": "LocustEvent.root"
     },
     
     "simulation":
     {
-        "egg-filename": "/home/les67/locust_faketrack.egg",
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust.egg",
         "n-records": 1,
         "n-channels": 1,
         "record-size": 4194304
@@ -34,7 +36,7 @@
   
     "gaussian-noise":
     {
-    "noise-floor": 4.0e-21,
+    "noise-floor": 4.0e-30,
     "domain": "time"
     },
 

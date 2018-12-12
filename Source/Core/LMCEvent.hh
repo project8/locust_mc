@@ -14,7 +14,8 @@
 #define LMCEVENT_HH_
 
 #include "TObject.h"
-
+#include "LMCTrack.hh"
+#include <vector>
 
 namespace locust
 {
@@ -26,6 +27,15 @@ namespace locust
         public:
             Event();
             virtual ~Event();
+            int EventID = -99;
+            int ntracks = -99;
+            double LOFrequency = -99.;
+            std::vector<double> StartFrequencies;
+            std::vector<double> StartTimes;
+            std::vector<double> EndTimes;
+            std::vector<double> TrackLengths;
+            std::vector<double> Slopes;
+
 
    ClassDef(Event,1)  // Root syntax.
 

@@ -6,24 +6,19 @@
  */
 
 #include "LMCTrack.hh"
+ClassImp(locust::Track);
 
 
 namespace locust
 {
 
-    Track::Track():
-        StartTime(-99.),
-        EndTime(-99.)
+    Track::Track()
     {
     }
 
     Track::~Track()
     {
     }
-
-public:
-
-
 
 
 } /* namespace locust */

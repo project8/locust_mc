@@ -50,7 +50,7 @@ namespace locust {
       inline ::ROOT::TGenericClassInfo *GenerateInitInstance()
       {
          static ::ROOT::TGenericClassInfo 
-            instance("locust", 0 /*version*/, "../Source/Core/LMCEvent.hh", 19,
+            instance("locust", 0 /*version*/, "../Source/Core/LMCTrack.hh", 14,
                      ::ROOT::Internal::DefineBehavior((void*)0,(void*)0),
                      &locust_Dictionary, 0);
          return &instance;
@@ -81,7 +81,7 @@ namespace ROOT {
       ::locust::Event *ptr = 0;
       static ::TVirtualIsAProxy* isa_proxy = new ::TInstrumentedIsAProxy< ::locust::Event >(0);
       static ::ROOT::TGenericClassInfo 
-         instance("locust::Event", ::locust::Event::Class_Version(), "../Source/Core/LMCEvent.hh", 23,
+         instance("locust::Event", ::locust::Event::Class_Version(), "../Source/Core/LMCEvent.hh", 24,
                   typeid(::locust::Event), ::ROOT::Internal::DefineBehavior(ptr, ptr),
                   &::locust::Event::Dictionary, isa_proxy, 4,
                   sizeof(::locust::Event) );
@@ -171,6 +171,132 @@ namespace ROOT {
       ((current_t*)p)->~current_t();
    }
 } // end of namespace ROOT for class ::locust::Event
+
+namespace ROOT {
+   static TClass *vectorlElocustcLcLTrackgR_Dictionary();
+   static void vectorlElocustcLcLTrackgR_TClassManip(TClass*);
+   static void *new_vectorlElocustcLcLTrackgR(void *p = 0);
+   static void *newArray_vectorlElocustcLcLTrackgR(Long_t size, void *p);
+   static void delete_vectorlElocustcLcLTrackgR(void *p);
+   static void deleteArray_vectorlElocustcLcLTrackgR(void *p);
+   static void destruct_vectorlElocustcLcLTrackgR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const vector<locust::Track>*)
+   {
+      vector<locust::Track> *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<locust::Track>));
+      static ::ROOT::TGenericClassInfo 
+         instance("vector<locust::Track>", -2, "vector", 216,
+                  typeid(vector<locust::Track>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &vectorlElocustcLcLTrackgR_Dictionary, isa_proxy, 0,
+                  sizeof(vector<locust::Track>) );
+      instance.SetNew(&new_vectorlElocustcLcLTrackgR);
+      instance.SetNewArray(&newArray_vectorlElocustcLcLTrackgR);
+      instance.SetDelete(&delete_vectorlElocustcLcLTrackgR);
+      instance.SetDeleteArray(&deleteArray_vectorlElocustcLcLTrackgR);
+      instance.SetDestructor(&destruct_vectorlElocustcLcLTrackgR);
+      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<locust::Track> >()));
+      return &instance;
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<locust::Track>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *vectorlElocustcLcLTrackgR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<locust::Track>*)0x0)->GetClass();
+      vectorlElocustcLcLTrackgR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void vectorlElocustcLcLTrackgR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_vectorlElocustcLcLTrackgR(void *p) {
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<locust::Track> : new vector<locust::Track>;
+   }
+   static void *newArray_vectorlElocustcLcLTrackgR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<locust::Track>[nElements] : new vector<locust::Track>[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_vectorlElocustcLcLTrackgR(void *p) {
+      delete ((vector<locust::Track>*)p);
+   }
+   static void deleteArray_vectorlElocustcLcLTrackgR(void *p) {
+      delete [] ((vector<locust::Track>*)p);
+   }
+   static void destruct_vectorlElocustcLcLTrackgR(void *p) {
+      typedef vector<locust::Track> current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class vector<locust::Track>
+
+namespace ROOT {
+   static TClass *vectorlEdoublegR_Dictionary();
+   static void vectorlEdoublegR_TClassManip(TClass*);
+   static void *new_vectorlEdoublegR(void *p = 0);
+   static void *newArray_vectorlEdoublegR(Long_t size, void *p);
+   static void delete_vectorlEdoublegR(void *p);
+   static void deleteArray_vectorlEdoublegR(void *p);
+   static void destruct_vectorlEdoublegR(void *p);
+
+   // Function generating the singleton type initializer
+   static TGenericClassInfo *GenerateInitInstanceLocal(const vector<double>*)
+   {
+      vector<double> *ptr = 0;
+      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(vector<double>));
+      static ::ROOT::TGenericClassInfo 
+         instance("vector<double>", -2, "vector", 216,
+                  typeid(vector<double>), ::ROOT::Internal::DefineBehavior(ptr, ptr),
+                  &vectorlEdoublegR_Dictionary, isa_proxy, 0,
+                  sizeof(vector<double>) );
+      instance.SetNew(&new_vectorlEdoublegR);
+      instance.SetNewArray(&newArray_vectorlEdoublegR);
+      instance.SetDelete(&delete_vectorlEdoublegR);
+      instance.SetDeleteArray(&deleteArray_vectorlEdoublegR);
+      instance.SetDestructor(&destruct_vectorlEdoublegR);
+      instance.AdoptCollectionProxyInfo(TCollectionProxyInfo::Generate(TCollectionProxyInfo::Pushback< vector<double> >()));
+      return &instance;
+   }
+   // Static variable to force the class initialization
+   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const vector<double>*)0x0); R__UseDummy(_R__UNIQUE_DICT_(Init));
+
+   // Dictionary for non-ClassDef classes
+   static TClass *vectorlEdoublegR_Dictionary() {
+      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const vector<double>*)0x0)->GetClass();
+      vectorlEdoublegR_TClassManip(theClass);
+   return theClass;
+   }
+
+   static void vectorlEdoublegR_TClassManip(TClass* ){
+   }
+
+} // end of namespace ROOT
+
+namespace ROOT {
+   // Wrappers around operator new
+   static void *new_vectorlEdoublegR(void *p) {
+      return  p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<double> : new vector<double>;
+   }
+   static void *newArray_vectorlEdoublegR(Long_t nElements, void *p) {
+      return p ? ::new((::ROOT::Internal::TOperatorNewHelper*)p) vector<double>[nElements] : new vector<double>[nElements];
+   }
+   // Wrapper around operator delete
+   static void delete_vectorlEdoublegR(void *p) {
+      delete ((vector<double>*)p);
+   }
+   static void deleteArray_vectorlEdoublegR(void *p) {
+      delete [] ((vector<double>*)p);
+   }
+   static void destruct_vectorlEdoublegR(void *p) {
+      typedef vector<double> current_t;
+      ((current_t*)p)->~current_t();
+   }
+} // end of namespace ROOT for class vector<double>
 
 namespace {
   void TriggerDictionaryInitialization_EventDict_Impl() {

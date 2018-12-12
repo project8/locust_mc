@@ -78,9 +78,11 @@ set( LOCUST_MC_SOURCE_FILES
 
 if (locust_mc_BUILD_WITH_ROOT)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
-        Core/LMCEvent.hh)
+        Core/LMCEvent.hh
+        Core/LMCTrack.hh)
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
-        Core/LMCEvent.cc)
+        Core/LMCEvent.cc
+        Core/LMCTrack.cc)
 endif (locust_mc_BUILD_WITH_ROOT)
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
@@ -131,7 +133,7 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 #  Check root build.
-if (ROOT_FOUND)
+if (locust_mc_BUILD_WITH_ROOT)
 
   if (CMAKE_COMPILER_IS_GNUCXX)
       option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
@@ -143,17 +145,33 @@ if (ROOT_FOUND)
     pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
     message(STATUS "${ROOT_LIBRARIES}")
 
-    set (EVENT_DICT_HEADERFILES ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh)
-    set (EVENT_LINKDEF_HEADERFILE ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh)
-    set (EVENT_DICT_OUTFILE ${PROJECT_SOURCE_DIR}/Source/EventDict.cxx)
-    set (EVENT_DICT_PCMFILE ${PROJECT_SOURCE_DIR}/Source/EventDict_rdict.pcm)
+    set (EVENT_DICT_HEADERFILES 
+      ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh
+      ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh
+      )
+    set (EVENT_LINKDEF_HEADERFILE 
+      ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh      
+      ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCTrackLinkDef.hh           
+      )
+      
+    set (EVENT_DICT_OUTFILE 
+      ${PROJECT_SOURCE_DIR}/Source/EventDict.cxx
+      ${PROJECT_SOURCE_DIR}/Source/TrackDict.cxx     
+      )
+    set (EVENT_DICT_PCMFILE 
+      ${PROJECT_SOURCE_DIR}/Source/EventDict_rdict.pcm
+      ${PROJECT_SOURCE_DIR}/Source/TrackDict_rdict.pcm      
+      )
 
+# root_generate_dictionary is not working due to possible path conflict with Scarab.
+# run rootcint statements on command line from cbuild directory instead.
     ROOT_GENERATE_DICTIONARY(EventDict "${EVENT_DICT_HEADERFILES}" LINKDEF "${EVENT_LINKDEF_HEADERFILE}")   
 #    rootcint -f EventDict.cxx -c ../Source/Core/LMCEvent.hh ../Source/Core/LinkDef/LMCEventLinkDef.hh 
+#    rootcint -f TrackDict.cxx -c ../Source/Core/LMCTrack.hh ../Source/Core/LinkDef/LMCTrackLinkDef.hh 
 
     pbuilder_install_files (${LIB_INSTALL_DIR}  ${EVENT_DICT_PCMFILE})
         
-endif(ROOT_FOUND)
+endif(locust_mc_BUILD_WITH_ROOT)
 
 pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE )
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
