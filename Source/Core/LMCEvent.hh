@@ -20,7 +20,6 @@
 namespace locust
 {
 
-    class Event;
     class Event : public TObject 
     {
 
@@ -37,9 +36,9 @@ namespace locust
             std::vector<double> Slopes;
 
 
-   ClassDef(Event,1)  // Root syntax.
+            ClassDef(Event,1)  // Root syntax.
 
-};
+    };
 
 }
 #endif /* LMCEVENT_HH_ */

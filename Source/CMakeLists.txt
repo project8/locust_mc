@@ -144,16 +144,14 @@ if (locust_mc_BUILD_WITH_ROOT)
 
     pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
     message(STATUS "${ROOT_LIBRARIES}")
+    
+    set (EVENT_DICT_HEADERFILES LMCEvent.hh LMCTrack.hh)
+    set (EVENT_LINKDEF_HEADERFILE LinkDef/LMCEventLinkDef.hh LMCTrackLinkDef.hh)
+# The next two lines are what should be happening, but without root_generate_dictionary they are not working yet.
+#    set (EVENT_DICT_OUTFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx)
+#    set (EVENT_DICT_PCMFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm)
 
-    set (EVENT_DICT_HEADERFILES 
-      ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh
-      ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh
-      )
-    set (EVENT_LINKDEF_HEADERFILE 
-      ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh      
-      ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCTrackLinkDef.hh           
-      )
-      
+# starting band-aid lines instead:
     set (EVENT_DICT_OUTFILE 
       ${PROJECT_SOURCE_DIR}/Source/EventDict.cxx
       ${PROJECT_SOURCE_DIR}/Source/TrackDict.cxx     
@@ -162,10 +160,11 @@ if (locust_mc_BUILD_WITH_ROOT)
       ${PROJECT_SOURCE_DIR}/Source/EventDict_rdict.pcm
       ${PROJECT_SOURCE_DIR}/Source/TrackDict_rdict.pcm      
       )
+# end band-aid.
 
 # root_generate_dictionary is not working due to possible path conflict with Scarab.
 # run rootcint statements on command line from cbuild directory instead.
-    ROOT_GENERATE_DICTIONARY(EventDict "${EVENT_DICT_HEADERFILES}" LINKDEF "${EVENT_LINKDEF_HEADERFILE}")   
+    ROOT_GENERATE_DICTIONARY(EventDict ${EVENT_DICT_HEADERFILES} LINKDEF ${EVENT_LINKDEF_HEADERFILE})   
 #    rootcint -f EventDict.cxx -c ../Source/Core/LMCEvent.hh ../Source/Core/LinkDef/LMCEventLinkDef.hh 
 #    rootcint -f TrackDict.cxx -c ../Source/Core/LMCTrack.hh ../Source/Core/LinkDef/LMCTrackLinkDef.hh 
 
