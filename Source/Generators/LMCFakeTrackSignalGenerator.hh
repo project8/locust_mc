@@ -12,6 +12,10 @@
 #include "LMCRunLengthCalculator.hh"
 #include <random>
 
+const double PI = 3.141592653589793;
+double m_kg = 9.10938291*1e-31; // electron mass in kg
+double q_C = 1.60217657*1e-19; // electron charge in C
+double me_keV = 510.998; // electron mass in keV
 
 namespace scarab
 {
@@ -45,6 +49,7 @@ namespace locust
       - "start-time-max": double -- Upper bound for track start time (s); distribution: uniform.
       - "start-time-min": double -- Lower bound for track start time (s); distribution: uniform.
       - "ntracks-mean": double -- Average number of tracks per event (integer); distribution: exponential.
+      - "magnetic-field": double -- Magnetic field used to convert from frequency to energy (for jumpsize) (T).
       - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used. 
 
 
@@ -94,6 +99,9 @@ namespace locust
             double GetNTracksMean() const;
             void SetNTracksMean( double aNTracksMean );
 
+            double GetBField() const;
+            void SetBField( double aBField );
+
             int GetRandomSeed() const;
             void SetRandomSeed(  int aRandomSeed );
 
@@ -101,7 +109,7 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
 
-            void SetTrackProperties(bool firsttrack) const;
+            void SetTrackProperties(bool firsttrack, int event_tracks_counter = 0);
 
             mutable double slope_val = 0.;
             mutable double tracklength_val = 0.;
@@ -113,6 +121,11 @@ namespace locust
 
 
         private:
+            double rel_cyc(double energy, double b_field);
+            double rel_energy(double frequency, double b_field);
+            float myErfInv(float x);
+            double scattering_inverseCDF(double p);
+
             bool DoGenerate( Signal* aSignal );
 
             bool DoGenerateTime( Signal* aSignal );
@@ -131,6 +144,7 @@ namespace locust
             double fLO_frequency;
             double fTrackLengthMean;
             double fNTracksMean;
+            double fBField;
             int fRandomSeed;
 
 
