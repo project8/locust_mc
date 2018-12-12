@@ -36,7 +36,7 @@ namespace locust
         fTrackLengthMean( 0. ),
         fNTracksMean(1 ),
         fBField(1.0),
-        fRandomSeed(0)
+        fRandomSeed(0),
         fNEvents(1),
         fRoot_filename("LocustEvent.root")
 
@@ -319,21 +319,21 @@ namespace locust
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
-    double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field)
+    double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
     {
         double cyc_freq = (q_C)*b_field/m_kg;
         double rel_cyc_freq = cyc_freq/(1+(energy/me_keV))/(2*PI);
         return rel_cyc_freq; // takes energy in keV, magnetic field in T, returns in Hz
     }
 
-    double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field)
+    double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field) const
     {
         double cyc_freq = (q_C)*b_field/m_kg;
         double rel_energy = (cyc_freq/(2*PI*frequency)-1)*me_keV;
         return rel_energy; // takes frequency in Hz, magnetic field in T, returns in keV        
     }
 
-    float FakeTrackSignalGenerator::myErfInv(float x) // tolerance under +-6e-3, approximate inverse error function from "A handy approximation for the error function and its inverse" by Sergei Winitzki
+    float FakeTrackSignalGenerator::myErfInv(float x) const // tolerance under +-6e-3, approximate inverse error function from "A handy approximation for the error function and its inverse" by Sergei Winitzki
     {
        float tt1, tt2, lnx, sgn;
        sgn = (x < 0) ? -1.0f : 1.0f;
@@ -345,7 +345,7 @@ namespace locust
        return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
     }
 
-    double FakeTrackSignalGenerator::scattering_inverseCDF(double p)
+    double FakeTrackSignalGenerator::scattering_inverseCDF(double p) const
     {
         // Fit params from Aseev et al. paper
         double A1 = 0.204; // +/- 0.001 eV^-1
@@ -413,7 +413,7 @@ namespace locust
           scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
           energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
           new_energy = current_energy - energy_loss; // new energy after loss, in keV
-          jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz   
+          jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
           startfreq_val += jumpsize_val;
           aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
           aTrack.StartFrequency += jumpsize_val;

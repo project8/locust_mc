@@ -117,9 +117,13 @@ namespace locust
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            void SetTrackProperties(Track &aTrack, bool firsttrack, double TimeOffset) const;
+            void SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset) const;
             void InitiateEvent(Event* anEvent, int eventID) const;
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
+            double rel_cyc(double energy, double b_field) const;
+            double rel_energy(double frequency, double b_field) const;
+            float myErfInv(float x) const;
+            double scattering_inverseCDF(double p) const;
 
             mutable double slope_val = 0.;
             mutable double tracklength_val = 0.;
@@ -132,10 +136,6 @@ namespace locust
 
 
         private:
-            double rel_cyc(double energy, double b_field);
-            double rel_energy(double frequency, double b_field);
-            float myErfInv(float x);
-            double scattering_inverseCDF(double p);
 
             bool DoGenerate( Signal* aSignal );
             bool DoGenerateTime( Signal* aSignal );
