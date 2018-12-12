@@ -8,9 +8,15 @@
 #ifndef LMCFAKETRACKSIGNALGENERATOR_HH_
 #define LMCFAKETRACKSIGNALGENERATOR_HH_
 
+#include "TFile.h"  // order of includes matters.
+#include "TTree.h"  // include these first.
+
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 #include <random>
+#include <vector>
+#include "LMCEvent.hh"
+
 
 
 namespace scarab
@@ -97,11 +103,17 @@ namespace locust
             int GetRandomSeed() const;
             void SetRandomSeed(  int aRandomSeed );
 
+            int GetNEvents() const;
+            void SetNEvents(  int aNEvents );
+
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
 
-            void SetTrackProperties(bool firsttrack) const;
+            void SetTrackProperties(Track &aTrack, bool firsttrack, double TimeOffset) const;
+            void InitiateEvent(Event* anEvent, int eventID) const;
+            void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
+
 
             mutable double slope_val = 0.;
             mutable double tracklength_val = 0.;
@@ -109,12 +121,12 @@ namespace locust
             mutable double endtime_val = 0.;
             mutable double startfreq_val = 0.;
             mutable double jumpsize_val = 0.002e9;
+            mutable int ntracks_val = 0;
 
 
 
         private:
             bool DoGenerate( Signal* aSignal );
-
             bool DoGenerateTime( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
 
@@ -132,6 +144,9 @@ namespace locust
             double fTrackLengthMean;
             double fNTracksMean;
             int fRandomSeed;
+            int fNEvents;
+            std::string fRoot_filename;
+
 
 
 

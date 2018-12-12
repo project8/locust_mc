@@ -35,7 +35,10 @@ namespace locust
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
         fNTracksMean(1 ),
-        fRandomSeed(0)
+        fRandomSeed(0),
+        fNEvents(1),
+        fRoot_filename("LocustEvent.root")
+
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -85,6 +88,13 @@ namespace locust
         if (aParam->has( "random-seed") )
             SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
 
+        if (aParam->has( "n-events") )
+            SetNEvents(  aParam->get_value< int >( "n-events",fNEvents) );
+
+        if( aParam->has( "root-filename" ) )
+        {
+            fRoot_filename = aParam->get_value< std::string >( "root-filename" );
+        }
 
 
         if( aParam->has( "domain" ) )
@@ -252,6 +262,17 @@ namespace locust
         return;
     }
 
+    int FakeTrackSignalGenerator::GetNEvents() const
+    {
+        return fNEvents;
+    }
+
+    void FakeTrackSignalGenerator::SetNEvents( int aNEvents )
+    {
+        fNEvents = aNEvents;
+        return;
+    }
+
 
     Signal::State FakeTrackSignalGenerator::GetDomain() const
     {
@@ -284,7 +305,7 @@ namespace locust
     }
 
 
-    void FakeTrackSignalGenerator::SetTrackProperties(bool firsttrack) const
+    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, bool firsttrack, double TimeOffset) const
     {
 
         int random_seed_val;
@@ -306,54 +327,107 @@ namespace locust
 
 	if (firsttrack)
           {
-          starttime_val = starttime_distribution(generator);
+          starttime_val = starttime_distribution(generator) + TimeOffset;
           startfreq_val = startfreq_distribution(generator);
+          aTrack.StartTime = starttime_val;
+          aTrack.StartFrequency = startfreq_val;
           }
         else
           {
-	  starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
+	      starttime_val = endtime_val + 0.;  // old track endtime + jump margin=0.
           jumpsize_val = 0.002e9; // this should come from a pdf as well
           startfreq_val += jumpsize_val;
+          aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
+          aTrack.StartFrequency += jumpsize_val;
           }
 
         slope_val = slope_distribution(generator);
         tracklength_val = tracklength_distribution(generator);
         endtime_val = starttime_val + tracklength_val;  // reset endtime.
-	//		printf("startfreq is %g\n", startfreq_val);
-
+//			printf("starttime is %g and TimeOffset is %g\n", starttime_val, TimeOffset);
+        aTrack.Slope = slope_val;
+        aTrack.TrackLength = tracklength_val;
+        aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
     }
+
+    void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID) const
+    {
+
+        int random_seed_val;
+         if ( fRandomSeed != 0 )
+         {
+             random_seed_val = fRandomSeed;
+         }
+         else
+         {
+             std::random_device rd;
+             random_seed_val = rd();
+         }
+
+        std::default_random_engine generator(random_seed_val);
+        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
+        ntracks_val = round(ntracks_distribution(generator));
+        if ( ntracks_val == 0 ) // if we rounded to 0, let's simulate at least one tracks
+        {
+            ntracks_val = 1;
+        }
+
+    	anEvent->EventID = eventID;
+    	anEvent->ntracks = ntracks_val;
+    	anEvent->LOFrequency = fLO_frequency;
+    	anEvent->StartFrequencies.resize(ntracks_val);
+    	anEvent->StartTimes.resize(ntracks_val);
+    	anEvent->EndTimes.resize(ntracks_val);
+    	anEvent->TrackLengths.resize(ntracks_val);
+    	anEvent->Slopes.resize(ntracks_val);
+    }
+
+    void FakeTrackSignalGenerator::PackEvent(Track& aTrack, Event* anEvent, int trackID) const
+    {
+    	anEvent->StartFrequencies[trackID] = aTrack.StartFrequency;
+    	anEvent->StartTimes[trackID] = aTrack.StartTime;
+    	anEvent->TrackLengths[trackID] = aTrack.TrackLength;
+    	anEvent->EndTimes[trackID] = aTrack.EndTime;
+    	anEvent->Slopes[trackID] = aTrack.Slope;
+    }
+
+
+    void WriteRootFile(Event* anEvent, TFile* hfile)
+    {
+        TTree *aTree = new TTree("aTree","Locust Tree");
+        aTree->Branch("EventID", &anEvent->EventID, "EventID/I");
+        aTree->Branch("ntracks", &anEvent->ntracks, "ntracks/I");
+        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->StartFrequencies);
+        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->StartTimes);
+        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->EndTimes);
+        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
+        aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
+        aTree->Branch("StartFrequencies", &anEvent->LOFrequency, "StartFrequency/D");
+        aTree->Fill();
+        aTree->Write();
+    }
+
+
 
 
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
+        TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
+        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         const unsigned nchannels = fNChannels;
         double LO_phase = 0.;
         double dt = 1./aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-        int random_seed_val;
-        if ( fRandomSeed != 0 )
-        {
-            random_seed_val = fRandomSeed;
-        }
-        else
-        {   
-            std::random_device rd;
-            random_seed_val = rd();
-        }
+        double TimeOffset = 0.; // event spacing.
 
-        //LINFO( lmclog, "random_seed: " << random_seed_val ); // debugging
-
-        std::default_random_engine generator(random_seed_val);
-        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
-        int ntracks_val = round(ntracks_distribution(generator));
-        if ( ntracks_val == 0 ) // if we rounded to 0, let's simulate at least one tracks
+        for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
         {
-            ntracks_val = 1;
-        }
-   
-        SetTrackProperties(1);
+        Event* anEvent = new Event();
+        InitiateEvent(anEvent, eventID);
+        Track aTrack;
+        SetTrackProperties(aTrack, 1, TimeOffset);
+        PackEvent(aTrack, anEvent, 0);
 
         for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
         {
@@ -381,28 +455,36 @@ namespace locust
                         else if ( time>endtime_val )
                         {
                             event_tracks_counter += 1;
-                            if (event_tracks_counter > ntracks_val) // if done with all tracks in event
+                            if (event_tracks_counter > ntracks_val-1) // if done with all tracks in event
                             {
                                 eventdone_flag = true; // mark end of event   
+                                WriteRootFile(anEvent, hfile);
+                                TimeOffset = aTrack.EndTime + 0.0001; // event spacing.
                                 continue;  
                             }
+                            else
+                            {
+                                SetTrackProperties(aTrack, 0, 0.); // jump.
+                                PackEvent(aTrack, anEvent, event_tracks_counter);
+                            }
                             nexttrack_flag = true; // next track
-                            voltage_phase = 0.;  // interrupt phase.
-                            SetTrackProperties(0);
                         }
                     }
                     else if ( nexttrack_flag == true )
                     {
-		        startfreq_val += slope_val*1.e6/1.e-3*dt;
+		                startfreq_val += slope_val*1.e6/1.e-3*dt;
                         voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                         nexttrack_flag = false; // now we stay on this track
                     }
-                }
-            }   
-        }
+                }  // eventdone is false
+            }  // index loop.
+        }  // channel loop.
+        delete anEvent;
+        } // eventID loop.
         delete RunLengthCalculator1;
+        hfile->Close();
         return true;
     }
 
