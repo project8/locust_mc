@@ -146,33 +146,33 @@ if (locust_mc_BUILD_WITH_ROOT)
     message(STATUS "${ROOT_LIBRARIES}")
     
     set (EVENT_DICT_HEADERFILES LMCEvent.hh LMCTrack.hh)
-    set (EVENT_LINKDEF_HEADERFILE LinkDef/LMCEventLinkDef.hh LMCTrackLinkDef.hh)
-# The next two lines are what should be happening, but without root_generate_dictionary they are not working yet.
-#    set (EVENT_DICT_OUTFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx)
-#    set (EVENT_DICT_PCMFILE ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm)
-
-# starting band-aid lines instead:
+    set (EVENT_LINKDEF_HEADERFILE 
+      LMCEventLinkDef.hh 
+      LMCTrackLinkDef.hh
+      )
+      
     set (EVENT_DICT_OUTFILE 
-      ${PROJECT_SOURCE_DIR}/Source/EventDict.cxx
-      ${PROJECT_SOURCE_DIR}/Source/TrackDict.cxx     
+      ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx
+      ${CMAKE_CURRENT_BINARY_DIR}/TrackDict.cxx
       )
     set (EVENT_DICT_PCMFILE 
-      ${PROJECT_SOURCE_DIR}/Source/EventDict_rdict.pcm
-      ${PROJECT_SOURCE_DIR}/Source/TrackDict_rdict.pcm      
+      ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm
+      ${CMAKE_CURRENT_BINARY_DIR}/TrackDict_rdict.pcm      
       )
-# end band-aid.
 
-# root_generate_dictionary is not working due to possible path conflict with Scarab.
+# root_generate_dictionary is not finding everything.  use add_custom_command instead:
 # run rootcint statements on command line from cbuild directory instead.
-    ROOT_GENERATE_DICTIONARY(EventDict ${EVENT_DICT_HEADERFILES} LINKDEF ${EVENT_LINKDEF_HEADERFILE})   
-#    rootcint -f EventDict.cxx -c ../Source/Core/LMCEvent.hh ../Source/Core/LinkDef/LMCEventLinkDef.hh 
-#    rootcint -f TrackDict.cxx -c ../Source/Core/LMCTrack.hh ../Source/Core/LinkDef/LMCTrackLinkDef.hh 
+#    ROOT_GENERATE_DICTIONARY(EventDict ${EVENT_DICT_HEADERFILES} LINKDEF ${EVENT_LINKDEF_HEADERFILE})   
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx COMMAND rootcling -f EventDict.cxx -c ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh VERBATIM)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/TrackDict.cxx COMMAND rootcling -f TrackDict.cxx -c ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCTrackLinkDef.hh VERBATIM)
 
     pbuilder_install_files (${LIB_INSTALL_DIR}  ${EVENT_DICT_PCMFILE})
         
 endif(locust_mc_BUILD_WITH_ROOT)
 
-pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE )
+
+#pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE)
+add_library(LocustMC SHARED ${LOCUST_MC_SOURCE_FILES} ${EVENT_DICT_OUTFILE})
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 
 
