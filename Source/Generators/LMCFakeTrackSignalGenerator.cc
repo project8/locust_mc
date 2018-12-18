@@ -426,6 +426,8 @@ namespace locust
         aTrack.Slope = slope_val;
         aTrack.TrackLength = tracklength_val;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
+        aTrack.LOFrequency = fLO_frequency;
+        aTrack.TrackPower = fSignalPower;
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID) const
@@ -454,6 +456,7 @@ namespace locust
     	anEvent->ntracks = ntracks_val;
     	anEvent->LOFrequency = fLO_frequency;
     	anEvent->StartFrequencies.resize(ntracks_val);
+    	anEvent->TrackPower.resize(ntracks_val);
     	anEvent->StartTimes.resize(ntracks_val);
     	anEvent->EndTimes.resize(ntracks_val);
     	anEvent->TrackLengths.resize(ntracks_val);
@@ -463,6 +466,7 @@ namespace locust
     void FakeTrackSignalGenerator::PackEvent(Track& aTrack, Event* anEvent, int trackID) const
     {
     	anEvent->StartFrequencies[trackID] = aTrack.StartFrequency;
+    	anEvent->TrackPower[trackID] = aTrack.TrackPower;
     	anEvent->StartTimes[trackID] = aTrack.StartTime;
     	anEvent->TrackLengths[trackID] = aTrack.TrackLength;
     	anEvent->EndTimes[trackID] = aTrack.EndTime;
@@ -480,7 +484,8 @@ namespace locust
         aTree->Branch("EndTimes", "std::vector<double>", &anEvent->EndTimes);
         aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
         aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
-        aTree->Branch("StartFrequencies", &anEvent->LOFrequency, "StartFrequency/D");
+        aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
+        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
         aTree->Fill();
         aTree->Write();
     }

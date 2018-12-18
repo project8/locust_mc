@@ -30,6 +30,7 @@ namespace locust
             int ntracks = -99;
             double LOFrequency = -99.;
             std::vector<double> StartFrequencies;
+            std::vector<double> TrackPower;
             std::vector<double> StartTimes;
             std::vector<double> EndTimes;
             std::vector<double> TrackLengths;
