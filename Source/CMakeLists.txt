@@ -155,6 +155,8 @@ if (locust_mc_BUILD_WITH_ROOT)
       ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx
       ${CMAKE_CURRENT_BINARY_DIR}/TrackDict.cxx
       )
+      
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/ )      
     set (EVENT_DICT_PCMFILE 
       ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm
       ${CMAKE_CURRENT_BINARY_DIR}/TrackDict_rdict.pcm      
@@ -166,7 +168,7 @@ if (locust_mc_BUILD_WITH_ROOT)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx COMMAND rootcling -f EventDict.cxx -c ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh VERBATIM)
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/TrackDict.cxx COMMAND rootcling -f TrackDict.cxx -c ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCTrackLinkDef.hh VERBATIM)
 
-    pbuilder_install_files (${LIB_INSTALL_DIR}  ${EVENT_DICT_PCMFILE})
+pbuilder_install_files (${LIB_INSTALL_DIR} ${EVENT_DICT_PCMFILE})
         
 endif(locust_mc_BUILD_WITH_ROOT)
 
