@@ -145,36 +145,38 @@ if (locust_mc_BUILD_WITH_ROOT)
     pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
     message(STATUS "${ROOT_LIBRARIES}")
     
-    set (EVENT_DICT_HEADERFILES LMCEvent.hh LMCTrack.hh)
-    set (EVENT_LINKDEF_HEADERFILE 
-      LMCEventLinkDef.hh 
-      LMCTrackLinkDef.hh
-      )
+    set (DICT_OUTFILES
+        ${CMAKE_CURRENT_BINARY_DIR}/LMCDict.cxx
+    )
       
-    set (EVENT_DICT_OUTFILE 
-      ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx
-      ${CMAKE_CURRENT_BINARY_DIR}/TrackDict.cxx
-      )
-      
-    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/ )      
-    set (EVENT_DICT_PCMFILE 
-      ${CMAKE_CURRENT_BINARY_DIR}/EventDict_rdict.pcm
-      ${CMAKE_CURRENT_BINARY_DIR}/TrackDict_rdict.pcm      
-      )
+    set (DICT_PCMFILES 
+        ${CMAKE_CURRENT_BINARY_DIR}/LMCDict_rdict.pcm
+    )
 
-# root_generate_dictionary is not finding everything.  use add_custom_command instead:
-# run rootcint statements on command line from cbuild directory instead.
-#    ROOT_GENERATE_DICTIONARY(EventDict ${EVENT_DICT_HEADERFILES} LINKDEF ${EVENT_LINKDEF_HEADERFILE})   
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/EventDict.cxx COMMAND rootcling -f EventDict.cxx -c ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCEventLinkDef.hh VERBATIM)
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/TrackDict.cxx COMMAND rootcling -f TrackDict.cxx -c ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCTrackLinkDef.hh VERBATIM)
-
-pbuilder_install_files (${LIB_INSTALL_DIR} ${EVENT_DICT_PCMFILE})
+    # root_generate_dictionary is not finding everything.  use add_custom_command instead:
+    # run rootcint statements on command line from cbuild directory instead.
+    #    ROOT_GENERATE_DICTIONARY(EventDict ${EVENT_DICT_HEADERFILES} LINKDEF ${EVENT_LINKDEF_HEADERFILE})   
+    get_directory_property(incdirs INCLUDE_DIRECTORIES)
+    set(includedirs)
+    foreach( d ${incdirs})
+       set(includedirs ${includedirs} -I${d})
+    endforeach()
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/LMCDict.cxx 
+        COMMAND rootcling -f LMCDict.cxx -c -inlineInputHeader ${includedirs}
+            ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh 
+            ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh 
+            ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCLinkDef.hh 
+        VERBATIM
+    )
+    
+    pbuilder_install_files (${LIB_INSTALL_DIR} ${DICT_PCMFILES})
         
 endif(locust_mc_BUILD_WITH_ROOT)
 
 
 #pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE)
-add_library(LocustMC SHARED ${LOCUST_MC_SOURCE_FILES} ${EVENT_DICT_OUTFILE})
+add_library(LocustMC ${LOCUST_MC_SOURCE_FILES} ${DICT_OUTFILES})
+target_link_libraries (LocustMC ${EXTERNAL_LIBRARIES})
+
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
-
-
+pbuilder_install_libraries( LocustMC )
