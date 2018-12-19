@@ -47,7 +47,7 @@ namespace locust
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
             int FindNode(double tNew) const;
             double TE11ModeExcitation() const;
-            double TE01ModeExcitation() const;
+            double TE10ModeExcitation() const;
             std::string gxml_filename;
             std::string gpitchangle_filename;
             double phi_t1; // antenna voltage phase in radians.
