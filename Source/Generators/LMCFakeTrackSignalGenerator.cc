@@ -531,7 +531,7 @@ namespace locust
                 double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);           
                 LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
-                if ( eventdone_flag == false ) // if not done with event
+                if (( eventdone_flag == false ) && ( endtime_val < 0.99*aSignal->TimeSize()/RunLengthCalculator1->GetAcquisitionRate() )) // if not done with event
                 {
                     if ( nexttrack_flag == false ) // if on same track
                     {
@@ -555,6 +555,7 @@ namespace locust
                             else
                             {
                                 SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
+//                                printf("event %d start time is %g and endtime val is %g and %g\n", eventID, aTrack.StartTime, aTrack.EndTime, endtime_val); getchar();
                                 PackEvent(aTrack, anEvent, event_tracks_counter);
                             }
                             nexttrack_flag = true; // next track
