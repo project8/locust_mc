@@ -401,7 +401,14 @@ namespace locust
 
 	if (TrackID==0)
           {
-          starttime_val = starttime_distribution(generator) + TimeOffset;
+          if (TimeOffset==0) // first event
+        	  {
+        	  starttime_val = starttime_distribution(generator);
+        	  }
+          else
+              {
+        	  starttime_val = TimeOffset;
+              }
           startfreq_val = startfreq_distribution(generator);
           aTrack.StartTime = starttime_val;
           aTrack.StartFrequency = startfreq_val;
@@ -502,7 +509,7 @@ namespace locust
         const unsigned nchannels = fNChannels;
         double LO_phase = 0.;
         double dt = 1./aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-        double TimeOffset = 0.; // event spacing.
+        double TimeOffset = 0.; // event start time
 
         for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
         {
@@ -542,7 +549,7 @@ namespace locust
                             {
                                 eventdone_flag = true; // mark end of event   
                                 WriteRootFile(anEvent, hfile);
-                                TimeOffset = aTrack.EndTime + 0.0001; // event spacing.
+                                TimeOffset = aTrack.EndTime + 0.0005; // event spacing.
                                 continue;  
                             }
                             else
