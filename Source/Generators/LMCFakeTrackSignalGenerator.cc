@@ -401,7 +401,14 @@ namespace locust
 
 	if (TrackID==0)
           {
-          starttime_val = starttime_distribution(generator) + TimeOffset;
+          if (TimeOffset==0) // first event
+        	  {
+        	  starttime_val = starttime_distribution(generator);
+        	  }
+          else
+              {
+        	  starttime_val = TimeOffset;
+              }
           startfreq_val = startfreq_distribution(generator);
           aTrack.StartTime = starttime_val;
           aTrack.StartFrequency = startfreq_val;
@@ -502,7 +509,7 @@ namespace locust
         const unsigned nchannels = fNChannels;
         double LO_phase = 0.;
         double dt = 1./aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-        double TimeOffset = 0.; // event spacing.
+        double TimeOffset = 0.; // event start time
 
         for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
         {
@@ -524,7 +531,7 @@ namespace locust
                 double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);           
                 LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
-                if ( eventdone_flag == false ) // if not done with event
+                if (( eventdone_flag == false ) && ( endtime_val < 0.99*aSignal->TimeSize()/RunLengthCalculator1->GetAcquisitionRate() )) // if not done with event
                 {
                     if ( nexttrack_flag == false ) // if on same track
                     {
@@ -542,12 +549,13 @@ namespace locust
                             {
                                 eventdone_flag = true; // mark end of event   
                                 WriteRootFile(anEvent, hfile);
-                                TimeOffset = aTrack.EndTime + 0.0001; // event spacing.
+                                TimeOffset = aTrack.EndTime + 0.0005; // event spacing.
                                 continue;  
                             }
                             else
                             {
                                 SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
+//                                printf("event %d start time is %g and endtime val is %g and %g\n", eventID, aTrack.StartTime, aTrack.EndTime, endtime_val); getchar();
                                 PackEvent(aTrack, anEvent, event_tracks_counter);
                             }
                             nexttrack_flag = true; // next track
