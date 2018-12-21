@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.1.0)
+project( locust_mc VERSION 1.9.1)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -17,6 +17,7 @@ pbuilder_prepare_project()
 set_option( USE_CPP11 TRUE )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
+option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     # Keep KasperDefaults from overriding the install prefix
@@ -129,6 +130,26 @@ endif (NOT FFTW_THREADS_FOUND)
     message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
 message (STATUS "FFTW_LIBRARIES is ${FFTW_LIBRARIES}")
 include_directories (${FFTW_INCLUDE_DIR})
+
+# ROOT
+if (locust_mc_BUILD_WITH_ROOT)
+    find_package (ROOT 6.00 COMPONENTS Gui Spectrum TMVA)
+else (locust_mc_BUILD_WITH_ROOT)
+    set (ROOT_FOUND FALSE)
+endif (locust_mc_BUILD_WITH_ROOT)
+if (ROOT_FOUND)
+    add_definitions(-DROOT_FOUND)
+    pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
+    message(STATUS "ROOT_LIBRARIES is ${ROOT_LIBRARIES}")
+else (ROOT_FOUND)
+    message(STATUS "Building without ROOT")
+    remove_definitions(-DROOT_FOUND)
+endif (ROOT_FOUND)
+include_directories (${ROOT_INCLUDE_DIR})
+
+
+
+
 
 
 ###########

@@ -76,6 +76,15 @@ set( LOCUST_MC_SOURCE_FILES
 #    Generators/LMCTrappedElectronGenerator.cc
 )
 
+if (locust_mc_BUILD_WITH_ROOT)
+    set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+        Core/LMCEvent.hh
+        Core/LMCTrack.hh)
+    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+        Core/LMCEvent.cc
+        Core/LMCTrack.cc)
+endif (locust_mc_BUILD_WITH_ROOT)
+
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
 
@@ -122,7 +131,52 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
-pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
+
+#  Check root build.
+if (locust_mc_BUILD_WITH_ROOT)
+
+  if (CMAKE_COMPILER_IS_GNUCXX)
+      option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
+    if( GCC_FORCE_LINKING )
+        set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
+    endif( )
+  endif()
+
+    pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
+    message(STATUS "${ROOT_LIBRARIES}")
+    
+    set (DICT_OUTFILES
+        ${CMAKE_CURRENT_BINARY_DIR}/LMCDict.cxx
+    )
+      
+    set (DICT_PCMFILES 
+        ${CMAKE_CURRENT_BINARY_DIR}/LMCDict_rdict.pcm
+    )
+
+    # root_generate_dictionary is not finding everything.  use add_custom_command instead:
+    # run rootcint statements on command line from cbuild directory instead.
+    #    ROOT_GENERATE_DICTIONARY(EventDict ${EVENT_DICT_HEADERFILES} LINKDEF ${EVENT_LINKDEF_HEADERFILE})   
+    get_directory_property(incdirs INCLUDE_DIRECTORIES)
+    set(includedirs)
+    foreach( d ${incdirs})
+       set(includedirs ${includedirs} -I${d})
+    endforeach()
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/LMCDict.cxx 
+        COMMAND rootcling -f LMCDict.cxx -c -inlineInputHeader ${includedirs}
+            ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh 
+            ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh 
+            ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCLinkDef.hh 
+        VERBATIM
+    )
+    
+    pbuilder_install_files (${LIB_INSTALL_DIR} ${DICT_PCMFILES})
+        
+endif(locust_mc_BUILD_WITH_ROOT)
+
+
+#pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE)
+add_library(LocustMC ${LOCUST_MC_SOURCE_FILES} ${DICT_OUTFILES})
+target_link_libraries (LocustMC ${EXTERNAL_LIBRARIES})
+
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
-
-
+pbuilder_install_libraries( LocustMC )

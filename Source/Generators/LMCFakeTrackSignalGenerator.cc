@@ -35,7 +35,11 @@ namespace locust
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
         fNTracksMean(1 ),
-        fRandomSeed(0)
+        fBField(1.0),
+        fRandomSeed(0),
+        fNEvents(1),
+        fRoot_filename("LocustEvent.root")
+
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -82,9 +86,19 @@ namespace locust
         if (aParam->has( "ntracks-mean") )
             SetNTracksMean( aParam->get_value< double >( "ntracks-mean",fNTracksMean) );
 
+        if (aParam->has("magnetic-field") )
+            SetBField(  aParam->get_value< double >("magnetic-field", fBField) );
+
         if (aParam->has( "random-seed") )
             SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
 
+        if (aParam->has( "n-events") )
+            SetNEvents(  aParam->get_value< int >( "n-events",fNEvents) );
+
+        if( aParam->has( "root-filename" ) )
+        {
+            fRoot_filename = aParam->get_value< std::string >( "root-filename" );
+        }
 
 
         if( aParam->has( "domain" ) )
@@ -241,6 +255,17 @@ namespace locust
         return;
     }
 
+    double FakeTrackSignalGenerator::GetBField() const
+    {
+        return fBField;
+    }
+
+    void FakeTrackSignalGenerator::SetBField( double aBField )
+    {
+        fBField = aBField;
+        return;
+    }
+
     int FakeTrackSignalGenerator::GetRandomSeed() const
     {
         return fRandomSeed;
@@ -249,6 +274,17 @@ namespace locust
     void FakeTrackSignalGenerator::SetRandomSeed( int aRandomSeed )
     {
         fRandomSeed = aRandomSeed;
+        return;
+    }
+
+    int FakeTrackSignalGenerator::GetNEvents() const
+    {
+        return fNEvents;
+    }
+
+    void FakeTrackSignalGenerator::SetNEvents( int aNEvents )
+    {
+        fNEvents = aNEvents;
         return;
     }
 
@@ -283,11 +319,68 @@ namespace locust
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
+    double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
+    {
+        double cyc_freq = (q_C)*b_field/m_kg;
+        double rel_cyc_freq = cyc_freq/(1+(energy/me_keV))/(2*PI);
+        return rel_cyc_freq; // takes energy in keV, magnetic field in T, returns in Hz
+    }
 
-    void FakeTrackSignalGenerator::SetTrackProperties(bool firsttrack) const
+    double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field) const
+    {
+        double cyc_freq = (q_C)*b_field/m_kg;
+        double rel_energy = (cyc_freq/(2*PI*frequency)-1)*me_keV;
+        return rel_energy; // takes frequency in Hz, magnetic field in T, returns in keV        
+    }
+
+    float FakeTrackSignalGenerator::myErfInv(float x) const // tolerance under +-6e-3, approximate inverse error function from "A handy approximation for the error function and its inverse" by Sergei Winitzki
+    {
+       float tt1, tt2, lnx, sgn;
+       sgn = (x < 0) ? -1.0f : 1.0f;
+       x = (1 - x)*(1 + x);        // x = 1 - x*x;
+       lnx = logf(x);
+       tt1 = 2/(PI*0.147) + 0.5f * lnx;
+       tt2 = 1/(0.147) * lnx;
+
+       return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
+    }
+
+    double FakeTrackSignalGenerator::scattering_inverseCDF(double p) const
+    {
+        // Fit params from Aseev et al. paper
+        double A1 = 0.204; // +/- 0.001 eV^-1
+        double w1 = 1.85; // +/- 0.02 eV
+        double eps1 = 12.6; // eV
+        double A2 = 0.0556; // +/- 0.0003 eV^-1
+        double w2 = 12.5; // +/- 0.1 eV
+        double eps2 = 14.30; // +/- 0.02 eV
+
+        double eps_c = 14.08948948948949; // calculated where the pieces of the PDF meet (eV)
+        double inv_eps_c = 0.4476144865289551; // calculated as CDF @ epsilon_c
+        double alpha, beta, energy_loss; 
+
+        if (p < inv_eps_c)
+        {
+            energy_loss = w1/pow(2,0.5)*myErfInv(pow(2/PI,0.5)*(2*p/(A1*w1))-1)+eps1;
+        }
+        else
+        {
+            alpha = pow(PI/2,0.5)*A1*w1/2*(erf(pow(2,0.5)*(eps_c-eps1)/w1)+1);
+            beta = A2*w2/2*atan(2*(eps_c-eps2)/w2);
+            energy_loss = w2/2*tan(2/(A2*w2)*(p-alpha+beta))+eps2;
+        }
+        return energy_loss; // input must be random continuous variable following uniform(0,1), returns in eV
+    }
+
+    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset) const
     {
 
         int random_seed_val;
+        double current_energy = 0.;
+        double scattering_cdf_val = 0.;
+        double energy_loss = 0.;
+        double new_energy = 0.;
+
         if ( fRandomSeed != 0 )
         {
             random_seed_val = fRandomSeed;
@@ -299,61 +392,132 @@ namespace locust
         }
 
         std::default_random_engine generator(random_seed_val);
+        std::default_random_engine generator2(random_seed_val+TrackID); // get new random value, different from above properties
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
+        std::uniform_real_distribution<double> dist(0,0.9798681926077586); // for scattering inverse cdf input, upper bound is cdf @ 100 eV
 
-	if (firsttrack)
+	if (TrackID==0)
           {
-          starttime_val = starttime_distribution(generator);
+          if (TimeOffset==0) // first event
+        	  {
+        	  starttime_val = starttime_distribution(generator);
+        	  }
+          else
+              {
+        	  starttime_val = TimeOffset;
+              }
           startfreq_val = startfreq_distribution(generator);
+          aTrack.StartTime = starttime_val;
+          aTrack.StartFrequency = startfreq_val;
           }
         else
           {
-	  starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
-          jumpsize_val = 0.002e9; // this should come from a pdf as well
+  	      starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
+          current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
+          scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
+          energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
+          new_energy = current_energy - energy_loss; // new energy after loss, in keV
+          jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
           startfreq_val += jumpsize_val;
+          aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
+          aTrack.StartFrequency += jumpsize_val;
           }
 
         slope_val = slope_distribution(generator);
         tracklength_val = tracklength_distribution(generator);
         endtime_val = starttime_val + tracklength_val;  // reset endtime.
-	//		printf("startfreq is %g\n", startfreq_val);
-
+//			printf("starttime is %g and TimeOffset is %g\n", starttime_val, TimeOffset);
+        aTrack.Slope = slope_val;
+        aTrack.TrackLength = tracklength_val;
+        aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
+        aTrack.LOFrequency = fLO_frequency;
+        aTrack.TrackPower = fSignalPower;
     }
+
+    void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID) const
+    {
+
+        int random_seed_val;
+         if ( fRandomSeed != 0 )
+         {
+             random_seed_val = fRandomSeed;
+         }
+         else
+         {
+             std::random_device rd;
+             random_seed_val = rd();
+         }
+
+        std::default_random_engine generator(random_seed_val);
+        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
+        ntracks_val = round(ntracks_distribution(generator));
+        if ( ntracks_val == 0 ) // if we rounded to 0, let's simulate at least one tracks
+        {
+            ntracks_val = 1;
+        }
+
+    	anEvent->EventID = eventID;
+    	anEvent->ntracks = ntracks_val;
+    	anEvent->LOFrequency = fLO_frequency;
+    	anEvent->StartFrequencies.resize(ntracks_val);
+    	anEvent->TrackPower.resize(ntracks_val);
+    	anEvent->StartTimes.resize(ntracks_val);
+    	anEvent->EndTimes.resize(ntracks_val);
+    	anEvent->TrackLengths.resize(ntracks_val);
+    	anEvent->Slopes.resize(ntracks_val);
+    }
+
+    void FakeTrackSignalGenerator::PackEvent(Track& aTrack, Event* anEvent, int trackID) const
+    {
+    	anEvent->StartFrequencies[trackID] = aTrack.StartFrequency;
+    	anEvent->TrackPower[trackID] = aTrack.TrackPower;
+    	anEvent->StartTimes[trackID] = aTrack.StartTime;
+    	anEvent->TrackLengths[trackID] = aTrack.TrackLength;
+    	anEvent->EndTimes[trackID] = aTrack.EndTime;
+    	anEvent->Slopes[trackID] = aTrack.Slope;
+    }
+
+
+    void WriteRootFile(Event* anEvent, TFile* hfile)
+    {
+        TTree *aTree = new TTree("aTree","Locust Tree");
+        aTree->Branch("EventID", &anEvent->EventID, "EventID/I");
+        aTree->Branch("ntracks", &anEvent->ntracks, "ntracks/I");
+        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->StartFrequencies);
+        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->StartTimes);
+        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->EndTimes);
+        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
+        aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
+        aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
+        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
+        aTree->Fill();
+        aTree->Write();
+    }
+
+
 
 
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
+        TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
+        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         const unsigned nchannels = fNChannels;
         double LO_phase = 0.;
         double dt = 1./aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-        int random_seed_val;
-        if ( fRandomSeed != 0 )
-        {
-            random_seed_val = fRandomSeed;
-        }
-        else
-        {   
-            std::random_device rd;
-            random_seed_val = rd();
-        }
+        double TimeOffset = 0.; // event start time
 
-        //LINFO( lmclog, "random_seed: " << random_seed_val ); // debugging
-
-        std::default_random_engine generator(random_seed_val);
-        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
-        int ntracks_val = round(ntracks_distribution(generator));
-        if ( ntracks_val == 0 ) // if we rounded to 0, let's simulate at least one tracks
+        for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
         {
-            ntracks_val = 1;
-        }
-   
-        SetTrackProperties(1);
+        Event* anEvent = new Event();
+        InitiateEvent(anEvent, eventID);
+        Track aTrack;
+        SetTrackProperties(aTrack, 0, TimeOffset);
+        PackEvent(aTrack, anEvent, 0);
 
         for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
         {
@@ -367,7 +531,7 @@ namespace locust
                 double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);           
                 LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
-                if ( eventdone_flag == false ) // if not done with event
+                if (( eventdone_flag == false ) && ( endtime_val < 0.99*aSignal->TimeSize()/RunLengthCalculator1->GetAcquisitionRate() )) // if not done with event
                 {
                     if ( nexttrack_flag == false ) // if on same track
                     {
@@ -381,28 +545,37 @@ namespace locust
                         else if ( time>endtime_val )
                         {
                             event_tracks_counter += 1;
-                            if (event_tracks_counter > ntracks_val) // if done with all tracks in event
+                            if (event_tracks_counter > ntracks_val-1) // if done with all tracks in event
                             {
                                 eventdone_flag = true; // mark end of event   
+                                WriteRootFile(anEvent, hfile);
+                                TimeOffset = aTrack.EndTime + 0.0005; // event spacing.
                                 continue;  
                             }
+                            else
+                            {
+                                SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
+//                                printf("event %d start time is %g and endtime val is %g and %g\n", eventID, aTrack.StartTime, aTrack.EndTime, endtime_val); getchar();
+                                PackEvent(aTrack, anEvent, event_tracks_counter);
+                            }
                             nexttrack_flag = true; // next track
-                            voltage_phase = 0.;  // interrupt phase.
-                            SetTrackProperties(0);
                         }
                     }
                     else if ( nexttrack_flag == true )
                     {
-		        startfreq_val += slope_val*1.e6/1.e-3*dt;
+		                startfreq_val += slope_val*1.e6/1.e-3*dt;
                         voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                         nexttrack_flag = false; // now we stay on this track
                     }
-                }
-            }   
-        }
+                }  // eventdone is false
+            }  // index loop.
+        }  // channel loop.
+        delete anEvent;
+        } // eventID loop.
         delete RunLengthCalculator1;
+        hfile->Close();
         return true;
     }
 
