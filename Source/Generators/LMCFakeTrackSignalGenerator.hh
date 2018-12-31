@@ -36,7 +36,7 @@ namespace locust
       @class FakeTrackSignalGenerator
       @author P. L. Slocum, L. Saldana
 
-      @brief Generate custom, aka "fake", CRES track.
+      @brief Generate custom, aka "fake", CRES event.
 
       @details
       Operates in time.
@@ -56,7 +56,9 @@ namespace locust
       - "start-time-min": double -- Lower bound for track start time (s); distribution: uniform.
       - "ntracks-mean": double -- Average number of tracks per event (integer); distribution: exponential.
       - "magnetic-field": double -- Magnetic field used to convert from frequency to energy (for jumpsize) (T).
-      - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used. 
+      - "n-events": int -- Number of events per simulation, spaced by 0.5 ms (hardcoded).
+      - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used.
+      - "root-filename": str -- Name of root file containing event information to be written at output. 
 
 
 */
