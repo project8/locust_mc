@@ -9,6 +9,11 @@
 #define LMCKASSSIGNALGENERATOR_HH_
 
 #include "LMCGenerator.hh"
+#include "LMCConst.hh"
+#include "LMCThreeVector.hh"
+#include <vector>
+using std::vector;
+
 
 namespace locust
 {
@@ -41,11 +46,16 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
+            double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition, double GroupVelocity);
+
+
+
         private:
             double fLO_Frequency;  // typically defined by a parameter in json file.
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
             int FindNode(double tNew) const;
+            int GetCurrentIndex(double t_old, double distance, int PreEventCounter, double GroupVelocity);
             double TE11ModeExcitation() const;
             double TE10ModeExcitation() const;
             std::string gxml_filename;
@@ -53,6 +63,8 @@ namespace locust
             double phi_t1; // antenna voltage phase in radians.
             double phi_t2; // reflecting short voltage phase in radians.
             double phiLO_t; // voltage phase of LO in radians;
+            mutable double fPreviousRetardedTime;
+            mutable int fPreviousRetardedIndex;
             double EventStartTime;
             bool EventToFile;
 
