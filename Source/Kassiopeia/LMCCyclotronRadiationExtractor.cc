@@ -259,8 +259,8 @@ namespace locust
         }
         if(fP8Phase==2)  // this code be commented out to save time as DeltaE will be small.
         {
-//            DeltaE = aFieldCalculator.GetDampingFactorPhase2(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-//            aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+            DeltaE = aFieldCalculator.GetDampingFactorPhase2(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
 	
         if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
@@ -269,7 +269,6 @@ namespace locust
             if (t_old == 0.) 
             {
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
-                if (fParticleHistory.size()) fParticleHistory.clear();
             }
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));

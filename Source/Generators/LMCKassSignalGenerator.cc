@@ -149,7 +149,8 @@ namespace locust
 
         LMCThreeVector testPoint(0.,0.,rxZPosition);  // electron is at z-now.
 
-//        printf("fparticlefronttime is %g\n", fParticleHistory.front().GetTime()); getchar();
+        if (fParticleHistory.size())
+	  {
         if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
                 {
                     fParticleHistory.front().Interpolate(0);
@@ -197,7 +198,8 @@ namespace locust
 
                     tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), testPoint, GroupVelocity);
                     tOldSpaceTimeInterval = tSpaceTimeInterval;
-                }
+                } // if
+	  } // if fParticleHistory.size()
     	return CurrentIndex;
     }
 
@@ -221,9 +223,10 @@ namespace locust
             tCutOffFrequency = LMCConst::C() * LMCConst::Pi() / 10.668e-3; // a in m
         }
 
-        int currentIndex = FindNode(t_old);
+	int currentIndex = FindNode(t_old);
         locust::Particle tParticle = fParticleHistory[currentIndex];
         tParticle.Interpolate(t_old);
+	
 
         RunLengthCalculator RunLengthCalculator1;
 
@@ -237,31 +240,11 @@ namespace locust
         double tGroupVelocity = LMCConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*LMCConst::Pi()*tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
-// new solutions starting:
-        int currentIndexAntenna = GetCurrentIndex(t_old, CENTER_TO_ANTENNA, PreEventCounter, tGroupVelocity);
-        int currentIndexShort = GetCurrentIndex(t_old, -2.*CENTER_TO_SHORT-CENTER_TO_ANTENNA, PreEventCounter, tGroupVelocity);
-        locust::Particle tParticleAntenna = fParticleHistory[currentIndexAntenna];
-        tParticleAntenna.Interpolate(t_old);
-        double tCyclotronFrequencyAntenna = tParticleAntenna.GetCyclotronFrequency()/2./LMCConst::Pi();
-        double tVelocityZAntenna = tParticleAntenna.GetVelocity().Z();
-        locust::Particle tParticleShort = fParticleHistory[currentIndexShort];
-        tParticleShort.Interpolate(t_old);
-        double tCyclotronFrequencyShort = tParticleShort.GetCyclotronFrequency()/2./LMCConst::Pi();
-        double tVelocityZShort = tParticleShort.GetVelocity().Z();
-        tDopplerFrequencyAntenna = tCyclotronFrequencyAntenna * tGammaZ *( 1. - tVelocityZAntenna / tGroupVelocity);
-        tDopplerFrequencyShort = tCyclotronFrequencyShort *  tGammaZ *( 1. + tVelocityZShort / tGroupVelocity);
-//        printf("dopplerfreqantenna is %g\n", tDopplerFrequencyAntenna);
-//        printf("dopplerfreqshort is %g\n", tDopplerFrequencyShort);
-// new solutions ending.
-
 
 //standard lines.  old solutions.
-/*        tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
+        tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
-        printf("old dopplerfreqantenna is %g\n", tDopplerFrequencyAntenna);
-        printf("old dopplerfreqshort is %g\n", tDopplerFrequencyShort); getchar();
-*/
-        // end old solutions.
+// end old solutions.
 
 
         double tPositionZ = tParticle.GetPosition().Z();
@@ -306,12 +289,12 @@ namespace locust
         {  // assume 50 ohm impedance
 
             //	    RealVoltage2 *= 0.25; // some loss at short.
-            aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
-            aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
+	  aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
+	  aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
 
         }
 
-/*
+	/*	
                                 printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
                                 printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
                                 printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
@@ -322,7 +305,7 @@ namespace locust
 
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-*/
+	*/
 
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
@@ -367,8 +350,8 @@ namespace locust
     {
         double dim1_wr42 = 10.668e-3; // a in m
 
-//        locust::Particle tParticle = fParticleHistory.back();
-        locust::Particle tParticle = fParticleHistory[0];  // 0 is most recent.
+	// no need to interpolate times here as grad-B motion is slow.
+        locust::Particle tParticle = fParticleHistory.back();
 
         double tPositionX = tParticle.GetPosition().X() + dim1_wr42/2.;
         double coupling = 0.63*sin(LMCConst::Pi()*tPositionX/dim1_wr42);  // avg over cyclotron orbit.
