@@ -27,6 +27,7 @@ namespace locust
 
             virtual bool Configure( const scarab::param_node* aNode ) = 0;
             void ConfigureNChannels( unsigned nchannels ) const;
+            void ConfigureAcquisitionRate( double ar ) const;
 
             virtual void Accept( GeneratorVisitor* aVisitor ) const = 0;
 
@@ -50,6 +51,7 @@ namespace locust
             bool Generate( Signal* aSignal );
             virtual bool DoGenerate( Signal* aSignal ) = 0;
             mutable unsigned fNChannels;
+            mutable double fAcquisitionRate;
 
 
             std::string fName;

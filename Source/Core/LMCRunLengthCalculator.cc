@@ -29,7 +29,7 @@ namespace locust
 //            fRecordSize( 20000 ),  // debug
             fSampleSize ( 2 ),
             fBinWidth( 5.e-9 ),
-            fAcquisitionRate( 200. )
+            frlcAcquisitionRate( 200. )
     {
     }
 
@@ -62,7 +62,6 @@ namespace locust
         if(aNode->has( "n-channels" ) )
 	  SetNChannels( aNode->get_value< unsigned >( "n-channels" ) );
 
-
         return true;
     }
 
@@ -78,6 +77,7 @@ namespace locust
         while( nextGenerator != NULL )
         {
 	    nextGenerator->ConfigureNChannels(frlcChannels);
+	    nextGenerator->ConfigureAcquisitionRate(frlcAcquisitionRate);
             nextGenerator->Accept( this );
             nextGenerator = nextGenerator->GetNextGenerator();
         }
@@ -211,7 +211,7 @@ namespace locust
                  "\t\tNumber of records: " << fNRecords << '\n' <<
                  "\t\tDuration: " << fDuration << " seconds\n" <<
                  "\t\tRecord size: " << fRecordSize << " samples\n" <<
-                 "\t\tAcquisition rate: " << fAcquisitionRate << " MHz\n" <<
+                 "\t\tAcquisition rate: " << frlcAcquisitionRate << " MHz\n" <<
                  "\t\tBin width: " << fBinWidth << " s");
         return true;
     }
@@ -319,12 +319,12 @@ namespace locust
 
     double RunLengthCalculator::GetAcquisitionRate() const
     {
-        return fAcquisitionRate;
+        return frlcAcquisitionRate;
     }
 
     void RunLengthCalculator::SetAcquisitionRate( double ar )
     {
-        fAcquisitionRate = ar;
+        frlcAcquisitionRate = ar;
         fBinWidth = 1. / (ar * 1.e6);
         return;
     }
@@ -337,7 +337,7 @@ namespace locust
     void RunLengthCalculator::SetBinWidth( double bw )
     {
         fBinWidth = bw;
-        fAcquisitionRate = 1. / (bw * 1.e6);
+        frlcAcquisitionRate = 1. / (bw * 1.e6);
         return;
     }
 

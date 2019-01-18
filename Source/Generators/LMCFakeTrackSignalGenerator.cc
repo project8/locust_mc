@@ -453,7 +453,7 @@ namespace locust
 
         std::default_random_engine generator(random_seed_val);
         std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
-        ntracks_val = round(ntracks_distribution(generator));
+        ntracks_val = ceil(ntracks_distribution(generator));
         if ( ntracks_val == 0 ) // if we rounded to 0, let's simulate at least one tracks
         {
             ntracks_val = 1;
@@ -505,10 +505,9 @@ namespace locust
 
         TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
-        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
         const unsigned nchannels = fNChannels;
         double LO_phase = 0.;
-        double dt = 1./aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+        double dt = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
         double TimeOffset = 0.; // event start time
 
         for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
@@ -519,6 +518,12 @@ namespace locust
         SetTrackProperties(aTrack, 0, TimeOffset);
         PackEvent(aTrack, anEvent, 0);
 
+        if ( endtime_val < 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) )
+        {
+
+//        	printf("endtime_val is %g and reclength is %g\n", endtime_val, 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) ); getchar();
+
+
         for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
         {
             double voltage_phase = fStartVPhase;
@@ -528,10 +533,10 @@ namespace locust
 
             for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
             {
-                double time = (double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);           
+                double time = (double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
                 LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
-                if (( eventdone_flag == false ) && ( endtime_val < 0.99*aSignal->TimeSize()/RunLengthCalculator1->GetAcquisitionRate() )) // if not done with event
+                if ( eventdone_flag == false ) // if not done with event
                 {
                     if ( nexttrack_flag == false ) // if on same track
                     {
@@ -572,9 +577,9 @@ namespace locust
                 }  // eventdone is false
             }  // index loop.
         }  // channel loop.
+        }  // endtime boolean loop.
         delete anEvent;
         } // eventID loop.
-        delete RunLengthCalculator1;
         hfile->Close();
         return true;
     }

@@ -112,8 +112,9 @@ namespace locust
    // TM power reduction of 0.00136 is included in normalization as in Collin paper.
    // coupling*coupling is the power fraction plotted in the Locust paper.
 
-        double coupling =   48.1 * 2./LMCConst::Pi() * 4./(2.*LMCConst::Pi()) / kc *
+        double coupling =   705.7 * 2./LMCConst::Pi() * 4./(2.*LMCConst::Pi()) / kc *
         		j1(kc*r);
+      
         return coupling*coupling;
     }
 

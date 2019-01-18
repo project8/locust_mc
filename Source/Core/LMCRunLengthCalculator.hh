@@ -120,7 +120,7 @@ namespace locust
             unsigned fRecordSize;
             unsigned fSampleSize;
             double fBinWidth; // sec
-            double fAcquisitionRate; // MHz
+            double frlcAcquisitionRate; // MHz
 
     };
 

@@ -69,6 +69,24 @@ namespace locust
     }
 
 
+
+    double KassSignalGenerator::GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition, double GroupVelocityTE10 )
+    {
+      //    printf("sti says aReceiverTime is %g, aParticleTime is %g\n", aReceiverTime, aParticleTime);
+      return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / GroupVelocityTE10;
+    }
+
+
+    double GetKassSignalFieldStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
+    {
+        double tRetardedTime = aParticle.GetTime(true);
+        return tRetardedTime + aSpaceTimeInterval;
+    }
+
+
+
+
+
     static void* KassiopeiaInit(const std::string &aFile)
     {
         RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
@@ -108,8 +126,86 @@ namespace locust
         return true;
     }
 
+    int KassSignalGenerator::GetCurrentIndex(double t_old, double rxZPosition, int PreEventCounter, double GroupVelocity)
+    {
+
+        locust::Particle tCurrentParticle = fParticleHistory.back();
+        int CurrentIndex = 0;
+
+        const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
+        const int historySize = fParticleHistory.size();
+        double tReceiverTime = t_old;
+        double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
+
+        double tSpaceTimeInterval=99.;
+        double dtRetarded=0;
+        double tTolerance=1e-23;
+
+        if (PreEventCounter > 0)
+        {
+        	fPreviousRetardedTime = -99.;
+        	fPreviousRetardedIndex = -99;
+        }
+
+        LMCThreeVector testPoint(0.,0.,rxZPosition);  // electron is at z-now.
+
+        if (fParticleHistory.size())
+	  {
+        if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
+                {
+                    fParticleHistory.front().Interpolate(0);
+                    if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), testPoint, GroupVelocity ) < 0 )
+                    {
+                        printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
+                        return 0;
+                    }
+                }
+
+                if(fPreviousRetardedIndex == -99.)
+                {
+                    CurrentIndex=FindNode(tReceiverTime);
+                    tCurrentParticle = fParticleHistory[CurrentIndex];
+                    tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - testPoint).Magnitude() /  LMCConst::C();
+                }
+                else
+                {
+                    CurrentIndex = fPreviousRetardedIndex;
+                    tRetardedTime = fPreviousRetardedTime + fDigitizerTimeStep;
+                }
+
+                CurrentIndex = FindNode(tRetardedTime);
+                CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
+
+                tCurrentParticle = fParticleHistory[CurrentIndex];
+                tCurrentParticle.Interpolate(tRetardedTime);
+                tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), testPoint, GroupVelocity);
+
+                double tOldSpaceTimeInterval=99.;
+
+                //Converge to root
+                for(int j=0;j<25;++j)
+                {
+                    tRetardedTime = GetKassSignalFieldStepRoot(tCurrentParticle, tReceiverTime, testPoint, tSpaceTimeInterval);
+                    tCurrentParticle.Interpolate(tRetardedTime);
+
+                    //Change the kassiopeia step we expand around if the interpolation time displacement is too large
+                    if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
+                    {
+                        CurrentIndex=FindNode(tRetardedTime);
+                        tCurrentParticle=fParticleHistory[CurrentIndex];
+                        tCurrentParticle.Interpolate(tRetardedTime);
+                    }
+
+                    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), testPoint, GroupVelocity);
+                    tOldSpaceTimeInterval = tSpaceTimeInterval;
+                } // if
+	  } // if fParticleHistory.size()
+    	return CurrentIndex;
+    }
+
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
     {
+
         double gain=1.;  //voltage gain
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
@@ -127,9 +223,10 @@ namespace locust
             tCutOffFrequency = LMCConst::C() * LMCConst::Pi() / 10.668e-3; // a in m
         }
 
-        int currentIndex = FindNode(t_old);
+	int currentIndex = FindNode(t_old);
         locust::Particle tParticle = fParticleHistory[currentIndex];
         tParticle.Interpolate(t_old);
+	
 
         RunLengthCalculator RunLengthCalculator1;
 
@@ -143,11 +240,12 @@ namespace locust
         double tGroupVelocity = LMCConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*LMCConst::Pi()*tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
-        //        printf("paused in Locust! Larmorpower is %g\n", tLarmorPower); getchar();
 
-        //        printf("GroupVelocity is %g, tCutOffFreq is %g, 2PIfcyc is %g\n", tGroupVelocity, tCutOffFrequency, 2.*LMCConst::Pi()*tCyclotronFrequency); getchar();
+//standard lines.  old solutions.
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
+// end old solutions.
+
 
         double tPositionZ = tParticle.GetPosition().Z();
 
@@ -172,7 +270,6 @@ namespace locust
         }
 
 
-
         phi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * fDigitizerTimeStep;
         phi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * fDigitizerTimeStep;
         phiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
@@ -180,7 +277,6 @@ namespace locust
         ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));  // short
         ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
-
 
         if (Project8Phase == 2)
         {
@@ -193,25 +289,23 @@ namespace locust
         {  // assume 50 ohm impedance
 
             //	    RealVoltage2 *= 0.25; // some loss at short.
-            aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
-            aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
-
+	  aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
+	  aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
 
         }
 
-
-        /*						
+	/*	
                                 printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
                                 printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
                                 printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
                                 printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
                                 "  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
                                 index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-        //            getchar();
+                    getchar();
 
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-        */		
+	*/
 
 
         t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
@@ -255,7 +349,10 @@ namespace locust
     double KassSignalGenerator::TE10ModeExcitation() const
     {
         double dim1_wr42 = 10.668e-3; // a in m
+
+	// no need to interpolate times here as grad-B motion is slow.
         locust::Particle tParticle = fParticleHistory.back();
+
         double tPositionX = tParticle.GetPosition().X() + dim1_wr42/2.;
         double coupling = 0.63*sin(LMCConst::Pi()*tPositionX/dim1_wr42);  // avg over cyclotron orbit.
         return coupling;  // 0.63*0.63 = 0.4 = power fraction in WR42.
