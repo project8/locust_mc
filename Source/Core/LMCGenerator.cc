@@ -25,6 +25,7 @@ namespace locust
             fName( aName ),
             fRequiredSignalState( Signal::kFreq ),
             fNChannels( 1 ),
+            fAcquisitionRate( 200. ),
             fNext( NULL )
     {
     }
@@ -77,10 +78,15 @@ namespace locust
         return;
     }
 
-  void Generator::ConfigureNChannels( unsigned nchannels ) const
-  {
-    fNChannels = nchannels;
-  }
+    void Generator::ConfigureNChannels( unsigned nchannels ) const
+    {
+        fNChannels = nchannels;
+    }
+
+    void Generator::ConfigureAcquisitionRate( double ar ) const
+    {
+        fAcquisitionRate = ar;
+    }
 
 
 
