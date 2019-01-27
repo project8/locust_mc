@@ -37,18 +37,15 @@ namespace locust
     {
         if( aParam == NULL) return true;
 
-        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
-
         double tSigma = fSigma;
         if( aParam->has( "noise-floor" ) )
         {
-            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * RunLengthCalculator1->GetAcquisitionRate() * 1.e6);  // sampling rate
+            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
         }
         else
         {
             tSigma = aParam->get_value( "sigma", fSigma );
         }
-        delete RunLengthCalculator1;
 
         SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
 
