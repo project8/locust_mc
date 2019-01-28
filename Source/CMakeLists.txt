@@ -96,6 +96,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
         Core/LMCPatchAntenna.hh
+        Core/LMCPowerCombiner.hh
         Core/LMCParticle.hh
         Core/LMCReceiver.hh
         Core/LMCHFSSReader.hh
@@ -119,6 +120,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Core/LMCHFSSReader.cc
         Core/LMCParticle.cc
         Core/LMCPatchAntenna.cc
+        Core/LMCPowerCombiner.cc
         Core/LMCReceiver.cc
 
         Kassiopeia/LMCFieldCalculator.cc
