@@ -12,6 +12,7 @@
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
+#include "LMCPowerCombiner.hh"
 
 
 namespace locust
@@ -58,7 +59,7 @@ namespace locust
             int fNPatchesPerStrip; // from json file.
             double fPatchSpacing; // from json file.
             std::string gxml_filename;
-            bool fCorporateFeed;
+            int fPowerCombiner;
 
 
             bool DoGenerate( Signal* aSignal );
@@ -67,7 +68,6 @@ namespace locust
 
             int FindNode(double tNew) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
-            double ZPositionPatch(unsigned z_index);
 
 
             double phiLO_t; // voltage phase of LO in radians;

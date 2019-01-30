@@ -17,7 +17,6 @@
 #include <fstream>
 
 #include "LMCGlobalsDeclaration.hh"
-#include "LMCHFSSReader.hh"
 #include "LMCDigitizer.hh"
 #include <chrono>
 
@@ -34,7 +33,7 @@ namespace locust
         fArrayRadius( 0. ),
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
-        fCorporateFeed( 0 ),
+        fPowerCombiner( 0 ),
         gxml_filename("blank.xml"),
         phiLO_t(0.),
         VoltagePhase_t {0.}
@@ -73,11 +72,13 @@ namespace locust
         if( aParam->has( "feed" ) )
         {
             if (aParam->get_value< std::string >( "feed" ) == "corporate")
-                fCorporateFeed = 1;  // default
+                fPowerCombiner = 0;  // default
             else if (aParam->get_value< std::string >( "feed" ) == "series")
-                fCorporateFeed = 0;
+                fPowerCombiner = 1;
+            else if (aParam->get_value< std::string >( "feed" ) == "quadraturefeed")
+                fPowerCombiner = 2;
             else
-                fCorporateFeed = 1;  // default
+            	fPowerCombiner = 0;  // default
         }
 
         return true;
@@ -184,6 +185,7 @@ namespace locust
     }
 
 
+    // voltage amplitude induced at patch.
     double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
         double AntennaFactor = 1./400.;
@@ -198,43 +200,22 @@ namespace locust
         return VoltageAmplitude;
     }
 
-    double PatchSignalGenerator::ZPositionPatch(unsigned z_index)
-    {
-        double PatchOffset = 0.;
-        double ZPosition = 0.;
-        if (fNPatchesPerStrip%2==1)
-        {
-            PatchOffset = -(fNPatchesPerStrip-1.)/2. * fPatchSpacing;  // far left patch.                  
-            ZPosition = PatchOffset + (double)(z_index)*fPatchSpacing;
-        }
-        else
-        {
-            PatchOffset = -(fPatchSpacing)/2. - ((fNPatchesPerStrip/2.) - 1.) * fPatchSpacing;
-            ZPosition = PatchOffset + (double)(z_index)*fPatchSpacing;
-        }
-        return ZPosition;
-    }
 
-
-
-    double GetLinePhaseCorr(unsigned z_index, double DopplerFrequency)
-    {
-        double D = 0.007711*0.95; // m.  18.0 keV 90 degree electron, lambda in kapton.
-        double c_n = LMCConst::C()/1.5;  // speed of light in Kapton.
-        double lambda = c_n/(DopplerFrequency/(2.*LMCConst::Pi()));
-        double dphi = 2.*LMCConst::Pi() * D * z_index / lambda;
-        return dphi;
-    }
-
-
-
+    // z-index ranges from 0 to npatches-per-strip-1.
     void PatchSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency)
     {
-        double LinePhaseCorr = 0.;
-        if (fCorporateFeed == false)
+    	PowerCombiner aPowerCombiner;
+        if (fPowerCombiner == 1)  // series feed
         {
-            LinePhaseCorr = GetLinePhaseCorr(z_index, DopplerFrequency);
-            VoltagePhase += LinePhaseCorr;     
+        	//lossless series feed with amp at one end:
+        	VoltagePhase += aPowerCombiner.GetLinePhaseCorr(z_index, DopplerFrequency);
+        }
+        if (fPowerCombiner == 2) // quadrature feed
+        {
+        	// assume 2PI delay between junctions, so we don't calculated phase mismatches.
+        	// instead calculate damping on voltage amplitude:
+        	int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
+            VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(njunctions);
         }
 
         //if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
