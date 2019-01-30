@@ -483,7 +483,11 @@ namespace locust
 
     void WriteRootFile(Event* anEvent, TFile* hfile)
     {
-        TTree *aTree = new TTree("aTree","Locust Tree");
+    	char buffer[100];
+    	int n=sprintf(buffer, "Event_%d", anEvent->EventID);
+    	char* treename = buffer;
+
+        TTree *aTree = new TTree(treename,"Locust Tree");
         aTree->Branch("EventID", &anEvent->EventID, "EventID/I");
         aTree->Branch("ntracks", &anEvent->ntracks, "ntracks/I");
         aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->StartFrequencies);
@@ -495,6 +499,7 @@ namespace locust
         aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
         aTree->Fill();
         aTree->Write();
+        delete aTree;
     }
 
 
