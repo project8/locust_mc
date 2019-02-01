@@ -37,17 +37,19 @@ namespace locust
     {
         if( aParam == NULL) return true;
 
-        double tSigma = fSigma;
+
         if( aParam->has( "noise-floor" ) )
         {
-            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
+//            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
+            fSigma = sqrt( aParam->get_value< double >( "noise-floor" ));
+//            printf("sigma is %g and fAcquisitionRate is %g\n", tSigma, fAcquisitionRate); getchar();
         }
         else
         {
-            tSigma = aParam->get_value( "sigma", fSigma );
+            fSigma = aParam->get_value< double >( "sigma");
         }
 
-        SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
+  //      SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
 
         if( aParam->has( "domain" ) )
         {
@@ -140,6 +142,9 @@ namespace locust
 
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
+
+    	SetMeanAndSigma( fMean, fSigma * sqrt(fAcquisitionRate * 1.e6) );
+
         double gain=1.;
         const unsigned nchannels = fNChannels;
         double phi = 0.;  // voltage phase
