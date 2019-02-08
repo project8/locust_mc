@@ -25,7 +25,7 @@ namespace locust
     double PowerCombiner::GetVoltageDamping(int njunctions)
     {
     	// test:  clobber voltage with 0.6 at each junction.
-    return njunctions*0.6;
+      return pow(1.0, njunctions);
     }
 
     double PowerCombiner::GetLinePhaseCorr(unsigned z_index, double DopplerFrequency)

@@ -75,7 +75,7 @@ namespace locust
                 fPowerCombiner = 0;  // default
             else if (aParam->get_value< std::string >( "feed" ) == "series")
                 fPowerCombiner = 1;
-            else if (aParam->get_value< std::string >( "feed" ) == "quadraturefeed")
+            else if (aParam->get_value< std::string >( "feed" ) == "quadrature")
                 fPowerCombiner = 2;
             else
             	fPowerCombiner = 0;  // default
@@ -214,7 +214,7 @@ namespace locust
         {
         	// assume 2PI delay between junctions, so we don't calculated phase mismatches.
         	// instead calculate damping on voltage amplitude:
-        	int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
+            int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
             VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(njunctions);
         }
 
