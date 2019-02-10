@@ -97,6 +97,7 @@ namespace locust
             void Visit( const TrappedElectronGenerator* );
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const FakeTrackSignalGenerator* );
+            void Visit( const PlaneWaveSignalGenerator* );
             void Visit( const TestSignalGenerator* );
             void Visit( const BasebandTrackGenerator* );
             void Visit( const LowPassFilterFFTGenerator* );

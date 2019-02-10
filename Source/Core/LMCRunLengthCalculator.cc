@@ -144,6 +144,13 @@ namespace locust
         return;
     }
 
+
+    void RunLengthCalculator::Visit( const PlaneWaveSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
     void RunLengthCalculator::Visit( const TestSignalGenerator* )
     {
         // nothing to see here, move along, please
