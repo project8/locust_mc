@@ -149,7 +149,7 @@ namespace locust
         {
             if (fPhaseDelay) // parameter from json
             {
-            VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency);
+	      VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
             }
         	// instead calculate damping on voltage amplitude:
             int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
