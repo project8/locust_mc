@@ -39,7 +39,6 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCFakeTrackSignalGenerator.hh    
-    Generators/LMCPlaneWaveSignalGenerator.hh    
     Generators/LMCTestSignalGenerator.hh
     Generators/LMCDecimateSignalGenerator.hh
     Generators/LMCLowPassFilterFFTGenerator.hh
@@ -67,8 +66,6 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCFakeTrackSignalGenerator.cc    
-    Generators/LMCFakeTrackSignalGenerator.cc    
-    Generators/LMCPlaneWaveSignalGenerator.cc
     Generators/LMCDecimateSignalGenerator.cc
     Generators/LMCLowPassFilterFFTGenerator.cc
     Generators/LMCLocalOscillatorGenerator.cc
@@ -93,6 +90,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
+        Generators/LMCPlaneWaveSignalGenerator.hh
 
         Core/LMCChannel.hh
         Core/LMCGlobalsDeclaration.hh
@@ -117,6 +115,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCPatchSignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
+        Generators/LMCPlaneWaveSignalGenerator.cc
 
         Core/LMCChannel.cc
         Core/LMCHFSSReader.cc
