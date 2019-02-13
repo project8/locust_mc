@@ -152,11 +152,17 @@ namespace locust
 	      VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
             }
         	// instead calculate damping on voltage amplitude:
-            int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
+            int njunctions = fabs((double)z_index - (double)fNPatchesPerStrip/2.);
+            if (z_index >= fNPatchesPerStrip/2) njunctions += 1;
+//printf("zindex is %d and njnctions is %d\n", z_index, njunctions); getchar();
             VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(njunctions);
         }
+
+
+
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
+        
 //	        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
 
 

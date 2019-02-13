@@ -41,7 +41,9 @@ namespace locust
 
   double PowerCombiner::GetCenterFedLinePhaseCorr(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing)
     {
-        int njunctions = fabs(NPatchesPerStrip/2 - z_index);
+        int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.);
+        if (z_index >= NPatchesPerStrip/2) njunctions += 1;
+        
         double D = PatchSpacing; // m.  18.0 keV 90 degree electron, lambda in kapton.
         double c_n = LMCConst::C()/1.704;  // speed of light in Kapton.
         double lambda = c_n/DopplerFrequency;
