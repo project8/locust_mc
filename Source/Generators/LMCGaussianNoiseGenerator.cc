@@ -86,7 +86,7 @@ namespace locust
 
     void GaussianNoiseGenerator::SetMean( double aMean )
     {
-        SetMeanAndSigma( aMean, fSigma );
+        fMean = aMean;
         return;
     }
 
@@ -97,13 +97,13 @@ namespace locust
 
     void GaussianNoiseGenerator::SetSigma( double aSigma )
     {
-        SetMeanAndSigma( fMean, aSigma );
+        fSigma = aSigma;
         return;
     }
 
-    void GaussianNoiseGenerator::SetMeanAndSigma( double aMean, double aSigma )
+    void GaussianNoiseGenerator::SetMeanAndSigma( double aMean, double aSigma, double aSampledSigma )
     {
-        fNormDist = std::normal_distribution< double >( aMean, aSigma );
+        fNormDist = std::normal_distribution< double >( aMean, aSampledSigma );
         fUniDist = std::uniform_real_distribution< double >(0.,360.);
         fMean = aMean;
         fSigma = aSigma;
@@ -143,7 +143,7 @@ namespace locust
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-    	SetMeanAndSigma( fMean, fSigma * sqrt(fAcquisitionRate * 1.e6) );
+    	SetMeanAndSigma( fMean, fSigma, fSigma * sqrt(fAcquisitionRate * 1.e6) );
 
         double gain=1.;
         const unsigned nchannels = fNChannels;
