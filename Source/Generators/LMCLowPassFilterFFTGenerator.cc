@@ -20,7 +20,8 @@ namespace locust
 
     LowPassFilterFFTGenerator::LowPassFilterFFTGenerator( const std::string& aName ) :
         Generator( aName ),
-        fDoGenerateFunc( &LowPassFilterFFTGenerator::DoGenerateTime )
+        fDoGenerateFunc( &LowPassFilterFFTGenerator::DoGenerateTime ),
+        fThreshold( 0.85 ) // fraction of Nyquist above which signals are suppressed.
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -32,8 +33,25 @@ namespace locust
     bool LowPassFilterFFTGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
+        if( aParam->has( "threshold" ) )
+        {
+        SetThreshold( aParam->get_value< double >( "threshold", fThreshold ) ); 
+        }
+
         return true;
     }
+
+    double LowPassFilterFFTGenerator::GetThreshold() const
+    {
+        return fThreshold;
+    }
+
+    void LowPassFilterFFTGenerator::SetThreshold( double aThreshold )
+    {
+        fThreshold = aThreshold;
+        return;
+    }
+
 
     void LowPassFilterFFTGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
@@ -53,7 +71,8 @@ namespace locust
         const unsigned nchannels = fNChannels;
 
 
-        double CutoffFreq = 85.e6;
+        double CutoffFreq = fThreshold * fAcquisitionRate/2. * 1.e6; // Hz
+        double FastNyquist = fAcquisitionRate/2. * 1.e6 * aSignal->DecimationFactor();
         int nwindows = 80;
         int windowsize = aSignal->DecimationFactor()*aSignal->TimeSize()/nwindows;
 
@@ -85,12 +104,11 @@ namespace locust
                 // Low Pass FilterFFT
                 for( unsigned index = 0; index < windowsize; ++index )
                 {
-                    if ( (index > windowsize/2.*CutoffFreq/1.e9) && (index < windowsize/2. * (1. + (1.e9-CutoffFreq)/1.e9)))
-                    {
-                        //printf("index is %d\n", index);
-                        FFTComplex[index][0] = 0.;
-                        FFTComplex[index][1] = 0.;
-                    }
+                if ( (index > windowsize/2.*CutoffFreq/FastNyquist) && (index < windowsize/2. * (1. + (FastNyquist-CutoffFreq)/FastNyquist)))
+                  {
+                  FFTComplex[index][0] = 0.;
+                  FFTComplex[index][1] = 0.;
+                  }
                 }
 
                 fftw_execute(ReversePlan);
