@@ -75,7 +75,7 @@ namespace locust
                 fPowerCombiner = 0;  // default
             else if (aParam->get_value< std::string >( "feed" ) == "series")
                 fPowerCombiner = 1;
-            else if (aParam->get_value< std::string >( "feed" ) == "quadraturefeed")
+            else if (aParam->get_value< std::string >( "feed" ) == "quadrature")
                 fPowerCombiner = 2;
             else
             	fPowerCombiner = 0;  // default
@@ -167,7 +167,7 @@ namespace locust
 
     double GetVoltageAmpFromPlaneWave()
     {
-        double AntennaFactor = 1./420.;
+        double AntennaFactor = 1./400.;
 
         // S = epsilon0 c E0^2 / 2.  // power/area
         //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
@@ -214,13 +214,15 @@ namespace locust
         {
         	// assume 2PI delay between junctions, so we don't calculated phase mismatches.
         	// instead calculate damping on voltage amplitude:
-        	int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
+            int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
             VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(njunctions);
         }
 
-        //if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
+	//        if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
+	//        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
+
 
     }
 
@@ -332,8 +334,9 @@ namespace locust
                     //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
                 }      
 
-                double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
-                //printf("tVoltageAmplitude is %g\n", tVoltageAmplitude); getchar();
+		double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
+//                double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
+		//                printf("tVoltageAmplitude is %g\n", tVoltageAmplitude); getchar();
 
                 AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
 

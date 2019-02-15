@@ -23,7 +23,7 @@ namespace locust
             virtual ~PowerCombiner();
 
             double GetLinePhaseCorr(unsigned z_index, double DopplerFrequency);
-
+      double GetCenterFedLinePhaseCorr(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing);
             double GetVoltageDamping(int njunctions);
 
 
