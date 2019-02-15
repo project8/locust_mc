@@ -173,9 +173,6 @@ namespace locust
     {
 
 
-        //static bool t_is_new_acq = true;
-
-
         if( f_state != kWriting && f_state != kPrepared )
         {
             LERROR( lmclog, "Egg file must be opened before writing records" );
@@ -209,7 +206,7 @@ namespace locust
         ++f_record_id;
         f_record_time += f_record_length;
 
-        bool t_return = f_stream->WriteRecord( f_is_new_acq ); // pls had to edit false to true
+        bool t_return = f_stream->WriteRecord( f_is_new_acq );
         f_is_new_acq = false;
         return t_return;
     }
