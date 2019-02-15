@@ -70,6 +70,7 @@ namespace locust
             mv_accessible_noset( monarch3::RecordIdType, record_id );
             mv_accessible_noset( monarch3::TimeType, record_time );
             mv_accessible_noset( uint64_t, record_n_bytes );
+            mv_accessible_noset( bool, is_new_acq );
 
         private:
             monarch3::Monarch3* f_monarch;

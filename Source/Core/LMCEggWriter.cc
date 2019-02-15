@@ -34,6 +34,7 @@ namespace locust
             f_record_id( 0 ),
             f_record_time( 0 ),
             f_record_n_bytes( 0 ),
+            f_is_new_acq( true ),
             f_monarch( NULL ),
             f_stream( NULL ),
             f_record( NULL ),
@@ -172,7 +173,7 @@ namespace locust
     {
 
 
-        static bool t_is_new_acq = true;
+        //static bool t_is_new_acq = true;
 
 
         if( f_state != kWriting && f_state != kPrepared )
@@ -208,8 +209,8 @@ namespace locust
         ++f_record_id;
         f_record_time += f_record_length;
 
-        bool t_return = f_stream->WriteRecord( true ); // pls had to edit false to true
-        t_is_new_acq = false;
+        bool t_return = f_stream->WriteRecord( f_is_new_acq ); // pls had to edit false to true
+        f_is_new_acq = false;
         return t_return;
     }
 
