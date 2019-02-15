@@ -149,13 +149,9 @@ namespace locust
         {
             if (fPhaseDelay) // parameter from json
             {
-	      VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+	        VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
             }
-        	// instead calculate damping on voltage amplitude:
-            int njunctions = fabs((double)z_index - (double)fNPatchesPerStrip/2.);
-            if (z_index >= fNPatchesPerStrip/2) njunctions += 1;
-//printf("zindex is %d and njnctions is %d\n", z_index, njunctions); getchar();
-            VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(njunctions);
+            VoltageAmplitude *= aPowerCombiner.GetCenterFedUnitCellDamping(fNPatchesPerStrip, z_index);
         }
 
 
@@ -193,7 +189,7 @@ namespace locust
 //            printf("voltagephase_t is %g\n", VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]); getchar();
 
                 double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
-                AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fLO_Frequency);
+                AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
 
             } // patch loop
 

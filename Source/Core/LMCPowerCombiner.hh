@@ -24,7 +24,8 @@ namespace locust
 
             double GetLinePhaseCorr(unsigned z_index, double DopplerFrequency);
       double GetCenterFedLinePhaseCorr(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            double GetVoltageDamping(int njunctions);
+            double GetVoltageDamping(int NPatchesPerStrip, unsigned z_index);
+            double GetCenterFedUnitCellDamping(int NPatchesPerStrip, unsigned z_index);
 
 
         private:

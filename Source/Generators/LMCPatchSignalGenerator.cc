@@ -215,7 +215,7 @@ namespace locust
         	// assume 2PI delay between junctions, so we don't calculated phase mismatches.
         	// instead calculate damping on voltage amplitude:
             int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
-            VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(njunctions);
+            VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(fNPatchesPerStrip, z_index);
         }
 
 	//        if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
