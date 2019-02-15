@@ -116,6 +116,7 @@ namespace locust
         }
 
         bool IQStream = true;  // get rid of this.
+        bool isNewAcquisition = true;
         unsigned nRecords = fRunLengthCalc.GetNRecords();
         unsigned recordSize = fRunLengthCalc.GetRecordSize();
         unsigned nchannels = fRunLengthCalc.GetNChannels();
@@ -125,6 +126,7 @@ namespace locust
         for( unsigned record = 0; record < nRecords; ++record )
         {
             LINFO( lmclog, "Simulating record " << record );
+            LDEBUG( lmclog, "first generator: "<<fFirstGenerator->GetName());
             Signal* simulatedSignal = fFirstGenerator->Run( recordSize );
             if( simulatedSignal == NULL )
             {
@@ -172,12 +174,13 @@ namespace locust
             }
 
 
-            if( ! fEggWriter.WriteRecord( simulatedSignal ) )
+            if( ! fEggWriter.WriteRecord( simulatedSignal, isNewAcquisition ) )
             {
                 LERROR( lmclog, "Something went wrong while writing record " << record );
                 delete simulatedSignal;
                 return false;
             }
+            isNewAcquisition = false;
 
             // temporarily, immediately cleanup
 	    delete simulatedSignal;

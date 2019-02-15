@@ -60,7 +60,7 @@ namespace locust
         public:
             bool PrepareEgg( const RunLengthCalculator* aRLC, const Digitizer* aDig );
 
-            bool WriteRecord( const Signal* aSignal );
+            bool WriteRecord( const Signal* aSignal, bool is_new_acq );
 
             bool FinalizeEgg();
 
