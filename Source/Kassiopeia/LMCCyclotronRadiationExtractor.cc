@@ -12,7 +12,9 @@ namespace locust
         fFinalParticle( NULL ),
         fParticleQueue( NULL ),
         fP8Phase( 0 ),
-        fPitchAngle( -99. )
+        fPitchAngle( -99. ),
+        fCentralPower( -99. ),
+		fCentralZVelocity( -99. )
     {
     }
 
@@ -183,8 +185,11 @@ namespace locust
         {
             if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
             {
+                FieldCalculator aFieldCalculator;
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
-                //      	printf("pitch angle is %f\n", fPitchAngle); getchar();
+                fCentralPower = aFieldCalculator.GetCouplingFactorTE11(aFinalParticle);
+                fCentralZVelocity = aFinalParticle.GetVelocity().GetZ();
+                printf("pitch angle is %f and cnetralpowerfraction is %g\n", fPitchAngle, fCentralPower); getchar();
             }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
@@ -257,7 +262,7 @@ namespace locust
             DeltaE = aFieldCalculator.GetDampingFactorPhase1(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
-        if(fP8Phase==2)  // this code be commented out to save time as DeltaE will be small.
+        if(fP8Phase==2)  // this code can be commented out to save time as DeltaE will be small.
         {
             DeltaE = aFieldCalculator.GetDampingFactorPhase2(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));

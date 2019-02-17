@@ -76,6 +76,8 @@ namespace locust
         int fP8Phase; // 1, 2, 3, or 4.
         std::deque<locust::Particle> fNewParticleHistory;
         double fPitchAngle;
+        double fCentralPower;
+        double fCentralZVelocity;
 
     };
 

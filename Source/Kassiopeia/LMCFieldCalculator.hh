@@ -45,6 +45,7 @@ namespace locust
             double GetDampingFactorPhase1(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTE11(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
       double GetRetardedTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
