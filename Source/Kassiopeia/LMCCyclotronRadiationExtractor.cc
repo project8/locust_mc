@@ -12,9 +12,7 @@ namespace locust
         fFinalParticle( NULL ),
         fParticleQueue( NULL ),
         fP8Phase( 0 ),
-        fPitchAngle( -99. ),
-        fCentralPower( -99. ),
-		fCentralZVelocity( -99. )
+        fPitchAngle( -99. )
     {
     }
 
@@ -185,11 +183,7 @@ namespace locust
         {
             if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
             {
-                FieldCalculator aFieldCalculator;
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
-                fCentralPower = aFieldCalculator.GetCouplingFactorTE11(aFinalParticle);
-                fCentralZVelocity = aFinalParticle.GetVelocity().GetZ();
-                printf("pitch angle is %f and cnetralpowerfraction is %g\n", fPitchAngle, fCentralPower); getchar();
             }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);

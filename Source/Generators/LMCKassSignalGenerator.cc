@@ -28,6 +28,7 @@ namespace locust
         fLO_Frequency( 0.),
         gxml_filename("blank.xml"),
         gpitchangle_filename("blank.xml"),
+		fTruth( 0 ),
         phi_t1(0.),
         phi_t2(0.),
         phiLO_t(0.),
@@ -57,7 +58,10 @@ namespace locust
             gpitchangle_filename = aParam->get_value< std::string >( "pitchangle-filename" );
         }
 
-
+        if( aParam->has( "truth" ) )
+        {
+            fTruth = aParam->get_value< bool >( "truth" );
+        }
 
         return true;
     }
@@ -382,21 +386,13 @@ namespace locust
             {
                 if (ReceivedKassReady()) fPreEventInProgress = true;
                 printf("LMC says it ReceivedKassReady()\n");                
-                /*		if (Project8Phase == 2)
-                        {
-                        if ((index-StartEventTimer) > 1e6) 
-                        {
-                        break;  // if breaking after just one event
-                        }
-                        }
-                        */
-            }
+             }
 
             if (fPreEventInProgress)
             {
                 PreEventCounter += 1;
 
-                if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
+                if (((!fTruth)&&(PreEventCounter > NPreEventSamples))||((fTruth)&&(PreEventCounter > NPreEventSamples)&&(index%8192==0)  ))// finished pre-samples.  Start event.
                 {
                     fPreEventInProgress = false;  // reset.
                     fEventInProgress = true;

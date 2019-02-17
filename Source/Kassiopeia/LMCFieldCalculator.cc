@@ -128,30 +128,6 @@ namespace locust
     }
 
 
-    double FieldCalculator::GetCouplingFactorTE11(KSParticle& aFinalParticle)
-    {
-    	// TE11 mode is used to calculate fCentralPower and fCentralZVelocity for instantaneous output.
-        double kc = 1.841/0.00502920;
-        double tPositionX = aFinalParticle.GetPosition().GetX();
-        double tPositionY = aFinalParticle.GetPosition().GetY();
-        double r = sqrt( tPositionX*tPositionX + tPositionY*tPositionY);
-
-    // sqrt of power fraction plotted in the Locust simulation paper.
-    // factor of 813.2 is numerical normalization
-    // of Bessel functions after time averaging as in Collin IEEE paper.
-    // tCoupling is the sqrt of the power fraction plotted in the Locust paper.
-
-        double coupling = 813.2 * 2./LMCConst::Pi() * 4./(2. * LMCConst::Pi()) / kc/2. *
-        		( (j0(kc*r) - jn(2,kc*r)) +
-                (j0(kc*r) + jn(2, kc*r)) );
-
-        return coupling*coupling;  // field amplitude is sqrt of power fraction.
-        // coupling*coupling is the power fraction plotted in the Locust paper.
-
-    }
-
-
-
     double FieldCalculator::GetTE10FieldAfterOneBounce(KSParticle& aFinalParticle)
     {
         double fcyc = aFinalParticle.GetCyclotronFrequency();
