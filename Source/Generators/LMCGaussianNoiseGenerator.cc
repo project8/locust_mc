@@ -148,16 +148,18 @@ namespace locust
         double gain=1.;
         const unsigned nchannels = fNChannels;
         double phi = 0.;  // voltage phase
-        double mag = 0.;  // voltage mag
+        double mag_r = 0.;  // voltage mag
+        double mag_i = 0.;
 
         for (int ch=0; ch<nchannels; ch++)
         {
             for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
             {
                 phi = fUniDist( fRNG );
-                mag = fNormDist( fRNG );
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag * cos(phi*LMCConst::Pi()/180.);
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag * sin(phi*LMCConst::Pi()/180.);
+                mag_r = fNormDist( fRNG ) * sqrt(0.5);
+                mag_i = fNormDist( fRNG ) * sqrt(0.5);
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag_r;
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag_i;
                 //	    printf("noise signal is %g\n", aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1]); getchar();
             }
         }
