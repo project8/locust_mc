@@ -392,7 +392,7 @@ namespace locust
             {
                 PreEventCounter += 1;
 
-                if (((!fTruth)&&(PreEventCounter > NPreEventSamples))||((fTruth)&&(PreEventCounter > NPreEventSamples)&&(index%8192==0)  ))// finished pre-samples.  Start event.
+                if (((!fTruth)&&(PreEventCounter > NPreEventSamples))||((fTruth)&&(PreEventCounter > NPreEventSamples)&&(index%(8192*aSignal->DecimationFactor())==0)  ))// finished pre-samples.  Start event.
                 {
                     fPreEventInProgress = false;  // reset.
                     fEventInProgress = true;
