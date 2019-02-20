@@ -59,6 +59,7 @@ namespace locust
             double fPatchSpacing; // from json file.
             int fPowerCombiner;
             bool fPhaseDelay;
+            bool fVoltageDamping;
 
 
             bool DoGenerate( Signal* aSignal );

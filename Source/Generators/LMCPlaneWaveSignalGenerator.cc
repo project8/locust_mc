@@ -29,6 +29,7 @@ namespace locust
         fRF_Frequency( 0.),
         fArrayRadius( 0. ),
         fPhaseDelay( 0 ),
+        fVoltageDamping( 0 ),
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
@@ -50,6 +51,11 @@ namespace locust
         {
             fPhaseDelay = aParam->get_value< bool >( "phase-delay" );
         }
+
+        if( aParam->has( "voltage-damping" ) )
+	  {
+            fVoltageDamping = aParam->get_value< bool >( "voltage-damping" );
+	  }
 
         if( aParam->has( "planewave-frequency" ) )
         {
@@ -151,7 +157,10 @@ namespace locust
             {
 	        VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
             }
-            VoltageAmplitude *= aPowerCombiner.GetCenterFedUnitCellDamping(fNPatchesPerStrip, z_index);
+            if (fVoltageDamping)
+	    {
+                VoltageAmplitude *= aPowerCombiner.GetCenterFedUnitCellDamping(fNPatchesPerStrip, z_index);
+	    }
         }
 
 
@@ -159,7 +168,7 @@ namespace locust
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
         
-//	        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
+	//	        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
 
 
     }
