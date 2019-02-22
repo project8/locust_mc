@@ -20,7 +20,9 @@ namespace locust
      @brief Apply high pass filter to signal in frequency domain
 
      @details
-      This is a straightforward filter in frequency space.  It assumed that the signal has been sampled at fAcquisitionRate, and not fAcquisitionRate*aSignal->DecimationFactor().  The initial purpose of this filter is to exclude the DC bin.
+      This is a filter in frequency space.  It assumes that the signal has been
+      sampled at fAcquisitionRate*aSignal->DecimationFactor(), and needs to be
+      followed by the decimation generator.
       Available configuration options:
       - "threshold": double -- threshold below which signals are suppressed (Hz).
 

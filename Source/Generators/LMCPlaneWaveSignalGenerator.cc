@@ -29,6 +29,7 @@ namespace locust
         fRF_Frequency( 0.),
         fArrayRadius( 0. ),
         fPhaseDelay( 0 ),
+        fVoltageDamping( 0 ),
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
@@ -50,6 +51,11 @@ namespace locust
         {
             fPhaseDelay = aParam->get_value< bool >( "phase-delay" );
         }
+
+        if( aParam->has( "voltage-damping" ) )
+	  {
+            fVoltageDamping = aParam->get_value< bool >( "voltage-damping" );
+	  }
 
         if( aParam->has( "planewave-frequency" ) )
         {
@@ -149,13 +155,12 @@ namespace locust
         {
             if (fPhaseDelay) // parameter from json
             {
-	      VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+	        VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
             }
-        	// instead calculate damping on voltage amplitude:
-            int njunctions = fabs((double)z_index - (double)fNPatchesPerStrip/2.);
-            if (z_index >= fNPatchesPerStrip/2) njunctions += 1;
-//printf("zindex is %d and njnctions is %d\n", z_index, njunctions); getchar();
-            VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(njunctions);
+            if (fVoltageDamping)
+	    {
+                VoltageAmplitude *= aPowerCombiner.GetCenterFedUnitCellDamping(fNPatchesPerStrip, z_index);
+	    }
         }
 
 
@@ -163,7 +168,7 @@ namespace locust
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
         
-//	        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
+	//	        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
 
 
     }
@@ -193,7 +198,7 @@ namespace locust
 //            printf("voltagephase_t is %g\n", VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]); getchar();
 
                 double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
-                AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fLO_Frequency);
+                AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
 
             } // patch loop
 

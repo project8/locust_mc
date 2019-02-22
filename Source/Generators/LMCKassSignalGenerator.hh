@@ -52,6 +52,7 @@ namespace locust
 
         private:
             double fLO_Frequency;  // typically defined by a parameter in json file.
+            bool fTruth; // parameter in json file.  default is false.
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
             int FindNode(double tNew) const;

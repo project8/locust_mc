@@ -57,7 +57,7 @@ namespace locust
             double GetSigma() const;
             void SetSigma( double aSigma );
 
-            void SetMeanAndSigma( double aMean, double aSigma );
+            void SetMeanAndSigma( double aMean, double aSigma, double aSampledSigma);
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );

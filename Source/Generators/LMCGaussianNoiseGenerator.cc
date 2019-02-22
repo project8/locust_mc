@@ -86,7 +86,7 @@ namespace locust
 
     void GaussianNoiseGenerator::SetMean( double aMean )
     {
-        SetMeanAndSigma( aMean, fSigma );
+        fMean = aMean;
         return;
     }
 
@@ -97,13 +97,13 @@ namespace locust
 
     void GaussianNoiseGenerator::SetSigma( double aSigma )
     {
-        SetMeanAndSigma( fMean, aSigma );
+        fSigma = aSigma;
         return;
     }
 
-    void GaussianNoiseGenerator::SetMeanAndSigma( double aMean, double aSigma )
+    void GaussianNoiseGenerator::SetMeanAndSigma( double aMean, double aSigma, double aSampledSigma )
     {
-        fNormDist = std::normal_distribution< double >( aMean, aSigma );
+        fNormDist = std::normal_distribution< double >( aMean, aSampledSigma );
         fUniDist = std::uniform_real_distribution< double >(0.,360.);
         fMean = aMean;
         fSigma = aSigma;
@@ -143,21 +143,23 @@ namespace locust
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-    	SetMeanAndSigma( fMean, fSigma * sqrt(fAcquisitionRate * 1.e6) );
+    	SetMeanAndSigma( fMean, fSigma, fSigma * sqrt(fAcquisitionRate * 1.e6) );
 
         double gain=1.;
         const unsigned nchannels = fNChannels;
         double phi = 0.;  // voltage phase
-        double mag = 0.;  // voltage mag
+        double mag_r = 0.;  // voltage mag
+        double mag_i = 0.;
 
         for (int ch=0; ch<nchannels; ch++)
         {
             for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
             {
                 phi = fUniDist( fRNG );
-                mag = fNormDist( fRNG );
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag * cos(phi*LMCConst::Pi()/180.);
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag * sin(phi*LMCConst::Pi()/180.);
+                mag_r = fNormDist( fRNG ) * sqrt(0.5);
+                mag_i = fNormDist( fRNG ) * sqrt(0.5);
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag_r;
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag_i;
                 //	    printf("noise signal is %g\n", aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1]); getchar();
             }
         }

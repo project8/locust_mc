@@ -21,7 +21,7 @@ namespace locust
     HighPassFilterFFTGenerator::HighPassFilterFFTGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &HighPassFilterFFTGenerator::DoGenerateTime ),
-        fThreshold ( 1.0e6 ) // 1 MHz
+        fThreshold ( 2.0e6 ) // MHz
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -67,10 +67,14 @@ namespace locust
 
     bool HighPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal )
     {
+
         const unsigned nchannels = fNChannels;
-        double CutoffFreq = fThreshold;
-        int nwindows = 10;
-        int windowsize = aSignal->TimeSize()/nwindows;
+
+
+        double CutoffFreq = fThreshold; // Hz
+        double FastNyquist = fAcquisitionRate/2. * 1.e6 * aSignal->DecimationFactor();
+        int nwindows = 80;
+        int windowsize = aSignal->DecimationFactor()*aSignal->TimeSize()/nwindows;
 
 
         fftw_complex *SignalComplex;
@@ -90,20 +94,23 @@ namespace locust
                 // Construct complex voltage.
                 for( unsigned index = 0; index < windowsize; ++index )
                 {
-                    SignalComplex[index][0] = aSignal->SignalTimeComplex()[ ch*aSignal->TimeSize() + nwin*windowsize + index ][0];
-                    SignalComplex[index][1] = aSignal->SignalTimeComplex()[ ch*aSignal->TimeSize() + nwin*windowsize + index ][1];
+                    SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0];
+                    SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1];
+                    //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
                 }
 
                 fftw_execute(ForwardPlan);
 
+//                printf("windowsize/2 is %g and CutoffFreq is %g and FastNyquist is %g\n", windowsize/2, CutoffFreq, FastNyquist); getchar();
+
                 // High Pass FilterFFT
                 for( unsigned index = 0; index < windowsize; ++index )
                 {
-                    if ((index < CutoffFreq/(fAcquisitionRate*1.e6)*windowsize)||(index>0.5*windowsize))
-                    {
-                        FFTComplex[index][0] = 0.;
-                        FFTComplex[index][1] = 0.;
-                    }
+                if ((index < windowsize/2. * CutoffFreq/FastNyquist)||(index > windowsize/2.))
+                  {
+                  FFTComplex[index][0] = 0.;
+                  FFTComplex[index][1] = 0.;
+                  }
                 }
 
                 fftw_execute(ReversePlan);
@@ -113,15 +120,15 @@ namespace locust
                 for( unsigned index = 0; index < windowsize; ++index )
                 {
                     // normalize
-                    aSignal->SignalTimeComplex()[ ch*aSignal->TimeSize() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
-                    aSignal->SignalTimeComplex()[ ch*aSignal->TimeSize() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
+                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
+                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
+                    //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
                 }
             }  // nwin
         }  // NCHANNELS
 
         delete [] SignalComplex;
         delete [] FFTComplex;
-
 
         return true;
     }
