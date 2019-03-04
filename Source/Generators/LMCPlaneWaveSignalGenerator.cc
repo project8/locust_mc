@@ -84,8 +84,10 @@ namespace locust
                 fPowerCombiner = 0;  // default
             else if (aParam->get_value< std::string >( "feed" ) == "series")
                 fPowerCombiner = 1;
-            else if (aParam->get_value< std::string >( "feed" ) == "quadrature")
+            else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
                 fPowerCombiner = 2;
+            else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
+            	fPowerCombiner = 3;
             else
             	fPowerCombiner = 0;  // default
         }
@@ -143,33 +145,60 @@ namespace locust
 
 
     // z-index ranges from 0 to npatches-per-strip-1.
-    void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency)
+    void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned sampleIndex, unsigned z_index, double DopplerFrequency)
     {
     	PowerCombiner aPowerCombiner;
-        if (fPowerCombiner == 1)  // series feed
+    	if (fPowerCombiner == 0 ) //corporate feed, for testing
+    	{
+    		if (fVoltageDamping)
+    		{
+    			VoltageAmplitude *= aPowerCombiner.GetCorporateVoltageDamping();
+    		}
+    	}
+
+    	if (fPowerCombiner == 1)  // series feed
         {
-        	//lossless series feed with amp at one end:
-        	VoltagePhase += aPowerCombiner.GetLinePhaseCorr(z_index, DopplerFrequency);
+    		if (fPhaseDelay) // parameter from json
+    		{
+    			VoltagePhase += aPowerCombiner.GetSeriesPhaseDelay(z_index, DopplerFrequency, fPatchSpacing);
+    		}
+    		if (fVoltageDamping)  // parameter from json
+    		{
+    			VoltageAmplitude *= aPowerCombiner.GetSeriesVoltageDamping(z_index);
+    		}
         }
-        if (fPowerCombiner == 2) // quadrature feed
+
+    	if (fPowerCombiner == 2) // one-quarter power combining, center fed strip
         {
-            if (fPhaseDelay) // parameter from json
+            if (fPhaseDelay)
             {
-	        VoltagePhase += aPowerCombiner.GetCenterFedLinePhaseCorr(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+            	VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
             }
             if (fVoltageDamping)
-	    {
-                VoltageAmplitude *= aPowerCombiner.GetCenterFedUnitCellDamping(fNPatchesPerStrip, z_index);
-	    }
+            {
+                VoltageAmplitude *= aPowerCombiner.GetOneQuarterVoltageDamping(fNPatchesPerStrip, z_index);
+            }
         }
 
+    	if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
+    	{
+    		if (fPhaseDelay)
+    		{
+            	VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+    		}
+    		if (fVoltageDamping)
+    		{
+    			VoltageAmplitude *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, z_index);
+    		}
+    	}
 
 
-        aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
-        aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
+
+        aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
+        aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
         
-	//	        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
-
+//  if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();}
+// printf("Voltage Amplitude is %g\n", VoltageAmplitude); getchar();
 
     }
 
@@ -179,7 +208,6 @@ namespace locust
 
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
-        double testphase = 0.;
 
         //Receiver Properties
         phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency / (1.e6*fAcquisitionRate*aSignal->DecimationFactor());
@@ -201,6 +229,9 @@ namespace locust
                 AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
 
             } // patch loop
+            //printf("VI for time %d is %g\n", index, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
+                          //   getchar();
+
 
         } // channels loop
 
@@ -247,6 +278,9 @@ namespace locust
 
         InitializePatchArray();
 
+        //text file for VI for testing.
+        std::ofstream voltagefile;
+        voltagefile.open("voltagefile.txt");
 
         //n samples for event spacing.
         int PreEventCounter = 0;
@@ -257,12 +291,18 @@ namespace locust
                 VoltagePhase_t[i] = {0.0};
             }
 
-
-
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
           {
           DriveAntenna(PreEventCounter, index, aSignal);
+          voltagefile << index;
+          voltagefile << "\n";
+          voltagefile << aSignal->LongSignalTimeComplex()[index][0];
+          voltagefile << "\n";
+          voltagefile << aSignal->LongSignalTimeComplex()[index][1];
+          voltagefile << "\n";
           }
+        voltagefile.close();
+
 
         return true;
     }
