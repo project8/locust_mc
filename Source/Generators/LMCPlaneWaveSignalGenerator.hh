@@ -49,6 +49,7 @@ namespace locust
             double GetMismatchFactor(double f);
             double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi) const;
             double GetVoltageAmpFromPlaneWave();
+            double GetVoltageAmpFromPlaneWaveMutualCoupling(int z_index);
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
             std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)

@@ -142,6 +142,32 @@ namespace locust
 
     }
 
+    double PlaneWaveSignalGenerator::GetVoltageAmpFromPlaneWaveMutualCoupling(int z_index)
+      {
+    	double AntennaFactor = 0.;
+       if(z_index == 0 || z_index == fNPatchesPerStrip)
+       {
+    	AntennaFactor = 1./430.;
+       }
+       else
+       {
+    	AntennaFactor = 1./460.;
+       }
+
+          // S = epsilon0 c E0^2 / 2.  // power/area
+          //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
+          // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
+          // E0 = sqrt(2.*S/epsilon0/c)
+          // effective patch area 0.00004583662 m^2
+
+          double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
+          double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
+          //    double E0 = 1.0; // V/m, test case
+          double amplitude = E0*AntennaFactor;  // volts
+          return amplitude;
+
+
+      }
 
 
     // z-index ranges from 0 to npatches-per-strip-1.
@@ -225,7 +251,8 @@ namespace locust
  2. * LMCConst::Pi() * fRF_Frequency / (1.e6 * fAcquisitionRate * aSignal->DecimationFactor()); // phi =+ f*dt
 //            printf("voltagephase_t is %g\n", VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]); getchar();
 
-                double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
+               // double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
+                double tVoltageAmplitude = GetVoltageAmpFromPlaneWaveMutualCoupling(patchIndex);
                 AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
 
             } // patch loop
