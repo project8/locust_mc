@@ -48,37 +48,6 @@ namespace locust
 
 
 
-
-  int FieldCalculator::FindNode(double tNew) const
-  {
-    std::deque<locust::Particle>::iterator it;
-    it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
-
-    int tNodeIndex = it - fParticleHistory.begin();
-
-    return tNodeIndex;
-  }
-
-
-  double FieldCalculator::GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition, double GroupVelocityTE10 )
-  {
-    //    printf("sti says aReceiverTime is %g, aParticleTime is %g\n", aReceiverTime, aParticleTime);
-    return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / GroupVelocityTE10;
-  }
-
-
-  double GetFieldStepRoot(const locust::Particle aParticle, double aSpaceTimeInterval)
-  {
-    double tRetardedTime = aParticle.GetTime(true);
-    //    printf("tr = %g and  sti = %g\n", tRetardedTime, aSpaceTimeInterval);
-    return tRetardedTime + aSpaceTimeInterval;
-  }
-
-
-
-
-
-
     double FieldCalculator::GetGroupVelocityTM01(KSParticle& aFinalParticle)
     {
         const double SpeedOfLight = LMCConst::C();
@@ -149,106 +118,6 @@ namespace locust
     }
 
 
-  double FieldCalculator::GetRetardedTE10FieldAfterOneBounce(KSParticle& aFinalParticle)
-  {
-   
-    locust::Particle tCurrentParticle = fParticleHistory.back();
-      
-    int CurrentIndex;
-    
-    const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
-    const int historySize = fParticleHistory.size();
-    double tReceiverTime = aFinalParticle.GetTime();
-    double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching electron at tReceiverTime
-    static double fPreviousRetardedTime = 99.;
-    static int fPreviousRetardedIndex = -99;
-    double tSpaceTimeInterval=0.;
-    double rxPosition = -2.*CENTER_TO_SHORT - aFinalParticle.GetPosition().GetZ();  // calculate tRetardedTime at grid point on other side of short by -CENTER_TO_SHORT - (z_now - (-CENTER_TO_SHORT))
-    LMCThreeVector testPoint(0.,0.,rxPosition);  // electron is at z-now.
-
-    if (tReceiverTime <= fDigitizerTimeStep + 2.*kassiopeiaTimeStep)  // new event starting.  reset.
-      {
-	fPreviousRetardedTime = 99.;
-        fPreviousRetardedIndex = -99;
-      }
-      
-
-    if (fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
-      {
-	fParticleHistory.front().Interpolate(0);
-	if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), testPoint, GetGroupVelocityTE10(aFinalParticle) ) < 0 )
-	  {
-	    //	    printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime); 
-	    //continue;
-	  }
-      }
-
-
-    if(fPreviousRetardedIndex == -99)
-      {
-	CurrentIndex=FindNode(tReceiverTime);
-	tCurrentParticle = fParticleHistory[CurrentIndex];
-	tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - testPoint ).Magnitude() /  GetGroupVelocityTE10(aFinalParticle);
-      }
-    else
-      {
-	CurrentIndex = fPreviousRetardedIndex;
-	tRetardedTime = fPreviousRetardedTime + kassiopeiaTimeStep;
-      }
-
-    CurrentIndex = FindNode(tRetardedTime);
-    CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
-
-    tCurrentParticle = fParticleHistory[CurrentIndex];
-    tCurrentParticle.Interpolate(tRetardedTime);
-    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), testPoint, GetGroupVelocityTE10(aFinalParticle));
-
-
-    //Converge to root
-    for(int j=0;j<25;++j)
-      {
-	tRetardedTime = GetFieldStepRoot(tCurrentParticle, tSpaceTimeInterval);
-	tCurrentParticle.Interpolate(tRetardedTime);
-
-	//Change the kassiopeia step we expand around if the interpolation time displacement is too large
-	if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
-	  {
-	    CurrentIndex=FindNode(tRetardedTime);
-	    tCurrentParticle=fParticleHistory[CurrentIndex];
-	    tCurrentParticle.Interpolate(tRetardedTime);
-	  }
-
-	tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), testPoint, GetGroupVelocityTE10(aFinalParticle));
-      }
-
-
-    fPreviousRetardedIndex = CurrentIndex;
-    fPreviousRetardedTime = tRetardedTime;
-
-
-      
-
-    double fcyc = tCurrentParticle.GetCyclotronFrequency()/2./LMCConst::Pi();
-    double GroupVelocity = GetGroupVelocityTE10(aFinalParticle);
-    double zvelocity = tCurrentParticle.GetVelocity().Z();  // v retarded particle.
-    double zPosition = aFinalParticle.GetPosition().GetZ();  // z now.
-    double GammaZ = 1.0/pow(1.0-pow(zvelocity/GroupVelocity,2.),0.5);
-
-    double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-    double phi_shortTE10 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition) + CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.  force mode symmetry (critical) with fabs(z).
-    double FieldFromShort = cos(0.) + cos(phi_shortTE10);
-
-
-    //    printf("currentIndex is %d and zvelocity is %g and fPreviousRetardedIndex is %d and fPreviousRetardedTime is %g\n", CurrentIndex, zvelocity, fPreviousRetardedIndex, fPreviousRetardedTime); getchar();
-    //printf("field sum at z=%g is %f with zvelocity %g and CurrentIndex %d and fcyc is %g\n", zPosition, FieldFromShort, zvelocity, CurrentIndex, fcyc);
-    //    printf("particle time is %g and t_old is %g\n", aFinalParticle.GetTime(), t_old);
-    //    getchar();                                                           
-   
-return FieldFromShort;
-
-}
-
-
 
     double FieldCalculator::GetTM01FieldWithTerminator(KSParticle& aFinalParticle)
     {
@@ -272,35 +141,21 @@ return FieldFromShort;
     double FieldCalculator::GetDampingFactorPhase1(KSParticle& aFinalParticle)
     {
       double TE10FieldFromShort = 0.;
-      if (fParticleHistory.size()&&(0==1)) // if fParticleHistory has some entries.
-	    {
-        TE10FieldFromShort = GetRetardedTE10FieldAfterOneBounce(aFinalParticle);
-        }
-      else  // if fParticleHistory has not been filled at all yet.
-        {
-	    TE10FieldFromShort = GetTE10FieldAfterOneBounce(aFinalParticle);
-	    }
-
-      //      if (fParticleHistory.size()) {printf("FieldFromShort is %g\n", TE10FieldFromShort); getchar();}
-
-
-        double A10squ = GetCouplingFactorTE10(aFinalParticle);
-        double DampingFactorTE10 = 1. - A10squ + A10squ*TE10FieldFromShort*TE10FieldFromShort;  // = P'/P
-
-        return DampingFactorTE10;
+	  TE10FieldFromShort = GetTE10FieldAfterOneBounce(aFinalParticle);
+      double A10squ = GetCouplingFactorTE10(aFinalParticle);
+      double DampingFactorTE10 = 1. - A10squ + A10squ*TE10FieldFromShort*TE10FieldFromShort;  // = P'/P
+      return DampingFactorTE10;
     }
-
 
 
 
     double FieldCalculator::GetDampingFactorPhase2(KSParticle& aFinalParticle)
     {
-        double TM01FieldWithTerminator = GetTM01FieldWithTerminator(aFinalParticle);
-        double A01squ = GetCouplingFactorTM01(aFinalParticle);
-        double DampingFactorTM01 = 1. - A01squ + A01squ*TM01FieldWithTerminator*TM01FieldWithTerminator;  // = P'/P
-        double DampingFactor = DampingFactorTM01;
-
-        return DampingFactor;
+      double TM01FieldWithTerminator = 0.;
+      TM01FieldWithTerminator = GetTM01FieldWithTerminator(aFinalParticle);
+      double A01squ = GetCouplingFactorTM01(aFinalParticle);
+      double DampingFactorTM01 = 1. - A01squ + A01squ*TM01FieldWithTerminator*TM01FieldWithTerminator;  // = P'/P
+      return DampingFactorTM01;
     }
 
 

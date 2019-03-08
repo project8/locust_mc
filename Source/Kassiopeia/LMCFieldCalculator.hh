@@ -47,17 +47,11 @@ namespace locust
             double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-      double GetRetardedTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-
-            int FindNode(double tNew) const;
-      double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition, double GroupVelocity);
-
-
 
 
 
         public:
-      void CalculateInteraction( const Kassiopeia::KSTrajectory& aTrajectory, const Kassiopeia::KSParticle& aTrajectoryInitialParticle, const Kassiopeia::KSParticle& aTrajectoryFinalParticle, const KThreeVector& aTrajectoryCenter, const double& aTrajectoryRadius, const double& aTrajectoryTimeStep, Kassiopeia::KSParticle& anInteractionParticle, double& aTimeStep, bool& aFlag );
+            void CalculateInteraction( const Kassiopeia::KSTrajectory& aTrajectory, const Kassiopeia::KSParticle& aTrajectoryInitialParticle, const Kassiopeia::KSParticle& aTrajectoryFinalParticle, const KThreeVector& aTrajectoryCenter, const double& aTrajectoryRadius, const double& aTrajectoryTimeStep, Kassiopeia::KSParticle& anInteractionParticle, double& aTimeStep, bool& aFlag );
             void ExecuteInteraction( const Kassiopeia::KSParticle& anInteractionParticle, Kassiopeia::KSParticle& aFinalParticle, Kassiopeia::KSParticleQueue& aSecondaries ) const;
 
             //***********
