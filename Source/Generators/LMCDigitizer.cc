@@ -22,7 +22,7 @@ namespace locust
 
     Digitizer::Digitizer( const std::string& aName ) :
             Generator( aName ),
-            fADCValuesSigned( false )
+            fADCValuesSigned( true )
     {
         fRequiredSignalState = Signal::kTime;
 
