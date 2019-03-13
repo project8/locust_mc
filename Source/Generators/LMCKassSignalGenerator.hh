@@ -46,9 +46,6 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition, double GroupVelocity);
-
-
 
         private:
             double fLO_Frequency;  // typically defined by a parameter in json file.
@@ -56,7 +53,6 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
             int FindNode(double tNew) const;
-            int GetCurrentIndex(double t_old, double distance, int PreEventCounter, double GroupVelocity);
             double TE11ModeExcitation() const;
             double TE10ModeExcitation() const;
             std::string gxml_filename;
