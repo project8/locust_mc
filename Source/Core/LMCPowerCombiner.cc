@@ -87,6 +87,16 @@ namespace locust
     	    return dampingfactor;
           }
 
+    double PowerCombiner::GetNineSixteenthsVoltageDamping(int NPatchesPerStrip, unsigned z_index)
+    {
+    	int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
+    	if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
+        double dampingfactor = 0.;
+    	dampingfactor = 0.52*pow(0.8, njunctions)*0.66; // patch loss * junction loss * amplifier loss
+    	//   printf("dampingfactor is %g\n", dampingfactor); getchar();
+    	return dampingfactor;
+    }
+
 }
 
 

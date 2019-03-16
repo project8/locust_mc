@@ -80,6 +80,9 @@ namespace locust
         double* analogData = aSignal->SignalTime();
 //        uint64_t* digitizedData = new uint64_t[ signalSize ];
 
+        std::ofstream dgvoltagefile;
+        dgvoltagefile.open("digitizedvoltagefile.txt");
+
         if( fADCValuesSigned )
         {
 
@@ -99,6 +102,16 @@ namespace locust
                     LWARN( lmclog, "digitizing channel " << ch << ": " << index << " I: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][0] << " --> " << (int) digitizedData[2*ch*signalSize + index*2 ] );  // pls added (int)
                     LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
                 }
+
+                //print out digitized voltages
+
+                dgvoltagefile << index;
+                dgvoltagefile << "\n";
+                dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2 ];
+                dgvoltagefile << "\n";
+                dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2+1 ] ;
+                dgvoltagefile << "\n";
+
             } // signalsize
             } // channels
             aSignal->ToDigital( digitizedData, signalSizeComplex );
@@ -129,6 +142,14 @@ namespace locust
                         LWARN( lmclog, "digitizing channel " << ch << ": " << index << " I: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][0] << " --> " << (int) digitizedData[2*ch*signalSize + index*2 ] );  // pls added (int)
                         LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
                     }
+
+                    dgvoltagefile << index;
+                    dgvoltagefile << "\n";
+                    dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2 ];
+                    dgvoltagefile << "\n";
+                    dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2+1 ] ;
+                    dgvoltagefile << "\n";
+
                 } // signalsize
                 } // channels
 		  //fclose(fp);
@@ -136,7 +157,9 @@ namespace locust
 
         }  // unsigned
 
+        dgvoltagefile.close();
         return true;
+
     }
 
 } /* namespace locust */

@@ -88,6 +88,8 @@ namespace locust
                 fPowerCombiner = 2;
             else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
             	fPowerCombiner = 3;
+            else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
+            	fPowerCombiner = 4;
             else
             	fPowerCombiner = 0;  // default
         }
@@ -218,6 +220,17 @@ namespace locust
     		}
     	}
 
+    	if (fPowerCombiner == 4) // nine-sixteenths power combining, center fed strip
+    	{
+    		if (fPhaseDelay)
+    		{
+    			VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+    		}
+    		if (fVoltageDamping)
+    		{
+    			VoltageAmplitude *= aPowerCombiner.GetNineSixteenthsVoltageDamping(fNPatchesPerStrip, z_index);
+    		}
+    	}
 
 
         aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);

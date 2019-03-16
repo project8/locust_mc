@@ -28,6 +28,7 @@ namespace locust
             double GetCenterFedPhaseDelay(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing);
             double GetOneQuarterVoltageDamping(int NPatchesPerStrip, unsigned z_index);
             double GetSevenEighthsVoltageDamping(int NPatchesPerStrip, unsigned z_index);
+            double GetNineSixteenthsVoltageDamping(int NPatchesPerStrip, unsigned z_index);
 
         private:
 
