@@ -31,6 +31,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( KGeoBag_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
     set( KEMField_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
 
+    set( CMAKE_INSTALL_LIBDIR ${PROJECT_BINARY_DIR}/lib)    
+
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
