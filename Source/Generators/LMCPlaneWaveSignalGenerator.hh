@@ -47,7 +47,8 @@ namespace locust
               
             void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
             double GetMismatchFactor(double f);
-            double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi) const;
+            //double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi) const;
+            double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
             double GetVoltageAmpFromPlaneWave();
             double GetVoltageAmpFromPlaneWaveMutualCoupling(int z_index);
         private:
@@ -61,6 +62,7 @@ namespace locust
             int fPowerCombiner;
             bool fPhaseDelay;
             bool fVoltageDamping;
+            double fAOI; // from json file, in degrees.
 
 
             bool DoGenerate( Signal* aSignal );

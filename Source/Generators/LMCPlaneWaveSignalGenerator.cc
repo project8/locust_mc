@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <math.h>       /* sin */
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
@@ -34,7 +35,8 @@ namespace locust
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
         phiLO_t(0.),
-        VoltagePhase_t {0.}
+        VoltagePhase_t {0.},
+    	fAOI( 0.)
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -93,6 +95,11 @@ namespace locust
             else
             	fPowerCombiner = 0;  // default
         }
+        if( aParam->has( "AOI" ) )
+        {
+        	fAOI = aParam->get_value< double >( "AOI" );
+        	fAOI *= (2*LMCConst::Pi()/360); //convert to radians
+        }
 
         return true;
     }
@@ -115,7 +122,7 @@ namespace locust
         double MismatchFactor = 0.85;  // punt.
         return MismatchFactor;
     }
-
+/*
     double PlaneWaveSignalGenerator::GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi) const
     {
         LMCThreeVector PatchNormalVector;
@@ -123,6 +130,14 @@ namespace locust
         double AOIFactor = fabs(IncidentKVector.Unit().Dot(PatchNormalVector));
         //printf("cos aoi is %f\n", AOIFactor);
         return AOIFactor;
+    }
+    */
+
+    double PlaneWaveSignalGenerator::GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector){
+    	LMCThreeVector IncidentKVector;
+    	IncidentKVector.SetComponents(cos(AOI), 0.0, sin(AOI));
+    	double AOIFactor = fabs(IncidentKVector.Dot(PatchNormalVector));
+    	return AOIFactor;
     }
 
     double PlaneWaveSignalGenerator::GetVoltageAmpFromPlaneWave()
@@ -175,6 +190,8 @@ namespace locust
     // z-index ranges from 0 to npatches-per-strip-1.
     void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned sampleIndex, unsigned z_index, double DopplerFrequency)
     {
+
+
     	PowerCombiner aPowerCombiner;
     	if (fPowerCombiner == 0 ) //corporate feed, for testing
     	{
@@ -252,7 +269,7 @@ namespace locust
         phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency / (1.e6*fAcquisitionRate*aSignal->DecimationFactor());
 
         PatchAntenna *currentPatch;
-
+        double timedelay;
         for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
         {
             for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
@@ -262,10 +279,24 @@ namespace locust
 
                 VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] +=
  2. * LMCConst::Pi() * fRF_Frequency / (1.e6 * fAcquisitionRate * aSignal->DecimationFactor()); // phi =+ f*dt
-//            printf("voltagephase_t is %g\n", VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]); getchar();
+
+                // arrival time delay for skewed angle of incidence
+                   if(index == 0){
+                	timedelay = patchIndex*fPatchSpacing*sin(fAOI)/LMCConst::C();
+                //	printf("timedelay is %e\n", timedelay);
+                	VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] -= 2.*LMCConst::Pi()*fRF_Frequency*timedelay;
+                   }
+
+
+               //  printf("voltagephase_t for patch %d is %g\n", patchIndex, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]); getchar();
 
                // double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
                 double tVoltageAmplitude = GetVoltageAmpFromPlaneWaveMutualCoupling(patchIndex);
+
+                tVoltageAmplitude *= GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
+             //   printf("aoi factor is %f\n", GetAOIFactor(fAOI, currentPatch->GetNormalDirection())); getchar();
+            //    printf("amp is %g\n", tVoltageAmplitude); getchar();
+
                 AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
 
             } // patch loop

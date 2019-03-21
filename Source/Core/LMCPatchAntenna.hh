@@ -41,6 +41,7 @@ namespace locust
             void SetInstantaneousFrequency(const double &dopplerFrequency);
 
             LMCThreeVector GetPosition();
+            LMCThreeVector GetNormalDirection();
 
             int GetPreviousRetardedIndex();
             double  GetPreviousRetardedTime();
