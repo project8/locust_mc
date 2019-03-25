@@ -46,7 +46,7 @@ namespace locust
           int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.);
           if (z_index >= NPatchesPerStrip/2) njunctions += 1;
 //          printf("z_index is %d and njunctions is %d\n", z_index, njunctions); getchar();
-
+	  njunctions -= 1; //now, njunctions is the number of junctions between current patch and amplifier
           double D = PatchSpacing; // m.  18.0 keV 90 degree electron, lambda in kapton.
           double c_n = LMCConst::C()/1.704;  // speed of light in Kapton.
           double lambda = c_n/DopplerFrequency;
@@ -60,9 +60,16 @@ namespace locust
       {
           int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.);
           if (z_index >= NPatchesPerStrip/2) njunctions += 1;
+          double dampingfactor = 0.;
 
-          double dampingfactor = 0.38*0.66*(njunctions-1.)*0.87; // patch, amplifier, njunction-1 regular junctions.
-
+          if (njunctions>1)
+            {
+	      dampingfactor = 0.38*0.66*pow(0.87, njunctions-1.); // patch, amplifier, njunction-1 regular junctions.
+            }
+          else
+            {
+	    dampingfactor = 0.38*0.66; //patch and amplifier, no junction
+            }
 
           return dampingfactor;
       }
