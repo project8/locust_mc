@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.10.1)
+project( locust_mc VERSION 1.10.2)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -31,7 +31,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( KGeoBag_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
     set( KEMField_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
 
-    set( CMAKE_INSTALL_LIBDIR ${PROJECT_BINARY_DIR}/lib)    
+    set( CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)    
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
