@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.10.2)
+project( locust_mc VERSION 1.10.3)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -20,6 +20,7 @@ option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE 
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
+
     # Keep KasperDefaults from overriding the install prefix
     set( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE )
 
@@ -32,6 +33,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( KEMField_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
 
     set( CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)    
+    set( DATA_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/data )    
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
