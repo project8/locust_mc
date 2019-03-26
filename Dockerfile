@@ -34,11 +34,11 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
     cd build &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
-          -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/testdata \
+          -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
-          -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/testdata \
+          -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
     make -j3 install &&\
     /bin/true
