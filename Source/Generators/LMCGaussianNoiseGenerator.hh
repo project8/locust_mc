@@ -59,6 +59,10 @@ namespace locust
 
             void SetMeanAndSigma( double aMean, double aSigma, double aSampledSigma);
 
+            int GetRandomSeed() const;
+            void SetRandomSeed(  int aRandomSeed );
+
+
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
 
@@ -72,9 +76,10 @@ namespace locust
 
             double fMean;
             double fSigma;
+            int fRandomSeed;
 
             mutable std::normal_distribution< double > fNormDist;
-            mutable std::uniform_real_distribution<double> fUniDist;
+            //mutable std::uniform_real_distribution<double> fUniDist;
 
 
     };

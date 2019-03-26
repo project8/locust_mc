@@ -8,6 +8,7 @@
 #include "LMCGaussianNoiseGenerator.hh"
 
 #include "logger.hh"
+#include <random>
 
 
 using std::string;
@@ -23,7 +24,7 @@ namespace locust
         fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),
         fMean( 0. ),
         fSigma( 1. ),
-        fUniDist( 0., 360. ),
+        fRandomSeed(0),
         fNormDist( fMean, fSigma )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -50,6 +51,12 @@ namespace locust
         }
 
   //      SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
+
+        if (aParam->has( "random-seed") )
+        {
+            SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
+        }
+
 
         if( aParam->has( "domain" ) )
         {
@@ -104,9 +111,19 @@ namespace locust
     void GaussianNoiseGenerator::SetMeanAndSigma( double aMean, double aSigma, double aSampledSigma )
     {
         fNormDist = std::normal_distribution< double >( aMean, aSampledSigma );
-        fUniDist = std::uniform_real_distribution< double >(0.,360.);
+        //fUniDist = std::uniform_real_distribution< double >(0.,360.);
         fMean = aMean;
         fSigma = aSigma;
+        return;
+    }
+    int GaussianNoiseGenerator::GetRandomSeed() const
+    {
+        return fRandomSeed;
+    }
+
+    void GaussianNoiseGenerator::SetRandomSeed( int aRandomSeed )
+    {
+        fRandomSeed = aRandomSeed;
         return;
     }
 
@@ -142,12 +159,24 @@ namespace locust
 
     bool GaussianNoiseGenerator::DoGenerateTime( Signal* aSignal )
     {
+        int random_seed_val;
+
+        if ( fRandomSeed != 0 )
+        {
+            random_seed_val = fRandomSeed;
+        }
+        else
+        {
+            std::random_device rd;
+            random_seed_val = rd();
+        }
+        std::default_random_engine generator(random_seed_val);
 
     	SetMeanAndSigma( fMean, fSigma, fSigma * sqrt(fAcquisitionRate * 1.e6) );
 
         double gain=1.;
         const unsigned nchannels = fNChannels;
-        double phi = 0.;  // voltage phase
+        //double phi = 0.;  // voltage phase
         double mag_r = 0.;  // voltage mag
         double mag_i = 0.;
 
@@ -155,9 +184,9 @@ namespace locust
         {
             for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
             {
-                phi = fUniDist( fRNG );
-                mag_r = fNormDist( fRNG ) * sqrt(0.5);
-                mag_i = fNormDist( fRNG ) * sqrt(0.5);
+                //phi = fUniDist( fRNG );
+                mag_r = fNormDist( generator ) * sqrt(0.5);
+                mag_i = fNormDist( generator ) * sqrt(0.5);
                 aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag_r;
                 aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag_i;
                 //	    printf("noise signal is %g\n", aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1]); getchar();
