@@ -281,10 +281,18 @@ namespace locust
  2. * LMCConst::Pi() * fRF_Frequency / (1.e6 * fAcquisitionRate * aSignal->DecimationFactor()); // phi =+ f*dt
 
                 // arrival time delay for skewed angle of incidence
-                   if(index == 0){
-                	timedelay = patchIndex*fPatchSpacing*sin(fAOI)/LMCConst::C();
-                //	printf("timedelay is %e\n", timedelay);
-                	VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] -= 2.*LMCConst::Pi()*fRF_Frequency*timedelay;
+                   if(index == 0)
+                   {
+                	   if(fAOI >= 0)
+                	   {
+                		   timedelay = patchIndex*fPatchSpacing*sin(fAOI)/LMCConst::C();
+                	   }
+                	   else
+                	   {
+                		   timedelay = (fNPatchesPerStrip - patchIndex)*fPatchSpacing*fabs(sin(fAOI))/LMCConst::C();
+                	   }
+                	   //	printf("timedelay is %e\n", timedelay);
+                	   VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] -= 2.*LMCConst::Pi()*fRF_Frequency*timedelay;
                    }
 
 
