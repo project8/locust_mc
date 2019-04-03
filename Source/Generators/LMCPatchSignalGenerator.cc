@@ -208,14 +208,14 @@ namespace locust
         if (fPowerCombiner == 1)  // series feed
         {
         	//lossless series feed with amp at one end:
-        	VoltagePhase += aPowerCombiner.GetLinePhaseCorr(z_index, DopplerFrequency);
+        	//VoltagePhase += aPowerCombiner.GetLinePhaseCorr(z_index, DopplerFrequency);
         }
         if (fPowerCombiner == 2) // quadrature feed
         {
         	// assume 2PI delay between junctions, so we don't calculated phase mismatches.
         	// instead calculate damping on voltage amplitude:
             int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
-            VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(fNPatchesPerStrip, z_index);
+           // VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(fNPatchesPerStrip, z_index);
         }
 
 	//        if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
