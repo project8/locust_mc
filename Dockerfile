@@ -1,4 +1,4 @@
-FROM project8/p8compute_dependencies:v0.4.0 as locust_common
+FROM project8/p8compute_dependencies:v0.5.0 as locust_common
 
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
