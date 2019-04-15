@@ -245,7 +245,7 @@ namespace locust
     {
 
         FieldCalculator aFieldCalculator;
-	double DeltaE=0.;
+	    double DeltaE=0.;
 
         //		       printf("fcyc is %g\n", aFinalParticle.GetCyclotronFrequency()); getchar();
 
@@ -272,7 +272,7 @@ namespace locust
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
-            if (t_poststep - t_old >= fDigitizerTimeStep) //take a digitizer sample every 5e-10s
+            if (t_poststep - t_old >= fKassTimeStep) //take a digitizer sample every KassTimeStep
             {
                 std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();
@@ -285,6 +285,7 @@ namespace locust
                     t_poststep = 0.;
                     fParticleHistory.clear();
                 }
+//                else {printf("history is empty at t_old %g\n", t_old); getchar();}
 
 
                 //Put in new entries in global ParticleHistory

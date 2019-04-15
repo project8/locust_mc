@@ -35,6 +35,7 @@ namespace locust
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
         gxml_filename("blank.xml"),
+		fTextFileWriting( 0 ),
         phiLO_t(0.),
         VoltagePhase_t {0.}
     {
@@ -68,6 +69,10 @@ namespace locust
         if( aParam->has( "xml-filename" ) )
         {
             gxml_filename = aParam->get_value< std::string >( "xml-filename" );
+        }
+        if( aParam->has( "text-filewriting" ) )
+        {
+            fTextFileWriting = aParam->get_value< bool >( "text-filewriting" );
         }
         if( aParam->has( "feed" ) )
         {
@@ -185,6 +190,22 @@ namespace locust
     }
 
 
+    // fields incident on patch.
+    void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    {
+        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
+        LMCThreeVector PatchPolarizationVector;
+        PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
+        LMCThreeVector PatchCrossPolarizationVector;
+        PatchCrossPolarizationVector.SetComponents(0.0, 0.0, 1.0);  // axial direction.
+
+        double EFieldPatch = IncidentElectricField.Dot(PatchPolarizationVector);
+        double BFieldPatch = IncidentMagneticField.Dot(PatchCrossPolarizationVector);
+        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), t_old);
+    }
+
+
+
     // voltage amplitude induced at patch.
     double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
@@ -227,7 +248,7 @@ namespace locust
     }
 
 
-    void* PatchSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
+    void* PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal)
     {
         if (PreEventCounter > 0)  // new event starting.                                                    
         {
@@ -247,7 +268,7 @@ namespace locust
         unsigned sampleIndex = 0;
 
         //Receiver Properties
-        phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep; 
+        phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         double tReceiverTime = t_old;
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
 
@@ -284,7 +305,7 @@ namespace locust
                 else
                 {
                     CurrentIndex = currentPatch->GetPreviousRetardedIndex();
-                    tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
+                    tRetardedTime = currentPatch->GetPreviousRetardedTime() + 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
                 }
 
                 CurrentIndex = FindNode(tRetardedTime);
@@ -326,7 +347,7 @@ namespace locust
 
                 if (VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]>0.)  // not first sample                                                        
                 {
-                    VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * fDigitizerTimeStep;
+                    VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
                 }
                 else  // if this is the first light at this patch, the voltage phase doesn't advance for the full dt.
                 {              
@@ -334,18 +355,16 @@ namespace locust
                     //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
                 }      
 
-		double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
-//                double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
-		//                printf("tVoltageAmplitude is %g\n", tVoltageAmplitude); getchar();
+ 		        double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())) , PatchPhi, tDopplerFrequency);
 
                 AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
 
             } // patch loop
-            //printf("channel %d voltage is %g\n", channelIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
         } // channels loop
 
-        t_old += fDigitizerTimeStep;
+        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         return 0;
     }
@@ -398,12 +417,15 @@ namespace locust
     bool PatchSignalGenerator::DoGenerate( Signal* aSignal )
     {
 
+        FILE *fp = fopen("incidentfields.txt", "w");
+
         InitializePatchArray();
 
 
         //n samples for event spacing.
         int PreEventCounter = 0;
         const int NPreEventSamples = 150000;
+        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
@@ -438,7 +460,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(PreEventCounter, index, aSignal);
+                        DriveAntenna(fp, PreEventCounter, index, aSignal);
                         PreEventCounter = 0; // reset
                     }
                     tLock.unlock();
@@ -448,6 +470,7 @@ namespace locust
 
         printf("finished signal loop\n");
 
+        fclose(fp);
         fRunInProgress = false;  // tell Kassiopeia to finish.
         fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
         //if (fEventInProgress)

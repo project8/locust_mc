@@ -60,10 +60,11 @@ namespace locust
             double fPatchSpacing; // from json file.
             std::string gxml_filename;
             int fPowerCombiner;
+            bool fTextFileWriting;
 
 
             bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
+            void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal);
             void InitializePatchArray();
 
             int FindNode(double tNew) const;

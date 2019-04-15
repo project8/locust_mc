@@ -188,7 +188,7 @@ namespace locust
                 else
                 {
                     CurrentIndex = currentPatch->GetPreviousRetardedIndex();
-                    tRetardedTime = currentPatch->GetPreviousRetardedTime() + fDigitizerTimeStep;
+                    tRetardedTime = currentPatch->GetPreviousRetardedTime() + 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
                 }
 
 
@@ -240,7 +240,7 @@ namespace locust
             } // z_position waveguide element stepping loop.
         } // nChannels loop.
 
-        t_old += fDigitizerTimeStep;
+        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         return 0;
     }
@@ -307,6 +307,7 @@ namespace locust
         //n samples for event spacing.
         int PreEventCounter = 0;
         const int NPreEventSamples = 150000;
+        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         std::thread Kassiopeia (KassiopeiaInit, gxml_filename);     // spawn new thread
 
