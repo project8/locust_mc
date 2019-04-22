@@ -22,11 +22,13 @@ namespace locust
 
             virtual ~PowerCombiner();
 
-            double GetLinePhaseCorr(unsigned z_index, double DopplerFrequency);
-      double GetCenterFedLinePhaseCorr(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            double GetVoltageDamping(int NPatchesPerStrip, unsigned z_index);
-            double GetCenterFedUnitCellDamping(int NPatchesPerStrip, unsigned z_index);
-
+            double GetCorporateVoltageDamping();
+            double GetSeriesPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
+            double GetSeriesVoltageDamping(unsigned z_index);
+            double GetCenterFedPhaseDelay(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing);
+            double GetOneQuarterVoltageDamping(int NPatchesPerStrip, unsigned z_index);
+            double GetSevenEighthsVoltageDamping(int NPatchesPerStrip, unsigned z_index);
+            double GetNineSixteenthsVoltageDamping(int NPatchesPerStrip, unsigned z_index);
 
         private:
 

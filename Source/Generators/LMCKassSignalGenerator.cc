@@ -180,9 +180,9 @@ namespace locust
         }
 
 
-        phi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * fDigitizerTimeStep;
-        phi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * fDigitizerTimeStep;
-        phiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * fDigitizerTimeStep;
+        phi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        phi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        phiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));  // antenna
         ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
         RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));  // short
@@ -204,21 +204,21 @@ namespace locust
 
         }
 
-	/*	
+/*
                                 printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
                                 printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
                                 printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
                                 printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
                                 "  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
                                 index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-                    getchar();
+//                    getchar();
 
 
         printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-	*/
+*/
 
 
-        t_old += fDigitizerTimeStep;  // advance time here instead of in step modifier.  This preserves the freefield sampling.
+        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 
         return 0;
     }
@@ -275,6 +275,7 @@ namespace locust
         //n samples for event spacing.
         int PreEventCounter = 0;
         int NPreEventSamples = 1500000;
+        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
         //fprintf(fp, "testing\n");

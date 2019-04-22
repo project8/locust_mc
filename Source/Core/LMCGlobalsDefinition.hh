@@ -14,7 +14,7 @@ double CENTER_TO_ANTENNA = 0.0;
 
 
 double t_old = -99.;
-double fDigitizerTimeStep = 5e-10; //Time step for sampling
+double fKassTimeStep = 0.; //Time step for sampling
 
 //running deque for saving previous few ns of particle history 
 //in order to caluclate retarded fields

@@ -34,6 +34,11 @@ namespace locust
         return centerPosition;
     }
 
+    LMCThreeVector PatchAntenna::GetNormalDirection()
+    {
+    	return normalDirection;
+    }
+
     void PatchAntenna::SetIncidentElectricField(const LMCThreeVector &incomingElectricField)
     {
         incidentElectricField = incomingElectricField;
@@ -114,6 +119,7 @@ namespace locust
     {
         normalDirection = normDirection;
     }
+
 
 
 

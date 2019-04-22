@@ -21,7 +21,7 @@ extern double CENTER_TO_SHORT;
 extern double CENTER_TO_ANTENNA;
 extern double t_old;
 
-extern double fDigitizerTimeStep;
+extern double fKassTimeStep;
 
 extern std::deque<locust::Particle> fParticleHistory;
 
