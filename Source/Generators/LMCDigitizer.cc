@@ -22,7 +22,7 @@ namespace locust
 
     Digitizer::Digitizer( const std::string& aName ) :
             Generator( aName ),
-            fADCValuesSigned( true )
+            fADCValuesSigned( false )
     {
         fRequiredSignalState = Signal::kTime;
 
@@ -39,10 +39,15 @@ namespace locust
     {
         if( aNode == NULL ) return true;
 
+        if( aNode->has( "adc-values-signed" ) )
+            SetADCValuesSigned( aNode->get_value< bool >( "adc-values-signed", fADCValuesSigned ) );
+
+
         unsigned bitDepth = aNode->get_value( "bit-depth", fParams.bit_depth );
         unsigned dataTypeSize = aNode->get_value( "data-type-size", fParams.data_type_size );
         double vRange = aNode->get_value( "v-range", fParams.v_range );
         double vMin = aNode->get_value( "v-offset", fParams.v_offset );
+        
       
 
         get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
@@ -51,6 +56,7 @@ namespace locust
 
         return true;
     }
+
 
     void Digitizer::Accept( GeneratorVisitor* aVisitor ) const
     {
@@ -71,7 +77,8 @@ namespace locust
     bool Digitizer::DoGenerate( Signal* aSignal )
     {
 
-    	bool IQStream = true;  // get rid of this.
+
+printf("fadcvaluessigned is %d\n", fADCValuesSigned); getchar();
   
         unsigned nchannels = fNChannels;
         unsigned signalSize = aSignal->TimeSize();
