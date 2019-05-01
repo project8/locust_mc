@@ -28,8 +28,6 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCException.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
-#    Core/LMCHFSSReader.hh
-#    Core/LMCParticle.hh
     Core/LMCRunLengthCalculator.hh
     Core/LMCSignal.hh
     Core/LMCSimulationController.hh
@@ -38,7 +36,6 @@ set( LOCUST_MC_HEADER_FILES
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
-    Generators/LMCFakeTrackSignalGenerator.hh    
     Generators/LMCTestSignalGenerator.hh
     Generators/LMCDecimateSignalGenerator.hh
     Generators/LMCLowPassFilterFFTGenerator.hh
@@ -56,8 +53,6 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCException.cc
     Core/LMCGenerator.cc
     Core/LMCGeneratorToolbox.cc
-#    Core/LMCHFSSReader.cc
-#    Core/LMCParticle.cc
     Core/LMCRunLengthCalculator.cc
     Core/LMCSignal.cc
     Core/LMCSimulationController.cc
@@ -66,7 +61,7 @@ set( LOCUST_MC_SOURCE_FILES
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
-    Generators/LMCFakeTrackSignalGenerator.cc    
+    Generators/LMCTestSignalGenerator.cc
     Generators/LMCDecimateSignalGenerator.cc
     Generators/LMCLowPassFilterFFTGenerator.cc
     Generators/LMCHighPassFilterFFTGenerator.cc
@@ -76,15 +71,6 @@ set( LOCUST_MC_SOURCE_FILES
 #    Generators/LMCBasebandTrackGenerator.cc
 #    Generators/LMCTrappedElectronGenerator.cc
 )
-
-if (locust_mc_BUILD_WITH_ROOT)
-    set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
-        Core/LMCEvent.hh
-        Core/LMCTrack.hh)
-    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
-        Core/LMCEvent.cc
-        Core/LMCTrack.cc)
-endif (locust_mc_BUILD_WITH_ROOT)
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
@@ -139,6 +125,19 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 #  Check root build.
 if (locust_mc_BUILD_WITH_ROOT)
+
+set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+    Core/LMCEvent.hh
+    Core/LMCTrack.hh
+    Generators/LMCFakeTrackSignalGenerator.hh
+   )
+
+set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+    Core/LMCEvent.cc
+    Core/LMCTrack.cc
+    Generators/LMCFakeTrackSignalGenerator.cc
+   )
+
 
   if (CMAKE_COMPILER_IS_GNUCXX)
       option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )

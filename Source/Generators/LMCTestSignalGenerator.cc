@@ -23,8 +23,9 @@ namespace locust
     TestSignalGenerator::TestSignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &TestSignalGenerator::DoGenerateTime ),
-        fLO_frequency( 0. ),
-        fAmplitude( 0.24 )
+        fLO_frequency( 20.05e9 ),
+        fRF_frequency( 20.1e9 ),
+        fAmplitude( 5.e-8 )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -38,8 +39,21 @@ namespace locust
     {
         if( aParam == NULL) return true;
 
-        SetFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
+        if( aParam->has( "rf-frequency" ) )
+        {
+        SetRFFrequency( aParam->get_value< double >( "rf-frequency", fRF_frequency ) );
+        }
+
+        if( aParam->has( "lo-frequency" ) )
+        {
+        SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
+        }
+
+
+        if( aParam->has( "amplitude" ) )
+        {
         SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
+        }
 
 
         if( aParam->has( "domain" ) )
@@ -75,12 +89,23 @@ namespace locust
         return;
     }
 
-    double TestSignalGenerator::GetFrequency() const
+    double TestSignalGenerator::GetRFFrequency() const
+    {
+        return fRF_frequency;
+    }
+
+    void TestSignalGenerator::SetRFFrequency( double aFrequency )
+    {
+        fRF_frequency = aFrequency;
+        return;
+    }
+
+    double TestSignalGenerator::GetLOFrequency() const
     {
         return fLO_frequency;
     }
 
-    void TestSignalGenerator::SetFrequency( double aFrequency )
+    void TestSignalGenerator::SetLOFrequency( double aFrequency )
     {
         fLO_frequency = aFrequency;
         return;
@@ -132,29 +157,27 @@ namespace locust
     bool TestSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-        RunLengthCalculator *RunLengthCalculator1 = new RunLengthCalculator;
-
         const unsigned nchannels = fNChannels;
 
         double LO_phase = 0.;
         double voltage_phase = 0.;
-        double test_frequency = 20.1e9; // Hz
 
         for (unsigned ch = 0; ch < nchannels; ++ch)
         {
             for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
             {
 
-                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
-                voltage_phase = 2.*LMCConst::Pi()*test_frequency*(double)index/aSignal->DecimationFactor()/(RunLengthCalculator1->GetAcquisitionRate()*1.e6);
+                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
+                voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
 
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*5.e-8*cos(voltage_phase-LO_phase);
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*5.e-8*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*fAmplitude*cos(voltage_phase-LO_phase);
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*fAmplitude*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+
+//printf("signal %d is with acqrate %g, lo %g and rf %g is %g\n", index, fAcquisitionRate, fLO_frequency, fRF_frequency, aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0]); getchar();
 
 
             }
         }
-        delete RunLengthCalculator1;
         return true;
     }
 
