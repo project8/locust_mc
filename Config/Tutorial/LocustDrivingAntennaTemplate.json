@@ -1,0 +1,46 @@
+{
+    "generators":
+    [          
+       "antenna-signal",
+       "lpf-fft",
+       "decimate-signal", 
+       "digitizer"
+    ],
+
+    "antenna-signal":
+    {
+        "lo-frequency": 25.8781e9,
+        "antenna-frequency": 25.9281e9,
+        "antenna-amplitude": 1.6e-6,
+        "array-radius": 0.05,
+        "npatches-per-strip": 22,
+        "patch-spacing": 0.0068,
+        "feed": "one-quarter",
+        "phase-delay": 1,
+        "voltage-damping": 1
+    },
+
+
+    "simulation":
+    {
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 81920,
+        "n-channels": 1
+    },
+     
+  
+    "gaussian-noise":
+    {
+    "noise-floor": 4.2e-22,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 3.0e-8,
+    "v-offset": -1.5e-8
+    }
+
+}
+

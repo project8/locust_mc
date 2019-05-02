@@ -76,9 +76,6 @@ namespace locust
 
     bool Digitizer::DoGenerate( Signal* aSignal )
     {
-
-
-printf("fadcvaluessigned is %d\n", fADCValuesSigned); getchar();
   
         unsigned nchannels = fNChannels;
         unsigned signalSize = aSignal->TimeSize();

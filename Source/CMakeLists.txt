@@ -79,6 +79,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCPlaneWaveSignalGenerator.hh
+        Generators/LMCAntennaSignalGenerator.hh
 
         Core/LMCChannel.hh
         Core/LMCGlobalsDeclaration.hh
@@ -104,6 +105,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCPatchSignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
         Generators/LMCPlaneWaveSignalGenerator.cc
+        Generators/LMCAntennaSignalGenerator.cc
 
         Core/LMCChannel.cc
         Core/LMCHFSSReader.cc
