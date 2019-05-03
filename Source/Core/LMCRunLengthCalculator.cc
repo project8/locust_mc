@@ -171,6 +171,13 @@ namespace locust
         return;
     }
 
+
+    void RunLengthCalculator::Visit( const TestFIRFilterGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
   void RunLengthCalculator::Visit( const BasebandTrackGenerator* )
     {
         // nothing to see here, move along, please

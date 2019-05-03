@@ -16,6 +16,7 @@ namespace locust
     class PlaneWaveSignalGenerator;
     class AntennaSignalGenerator;
     class TestSignalGenerator;
+    class TestFIRFilterGenerator;
     class BasebandTrackGenerator;
     class LowPassFilterFFTGenerator;
     class HighPassFilterFFTGenerator;
@@ -44,6 +45,7 @@ namespace locust
             virtual void Visit( const PlaneWaveSignalGenerator* ) = 0;
             virtual void Visit( const AntennaSignalGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;
+            virtual void Visit( const TestFIRFilterGenerator* ) = 0;
             virtual void Visit( const BasebandTrackGenerator* ) = 0;
             virtual void Visit( const LowPassFilterFFTGenerator* ) = 0;
             virtual void Visit( const HighPassFilterFFTGenerator* ) = 0;
