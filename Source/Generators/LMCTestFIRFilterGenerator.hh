@@ -82,6 +82,8 @@ namespace locust
             double fRF_frequency;
             double fLO_frequency;
             double fAmplitude;
+            double fFilter_resolution;
+            std::string gfilter_filename;
 
             
     };

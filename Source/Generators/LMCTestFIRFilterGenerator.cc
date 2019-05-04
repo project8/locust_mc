@@ -23,6 +23,8 @@ namespace locust
     TestFIRFilterGenerator::TestFIRFilterGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &TestFIRFilterGenerator::DoGenerateTime ),
+        gfilter_filename("blank.txt"),
+        fFilter_resolution( 0. ),
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
         fAmplitude( 5.e-8 )
@@ -38,6 +40,17 @@ namespace locust
     bool TestFIRFilterGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
+
+        if( aParam->has( "filter-filename" ) )
+        {
+            gfilter_filename = aParam->get_value< std::string >( "filter-filename" );
+        }
+
+        if( aParam->has( "filter-resolution" ) )
+        {
+            fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
+        }
+
 
         if( aParam->has( "rf-frequency" ) )
         {
@@ -156,7 +169,7 @@ namespace locust
     double *filterarray = new double[1000];
     double filter;
     double index;
-    fp = fopen("/home/penny/Desktop/laptop_backup/programs/FIRResonse/unitcell2ps.txt","r");
+    fp = fopen(gfilter_filename.c_str(),"r");
     int count = 0;
 
 
@@ -231,7 +244,7 @@ namespace locust
         double VoltageSample = 0.;
         double* filterarray = GetFIRFilter(1);
         int nfilterbins = GetNFilterBins(filterarray);
-        double dtfilter;
+        double dtfilter = fFilter_resolution;
 
         for (unsigned ch = 0; ch < nchannels; ++ch)
         {
@@ -240,7 +253,7 @@ namespace locust
 
                 LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
                 field_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                VoltageSample = GetFIRSample(filterarray, nfilterbins, 2.e-12, fAmplitude, field_phase, fRF_frequency);
+                VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, fAmplitude, field_phase, fRF_frequency);
 
                 aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*VoltageSample*cos(LO_phase);
                 aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*VoltageSample*cos(-LMCConst::Pi()/2. + LO_phase);

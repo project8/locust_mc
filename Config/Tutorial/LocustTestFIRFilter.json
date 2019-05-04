@@ -10,7 +10,9 @@
     "test-firfilter":
     {
     "rf-frequency": 20.7e9,
-    "lo-frequency": 20.67e9
+    "lo-frequency": 20.67e9,
+    "filter-filename": "/home/penny/Desktop/laptop_backup/programs/FIRResonse/unitcell2ps.txt",
+    "filter-resolution": 2.0e-12
     },
 
     
