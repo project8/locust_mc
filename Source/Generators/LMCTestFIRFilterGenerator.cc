@@ -255,8 +255,8 @@ namespace locust
                 field_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
                 VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, fAmplitude, field_phase, fRF_frequency);
 
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*VoltageSample*cos(LO_phase);
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*VoltageSample*cos(-LMCConst::Pi()/2. + LO_phase);
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += VoltageSample*cos(LO_phase);
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += VoltageSample*cos(LMCConst::Pi()/2. + LO_phase);
 
 //printf("signal %d is with acqrate %g, lo %g and rf %g is %g\n", index, fAcquisitionRate, fLO_frequency, fRF_frequency, aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0]); getchar();
 
