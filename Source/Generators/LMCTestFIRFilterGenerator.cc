@@ -255,8 +255,10 @@ namespace locust
                 field_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
                 VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, fAmplitude, field_phase, fRF_frequency);
 
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += VoltageSample*cos(LO_phase);
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += VoltageSample*cos(LMCConst::Pi()/2. + LO_phase);
+// factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
+// This allows for correct gain in Locust-Katydid analysis chain.
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += 2.*VoltageSample*cos(LO_phase);  
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 2.*VoltageSample*cos(LMCConst::Pi()/2. + LO_phase);
 
 //printf("signal %d is with acqrate %g, lo %g and rf %g is %g\n", index, fAcquisitionRate, fLO_frequency, fRF_frequency, aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0]); getchar();
 
