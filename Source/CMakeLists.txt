@@ -26,6 +26,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCConst.hh
     Core/LMCEggWriter.hh
     Core/LMCException.hh
+    Core/LMCFieldEstimator.hh
     Core/LMCGenerator.hh
     Core/LMCGeneratorToolbox.hh
     Core/LMCRunLengthCalculator.hh
@@ -52,6 +53,7 @@ set( LOCUST_MC_HEADER_FILES
 set( LOCUST_MC_SOURCE_FILES
     Core/LMCEggWriter.cc
     Core/LMCException.cc
+    Core/LMCFieldEstimator.cc
     Core/LMCGenerator.cc
     Core/LMCGeneratorToolbox.cc
     Core/LMCRunLengthCalculator.cc
