@@ -29,7 +29,7 @@ Check these fields in LocustPhase1Template.json:
 - "record-size" can be shortened to fit around a single electron track, or can be as long as 4194304.
 - In the "digitizer" field, check the voltage range and offset.  They should be optimized for your signal + noise power.
 
-There are two tuning distances that are hard-coded into the Phase 1 simulation:  CENTER_TO_SHORT and CENTER_TO_ANTENNA.  They are global in scope and are defined in LMCCyclotronRadiationExtractor.cc .
+There are two tuning distances that are hard-coded into the Phase 1 simulation:  CENTER_TO_SHORT and CENTER_TO_ANTENNA.  They are global in scope and are defined in LMCCyclotronRadiationExtractor.cc .  A git gist describing details of the field calculations from Section 3.2.2 of the Locust paper is here: https://gist.github.com/pslocum/3ee7b440a947974caa1b881cd89c5071
 
 ## Phase 2
 Run the	simulation like this:
