@@ -44,6 +44,8 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCLocalOscillatorGenerator.hh
     Generators/LMCButterworthLPFGenerator.hh
 
+    Transmitters/LMCFieldEstimator.hh
+
 #    Generators/LMCBasebandTrackGenerator.hh
 #    Generators/LMCTrappedElectronGenerator.hh
 )
@@ -70,6 +72,7 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCLocalOscillatorGenerator.cc
     Generators/LMCButterworthLPFGenerator.cc
 
+    Transmitters/LMCFieldEstimator.cc
 
 #    Generators/LMCBasebandTrackGenerator.cc
 #    Generators/LMCTrappedElectronGenerator.cc
