@@ -13,6 +13,7 @@
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
+#include "LMCFieldEstimator.hh"
 
 
 namespace locust
@@ -39,6 +40,7 @@ namespace locust
      - "feed": "one-quarter",  -- power-combining scheme.
      - "phase-delay": 1, -- consider phase delay between patches?
      - "voltage-damping": 1 -- consider power-combining scheme in "feed"?
+     - "input-signal-type": string -- By default considers sin wave, could change based on requirements. 
           
     */
     class AntennaSignalGenerator : public Generator
@@ -52,13 +54,18 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
-            void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
+            /*void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
             double GetMismatchFactor(double f);
             double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
             double GetVoltageAmpFromAntenna();
+	    */
 
         private:
-            std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+	    FieldEstimator fFieldEstimator;
+	    int fInputSignalType;
+	    double fInputFrequency;// in GHz
+            double fInputAmplitude;
+           /* std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
             std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
             double fLO_Frequency;  // typically defined by a parameter in json file.
             double fRF_Frequency;  // typically defined by a parameter in json file.
@@ -67,17 +74,17 @@ namespace locust
             int fNPatchesPerStrip; // from json file.
             double fPatchSpacing; // from json file.
             int fPowerCombiner;
-            bool fPhaseDelay;
-            bool fVoltageDamping;
+            bool fVoltageDamping;*/
 
+            void GenerateSignal(Signal* );
 
             bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
-            void InitializePatchArray();
+            //void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
+            //void InitializePatchArray();
 
 
-            double phiLO_t; // voltage phase of LO in radians;
-            double VoltagePhase_t[10000];
+            //double phiLO_t; // voltage phase of LO in radians;
+            //double VoltagePhase_t[10000];
 
     };
 
