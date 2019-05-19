@@ -17,7 +17,6 @@
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
-
 namespace locust
 {
     LOGGER( lmclog, "AntennaSignalGenerator" );
@@ -26,17 +25,20 @@ namespace locust
 
     AntennaSignalGenerator::AntennaSignalGenerator( const std::string& aName ) :
         Generator( aName ),
-        fLO_Frequency( 0.),
-        fRF_Frequency( 0.),
+	fInputSignalType(1),
+	fInputFrequency(27.0), //Assume 27 
+        fInputAmplitude(1)
+        /*fLO_Frequency( 0.),
+        fInputSignalType(1), //Currently 1 stands for sin wave
+	fRF_Frequency( 0.),
         fRF_Amplitude( 1.6e-5), // V/m, reasonable for 5 cm radius array
         fArrayRadius( 0. ),
-        fPhaseDelay( 0 ),
         fVoltageDamping( 0 ),
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
         phiLO_t(0.),
-        VoltagePhase_t {0.}
+        VoltagePhase_t {0.}*/
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -48,12 +50,29 @@ namespace locust
     bool AntennaSignalGenerator::Configure( const scarab::param_node* aParam )
     {
         if( aParam == NULL) return true;
+	 
+	if(!fFieldEstimator.Configure(aParam))
+	{
+		LERROR(lmclog,"Error configuring field estimator class");
+	}
 
-        if( aParam->has( "phase-delay" ) )
+	if( aParam->has( "input-signal-type" ) )
         {
-            fPhaseDelay = aParam->get_value< bool >( "phase-delay" );
+            fInputSignalType = aParam->get_value< int >( "input-signal-type" );
         }
 
+	if( aParam->has( "input-signal-frequency" ) )
+        {
+            fInputSignalType = aParam->get_value< double >( "input-signal-frequency" );
+        }
+
+	if( aParam->has( "input-signal-amplitude" ) )
+        {
+            fInputSignalType = aParam->get_value< double >( "input-signal-amplitude" );
+        }
+
+
+	/*
         if( aParam->has( "voltage-damping" ) )
 	  {
             fVoltageDamping = aParam->get_value< bool >( "voltage-damping" );
@@ -97,7 +116,7 @@ namespace locust
             	fPowerCombiner = 4;
             else
             	fPowerCombiner = 0;  // default
-        }
+        }*/
 
         return true;
     }
@@ -110,6 +129,7 @@ namespace locust
 
 
 
+    /*
     double AntennaSignalGenerator::GetMismatchFactor(double f)
     {
         //f /= 2.*LMCConst::Pi();
@@ -288,14 +308,37 @@ namespace locust
             }
         }
     }
+    */
 
 
+    void AntennaSignalGenerator::GenerateSignal(Signal* aSignal)
+    {
+	if(fInputSignalType==1) // sin wave
+	{
+	     for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+	     {
+		 aSignal->LongSignalTimeComplex()[index][0] = fInputAmplitude* sin(index);
+		 aSignal->LongSignalTimeComplex()[index][1] = fInputAmplitude* cos(index);
+	     }
+	}
+
+
+	else //Else case also sin for now still
+	{
+	     for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+	     {
+		 aSignal->LongSignalTimeComplex()[index][0] = fInputAmplitude* sin(index);
+		 aSignal->LongSignalTimeComplex()[index][1] = fInputAmplitude* cos(index);
+	     }
+	}
+    }
 
     bool AntennaSignalGenerator::DoGenerate( Signal* aSignal )
     {
+	fFieldEstimator.ReadFIRFile();
+	GenerateSignal(aSignal);
 
-        InitializePatchArray();
-
+	/*
         //n samples for event spacing.
         int PreEventCounter = 0;
         const int NPreEventSamples = 0;
@@ -308,7 +351,7 @@ namespace locust
           {
           DriveAntenna(PreEventCounter, index, aSignal);
           }
-
+*/
 
         return true;
     }
