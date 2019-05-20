@@ -27,7 +27,14 @@ namespace locust
         fFilter_resolution( 0. ),
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
-        fAmplitude( 5.e-8 )
+        fAmplitude( 5.e-8 ),
+        EFieldBuffer( 1 ),
+        EPhaseBuffer( 1 ),
+        EAmplitudeBuffer( 1 ),
+        EFrequencyBuffer( 1 ),
+        LOPhaseBuffer( 1 ),
+        IndexBuffer( 1 ),
+        PatchFIRBuffer( 1 )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -201,26 +208,25 @@ namespace locust
     return nbins;
     }
 
-    double TestFIRFilterGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, double fieldamplitude, double fieldphase, double fieldfrequency)
+
+    double TestFIRFilterGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel)
     {
-    	std::deque<double> fieldarrived = {0.};
 
-    	for (int i=0; i<nfilterbins; i++)  // initialize field and coefficients.
-    	  {
-    	  fieldarrived.emplace(fieldarrived.begin()+i, 0.);  // size deque array
-    	  }
-
+        double fieldphase = EPhaseBuffer[channel].front();
+        double fieldamplitude = EAmplitudeBuffer[channel].front();
+        double fieldfrequency = EFrequencyBuffer[channel].front();
+        
     	for (int i=0; i<nfilterbins; i++)  // populate filter.
     	  {
     	  fieldphase += 2.*3.1415926*fieldfrequency*dtfilter;
-    	  fieldarrived.push_back(fieldamplitude*cos(fieldphase));
-    	  fieldarrived.pop_front();
+    	  PatchFIRBuffer[0].push_back(fieldamplitude*cos(fieldphase));
+    	  PatchFIRBuffer[0].pop_front();
     	  }
 
     	double total = 0.;
     	for (int j=0; j<nfilterbins; j++)  // sum products in filter.
     	  {
-    	  total += fieldarrived.at(j)*filterarray[j];
+    	  total += PatchFIRBuffer[0].at(j)*filterarray[j];
     	  }
 
 //printf("total is %g\n", total); getchar();
@@ -243,8 +249,11 @@ namespace locust
         double field_phase = 0.;
         double VoltageSample = 0.;
         double* filterarray = GetFIRFilter(1);
-        int nfilterbins = GetNFilterBins(filterarray);
+        unsigned nfilterbins = GetNFilterBins(filterarray);
+        unsigned nfieldbufferbins = 100;
         double dtfilter = fFilter_resolution;
+
+        InitializeBuffers(nfilterbins, nfieldbufferbins);
 
         for (unsigned ch = 0; ch < nchannels; ++ch)
         {
@@ -253,19 +262,60 @@ namespace locust
 
                 LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
                 field_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, fAmplitude, field_phase, fRF_frequency);
+                FillBuffers(fAmplitude, field_phase, LO_phase, index, ch);
+
+                VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch);
 
 // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
 // This allows for correct gain in Locust-Katydid analysis chain.
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += 2.*VoltageSample*cos(LO_phase);  
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += 2.*VoltageSample*cos(LMCConst::Pi()/2. + LO_phase);
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch].front());  
+                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][1] += 2.*VoltageSample*cos(LMCConst::Pi()/2. + LOPhaseBuffer[ch].front());
 
-//printf("signal %d is with acqrate %g, lo %g and rf %g is %g\n", index, fAcquisitionRate, fLO_frequency, fRF_frequency, aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0]); getchar();
 
+//printf("signal %d is with acqrate %g, lo %g and rf %g is %g\n", (unsigned)IndexBuffer[ch].front(), fAcquisitionRate, fLO_frequency, EFrequencyBuffer[ch].front(), aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][0]); getchar();
+
+                PopBuffers(ch);
 
             }
         }
         return true;
+    }
+
+    void TestFIRFilterGenerator::FillBuffers(double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel)
+    {
+    EFieldBuffer[channel].push_back(fAmplitude*cos(FieldPhase));
+    EPhaseBuffer[channel].push_back(FieldPhase);
+    EAmplitudeBuffer[channel].push_back(fAmplitude);
+    EFrequencyBuffer[channel].push_back(fRF_frequency);
+    LOPhaseBuffer[channel].push_back(LOPhase);
+    IndexBuffer[channel].push_back(index);
+    }
+
+
+    void TestFIRFilterGenerator::PopBuffers(unsigned channel)
+    {
+    EFieldBuffer[channel].pop_front();
+    EPhaseBuffer[channel].pop_front();
+    EAmplitudeBuffer[channel].pop_front();
+    EFrequencyBuffer[channel].pop_front();
+    LOPhaseBuffer[channel].pop_front();
+    IndexBuffer[channel].pop_front();
+    }
+
+
+    void TestFIRFilterGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
+    {
+
+    const unsigned nchannels = fNChannels;
+
+    FieldBuffer aFieldBuffer;
+    EFieldBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
+    EPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
+    EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
+    EFrequencyBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
+    LOPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
+    IndexBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
+    PatchFIRBuffer = aFieldBuffer.InitializeBuffer(1, filterbuffersize);
     }
 
     bool TestFIRFilterGenerator::DoGenerateFreq( Signal* aSignal )

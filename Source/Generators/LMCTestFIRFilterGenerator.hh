@@ -10,6 +10,7 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCFieldBuffer.hh"
 
 
 namespace scarab
@@ -48,8 +49,7 @@ namespace locust
             virtual ~TestFIRFilterGenerator();
 
             bool Configure( const scarab::param_node* aNode );
-      bool Configure2( const Digitizer* aDig );
-
+            bool Configure2( const Digitizer* aDig );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
@@ -76,7 +76,11 @@ namespace locust
             bool (TestFIRFilterGenerator::*fDoGenerateFunc)( Signal* aSignal );
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
-            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, double fieldamplitude, double fieldphase, double fieldfrequency);
+            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel);
+
+            void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
+            void FillBuffers(double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel);
+            void PopBuffers(unsigned channel);
 
             double* filterarray;
             double fRF_frequency;
@@ -85,7 +89,13 @@ namespace locust
             double fFilter_resolution;
             std::string gfilter_filename;
 
-            
+            std::vector<std::deque<double>> EFieldBuffer;
+            std::vector<std::deque<double>> EPhaseBuffer;
+            std::vector<std::deque<double>> EAmplitudeBuffer;
+            std::vector<std::deque<double>> EFrequencyBuffer;
+            std::vector<std::deque<double>> LOPhaseBuffer;
+            std::vector<std::deque<double>> IndexBuffer;
+            std::vector<std::deque<double>> PatchFIRBuffer;
     };
 
 } /* namespace locust */

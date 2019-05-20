@@ -40,6 +40,7 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
 )
