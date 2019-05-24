@@ -209,30 +209,41 @@ namespace locust
     }
 
 
-    double TestFIRFilterGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel)
+    double TestFIRFilterGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, double AcquisitionRate)
     {
 
-        double fieldphase = EPhaseBuffer[channel].front();
-        double fieldamplitude = EAmplitudeBuffer[channel].front();
-        double fieldfrequency = EFrequencyBuffer[channel].front();
-        
-    	for (int i=0; i<nfilterbins; i++)  // populate filter.
+    double fieldfrequency = EFrequencyBuffer[channel].front();
+    double convolution = 0.;
+    double HilbertMag = 0.;
+    double HilbertPhase = 0.;
+    double HilbertMean = 0.;
+
+    if (fabs(EFieldBuffer[channel].front()) > 0.)  // field arrived yet?
+    {
+        HilbertTransform aHilbertTransform;
+        double* HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel], EFrequencyBuffer[channel], 50, AcquisitionRate);
+        HilbertMag = HilbertMagPhaseMean[0];
+        HilbertPhase = HilbertMagPhaseMean[1];
+        HilbertMean = HilbertMagPhaseMean[2];
+
+
+   	for (int i=0; i<nfilterbins; i++)  // populate filter with field.
     	  {
-    	  fieldphase += 2.*3.1415926*fieldfrequency*dtfilter;
-    	  PatchFIRBuffer[0].push_back(fieldamplitude*cos(fieldphase));
-    	  PatchFIRBuffer[0].pop_front();
+    	  HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
+    	  PatchFIRBuffer[channel].push_back(HilbertMag*cos(HilbertPhase));
+    	  PatchFIRBuffer[channel].pop_front();
     	  }
 
-    	double total = 0.;
     	for (int j=0; j<nfilterbins; j++)  // sum products in filter.
     	  {
-    	  total += PatchFIRBuffer[0].at(j)*filterarray[j];
+    	  convolution += PatchFIRBuffer[channel].at(j)*filterarray[j];
     	  }
 
-//printf("total is %g\n", total); getchar();
-    return total;
     }
 
+//    return sqrt(50.)*HilbertMag*cos(HilbertPhase);  // debug
+    return convolution;
+    }
 
 
     bool TestFIRFilterGenerator::DoGenerate( Signal* aSignal )
@@ -242,6 +253,7 @@ namespace locust
 
     bool TestFIRFilterGenerator::DoGenerateTime( Signal* aSignal )
     {
+
 
         const unsigned nchannels = fNChannels;
 
@@ -260,24 +272,23 @@ namespace locust
             for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
             {
 
-                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                field_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                FillBuffers(fAmplitude, field_phase, LO_phase, index, ch);
+            LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
+            field_phase += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
 
-                VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch);
+            FillBuffers(fAmplitude, field_phase, LO_phase, index, ch);
+            VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, fAcquisitionRate*aSignal->DecimationFactor());
+//            VoltageSample = sqrt(50.)*fAmplitude*cos(field_phase);
 
 // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
 // This allows for correct gain in Locust-Katydid analysis chain.
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch].front());  
-                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][1] += 2.*VoltageSample*cos(LMCConst::Pi()/2. + LOPhaseBuffer[ch].front());
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch].front());  
+            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][1] += 2.*VoltageSample*cos(LMCConst::Pi()/2. + LOPhaseBuffer[ch].front());
 
-
-//printf("signal %d is with acqrate %g, lo %g and rf %g is %g\n", (unsigned)IndexBuffer[ch].front(), fAcquisitionRate, fLO_frequency, EFrequencyBuffer[ch].front(), aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (unsigned)IndexBuffer[ch].front()][0]); getchar();
-
-                PopBuffers(ch);
+               PopBuffers(ch);
 
             }
         }
+
         return true;
     }
 
@@ -309,12 +320,14 @@ namespace locust
     const unsigned nchannels = fNChannels;
 
     FieldBuffer aFieldBuffer;
+
     EFieldBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
     EPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
     EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
     EFrequencyBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
     LOPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
     IndexBuffer = aFieldBuffer.InitializeBuffer(nchannels, fieldbuffersize);
+
     PatchFIRBuffer = aFieldBuffer.InitializeBuffer(1, filterbuffersize);
     }
 

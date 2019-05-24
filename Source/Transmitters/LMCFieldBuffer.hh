@@ -21,6 +21,7 @@ namespace locust
  Available configuration options:
  No input parameters
  */
+
     class FieldBuffer
     {
 

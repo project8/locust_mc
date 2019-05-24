@@ -11,6 +11,7 @@
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCFieldBuffer.hh"
+#include "LMCHilbertTransform.hh"
 
 
 namespace scarab
@@ -76,7 +77,7 @@ namespace locust
             bool (TestFIRFilterGenerator::*fDoGenerateFunc)( Signal* aSignal );
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
-            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel);
+            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, double AcquisitionRate);
 
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void FillBuffers(double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel);
