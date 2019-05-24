@@ -18,9 +18,9 @@ namespace locust
  /*!
  @class HilbertTransform
  @author P. Slocum
- @brief Class to handle Hilbert transforms for deriving phase of arbitrary incident real fields.
+ @brief Class to handle Hilbert transforms for deriving mag, phase, and mean of arbitrary incident real fields on arrival at receiver.
  @details
- Available configuration options:
+ Available configuration options:  none yet.
  No input parameters
  */
     class HilbertTransform

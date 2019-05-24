@@ -27,8 +27,7 @@ namespace locust
 
     fftw_complex* transformeddata = Transform( FieldBuffer );
     double* frequencydata = GetFrequencyData( FrequencyBuffer );
-    unsigned hilbertindex = FieldBuffer.size() - edge_margin;
-
+    unsigned hilbertindex = edge_margin;
     double* magphasemean = new double[3];
 
     double mag = pow(transformeddata[hilbertindex][0]*transformeddata[hilbertindex][0] + transformeddata[hilbertindex][1]*transformeddata[hilbertindex][1], 0.5);
@@ -40,11 +39,12 @@ namespace locust
     magphasemean[1] = phase;
     magphasemean[2] = GetMean( FieldBuffer );
 
-    magphasemean[1] += QuadrantCorrection( FieldBuffer, magphasemean[1], magphasemean[2]);
+    // atan(Q/I) only outputs 2 quadrants.  need all 4.
+    magphasemean[1] += QuadrantCorrection( FieldBuffer, magphasemean[1], magphasemean[2]);  
 
-// extrapolate to edge of window
-    for (unsigned i=hilbertindex; i<FieldBuffer.size(); i++)
-      magphasemean[1] += 2.*LMCConst::Pi()*frequencydata[i]/AcquisitionRate;
+    // extrapolate to edge of window so we know the field phase on arrival at patch.
+    for (unsigned i=hilbertindex; i>0; i--)
+      magphasemean[1] -= 2.*LMCConst::Pi()*frequencydata[i]/AcquisitionRate;
 
     return magphasemean;
     }
@@ -73,6 +73,7 @@ namespace locust
     double* HilbertTransform::GetFrequencyData( std::deque<double> FrequencyBuffer )
     {
 
+    // unpack buffer into array and return it.
     double* frequencydata = new double[FrequencyBuffer.size()];
 
         int i=0;

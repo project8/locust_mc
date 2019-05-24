@@ -34,7 +34,10 @@ namespace locust
         EFrequencyBuffer( 1 ),
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
-        PatchFIRBuffer( 1 )
+        PatchFIRBuffer( 1 ),
+        fFieldBufferSize( 50 ),
+        fFieldBufferMargin( 10 )
+
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -69,6 +72,21 @@ namespace locust
         SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
         }
 
+
+        if( aParam->has( "amplitude" ) )
+        {
+        SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
+        }
+
+        if( aParam->has( "buffer-size" ) )
+        {
+        SetBufferSize( aParam->get_value< double >( "buffer-size", fFieldBufferSize ) );
+        }
+
+        if( aParam->has( "buffer-margin" ) )
+        {
+        SetBufferMargin( aParam->get_value< double >( "buffer-margin", fFieldBufferMargin ) );
+        }
 
         if( aParam->has( "amplitude" ) )
         {
@@ -139,6 +157,28 @@ namespace locust
     void TestFIRFilterGenerator::SetAmplitude( double aAmplitude )
     {
         fAmplitude = aAmplitude;
+        return;
+    }
+
+    double TestFIRFilterGenerator::GetBufferSize() const
+    {
+        return fFieldBufferSize;
+    }
+
+    void TestFIRFilterGenerator::SetBufferSize( double aBufferSize )
+    {
+        fFieldBufferSize = aBufferSize;
+        return;
+    }
+
+    double TestFIRFilterGenerator::GetBufferMargin() const
+    {
+        return fFieldBufferMargin;
+    }
+
+    void TestFIRFilterGenerator::SetBufferMargin( double aBufferMargin )
+    {
+        fFieldBufferMargin = aBufferMargin;
         return;
     }
 
@@ -221,7 +261,7 @@ namespace locust
     if (fabs(EFieldBuffer[channel].front()) > 0.)  // field arrived yet?
     {
         HilbertTransform aHilbertTransform;
-        double* HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel], EFrequencyBuffer[channel], 50, AcquisitionRate);
+        double* HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel], EFrequencyBuffer[channel], fFieldBufferMargin, AcquisitionRate);
         HilbertMag = HilbertMagPhaseMean[0];
         HilbertPhase = HilbertMagPhaseMean[1];
         HilbertMean = HilbertMagPhaseMean[2];
@@ -262,7 +302,7 @@ namespace locust
         double VoltageSample = 0.;
         double* filterarray = GetFIRFilter(1);
         unsigned nfilterbins = GetNFilterBins(filterarray);
-        unsigned nfieldbufferbins = 100;
+        unsigned nfieldbufferbins = fFieldBufferSize;
         double dtfilter = fFilter_resolution;
 
         InitializeBuffers(nfilterbins, nfieldbufferbins);

@@ -27,7 +27,7 @@ namespace locust
      @class TestFIRFilterGenerator
      @author P. L. Slocum
 
-     @brief Add Sine Wave to the signal.
+     @brief Compute FIR response to a sinusoidal E field, treating the E field as a real arbitrary signal.  Buffer E fields to constrain arrival times (roughly).  Extract mag and phase of incident E field with Hilbert transform and convolve it with FIR filter to generate each voltage.  
 
      @details
      Can operate in time or frequency space
@@ -35,8 +35,13 @@ namespace locust
      Configuration name: "test-firfilter"
 
      Available configuration options:
-     - "frequency": double -- Frequency of the sine wave.
-     - "amplitude": double -- Amplitude of the sine wave.
+     - "rf-frequency": double -- Frequency of the incident sine wave.
+     - "lo-frequency": double -- Frequency of the local oscillator.
+     - "amplitude": double -- Amplitude of the incident sine wave.
+     - "filter-filename": double -- path to FIR text file.
+     - "filter-resolution": double -- time resolution of coefficients in filter-filename.
+     - "buffer-size": double -- size of buffer to contain incident E field values.
+     - "buffer-margin": double -- distance from beginning of buffer at which to extract Hilbert transform info.  extrapolate to edge across this margin.
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
             or frequency domain
     
@@ -60,9 +65,14 @@ namespace locust
             double GetLOFrequency() const;
             void SetLOFrequency( double aFrequency );
 
-
             double GetAmplitude() const;
             void SetAmplitude( double aAmplitude );
+
+            double GetBufferSize() const;
+            void SetBufferSize( double aBufferSize );
+
+            double GetBufferMargin() const;
+            void SetBufferMargin( double aBufferMargin );
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -89,6 +99,8 @@ namespace locust
             double fAmplitude;
             double fFilter_resolution;
             std::string gfilter_filename;
+            unsigned fFieldBufferSize;
+            unsigned fFieldBufferMargin;
 
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EPhaseBuffer;
