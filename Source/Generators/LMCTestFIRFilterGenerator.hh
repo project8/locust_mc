@@ -87,11 +87,11 @@ namespace locust
             bool (TestFIRFilterGenerator::*fDoGenerateFunc)( Signal* aSignal );
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
-            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, double AcquisitionRate);
+            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
 
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
-            void FillBuffers(double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel);
-            void PopBuffers(unsigned channel);
+            void FillBuffers(double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch);
+            void PopBuffers(unsigned channel, unsigned patch);
 
             double* filterarray;
             double fRF_frequency;
@@ -101,6 +101,7 @@ namespace locust
             std::string gfilter_filename;
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
+            unsigned fNPatches; // placeholder for buffer dimensioning.  There are no patches in this generator.
 
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EPhaseBuffer;

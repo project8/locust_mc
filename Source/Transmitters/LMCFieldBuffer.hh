@@ -29,7 +29,7 @@ namespace locust
             FieldBuffer();
             virtual ~FieldBuffer();
 
-            std::vector<std::deque<double>> InitializeBuffer(int nchannels, int buffersize);
+            std::vector<std::deque<double>> InitializeBuffer(int nchannels, int npatches, int buffersize);
 
         private:
             std::vector<std::deque<double>> buffer;
