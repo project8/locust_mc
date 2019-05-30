@@ -26,7 +26,6 @@ namespace locust
             fByGeneratorsDuration( 1. ),
             frlcChannels( 1 ),
             fRecordSize( 4194304 ),
-//            fRecordSize( 20000 ),  // debug
             fSampleSize ( 2 ),
             fBinWidth( 5.e-9 ),
             frlcAcquisitionRate( 200. )
@@ -158,7 +157,22 @@ namespace locust
         return;
     }
 
+
+    void RunLengthCalculator::Visit( const AntennaSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
+
     void RunLengthCalculator::Visit( const TestSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
+
+    void RunLengthCalculator::Visit( const TestFIRFilterGenerator* )
     {
         // nothing to see here, move along, please
         return;

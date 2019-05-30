@@ -53,8 +53,12 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            double GetFrequency() const;
-            void SetFrequency( double aFrequency );
+            double GetRFFrequency() const;
+            void SetRFFrequency( double aFrequency );
+
+            double GetLOFrequency() const;
+            void SetLOFrequency( double aFrequency );
+
 
             double GetAmplitude() const;
             void SetAmplitude( double aAmplitude );
@@ -71,6 +75,7 @@ namespace locust
 
             bool (TestSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
+            double fRF_frequency;
             double fLO_frequency;
             double fAmplitude;
 
