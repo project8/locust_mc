@@ -14,6 +14,8 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>       /* sin */
+#include <deque>
+
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
@@ -141,7 +143,7 @@ namespace locust
   double PlaneWaveSignalGenerator::GetVoltageAmpFromPlaneWave(int z_index)
   {
     double amplitude = 0.;
-    if(fPatchFIRFilter)
+    if(fPatchFIRfilter)
       {
 	amplitude = fAmplitude;
       }
@@ -168,6 +170,7 @@ namespace locust
 	//    double E0 = 1.0; // V/m, test case
 	amplitude = E0*AntennaFactor;  // volts
       }
+    // printf("amplitude is %g\n", amplitude); getchar();
     return amplitude;
   }
 
@@ -179,7 +182,7 @@ namespace locust
     double *filterarray = new double[1000];
     double filter;
     double index;
-    fp = fopen(gfilter_filename.c_str(),"r");
+    fp = fopen(gpatchfilter_filename.c_str(),"r");
     int count = 0;
 
 
@@ -191,7 +194,6 @@ namespace locust
       {
         fscanf(fp, "%lf %lf\n", &index, &filter);
         if (count%nskips==0) filterarray[count/nskips] = filter;
-	//    printf("filter %d is %g\n", count, filterarray[count]);
         count += 1;
       }
 
@@ -213,15 +215,20 @@ namespace locust
 
   double PlaneWaveSignalGenerator::GetPatchFIRSample(double* filterarray, int nfilterbins, double dtfilter, double VoltageAmplitude, double VoltagePhase)
   {
-    double FIRsample = 0.;
-    std::vector<std::deque<double>> patchbuffer;
-    patchbuffer.resize(1000, 0.);
+    /*
+    std::deque<double> patchbuffer;
+    //patchbuffer.resize(nfilterbins, 0.);
+    for(int i=0; i < nfilterbins; i++)
+      {
+	patchbuffer.emplace(patchbuffer.begin()+i, 0.);
+      }
     double phase = VoltagePhase;
     for(int i=0; i < nfilterbins; i++)
       {
 	phase += 2*LMCConst::Pi()*dtfilter*fRF_Frequency;
 	patchbuffer.push_back(VoltageAmplitude*cos(phase));
 	patchbuffer.pop_front();
+	printf("patchbuffer %d is %g", i, patchbuffer.at(i)); getchar();
       }
 
     double total = 0.;
@@ -229,8 +236,28 @@ namespace locust
       {
 	total += patchbuffer.at(j)*filterarray[j];
       }
+    */
+    
+   
+   
+    double* generatedpoints = new double [nfilterbins];
+    double phase = VoltagePhase;
+    for(int i=0; i < nfilterbins; i++)
+      {
+	phase += 2*LMCConst::Pi()*dtfilter*fRF_Frequency;
+	generatedpoints[i] = VoltageAmplitude*cos(phase);
+	//	printf("genpoints %d is %g", i, generatedpoints[i]); getchar();
+      }
+
+    double total = 0.;
+    for(int j=0; j < nfilterbins; j++)
+      {
+	total += generatedpoints[j]*filterarray[j];
+      }
+      
     
     return total;
+      
   }
   
 
@@ -296,11 +323,14 @@ namespace locust
       }
 
 
-    aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
-    aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
-        
+    // aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
+    // aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
+
+     aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * 2. * cos(phi_LO);
+     aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
+    
     //  if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();}
-    // printf("Voltage Amplitude is %g\n", VoltageAmplitude); getchar();
+     printf("Voltage Amplitude at %d is %g\n", sampleIndex, VoltageAmplitude); //getchar();
 
   }
 
@@ -352,13 +382,20 @@ namespace locust
 
 	    tVoltageAmplitude *= GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
 	    //   printf("aoi factor is %f\n", GetAOIFactor(fAOI, currentPatch->GetNormalDirection())); getchar();
-            //    printf("amp is %g\n", tVoltageAmplitude); getchar();
+	    //   printf("amp is %g\n", tVoltageAmplitude); getchar();
 
 	    double tVoltageSample = GetPatchFIRSample(filterarray, nfilterbins, fPatchFIRfilter_resolution, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]);
 
-	    printf("tVoltageSample is %g\n", tVoltageSample);
-	    
-	    AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
+	    // printf("tVoltageSample is %g\n", tVoltageSample); getchar();
+
+	    if(fPatchFIRfilter)
+	      {
+		AddOnePatchVoltageToStripSum(aSignal, tVoltageSample, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
+	      }
+	    else
+	      {
+		AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
+	      }
 
 	  } // patch loop
             //printf("VI for time %d is %g\n", index, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
@@ -411,8 +448,8 @@ namespace locust
     InitializePatchArray();
 
     //text file for VI for testing.
-    std::ofstream voltagefile;
-    voltagefile.open("voltagefile.txt");
+    //   std::ofstream voltagefile;
+    //    voltagefile.open("voltagefile.txt");
 
     //n samples for event spacing.
     int PreEventCounter = 0;
@@ -426,14 +463,16 @@ namespace locust
     for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
       {
 	DriveAntenna(PreEventCounter, index, aSignal);
+	/*
 	voltagefile << index;
 	voltagefile << "\n";
 	voltagefile << aSignal->LongSignalTimeComplex()[index][0];
 	voltagefile << "\n";
 	voltagefile << aSignal->LongSignalTimeComplex()[index][1];
 	voltagefile << "\n";
+	*/
       }
-    voltagefile.close();
+    //    voltagefile.close();
 
 
     return true;

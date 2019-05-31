@@ -65,7 +65,7 @@ namespace locust
     // FIR filter methods
     double* GetFIRFilter(int nskips);
     int GetNFilterBins(double* filterarray);
-    double GetPatchFIRSample(double* filterarray, int nfilterbins, double dtfilter);
+    double GetPatchFIRSample(double* filterarray, int nfilterbins, double dtfilter, double VoltageAmplitude, double VoltagePhase);
     bool fPatchFIRfilter;
     std::string gpatchfilter_filename;
     double fPatchFIRfilter_resolution;
