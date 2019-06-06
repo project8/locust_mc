@@ -29,7 +29,7 @@ namespace locust
         public:
             HilbertTransform();
             virtual ~HilbertTransform();
-            double* GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer, unsigned edge_margin, double AcquiitionRate);
+            double* GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer, unsigned edge_margin, double AcquisitionRate);
 
         private:
 

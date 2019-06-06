@@ -46,6 +46,9 @@ namespace locust
     for (unsigned i=hilbertindex; i>0; i--)
       magphasemean[1] -= 2.*LMCConst::Pi()*frequencydata[i]/AcquisitionRate;
 
+    delete[] transformeddata;
+    delete[] frequencydata;
+
     return magphasemean;
     }
 
@@ -157,6 +160,13 @@ namespace locust
         originaldata[i][1] = SignalComplex[i][0];
         }
 
+      fftw_destroy_plan(ForwardPlan);
+      fftw_destroy_plan(ReversePlan);
+      delete[] hilbert;
+      delete[] SignalComplex;
+      delete[] FFTComplex;
+
+
 
     // dump to text file for debugging.
 /*        
@@ -166,7 +176,7 @@ namespace locust
           fprintf(fp, "%g %g %g\n", originaldata[i][0], originaldata[i][1], pow(originaldata[i][0]*originaldata[i][0] + originaldata[i][1]*originaldata[i][1], 0.5));
     }
     fclose (fp);
-    getchar();
+    getchar();  // Control-C to quit.
 */
 
     return originaldata;

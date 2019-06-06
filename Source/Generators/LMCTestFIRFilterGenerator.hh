@@ -90,8 +90,9 @@ namespace locust
             double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
 
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
-            void FillBuffers(double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch);
+            void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch);
             void PopBuffers(unsigned channel, unsigned patch);
+            void CleanupBuffers();
 
             double* filterarray;
             double fRF_frequency;
@@ -101,14 +102,15 @@ namespace locust
             std::string gfilter_filename;
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
-            unsigned fNPatches; // placeholder for buffer dimensioning.  There are no patches in this generator.
+            unsigned fNPatches; // placeholder for buffer dimensioning.
+
 
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EPhaseBuffer;
             std::vector<std::deque<double>> EAmplitudeBuffer;
             std::vector<std::deque<double>> EFrequencyBuffer;
             std::vector<std::deque<double>> LOPhaseBuffer;
-            std::vector<std::deque<double>> IndexBuffer;
+            std::vector<std::deque<unsigned>> IndexBuffer;
             std::vector<std::deque<double>> PatchFIRBuffer;
     };
 
