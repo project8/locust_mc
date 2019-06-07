@@ -8,8 +8,9 @@
 #ifndef LMCFIELDBUFFER_HH_
 #define LMCFIELDBUFFER_HH_
 
-#include <vector>
 #include <deque>
+#include <vector>
+#include "stdio.h"
 
 namespace locust
 {
@@ -28,11 +29,12 @@ namespace locust
         public:
             FieldBuffer();
             virtual ~FieldBuffer();
-
             std::vector<std::deque<double>> InitializeBuffer(int nchannels, int npatches, int buffersize);
+            std::vector<std::deque<unsigned>> InitializeUnsignedBuffer(int nchannels, int npatches, int buffersize);
+            std::vector<std::deque<double>> CleanupBuffer(std::vector<std::deque<double>> buffer);
+            std::vector<std::deque<unsigned>> CleanupBuffer(std::vector<std::deque<unsigned>> buffer);
 
         private:
-            std::vector<std::deque<double>> buffer;
 
     };
 
