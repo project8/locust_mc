@@ -13,6 +13,7 @@
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
+#include "LMCFieldBuffer.hh"
 
 
 namespace locust
@@ -48,6 +49,7 @@ namespace locust
     void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
     double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
     double GetVoltageAmpFromPlaneWave(int z_index);
+    double GetTimeDelayToPatch(int z_index);
       
   private:
     std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
@@ -62,22 +64,32 @@ namespace locust
     bool fVoltageDamping; // yes/no for calculating voltage damping due to junctions
     double fAOI; // from json file, in degrees.
 
-    // FIR filter methods
-    double* GetFIRFilter(int nskips);
-    int GetNFilterBins(double* filterarray);
-    double GetPatchFIRSample(double* filterarray, int nfilterbins, double dtfilter, double VoltageAmplitude, double VoltagePhase);
+    // for FIR filter 
+    void ProcessFIRFilter(int nskips);
+    int GetNFilterBins();
+    double GetPatchFIRSample(int bufferIndex);
     bool fPatchFIRfilter;
     std::string gpatchfilter_filename;
     double fPatchFIRfilter_resolution;
     double fAmplitude;
+    double FIR_array[1000];
+    int nfilterbins;
     
     bool DoGenerate( Signal* aSignal );
     void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
     void InitializePatchArray();
 
-
     double phiLO_t; // voltage phase of LO in radians;
-    double VoltagePhase_t[10000];
+
+    void InitializeBuffers(unsigned fieldbuffersize);
+    void FillPWBuffers(double timeSampleSize, int digitizerIndex, int channelIndex, int patchIndex, int bufferIndex);
+    void PopBuffers(unsigned bufferIndex);
+    
+    std::vector<std::vector<double>> SampleIndexBuffer;
+    std::vector<std::vector<double>> LOPhaseBuffer;
+    std::vector<std::vector<double>> PWPhaseBuffer;
+    std::vector<std::vector<double>> PWMagBuffer;
+    std::vector<std::vector<double>> PatchVoltageBuffer;
 
   };
 
