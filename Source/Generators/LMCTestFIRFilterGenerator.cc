@@ -35,6 +35,7 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
+		ConvolutionTimeBuffer( 1 ),
         fFieldBufferSize( 50 ),
         fFieldBufferMargin( 25 ),
 		fNPatches( 1 )
@@ -262,7 +263,7 @@ namespace locust
         HilbertPhase = HilbertMagPhaseMean[1];
         delete[] HilbertMagPhaseMean;
 
-   	for (int i=0; i<nfilterbins; i++)  // populate filter with field.
+   	for (int i=0; i < nfilterbins - ConvolutionTimeBuffer[channel*fNPatches+patch].front(); i++)  // populate filter with field.
       {
     	  HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
     	  PatchFIRBuffer[channel*fNPatches+patch].push_back(HilbertMag*cos(HilbertPhase));
@@ -302,6 +303,7 @@ namespace locust
         unsigned nfilterbins = GetNFilterBins(filterarray);
         unsigned nfieldbufferbins = fFieldBufferSize;
         double dtfilter = fFilter_resolution;
+        unsigned dtauConvolutionTime = 0;
 
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
@@ -316,7 +318,10 @@ namespace locust
         	for (unsigned patch = 0; patch < npatches; ++patch)
         	{
 
-            FillBuffers(aSignal, fAmplitude, field_phase, LO_phase, index, ch, patch);
+            if (index > 0) dtauConvolutionTime = 0;
+            else dtauConvolutionTime = nfilterbins/2;
+
+            FillBuffers(aSignal, fAmplitude, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
             VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, fAcquisitionRate*aSignal->DecimationFactor());
 //            VoltageSample = sqrt(50.)*fAmplitude*cos(field_phase);
 
@@ -338,7 +343,7 @@ namespace locust
         return true;
     }
 
-    void TestFIRFilterGenerator::FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch)
+    void TestFIRFilterGenerator::FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime)
     {
 
     EFieldBuffer[channel*fNPatches+patch].push_back(fAmplitude*cos(FieldPhase));
@@ -347,6 +352,7 @@ namespace locust
     EFrequencyBuffer[channel*fNPatches+patch].push_back(fRF_frequency);
     LOPhaseBuffer[channel*fNPatches+patch].push_back(LOPhase);
     IndexBuffer[channel*fNPatches+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
+    ConvolutionTimeBuffer[channel*fNPatches+patch].push_back(dtauConvolutionTime);
 
     }
 
@@ -359,6 +365,7 @@ namespace locust
     	EFrequencyBuffer[channel*fNPatches+patch].pop_front();
     	LOPhaseBuffer[channel*fNPatches+patch].pop_front();
     	IndexBuffer[channel*fNPatches+patch].pop_front();
+    	ConvolutionTimeBuffer[channel*fNPatches+patch].pop_front();
 
     	EFieldBuffer[channel*fNPatches+patch].shrink_to_fit();
         EPhaseBuffer[channel*fNPatches+patch].shrink_to_fit();
@@ -366,6 +373,7 @@ namespace locust
         EFrequencyBuffer[channel*fNPatches+patch].shrink_to_fit();
         LOPhaseBuffer[channel*fNPatches+patch].shrink_to_fit();
         IndexBuffer[channel*fNPatches+patch].shrink_to_fit();
+        ConvolutionTimeBuffer[channel+fNPatches+patch].shrink_to_fit();
 
     }
 
@@ -376,6 +384,12 @@ namespace locust
     {
     FieldBuffer aFieldBuffer;
     EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    EPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    EAmplitudeBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
+    ConvolutionTimeBuffer = aFieldBuffer.CleanupBuffer(ConvolutionTimeBuffer);
 
     }
 
@@ -390,8 +404,10 @@ namespace locust
     EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatches, fieldbuffersize);
     LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatches, fieldbuffersize);
     IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatches, fieldbuffersize);
+    ConvolutionTimeBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatches, fieldbuffersize);
 
     PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatches, filterbuffersize);
+
 
     }
 

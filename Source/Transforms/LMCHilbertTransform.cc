@@ -21,6 +21,35 @@ namespace locust
 
 
 
+/*
+    double* HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer, unsigned edge_margin, double AcquisitionRate)
+    {
+
+    fftw_complex* transformeddata = Transform( FieldBuffer );
+    double* frequencydata = GetFrequencyData( FrequencyBuffer );
+    unsigned hilbertindex = edge_margin;
+    double* magphasemean = new double[3];
+
+    double mean = GetMean(FieldBuffer);
+    double mag = pow(transformeddata[hilbertindex][0]*transformeddata[hilbertindex][0] + transformeddata[hilbertindex][1]*transformeddata[hilbertindex][1], 0.5);
+    double phase = GetPhase(transformeddata[hilbertindex][0], transformeddata[hilbertindex][1], mean);
+
+    magphasemean[0] = mag;
+    magphasemean[1] = phase;
+    magphasemean[2] = mean;
+
+    // extrapolate to edge of window so we know the field phase on arrival at patch.
+    for (unsigned i=hilbertindex; i>0; i--)
+      magphasemean[1] -= 2.*LMCConst::Pi()*frequencydata[i]/AcquisitionRate;
+
+    delete[] transformeddata;
+    delete[] frequencydata;
+
+    return magphasemean;
+    }
+*/
+
+
 
     double* HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer, unsigned edge_margin, double AcquisitionRate)
     {
@@ -31,16 +60,12 @@ namespace locust
     double* magphasemean = new double[3];
 
     double mag = pow(transformeddata[hilbertindex][0]*transformeddata[hilbertindex][0] + transformeddata[hilbertindex][1]*transformeddata[hilbertindex][1], 0.5);
-    double phase = 0.;
-    if (fabs(transformeddata[hilbertindex][0]) > 0.)
-      phase = atan(transformeddata[hilbertindex][1]/transformeddata[hilbertindex][0]);
+    double mean = GetMean( FieldBuffer );
+    double phase = GetPhase(transformeddata[hilbertindex][0], transformeddata[hilbertindex][1], mean);
 
     magphasemean[0] = mag;
     magphasemean[1] = phase;
-    magphasemean[2] = GetMean( FieldBuffer );
-
-    // atan(Q/I) only outputs 2 quadrants.  need all 4.
-    magphasemean[1] += QuadrantCorrection( FieldBuffer, magphasemean[1], magphasemean[2]);  
+    magphasemean[2] = mean;
 
     // extrapolate to edge of window so we know the field phase on arrival at patch.
     for (unsigned i=hilbertindex; i>0; i--)
@@ -52,15 +77,31 @@ namespace locust
     return magphasemean;
     }
 
-    double HilbertTransform::QuadrantCorrection( std::deque<double> FieldBuffer, double HilbertPhase, double HilbertMean)
+
+    double HilbertTransform::GetPhase( double VI, double VQ, double VMean)
+    {
+
+    double phase = 0.;
+    if (fabs(VI) > 0.)
+      phase = atan(VQ/VI);
+
+    // atan(Q/I) only outputs 2 quadrants.  need all 4.
+    phase += QuadrantCorrection( VI, phase, VMean);
+
+    return phase;
+    }
+
+
+    double HilbertTransform::QuadrantCorrection( double VI, double HilbertPhase, double HilbertMean)
     {
     double phasecorrection = 0.;
-    if (((HilbertPhase < 0.)&&(FieldBuffer.front() > HilbertMean)) ||
-        ((HilbertPhase > 0.)&&(FieldBuffer.front() < HilbertMean)))
-        phasecorrection = LMCConst::Pi();  // check IQ quadrant    
+    if (((HilbertPhase < 0.)&&(VI < HilbertMean)) ||
+        ((HilbertPhase > 0.)&&(VI < HilbertMean)))
+        phasecorrection = LMCConst::Pi();  // check IQ quadrant
     else phasecorrection = 0.;
     return phasecorrection;
     }
+
 
     double HilbertTransform::GetMean( std::deque<double> FieldBuffer )
     {
