@@ -10,6 +10,8 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCFieldBuffer.hh"
+#include "LMCHilbertTransform.hh"
 
 
 namespace scarab
@@ -25,7 +27,7 @@ namespace locust
      @class TestFIRFilterGenerator
      @author P. L. Slocum
 
-     @brief Add Sine Wave to the signal.
+     @brief Compute FIR response to a sinusoidal E field, treating the E field as a real arbitrary signal.  Buffer E fields to constrain arrival times (roughly).  Extract mag and phase of incident E field with Hilbert transform and convolve it with FIR filter to generate each voltage.  
 
      @details
      Can operate in time or frequency space
@@ -33,8 +35,13 @@ namespace locust
      Configuration name: "test-firfilter"
 
      Available configuration options:
-     - "frequency": double -- Frequency of the sine wave.
-     - "amplitude": double -- Amplitude of the sine wave.
+     - "rf-frequency": double -- Frequency of the incident sine wave.
+     - "lo-frequency": double -- Frequency of the local oscillator.
+     - "amplitude": double -- Amplitude of the incident sine wave.
+     - "filter-filename": double -- path to FIR text file.
+     - "filter-resolution": double -- time resolution of coefficients in filter-filename.
+     - "buffer-size": double -- size of buffer to contain incident E field values.
+     - "buffer-margin": double -- distance from beginning of buffer at which to extract Hilbert transform info.  extrapolate to edge across this margin.
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
             or frequency domain
     
@@ -48,8 +55,7 @@ namespace locust
             virtual ~TestFIRFilterGenerator();
 
             bool Configure( const scarab::param_node* aNode );
-      bool Configure2( const Digitizer* aDig );
-
+            bool Configure2( const Digitizer* aDig );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
@@ -59,9 +65,14 @@ namespace locust
             double GetLOFrequency() const;
             void SetLOFrequency( double aFrequency );
 
-
             double GetAmplitude() const;
             void SetAmplitude( double aAmplitude );
+
+            double GetBufferSize() const;
+            void SetBufferSize( double aBufferSize );
+
+            double GetBufferMargin() const;
+            void SetBufferMargin( double aBufferMargin );
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -76,7 +87,12 @@ namespace locust
             bool (TestFIRFilterGenerator::*fDoGenerateFunc)( Signal* aSignal );
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
-            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, double fieldamplitude, double fieldphase, double fieldfrequency);
+            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
+
+            void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
+            void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);
+            void PopBuffers(unsigned channel, unsigned patch);
+            void CleanupBuffers();
 
             double* filterarray;
             double fRF_frequency;
@@ -84,8 +100,19 @@ namespace locust
             double fAmplitude;
             double fFilter_resolution;
             std::string gfilter_filename;
+            unsigned fFieldBufferSize;
+            unsigned fFieldBufferMargin;
+            unsigned fNPatches; // placeholder for buffer dimensioning.
 
-            
+
+            std::vector<std::deque<double>> EFieldBuffer;
+            std::vector<std::deque<double>> EPhaseBuffer;
+            std::vector<std::deque<double>> EAmplitudeBuffer;
+            std::vector<std::deque<double>> EFrequencyBuffer;
+            std::vector<std::deque<double>> LOPhaseBuffer;
+            std::vector<std::deque<unsigned>> IndexBuffer;
+            std::vector<std::deque<double>> PatchFIRBuffer;
+            std::vector<std::deque<unsigned>> ConvolutionTimeBuffer;
     };
 
 } /* namespace locust */
