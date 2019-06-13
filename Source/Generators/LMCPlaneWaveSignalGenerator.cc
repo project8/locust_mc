@@ -14,376 +14,525 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>       /* sin */
+
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
 
 namespace locust
 {
-    LOGGER( lmclog, "PlaneWaveSignalGenerator" );
+  LOGGER( lmclog, "PlaneWaveSignalGenerator" );
 
-    MT_REGISTER_GENERATOR(PlaneWaveSignalGenerator, "planewave-signal");
+  MT_REGISTER_GENERATOR(PlaneWaveSignalGenerator, "planewave-signal");
 
-    PlaneWaveSignalGenerator::PlaneWaveSignalGenerator( const std::string& aName ) :
-        Generator( aName ),
-        fLO_Frequency( 0.),
-        fRF_Frequency( 0.),
-        fArrayRadius( 0. ),
-        fPhaseDelay( 0 ),
-        fVoltageDamping( 0 ),
-        fNPatchesPerStrip( 0. ),
-        fPatchSpacing( 0. ),
-        fPowerCombiner( 0 ),
-        phiLO_t(0.),
-        VoltagePhase_t {0.},
-    	fAOI( 0.)
-    {
-        fRequiredSignalState = Signal::kTime;
-    }
+  PlaneWaveSignalGenerator::PlaneWaveSignalGenerator( const std::string& aName ) :
+    Generator( aName ),
+    fLO_Frequency( 0.),
+    fRF_Frequency( 0.),
+    fArrayRadius( 0. ),
+    fPhaseDelay( 0 ),
+    fVoltageDamping( 0 ),
+    fNPatchesPerStrip( 0. ),
+    fPatchSpacing( 0. ),
+    fPowerCombiner( 0 ),
+    phiLO_t(0.),
+    fAOI( 0.),
+    fPatchFIRfilter( 0.),
+    gpatchfilter_filename("blank.txt"),
+    fPatchFIRfilter_resolution( 0. ),
+    fAmplitude( 0.)
+  {
+    fRequiredSignalState = Signal::kTime;
+  }
 
-    PlaneWaveSignalGenerator::~PlaneWaveSignalGenerator()
-    {
-    }
+  PlaneWaveSignalGenerator::~PlaneWaveSignalGenerator()
+  {
+  }
 
-    bool PlaneWaveSignalGenerator::Configure( const scarab::param_node* aParam )
-    {
-        if( aParam == NULL) return true;
+  bool PlaneWaveSignalGenerator::Configure( const scarab::param_node* aParam )
+  {
+    if( aParam == NULL) return true;
 
-        if( aParam->has( "phase-delay" ) )
-        {
-            fPhaseDelay = aParam->get_value< bool >( "phase-delay" );
-        }
-
-        if( aParam->has( "voltage-damping" ) )
-	  {
-            fVoltageDamping = aParam->get_value< bool >( "voltage-damping" );
-	  }
-
-        if( aParam->has( "planewave-frequency" ) )
-        {
-            fRF_Frequency = aParam->get_value< double >( "planewave-frequency" );
-        }
-
-        if( aParam->has( "lo-frequency" ) )
-        {
-            fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
-        }
-        if( aParam->has( "array-radius" ) )
-        {
-            fArrayRadius = aParam->get_value< double >( "array-radius" );
-        }
-        if( aParam->has( "npatches-per-strip" ) )
-        {
-            fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
-        }
-        if( aParam->has( "patch-spacing" ) )
-        {
-            fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
-        }
-        if( aParam->has( "feed" ) )
-        {
-            if (aParam->get_value< std::string >( "feed" ) == "corporate")
-                fPowerCombiner = 0;  // default
-            else if (aParam->get_value< std::string >( "feed" ) == "series")
-                fPowerCombiner = 1;
-            else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
-                fPowerCombiner = 2;
-            else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
-            	fPowerCombiner = 3;
-            else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
-            	fPowerCombiner = 4;
-            else
-            	fPowerCombiner = 0;  // default
-        }
-        if( aParam->has( "AOI" ) )
-        {
-        	fAOI = aParam->get_value< double >( "AOI" );
-        	fAOI *= (2*LMCConst::Pi()/360); //convert to radians
-        }
-
-        return true;
-    }
-
-    void PlaneWaveSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
-    {
-        aVisitor->Visit( this );
-        return;
-    }
-
-
-
-    double PlaneWaveSignalGenerator::GetMismatchFactor(double f)
-    {
-        //f /= 2.*LMCConst::Pi();
-        // placeholder = 1 - mag(S11)
-        // fit to HFSS output
-        //double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
-        //    printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
-        double MismatchFactor = 0.85;  // punt.
-        return MismatchFactor;
-    }
-/*
-    double PlaneWaveSignalGenerator::GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi) const
-    {
-        LMCThreeVector PatchNormalVector;
-        PatchNormalVector.SetComponents(cos(PatchPhi), sin(PatchPhi), 0.0);
-        double AOIFactor = fabs(IncidentKVector.Unit().Dot(PatchNormalVector));
-        //printf("cos aoi is %f\n", AOIFactor);
-        return AOIFactor;
-    }
-    */
-
-    double PlaneWaveSignalGenerator::GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector){
-    	LMCThreeVector IncidentKVector;
-    	IncidentKVector.SetComponents(cos(AOI), 0.0, sin(AOI));
-    	double AOIFactor = fabs(IncidentKVector.Dot(PatchNormalVector));
-    	return AOIFactor;
-    }
-
-    double PlaneWaveSignalGenerator::GetVoltageAmpFromPlaneWave()
-    {
-        double AntennaFactor = 1./400.;
-
-        // S = epsilon0 c E0^2 / 2.  // power/area
-        //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
-        // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
-        // E0 = sqrt(2.*S/epsilon0/c)
-        // effective patch area 0.00004583662 m^2 
-
-        double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
-        double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
-        //    double E0 = 1.0; // V/m, test case
-        double amplitude = E0*AntennaFactor;  // volts
-        return amplitude;
-
-
-    }
-
-    double PlaneWaveSignalGenerator::GetVoltageAmpFromPlaneWaveMutualCoupling(int z_index)
+    if( aParam->has( "phase-delay" ) )
       {
-    	double AntennaFactor = 0.;
-       if(z_index == 0 || z_index == fNPatchesPerStrip)
-       {
-    	AntennaFactor = 1./430.;
-       }
-       else
-       {
-    	AntennaFactor = 1./460.;
-       }
-
-          // S = epsilon0 c E0^2 / 2.  // power/area
-          //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
-          // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
-          // E0 = sqrt(2.*S/epsilon0/c)
-          // effective patch area 0.00004583662 m^2
-
-          double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
-          double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
-          //    double E0 = 1.0; // V/m, test case
-          double amplitude = E0*AntennaFactor;  // volts
-          return amplitude;
-
-
+	fPhaseDelay = aParam->get_value< bool >( "phase-delay" );
       }
 
+    if( aParam->has( "voltage-damping" ) )
+      {
+	fVoltageDamping = aParam->get_value< bool >( "voltage-damping" );
+      }
 
-    // z-index ranges from 0 to npatches-per-strip-1.
-    void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned sampleIndex, unsigned z_index, double DopplerFrequency)
+    if( aParam->has( "planewave-frequency" ) )
+      {
+	fRF_Frequency = aParam->get_value< double >( "planewave-frequency" );
+      }
+
+    if( aParam->has( "lo-frequency" ) )
+      {
+	fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
+      }
+    if( aParam->has( "array-radius" ) )
+      {
+	fArrayRadius = aParam->get_value< double >( "array-radius" );
+      }
+    if( aParam->has( "npatches-per-strip" ) )
+      {
+	fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+      }
+    if( aParam->has( "patch-spacing" ) )
+      {
+	fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+      }
+    if( aParam->has( "feed" ) )
+      {
+	if (aParam->get_value< std::string >( "feed" ) == "corporate")
+	  fPowerCombiner = 0;  // default
+	else if (aParam->get_value< std::string >( "feed" ) == "series")
+	  fPowerCombiner = 1;
+	else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
+	  fPowerCombiner = 2;
+	else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
+	  fPowerCombiner = 3;
+	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
+	  fPowerCombiner = 4;
+	else
+	  fPowerCombiner = 0;  // default
+      }
+    if( aParam->has( "AOI" ) )
+      {
+	fAOI = aParam->get_value< double >( "AOI" );
+	fAOI *= (2*LMCConst::Pi()/360); //convert to radians
+      }
+    if ( aParam->has(  "patch-filter"  ) )
+      {
+	fPatchFIRfilter = aParam->get_value< bool >( "patch-filter" );
+      }
+    if( aParam->has( "patch-filter-filename" ) )
+      {
+	gpatchfilter_filename = aParam->get_value< std::string >( "patch-filter-filename" );
+      }
+    if( aParam->has( "patch-filter-resolution" ) )
+      {
+	fPatchFIRfilter_resolution = aParam->get_value< double >( "patch-filter-resolution" );
+      }
+     if( aParam->has( "amplitude" ) )
+      {
+	fAmplitude = aParam->get_value< double >( "amplitude" );
+      }
+
+    return true;
+  }
+
+  void PlaneWaveSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
+  {
+    aVisitor->Visit( this );
+    return;
+  }
+
+  double PlaneWaveSignalGenerator::GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector){
+    LMCThreeVector IncidentKVector;
+    IncidentKVector.SetComponents(cos(AOI), 0.0, sin(AOI));
+    double AOIFactor = fabs(IncidentKVector.Dot(PatchNormalVector));
+    return AOIFactor;
+  }
+
+
+  double PlaneWaveSignalGenerator::GetVoltageAmpFromPlaneWave(int z_index)
+  {
+    double AntennaFactor = 0.;
+    double amplitude = 0.;
+    if(z_index == 0 || z_index == fNPatchesPerStrip)
+      {
+	AntennaFactor = 1./430.;
+      }
+    else
+      {
+	AntennaFactor = 1./460.;
+      }
+
+    // S = epsilon0 c E0^2 / 2.  // power/area
+    //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
+    // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
+    // E0 = sqrt(2.*S/epsilon0/c)
+    // effective patch area 0.00004583662 m^2
+
+    double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
+    double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
+    //    double E0 = 1.0; // V/m, test case
+    amplitude = E0*AntennaFactor;  // volts
+      
+    // printf("amplitude is %g\n", amplitude); getchar();
+    return amplitude;
+  }
+
+  double PlaneWaveSignalGenerator::GetPWPhaseDelayAtPatch(int z_index)
+  {
+    double phasedelay = 0.;
+    if(fAOI >= 0)
+      {
+	phasedelay = 2*LMCConst::Pi()*z_index*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
+      }
+    else
+      {
+	phasedelay = (fNPatchesPerStrip - z_index)*2*LMCConst::Pi()*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();	
+      }
+    return phasedelay;
+  }
+  
+  void PlaneWaveSignalGenerator::ProcessFIRFilter(int nskips)
+  {
+
+    FILE *fp;
+    double filter;
+    double index;
+    fp = fopen(gpatchfilter_filename.c_str(),"r");
+    int count = 0;
+
+
+    for (int i=0; i<sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
+      FIR_array[i] = -99.;
+
+
+    while (!feof(fp))
+      {
+        fscanf(fp, "%lf %lf\n", &index, &filter);
+        if (count%nskips==0) FIR_array[count/nskips] = filter;
+        count += 1;
+      }
+
+    fclose(fp);
+
+  }
+
+  int PlaneWaveSignalGenerator::GetNFilterBins()
+  {
+    int nbins = 0;
+    for (int i=0; i<sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
+      {
+	if (FIR_array[i]>0.) nbins += 1;
+
+	// TEST
+	// printf("FIR_array[%d] is %g\n", i, FIR_array[i]); getchar();
+	
+      }    
+    return nbins;
+  }
+  
+
+  double PlaneWaveSignalGenerator::GetPatchFIRSample(int bufferIndex, int patchIndex)
+  {   
+   
+    double* generatedpoints = new double [nfilterbins];
+    double amp = fAmplitude;
+    double phase = PWPhaseBuffer[bufferIndex].back()+GetPWPhaseDelayAtPatch(patchIndex);
+    double dtfilter = fPatchFIRfilter_resolution;
+
+    
+    for(int i=0; i < nfilterbins; i++)
+      {
+	phase += 2*LMCConst::Pi()*dtfilter*fRF_Frequency;
+	generatedpoints[i] = amp*cos(phase);
+	//	printf("genpoints %d is %g", i, generatedpoints[i]); getchar();
+      }
+
+    double total = 0.;
+    for(int j=0; j < nfilterbins; j++)
+      {
+	total += generatedpoints[j]*FIR_array[j];
+      }
+    delete[] generatedpoints;
+    return total;
+      
+  }
+  
+
+  // z-index ranges from 0 to npatches-per-strip-1.
+  void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned sampleIndex, unsigned z_index, double DopplerFrequency)
+  {
+    double VI = 0.;
+    double VQ = 0.;
+    double phi_at_patch = 0.;
+    PowerCombiner aPowerCombiner;
+    
+    if (fPowerCombiner == 0 ) //corporate feed, for testing
+      {
+	if (fVoltageDamping)
+	  {
+	    VoltageAmplitude *= aPowerCombiner.GetCorporateVoltageDamping();
+	  }
+      }
+
+    if (fPowerCombiner == 1)  // series feed
+      {
+	if (fPhaseDelay) // parameter from json
+	  {
+	    VoltagePhase += aPowerCombiner.GetSeriesPhaseDelay(z_index, DopplerFrequency, fPatchSpacing);
+	  }
+	if (fVoltageDamping)  // parameter from json
+	  {
+	    VoltageAmplitude *= aPowerCombiner.GetSeriesVoltageDamping(z_index);
+	  }
+      }
+
+    if (fPowerCombiner == 2) // one-quarter power combining, center fed strip
+      {
+	if (fPhaseDelay)
+	  {
+	    VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+	  }
+	if (fVoltageDamping)
+	  {
+	    VoltageAmplitude *= aPowerCombiner.GetOneQuarterVoltageDamping(fNPatchesPerStrip, z_index);
+	  }
+      }
+
+    if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
+      {
+	if (fPhaseDelay)
+	  {
+	    VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+	  }
+	if (fVoltageDamping)
+	  {
+	    VoltageAmplitude *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, z_index);
+	  }
+      }
+
+    if (fPowerCombiner == 4) // nine-sixteenths power combining, center fed strip
+      {
+	if (fPhaseDelay)
+	  {
+	    VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
+	  }
+	if (fVoltageDamping)
+	  {
+	    VoltageAmplitude *= aPowerCombiner.GetNineSixteenthsVoltageDamping(fNPatchesPerStrip, z_index);
+	  }
+      }
+
+    // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
+    
+     aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * 2. * cos(phi_LO);
+     aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
+
+     /*
+     
+     VI = VoltageAmplitude * 2. * cos(phi_LO);
+     VQ = VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
+
+     
+     phi_at_patch = atan(abs(VQ)/abs(VI));
+
+     if(VQ > 0. && VI < 0.) // second quadrant
+       {
+	 phi_at_patch = LMCConst::Pi()-phi_at_patch;
+       }
+     else if(VQ < 0. && VI < 0.) // third quadrant
+       {
+	 phi_at_patch = LMCConst::Pi()+phi_at_patch;
+       }
+     else if(VQ < 0. && VI > 0.) // fourth quadrant
+       {
+	 phi_at_patch = 2*LMCConst::Pi()-phi_at_patch;
+       }
+     
+     if(fPhaseDelay)
+       {
+	 
+       }
+     */
+     // TEST
+     // printf("Voltage Amplitude for patch at %d is %g\n", sampleIndex, VoltageAmplitude);
+     // printf("summedvoltageamplitude at %d is %g\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
+     // getchar();
+
+  }
+
+
+
+  void* PlaneWaveSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal){
+       
+    unsigned bufferIndex = 0;
+    const int signalSize = aSignal->TimeSize();
+    const double timeSampleSize = 1./(1.e6 * fAcquisitionRate * aSignal->DecimationFactor());
+    unsigned sampleIndex = 0;
+    
+    phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency / (1.e6*fAcquisitionRate*aSignal->DecimationFactor());
+   
+    for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
+      {
+	for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
+	  {
+	    sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+	    
+	    bufferIndex = channelIndex*fNPatchesPerStrip+patchIndex;
+	    LOPhaseBuffer[bufferIndex].push_back(phiLO_t);
+
+	    FillPWBuffers(timeSampleSize, index, channelIndex, patchIndex, bufferIndex);
+	    
+	    // calculate patch voltage using FIR filter
+	    PatchVoltageBuffer[bufferIndex].push_back(GetPatchFIRSample(bufferIndex, patchIndex));
+
+	    AddOnePatchVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].back(), PWPhaseBuffer[bufferIndex].back(), LOPhaseBuffer[bufferIndex].back(), sampleIndex, patchIndex, fRF_Frequency);
+
+	    // TEST PRINT STATEMENTS
+	    /*
+	    printf("Channel is %d\n", channelIndex);
+	    printf("Patch is %d\n", patchIndex);
+	    printf("SampleIndexBuffer[%d] is %f\n", bufferIndex, SampleIndexBuffer[bufferIndex].back());
+	    printf("LOPhaseBuffer[%d] is %f\n", bufferIndex, LOPhaseBuffer[bufferIndex].back());
+	    printf("PWPhaseBuffer[%d] is %f\n", bufferIndex, PWPhaseBuffer[bufferIndex].back());
+	    printf("PWMagBuffer[%d] is %f\n", bufferIndex, PWMagBuffer[bufferIndex].back());
+	    printf("PatchVoltageBuffer[%d] is %f\n", bufferIndex, PatchVoltageBuffer[bufferIndex].back());
+	    //printf("Resulting VI[%d] is %f\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
+	    getchar();
+	    */
+	    
+	    PopBuffers(bufferIndex);
+	  }
+      }
+  }
+    
+  
+
+  void PlaneWaveSignalGenerator::FillPWBuffers(double timeSampleSize, int digitizerIndex, int channelIndex, int patchIndex, int bufferIndex){
+
+    /*
+    double arrivaltime = GetTimeDelayToPatch(patchIndex);
+    double currenttime = digitizerIndex*timeSampleSize;
+    double phasecrunchtime = timeSampleSize - (currenttime - arrivaltime);
+    */
+    double fieldamp = 0.;
+    double fieldphase = 0;
+    
+    PatchAntenna *currentPatch;
+    currentPatch = &allChannels[channelIndex][patchIndex];
+    
+    // has the plane wave arrived to this patch?
+    //  if(arrivaltime < currenttime)
+    //     {
+	fieldamp = fAmplitude*GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
+	fieldphase = 2. * LMCConst::Pi() * fRF_Frequency * timeSampleSize;
+
+	// account for plane wave arriving in between samples.
+	//	if((currenttime-arrivaltime) < timeSampleSize)
+	//	  {
+	//	    fieldphase += 2. * LMCConst::Pi() * fRF_Frequency * phasecrunchtime;
+	    //	  }
+	//   }
+
+    SampleIndexBuffer[bufferIndex].push_back(digitizerIndex);
+    PWPhaseBuffer[bufferIndex].push_back(PWPhaseBuffer[bufferIndex].back()+fieldphase);
+    PWMagBuffer[bufferIndex].push_back(fAmplitude*cos(PWPhaseBuffer[bufferIndex].back()));
+
+  }
+
+  void PlaneWaveSignalGenerator::PopBuffers(unsigned bufferIndex){
+
+    
+    SampleIndexBuffer[bufferIndex].erase(SampleIndexBuffer[bufferIndex].begin());
+    LOPhaseBuffer[bufferIndex].erase(LOPhaseBuffer[bufferIndex].begin());
+    PWPhaseBuffer[bufferIndex].erase(PWPhaseBuffer[bufferIndex].begin());
+    PWMagBuffer[bufferIndex].erase(PWMagBuffer[bufferIndex].begin());
+    PatchVoltageBuffer[bufferIndex].erase(PatchVoltageBuffer[bufferIndex].begin());
+
+  }
+  
+  void PlaneWaveSignalGenerator::InitializeBuffers(unsigned fieldbuffersize)
     {
 
+    const unsigned nchannels = fNChannels;
+    const int nReceivers = fNPatchesPerStrip;
 
-    	PowerCombiner aPowerCombiner;
-    	if (fPowerCombiner == 0 ) //corporate feed, for testing
-    	{
-    		if (fVoltageDamping)
-    		{
-    			VoltageAmplitude *= aPowerCombiner.GetCorporateVoltageDamping();
-    		}
-    	}
+    
+    FieldBuffer aFieldBuffer;
 
-    	if (fPowerCombiner == 1)  // series feed
-        {
-    		if (fPhaseDelay) // parameter from json
-    		{
-    			VoltagePhase += aPowerCombiner.GetSeriesPhaseDelay(z_index, DopplerFrequency, fPatchSpacing);
-    		}
-    		if (fVoltageDamping)  // parameter from json
-    		{
-    			VoltageAmplitude *= aPowerCombiner.GetSeriesVoltageDamping(z_index);
-    		}
-        }
-
-    	if (fPowerCombiner == 2) // one-quarter power combining, center fed strip
-        {
-            if (fPhaseDelay)
-            {
-            	VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
-            }
-            if (fVoltageDamping)
-            {
-                VoltageAmplitude *= aPowerCombiner.GetOneQuarterVoltageDamping(fNPatchesPerStrip, z_index);
-            }
-        }
-
-    	if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
-    	{
-    		if (fPhaseDelay)
-    		{
-            	VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
-    		}
-    		if (fVoltageDamping)
-    		{
-    			VoltageAmplitude *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, z_index);
-    		}
-    	}
-
-    	if (fPowerCombiner == 4) // nine-sixteenths power combining, center fed strip
-    	{
-    		if (fPhaseDelay)
-    		{
-    			VoltagePhase += aPowerCombiner.GetCenterFedPhaseDelay(fNPatchesPerStrip, z_index, DopplerFrequency, fPatchSpacing);
-    		}
-    		if (fVoltageDamping)
-    		{
-    			VoltageAmplitude *= aPowerCombiner.GetNineSixteenthsVoltageDamping(fNPatchesPerStrip, z_index);
-    		}
-    	}
-
-
-        aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
-        aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
-        
-//  if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();}
-// printf("Voltage Amplitude is %g\n", VoltageAmplitude); getchar();
-
+    SampleIndexBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
+    LOPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
+    PWMagBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
+    PWPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);   
+    PatchVoltageBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
+    
+    
     }
 
+  void PlaneWaveSignalGenerator::InitializePatchArray()
+  {
 
-    void* PlaneWaveSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
-    {
+    const unsigned nChannels = fNChannels;
+    const int nReceivers = fNPatchesPerStrip;
 
-        const int signalSize = aSignal->TimeSize();
-        unsigned sampleIndex = 0;
+    const double patchSpacingZ = fPatchSpacing;
+    const double patchRadius = fArrayRadius;
+    double zPosition;
+    double theta;
+    const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
 
-        //Receiver Properties
-        phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency / (1.e6*fAcquisitionRate*aSignal->DecimationFactor());
+    PatchAntenna modelPatch;
 
-        PatchAntenna *currentPatch;
-        double timedelay;
-        for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
-        {
-            for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
-            {
-                currentPatch = &allChannels[channelIndex][patchIndex]; 
-                sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+    allChannels.resize(nChannels);
 
-                VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] +=
- 2. * LMCConst::Pi() * fRF_Frequency / (1.e6 * fAcquisitionRate * aSignal->DecimationFactor()); // phi =+ f*dt
+    for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
+      {
+	theta = channelIndex * dThetaArray;
 
-                // arrival time delay for skewed angle of incidence
-                   if(index == 0)
-                   {
-                	   if(fAOI >= 0)
-                	   {
-                		   timedelay = patchIndex*fPatchSpacing*sin(fAOI)/LMCConst::C();
-                	   }
-                	   else
-                	   {
-                		   timedelay = (fNPatchesPerStrip - patchIndex)*fPatchSpacing*fabs(sin(fAOI))/LMCConst::C();
-                	   }
-                	   //	printf("timedelay is %e\n", timedelay);
-                	   VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] -= 2.*LMCConst::Pi()*fRF_Frequency*timedelay;
-                   }
+	for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
+	  {
+	    zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
-
-               //  printf("voltagephase_t for patch %d is %g\n", patchIndex, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]); getchar();
-
-               // double tVoltageAmplitude = GetVoltageAmpFromPlaneWave();
-                double tVoltageAmplitude = GetVoltageAmpFromPlaneWaveMutualCoupling(patchIndex);
-
-                tVoltageAmplitude *= GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
-             //   printf("aoi factor is %f\n", GetAOIFactor(fAOI, currentPatch->GetNormalDirection())); getchar();
-            //    printf("amp is %g\n", tVoltageAmplitude); getchar();
-
-                AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, fRF_Frequency);
-
-            } // patch loop
-            //printf("VI for time %d is %g\n", index, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
-                          //   getchar();
-
-
-        } // channels loop
-
-        return 0;
-    }
-
-
-    void PlaneWaveSignalGenerator::InitializePatchArray()
-    {
-
-        const unsigned nChannels = fNChannels;
-        const int nReceivers = fNPatchesPerStrip;
-
-        const double patchSpacingZ = fPatchSpacing;
-        const double patchRadius = fArrayRadius;
-        double zPosition;
-        double theta;
-        const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
-
-        PatchAntenna modelPatch;
-
-        allChannels.resize(nChannels);
-
-        for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
-        {
-            theta = channelIndex * dThetaArray;
-
-            for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
-            {
-                zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
-
-                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
-                modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); 
-                modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
-                allChannels[channelIndex].AddReceiver(modelPatch);
-            }
-        }
-    }
+	    modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
+	    modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); 
+	    modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+	    allChannels[channelIndex].AddReceiver(modelPatch);
+	  }
+      }
+  }
 
 
 
-    bool PlaneWaveSignalGenerator::DoGenerate( Signal* aSignal )
-    {
+  bool PlaneWaveSignalGenerator::DoGenerate( Signal* aSignal )
+  {
 
-        InitializePatchArray();
+    InitializePatchArray();
 
-        //text file for VI for testing.
-        std::ofstream voltagefile;
-        voltagefile.open("voltagefile.txt");
+    // initialize FIR filter array
+    for (unsigned i=0; i < sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
+      {  
+	FIR_array[i] = 0.;
+      }
+    
+    ProcessFIRFilter(1);
+    nfilterbins = GetNFilterBins();
+    int tempfieldbuffersize = 100;
+ 
+    InitializeBuffers(tempfieldbuffersize);
 
-        //n samples for event spacing.
-        int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
-        PreEventCounter = NPreEventSamples; // jump past wait time.
-        for (unsigned i=0; i < sizeof(VoltagePhase_t)/sizeof(VoltagePhase_t[0]); i++)
-            {  // initialize voltage phases.
-                VoltagePhase_t[i] = {0.0};
-            }
+    //text file for VI for testing.
+    //   std::ofstream voltagefile;
+    //    voltagefile.open("voltagefile.txt");
 
-        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-          {
-          DriveAntenna(PreEventCounter, index, aSignal);
-          voltagefile << index;
-          voltagefile << "\n";
-          voltagefile << aSignal->LongSignalTimeComplex()[index][0];
-          voltagefile << "\n";
-          voltagefile << aSignal->LongSignalTimeComplex()[index][1];
-          voltagefile << "\n";
-          }
-        voltagefile.close();
+    //n samples for event spacing.
+    int PreEventCounter = 0;
+    const int NPreEventSamples = 150000;
+    PreEventCounter = NPreEventSamples; // jump past wait time.
+
+    for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+      {
+	DriveAntenna(PreEventCounter, index, aSignal);
+	/*
+	voltagefile << index;
+	voltagefile << "\n";
+	voltagefile << aSignal->LongSignalTimeComplex()[index][0];
+	voltagefile << "\n";
+	voltagefile << aSignal->LongSignalTimeComplex()[index][1];
+	voltagefile << "\n";
+	*/
+      }
+    //    voltagefile.close();
 
 
-        return true;
-    }
+    return true;
+  }
 
 } /* namespace locust */
