@@ -166,18 +166,18 @@ namespace locust
     return amplitude;
   }
 
-  double PlaneWaveSignalGenerator::GetTimeDelayToPatch(int z_index)
+  double PlaneWaveSignalGenerator::GetPWPhaseDelayAtPatch(int z_index)
   {
-    double timedelay = 0.;
+    double phasedelay = 0.;
     if(fAOI >= 0)
       {
-	timedelay = z_index*fPatchSpacing*sin(fAOI)/LMCConst::C();
+	phasedelay = 2*LMCConst::Pi()*z_index*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
       }
     else
       {
-	timedelay = (fNPatchesPerStrip - z_index)*fPatchSpacing*fabs(sin(fAOI))/LMCConst::C();
-	return timedelay;
+	phasedelay = (fNPatchesPerStrip - z_index)*2*LMCConst::Pi()*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();	
       }
+    return phasedelay;
   }
   
   void PlaneWaveSignalGenerator::ProcessFIRFilter(int nskips)
@@ -213,19 +213,19 @@ namespace locust
 	if (FIR_array[i]>0.) nbins += 1;
 
 	// TEST
-	printf("FIR_array[%d] is %.4f\n", i, FIR_array[i]); getchar();
+	// printf("FIR_array[%d] is %g\n", i, FIR_array[i]); getchar();
 	
       }    
     return nbins;
   }
   
 
-  double PlaneWaveSignalGenerator::GetPatchFIRSample(int bufferIndex)
+  double PlaneWaveSignalGenerator::GetPatchFIRSample(int bufferIndex, int patchIndex)
   {   
    
     double* generatedpoints = new double [nfilterbins];
     double amp = fAmplitude;
-    double phase = PWPhaseBuffer[bufferIndex].back();
+    double phase = PWPhaseBuffer[bufferIndex].back()+GetPWPhaseDelayAtPatch(patchIndex);
     double dtfilter = fPatchFIRfilter_resolution;
 
     
@@ -241,7 +241,7 @@ namespace locust
       {
 	total += generatedpoints[j]*FIR_array[j];
       }
-      
+    delete[] generatedpoints;
     return total;
       
   }
@@ -316,6 +316,7 @@ namespace locust
      aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * 2. * cos(phi_LO);
      aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
 
+     /*
      
      VI = VoltageAmplitude * 2. * cos(phi_LO);
      VQ = VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
@@ -340,10 +341,11 @@ namespace locust
        {
 	 
        }
-     
-    
-    //  if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();}
-    // printf("Voltage Amplitude at %d is %g\n", sampleIndex, VoltageAmplitude); //getchar();
+     */
+     // TEST
+     // printf("Voltage Amplitude for patch at %d is %g\n", sampleIndex, VoltageAmplitude);
+     // printf("summedvoltageamplitude at %d is %g\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
+     // getchar();
 
   }
 
@@ -370,11 +372,12 @@ namespace locust
 	    FillPWBuffers(timeSampleSize, index, channelIndex, patchIndex, bufferIndex);
 	    
 	    // calculate patch voltage using FIR filter
-	    PatchVoltageBuffer[bufferIndex].push_back(GetPatchFIRSample(bufferIndex));
+	    PatchVoltageBuffer[bufferIndex].push_back(GetPatchFIRSample(bufferIndex, patchIndex));
 
 	    AddOnePatchVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].back(), PWPhaseBuffer[bufferIndex].back(), LOPhaseBuffer[bufferIndex].back(), sampleIndex, patchIndex, fRF_Frequency);
 
 	    // TEST PRINT STATEMENTS
+	    /*
 	    printf("Channel is %d\n", channelIndex);
 	    printf("Patch is %d\n", patchIndex);
 	    printf("SampleIndexBuffer[%d] is %f\n", bufferIndex, SampleIndexBuffer[bufferIndex].back());
@@ -382,7 +385,9 @@ namespace locust
 	    printf("PWPhaseBuffer[%d] is %f\n", bufferIndex, PWPhaseBuffer[bufferIndex].back());
 	    printf("PWMagBuffer[%d] is %f\n", bufferIndex, PWMagBuffer[bufferIndex].back());
 	    printf("PatchVoltageBuffer[%d] is %f\n", bufferIndex, PatchVoltageBuffer[bufferIndex].back());
+	    //printf("Resulting VI[%d] is %f\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
 	    getchar();
+	    */
 	    
 	    PopBuffers(bufferIndex);
 	  }
@@ -393,11 +398,11 @@ namespace locust
 
   void PlaneWaveSignalGenerator::FillPWBuffers(double timeSampleSize, int digitizerIndex, int channelIndex, int patchIndex, int bufferIndex){
 
-
+    /*
     double arrivaltime = GetTimeDelayToPatch(patchIndex);
     double currenttime = digitizerIndex*timeSampleSize;
     double phasecrunchtime = timeSampleSize - (currenttime - arrivaltime);
-
+    */
     double fieldamp = 0.;
     double fieldphase = 0;
     
@@ -405,17 +410,17 @@ namespace locust
     currentPatch = &allChannels[channelIndex][patchIndex];
     
     // has the plane wave arrived to this patch?
-    if(arrivaltime < currenttime)
-      {
+    //  if(arrivaltime < currenttime)
+    //     {
 	fieldamp = fAmplitude*GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
 	fieldphase = 2. * LMCConst::Pi() * fRF_Frequency * timeSampleSize;
 
 	// account for plane wave arriving in between samples.
-	if((currenttime-arrivaltime) < timeSampleSize)
-	  {
-	    fieldphase -= 2. * LMCConst::Pi() * fRF_Frequency * phasecrunchtime;
-	  }
-      }
+	//	if((currenttime-arrivaltime) < timeSampleSize)
+	//	  {
+	//	    fieldphase += 2. * LMCConst::Pi() * fRF_Frequency * phasecrunchtime;
+	    //	  }
+	//   }
 
     SampleIndexBuffer[bufferIndex].push_back(digitizerIndex);
     PWPhaseBuffer[bufferIndex].push_back(PWPhaseBuffer[bufferIndex].back()+fieldphase);
