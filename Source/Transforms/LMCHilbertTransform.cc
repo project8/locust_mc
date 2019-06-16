@@ -21,58 +21,29 @@ namespace locust
 
 
 
-/*
+
     double* HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer, unsigned edge_margin, double AcquisitionRate)
     {
 
     fftw_complex* transformeddata = Transform( FieldBuffer );
-    double* frequencydata = GetFrequencyData( FrequencyBuffer );
+//    double* frequencydata = GetFrequencyData( FrequencyBuffer );
     unsigned hilbertindex = edge_margin;
     double* magphasemean = new double[3];
 
-    double mean = GetMean(FieldBuffer);
     double mag = pow(transformeddata[hilbertindex][0]*transformeddata[hilbertindex][0] + transformeddata[hilbertindex][1]*transformeddata[hilbertindex][1], 0.5);
+    double mean = 0.;  // this is set to zero in HilbertTransform::Transform().
     double phase = GetPhase(transformeddata[hilbertindex][0], transformeddata[hilbertindex][1], mean);
 
     magphasemean[0] = mag;
     magphasemean[1] = phase;
     magphasemean[2] = mean;
 
-    // extrapolate to edge of window so we know the field phase on arrival at patch.
-    for (unsigned i=hilbertindex; i>0; i--)
-      magphasemean[1] -= 2.*LMCConst::Pi()*frequencydata[i]/AcquisitionRate;
+    // extrapolate to edge of window so we know the field phase on arrival at patch?
+//    for (unsigned i=hilbertindex; i>0; i--)
+//      magphasemean[1] -= 2.*LMCConst::Pi()*frequencydata[i]/AcquisitionRate;
 
     delete[] transformeddata;
-    delete[] frequencydata;
-
-    return magphasemean;
-    }
-*/
-
-
-
-    double* HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer, unsigned edge_margin, double AcquisitionRate)
-    {
-
-    fftw_complex* transformeddata = Transform( FieldBuffer );
-    double* frequencydata = GetFrequencyData( FrequencyBuffer );
-    unsigned hilbertindex = edge_margin;
-    double* magphasemean = new double[3];
-
-    double mag = pow(transformeddata[hilbertindex][0]*transformeddata[hilbertindex][0] + transformeddata[hilbertindex][1]*transformeddata[hilbertindex][1], 0.5);
-    double mean = GetMean( FieldBuffer );
-    double phase = GetPhase(transformeddata[hilbertindex][0], transformeddata[hilbertindex][1], mean);
-
-    magphasemean[0] = mag;
-    magphasemean[1] = phase;
-    magphasemean[2] = mean;
-
-    // extrapolate to edge of window so we know the field phase on arrival at patch.
-    for (unsigned i=hilbertindex; i>0; i--)
-      magphasemean[1] -= 2.*LMCConst::Pi()*frequencydata[i]/AcquisitionRate;
-
-    delete[] transformeddata;
-    delete[] frequencydata;
+//    delete[] frequencydata;
 
     return magphasemean;
     }
@@ -108,10 +79,38 @@ namespace locust
     double mean = 0.;
     for (std::deque<double>::iterator it = FieldBuffer.begin(); it!=FieldBuffer.end(); ++it)
           {
-          mean += *it/FieldBuffer.size();
+          mean += *it/(double)FieldBuffer.size();
           }
     return mean;
     }
+
+
+    double HilbertTransform::GetMean( fftw_complex* array, int IQ, int size )
+    {
+    double mean = 0.;
+    for (unsigned i=0; i<size; i++)
+          {
+          mean += array[i][IQ]/size;
+          }
+    return mean;
+    }
+
+
+    double* HilbertTransform::GetSpan( fftw_complex* array, int IQ, int size )
+    {
+    double* span = new double[2];
+    double max = -99.;
+    double min = 99.;
+    for (unsigned i=size/4; i<3*size/4; i++)
+          {
+          if (array[i][IQ] > max) max=array[i][IQ];
+          if (array[i][IQ] < min) min=array[i][IQ];
+          }
+    span[0] = min;
+    span[1] = max;
+    return span;
+    }
+
 
 
     double* HilbertTransform::GetFrequencyData( std::deque<double> FrequencyBuffer )
@@ -150,7 +149,14 @@ namespace locust
         fftw_plan ReversePlan;
         ReversePlan = fftw_plan_dft_1d(windowsize, hilbert, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
 
-
+/*        double pi = LMCConst::Pi();
+        for (int j=0; j<FieldBuffer.size(); j++)  // debug
+        {
+        double toptime = 0.02*j/FieldBuffer.size();
+        FieldBuffer.push_back(2.5 + cos(2*pi*203*toptime*j) + sin(2*pi*721*toptime*j) + cos(2*pi*1001*toptime*j));
+        FieldBuffer.pop_front();
+        }
+*/
 
         int i=0;
         for (std::deque<double>::iterator it = FieldBuffer.begin(); it!=FieldBuffer.end(); ++it)
@@ -182,6 +188,7 @@ namespace locust
             }
           }
 
+
       fftw_execute(ReversePlan); // hilbert->SignalComplex
 
 
@@ -192,7 +199,6 @@ namespace locust
         }
 
 
-
         // construct transformed time series.
         //    	    Y(t) = y(t) + j h(t) = originaldata + j(hilbert0 + j hilbert1)
       for (int i = 0; i < windowsize; ++i)
@@ -201,24 +207,32 @@ namespace locust
         originaldata[i][1] = SignalComplex[i][0];
         }
 
-      fftw_destroy_plan(ForwardPlan);
-      fftw_destroy_plan(ReversePlan);
-      delete[] hilbert;
-      delete[] SignalComplex;
-      delete[] FFTComplex;
 
+    double* spanI = GetSpan(originaldata, 0, FieldBuffer.size());
+    double* spanQ = GetSpan(originaldata, 1, FieldBuffer.size());
+
+    for (int i = 0; i < windowsize; ++i)
+      {
+      originaldata[i][0] -= (spanI[1]+spanI[0])/2.;
+      originaldata[i][1] -= (spanQ[1]+spanQ[0])/2.;
+      }
 
 
     // dump to text file for debugging.
-/*        
-    FILE *fp = fopen("Hilbertresults.txt", "w");
+/*    FILE *fp = fopen("Hilbertresults.txt", "w");
     for (int i=0; i<windowsize; i++)
     {
-          fprintf(fp, "%g %g %g\n", originaldata[i][0], originaldata[i][1], pow(originaldata[i][0]*originaldata[i][0] + originaldata[i][1]*originaldata[i][1], 0.5));
+    	fprintf(fp, "%g %g %g %g\n", originaldata[i][0], originaldata[i][1], pow(originaldata[i][0]*originaldata[i][0] + originaldata[i][1]*originaldata[i][1], 0.5), GetPhase(originaldata[i][0], originaldata[i][1], 0.));
     }
     fclose (fp);
     getchar();  // Control-C to quit.
 */
+
+    fftw_destroy_plan(ForwardPlan);
+    fftw_destroy_plan(ReversePlan);
+    delete[] hilbert;
+    delete[] SignalComplex;
+    delete[] FFTComplex;
 
     return originaldata;
    
