@@ -54,37 +54,15 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
-            /*void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
-            double GetMismatchFactor(double f);
-            double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
-            double GetVoltageAmpFromAntenna();
-	    */
-
         private:
 	    FieldEstimator fFieldEstimator;
 	    int fInputSignalType;
 	    double fInputFrequency;// in GHz
             double fInputAmplitude;
-           /* std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
-            std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
-            double fLO_Frequency;  // typically defined by a parameter in json file.
-            double fRF_Frequency;  // typically defined by a parameter in json file.
-            double fRF_Amplitude;  // typically defined by a parameter in json file.
-            double fArrayRadius;  // from json file.
-            int fNPatchesPerStrip; // from json file.
-            double fPatchSpacing; // from json file.
-            int fPowerCombiner;
-            bool fVoltageDamping;*/
 
             void GenerateSignal(Signal* );
 
             bool DoGenerate( Signal* aSignal );
-            //void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
-            //void InitializePatchArray();
-
-
-            //double phiLO_t; // voltage phase of LO in radians;
-            //double VoltagePhase_t[10000];
 
     };
 
