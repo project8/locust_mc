@@ -50,7 +50,7 @@ namespace locust
             void Accept( GeneratorVisitor* aVisitor ) const;
               
             void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
-            void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
+            void AddOneFIRVoltageToStripSum(Signal* aSignal, LMCThreeVector ElectricField, PatchAntenna* currentPatch, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
 
 
 

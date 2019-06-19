@@ -115,6 +115,11 @@ namespace locust
         copolarizationDirection = copolDirection;
     }
 
+    LMCThreeVector PatchAntenna::GetPolarizationDirection()
+     {
+         return copolarizationDirection;
+     }
+
     void PatchAntenna::SetNormalDirection(const LMCThreeVector &normDirection)
     {
         normalDirection = normDirection;

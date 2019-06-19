@@ -205,25 +205,6 @@ namespace locust
         return AOIFactor;
     }
 
-    double GetVoltageAmpFromPlaneWave()
-    {
-        double AntennaFactor = 1./400.;
-
-        // S = epsilon0 c E0^2 / 2.  // power/area
-        //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
-        // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
-        // E0 = sqrt(2.*S/epsilon0/c)
-        // effective patch area 0.00004583662 m^2 
-
-        double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
-        double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
-        //    double E0 = 1.0; // V/m, test case
-        double amplitude = E0*AntennaFactor;  // volts
-        return amplitude;
-
-
-    }
-
 
     // fields incident on patch.
     void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
@@ -236,7 +217,7 @@ namespace locust
 
         double EFieldPatch = IncidentElectricField.Dot(PatchPolarizationVector);
         double BFieldPatch = IncidentMagneticField.Dot(PatchCrossPolarizationVector);
-//        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), t_old);
+        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), t_old);
     }
 
 
@@ -349,12 +330,12 @@ namespace locust
     }
 
 
-    void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
+    void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, LMCThreeVector ElectricField, PatchAntenna* currentPatch, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
     {
-//        if (VoltageFIRSample>-999.) {printf("voltageamplitude is %g\n", VoltageFIRSample); getchar();}
-        aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
+
+    	double DotProduct = currentPatch->GetPolarizationDirection().Dot(ElectricField);
+    	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
         aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageFIRSample * cos(phi_LO);
-	//        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}
 
     }
 
@@ -492,14 +473,14 @@ namespace locust
                     //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
                 }      
 
- 		        double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
+// 		        double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
  		        double tEFieldCrossPol = GetEFieldCrossPol(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
-//                if (fTextFileWriting==1) RecordIncidentFields(fp, tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())) , PatchPhi, tDopplerFrequency);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())) , PatchPhi, tDopplerFrequency);
 
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCrossPol, phiLO_t, index, channelIndex, patchIndex, 0);
  	            double VoltageFIRSample = GetFIRSample(filterarray, nfilterbins, dtfilter, channelIndex, patchIndex, fAcquisitionRate*aSignal->DecimationFactor());
- 	            AddOneFIRVoltageToStripSum(aSignal, VoltageFIRSample, phiLO_t, channelIndex, patchIndex);
+ 	            AddOneFIRVoltageToStripSum(aSignal, tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), currentPatch, VoltageFIRSample, phiLO_t, channelIndex, patchIndex);
                 PopBuffers(channelIndex, patchIndex);
 
 // 	            AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
@@ -615,7 +596,14 @@ namespace locust
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
+                if (channelIndex<nChannels)
+                {
                 modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); 
+                }
+                else
+		        {
+                modelPatch.SetPolarizationDirection({-sin(theta), cos(theta), 0.});
+		        }
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
             }
