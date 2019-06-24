@@ -84,11 +84,8 @@ namespace locust
         double* analogData = aSignal->SignalTime();
 //        uint64_t* digitizedData = new uint64_t[ signalSize ];
 
-	// create text file of digitized voltages for testing.
-	/*
         std::ofstream dgvoltagefile;
         dgvoltagefile.open("digitizedvoltagefile.txt");
-	*/
 
         if( fADCValuesSigned )
         {
@@ -110,16 +107,15 @@ namespace locust
                     LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
                 }
 
-                // print out digitized voltages for testing
-		/*
+                //print out digitized voltages
+
                 dgvoltagefile << index;
                 dgvoltagefile << "\n";
                 dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2 ];
                 dgvoltagefile << "\n";
                 dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2+1 ] ;
                 dgvoltagefile << "\n";
-		*/
-		
+
             } // signalsize
             } // channels
             aSignal->ToDigital( digitizedData, signalSizeComplex );
@@ -151,15 +147,12 @@ namespace locust
                         LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
                     }
 
-		    // print out digitized voltages for testing.
-		    /*
                     dgvoltagefile << index;
                     dgvoltagefile << "\n";
                     dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2 ];
                     dgvoltagefile << "\n";
                     dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2+1 ] ;
                     dgvoltagefile << "\n";
-		    */
 
                 } // signalsize
                 } // channels
@@ -168,8 +161,7 @@ namespace locust
 
         }  // unsigned
 
-	// close printed test digitized voltage	file
-	// dgvoltagefile.close();
+        dgvoltagefile.close();
         return true;
 
     }
