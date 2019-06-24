@@ -35,7 +35,6 @@ namespace locust
     fNPatchesPerStrip( 0. ),
     fPatchSpacing( 0. ),
     fPowerCombiner( 0 ),
-    phiLO_t(0.),
     fAOI( 0.),
     fPatchFIRfilter( 0.),
     gpatchfilter_filename("blank.txt"),
@@ -220,12 +219,10 @@ namespace locust
   }
   
 
-  double PlaneWaveSignalGenerator::GetPatchFIRSample(int bufferIndex, int patchIndex)
+  double PlaneWaveSignalGenerator::GetPatchFIRSample(double amp, double phase)
   {   
    
     double* generatedpoints = new double [nfilterbins];
-    double amp = fAmplitude;
-    double phase = PWPhaseBuffer[bufferIndex].back()+GetPWPhaseDelayAtPatch(patchIndex);
     double dtfilter = fPatchFIRfilter_resolution;
 
     
@@ -248,11 +245,15 @@ namespace locust
   
 
   // z-index ranges from 0 to npatches-per-strip-1.
-  void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned sampleIndex, unsigned z_index, double DopplerFrequency)
+  void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex)
   {
-    double VI = 0.;
-    double VQ = 0.;
-    double phi_at_patch = 0.;
+    unsigned sampleIndex = SampleIndexBuffer[bufferIndex].back();
+    double phi_LO = LOPhaseBuffer[bufferIndex].back();
+    double VoltagePhase = 0.; // need to fix this later
+    double VoltageAmplitude = PatchVoltageBuffer[bufferIndex].back();
+    unsigned z_index = patchIndex;
+    double DopplerFrequency = fRF_Frequency;
+    
     PowerCombiner aPowerCombiner;
     
     if (fPowerCombiner == 0 ) //corporate feed, for testing
@@ -318,6 +319,10 @@ namespace locust
 
      /*
      
+       double VI = 0.;
+    double VQ = 0.;
+    double phi_at_patch = 0.;
+
      VI = VoltageAmplitude * 2. * cos(phi_LO);
      VQ = VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
 
@@ -357,24 +362,36 @@ namespace locust
     const int signalSize = aSignal->TimeSize();
     const double timeSampleSize = 1./(1.e6 * fAcquisitionRate * aSignal->DecimationFactor());
     unsigned sampleIndex = 0;
-    
-    phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency / (1.e6*fAcquisitionRate*aSignal->DecimationFactor());
+    double fieldamp = 0.;
+    double fieldphase = 0.;
+    double fieldvalue = 0.;
+    double patchvoltage = 0.;
+    double phiLO = 0;
    
     for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
       {
 	for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
 	  {
-	    sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-	    
+	    sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;
 	    bufferIndex = channelIndex*fNPatchesPerStrip+patchIndex;
-	    LOPhaseBuffer[bufferIndex].push_back(phiLO_t);
 
-	    FillPWBuffers(timeSampleSize, index, channelIndex, patchIndex, bufferIndex);
+	    phiLO = LOPhaseBuffer[bufferIndex].back();
+	    phiLO +=  2. * LMCConst::Pi() * fLO_Frequency / (1.e6*fAcquisitionRate*aSignal->DecimationFactor());
+
+	    PatchAntenna *currentPatch;
+	    currentPatch = &allChannels[channelIndex][patchIndex];
+
+	    fieldamp = fAmplitude*GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
+	    fieldphase = PWPhaseBuffer[bufferIndex].back();
+	    fieldphase += 2. * LMCConst::Pi() * fRF_Frequency * timeSampleSize;
+	    fieldphase += GetPWPhaseDelayAtPatch(patchIndex);
+	    fieldvalue = fieldamp*cos(fieldphase);
+
+	    patchvoltage = GetPatchFIRSample(fieldamp, fieldphase);
 	    
-	    // calculate patch voltage using FIR filter
-	    PatchVoltageBuffer[bufferIndex].push_back(GetPatchFIRSample(bufferIndex, patchIndex));
+	    FillBuffers(bufferIndex, sampleIndex, phiLO, fieldphase, fieldvalue, patchvoltage);
 
-	    AddOnePatchVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].back(), PWPhaseBuffer[bufferIndex].back(), LOPhaseBuffer[bufferIndex].back(), sampleIndex, patchIndex, fRF_Frequency);
+	    AddOnePatchVoltageToStripSum(aSignal, bufferIndex, patchIndex);
 
 	    // TEST PRINT STATEMENTS
 	    /*
@@ -396,47 +413,30 @@ namespace locust
     
   
 
-  void PlaneWaveSignalGenerator::FillPWBuffers(double timeSampleSize, int digitizerIndex, int channelIndex, int patchIndex, int bufferIndex){
-
-    /*
-    double arrivaltime = GetTimeDelayToPatch(patchIndex);
-    double currenttime = digitizerIndex*timeSampleSize;
-    double phasecrunchtime = timeSampleSize - (currenttime - arrivaltime);
-    */
-    double fieldamp = 0.;
-    double fieldphase = 0;
-    
-    PatchAntenna *currentPatch;
-    currentPatch = &allChannels[channelIndex][patchIndex];
-    
-    // has the plane wave arrived to this patch?
-    //  if(arrivaltime < currenttime)
-    //     {
-	fieldamp = fAmplitude*GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
-	fieldphase = 2. * LMCConst::Pi() * fRF_Frequency * timeSampleSize;
-
-	// account for plane wave arriving in between samples.
-	//	if((currenttime-arrivaltime) < timeSampleSize)
-	//	  {
-	//	    fieldphase += 2. * LMCConst::Pi() * fRF_Frequency * phasecrunchtime;
-	    //	  }
-	//   }
+  void PlaneWaveSignalGenerator::FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwmag, double patchvoltage){
 
     SampleIndexBuffer[bufferIndex].push_back(digitizerIndex);
-    PWPhaseBuffer[bufferIndex].push_back(PWPhaseBuffer[bufferIndex].back()+fieldphase);
-    PWMagBuffer[bufferIndex].push_back(fAmplitude*cos(PWPhaseBuffer[bufferIndex].back()));
-
+    LOPhaseBuffer[bufferIndex].push_back(phiLO);
+    PWPhaseBuffer[bufferIndex].push_back(pwphase);
+    PWMagBuffer[bufferIndex].push_back(pwmag);
+    PatchVoltageBuffer[bufferIndex].push_back(patchvoltage);
   }
 
   void PlaneWaveSignalGenerator::PopBuffers(unsigned bufferIndex){
 
-    
+    /*
     SampleIndexBuffer[bufferIndex].erase(SampleIndexBuffer[bufferIndex].begin());
     LOPhaseBuffer[bufferIndex].erase(LOPhaseBuffer[bufferIndex].begin());
     PWPhaseBuffer[bufferIndex].erase(PWPhaseBuffer[bufferIndex].begin());
     PWMagBuffer[bufferIndex].erase(PWMagBuffer[bufferIndex].begin());
     PatchVoltageBuffer[bufferIndex].erase(PatchVoltageBuffer[bufferIndex].begin());
+    */
 
+    SampleIndexBuffer[bufferIndex].pop_front();
+    LOPhaseBuffer[bufferIndex].pop_front();
+    PWPhaseBuffer[bufferIndex].pop_front();
+    PWMagBuffer[bufferIndex].pop_front();
+    PatchVoltageBuffer[bufferIndex].pop_front();
   }
   
   void PlaneWaveSignalGenerator::InitializeBuffers(unsigned fieldbuffersize)
@@ -448,7 +448,7 @@ namespace locust
     
     FieldBuffer aFieldBuffer;
 
-    SampleIndexBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
+    SampleIndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(nchannels, nReceivers, fieldbuffersize);
     LOPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
     PWMagBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
     PWPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);   

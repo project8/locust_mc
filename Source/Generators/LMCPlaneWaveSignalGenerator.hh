@@ -46,7 +46,7 @@ namespace locust
 
     void Accept( GeneratorVisitor* aVisitor ) const;
               
-    void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
+    void AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex);
     double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
     double GetVoltageAmpFromPlaneWave(int z_index);
     double GetPWPhaseDelayAtPatch(int z_index);
@@ -67,7 +67,7 @@ namespace locust
     // for FIR filter 
     void ProcessFIRFilter(int nskips);
     int GetNFilterBins();
-    double GetPatchFIRSample(int bufferIndex, int patchIndex);
+    double GetPatchFIRSample(double amp, double phase);
     bool fPatchFIRfilter;
     std::string gpatchfilter_filename;
     double fPatchFIRfilter_resolution;
@@ -79,13 +79,11 @@ namespace locust
     void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
     void InitializePatchArray();
 
-    double phiLO_t; // voltage phase of LO in radians;
-
     void InitializeBuffers(unsigned fieldbuffersize);
-    void FillPWBuffers(double timeSampleSize, int digitizerIndex, int channelIndex, int patchIndex, int bufferIndex);
+    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwmag, double patchvoltage);
     void PopBuffers(unsigned bufferIndex);
     
-    std::vector<std::deque<double>> SampleIndexBuffer;
+    std::vector<std::deque<unsigned>> SampleIndexBuffer;
     std::vector<std::deque<double>> LOPhaseBuffer;
     std::vector<std::deque<double>> PWPhaseBuffer;
     std::vector<std::deque<double>> PWMagBuffer;
