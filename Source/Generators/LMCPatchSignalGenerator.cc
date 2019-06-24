@@ -565,6 +565,20 @@ namespace locust
     }
 
 
+  double RotateZ(int component, double angle, double x, double y)
+    {
+      double newcomponent = 0.;
+      if (component==0)
+        {
+        newcomponent = x*cos(angle) - y*sin(angle);
+        }
+      if (component==1)
+        {
+        newcomponent = x*sin(angle) + y*cos(angle);
+        }
+
+      return newcomponent;
+    }
 
 
     void PatchSignalGenerator::InitializePatchArray()
@@ -578,6 +592,7 @@ namespace locust
         double zPosition;
         double theta;
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
+        const double dRotateVoltages = 360. / nChannels * LMCConst::Pi() / 180.;  
 
         PatchAntenna modelPatch;
 
@@ -592,14 +607,8 @@ namespace locust
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
-                if (channelIndex<nChannels/2)
-                  {
-                  modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
-                  }
-                else
-		          {
-                  modelPatch.SetPolarizationDirection({-sin(theta), cos(theta), 0.});
-		          }
+                modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
+           
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
             }
@@ -684,3 +693,4 @@ namespace locust
     }
 
 } /* namespace locust */
+
