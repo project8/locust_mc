@@ -67,7 +67,7 @@ namespace locust
     // for FIR filter 
     void ProcessFIRFilter(int nskips);
     int GetNFilterBins();
-    double GetPatchFIRSample(double amp, double phase);
+    double GetPatchFIRSample(double amp, double startphase, int patchIndex);
     bool fPatchFIRfilter;
     std::string gpatchfilter_filename;
     double fPatchFIRfilter_resolution;

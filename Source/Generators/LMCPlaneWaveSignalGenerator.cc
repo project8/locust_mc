@@ -219,13 +219,58 @@ namespace locust
   }
   
 
-  double PlaneWaveSignalGenerator::GetPatchFIRSample(double amp, double phase)
+  double PlaneWaveSignalGenerator::GetPatchFIRSample(double dottedamp, double startphase, int patchIndex)
   {   
    
     double* generatedpoints = new double [nfilterbins];
     double dtfilter = fPatchFIRfilter_resolution;
-
+    double phase = startphase + GetPWPhaseDelayAtPatch(patchIndex);
+    double amp = dottedamp;
     
+    for(int i=0; i < nfilterbins; i++)
+      {
+	generatedpoints[i] = amp*cos(phase);
+	phase += 2*LMCConst::Pi()*dtfilter*fRF_Frequency;
+
+	// TEST PRINT STATEMENT
+	//	printf("genpoints %d is %g", i, generatedpoints[i]); getchar();
+      }
+
+    double total = 0.;
+    for(int j=0; j < nfilterbins; j++)
+      {
+	total += generatedpoints[j]*FIR_array[j];
+      }
+    delete[] generatedpoints;
+    return total;
+      
+  }
+
+  // overload FIR sample function to do a Hilbert Transform
+
+  /*
+  double PlaneWaveSignalGenerator::GetPatchFIRSample(int bufferIndex, double fieldvalue)
+  {
+
+    double phase = 0.;
+    double amp = 0.;
+
+    double fieldfrequency = fRF_Frequency;
+    double HilbertMag = 0.;
+    double HilbertPhase = 0.;
+    double convolution = 0.0;
+
+    HilbertTransform aHilbertTransform;
+
+    double* HilbertMagPhaseMean = new double[3];
+    HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(PWMagBuffer[bufferIndex], EFrequencyBuffer[channel*fNPatches+patch], fFieldBufferMargin, AcquisitionRate);
+    HilbertMag = HilbertMagPhaseMean[0];
+    HilbertPhase = HilbertMagPhaseMean[1];
+    delete[] HilbertMagPhaseMean;
+    
+    double* generatedpoints = new double [nfilterbins];
+    double dtfilter = fPatchFIRfilter_resolution;
+
     for(int i=0; i < nfilterbins; i++)
       {
 	phase += 2*LMCConst::Pi()*dtfilter*fRF_Frequency;
@@ -240,9 +285,8 @@ namespace locust
       }
     delete[] generatedpoints;
     return total;
-      
   }
-  
+  */
 
   // z-index ranges from 0 to npatches-per-strip-1.
   void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex)
@@ -348,9 +392,11 @@ namespace locust
        }
      */
      // TEST
-     // printf("Voltage Amplitude for patch at %d is %g\n", sampleIndex, VoltageAmplitude);
-     // printf("summedvoltageamplitude at %d is %g\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
-     // getchar();
+     /*
+      printf("Voltage Amplitude for patch at %d is %g\n", sampleIndex, VoltageAmplitude);
+      printf("summedvoltageamplitude at %d is %g\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
+      getchar();
+     */
 
   }
 
@@ -366,7 +412,7 @@ namespace locust
     double fieldphase = 0.;
     double fieldvalue = 0.;
     double patchvoltage = 0.;
-    double phiLO = 0;
+    double phiLO = 0.;
    
     for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
       {
@@ -384,10 +430,10 @@ namespace locust
 	    fieldamp = fAmplitude*GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
 	    fieldphase = PWPhaseBuffer[bufferIndex].back();
 	    fieldphase += 2. * LMCConst::Pi() * fRF_Frequency * timeSampleSize;
-	    fieldphase += GetPWPhaseDelayAtPatch(patchIndex);
+	    // fieldphase += GetPWPhaseDelayAtPatch(patchIndex); this DOES NOT WORK, not sure why
 	    fieldvalue = fieldamp*cos(fieldphase);
 
-	    patchvoltage = GetPatchFIRSample(fieldamp, fieldphase);
+	    patchvoltage = GetPatchFIRSample(fieldamp, fieldphase, patchIndex);
 	    
 	    FillBuffers(bufferIndex, sampleIndex, phiLO, fieldphase, fieldvalue, patchvoltage);
 
@@ -397,14 +443,16 @@ namespace locust
 	    /*
 	    printf("Channel is %d\n", channelIndex);
 	    printf("Patch is %d\n", patchIndex);
+	    printf("fieldphase is %f\n", fieldphase);
 	    printf("SampleIndexBuffer[%d] is %f\n", bufferIndex, SampleIndexBuffer[bufferIndex].back());
 	    printf("LOPhaseBuffer[%d] is %f\n", bufferIndex, LOPhaseBuffer[bufferIndex].back());
 	    printf("PWPhaseBuffer[%d] is %f\n", bufferIndex, PWPhaseBuffer[bufferIndex].back());
 	    printf("PWMagBuffer[%d] is %f\n", bufferIndex, PWMagBuffer[bufferIndex].back());
 	    printf("PatchVoltageBuffer[%d] is %f\n", bufferIndex, PatchVoltageBuffer[bufferIndex].back());
-	    //printf("Resulting VI[%d] is %f\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
+	    printf("Resulting VI[%d] is %f\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
 	    getchar();
 	    */
+	    
 	    
 	    PopBuffers(bufferIndex);
 	  }
@@ -424,19 +472,21 @@ namespace locust
 
   void PlaneWaveSignalGenerator::PopBuffers(unsigned bufferIndex){
 
-    /*
+    
     SampleIndexBuffer[bufferIndex].erase(SampleIndexBuffer[bufferIndex].begin());
     LOPhaseBuffer[bufferIndex].erase(LOPhaseBuffer[bufferIndex].begin());
     PWPhaseBuffer[bufferIndex].erase(PWPhaseBuffer[bufferIndex].begin());
     PWMagBuffer[bufferIndex].erase(PWMagBuffer[bufferIndex].begin());
     PatchVoltageBuffer[bufferIndex].erase(PatchVoltageBuffer[bufferIndex].begin());
-    */
+    
 
+    /*
     SampleIndexBuffer[bufferIndex].pop_front();
     LOPhaseBuffer[bufferIndex].pop_front();
     PWPhaseBuffer[bufferIndex].pop_front();
     PWMagBuffer[bufferIndex].pop_front();
     PatchVoltageBuffer[bufferIndex].pop_front();
+    */
   }
   
   void PlaneWaveSignalGenerator::InitializeBuffers(unsigned fieldbuffersize)
