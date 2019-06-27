@@ -17,6 +17,8 @@
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
+using std::string;
+
 namespace locust
 {
     LOGGER( lmclog, "AntennaSignalGenerator" );
@@ -52,14 +54,38 @@ namespace locust
 
 	if( aParam->has( "input-signal-frequency" ) )
         {
-            fInputSignalType = aParam->get_value< double >( "input-signal-frequency" );
+            fInputFrequency= aParam->get_value< double >( "input-signal-frequency" );
         }
 
 	if( aParam->has( "input-signal-amplitude" ) )
         {
-            fInputSignalType = aParam->get_value< double >( "input-signal-amplitude" );
+            fInputAmplitude = aParam->get_value< double >( "input-signal-amplitude" );
         }
 
+	// PTS: Need to check if this needs to be set separately for both generators as well as the transmitter
+	// Implement SetDomain functionality later
+	//Defining the domain to be used
+	/*
+        if( aParam->has( "domain" ) )
+	{
+	    string domain = aParam->get_value( "domain" );
+            if( domain == "time" )
+	    {
+		SetDomain( Signal::kTime );
+		LDEBUG( lmclog, "Generating simulation in time domain.");
+	    }
+            else if( domain == "freq" )
+	    {
+		SetDomain( Signal::kFreq );
+		LDEBUG( lmclog, "Generating simulation in frequency domain.");
+	    }
+            else
+	    {
+		LDEBUG( lmclog, "Unable to use domain requested: <" << domain << ">");
+		return false;
+	    }
+
+	}*/
         return true;
     }
 
@@ -80,8 +106,7 @@ namespace locust
 	     }
 	}
 
-
-	else //Else case also sin for now still
+	else //Else case also sin for now
 	{
 	     for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
 	     {
@@ -94,9 +119,16 @@ namespace locust
     bool AntennaSignalGenerator::DoGenerate( Signal* aSignal )
     {
 	fFieldEstimator.ReadFIRFile();
-	GenerateSignal(aSignal);
-
+	InitializeBuffers(fFieldEstimator.GetFilterSize());
+	GenerateSignal(aSignal);	
+	fFieldEstimator.ConvolveWithFIRFilter(aSignal);
         return true;
     }
 
+    void AntennaSignalGenerator::InitializeBuffers(unsigned filterbuffersize)
+    {
+    	FieldBuffer aFieldBuffer;
+	delayedVoltageBuffer = aFieldBuffer.InitializeBuffer(1,1,filterbuffersize);
+	//const unsigned nchannels = fNChannels;
+    }
 } /* namespace locust */

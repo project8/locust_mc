@@ -24,7 +24,8 @@ namespace locust
     LOGGER( lmclog, "FieldEstimator" );
 
     FieldEstimator::FieldEstimator():
-	fGeneratorType("FIR")
+	fGeneratorType("FIR"),
+	fNFIRFilterBins(-99)
     {
     }
 
@@ -49,11 +50,17 @@ namespace locust
 			           str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
     }
 
+    int FieldEstimator::GetFilterSize()
+    {
+	    return fNFIRFilterBins;
+    }
+
     bool FieldEstimator::ReadFIRFile()
     {
+	    fNFIRFilterBins=0;
 	    if(!ends_with(fFIRFilename,".txt"))
 	    {
-		    LERROR(lmclog,"The FIR files should be a .csv file");
+		    LERROR(lmclog,"The FIR files should be a .txt file");
 		    return false;
 	    }
 	    double firIndex;
@@ -64,9 +71,21 @@ namespace locust
 	    while (!feof(firFile)){
 		    fscanf(firFile,"%lf %lf",&firIndex,&filterMagnitude);
 		    fFIRFilter.push_back(filterMagnitude);
+		    ++fNFIRFilterBins;
 	    }
 	    fclose(firFile);
 	    return true;
+    }
+
+    double FieldEstimator::ConvolveWithFIRFilter(Signal *aSignal)
+    {	
+	double convolution=0.0;
+	for(int i=0;i<fNFIRFilterBins;++i)
+	{
+		// Still needs implementation
+		//convolution+=fFIRFilter[i];
+	}
+	return convolution;
     }
 
 } /* namespace locust */

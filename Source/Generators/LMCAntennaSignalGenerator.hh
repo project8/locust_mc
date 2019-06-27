@@ -11,6 +11,7 @@
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
+#include "LMCFieldBuffer.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldEstimator.hh"
@@ -63,6 +64,10 @@ namespace locust
             void GenerateSignal(Signal* );
 
             bool DoGenerate( Signal* aSignal );
+
+	    void InitializeBuffers(unsigned);
+
+	    std::vector<std::deque<double>> delayedVoltageBuffer;
 
     };
 

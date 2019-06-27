@@ -2,6 +2,7 @@
 #define LMCFIELDESTIMATOR_HH_ 
 
 //#include "LMCThreeVector.hh"
+#include "LMCGenerator.hh"
 #include "LMCException.hh"
 #include "param.hh"
 
@@ -32,6 +33,8 @@ namespace locust
 	    // Member functions
 	    bool Configure( const scarab::param_node* aNode );
 	    bool ReadFIRFile();
+	    double ConvolveWithFIRFilter(Signal *);
+	    int GetFilterSize();
 
         private:
 
@@ -39,6 +42,7 @@ namespace locust
 	    std::string fFIRFilename;
 	    std::string fGeneratorType;
 	    std::vector<double> fFIRFilter;
+	    int fNFIRFilterBins;
 
 	    //Member functions
 	    bool ends_with(const std::string &, const std::string &);
