@@ -14,7 +14,7 @@
 #include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
-
+#include "LMCHilbertTransform.hh"
 
 namespace locust
 {
@@ -68,6 +68,7 @@ namespace locust
     void ProcessFIRFilter(int nskips);
     int GetNFilterBins();
     double GetPatchFIRSample(double amp, double startphase, int patchIndex);
+    double* GetHilbertMagPhase(unsigned bufferIndex);
     bool fPatchFIRfilter;
     std::string gpatchfilter_filename;
     double fPatchFIRfilter_resolution;
@@ -80,13 +81,15 @@ namespace locust
     void InitializePatchArray();
 
     void InitializeBuffers(unsigned fieldbuffersize);
-    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwmag, double patchvoltage);
+    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwmag);
     void PopBuffers(unsigned bufferIndex);
     
     std::vector<std::deque<unsigned>> SampleIndexBuffer;
     std::vector<std::deque<double>> LOPhaseBuffer;
+    std::vector<std::deque<double>> PWFreqBuffer;
     std::vector<std::deque<double>> PWPhaseBuffer;
     std::vector<std::deque<double>> PWMagBuffer;
+    
     std::vector<std::deque<double>> PatchVoltageBuffer;
 
   };
