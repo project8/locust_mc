@@ -115,7 +115,7 @@ namespace locust
       {
 	fPatchFIRfilter_resolution = aParam->get_value< double >( "patch-filter-resolution" );
       }
-     if( aParam->has( "amplitude" ) )
+    if( aParam->has( "amplitude" ) )
       {
 	fAmplitude = aParam->get_value< double >( "amplitude" );
       }
@@ -253,7 +253,7 @@ namespace locust
     magphase[0] = 0.;
     magphase[1] = 0.;
     
-    if (fabs(PWMagBuffer[bufferIndex].front() > 0.))
+    if (fabs(PWMagBuffer[bufferIndex].front()) > 0.)
       {
 	double fFieldBufferMargin = 50;
 	HilbertTransform aHilbertTransform;
@@ -339,45 +339,45 @@ namespace locust
 
     // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
     
-     aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * 2. * cos(phi_LO);
-     aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
+    aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * 2. * cos(phi_LO);
+    aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
 
-     /*
+    /*
      
-       double VI = 0.;
-    double VQ = 0.;
-    double phi_at_patch = 0.;
+      double VI = 0.;
+      double VQ = 0.;
+      double phi_at_patch = 0.;
 
-     VI = VoltageAmplitude * 2. * cos(phi_LO);
-     VQ = VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
+      VI = VoltageAmplitude * 2. * cos(phi_LO);
+      VQ = VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
 
      
-     phi_at_patch = atan(abs(VQ)/abs(VI));
+      phi_at_patch = atan(abs(VQ)/abs(VI));
 
-     if(VQ > 0. && VI < 0.) // second quadrant
-       {
-	 phi_at_patch = LMCConst::Pi()-phi_at_patch;
-       }
-     else if(VQ < 0. && VI < 0.) // third quadrant
-       {
-	 phi_at_patch = LMCConst::Pi()+phi_at_patch;
-       }
-     else if(VQ < 0. && VI > 0.) // fourth quadrant
-       {
-	 phi_at_patch = 2*LMCConst::Pi()-phi_at_patch;
-       }
+      if(VQ > 0. && VI < 0.) // second quadrant
+      {
+      phi_at_patch = LMCConst::Pi()-phi_at_patch;
+      }
+      else if(VQ < 0. && VI < 0.) // third quadrant
+      {
+      phi_at_patch = LMCConst::Pi()+phi_at_patch;
+      }
+      else if(VQ < 0. && VI > 0.) // fourth quadrant
+      {
+      phi_at_patch = 2*LMCConst::Pi()-phi_at_patch;
+      }
      
-     if(fPhaseDelay)
-       {
+      if(fPhaseDelay)
+      {
 	 
-       }
-     */
-     // TEST
-     /*
+      }
+    */
+    // TEST
+    /*
       printf("Voltage Amplitude for patch at %d is %g\n", sampleIndex, VoltageAmplitude);
       printf("summedvoltageamplitude at %d is %g\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
       getchar();
-     */
+    */
 
   }
 
@@ -395,11 +395,6 @@ namespace locust
     double* hilbertmagphase = new double[2];
     double phiLO = 0.;
 
-    //text file for hilbert transform testing.
-
-    
-  
-    
     for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
       {
 	for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
@@ -408,7 +403,7 @@ namespace locust
 	    bufferIndex = channelIndex*fNPatchesPerStrip+patchIndex;
 
 	    phiLO = LOPhaseBuffer[bufferIndex].back();
-	    phiLO +=  2. * LMCConst::Pi() * fLO_Frequency / (1.e6*fAcquisitionRate*aSignal->DecimationFactor());
+	    phiLO +=  2. * LMCConst::Pi() * fLO_Frequency * timeSampleSize;
 	    
 	    PatchAntenna *currentPatch;
 	    currentPatch = &allChannels[channelIndex][patchIndex];
@@ -430,32 +425,33 @@ namespace locust
 
 	    // TEST PRINT STATEMENTS
 	    /*
-	    printf("Channel is %d\n", channelIndex);
-	    printf("Patch is %d\n", patchIndex);
-	    printf("SampleIndexBuffer[%d] is %u\n", bufferIndex, SampleIndexBuffer[bufferIndex].front());
-	    printf("LOPhaseBuffer[%d] is %f\n", bufferIndex, LOPhaseBuffer[bufferIndex].front());
-	    printf("PWFreqBuffer[%d] is %f\n", bufferIndex, PWFreqBuffer[bufferIndex].front());
-	    printf("PWPhaseBuffer[%d] is %f\n", bufferIndex, PWPhaseBuffer[bufferIndex].front());
-	    printf("PWMagBuffer[%d] is %f\n", bufferIndex, PWMagBuffer[bufferIndex].front());
-	    printf("PatchVoltageBuffer[%d] is %f\n", bufferIndex, PatchVoltageBuffer[bufferIndex].front());
-	    printf("Resulting VI[%d] is %f\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
-	    //getchar();
+	      printf("Channel is %d\n", channelIndex);
+	      printf("Patch is %d\n", patchIndex);
+	      printf("SampleIndexBuffer[%d] is %u\n", bufferIndex, SampleIndexBuffer[bufferIndex].front());
+	      printf("LOPhaseBuffer[%d] is %f\n", bufferIndex, LOPhaseBuffer[bufferIndex].front());
+	      printf("PWFreqBuffer[%d] is %f\n", bufferIndex, PWFreqBuffer[bufferIndex].front());
+	      printf("PWPhaseBuffer[%d] is %f\n", bufferIndex, PWPhaseBuffer[bufferIndex].front());
+	      printf("PWMagBuffer[%d] is %f\n", bufferIndex, PWMagBuffer[bufferIndex].front());
+	      printf("PatchVoltageBuffer[%d] is %f\n", bufferIndex, PatchVoltageBuffer[bufferIndex].front());
+	      printf("Resulting VI[%d] is %f\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
+	      //getchar();
 	    
 
-	    // TEST HILBERT PRINT STATEMENTS
+	      // TEST HILBERT PRINT STATEMENTS
 
-	    printf("fieldamp is %f\n", fieldamp);
-	    printf("fieldphase is %f\n", fieldphase);
-	    printf("fieldvalue is %f\n", fieldvalue);
-	    printf("hilbertmagphase[0] is %f\n", hilbertmagphase[0]);
-	    printf("hilbertmagphase[1] is %f\n", hilbertmagphase[1]);
-	    getchar();
+	      printf("fieldamp is %f\n", fieldamp);
+	      printf("fieldphase is %f\n", fieldphase);
+	      printf("fieldvalue is %f\n", fieldvalue);
+	      printf("hilbertmagphase[0] is %f\n", hilbertmagphase[0]);
+	      printf("hilbertmagphase[1] is %f\n", hilbertmagphase[1]);
+	      getchar();
 	    */
 
 	    //text file for hilbert transform testing.
-	    std::ofstream hilbertfile;
-	    hilbertfile.open("hilbertfile.txt", std::fstream::app);
-	    if(patchIndex == 0){
+	    /*
+	      std::ofstream hilbertfile;
+	      hilbertfile.open("hilbertfile.txt", std::fstream::app);
+	      if(patchIndex == 0){
 	      hilbertfile << PWMagBuffer[bufferIndex].front();
 	      hilbertfile << ", ";
 	      hilbertfile << PWPhaseBuffer[bufferIndex].front();
@@ -465,8 +461,8 @@ namespace locust
 	      hilbertfile << hilbertmagphase[1];
 	      hilbertfile << "\n";
 	      hilbertfile.close();
-		      
-	    }
+	      }
+	    */
 	    
 	    PopBuffers(bufferIndex);
 	  }
@@ -485,15 +481,6 @@ namespace locust
   }
 
   void PlaneWaveSignalGenerator::PopBuffers(unsigned bufferIndex){
-
-    /*
-    SampleIndexBuffer[bufferIndex].erase(SampleIndexBuffer[bufferIndex].begin());
-    LOPhaseBuffer[bufferIndex].erase(LOPhaseBuffer[bufferIndex].begin());
-    PWFreqBuffer[bufferIndex].erase(PWFreqBuffer[bufferIndex].begin());
-    PWPhaseBuffer[bufferIndex].erase(PWPhaseBuffer[bufferIndex].begin());
-    PWMagBuffer[bufferIndex].erase(PWMagBuffer[bufferIndex].begin());
-    PatchVoltageBuffer[bufferIndex].erase(PatchVoltageBuffer[bufferIndex].begin());
-    */
     
     SampleIndexBuffer[bufferIndex].pop_front();
     LOPhaseBuffer[bufferIndex].pop_front();
@@ -513,7 +500,7 @@ namespace locust
   }
   
   void PlaneWaveSignalGenerator::InitializeBuffers(unsigned fieldbuffersize)
-    {
+  {
 
     const unsigned nchannels = fNChannels;
     const int nReceivers = fNPatchesPerStrip;
@@ -529,7 +516,7 @@ namespace locust
     PatchVoltageBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
     
     
-    }
+  }
 
   void PlaneWaveSignalGenerator::InitializePatchArray()
   {
@@ -598,12 +585,12 @@ namespace locust
       {
 	DriveAntenna(PreEventCounter, index, aSignal);
 	/*
-	voltagefile << index;
-	voltagefile << "\n";
-	voltagefile << aSignal->LongSignalTimeComplex()[index][0];
-	voltagefile << "\n";
-	voltagefile << aSignal->LongSignalTimeComplex()[index][1];
-	voltagefile << "\n";
+	  voltagefile << index;
+	  voltagefile << "\n";
+	  voltagefile << aSignal->LongSignalTimeComplex()[index][0];
+	  voltagefile << "\n";
+	  voltagefile << aSignal->LongSignalTimeComplex()[index][1];
+	  voltagefile << "\n";
 	*/
       }
     //    voltagefile.close();
