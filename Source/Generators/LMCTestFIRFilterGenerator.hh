@@ -90,7 +90,7 @@ namespace locust
             double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
 
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
-            void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch);
+            void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);
             void PopBuffers(unsigned channel, unsigned patch);
             void CleanupBuffers();
 
@@ -112,6 +112,7 @@ namespace locust
             std::vector<std::deque<double>> LOPhaseBuffer;
             std::vector<std::deque<unsigned>> IndexBuffer;
             std::vector<std::deque<double>> PatchFIRBuffer;
+            std::vector<std::deque<unsigned>> ConvolutionTimeBuffer;
     };
 
 } /* namespace locust */

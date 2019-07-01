@@ -36,7 +36,11 @@ namespace locust
             fftw_complex* Transform(std::deque<double> FieldBuffer);
             double* GetFrequencyData(std::deque<double> FrequencyBuffer);
             double GetMean( std::deque<double> FieldBuffer );
-            double QuadrantCorrection( std::deque<double> FieldBuffer, double HilbertPhase, double HilbertMean );
+            double GetMean( fftw_complex* array, int IQ, int size );
+            double* GetSpan( fftw_complex* array, int IQ, int size );
+            double GetPhase( double VI, double VQ, double VMean);
+            double QuadrantCorrection( double VI, double HilbertPhase, double HilbertMean );
+
     };
 
 } /* namespace locust */
