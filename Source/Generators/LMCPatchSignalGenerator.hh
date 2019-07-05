@@ -86,7 +86,6 @@ namespace locust
             std::vector<std::deque<double>> LOPhaseBuffer;
             std::vector<std::deque<unsigned>> IndexBuffer;
             std::vector<std::deque<double>> PatchFIRBuffer;
-            std::vector<std::deque<unsigned>> ConvolutionTimeBuffer;
 
 
             bool DoGenerate( Signal* aSignal );
