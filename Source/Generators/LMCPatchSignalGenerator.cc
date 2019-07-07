@@ -281,9 +281,6 @@ namespace locust
         HilbertPhase = HilbertMagPhaseMean[1];
         delete[] HilbertMagPhaseMean;
 
-        HilbertMag = 1.0;
-        fieldfrequency = 25.928e9;
-
    	for (int i=0; i < nfilterbins; i++)  // populate filter with field.
       {
     	  HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
@@ -339,6 +336,11 @@ namespace locust
     {
 
     	PowerCombiner aPowerCombiner;
+
+        if (fPowerCombiner == 0 ) //corporate feed, for testing
+          {
+    	    VoltageFIRSample *= aPowerCombiner.GetCorporateVoltageDamping();
+          }
 
         if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
           {
