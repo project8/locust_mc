@@ -63,6 +63,7 @@ namespace locust
     bool fPhaseDelay; // yes/no for calculating phase delays
     bool fVoltageDamping; // yes/no for calculating voltage damping due to junctions
     double fAOI; // from json file, in degrees.
+    unsigned fFieldBufferMargin;
 
     // for FIR filter 
     void ProcessFIRFilter(int nskips);
@@ -81,14 +82,14 @@ namespace locust
     void InitializePatchArray();
 
     void InitializeBuffers(unsigned fieldbuffersize);
-    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwmag);
+    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwval);
     void PopBuffers(unsigned bufferIndex);
     
     std::vector<std::deque<unsigned>> SampleIndexBuffer;
     std::vector<std::deque<double>> LOPhaseBuffer;
     std::vector<std::deque<double>> PWFreqBuffer;
     std::vector<std::deque<double>> PWPhaseBuffer;
-    std::vector<std::deque<double>> PWMagBuffer;
+    std::vector<std::deque<double>> PWValueBuffer;
     
     std::vector<std::deque<double>> PatchVoltageBuffer;
 
