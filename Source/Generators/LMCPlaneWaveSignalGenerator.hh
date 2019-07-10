@@ -52,6 +52,7 @@ namespace locust
     double GetPWPhaseDelayAtPatch(int z_index);
       
   private:
+    // patch and plane wave parameters
     std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
     std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
     double fLO_Frequency;  // typically defined by a parameter in json file.
@@ -59,31 +60,45 @@ namespace locust
     double fArrayRadius;  // from json file.
     int fNPatchesPerStrip; // from json file.
     double fPatchSpacing; // from json file.
+    double fAOI; // from json file, in degrees.
+
+    // options to turn on/off or to select
     int fPowerCombiner; // internally keeps track of power combiner type
     bool fPhaseDelay; // yes/no for calculating phase delays
     bool fVoltageDamping; // yes/no for calculating voltage damping due to junctions
-    double fAOI; // from json file, in degrees.
-    unsigned fFieldBufferMargin;
+    bool fPatchFIRfilter; // yes/no to use the patch FIR filter
+    bool fJunctionCascade; // yes/no to use the S31 junction cascade
 
+    
     // for FIR filter 
     void ProcessFIRFilter(int nskips);
     int GetNFilterBins();
     double GetPatchFIRSample(double amp, double startphase, int patchIndex);
     double* GetHilbertMagPhase(unsigned bufferIndex);
-    bool fPatchFIRfilter;
     std::string gpatchfilter_filename;
     double fPatchFIRfilter_resolution;
     double fAmplitude;
     double FIR_array[1000];
     int nfilterbins;
+
+    // for cascaded S31
+    double* GetPatchFIRWaveform(double dottedamp, double startphase, int patchIndex);
+    void CascadeVoltageToAmp(double* startwaveform, Signal* aSignal, unsigned bufferIndex, int patchIndex);
+    std::string gjunctionfilter_filename;
+    double fJunctionFIRfilter_resolution;
+    double S31FIR_array[1000];
     
     bool DoGenerate( Signal* aSignal );
     void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
     void InitializePatchArray();
 
+    
+    // for buffers
     void InitializeBuffers(unsigned fieldbuffersize);
     void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwval);
     void PopBuffers(unsigned bufferIndex);
+
+    unsigned fFieldBufferMargin;
     
     std::vector<std::deque<unsigned>> SampleIndexBuffer;
     std::vector<std::deque<double>> LOPhaseBuffer;
