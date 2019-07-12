@@ -22,6 +22,7 @@ namespace locust
 	 Available configuration options:
      	 - "generator-type": string -- Define if the generator to be used is based on impulse response or a analytical
 	 - "fir-filename": string -- The location of the file containing impulse response
+	 - "filter-dt": double (1e-12) -- The size of filter sample width (seconds)
     */
     
     class FieldEstimator 
@@ -35,14 +36,15 @@ namespace locust
 	    bool ReadFIRFile();
 	    double ConvolveWithFIRFilter(Signal *);
 	    int GetFilterSize();
+	    double GetFilterdt();
 
         private:
 
 	    // Member variables
 	    std::string fFIRFilename;
-	    std::string fGeneratorType;
 	    std::vector<double> fFIRFilter;
 	    int fNFIRFilterBins;
+	    double fFilterdt;
 
 	    //Member functions
 	    bool ends_with(const std::string &, const std::string &);

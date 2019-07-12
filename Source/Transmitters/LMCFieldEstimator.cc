@@ -8,15 +8,6 @@
 #include "LMCConst.hh"
 #include "LMCFieldEstimator.hh"
 
-/*#include <algorithm>
-#include <iostream>
-#include <fstream>
-#include <regex>
-#include <math.h>
-
-#include <stdlib.h>
-#include <time.h>
-*/
 #include "logger.hh"
 
 namespace locust
@@ -24,8 +15,8 @@ namespace locust
     LOGGER( lmclog, "FieldEstimator" );
 
     FieldEstimator::FieldEstimator():
-	fGeneratorType("FIR"),
-	fNFIRFilterBins(-99)
+	fNFIRFilterBins(-99),
+	fFilterdt(1e-12)
     {
     }
 
@@ -40,6 +31,10 @@ namespace locust
 	    {
 		    fFIRFilename=aParam->get_value<std::string>("fir-filename");
 	    }
+	    if( aParam->has( "filter-dt" ) )
+	    {
+		    fFilterdt=aParam->get_value<double>("filter-dt");
+	    }
 	    return true;
     }
 
@@ -48,11 +43,6 @@ namespace locust
 	    //copied from https://stackoverflow.com/a/20446239
 	    return str.size() >= suffix.size() &&
 			           str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
-    }
-
-    int FieldEstimator::GetFilterSize()
-    {
-	    return fNFIRFilterBins;
     }
 
     bool FieldEstimator::ReadFIRFile()
@@ -75,6 +65,16 @@ namespace locust
 	    }
 	    fclose(firFile);
 	    return true;
+    }
+
+    int FieldEstimator::GetFilterSize()
+    {
+	    return fNFIRFilterBins;
+    }
+
+    double FieldEstimator::GetFilterdt()
+    {
+	    return fFilterdt;
     }
 
     double FieldEstimator::ConvolveWithFIRFilter(Signal *aSignal)

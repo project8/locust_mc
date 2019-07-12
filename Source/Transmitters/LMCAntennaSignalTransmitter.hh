@@ -9,13 +9,9 @@
 #define LMCANTENNASIGNALTRANSMITTER_HH_
 
 #include "LMCThreeVector.hh"
-#include "LMCGenerator.hh"
-#include "LMCChannel.hh"
 #include "LMCFieldBuffer.hh"
-#include "LMCPatchAntenna.hh"
-#include "LMCPowerCombiner.hh"
 #include "LMCFieldEstimator.hh"
-
+#include "LMCConst.hh"
 
 namespace locust
 {
@@ -24,7 +20,7 @@ namespace locust
      @class AntennaSignalTransmitter
      @author P. L. Slocum
 
-     @brief Generate artibtrary plane wave for calibration and detect with patch array.
+     @brief Class to generate tranmistter from antenna signal
 
      @details
      Operates in time space
@@ -32,38 +28,31 @@ namespace locust
      Configuration name: "antenna-signal"
 
      Available configuration options:
-     - "param-name": type -- Description
-     - "lo-frequency" : double -- local oscillator frequency
-     - "antenna-frequency": 25.9281e9,
-     - "array-radius": 0.05,
-     - "npatches-per-strip": 22,
-     - "patch-spacing": 0.0068,
-     - "feed": "one-quarter",  -- power-combining scheme.
-     - "phase-delay": 1, -- consider phase delay between patches?
-     - "voltage-damping": 1 -- consider power-combining scheme in "feed"?
-     - "input-signal-type": string -- By default considers sin wave, could change based on requirements. 
+     - "input-signal-type": 1 -- Leaving an option open for generating different types of signals,
+     - "input-signal-frequency": 25.9281e9,
+     - "input-signal-amplitude": 1
           
     */
-    class AntennaSignalTransmitter: public Generator
+    class AntennaSignalTransmitter
     {
         public:
 
-            AntennaSignalTransmitter( const std::string& aName = "antenna-signal" );
+            AntennaSignalTransmitter();
             virtual ~AntennaSignalTransmitter();
 
             bool Configure( const scarab::param_node* aNode );
 
-            void Accept( GeneratorVisitor* aVisitor ) const;
-              
+            double GenerateSignal(Signal *, double);
+
+            bool InitializeTransmitter();
+           
         private:
 	    FieldEstimator fFieldEstimator;
 	    int fInputSignalType;
 	    double fInputFrequency;// in GHz
             double fInputAmplitude;
-
-            void GenerateSignal(Signal* );
-
-            bool DoGenerate( Signal* aSignal );
+	    double phaseDelay=0.0;  
+	    int timeNumber=0;
 
 	    void InitializeBuffers(unsigned);
 

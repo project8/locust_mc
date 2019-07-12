@@ -23,15 +23,11 @@ namespace locust
 {
     LOGGER( lmclog, "AntennaSignalTransmitter" );
 
-    MT_REGISTER_GENERATOR(AntennaSignalTransmitter, "antenna-signal");
-
-    AntennaSignalTransmitter::AntennaSignalTransmitter( const std::string& aName ) :
-        Generator( aName ),
+    AntennaSignalTransmitter::AntennaSignalTransmitter() :
 	fInputSignalType(1),
-	fInputFrequency(27.0), //Assume 27 
+	fInputFrequency(27.0e9), //Assume 27 
         fInputAmplitude(1)
     {
-        fRequiredSignalState = Signal::kTime;
     }
 
     AntennaSignalTransmitter::~AntennaSignalTransmitter()
@@ -89,40 +85,40 @@ namespace locust
         return true;
     }
 
-    void AntennaSignalTransmitter::Accept( GeneratorVisitor* aVisitor ) const
+    double AntennaSignalTransmitter::GenerateSignal(Signal *aSignal,double acquisitionRate)
     {
-        aVisitor->Visit( this );
-        return;
-    }
-
-    void AntennaSignalTransmitter::GenerateSignal(Signal* aSignal)
-    {
+	double estimatedField=0.0;
+	double voltagePhase=0.0;
+	//std::cout<< "1: "<<phaseDelay<<" : "<<voltagePhase<<" : " << timeNumber<< std::endl;
 	if(fInputSignalType==1) // sin wave
 	{
-	     for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+	     for( unsigned index = 0; index <fFieldEstimator.GetFilterSize();index++)
 	     {
-		 aSignal->LongSignalTimeComplex()[index][0] = fInputAmplitude* sin(index);
-		 aSignal->LongSignalTimeComplex()[index][1] = fInputAmplitude* cos(index);
+	     	 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterdt()+phaseDelay;
+		 delayedVoltageBuffer[0].push_back(fInputAmplitude* cos(voltagePhase));
+	     	 delayedVoltageBuffer[0].pop_front();
 	     }
 	}
 
 	else //Else case also sin for now
 	{
-	     for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-	     {
-		 aSignal->LongSignalTimeComplex()[index][0] = fInputAmplitude* sin(index);
-		 aSignal->LongSignalTimeComplex()[index][1] = fInputAmplitude* cos(index);
-	     }
 	}
+	//std::cout<< "2: "<<phaseDelay<<" : "<<voltagePhase<<" : " << timeNumber<< std::endl;
+	estimatedField=fFieldEstimator.ConvolveWithFIRFilter(aSignal);
+	phaseDelay+= 2.*LMCConst::Pi()*fInputFrequency/aSignal->DecimationFactor()/(acquisitionRate*1.e6);
+	timeNumber+=1;
+	//std::cout<< "3: "<<phaseDelay<<" : "<<voltagePhase<<" : " << timeNumber<< std::endl;
+	return estimatedField;
     }
 
-    bool AntennaSignalTransmitter::DoGenerate( Signal* aSignal )
+    bool AntennaSignalTransmitter::InitializeTransmitter()
     {
 	fFieldEstimator.ReadFIRFile();
-	InitializeBuffers(fFieldEstimator.GetFilterSize());
-	GenerateSignal(aSignal);	
-	fFieldEstimator.ConvolveWithFIRFilter(aSignal);
-        return true;
+	double filterSize=fFieldEstimator.GetFilterSize();
+	InitializeBuffers(filterSize);
+	phaseDelay= -2.*LMCConst::Pi()*filterSize*fFieldEstimator.GetFilterdt()*fInputFrequency;
+	std::cout <<filterSize<<": "<<fFieldEstimator.GetFilterdt()<<":"<<fInputFrequency <<"  "<<phaseDelay/2/LMCConst::Pi()<<std::endl;
+	return true;
     }
 
     void AntennaSignalTransmitter::InitializeBuffers(unsigned filterbuffersize)
