@@ -25,7 +25,7 @@ namespace locust
 
     AntennaSignalTransmitter::AntennaSignalTransmitter() :
 	fInputSignalType(1),
-	fInputFrequency(27.0e9), //Assume 27 
+	fInputFrequency(27.0e9), //Should use this for the rf frequency ?
         fInputAmplitude(1)
     {
     }
@@ -57,57 +57,29 @@ namespace locust
         {
             fInputAmplitude = aParam->get_value< double >( "input-signal-amplitude" );
         }
-
-	// PTS: Need to check if this needs to be set separately for both generators as well as the transmitter
-	// Implement SetDomain functionality later
-	//Defining the domain to be used
-	/*
-        if( aParam->has( "domain" ) )
-	{
-	    string domain = aParam->get_value( "domain" );
-            if( domain == "time" )
-	    {
-		SetDomain( Signal::kTime );
-		LDEBUG( lmclog, "Generating simulation in time domain.");
-	    }
-            else if( domain == "freq" )
-	    {
-		SetDomain( Signal::kFreq );
-		LDEBUG( lmclog, "Generating simulation in frequency domain.");
-	    }
-            else
-	    {
-		LDEBUG( lmclog, "Unable to use domain requested: <" << domain << ">");
-		return false;
-	    }
-
-	}*/
-        return true;
+	return true;
     }
 
     double AntennaSignalTransmitter::GenerateSignal(Signal *aSignal,double acquisitionRate)
     {
 	double estimatedField=0.0;
-	double voltagePhase=0.0;
-	//std::cout<< "1: "<<phaseDelay<<" : "<<voltagePhase<<" : " << timeNumber<< std::endl;
+	double voltagePhase=fPhaseDelay;
 	if(fInputSignalType==1) // sin wave
 	{
 	     for( unsigned index = 0; index <fFieldEstimator.GetFilterSize();index++)
 	     {
-	     	 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterdt()+phaseDelay;
 		 delayedVoltageBuffer[0].push_back(fInputAmplitude* cos(voltagePhase));
 	     	 delayedVoltageBuffer[0].pop_front();
+		 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterdt();
 	     }
 	}
 
 	else //Else case also sin for now
 	{
 	}
-	//std::cout<< "2: "<<phaseDelay<<" : "<<voltagePhase<<" : " << timeNumber<< std::endl;
-	estimatedField=fFieldEstimator.ConvolveWithFIRFilter(aSignal);
-	phaseDelay+= 2.*LMCConst::Pi()*fInputFrequency/aSignal->DecimationFactor()/(acquisitionRate*1.e6);
-	timeNumber+=1;
-	//std::cout<< "3: "<<phaseDelay<<" : "<<voltagePhase<<" : " << timeNumber<< std::endl;
+	estimatedField=fFieldEstimator.ConvolveWithFIRFilter(delayedVoltageBuffer[0]);
+	//std::cout<< "1: "<<fPhaseDelay <<std::endl;
+	fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency/aSignal->DecimationFactor()/(acquisitionRate*1.e6);
 	return estimatedField;
     }
 
@@ -116,9 +88,15 @@ namespace locust
 	fFieldEstimator.ReadFIRFile();
 	double filterSize=fFieldEstimator.GetFilterSize();
 	InitializeBuffers(filterSize);
-	phaseDelay= -2.*LMCConst::Pi()*filterSize*fFieldEstimator.GetFilterdt()*fInputFrequency;
-	std::cout <<filterSize<<": "<<fFieldEstimator.GetFilterdt()<<":"<<fInputFrequency <<"  "<<phaseDelay/2/LMCConst::Pi()<<std::endl;
+	//This has to be added later
+	fInitialPhaseDelay = -2.*LMCConst::Pi()*filterSize*fFieldEstimator.GetFilterdt()*fInputFrequency;
+	fPhaseDelay = fInitialPhaseDelay;
 	return true;
+    }
+
+    double AntennaSignalTransmitter::GetInitialPhaseDelay()
+    {
+	    return fInitialPhaseDelay;
     }
 
     void AntennaSignalTransmitter::InitializeBuffers(unsigned filterbuffersize)

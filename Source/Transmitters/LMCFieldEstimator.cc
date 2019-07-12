@@ -77,13 +77,12 @@ namespace locust
 	    return fFilterdt;
     }
 
-    double FieldEstimator::ConvolveWithFIRFilter(Signal *aSignal)
+    double FieldEstimator::ConvolveWithFIRFilter(std::deque<double> delayedVoltageBuffer)
     {	
 	double convolution=0.0;
 	for(int i=0;i<fNFIRFilterBins;++i)
 	{
-		// Still needs implementation
-		//convolution+=fFIRFilter[i];
+		convolution+=fFIRFilter[i]*delayedVoltageBuffer[i];
 	}
 	return convolution;
     }

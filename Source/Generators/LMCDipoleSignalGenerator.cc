@@ -27,7 +27,7 @@ namespace locust
         fFilter_resolution( 0. ),
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
-        fAmplitude( 5.e-8 ),
+       	fAmplitude( 5.e-8 ),
         EFieldBuffer( 1 ),
         EPhaseBuffer( 1 ),
         EAmplitudeBuffer( 1 ),
@@ -35,10 +35,10 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
-		ConvolutionTimeBuffer( 1 ),
+	ConvolutionTimeBuffer( 1 ),
         fFieldBufferSize( 50 ),
         fFieldBufferMargin( 25 ),
-		fNPatches( 1 )
+	fNPatches( 1 )
 
     {
         fRequiredSignalState = Signal::kTime;
@@ -84,9 +84,9 @@ namespace locust
         SetBufferMargin( aParam->get_value< double >( "buffer-margin", fFieldBufferMargin ) );
         }
 
-        if( aParam->has( "amplitude" ) )
+        if( aParam->has( "input-signal-amplitude" ) )
         {
-        SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
+        SetAmplitude( aParam->get_value< double >( "input-signal-amplitude", fAmplitude ) );
         }
 
 
@@ -265,7 +265,7 @@ namespace locust
 
    	for (int i=0; i < nfilterbins - ConvolutionTimeBuffer[channel*fNPatches+patch].front(); i++)  // populate filter with field.
       {
-    	  HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
+    	  HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*dtfilter;
     	  PatchFIRBuffer[channel*fNPatches+patch].push_back(HilbertMag*cos(HilbertPhase));
     	  PatchFIRBuffer[channel*fNPatches+patch].pop_front();
       }
@@ -308,51 +308,36 @@ namespace locust
 	fAntennaSignalGenerator.InitializeTransmitter();
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
-	
+	field_phase=fAntennaSignalGenerator.GetInitialPhaseDelay();	
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
-		fAntennaSignalGenerator.GenerateSignal(aSignal,fAcquisitionRate);
-	}
-	/*
-          LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-          field_phase += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-
-          for (unsigned ch = 0; ch < nchannels; ++ch)
-            {
-
-        	for (unsigned patch = 0; patch < npatches; ++patch)
-        	{
-
-            if (index > 0) dtauConvolutionTime = 0;
-            else dtauConvolutionTime = nfilterbins/2;
-
-            FillBuffers(aSignal, fAmplitude, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
-            VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, fAcquisitionRate*aSignal->DecimationFactor());
-//            VoltageSample = sqrt(50.)*fAmplitude*cos(field_phase);
-
+		double fieldValue=fAntennaSignalGenerator.GenerateSignal(aSignal,fAcquisitionRate);
+          	LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
+          	field_phase += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6) ;
+          	for (unsigned ch = 0; ch < nchannels; ++ch)
+            	{
+        		for (unsigned patch = 0; patch < npatches; ++patch)
+        		{
+            			if (index > 0) dtauConvolutionTime = 0;
+            			else dtauConvolutionTime = nfilterbins/2;
+            			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
+		            	VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, fAcquisitionRate*aSignal->DecimationFactor());
 // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
-// This allows for correct gain in Locust-Katydid analysis chain.
-            aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatches+patch].front());
-            aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][1] += 2.*VoltageSample*(-sin(LOPhaseBuffer[ch*fNPatches+patch].front()));
-
-//            printf("longsignal %u mixing product is %g\n", IndexBuffer[ch*fNPatches+patch].front(),
-//					2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatches+patch].front())); getchar();
-
-            PopBuffers(ch, patch);
-        	}  // patch
-            }  // channel
+            			aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatches+patch].front());
+            			aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][1] += 2.*VoltageSample*(-sin(LOPhaseBuffer[ch*fNPatches+patch].front()));
+				PopBuffers(ch, patch);
+        		}  // patch
+            	}  // channel
+		//std::cout<< "index: "<< index <<std::endl;
         }  // index
-	*/
-
         CleanupBuffers();
-
         return true;
     }
 
-    void DipoleSignalGenerator::FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime)
+    void DipoleSignalGenerator::FillBuffers(Signal* aSignal, double FieldValue, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime)
     {
 
-    EFieldBuffer[channel*fNPatches+patch].push_back(fAmplitude*cos(FieldPhase));
+    EFieldBuffer[channel*fNPatches+patch].push_back(FieldValue);
     EPhaseBuffer[channel*fNPatches+patch].push_back(FieldPhase);
     EAmplitudeBuffer[channel*fNPatches+patch].push_back(fAmplitude);
     EFrequencyBuffer[channel*fNPatches+patch].push_back(fRF_frequency);
@@ -379,7 +364,8 @@ namespace locust
         EFrequencyBuffer[channel*fNPatches+patch].shrink_to_fit();
         LOPhaseBuffer[channel*fNPatches+patch].shrink_to_fit();
         IndexBuffer[channel*fNPatches+patch].shrink_to_fit();
-        ConvolutionTimeBuffer[channel+fNPatches+patch].shrink_to_fit();
+        // PTS: Seg faults when shrink-to-fit used on ConvolutionTimeBuffer, removed for now. Need to revisit what the problem is
+	//ConvolutionTimeBuffer[channel+fNPatches+patch].shrink_to_fit();
 
     }
 

@@ -34,7 +34,7 @@ namespace locust
 	    // Member functions
 	    bool Configure( const scarab::param_node* aNode );
 	    bool ReadFIRFile();
-	    double ConvolveWithFIRFilter(Signal *);
+	    double ConvolveWithFIRFilter(std::deque<double>);
 	    int GetFilterSize();
 	    double GetFilterdt();
 

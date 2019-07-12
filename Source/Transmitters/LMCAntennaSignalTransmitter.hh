@@ -43,15 +43,18 @@ namespace locust
             bool Configure( const scarab::param_node* aNode );
 
             double GenerateSignal(Signal *, double);
-
-            bool InitializeTransmitter();
+	    
+	    double GetInitialPhaseDelay();
+            
+	    bool InitializeTransmitter();
            
         private:
 	    FieldEstimator fFieldEstimator;
 	    int fInputSignalType;
 	    double fInputFrequency;// in GHz
             double fInputAmplitude;
-	    double phaseDelay=0.0;  
+	    double fPhaseDelay=0.0;  
+	    double fInitialPhaseDelay=0.0;  
 	    int timeNumber=0;
 
 	    void InitializeBuffers(unsigned);
