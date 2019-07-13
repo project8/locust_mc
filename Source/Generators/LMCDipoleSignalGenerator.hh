@@ -35,7 +35,7 @@ namespace locust
      Configuration name: "dipole-signal-generator"
 
      Available configuration options:
-     - "rf-frequency": double -- Frequency of the incident sine wave.
+     - "input-signal-frequency": double -- Frequency of the incident sine wave.
      - "lo-frequency": double -- Frequency of the local oscillator.
      - "amplitude": double -- Amplitude of the incident sine wave.
      - "filter-filename": double -- path to FIR text file.

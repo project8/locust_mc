@@ -64,9 +64,9 @@ namespace locust
         }
 
 
-        if( aParam->has( "rf-frequency" ) )
+        if( aParam->has( "input-signal-frequency"))
         {
-        SetRFFrequency( aParam->get_value< double >( "rf-frequency", fRF_frequency ) );
+        SetRFFrequency( aParam->get_value< double >( "input-signal-frequency", fRF_frequency ) );
         }
 
         if( aParam->has( "lo-frequency" ) )
