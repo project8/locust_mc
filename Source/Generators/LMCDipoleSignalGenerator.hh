@@ -8,8 +8,11 @@
 #ifndef LMCDIPOLESIGNALGENERATOR_HH_
 #define LMCDIPOLESIGNALGENERATOR_HH_ 
 
+#include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
-#include "LMCRunLengthCalculator.hh"
+#include "LMCChannel.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCAntennaSignalTransmitter.hh"
@@ -58,7 +61,11 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            double GetRFFrequency() const;
+	    void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
+
+	    void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
+
+	    double GetRFFrequency() const;
             void SetRFFrequency( double aFrequency );
 
             double GetLOFrequency() const;
@@ -79,11 +86,14 @@ namespace locust
 
         private:
             bool DoGenerate( Signal* aSignal );
-
             bool DoGenerateTime( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
-
             bool (DipoleSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
+
+	    void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
+	    double RotateZ(int component, double angle, double x, double y);
+	    void InitializePatchArray();
+
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
             double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
@@ -94,6 +104,15 @@ namespace locust
             void CleanupBuffers();
 
             AntennaSignalTransmitter fAntennaSignalGenerator; 
+	    std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+	    std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            double fArrayRadius;  // from json file.
+            int fNPatchesPerStrip; // from json file.
+            double fPatchSpacing; // from json file.
+            std::string gxml_filename;
+            int fPowerCombiner;
+            bool fTextFileWriting;
+
 	    double* filterarray;
             double fRF_frequency;
             double fLO_frequency;
@@ -102,8 +121,7 @@ namespace locust
             std::string gfilter_filename;
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
-            unsigned fNPatches; // placeholder for buffer dimensioning.
-
+            unsigned fNPatches; 
 
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EPhaseBuffer;

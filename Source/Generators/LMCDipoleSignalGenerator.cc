@@ -27,6 +27,11 @@ namespace locust
         fFilter_resolution( 0. ),
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
+	fArrayRadius( 0. ),
+	fNPatchesPerStrip( 1. ),
+	fPatchSpacing( 0. ),
+	fPowerCombiner( 0 ),
+	fTextFileWriting( 0 ),
        	fAmplitude( 5.e-8 ),
         EFieldBuffer( 1 ),
         EPhaseBuffer( 1 ),
@@ -55,40 +60,73 @@ namespace locust
 
         if( aParam->has( "filter-filename" ) )
         {
-            gfilter_filename = aParam->get_value< std::string >( "filter-filename" );
+            	gfilter_filename = aParam->get_value< std::string >( "filter-filename" );
         }
 
         if( aParam->has( "filter-resolution" ) )
         {
-            fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
+            	fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
         }
-
+	if( aParam->has( "array-radius" ) )
+	{
+		fArrayRadius = aParam->get_value< double >( "array-radius" );
+	}
 
         if( aParam->has( "input-signal-frequency"))
         {
-        SetRFFrequency( aParam->get_value< double >( "input-signal-frequency", fRF_frequency ) );
+        	SetRFFrequency( aParam->get_value< double >( "input-signal-frequency", fRF_frequency ) );
         }
 
         if( aParam->has( "lo-frequency" ) )
         {
-        SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
+        	SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
         }
 
         if( aParam->has( "buffer-size" ) )
         {
-        SetBufferSize( aParam->get_value< double >( "buffer-size", fFieldBufferSize ) );
+		SetBufferSize( aParam->get_value< double >( "buffer-size", fFieldBufferSize ) );
         }
 
         if( aParam->has( "buffer-margin" ) )
         {
-        SetBufferMargin( aParam->get_value< double >( "buffer-margin", fFieldBufferMargin ) );
-        }
+		SetBufferMargin( aParam->get_value< double >( "buffer-margin", fFieldBufferMargin ) );
+	}
 
         if( aParam->has( "input-signal-amplitude" ) )
         {
-        SetAmplitude( aParam->get_value< double >( "input-signal-amplitude", fAmplitude ) );
+		SetAmplitude( aParam->get_value< double >( "input-signal-amplitude", fAmplitude ) );
         }
-
+	if( aParam->has( "npatches-per-strip" ) )
+	{
+		fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+	}
+	if( aParam->has( "patch-spacing" ) )
+	{
+		fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+	}
+	if( aParam->has( "xml-filename" ) )
+	{
+		gxml_filename = aParam->get_value< std::string >( "xml-filename" );
+	}
+	if( aParam->has( "text-filewriting" ) )
+	{
+		fTextFileWriting = aParam->get_value< bool >( "text-filewriting" );
+	}
+	if( aParam->has( "feed" ) )
+	{
+		if (aParam->get_value< std::string >( "feed" ) == "corporate")
+			fPowerCombiner = 0;  // default
+		else if (aParam->get_value< std::string >( "feed" ) == "series")
+			fPowerCombiner = 1;
+		else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
+			fPowerCombiner = 2;
+		else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
+			fPowerCombiner = 3;
+		else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
+			fPowerCombiner = 4;
+		else
+			fPowerCombiner = 0;  // default
+	}
 
         if( aParam->has( "domain" ) )
         {
@@ -283,6 +321,75 @@ namespace locust
 //    return sqrt(50.)*HilbertMag*cos(HilbertPhase);  // debug
 //    printf("returning convolution %d %d\n", channel, patch);
     }
+    
+    
+    
+    double DipoleSignalGenerator::RotateZ(int component, double angle, double x, double y)
+    {
+	double newcomponent = 0.;
+	if (component==0)
+	{
+		newcomponent = x*cos(angle) - y*sin(angle);
+	}
+	else if (component==1)
+	{
+		newcomponent = x*sin(angle) + y*cos(angle);
+	}
+	return newcomponent;
+    }
+
+    void DipoleSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
+    {
+
+	PowerCombiner aPowerCombiner;
+
+	if (fPowerCombiner == 0 ) //corporate feed, for testing
+	{
+		VoltageSample *= aPowerCombiner.GetCorporateVoltageDamping();
+	}
+	
+	if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
+	{
+		VoltageSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, patchIndex);
+	}
+
+	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageSample * sin(phi_LO);
+	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageSample * cos(phi_LO);
+
+}
+
+    void  DipoleSignalGenerator::InitializePatchArray()
+	{
+
+		const unsigned nChannels = fNChannels;
+		const int nReceivers = fNPatchesPerStrip;
+		const double patchSpacingZ = fPatchSpacing;
+		const double patchRadius = fArrayRadius;
+		double zPosition;
+		double theta;
+		const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
+		const double dRotateVoltages = 0.;  // set to zero to not rotate patch polarities.
+
+		PatchAntenna modelPatch;
+
+		allChannels.resize(nChannels);
+
+		for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
+		{
+			theta = channelIndex * dThetaArray;
+
+			for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
+			{
+				zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
+
+				modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
+				modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
+																													                  
+				modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+				allChannels[channelIndex].AddReceiver(modelPatch);
+			}
+		}
+	}
 
     bool DipoleSignalGenerator::DoGenerate( Signal* aSignal )
     {
@@ -293,6 +400,7 @@ namespace locust
     bool DipoleSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
+	InitializePatchArray();
         const unsigned nchannels = fNChannels;
         const unsigned npatches = fNPatches;
 
@@ -318,13 +426,19 @@ namespace locust
             	{
         		for (unsigned patch = 0; patch < npatches; ++patch)
         		{
+				PatchAntenna *currentPatch;
+				currentPatch = &allChannels[ch][patch];
+				double distance=currentPatch->GetPosition().Perp();
+
             			if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;
             			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
 		            	VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, fAcquisitionRate*aSignal->DecimationFactor());
+				VoltageSample = VoltageSample/distance;
+				AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
 // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
-            			aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatches+patch].front());
-            			aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][1] += 2.*VoltageSample*(-sin(LOPhaseBuffer[ch*fNPatches+patch].front()));
+            			//aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatches+patch].front());
+            			//aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatches+patch].front()][1] += 2.*VoltageSample*(-sin(LOPhaseBuffer[ch*fNPatches+patch].front()));
 				PopBuffers(ch, patch);
         		}  // patch
             	}  // channel
