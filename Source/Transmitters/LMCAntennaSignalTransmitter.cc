@@ -53,6 +53,11 @@ namespace locust
             fInputFrequency= aParam->get_value< double >( "input-signal-frequency" );
         }
 
+	if( aParam->has( "array-radius" ) )
+	{
+		fArrayRadius = aParam->get_value< double >( "array-radius" );
+	}
+
 	if( aParam->has( "input-signal-amplitude" ) )
         {
             fInputAmplitude = aParam->get_value< double >( "input-signal-amplitude" );
@@ -98,9 +103,8 @@ namespace locust
 	}
 	double filterSize=fFieldEstimator.GetFilterSize();
 	InitializeBuffers(filterSize);
-	//This has to be added later
-	fInitialPhaseDelay = -2.*LMCConst::Pi()*filterSize*fFieldEstimator.GetFilterResolution()*fInputFrequency;
-	fPhaseDelay = fInitialPhaseDelay;
+	fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fFieldEstimator.GetFilterResolution()+fArrayRadius/LMCConst::C())*fInputFrequency;
+	fPhaseDelay = fInitialPhaseDelay+travelPhaseDelay;
 	return true;
     }
 

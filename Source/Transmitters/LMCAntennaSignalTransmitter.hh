@@ -59,8 +59,9 @@ namespace locust
 	    double fInputFrequency;// in GHz
             double fInputAmplitude;// in V/m
 	    double fPhaseDelay=0.0; //Delay in the phase that changes for each time sample
-	    double fInitialPhaseDelay=0.0;  //Initial delay in the phase
-	    
+	    double fInitialPhaseDelay = 0.0;  //Initial delay in the phase from the the signal arriving from the back of the buffer as well as the delay from signal travel
+	    double fArrayRadius=0.0; //Array radius to be used to obtain the phase delay from the tranmistter to the reciever patch
+
 	    void InitializeBuffers(unsigned); 
 
 	    std::vector<std::deque<double>> delayedVoltageBuffer;
