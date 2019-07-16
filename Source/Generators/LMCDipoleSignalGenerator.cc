@@ -413,7 +413,11 @@ namespace locust
         double dtfilter = fFilter_resolution;
         unsigned dtauConvolutionTime = 0;
 
-	fAntennaSignalGenerator.InitializeTransmitter();
+	if(!fAntennaSignalGenerator.InitializeTransmitter())
+	{
+		return false;
+	}
+
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
 	field_phase=fAntennaSignalGenerator.GetInitialPhaseDelay();	

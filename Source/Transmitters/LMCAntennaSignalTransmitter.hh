@@ -59,7 +59,7 @@ namespace locust
 	    
 	    double ApplyDerivative(double normalizedVoltage);
 
-	    double GetInputVoltageSignal(double inputAmplitude,double voltagePhase);
+	    double GetFieldAtOrigin(double inputAmplitude,double voltagePhase);
 
 	    void InitializeBuffers(unsigned);
 

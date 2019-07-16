@@ -60,19 +60,20 @@ namespace locust
 	return true;
     }
     
-    double AntennaSignalTransmitter::ApplyDerivative(double normalizedVoltage)
+    double AntennaSignalTransmitter::ApplyDerivative(double voltagePhase)
     {
-	    //Conver cos to sin
-	    return std::sqrt((1- std::pow(normalizedVoltage,2)));//Only applicable for dipole antenna
+	    return -sin(voltagePhase);
     }
 
-    double AntennaSignalTransmitter::GetInputVoltageSignal(double inputAmplitude,double voltagePhase)
+    double AntennaSignalTransmitter::GetFieldAtOrigin(double inputAmplitude,double voltagePhase)
     {
-	    double normalizedVoltage = cos(voltagePhase);
-	    double normalizedVoltageDerivative = ApplyDerivative(normalizedVoltage);
-	    std::cout<< normalizedVoltageDerivative << ":"<<sin(voltagePhase)<<std::endl;
-	    return inputAmplitude*normalizedVoltageDerivative; 
+	    //double normalizedVoltage = cos(voltagePhase);
+	    double normalizedDerivative = ApplyDerivative(voltagePhase);
+	    // Only missing tau, f_g, and distance
+	    double field = inputAmplitude*normalizedDerivative/(2*LMCConst::Pi()*LMCConst::C());
+	    return field; 
     }
+    
 
     double AntennaSignalTransmitter::GenerateSignal(Signal *aSignal,double acquisitionRate)
     {
@@ -82,7 +83,7 @@ namespace locust
 	{
 	     for( unsigned index = 0; index <fFieldEstimator.GetFilterSize();index++)
 	     {
-		 double voltageValue = GetInputVoltageSignal(fInputAmplitude,voltagePhase);
+		 double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
 		 delayedVoltageBuffer[0].push_back(voltageValue);
 	     	 delayedVoltageBuffer[0].pop_front();
 		 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterdt();
@@ -100,7 +101,10 @@ namespace locust
 
     bool AntennaSignalTransmitter::InitializeTransmitter()
     {
-	fFieldEstimator.ReadFIRFile();
+	if(!fFieldEstimator.ReadFIRFile())
+	{
+		return false;
+	}
 	double filterSize=fFieldEstimator.GetFilterSize();
 	InitializeBuffers(filterSize);
 	//This has to be added later
