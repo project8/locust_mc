@@ -59,6 +59,20 @@ namespace locust
         }
 	return true;
     }
+    
+    double AntennaSignalTransmitter::ApplyDerivative(double normalizedVoltage)
+    {
+	    //Conver cos to sin
+	    return std::sqrt((1- std::pow(normalizedVoltage,2)));//Only applicable for dipole antenna
+    }
+
+    double AntennaSignalTransmitter::GetInputVoltageSignal(double inputAmplitude,double voltagePhase)
+    {
+	    double normalizedVoltage = cos(voltagePhase);
+	    double normalizedVoltageDerivative = ApplyDerivative(normalizedVoltage);
+	    std::cout<< normalizedVoltageDerivative << ":"<<sin(voltagePhase)<<std::endl;
+	    return inputAmplitude*normalizedVoltageDerivative; 
+    }
 
     double AntennaSignalTransmitter::GenerateSignal(Signal *aSignal,double acquisitionRate)
     {
@@ -68,7 +82,8 @@ namespace locust
 	{
 	     for( unsigned index = 0; index <fFieldEstimator.GetFilterSize();index++)
 	     {
-		 delayedVoltageBuffer[0].push_back(fInputAmplitude* cos(voltagePhase));
+		 double voltageValue = GetInputVoltageSignal(fInputAmplitude,voltagePhase);
+		 delayedVoltageBuffer[0].push_back(voltageValue);
 	     	 delayedVoltageBuffer[0].pop_front();
 		 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterdt();
 	     }

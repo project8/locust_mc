@@ -56,6 +56,10 @@ namespace locust
 	    double fPhaseDelay=0.0;  
 	    double fInitialPhaseDelay=0.0;  
 	    int timeNumber=0;
+	    
+	    double ApplyDerivative(double normalizedVoltage);
+
+	    double GetInputVoltageSignal(double inputAmplitude,double voltagePhase);
 
 	    void InitializeBuffers(unsigned);
 
