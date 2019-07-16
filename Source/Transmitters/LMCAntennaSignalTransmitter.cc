@@ -104,7 +104,7 @@ namespace locust
 	double filterSize=fFieldEstimator.GetFilterSize();
 	InitializeBuffers(filterSize);
 	fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fFieldEstimator.GetFilterResolution()+fArrayRadius/LMCConst::C())*fInputFrequency;
-	fPhaseDelay = fInitialPhaseDelay+travelPhaseDelay;
+	fPhaseDelay = fInitialPhaseDelay;
 	return true;
     }
 
