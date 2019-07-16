@@ -13,7 +13,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <math.h>       /* sin */
+#include <math.h>       
 #include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
@@ -25,7 +25,7 @@ namespace locust
 
     AntennaSignalTransmitter::AntennaSignalTransmitter() :
 	fInputSignalType(1),
-	fInputFrequency(27.0e9), //Should use this for the rf frequency ?
+	fInputFrequency(27.0e9), //Should be the samne as the value used in the dipole signal generator
         fInputAmplitude(1)
     {
     }
@@ -60,41 +60,32 @@ namespace locust
 	return true;
     }
     
-    double AntennaSignalTransmitter::ApplyDerivative(double voltagePhase)
-    {
-	    return -sin(voltagePhase);
-    }
-
-    double AntennaSignalTransmitter::GetFieldAtOrigin(double inputAmplitude,double voltagePhase)
-    {
-	    //double normalizedVoltage = cos(voltagePhase);
-	    double normalizedDerivative = ApplyDerivative(voltagePhase);
-	    // Only missing tau, f_g, and distance
-	    double field = inputAmplitude*normalizedDerivative/(2*LMCConst::Pi()*LMCConst::C());
-	    return field; 
-    }
-    
-
     double AntennaSignalTransmitter::GenerateSignal(Signal *aSignal,double acquisitionRate)
     {
 	double estimatedField=0.0;
 	double voltagePhase=fPhaseDelay;
-	if(fInputSignalType==1) // sin wave
+	if(fInputSignalType==1) //sinusoidal wave for dipole antenna
 	{
 	     for( unsigned index = 0; index <fFieldEstimator.GetFilterSize();index++)
 	     {
-		 double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
+		 double voltageValue = fFieldEstimator.GetFieldAtOrigin(fInputAmplitude,voltagePhase);
 		 delayedVoltageBuffer[0].push_back(voltageValue);
 	     	 delayedVoltageBuffer[0].pop_front();
-		 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterdt();
+		 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterResolution();
 	     }
 	}
 
-	else //Else case also sin for now
+	else// For now using sinusoidal as well 
 	{
+	     for( unsigned index = 0; index <fFieldEstimator.GetFilterSize();index++)
+	     {
+		 double voltageValue = fFieldEstimator.GetFieldAtOrigin(fInputAmplitude,voltagePhase);
+		 delayedVoltageBuffer[0].push_back(voltageValue);
+	     	 delayedVoltageBuffer[0].pop_front();
+		 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFieldEstimator.GetFilterResolution();
+	     }
 	}
 	estimatedField=fFieldEstimator.ConvolveWithFIRFilter(delayedVoltageBuffer[0]);
-	//std::cout<< "1: "<<fPhaseDelay <<std::endl;
 	fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency/aSignal->DecimationFactor()/(acquisitionRate*1.e6);
 	return estimatedField;
     }
@@ -108,7 +99,7 @@ namespace locust
 	double filterSize=fFieldEstimator.GetFilterSize();
 	InitializeBuffers(filterSize);
 	//This has to be added later
-	fInitialPhaseDelay = -2.*LMCConst::Pi()*filterSize*fFieldEstimator.GetFilterdt()*fInputFrequency;
+	fInitialPhaseDelay = -2.*LMCConst::Pi()*filterSize*fFieldEstimator.GetFilterResolution()*fInputFrequency;
 	fPhaseDelay = fInitialPhaseDelay;
 	return true;
     }
@@ -122,6 +113,5 @@ namespace locust
     {
     	FieldBuffer aFieldBuffer;
 	delayedVoltageBuffer = aFieldBuffer.InitializeBuffer(1,1,filterbuffersize);
-	//const unsigned nchannels = fNChannels;
     }
 } /* namespace locust */

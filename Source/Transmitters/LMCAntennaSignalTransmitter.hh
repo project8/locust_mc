@@ -42,26 +42,26 @@ namespace locust
 
             bool Configure( const scarab::param_node* aNode );
 
-            double GenerateSignal(Signal *, double);
+	    /// Generate the electric field based on the voltage input from the config file and convolution with FIR
+            double GenerateSignal(Signal *,double acquisitionRate);
 	    
+	    /// Get initial phase delay 
 	    double GetInitialPhaseDelay();
             
+	    /// Initialize the FIR filter and the field estimator 
 	    bool InitializeTransmitter();
            
         private:
 	    FieldEstimator fFieldEstimator;
+	    
+	    /// Placeholder for now. Input signal type, 1 for dipole antenna, could be chaged later on.
 	    int fInputSignalType;
 	    double fInputFrequency;// in GHz
-            double fInputAmplitude;
-	    double fPhaseDelay=0.0;  
-	    double fInitialPhaseDelay=0.0;  
-	    int timeNumber=0;
+            double fInputAmplitude;// in V/m
+	    double fPhaseDelay=0.0; //Delay in the phase that changes for each time sample
+	    double fInitialPhaseDelay=0.0;  //Initial delay in the phase
 	    
-	    double ApplyDerivative(double normalizedVoltage);
-
-	    double GetFieldAtOrigin(double inputAmplitude,double voltagePhase);
-
-	    void InitializeBuffers(unsigned);
+	    void InitializeBuffers(unsigned); 
 
 	    std::vector<std::deque<double>> delayedVoltageBuffer;
 

@@ -31,9 +31,9 @@ namespace locust
      @class DipoleSignalGenerator
      @author  Pranava Teja Surukuchi 
 
-     @brief 
-
-     @details
+     @brief Signal generator for a dipole antenna. 
+     
+     @details Uses AntennaSignalTransmitter for obtaining the field which is thewen used to calculate the voltage measured by the patches
 
      Configuration name: "dipole-signal-generator"
 
@@ -48,7 +48,7 @@ namespace locust
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
             or frequency domain
     
-     Available options: "time" and "freq" [default]
+     Available options: "time"[default] and "freq" 
 
     */
     class DipoleSignalGenerator : public Generator
@@ -90,7 +90,7 @@ namespace locust
             bool DoGenerateFreq( Signal* aSignal );
             bool (DipoleSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
-	    void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
+	    //void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
 	    double RotateZ(int component, double angle, double x, double y);
 	    void InitializePatchArray();
 

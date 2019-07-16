@@ -15,8 +15,9 @@ namespace locust
     LOGGER( lmclog, "FieldEstimator" );
 
     FieldEstimator::FieldEstimator():
+	fFIRFilename("blank.txt"),
 	fNFIRFilterBins(-99),
-	fFilterdt(1e-12)
+	fFilterResolution(1e-12)
     {
     }
 
@@ -33,7 +34,7 @@ namespace locust
 	    }
 	    if( aParam->has( "filter-dt" ) )
 	    {
-		    fFilterdt=aParam->get_value<double>("filter-dt");
+		    fFilterResolution=aParam->get_value<double>("filter-dt");
 	    }
 	    return true;
     }
@@ -72,9 +73,9 @@ namespace locust
 	    return fNFIRFilterBins;
     }
 
-    double FieldEstimator::GetFilterdt()
+    double FieldEstimator::GetFilterResolution()
     {
-	    return fFilterdt;
+	    return fFilterResolution;
     }
 
     double FieldEstimator::ConvolveWithFIRFilter(std::deque<double> delayedVoltageBuffer)
@@ -86,5 +87,21 @@ namespace locust
 	}
 	return convolution;
     }
+
+    double FieldEstimator::ApplyDerivative(double voltagePhase)
+    {
+	    return -sin(voltagePhase);
+    }
+
+    double FieldEstimator::GetFieldAtOrigin(double inputAmplitude,double voltagePhase)
+    {
+	    //double normalizedVoltage = cos(voltagePhase);
+	    double normalizedDerivative = ApplyDerivative(voltagePhase);
+	    // Only missing tau, f_g
+	    // And distance will be applied later
+	    double field = inputAmplitude*normalizedDerivative/(2*LMCConst::Pi()*LMCConst::C());
+	    return field; 
+    }
+    
 
 } /* namespace locust */

@@ -34,9 +34,14 @@ namespace locust
 	    // Member functions
 	    bool Configure( const scarab::param_node* aNode );
 	    bool ReadFIRFile();
-	    double ConvolveWithFIRFilter(std::deque<double>);
-	    int GetFilterSize();
-	    double GetFilterdt();
+	    double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal with FIR 
+	    int GetFilterSize();//Number of entries in the filter
+	    double GetFilterResolution();//Get the resolution of the filter
+	    //Apply derivative of a given signal. This will be more complicated with implmentation of other field types 
+	    double ApplyDerivative(double voltagePhase);
+	    //Get the value of the field for a given amplitude and phase. 
+	    //Perhaps has to be moved to LMCAntennaSignalTransmitter
+	    double GetFieldAtOrigin(double inputAmplitude,double voltagePhase); 
 
         private:
 
@@ -44,7 +49,7 @@ namespace locust
 	    std::string fFIRFilename;
 	    std::vector<double> fFIRFilter;
 	    int fNFIRFilterBins;
-	    double fFilterdt;
+	    double fFilterResolution;
 
 	    //Member functions
 	    bool ends_with(const std::string &, const std::string &);

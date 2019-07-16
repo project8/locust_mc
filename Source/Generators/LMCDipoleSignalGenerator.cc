@@ -263,7 +263,6 @@ namespace locust
         {
         fscanf(fp, "%lf %lf\n", &index, &filter);
         if (count%nskips==0) filterarray[count/nskips] = filter;
-    //    printf("filter %d is %g\n", count, filterarray[count]);
         count += 1;
         }
 
@@ -318,8 +317,6 @@ namespace locust
     }
     else return 0.;
 
-//    return sqrt(50.)*HilbertMag*cos(HilbertPhase);  // debug
-//    printf("returning convolution %d %d\n", channel, patch);
     }
     
     
