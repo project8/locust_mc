@@ -435,12 +435,8 @@ namespace locust
         }
 
         std::default_random_engine generator(random_seed_val);
-        std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
-        ntracks_val = ceil(ntracks_distribution(generator));
-        if ( ntracks_val == 0 ) // if we rounded to 0, let's simulate at least one tracks
-        {
-            ntracks_val = 1;
-        }
+        std::geometric_distribution<int> ntracks_distribution(1./fNTracksMean);
+        ntracks_val = ntracks_distribution(generator)+1;
 
     	anEvent->EventID = eventID;
     	anEvent->ntracks = ntracks_val;
@@ -484,9 +480,6 @@ namespace locust
         aTree->Write();
         delete aTree;
     }
-
-
-
 
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
