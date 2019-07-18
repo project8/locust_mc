@@ -17,12 +17,6 @@
 #include <vector>
 #include "LMCEvent.hh"
 
-
-const double PI = 3.141592653589793;
-double m_kg = 9.10938291*1e-31; // electron mass in kg
-double q_C = 1.60217657*1e-19; // electron charge in C
-double me_keV = 510.998; // electron mass in keV
-
 namespace scarab
 {
     class param_node;
@@ -124,7 +118,6 @@ namespace locust
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
             double rel_cyc(double energy, double b_field) const;
             double rel_energy(double frequency, double b_field) const;
-            float myErfInv(float x) const;
             double scattering_inverseCDF(double p) const;
 
             mutable double slope_val = 0.;

@@ -2,7 +2,7 @@
  * LMCFakeTrackSignalGenerator.cc
  *
  *  Created on: Aug 8 2018
- *      Author: plslocum
+ *      Author: plslocum, buzinsky
  */
 
 #include <cmath>
@@ -12,6 +12,7 @@
 #include "LMCConst.hh"
 #include <random>
 #include <math.h>
+#include <boost/math/special_functions/erf.hpp>
 
 using std::string;
 
@@ -120,11 +121,7 @@ namespace locust
             }
         }
 
-
         return true;
-
-
-
     }
 
 
@@ -321,28 +318,16 @@ namespace locust
 
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
     {
-        double cyc_freq = (q_C)*b_field/m_kg;
-        double rel_cyc_freq = cyc_freq/(1+(energy/me_keV))/(2*PI);
+        double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
+        double rel_cyc_freq = cyc_freq/(1+(1e3*energy/LMCConst::M_el_eV()))/(2*LMCConst::Pi());
         return rel_cyc_freq; // takes energy in keV, magnetic field in T, returns in Hz
     }
 
     double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field) const
     {
-        double cyc_freq = (q_C)*b_field/m_kg;
-        double rel_energy = (cyc_freq/(2*PI*frequency)-1)*me_keV;
+        double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
+        double rel_energy = (cyc_freq/(2*LMCConst::Pi()*frequency)-1)*LMCConst::M_el_eV()/1e3;
         return rel_energy; // takes frequency in Hz, magnetic field in T, returns in keV        
-    }
-
-    float FakeTrackSignalGenerator::myErfInv(float x) const // tolerance under +-6e-3, approximate inverse error function from "A handy approximation for the error function and its inverse" by Sergei Winitzki
-    {
-       float tt1, tt2, lnx, sgn;
-       sgn = (x < 0) ? -1.0f : 1.0f;
-       x = (1 - x)*(1 + x);        // x = 1 - x*x;
-       lnx = logf(x);
-       tt1 = 2/(PI*0.147) + 0.5f * lnx;
-       tt2 = 1/(0.147) * lnx;
-
-       return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
     }
 
     double FakeTrackSignalGenerator::scattering_inverseCDF(double p) const
@@ -361,11 +346,11 @@ namespace locust
 
         if (p < inv_eps_c)
         {
-            energy_loss = w1/pow(2,0.5)*myErfInv(pow(2/PI,0.5)*(2*p/(A1*w1))-1)+eps1;
+            energy_loss = w1/pow(2,0.5)*boost::math::erf_inv(pow(2/LMCConst::Pi(),0.5)*(2*p/(A1*w1))-1)+eps1;
         }
         else
         {
-            alpha = pow(PI/2,0.5)*A1*w1/2*(erf(pow(2,0.5)*(eps_c-eps1)/w1)+1);
+            alpha = pow(LMCConst::Pi()/2,0.5)*A1*w1/2*(boost::math::erf(pow(2,0.5)*(eps_c-eps1)/w1)+1);
             beta = A2*w2/2*atan(2*(eps_c-eps2)/w2);
             energy_loss = w2/2*tan(2/(A2*w2)*(p-alpha+beta))+eps2;
         }
@@ -374,7 +359,6 @@ namespace locust
 
     void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset) const
     {
-
         int random_seed_val;
         double current_energy = 0.;
         double scattering_cdf_val = 0.;
@@ -399,57 +383,56 @@ namespace locust
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
         std::uniform_real_distribution<double> dist(0,0.9798681926077586); // for scattering inverse cdf input, upper bound is cdf @ 100 eV
 
-	if (TrackID==0)
-          {
-          if (TimeOffset==0) // first event
-        	  {
-        	  starttime_val = starttime_distribution(generator);
-        	  }
-          else
-              {
-        	  starttime_val = TimeOffset;
-              }
-          startfreq_val = startfreq_distribution(generator);
-          aTrack.StartTime = starttime_val;
-          aTrack.StartFrequency = startfreq_val;
-          }
-        else
-          {
-  	      starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
-          current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
-          scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
-          energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
-          new_energy = current_energy - energy_loss; // new energy after loss, in keV
-          jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
-          startfreq_val += jumpsize_val;
-          aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
-          aTrack.StartFrequency += jumpsize_val;
-          }
+        if(TrackID==0)
+        {
+            if (TimeOffset==0) // first event
+        	{
+                starttime_val = starttime_distribution(generator);
+        	}
+            else
+            {
+                starttime_val = TimeOffset;
+            }
+            startfreq_val = startfreq_distribution(generator);
+            aTrack.StartTime = starttime_val;
+            aTrack.StartFrequency = startfreq_val;
+        }
+       else
+       {
+  	       starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
+           current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
+           scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
+           energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
+           new_energy = current_energy - energy_loss; // new energy after loss, in keV
+           jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
+           startfreq_val += jumpsize_val;
+           aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
+           aTrack.StartFrequency += jumpsize_val;
+       }
 
-        slope_val = slope_distribution(generator);
-        tracklength_val = tracklength_distribution(generator);
-        endtime_val = starttime_val + tracklength_val;  // reset endtime.
-//			printf("starttime is %g and TimeOffset is %g\n", starttime_val, TimeOffset);
-        aTrack.Slope = slope_val;
-        aTrack.TrackLength = tracklength_val;
-        aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
-        aTrack.LOFrequency = fLO_frequency;
-        aTrack.TrackPower = fSignalPower;
+       slope_val = slope_distribution(generator);
+       tracklength_val = tracklength_distribution(generator);
+       endtime_val = starttime_val + tracklength_val;  // reset endtime.
+       //printf("starttime is %g and TimeOffset is %g\n", starttime_val, TimeOffset);
+       aTrack.Slope = slope_val;
+       aTrack.TrackLength = tracklength_val;
+       aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
+       aTrack.LOFrequency = fLO_frequency;
+       aTrack.TrackPower = fSignalPower;
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID) const
     {
-
         int random_seed_val;
-         if ( fRandomSeed != 0 )
-         {
-             random_seed_val = fRandomSeed;
-         }
-         else
-         {
-             std::random_device rd;
-             random_seed_val = rd();
-         }
+        if ( fRandomSeed != 0 )
+        {
+            random_seed_val = fRandomSeed;
+        }
+        else
+        {
+            std::random_device rd;
+            random_seed_val = rd();
+        }
 
         std::default_random_engine generator(random_seed_val);
         std::exponential_distribution<double> ntracks_distribution(1./fNTracksMean);
@@ -507,7 +490,6 @@ namespace locust
 
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-
         TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
         const unsigned nchannels = fNChannels;
@@ -517,60 +499,58 @@ namespace locust
 
         for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
         {
-        Event* anEvent = new Event();
-        InitiateEvent(anEvent, eventID);
-        Track aTrack;
-        SetTrackProperties(aTrack, 0, TimeOffset);
-        PackEvent(aTrack, anEvent, 0);
+            Event* anEvent = new Event();
+            InitiateEvent(anEvent, eventID);
+            Track aTrack;
+            SetTrackProperties(aTrack, 0, TimeOffset);
+            PackEvent(aTrack, anEvent, 0);
 
         if ( endtime_val < 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) )
         {
+            //printf("endtime_val is %g and reclength is %g\n", endtime_val, 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) ); getchar();
 
-//        	printf("endtime_val is %g and reclength is %g\n", endtime_val, 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) ); getchar();
-
-
-        for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
-        {
-            double voltage_phase = fStartVPhase;
-            bool nexttrack_flag = false;
-            int event_tracks_counter = 0;
-            bool eventdone_flag = false; 
-
-            for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
+            for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
             {
-                double time = (double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
+                double voltage_phase = fStartVPhase;
+                bool nexttrack_flag = false;
+                int event_tracks_counter = 0;
+                bool eventdone_flag = false; 
 
-                if ( eventdone_flag == false ) // if not done with event
+                for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
                 {
-                    if ( nexttrack_flag == false ) // if on same track
+                    double time = (double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
+                    LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
+
+                    if ( eventdone_flag == false ) // if not done with event
                     {
-                        if ( (time >= starttime_val) && (time <= endtime_val) )
+                        if ( nexttrack_flag == false ) // if on same track
                         {
-                            startfreq_val += slope_val*1.e6/1.e-3*dt;
-                            voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
-                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
-                            aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                        }
-                        else if ( time>endtime_val )
-                        {
-                            event_tracks_counter += 1;
-                            if (event_tracks_counter > ntracks_val-1) // if done with all tracks in event
+                            if ( (time >= starttime_val) && (time <= endtime_val) )
                             {
-                                eventdone_flag = true; // mark end of event   
-                                WriteRootFile(anEvent, hfile);
-                                TimeOffset = aTrack.EndTime + 0.0005; // event spacing.
-                                continue;  
+                                startfreq_val += slope_val*1.e6/1.e-3*dt;
+                                voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
+                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
+                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                             }
-                            else
+                            else if ( time>endtime_val )
                             {
-                                SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
-//                                printf("event %d start time is %g and endtime val is %g and %g\n", eventID, aTrack.StartTime, aTrack.EndTime, endtime_val); getchar();
-                                PackEvent(aTrack, anEvent, event_tracks_counter);
+                                event_tracks_counter += 1;
+                                if (event_tracks_counter > ntracks_val-1) // if done with all tracks in event
+                                {
+                                    eventdone_flag = true; // mark end of event   
+                                    WriteRootFile(anEvent, hfile);
+                                    TimeOffset = aTrack.EndTime + 0.0005; // event spacing.
+                                    continue;  
+                                }
+                                else
+                                {
+                                    SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
+                                    //printf("event %d start time is %g and endtime val is %g and %g\n", eventID, aTrack.StartTime, aTrack.EndTime, endtime_val); getchar();
+                                    PackEvent(aTrack, anEvent, event_tracks_counter);
+                                }
+                                nexttrack_flag = true; // next track
                             }
-                            nexttrack_flag = true; // next track
                         }
-                    }
                     else if ( nexttrack_flag == true )
                     {
 		                startfreq_val += slope_val*1.e6/1.e-3*dt;
