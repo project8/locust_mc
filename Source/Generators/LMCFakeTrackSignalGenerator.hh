@@ -38,7 +38,7 @@ namespace locust
       Configuration name: "fake-track"
 
       Available configuration options:
-      - "signal-power": double -- PSD of signal (W/Hz).
+      - "signal-power": double -- PSD of signal (at 90 degrees) (W/Hz).
       - "start-frequency-max": double -- Upper bound for start frequency of signal (Hz); distribution: uniform.
       - "start-frequency-min": double -- Lower bound for start frequency of signal (Hz); distribution: uniform.
       - "track-length-mean": double -- Average of track length (s); distribution: exponential.
@@ -63,8 +63,6 @@ namespace locust
             virtual ~FakeTrackSignalGenerator();
 
             bool Configure( const scarab::param_node* aNode );
-            bool Configure2( const Digitizer* aDig );
-
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
@@ -113,20 +111,20 @@ namespace locust
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            void SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset) const;
-            void InitiateEvent(Event* anEvent, int eventID) const;
+            void SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset);
+            void InitiateEvent(Event* anEvent, int eventID);
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
             double rel_cyc(double energy, double b_field) const;
             double rel_energy(double frequency, double b_field) const;
-            double scattering_inverseCDF(double p) const;
 
-            mutable double slope_val = 0.;
-            mutable double tracklength_val = 0.;
-            mutable double starttime_val = 0.;
-            mutable double endtime_val = 0.;
-            mutable double startfreq_val = 0.;
-            mutable double jumpsize_val = 0.002e9;
-            mutable int ntracks_val = 0;
+            double slope_val = 0.;
+            double pitch = 0.;
+            double tracklength_val = 0.;
+            double starttime_val = 0.;
+            double endtime_val = 0.;
+            double startfreq_val = 0.;
+            double jumpsize_val = 0.002e9;
+            int ntracks_val = 0;
 
 
 
@@ -153,9 +151,7 @@ namespace locust
             int fRandomSeed;
             int fNEvents;
             std::string fRoot_filename;
-
-
-
+            std::default_random_engine fRandomEngine;
 
     };
 

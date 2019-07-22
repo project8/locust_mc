@@ -18,6 +18,8 @@ using std::string;
 
 namespace locust
 {
+    //std::default_random_engine fRandomEngine;
+
     LOGGER( lmclog, "FakeTrackSignalGenerator" );
 
     MT_REGISTER_GENERATOR(FakeTrackSignalGenerator, "fake-track");
@@ -39,6 +41,7 @@ namespace locust
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
+        fRandomEngine(0),
         fRoot_filename("LocustEvent.root")
 
     {
@@ -91,7 +94,9 @@ namespace locust
             SetBField(  aParam->get_value< double >("magnetic-field", fBField) );
 
         if (aParam->has( "random-seed") )
+        {
             SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
+        }
 
         if (aParam->has( "n-events") )
             SetNEvents(  aParam->get_value< int >( "n-events",fNEvents) );
@@ -99,6 +104,14 @@ namespace locust
         if( aParam->has( "root-filename" ) )
         {
             fRoot_filename = aParam->get_value< std::string >( "root-filename" );
+        }
+
+        if(fRandomSeed)
+            fRandomEngine.seed(fRandomSeed);
+        else
+        {
+            std::random_device rd;
+            fRandomEngine.seed(rd());
         }
 
 
@@ -319,64 +332,38 @@ namespace locust
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
     {
         double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
-        double rel_cyc_freq = cyc_freq/(1+(1e3*energy/LMCConst::M_el_eV()))/(2*LMCConst::Pi());
-        return rel_cyc_freq; // takes energy in keV, magnetic field in T, returns in Hz
+        double rel_cyc_freq = cyc_freq/(1.+(energy/LMCConst::M_el_eV()))/(2*LMCConst::Pi());
+        return rel_cyc_freq; // takes energy in eV, magnetic field in T, returns in Hz
     }
 
     double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field) const
     {
         double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
-        double rel_energy = (cyc_freq/(2*LMCConst::Pi()*frequency)-1)*LMCConst::M_el_eV()/1e3;
-        return rel_energy; // takes frequency in Hz, magnetic field in T, returns in keV        
+        double rel_energy = (cyc_freq/(2*LMCConst::Pi()*frequency)-1.)*LMCConst::M_el_eV();
+        return rel_energy; // takes frequency in Hz, magnetic field in T, returns in eV
     }
 
-    double FakeTrackSignalGenerator::scattering_inverseCDF(double p) const
+    //double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double theta)
+    //{
+    //    double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
+    //    double zMax = L0 / tan(theta);
+    //    return boost::math::cyl_bessel_j(0,k_lambda * zMax);
+
+    //}
+
+    //double FakeTrackGenerator::InelasticScatter(double &eLoss, double &angle)
+    //{
+
+    //}
+
+    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset)
     {
-        // Fit params from Aseev et al. paper
-        double A1 = 0.204; // +/- 0.001 eV^-1
-        double w1 = 1.85; // +/- 0.02 eV
-        double eps1 = 12.6; // eV
-        double A2 = 0.0556; // +/- 0.0003 eV^-1
-        double w2 = 12.5; // +/- 0.1 eV
-        double eps2 = 14.30; // +/- 0.02 eV
-
-        double eps_c = 14.08948948948949; // calculated where the pieces of the PDF meet (eV)
-        double inv_eps_c = 0.4476144865289551; // calculated as CDF @ epsilon_c
-        double alpha, beta, energy_loss; 
-
-        if (p < inv_eps_c)
-        {
-            energy_loss = w1/pow(2,0.5)*boost::math::erf_inv(pow(2/LMCConst::Pi(),0.5)*(2*p/(A1*w1))-1)+eps1;
-        }
-        else
-        {
-            alpha = pow(LMCConst::Pi()/2,0.5)*A1*w1/2*(boost::math::erf(pow(2,0.5)*(eps_c-eps1)/w1)+1);
-            beta = A2*w2/2*atan(2*(eps_c-eps2)/w2);
-            energy_loss = w2/2*tan(2/(A2*w2)*(p-alpha+beta))+eps2;
-        }
-        return energy_loss; // input must be random continuous variable following uniform(0,1), returns in eV
-    }
-
-    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset) const
-    {
-        int random_seed_val;
         double current_energy = 0.;
         double scattering_cdf_val = 0.;
         double energy_loss = 0.;
         double new_energy = 0.;
 
-        if ( fRandomSeed != 0 )
-        {
-            random_seed_val = fRandomSeed;
-        }
-        else
-        {   
-            std::random_device rd;
-            random_seed_val = rd();
-        }
 
-        std::default_random_engine generator(random_seed_val);
-        std::default_random_engine generator2(random_seed_val+TrackID); // get new random value, different from above properties
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
@@ -387,13 +374,13 @@ namespace locust
         {
             if (TimeOffset==0) // first event
         	{
-                starttime_val = starttime_distribution(generator);
+                starttime_val = starttime_distribution(fRandomEngine);
         	}
             else
             {
                 starttime_val = TimeOffset;
             }
-            startfreq_val = startfreq_distribution(generator);
+            startfreq_val = startfreq_distribution(fRandomEngine);
             aTrack.StartTime = starttime_val;
             aTrack.StartFrequency = startfreq_val;
         }
@@ -401,8 +388,9 @@ namespace locust
        {
   	       starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
            current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
-           scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
-           energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
+           scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
+           //energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
+           energy_loss = 50.;
            new_energy = current_energy - energy_loss; // new energy after loss, in keV
            jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
            startfreq_val += jumpsize_val;
@@ -410,8 +398,8 @@ namespace locust
            aTrack.StartFrequency += jumpsize_val;
        }
 
-       slope_val = slope_distribution(generator);
-       tracklength_val = tracklength_distribution(generator);
+       slope_val = slope_distribution(fRandomEngine);
+       tracklength_val = tracklength_distribution(fRandomEngine);
        endtime_val = starttime_val + tracklength_val;  // reset endtime.
        //printf("starttime is %g and TimeOffset is %g\n", starttime_val, TimeOffset);
        aTrack.Slope = slope_val;
@@ -421,7 +409,7 @@ namespace locust
        aTrack.TrackPower = fSignalPower;
     }
 
-    void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID) const
+    void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
     {
         int random_seed_val;
         if ( fRandomSeed != 0 )
@@ -434,9 +422,8 @@ namespace locust
             random_seed_val = rd();
         }
 
-        std::default_random_engine generator(random_seed_val);
         std::geometric_distribution<int> ntracks_distribution(1./fNTracksMean);
-        ntracks_val = ntracks_distribution(generator)+1;
+        ntracks_val = ntracks_distribution(fRandomEngine)+1;
 
     	anEvent->EventID = eventID;
     	anEvent->ntracks = ntracks_val;
