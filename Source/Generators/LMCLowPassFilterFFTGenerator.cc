@@ -125,8 +125,12 @@ namespace locust
             }  // nwin
         }  // NCHANNELS
 
+        fftw_destroy_plan(ForwardPlan);
+        fftw_destroy_plan(ReversePlan);
         delete [] SignalComplex;
         delete [] FFTComplex;
+
+
 
         return true;
     }

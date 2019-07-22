@@ -37,7 +37,19 @@ namespace locust
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
         phiLO_t(0.),
-        VoltagePhase_t {0.}
+        VoltagePhase_t {0.},
+		gfilter_filename("blank.txt"),
+        fFilter_resolution( 0. ),
+        EFieldBuffer( 1 ),
+        EPhaseBuffer( 1 ),
+        EAmplitudeBuffer( 1 ),
+        EFrequencyBuffer( 1 ),
+        LOPhaseBuffer( 1 ),
+        IndexBuffer( 1 ),
+        PatchFIRBuffer( 1 ),
+        fFieldBufferSize( 50 ),
+        fFieldBufferMargin( 25 )
+
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -48,6 +60,28 @@ namespace locust
 
     bool PatchSignalGenerator::Configure( const scarab::param_node* aParam )
     {
+        if( aParam->has( "filter-filename" ) )
+        {
+            gfilter_filename = aParam->get_value< std::string >( "filter-filename" );
+        }
+
+        if( aParam->has( "filter-resolution" ) )
+        {
+            fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
+        }
+
+        if( aParam->has( "buffer-size" ) )
+        {
+        	fFieldBufferSize = aParam->get_value< double >( "buffer-size" );
+        }
+
+        if( aParam->has( "buffer-margin" ) )
+        {
+        	fFieldBufferMargin = aParam->get_value< double >( "buffer-margin" );
+        }
+
+
+
         if( aParam == NULL) return true;
 
         if( aParam->has( "lo-frequency" ) )
@@ -75,16 +109,20 @@ namespace locust
             fTextFileWriting = aParam->get_value< bool >( "text-filewriting" );
         }
         if( aParam->has( "feed" ) )
-        {
-            if (aParam->get_value< std::string >( "feed" ) == "corporate")
-                fPowerCombiner = 0;  // default
-            else if (aParam->get_value< std::string >( "feed" ) == "series")
-                fPowerCombiner = 1;
-            else if (aParam->get_value< std::string >( "feed" ) == "quadrature")
-                fPowerCombiner = 2;
-            else
-            	fPowerCombiner = 0;  // default
-        }
+          {
+    	if (aParam->get_value< std::string >( "feed" ) == "corporate")
+    	  fPowerCombiner = 0;  // default
+    	else if (aParam->get_value< std::string >( "feed" ) == "series")
+    	  fPowerCombiner = 1;
+    	else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
+    	  fPowerCombiner = 2;
+    	else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
+    	  fPowerCombiner = 3;
+    	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
+    	  fPowerCombiner = 4;
+    	else
+    	  fPowerCombiner = 0;  // default
+          }
 
         return true;
     }
@@ -170,25 +208,6 @@ namespace locust
         return AOIFactor;
     }
 
-    double GetVoltageAmpFromPlaneWave()
-    {
-        double AntennaFactor = 1./400.;
-
-        // S = epsilon0 c E0^2 / 2.  // power/area
-        //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
-        // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
-        // E0 = sqrt(2.*S/epsilon0/c)
-        // effective patch area 0.00004583662 m^2 
-
-        double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
-        double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
-        //    double E0 = 1.0; // V/m, test case
-        double amplitude = E0*AntennaFactor;  // volts
-        return amplitude;
-
-
-    }
-
 
     // fields incident on patch.
     void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
@@ -205,6 +224,97 @@ namespace locust
     }
 
 
+    double* PatchSignalGenerator::GetFIRFilter(int nskips)
+    {
+
+    FILE *fp;
+    double *filterarray = new double[1000];
+    double filter;
+    double index;
+    fp = fopen(gfilter_filename.c_str(),"r");
+    int count = 0;
+
+    for (int i=0; i<1000; i++)
+      filterarray[i] = -99.;
+
+
+
+      while (!feof(fp))
+        {
+        fscanf(fp, "%lf %lf\n", &index, &filter);
+        if (count%nskips==0) filterarray[count/nskips] = filter;
+    //    printf("filter %d is %g\n", count, filterarray[count]);
+        count += 1;
+        }
+
+    fclose(fp);
+    return filterarray;
+
+    }
+
+    int PatchSignalGenerator::GetNFilterBins(double* filterarray)
+    {
+    int nbins = 0;
+    for (int i=0; i<1000; i++)
+      {
+      if (filterarray[i]>0.) nbins += 1;
+      }
+    return nbins;
+    }
+
+
+    double PatchSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate)
+    {
+
+    double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
+    double HilbertMag = 0.;
+    double HilbertPhase = 0.;
+    double convolution = 0.0;
+
+    if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
+    {
+    	HilbertTransform aHilbertTransform;
+
+    	double* HilbertMagPhaseMean = new double[3];
+        HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch], fFieldBufferMargin, AcquisitionRate);
+        HilbertMag = HilbertMagPhaseMean[0];
+        HilbertPhase = HilbertMagPhaseMean[1];
+        delete[] HilbertMagPhaseMean;
+
+   	for (int i=0; i < nfilterbins; i++)  // populate filter with field.
+      {
+    	  HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
+    	  PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
+    	  PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+      }
+
+    for (int j=0; j<nfilterbins; j++)  // sum products in filter.
+      {
+    	  convolution += filterarray[j]*PatchFIRBuffer[channel*fNPatchesPerStrip+patch].at(j);
+      }
+
+    PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
+    return convolution;
+    }
+    else return 0.;
+
+//    return EFieldBuffer[channel*fNPatchesPerStrip+patch].front(); // debug
+//    return HilbertMag*cos(HilbertPhase);  // debug
+
+    }
+
+
+
+    // EField cross pol with aoi dot product, at patch.
+    double GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    {
+        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
+        LMCThreeVector PatchPolarizationVector = currentPatch->GetPolarizationDirection();
+        double EFieldCoPol = IncidentElectricField.Dot(PatchPolarizationVector) * AOIFactor;
+
+        return EFieldCoPol;
+    }
+
 
     // voltage amplitude induced at patch.
     double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
@@ -219,6 +329,27 @@ namespace locust
 
         //    if (VoltageAmplitude>0.) {printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();}
         return VoltageAmplitude;
+    }
+
+
+    void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
+    {
+
+    	PowerCombiner aPowerCombiner;
+
+        if (fPowerCombiner == 0 ) //corporate feed, for testing
+          {
+    	    VoltageFIRSample *= aPowerCombiner.GetCorporateVoltageDamping();
+          }
+
+        if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
+          {
+    	    VoltageFIRSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, patchIndex);
+          }
+
+    	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
+        aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
     }
 
 
@@ -239,7 +370,7 @@ namespace locust
            // VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(fNPatchesPerStrip, z_index);
         }
 
-	//        if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
+//	        if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
         aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
         aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
 	//        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
@@ -248,7 +379,7 @@ namespace locust
     }
 
 
-    void* PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal)
+    void* PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter)
     {
         if (PreEventCounter > 0)  // new event starting.                                                    
         {
@@ -355,10 +486,15 @@ namespace locust
                     //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
                 }      
 
- 		        double tVoltageAmplitude = GetVoltageAmplitude(tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
+ 		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
                 if (fTextFileWriting==1) RecordIncidentFields(fp, tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())) , PatchPhi, tDopplerFrequency);
 
-                AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
+ 	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, phiLO_t, index, channelIndex, patchIndex, 0);
+ 	            double VoltageFIRSample = GetFIRSample(filterarray, nfilterbins, dtfilter, channelIndex, patchIndex, fAcquisitionRate*aSignal->DecimationFactor());
+ 	            AddOneFIRVoltageToStripSum(aSignal, VoltageFIRSample, phiLO_t, channelIndex, patchIndex);
+                PopBuffers(channelIndex, patchIndex);
+
+// 	            AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
 
             } // patch loop
 
@@ -380,6 +516,82 @@ namespace locust
         return tNodeIndex;
     }
 
+
+
+    void PatchSignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime)
+    {
+    EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(EFieldValue);
+    EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(DopplerFrequency/2./LMCConst::Pi());
+    LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
+    IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
+
+    }
+
+
+
+
+
+    void PatchSignalGenerator::PopBuffers(unsigned channel, unsigned patch)
+    {
+
+    	EFieldBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+    	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+    	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+    	IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+
+    	EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
+        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
+        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
+        IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
+
+    }
+
+
+
+
+    void PatchSignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
+    {
+
+    FieldBuffer aFieldBuffer;
+
+    EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+    EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+    LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+    IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+
+    PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
+
+
+    }
+
+
+    void PatchSignalGenerator::CleanupBuffers()
+    {
+    FieldBuffer aFieldBuffer;
+    EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
+
+    }
+
+
+  double RotateZ(int component, double angle, double x, double y)
+    {
+      double newcomponent = 0.;
+      if (component==0)
+        {
+        newcomponent = x*cos(angle) - y*sin(angle);
+        }
+      if (component==1)
+        {
+        newcomponent = x*sin(angle) + y*cos(angle);
+        }
+
+      return newcomponent;
+    }
+
+
     void PatchSignalGenerator::InitializePatchArray()
     {
 
@@ -391,6 +603,7 @@ namespace locust
         double zPosition;
         double theta;
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
+        const double dRotateVoltages = 0.;  // set to zero to not rotate patch polarities.
 
         PatchAntenna modelPatch;
 
@@ -405,7 +618,8 @@ namespace locust
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
-                modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); 
+                modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
+           
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
             }
@@ -429,6 +643,13 @@ namespace locust
 
         std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
+
+        double* filterarray = GetFIRFilter(1);
+        unsigned nfilterbins = GetNFilterBins(filterarray);
+        unsigned nfieldbufferbins = fFieldBufferSize;
+        double dtfilter = fFilter_resolution;
+        unsigned dtauConvolutionTime = 0;
+        InitializeBuffers(nfilterbins, nfieldbufferbins);
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
@@ -460,7 +681,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(fp, PreEventCounter, index, aSignal);
+                        DriveAntenna(fp, PreEventCounter, index, aSignal, filterarray, nfilterbins, dtfilter);
                         PreEventCounter = 0; // reset
                     }
                     tLock.unlock();
@@ -471,6 +692,7 @@ namespace locust
         printf("finished signal loop\n");
 
         fclose(fp);
+        CleanupBuffers();
         fRunInProgress = false;  // tell Kassiopeia to finish.
         fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
         //if (fEventInProgress)
@@ -482,3 +704,4 @@ namespace locust
     }
 
 } /* namespace locust */
+

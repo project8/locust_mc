@@ -13,67 +13,102 @@
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
-
+#include "LMCFieldBuffer.hh"
+#include "LMCHilbertTransform.hh"
 
 namespace locust
 {
 
-    /*!
-     @class PlaneWaveSignalGenerator
-     @author P. L. Slocum
+  /*!
+    @class PlaneWaveSignalGenerator
+    @author P. L. Slocum
 
-     @brief Generate artibtrary plane wave for calibration and detect with patch array.
+    @brief Generate artibtrary plane wave for calibration and detect with patch array.
 
-     @details
-     Operates in time space
+    @details
+    Operates in time space
 
-     Configuration name: "planewave-signal"
+    Configuration name: "planewave-signal"
 
-     Available configuration options:
-     - "param-name": type -- Description
-     - "lo-frequency" : double -- the special value tuned down by the local oscillator, e.g., the 24.something giga hertz.
+    Available configuration options:
+    - "param-name": type -- Description
+    - "lo-frequency" : double -- the special value tuned down by the local oscillator, e.g., the 24.something giga hertz.
      
-    */
-    class PlaneWaveSignalGenerator : public Generator
-    {
-        public:
+  */
+  class PlaneWaveSignalGenerator : public Generator
+  {
+  public:
 
-            PlaneWaveSignalGenerator( const std::string& aName = "planewave-signal" );
-            virtual ~PlaneWaveSignalGenerator();
+    PlaneWaveSignalGenerator( const std::string& aName = "planewave-signal" );
+    virtual ~PlaneWaveSignalGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+    bool Configure( const scarab::param_node* aNode );
 
-            void Accept( GeneratorVisitor* aVisitor ) const;
+    void Accept( GeneratorVisitor* aVisitor ) const;
               
-            void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
-            double GetMismatchFactor(double f);
-            //double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi) const;
-            double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
-            double GetVoltageAmpFromPlaneWave();
-            double GetVoltageAmpFromPlaneWaveMutualCoupling(int z_index);
-        private:
-            std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
-            std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
-            double fLO_Frequency;  // typically defined by a parameter in json file.
-            double fRF_Frequency;  // typically defined by a parameter in json file.
-            double fArrayRadius;  // from json file.
-            int fNPatchesPerStrip; // from json file.
-            double fPatchSpacing; // from json file.
-            int fPowerCombiner;
-            bool fPhaseDelay;
-            bool fVoltageDamping;
-            double fAOI; // from json file, in degrees.
+    void AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex);
+    double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
+    double GetVoltageAmpFromPlaneWave(int z_index);
+    double GetPWPhaseDelayAtPatch(int z_index);
+      
+  private:
+    // patch and plane wave parameters
+    std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+    std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+    double fLO_Frequency;  // typically defined by a parameter in json file.
+    double fRF_Frequency;  // typically defined by a parameter in json file.
+    double fArrayRadius;  // from json file.
+    int fNPatchesPerStrip; // from json file.
+    double fPatchSpacing; // from json file.
+    double fAOI; // from json file, in degrees.
 
+    // options to turn on/off or to select
+    int fPowerCombiner; // internally keeps track of power combiner type
+    bool fPhaseDelay; // yes/no for calculating phase delays
+    bool fVoltageDamping; // yes/no for calculating voltage damping due to junctions
+    bool fPatchFIRfilter; // yes/no to use the patch FIR filter
+    bool fJunctionCascade; // yes/no to use the S31 junction cascade
 
-            bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
-            void InitializePatchArray();
+    
+    // for FIR filter 
+    void ProcessFIRFilter(int nskips);
+    int GetNFilterBins();
+    double GetPatchFIRSample(double amp, double startphase, int patchIndex);
+    double* GetHilbertMagPhase(unsigned bufferIndex);
+    std::string gpatchfilter_filename;
+    double fPatchFIRfilter_resolution;
+    double fAmplitude;
+    double FIR_array[1000];
+    int nfilterbins;
 
+    // for cascaded S31
+    double* GetPatchFIRWaveform(double dottedamp, double startphase, int patchIndex);
+    void CascadeVoltageToAmp(double* startwaveform, Signal* aSignal, unsigned bufferIndex, int patchIndex);
+    std::string gjunctionfilter_filename;
+    double fJunctionFIRfilter_resolution;
+    double S31FIR_array[1000];
+    
+    bool DoGenerate( Signal* aSignal );
+    void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
+    void InitializePatchArray();
 
-            double phiLO_t; // voltage phase of LO in radians;
-            double VoltagePhase_t[10000];
+    
+    // for buffers
+    void InitializeBuffers(unsigned fieldbuffersize);
+    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwval);
+    void PopBuffers(unsigned bufferIndex);
 
-    };
+    unsigned fFieldBufferMargin;
+    
+    std::vector<std::deque<unsigned>> SampleIndexBuffer;
+    std::vector<std::deque<double>> LOPhaseBuffer;
+    std::vector<std::deque<double>> PWFreqBuffer;
+    std::vector<std::deque<double>> PWPhaseBuffer;
+    std::vector<std::deque<double>> PWValueBuffer;
+    
+    std::vector<std::deque<double>> PatchVoltageBuffer;
+
+  };
 
 } /* namespace locust */
 
