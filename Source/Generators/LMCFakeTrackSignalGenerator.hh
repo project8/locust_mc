@@ -102,6 +102,9 @@ namespace locust
             double GetBField() const;
             void SetBField( double aBField );
 
+            double GetHydrogenFraction() const;
+            void SetHydrogenFraction( double aHydrogenFraction );
+
             int GetRandomSeed() const;
             void SetRandomSeed(  int aRandomSeed );
 
@@ -116,6 +119,8 @@ namespace locust
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
             double rel_cyc(double energy, double b_field) const;
             double rel_energy(double frequency, double b_field) const;
+            double WaveguidePowerCoupling(double frequency, double theta);
+            void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
 
             double slope_val = 0.;
             double pitch = 0.;
@@ -150,6 +155,7 @@ namespace locust
             double fBField;
             int fRandomSeed;
             int fNEvents;
+            double fHydrogenFraction;
             std::string fRoot_filename;
             std::default_random_engine fRandomEngine;
 

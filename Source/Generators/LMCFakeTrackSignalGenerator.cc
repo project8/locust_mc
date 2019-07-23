@@ -5,14 +5,15 @@
  *      Author: plslocum, buzinsky
  */
 
-#include <cmath>
 #include "LMCFakeTrackSignalGenerator.hh"
 #include "LMCDigitizer.hh"
 #include "logger.hh"
 #include "LMCConst.hh"
+#include <boost/math/special_functions/erf.hpp>
 #include <random>
 #include <math.h>
-#include <boost/math/special_functions/erf.hpp>
+#include <sstream>
+#include <string>
 
 using std::string;
 
@@ -42,6 +43,7 @@ namespace locust
         fRandomSeed(0),
         fNEvents(1),
         fRandomEngine(0),
+        fHydrogenFraction(1),
         fRoot_filename("LocustEvent.root")
 
     {
@@ -94,8 +96,11 @@ namespace locust
             SetBField(  aParam->get_value< double >("magnetic-field", fBField) );
 
         if (aParam->has( "random-seed") )
-        {
             SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
+
+        if (aParam->has( "hydrogen-fraction") )
+        {
+            SetHydrogenFraction(  aParam->get_value< int >( "hydrogen-fraction",fHydrogenFraction) );
         }
 
         if (aParam->has( "n-events") )
@@ -286,6 +291,17 @@ namespace locust
         fRandomSeed = aRandomSeed;
         return;
     }
+    
+    double FakeTrackSignalGenerator::GetHydrogenFraction() const
+    {
+        return fHydrogenFraction;
+    }
+
+    void FakeTrackSignalGenerator::SetHydrogenFraction( double aHydrogenFraction )
+    {
+        fHydrogenFraction = aHydrogenFraction;
+        return;
+    }
 
     int FakeTrackSignalGenerator::GetNEvents() const
     {
@@ -329,6 +345,29 @@ namespace locust
         return (this->*fDoGenerateFunc)( aSignal );
     }
 
+
+    void FakeTrackSignalGenerator::ReadFile(std::string filename, std::vector<std::pair<double,double> > &data)
+    {
+        std::ifstream input( filename );
+        std::stringstream ss;
+        std::vector<std::pair<double, double> > readData; // energies/ oscillator strengths
+        double bufferE, bufferOsc;
+        for( std::string line; getline( input, line ); )
+        {
+            if(line[0] == std::string("#")) continue;
+            ss = std::stringstream(line);
+            ss >> bufferE;
+            ss >> bufferOsc;
+            readData.push_back(std::make_pair(bufferE, bufferOsc));
+        }
+
+        //sort data
+        sort(readData.begin(), readData.end(), [](const std::pair<double,double> & a, const std::pair<double, double> & b) -> bool { return a.first > b.first; });
+
+        data = readData;
+
+    }
+
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
     {
         double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
@@ -343,16 +382,32 @@ namespace locust
         return rel_energy; // takes frequency in Hz, magnetic field in T, returns in eV
     }
 
-    //double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double theta)
-    //{
-    //    double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
-    //    double zMax = L0 / tan(theta);
-    //    return boost::math::cyl_bessel_j(0,k_lambda * zMax);
-
-    //}
+    double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double theta)
+    {
+        const double L0 = 0.00502920;
+        double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
+        double zMax = L0 / tan(theta);
+        return j0(k_lambda * zMax);
+    }
 
     //double FakeTrackGenerator::InelasticScatter(double &eLoss, double &angle)
     //{
+    //    ///Use rejection sampling to find energy loss/ momentum transfer
+    //    std::uniform_real_distribution<double> uniform_dist(0.,1.);
+    //    double eGen, kGen;
+    //    bool scatterHydrogen = (uniform_dist(fRandomEngine) <= fHydrogenFraction); // if true scatter is H2, else Kr
+
+    //    while(true)
+    //    {
+    //       eGen = uniform_dist(fRandomEngine);
+    //       kGen = uniform_dist(fRandomEngine);
+    //       if(XX)
+    //       {
+
+
+    //       }
+    //    }
+
 
     //}
 
