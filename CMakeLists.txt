@@ -30,6 +30,17 @@ pbuilder_add_submodule( Monarch monarch )
 # we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
 set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
 
+# set this up before the Kassiopeia build, so that the Kassiopeia build can use Locust include directories
+set (LOCUST_MC_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
+)
+
+include_directories( BEFORE ${LOCUST_MC_INCLUDE_DIRECTORIES} )
+
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -145,15 +156,6 @@ include_directories (${ROOT_INCLUDE_DIR})
 # library #
 ###########
 
-set (LOCUST_MC_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
-)
-
-include_directories( BEFORE ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 add_subdirectory( Source )
 
 
