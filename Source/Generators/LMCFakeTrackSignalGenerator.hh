@@ -13,9 +13,10 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCEvent.hh"
 #include <random>
 #include <vector>
-#include "LMCEvent.hh"
+#include <boost/math/interpolators/barycentric_rational.hpp>
 
 namespace scarab
 {
@@ -121,6 +122,7 @@ namespace locust
             double rel_energy(double frequency, double b_field) const;
             double WaveguidePowerCoupling(double frequency, double theta);
             void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
+            void SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data);
 
             double slope_val = 0.;
             double pitch = 0.;
@@ -158,6 +160,9 @@ namespace locust
             double fHydrogenFraction;
             std::string fRoot_filename;
             std::default_random_engine fRandomEngine;
+            boost::math::barycentric_rational<double> fH2Interpolant;
+            boost::math::barycentric_rational<double> fKrInterpolant;
+
 
     };
 

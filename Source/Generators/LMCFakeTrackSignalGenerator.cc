@@ -44,10 +44,17 @@ namespace locust
         fNEvents(1),
         fRandomEngine(0),
         fHydrogenFraction(1),
+        fH2Interpolant(std::vector<double>(),std::vector<double>(),0),
+        fKrInterpolant(std::vector<double>(),std::vector<double>(),0),
         fRoot_filename("LocustEvent.root")
 
     {
         fRequiredSignalState = Signal::kTime;
+        std::vector<std::pair<double, double> > h2Data, krData;
+        ReadFile("HH", h2Data);
+        ReadFile("HH", krData);
+        SetInterpolator(fH2Interpolant,h2Data);
+        SetInterpolator(fKrInterpolant,krData);
     }
 
     FakeTrackSignalGenerator::~FakeTrackSignalGenerator()
@@ -368,6 +375,20 @@ namespace locust
 
     }
 
+    void FakeTrackSignalGenerator::SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data)
+    {
+        std::vector<double> energies, oscillator_strengths;
+
+        for (auto it = std::make_move_iterator(data.begin()), end = std::make_move_iterator(data.end()); it != end; ++it)
+        {
+            energies.push_back(std::move(it->first));
+            oscillator_strengths.push_back(std::move(it->second));
+        }
+
+        interpolant = boost::math::barycentric_rational<double>(energies.data(), oscillator_strengths.data(), oscillator_strengths.size());
+
+    }
+
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
     {
         double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
@@ -410,6 +431,23 @@ namespace locust
 
 
     //}
+    //
+    double FakeTrackSignalGenerator::GetCosTheta(double T, double eLoss, double kTransfer, bool hydrogenScatter)
+    {
+        int A;
+        if(hydrogenScatter) A = 2;
+        else A = 83;
+        double mAtom = A*LMCConst::M_p_kg(); //use as approximate value for atomic mass (for changed kinematics)
+
+        double mReduced = mAtom*LMCConst::M_el_kg() / (mAtom + M_el_kg());
+        double mRatio = LMCConst::M_el_kg() / mReduced;
+        double eRatio = eLoss / T;
+        double cosTheta = 1. - mRatio * ERatio  - (kTransfer * LMCConst::a0() * mRatio)^2 / (2.* (T / LMCConst::E_Rydberg()));
+
+        cosTheta /= sqrt(1. - mRatio*eRatio);
+        return cosTheta;
+
+    }
 
     void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset)
     {
