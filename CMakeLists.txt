@@ -19,6 +19,18 @@ set_option( USE_CPP11 TRUE )
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 
+#####################
+# locust submodules #
+#####################
+
+
+pbuilder_add_submodule( Scarab Scarab/library )
+
+pbuilder_add_submodule( Monarch monarch )
+# we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
+set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
+
+
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
     # Keep KasperDefaults from overriding the install prefix
@@ -35,33 +47,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)    
     set( DATA_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/data )    
 
-endif (locust_mc_BUILD_WITH_KASSIOPEIA)
-
-
-set (LOCUST_MC_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
-)
-include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
-
-
-
-#####################
-# locust submodules #
-#####################
-
-
-pbuilder_add_submodule( Scarab Scarab/library )
-
-pbuilder_add_submodule( Monarch monarch )
-# we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
-set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
-
-
-if (locust_mc_BUILD_WITH_KASSIOPEIA)
     add_subdirectory( kassiopeia )
     
     if( Kommon_ENABLE_DEBUG )
@@ -123,8 +108,6 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 # locust dependencies #
 #######################
 
-include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
-
 # FFTW
 find_package(FFTW REQUIRED)
 if (NOT FFTW_THREADS_FOUND)
@@ -162,6 +145,15 @@ include_directories (${ROOT_INCLUDE_DIR})
 # library #
 ###########
 
+set (LOCUST_MC_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
+)
+
+include_directories( BEFORE ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 add_subdirectory( Source )
 
 
@@ -169,8 +161,9 @@ add_subdirectory( Source )
 ###############
 # executables #
 ###############
-
-add_subdirectory( Source/Applications )
+if (locust_mc_ENABLE_EXECUTBALES )
+    add_subdirectory( Source/Applications )
+endif (locust_mc_ENABLE_EXECUTBALES )
 
 
 
