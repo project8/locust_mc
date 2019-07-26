@@ -1,5 +1,6 @@
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
+    if(FALSE)
 
     # Make up for variables not created by PackageBuilder, but required by kasper_module_paths
     set_path(DATA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/data" "Install directory for data files")
@@ -18,7 +19,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     # include directories
     #kasper_internal_include_directories(
     #)
-
+endif(FALSE)
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 

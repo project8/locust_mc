@@ -22,18 +22,60 @@ option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
     # Keep KasperDefaults from overriding the install prefix
-    set( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE )
+    #set( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE )
 
-    list( APPEND CMAKE_MODULE_PATH 
-        ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
+    #list( APPEND CMAKE_MODULE_PATH 
+    #    ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
+    #)
+    #include( KasperDefaults )
+    #set( Kommon_DIR ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
+    #set( KGeoBag_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
+    #set( KEMField_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
+
+    #set( CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)    
+    #set( DATA_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/data )    
+    
+    include(ExternalProject)
+    message( STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}" )
+
+    
+    #ExternalProject_Add( Kassiopeia_prelim
+    #    PREFIX            ${CMAKE_INSTALL_PREFIX}
+    #    SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
+    #    CMAKE_CACHE_ARGS  -DCMAKE_INSTALL_PREFX:STRING=${CMAKE_INSTALL_PREFIX} -DDATA_INSTALL_DIR:STRING=${CMAKE_INSTALL_PREFIX}/data -DCMAKE_INSTALL_LIBDIR:STRING=${CMAKE_INSTALL_PREFIX}/lib -DBUILD_KASSIOPEIA:BOOL=FALSE -DBUILD_KEMFIELD:BOOL=FALSE -DBUILD_KGEOBAG:BOOL=FALSE -DBUILD_COMMON:BOOL=TRUE -DCMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT:BOOL=FALSE
+    #    BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
+    #    CMAKE_COMMAND     cmake
+    #    BUILD_COMMAND     ""
+    #    INSTALL_COMMAND   ""
+    #)        
+    
+    ExternalProject_Add( Kassiopeia
+        PREFIX            ${CMAKE_INSTALL_PREFIX}
+        SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
+        CMAKE_ARGS        -U *_INSTALL_DIR
+        CMAKE_CACHE_ARGS  -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=FALSE -D BUILD_KEMFIELD:BOOL=FALSE -D BUILD_KGEOBAG:BOOL=FALSE -D BUILD_KOMMON:BOOL=TRUE
+        BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
+        CMAKE_COMMAND     cmake
+        BUILD_ALWAYS      1
+        BUILD_COMMAND     make
+        INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
+        INSTALL_COMMAND   make install
     )
-    include( KasperDefaults )
-    set( Kommon_DIR ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
-    set( KGeoBag_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
-    set( KEMField_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
 
-    set( CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)    
-    set( DATA_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/data )    
+    ExternalProject_Add_Step( Kassiopeia prelim_configure
+        COMMAND           cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=FALSE -D BUILD_KEMFIELD:BOOL=FALSE -D BUILD_KGEOBAG:BOOL=FALSE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+        DEPENDERS         configure
+        BYPRODUCTS        ${PROJECT_BINARY_DIR}/kassiopeia/CMakeCache.txt
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+        USES_TERMINAL     1
+    )
+
+    #include( ${PROJECT_BINARY_DIR}/kassiopeia/Kommon/KommonConfig.cmake )
+    #include_directories( ${Kommon_INCLUDE_DIRS} )
+    #pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
+    #message( STATUS "kommon include dirs:  ${Kommon_INCLUDE_DIRS}" )
+    #message( STATUS "kommon libraries: ${Kommon_LIBRARIES}" )
+
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -61,7 +103,8 @@ pbuilder_add_submodule( Monarch monarch )
 set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
 
 
-if (locust_mc_BUILD_WITH_KASSIOPEIA)
+#if (locust_mc_BUILD_WITH_KASSIOPEIA)
+if (FALSE)
     add_subdirectory( kassiopeia )
     
     if( Kommon_ENABLE_DEBUG )
@@ -116,7 +159,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     include( ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia/KassiopeiaConfig.cmake )
     include_directories( ${Kassiopeia_INCLUDE_DIRS} )
     pbuilder_add_ext_libraries( ${Kassiopeia_LIBRARIES} )
-endif (locust_mc_BUILD_WITH_KASSIOPEIA)
+endif (FALSE)
+#endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 #######################
