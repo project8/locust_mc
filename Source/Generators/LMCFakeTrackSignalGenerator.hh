@@ -120,12 +120,14 @@ namespace locust
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
             double rel_cyc(double energy, double b_field) const;
             double rel_energy(double frequency, double b_field) const;
-            double WaveguidePowerCoupling(double frequency, double theta);
             void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
+            double EnergyLossSpectrum(double eLoss, double oscillator_strength);
+            double GetPitchAngle(double thetaScatter, double pitchAngle, double phi);
             void SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data);
-            void InelasticScatter(double &eLoss, double &kTransfer);
-            double CrossSection(double E, double K, bool hydrogenScatter);
-            double GetCosTheta(double T, double eLoss, double kTransfer, bool hydrogenScatter);
+            double WaveguidePowerCoupling(double frequency, double pitchAngle);
+            double GetEnergyLoss(double u, bool hydrogenScatter);
+            double GetKa2(double eLoss, double T);
+            double GetThetaScatter(double eLoss, double T);
 
 
             double slope_val = 0.;

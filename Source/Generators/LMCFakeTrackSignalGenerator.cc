@@ -9,6 +9,7 @@
 #include "LMCDigitizer.hh"
 #include "logger.hh"
 #include "LMCConst.hh"
+#include "LMCThreeVector.hh"
 #include <boost/math/special_functions/erf.hpp>
 #include <random>
 #include <math.h>
@@ -42,15 +43,15 @@ namespace locust
         fNEvents(1),
         fRandomEngine(0),
         fHydrogenFraction(1),
-        fH2Interpolant(std::vector<double>(),std::vector<double>(),0),
-        fKrInterpolant(std::vector<double>(),std::vector<double>(),0),
+        fH2Interpolant(std::vector<double>(1),std::vector<double>(1),0),
+        fKrInterpolant(std::vector<double>(1),std::vector<double>(1),0),
         fRoot_filename("LocustEvent.root")
 
     {
         fRequiredSignalState = Signal::kTime;
         std::vector<std::pair<double, double> > h2Data, krData;
-        ReadFile("HH", h2Data);
-        ReadFile("HH", krData);
+        ReadFile("h2OscillatorStrength.txt", h2Data);
+        ReadFile("krOscillatorStrength.txt", krData);
         SetInterpolator(fH2Interpolant,h2Data);
         SetInterpolator(fKrInterpolant,krData);
     }
@@ -379,29 +380,39 @@ namespace locust
     double FakeTrackSignalGenerator::EnergyLossSpectrum(double eLoss, double oscillator_strength)
     {
         double T = rel_cyc(fStartFrequencyMax, fBField);
-        return (LMCConst::E_Rydberg() / E) * oscillator_strength * log(4. * T * eLoss / ( LMCConst::E_Rydberg())^3.); // Produces energy loss spectrum (N. Buzinsky report Eqn XXX) 
+        return (LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * eLoss / pow(LMCConst::E_Rydberg(), 3.) ); // Produces energy loss spectrum (N. Buzinsky report Eqn XXX) 
         // NOTE: because this formula depends only on log T, I do NOT update with each change in kinetic energy (ie. from radiative losses). Including these changes may be better
 
+    }
+
+    double FakeTrackSignalGenerator::GetPitchAngle(double thetaScatter, double pitchAngle, double phi)
+    {
+        LMCThreeVector v(cos(phi) * sin(thetaScatter), sin(phi) * sin(thetaScatter), cos(thetaScatter)); //random unit vector at angle thetaScatter around z axis
+        LMCThreeVector xHat(1.,0.,0.);
+
+        //Rodrigues' formula, rotate into pitch angle
+        LMCThreeVector v_new = v * cos(pitchAngle)  + xHat.Cross(v) * sin(pitchAngle)  + xHat * xHat.Dot(v) * (1. - cos(pitchAngle));
+
+        return acos(v_new.Z());
     }
 
     void FakeTrackSignalGenerator::SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data)
     {
         // Reads in oscillator strength data, fills boost interpolator with corresponding inverse CDF for subsequent inversion sampling
-        std::vector<double> energies, oscillator_strengths, cdf;
-        double oscillatorStrength;
+        std::vector<double> energies, oscillator_strengths, energy_loss;
 
         for (auto it = std::make_move_iterator(data.begin()), end = std::make_move_iterator(data.end()); it != end; ++it)
         {
             energies.push_back(std::move(it->first));
-            oscillatorStrength = std::move(it->second);
-            energy_loss.push_back(energy_loss_spectrum(energies, oscillatorStrength));
+            oscillator_strengths.push_back(std::move(it->second));
+            energy_loss.push_back(EnergyLossSpectrum(energies.back(), oscillator_strengths.back()));
         }
 
         std::vector<double> cdf(energy_loss.size());
-        std::partial_sum(energy_loss.begin(), energy_loss.end(), cdf.begin(), plus<double>());
+        std::partial_sum(energy_loss.begin(), energy_loss.end(), cdf.begin(), std::plus<double>());
 
         double cdf_end = cdf.back();
-        std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](auto& c){return c/cdf_end;});
+        std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](double& c){return c/cdf_end;});
 
         interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size());
 
@@ -419,11 +430,11 @@ namespace locust
         return (cyc_freq / (2.*LMCConst::Pi()*frequency)-1.) *LMCConst::M_el_eV(); // takes frequency in Hz, magnetic field in T, returns in eV
     }
 
-    double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double theta)
+    double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double pitchAngle)
     {
         const double L0 = 0.00502920; //Phase II trap radius
         double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
-        double zMax = L0 / tan(theta);
+        double zMax = L0 / tan(pitchAngle);
         return j0(k_lambda * zMax);
     }
 
@@ -444,21 +455,21 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetKa2(double eLoss, double T)  //Generate random momentum transfer (Ka_0)^2. Note rndm generator is encapsulated within function
     {
-        ka2Min = eLoss^2. / (4.* LMCConst::E_Rydberg() * T) * (1. + eLoss / (2. *  LMCConst::E_Rydberg()));
-        ka2Max = 4. * T / LMCConst::E_Rydberg()  * (1. - eLoss / (2. * T));
+        double ka2Min = pow(eLoss, 2.) / (4.* LMCConst::E_Rydberg() * T) * (1. + eLoss / (2. *  LMCConst::E_Rydberg()));
+        double ka2Max = 4. * T / LMCConst::E_Rydberg()  * (1. - eLoss / (2. * T));
         std::uniform_real_distribution<double> uniform_dist(log(ka2Min), log(ka2Max));
         double ka2Transfer = uniform_dist(fRandomEngine);
         return ka2Transfer;
 
     }
     
-    double FakeTrackSignalGenerator::GetCosTheta(double eLoss, double T)
+    double FakeTrackSignalGenerator::GetThetaScatter(double eLoss, double T)
     {
         double ka2Transfer = GetKa2(eLoss, T);
         double eRatio = eLoss / T;
-        double cosTheta = 1. - ERatio /2.  - ka2Transfer  / (2.* (T / LMCConst::E_Rydberg()));
+        double cosTheta = 1. - eRatio /2.  - ka2Transfer  / (2.* (T / LMCConst::E_Rydberg()));
         cosTheta /= sqrt(1. - eRatio);
-        return cosTheta;
+        return acos(cosTheta);
 
     }
 
@@ -469,6 +480,8 @@ namespace locust
         double new_energy = 0.;
         double scattering_cdf_val = 0.;
         bool scatter_hydrogen;
+        double pitch_angle;
+        double theta_scatter;
 
 
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
@@ -495,10 +508,11 @@ namespace locust
        {
             starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
             current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
-            scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
+            scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
-            cos_theta = GetCosTheta(energy_loss, current_energy); // get cosine of scattering angle (NOT Pitch)
+            theta_scatter = GetThetaScatter(energy_loss, current_energy); // get scattering angle (NOT Pitch)
+            pitch_angle = GetPitchAngle( theta_scatter, pitch_angle, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
             startfreq_val += jumpsize_val;
