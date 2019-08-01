@@ -121,7 +121,6 @@ namespace locust
             std::string gfilter_filename;
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
-            unsigned fNPatches; 
 
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EPhaseBuffer;
