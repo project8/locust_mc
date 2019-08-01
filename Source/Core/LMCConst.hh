@@ -78,11 +78,6 @@ public:
         return 510.998918E3;
     } //!< electron mass in ev/c^2
 
-    constexpr static double M_p_kg()
-    {
-        return 1.67262192369E-27;
-    } //!< proton mass in kg
-
     constexpr static double a0()
     {
         return 5.29177210903E-11;

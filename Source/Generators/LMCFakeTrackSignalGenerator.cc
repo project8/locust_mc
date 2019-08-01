@@ -19,8 +19,6 @@ using std::string;
 
 namespace locust
 {
-    //std::default_random_engine fRandomEngine;
-
     LOGGER( lmclog, "FakeTrackSignalGenerator" );
 
     MT_REGISTER_GENERATOR(FakeTrackSignalGenerator, "fake-track");
@@ -108,6 +106,9 @@ namespace locust
         if (aParam->has( "hydrogen-fraction") )
         {
             SetHydrogenFraction(  aParam->get_value< int >( "hydrogen-fraction",fHydrogenFraction) );
+
+            if( fHydrogenFraction > 1 ||  fHydrogenFraction < 0)
+                LERROR( lmclog, "hydrogen-fraction must be between 0 and 1!");
         }
 
         if (aParam->has( "n-events") )
@@ -368,83 +369,95 @@ namespace locust
             readData.push_back(std::make_pair(bufferE, bufferOsc));
         }
 
-        //sort data
+        //sort data by energy
         sort(readData.begin(), readData.end(), [](const std::pair<double,double> & a, const std::pair<double, double> & b) -> bool { return a.first > b.first; });
 
         data = readData;
 
     }
 
+    double FakeTrackSignalGenerator::EnergyLossSpectrum(double eLoss, double oscillator_strength)
+    {
+        double T = rel_cyc(fStartFrequencyMax, fBField);
+        return (LMCConst::E_Rydberg() / E) * oscillator_strength * log(4. * T * eLoss / ( LMCConst::E_Rydberg())^3.); // Produces energy loss spectrum (N. Buzinsky report Eqn XXX) 
+        // NOTE: because this formula depends only on log T, I do NOT update with each change in kinetic energy (ie. from radiative losses). Including these changes may be better
+
+    }
+
     void FakeTrackSignalGenerator::SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data)
     {
-        std::vector<double> energies, oscillator_strengths;
+        // Reads in oscillator strength data, fills boost interpolator with corresponding inverse CDF for subsequent inversion sampling
+        std::vector<double> energies, oscillator_strengths, cdf;
+        double oscillatorStrength;
 
         for (auto it = std::make_move_iterator(data.begin()), end = std::make_move_iterator(data.end()); it != end; ++it)
         {
             energies.push_back(std::move(it->first));
-            oscillator_strengths.push_back(std::move(it->second));
+            oscillatorStrength = std::move(it->second);
+            energy_loss.push_back(energy_loss_spectrum(energies, oscillatorStrength));
         }
 
-        interpolant = boost::math::barycentric_rational<double>(energies.data(), oscillator_strengths.data(), oscillator_strengths.size());
+        std::vector<double> cdf(energy_loss.size());
+        std::partial_sum(energy_loss.begin(), energy_loss.end(), cdf.begin(), plus<double>());
+
+        double cdf_end = cdf.back();
+        std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](auto& c){return c/cdf_end;});
+
+        interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size());
 
     }
 
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
     {
-        double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
-        double rel_cyc_freq = cyc_freq/(1.+(energy/LMCConst::M_el_eV()))/(2*LMCConst::Pi());
-        return rel_cyc_freq; // takes energy in eV, magnetic field in T, returns in Hz
+        double cyc_freq = LMCConst::Q() * b_field / LMCConst::M_el_kg();
+        return cyc_freq / ( 1. + (energy/LMCConst::M_el_eV()) ) / (2. * LMCConst::Pi()); // takes energy in eV, magnetic field in T, returns in Hz
     }
 
     double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field) const
     {
-        double cyc_freq = LMCConst::Q()*b_field/LMCConst::M_el_kg();
-        double rel_energy = (cyc_freq/(2*LMCConst::Pi()*frequency)-1.)*LMCConst::M_el_eV();
-        return rel_energy; // takes frequency in Hz, magnetic field in T, returns in eV
+        double cyc_freq = LMCConst::Q() * b_field / LMCConst::M_el_kg();
+        return (cyc_freq / (2.*LMCConst::Pi()*frequency)-1.) *LMCConst::M_el_eV(); // takes frequency in Hz, magnetic field in T, returns in eV
     }
 
     double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double theta)
     {
-        const double L0 = 0.00502920;
+        const double L0 = 0.00502920; //Phase II trap radius
         double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
         double zMax = L0 / tan(theta);
         return j0(k_lambda * zMax);
     }
 
-    //double FakeTrackGenerator::InelasticScatter(double &eLoss, double &angle)
-    //{
-    //    ///Use rejection sampling to find energy loss/ momentum transfer
-    //    std::uniform_real_distribution<double> uniform_dist(0.,1.);
-    //    double eGen, kGen;
-    //    bool scatterHydrogen = (uniform_dist(fRandomEngine) <= fHydrogenFraction); // if true scatter is H2, else Kr
-
-    //    while(true)
-    //    {
-    //       eGen = uniform_dist(fRandomEngine);
-    //       kGen = uniform_dist(fRandomEngine);
-    //       if(XX)
-    //       {
-
-
-    //       }
-    //    }
-
-
-    //}
-    //
-    double FakeTrackSignalGenerator::GetCosTheta(double T, double eLoss, double kTransfer, bool hydrogenScatter)
+    double FakeTrackSignalGenerator::GetEnergyLoss(double u, bool hydrogenScatter)
     {
-        int A;
-        if(hydrogenScatter) A = 2;
-        else A = 83;
-        double mAtom = A*LMCConst::M_p_kg(); //use as approximate value for atomic mass (for changed kinematics)
+        //uses interpolated cdf to return random energy
+        boost::math::barycentric_rational<double> *interpolant;
+        if(hydrogenScatter)
+        {
+            interpolant = &fH2Interpolant;
+        }
+        else
+        {
+            interpolant = &fKrInterpolant;
+        }
+        return (*interpolant)(u);
+    }
 
-        double mReduced = mAtom*LMCConst::M_el_kg() / (mAtom + M_el_kg());
-        double mRatio = LMCConst::M_el_kg() / mReduced;
+    double FakeTrackSignalGenerator::GetKa2(double eLoss, double T)  //Generate random momentum transfer (Ka_0)^2. Note rndm generator is encapsulated within function
+    {
+        ka2Min = eLoss^2. / (4.* LMCConst::E_Rydberg() * T) * (1. + eLoss / (2. *  LMCConst::E_Rydberg()));
+        ka2Max = 4. * T / LMCConst::E_Rydberg()  * (1. - eLoss / (2. * T));
+        std::uniform_real_distribution<double> uniform_dist(log(ka2Min), log(ka2Max));
+        double ka2Transfer = uniform_dist(fRandomEngine);
+        return ka2Transfer;
+
+    }
+    
+    double FakeTrackSignalGenerator::GetCosTheta(double eLoss, double T)
+    {
+        double ka2Transfer = GetKa2(eLoss, T);
         double eRatio = eLoss / T;
-        double cosTheta = 1. - mRatio * ERatio  - (kTransfer * LMCConst::a0() * mRatio)^2 / (2.* (T / LMCConst::E_Rydberg()));
-
-        cosTheta /= sqrt(1. - mRatio*eRatio);
+        double cosTheta = 1. - ERatio /2.  - ka2Transfer  / (2.* (T / LMCConst::E_Rydberg()));
+        cosTheta /= sqrt(1. - eRatio);
         return cosTheta;
 
     }
@@ -452,16 +465,17 @@ namespace locust
     void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset)
     {
         double current_energy = 0.;
-        double scattering_cdf_val = 0.;
         double energy_loss = 0.;
         double new_energy = 0.;
+        double scattering_cdf_val = 0.;
+        bool scatter_hydrogen;
 
 
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
-        std::uniform_real_distribution<double> dist(0,0.9798681926077586); // for scattering inverse cdf input, upper bound is cdf @ 100 eV
+        std::uniform_real_distribution<double> dist(0,1);
 
         if(TrackID==0)
         {
@@ -479,27 +493,27 @@ namespace locust
         }
        else
        {
-  	       starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
-           current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
-           scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
-           //energy_loss = scattering_inverseCDF(scattering_cdf_val)/1.e3; // get a random energy loss using the inverse sampling theorem, scale to keV
-           energy_loss = 50.;
-           new_energy = current_energy - energy_loss; // new energy after loss, in keV
-           jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
-           startfreq_val += jumpsize_val;
-           aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
-           aTrack.StartFrequency += jumpsize_val;
-       }
+            starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
+            current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
+            scattering_cdf_val = dist(generator2); // random continous variable for scattering inverse cdf input
+            scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
+            energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
+            cos_theta = GetCosTheta(energy_loss, current_energy); // get cosine of scattering angle (NOT Pitch)
+            new_energy = current_energy - energy_loss; // new energy after loss, in eV
+            jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
+            startfreq_val += jumpsize_val;
+            aTrack.StartTime = endtime_val + 0.; // margin of time is 0.
+            aTrack.StartFrequency += jumpsize_val;
+        }
 
-       slope_val = slope_distribution(fRandomEngine);
-       tracklength_val = tracklength_distribution(fRandomEngine);
-       endtime_val = starttime_val + tracklength_val;  // reset endtime.
-       //printf("starttime is %g and TimeOffset is %g\n", starttime_val, TimeOffset);
-       aTrack.Slope = slope_val;
-       aTrack.TrackLength = tracklength_val;
-       aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
-       aTrack.LOFrequency = fLO_frequency;
-       aTrack.TrackPower = fSignalPower;
+        slope_val = slope_distribution(fRandomEngine);
+        tracklength_val = tracklength_distribution(fRandomEngine);
+        endtime_val = starttime_val + tracklength_val;  // reset endtime.
+        aTrack.Slope = slope_val;
+        aTrack.TrackLength = tracklength_val;
+        aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
+        aTrack.LOFrequency = fLO_frequency;
+        aTrack.TrackPower = fSignalPower;
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
@@ -580,7 +594,6 @@ namespace locust
 
         if ( endtime_val < 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) )
         {
-            //printf("endtime_val is %g and reclength is %g\n", endtime_val, 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) ); getchar();
 
             for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
             {
@@ -618,7 +631,6 @@ namespace locust
                                 else
                                 {
                                     SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
-                                    //printf("event %d start time is %g and endtime val is %g and %g\n", eventID, aTrack.StartTime, aTrack.EndTime, endtime_val); getchar();
                                     PackEvent(aTrack, anEvent, event_tracks_counter);
                                 }
                                 nexttrack_flag = true; // next track

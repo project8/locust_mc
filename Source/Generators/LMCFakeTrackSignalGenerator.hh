@@ -123,6 +123,10 @@ namespace locust
             double WaveguidePowerCoupling(double frequency, double theta);
             void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
             void SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data);
+            void InelasticScatter(double &eLoss, double &kTransfer);
+            double CrossSection(double E, double K, bool hydrogenScatter);
+            double GetCosTheta(double T, double eLoss, double kTransfer, bool hydrogenScatter);
+
 
             double slope_val = 0.;
             double pitch = 0.;
