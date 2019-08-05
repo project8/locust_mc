@@ -76,10 +76,8 @@ namespace locust
 
     static void* KassiopeiaInit(const std::string &aFile)
     {
-        RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-        RunKassiopeia1->Run(aFile);
-        delete RunKassiopeia1;
-
+        RunKassiopeia tRunKassiopeia;
+        tRunKassiopeia.Run(aFile);
         return 0;
     }
 

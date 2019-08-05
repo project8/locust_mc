@@ -139,25 +139,24 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 #  Check root build.
 if (locust_mc_BUILD_WITH_ROOT)
 
-set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
-    Core/LMCEvent.hh
-    Core/LMCTrack.hh
-    Generators/LMCFakeTrackSignalGenerator.hh
-   )
+    set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+        Core/LMCEvent.hh
+        Core/LMCTrack.hh
+        Generators/LMCFakeTrackSignalGenerator.hh
+    )
+    
+    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+        Core/LMCEvent.cc
+        Core/LMCTrack.cc
+        Generators/LMCFakeTrackSignalGenerator.cc
+    )
 
-set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
-    Core/LMCEvent.cc
-    Core/LMCTrack.cc
-    Generators/LMCFakeTrackSignalGenerator.cc
-   )
-
-
-  if (CMAKE_COMPILER_IS_GNUCXX)
-      option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
-    if( GCC_FORCE_LINKING )
-        set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
-    endif( )
-  endif()
+    if (CMAKE_COMPILER_IS_GNUCXX)
+        option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
+        if( GCC_FORCE_LINKING )
+            set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
+        endif( )
+    endif()
 
     pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
     message(STATUS "${ROOT_LIBRARIES}")
@@ -194,6 +193,7 @@ endif(locust_mc_BUILD_WITH_ROOT)
 #pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE)
 add_library(LocustMC ${LOCUST_MC_SOURCE_FILES} ${DICT_OUTFILES})
 target_link_libraries (LocustMC ${EXTERNAL_LIBRARIES})
+add_dependencies( LocustMC Kassiopeia )
 
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 pbuilder_install_libraries( LocustMC )

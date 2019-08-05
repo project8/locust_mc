@@ -19,6 +19,15 @@ set_option( USE_CPP11 TRUE )
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 
+
+set (LOCUST_MC_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+)
+
+
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
     # Keep KasperDefaults from overriding the install prefix
@@ -53,7 +62,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         PREFIX            ${CMAKE_INSTALL_PREFIX}
         SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
         CMAKE_ARGS        -U *_INSTALL_DIR
-        CMAKE_CACHE_ARGS  -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=FALSE -D BUILD_KEMFIELD:BOOL=FALSE -D BUILD_KGEOBAG:BOOL=FALSE -D BUILD_KOMMON:BOOL=TRUE
+        CMAKE_CACHE_ARGS  -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE
         BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
         CMAKE_COMMAND     cmake
         BUILD_ALWAYS      1
@@ -63,7 +72,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     )
 
     ExternalProject_Add_Step( Kassiopeia prelim_configure
-        COMMAND           cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=FALSE -D BUILD_KEMFIELD:BOOL=FALSE -D BUILD_KGEOBAG:BOOL=FALSE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+        COMMAND           cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
         DEPENDERS         configure
         BYPRODUCTS        ${PROJECT_BINARY_DIR}/kassiopeia/CMakeCache.txt
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
@@ -76,18 +85,26 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     #message( STATUS "kommon include dirs:  ${Kommon_INCLUDE_DIRS}" )
     #message( STATUS "kommon libraries: ${Kommon_LIBRARIES}" )
 
+    set (LOCUST_MC_INCLUDE_DIRECTORIES
+        $LOCUST_MC_INCLUDE_DIRECTORIES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
+        ${INCLUDE_INSTALL_DIR}
+    )
+ 
+    set (LOCUST_MC_LINK_DIRECTORIES
+        ${LIB_INSTALL_DIR}
+    )
+
+    #pbuilder_add_ext_libraries(
+    #    Kommon
+    #    KGeoBag
+    #    KEMField
+    #    Kassiopeia
+    #)
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
-set (LOCUST_MC_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
-)
-include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 
 
 
@@ -167,7 +184,6 @@ endif (FALSE)
 # locust dependencies #
 #######################
 
-include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
 
 # FFTW
 find_package(FFTW REQUIRED)
@@ -205,6 +221,11 @@ include_directories (${ROOT_INCLUDE_DIR})
 ###########
 # library #
 ###########
+
+include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
+if( ${LOCUST_MC_LINK_DIRECTORIES} )
+    link_directories( ${LOCUST_MC_LINK_DIRECTORIES} )
+endif( ${LOCUST_MC_LINK_DIRECTORIES} )
 
 add_subdirectory( Source )
 

@@ -7,9 +7,11 @@
 
 #include "LMCRunKassiopeia.hh"
 
+#include "LMCFieldCalculator.hh"
+#include "LMCCyclotronRadiationExtractor.hh"
 
-#include <KSSimulation.h>
-#include <KSRoot.h>
+#include "KSSimulation.h"
+#include "KSRoot.h"
 #include "KMessage.h"
 #include "KTextFile.h"
 
@@ -57,10 +59,10 @@ namespace locust
     {
 
 
-//    cout << "file vector is \n";
-//    cout << aFiles[0].c_str();
+        //    cout << "file vector is \n";
+        //    cout << aFiles[0].c_str();
 
-    	char* dummy_args[] = { (char*)"dummyname", (char*)aFiles[0].c_str(), NULL};
+        char* dummy_args[] = { (char*)"dummyname", (char*)aFiles[0].c_str(), NULL};
 
         KCommandLineTokenizer tCommandLine;
         tCommandLine.ProcessCommandLine( 2, dummy_args );
@@ -75,28 +77,37 @@ namespace locust
         KTagProcessor tTagProcessor;
         KElementProcessor tElementProcessor;
 
-    	tVariableProcessor.InsertAfter( &tTokenizer );
-    	tIncludeProcessor.InsertAfter( &tVariableProcessor );
+        tVariableProcessor.InsertAfter( &tTokenizer );
+        tIncludeProcessor.InsertAfter( &tVariableProcessor );
 
-	//#ifdef Kassiopeia_USE_ROOT
-	KFormulaProcessor tFormulaProcessor;
-	tFormulaProcessor.InsertAfter( &tVariableProcessor );
-	tIncludeProcessor.InsertAfter( &tFormulaProcessor );
-	//#endif
+        //#ifdef Kassiopeia_USE_ROOT
+        KFormulaProcessor tFormulaProcessor;
+        tFormulaProcessor.InsertAfter( &tVariableProcessor );
+        tIncludeProcessor.InsertAfter( &tFormulaProcessor );
+        //#endif
 
 
-    tLoopProcessor.InsertAfter( &tIncludeProcessor );
-    tConditionProcessor.InsertAfter( &tLoopProcessor );
-    tPrintProcessor.InsertAfter( &tConditionProcessor );
-    tTagProcessor.InsertAfter( &tPrintProcessor );
+        tLoopProcessor.InsertAfter( &tIncludeProcessor );
+        tConditionProcessor.InsertAfter( &tLoopProcessor );
+        tPrintProcessor.InsertAfter( &tConditionProcessor );
+        tTagProcessor.InsertAfter( &tPrintProcessor );
 
-    tElementProcessor.InsertAfter( &tTagProcessor );
+        tElementProcessor.InsertAfter( &tTagProcessor );
 
-       mainmsg( eNormal ) << "starting ..." << eom;
-       KToolbox::GetInstance();
+        KToolbox* tToolbox = KToolbox::GetInstance();
+
+        CyclotronRadiationExtractor* tCyclotronRadiationExtractor = new locust::CyclotronRadiationExtractor();
+        tCyclotronRadiationExtractor->SetName( "cyclotron_radiation_extractor" );
+        tToolbox->Add(tCyclotronRadiationExtractor);
+
+        FieldCalculator* tFieldCalculator = new FieldCalculator();
+        tFieldCalculator->SetName( "field_calculator");
+        tToolbox->Add(tFieldCalculator);
 
         KTextFile* tFile;
-	
+
+        mainmsg( eNormal ) << "starting ..." << eom;
+
         for( std::vector< std::string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
         {
             tFile = new KTextFile();
@@ -104,12 +115,12 @@ namespace locust
             tTokenizer.ProcessFile( tFile );
             delete tFile;
         }
-	
-        mainmsg( eNormal ) << "... finished" << eom;
-         
-	//	tTokenizer.~KXMLTokenizer();
 
-	KToolbox::GetInstance().Clear();
+        mainmsg( eNormal ) << "... finished" << eom;
+
+        //	tTokenizer.~KXMLTokenizer();
+
+        KToolbox::GetInstance().Clear();
 
         return 0;
     }
@@ -119,7 +130,7 @@ namespace locust
         std::vector< std::string > tFileVec( 1 );
         tFileVec[ 0 ] = aFile;
         return Run( tFileVec );
-        
+
     }
 
 } /* namespace locust */
