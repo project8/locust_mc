@@ -34,6 +34,7 @@ namespace locust
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
+		fRJunction( 0.3 ),
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
         phiLO_t(0.),
@@ -120,9 +121,16 @@ namespace locust
     	  fPowerCombiner = 3;
     	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
     	  fPowerCombiner = 4;
+    	else if (aParam->get_value< std::string >( "feed") == "voltage-divider")
+    	  fPowerCombiner = 5;
     	else
     	  fPowerCombiner = 0;  // default
           }
+        if( aParam->has( "junction-resistance" ) )
+        {
+            fRJunction = aParam->get_value< double >( "junction-resistance" );
+        }
+
 
         return true;
     }
@@ -345,6 +353,12 @@ namespace locust
         if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
           {
     	    VoltageFIRSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, patchIndex);
+          }
+        if (fPowerCombiner == 5)
+          {
+        	// voltage divider with 7/8 patch and T factors, no junctions.
+    	    VoltageFIRSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, fNPatchesPerStrip/2);
+            VoltageFIRSample *= aPowerCombiner.GetVoltageDividerWeight(fRJunction, 1.0, 10.e6, fNPatchesPerStrip, patchIndex);
           }
 
     	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);

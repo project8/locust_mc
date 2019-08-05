@@ -21,6 +21,65 @@ namespace locust
   {
   }
 
+
+  double PowerCombiner::GetVoltageDividerWeight(double RJunction, double R0, double RGround, int NPatchesPerStrip, unsigned z_index)
+  {
+	int NPAIRS = fabs((double)z_index - (double)NPatchesPerStrip/2.);
+	if (z_index >= NPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
+
+	std::vector<double> D = GetPartialGains(RJunction, R0, RGround, NPAIRS);  // calculate new vector of gains.
+	return D[NPAIRS-1];
+  }
+
+  std::vector<double> PowerCombiner::GetResistances(double RJunction, double R0, double RGround, int NPAIRS)
+  {
+	int NRESISTORS = NPAIRS + 1;
+	std::vector<double> R;
+	R.resize(NRESISTORS);
+
+	for (unsigned i=0; i<NPAIRS; i++)
+	  {
+	  R[i] = R0 + i*RJunction;
+	  }
+	R[NRESISTORS-1] = RGround;
+
+	return R;
+  }
+
+  std::vector<double> PowerCombiner::GetPartialGains(double RJunction, double R0, double RGround, int NPAIRS)
+  {
+	int NRESISTORS = NPAIRS + 1;
+	std::vector<double> D;
+	D.resize(NRESISTORS);
+	std::vector<double> R = GetResistances(RJunction, R0, RGround, NPAIRS);
+	double Dtotal = 0.;
+
+	for (int i=0; i<NRESISTORS; i++)
+	  {
+	  double ParallelResistance = GetParallelResistance(R, NRESISTORS, i);
+	  D[i] = ParallelResistance/(ParallelResistance + R[i]);
+	  Dtotal += D[i];
+//	  printf("D[%d] is %f and Dtotal is %f\n", i, D[i], Dtotal);
+	  }
+//	getchar();
+
+	return D;
+
+
+  }
+  double PowerCombiner::GetParallelResistance(std::vector<double> R, int NRESISTORS, int resistorindex)
+  {
+	double OneOverR = 0.;
+	for (unsigned i=0; i<NRESISTORS; i++)
+	  {
+	  if (i != resistorindex) OneOverR += 1./R[i];
+	  }
+	return 1./OneOverR;
+
+  }
+
+
+
   double PowerCombiner::GetCorporateVoltageDamping()
   {
     // currently hard-coded for one-quarter power combining
@@ -92,7 +151,7 @@ namespace locust
     // adjust last patch to a 2-port junction.
     if(z_index == 0 || z_index == NPatchesPerStrip)
       {
-	dampingfactor = 0.95*pow(0.75, njunctions)*0.66;
+  	dampingfactor = 0.95*pow(0.75, njunctions)*0.66;
       }
     else
       {

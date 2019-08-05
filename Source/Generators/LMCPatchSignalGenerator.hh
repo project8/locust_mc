@@ -63,6 +63,7 @@ namespace locust
             double fPatchSpacing; // from json file.
             std::string gxml_filename;
             int fPowerCombiner;
+            double fRJunction;
             bool fTextFileWriting;
 
             double fFilter_resolution;
