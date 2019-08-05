@@ -131,7 +131,7 @@ namespace locust
     int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
     if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
     double dampingfactor = 0.;
-    if(z_index == 0 || z_index == NPatchesPerStrip)
+    if(z_index == 0 || z_index == NPatchesPerStrip-1)
       {
 	dampingfactor = 0.95*pow(0.87, njunctions)*0.66;
       }
@@ -149,7 +149,7 @@ namespace locust
     if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
     double dampingfactor = 0.;
     // adjust last patch to a 2-port junction.
-    if(z_index == 0 || z_index == NPatchesPerStrip)
+    if(z_index == 0 || z_index == NPatchesPerStrip-1)
       {
   	dampingfactor = 0.95*pow(0.75, njunctions)*0.66;
       }
@@ -166,7 +166,7 @@ namespace locust
     int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
     if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
     double dampingfactor = 0.;
-    if(z_index == 0 || z_index == NPatchesPerStrip)
+    if(z_index == 0 || z_index == NPatchesPerStrip-1)
       {
 	dampingfactor = 0.95*pow(0.8, njunctions)*0.66;
 	  }
