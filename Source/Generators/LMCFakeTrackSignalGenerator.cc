@@ -371,10 +371,8 @@ namespace locust
         }
 
         //sort data by energy
-        sort(readData.begin(), readData.end(), [](const std::pair<double,double> & a, const std::pair<double, double> & b) -> bool { return a.first > b.first; });
-
+        std::sort(readData.begin(), readData.end(), [](const std::pair<double,double> & a, const std::pair<double, double> & b) -> bool { return a.first < b.first; });
         data = readData;
-
     }
 
     double FakeTrackSignalGenerator::EnergyLossSpectrum(double eLoss, double oscillator_strength)
@@ -400,12 +398,17 @@ namespace locust
     {
         // Reads in oscillator strength data, fills boost interpolator with corresponding inverse CDF for subsequent inversion sampling
         std::vector<double> energies, oscillator_strengths, energy_loss;
+        double fOsc;
 
         for (auto it = std::make_move_iterator(data.begin()), end = std::make_move_iterator(data.end()); it != end; ++it)
         {
-            energies.push_back(std::move(it->first));
-            oscillator_strengths.push_back(std::move(it->second));
-            energy_loss.push_back(EnergyLossSpectrum(energies.back(), oscillator_strengths.back()));
+            fOsc = abs(std::move(it->second));
+            if(fOsc)
+            {
+                energies.push_back(std::move(it->first));
+                oscillator_strengths.push_back(fOsc);
+                energy_loss.push_back(EnergyLossSpectrum(energies.back(), oscillator_strengths.back()));
+            }
         }
 
         std::vector<double> cdf(energy_loss.size());
