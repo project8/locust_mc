@@ -43,6 +43,8 @@ namespace locust
      - "amplitude": double -- Amplitude of the incident sine wave.
      - "filter-filename": double -- path to FIR text file.
      - "filter-resolution": double -- time resolution of coefficients in filter-filename.
+     - "antenna-x-position": double -- Location of the antenna in the x direction
+     - "antenna-y-position": double -- Location of the antenna in the y direction
      - "buffer-size": double -- size of buffer to contain incident E field values.
      - "buffer-margin": double -- distance from beginning of buffer at which to extract Hilbert transform info.  extrapolate to edge across this margin.
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
@@ -65,6 +67,9 @@ namespace locust
 
 	    void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
 
+	    double GetAntennaXPosition() const;
+	    double GetAntennaYPosition() const;
+	    
 	    double GetRFFrequency() const;
             void SetRFFrequency( double aFrequency );
 
@@ -109,9 +114,11 @@ namespace locust
             double fArrayRadius;  // from json file.
             int fNPatchesPerStrip; // from json file.
             double fPatchSpacing; // from json file.
-            std::string gxml_filename;
-            int fPowerCombiner;
-            bool fTextFileWriting;
+            std::string gxml_filename;// from json file.
+            int fPowerCombiner;// from json file.
+            bool fTextFileWriting;// from json file.
+	    double fAntennaPositionX;// from json file.
+	    double fAntennaPositionY;// from json file.
 
 	    double* filterarray;
             double fRF_frequency;

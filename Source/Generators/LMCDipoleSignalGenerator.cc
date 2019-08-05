@@ -25,6 +25,8 @@ namespace locust
         fDoGenerateFunc( &DipoleSignalGenerator::DoGenerateTime ),
         gfilter_filename("blank.txt"),
         fFilter_resolution( 0. ),
+	fAntennaPositionX( 0.0 ),
+	fAntennaPositionY( 0.0 ),
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
 	fArrayRadius( 0. ),
@@ -66,6 +68,17 @@ namespace locust
         {
             	fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
         }
+	
+	if( aParam->has( "antenna-x-position" ) )
+        {
+        	fAntennaPositionX= aParam->get_value< double >( "antenna-x-position");
+        }
+	
+	if( aParam->has( "antenna-y-position" ) )
+        {
+        	fAntennaPositionY= aParam->get_value< double >( "antenna-y-position");
+        }
+
 	if( aParam->has( "array-radius" ) )
 	{
 		fArrayRadius = aParam->get_value< double >( "array-radius" );
@@ -80,7 +93,7 @@ namespace locust
         {
         	SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
         }
-
+        
         if( aParam->has( "buffer-size" ) )
         {
 		SetBufferSize( aParam->get_value< double >( "buffer-size", fFieldBufferSize ) );
@@ -163,6 +176,16 @@ namespace locust
     double DipoleSignalGenerator::GetRFFrequency() const
     {
         return fRF_frequency;
+    }
+
+    double DipoleSignalGenerator::GetAntennaXPosition() const
+    {
+        return fAntennaPositionX;
+    }
+
+    double DipoleSignalGenerator::GetAntennaYPosition() const
+    {
+        return fAntennaPositionY;
     }
 
     void DipoleSignalGenerator::SetRFFrequency( double aFrequency )
@@ -428,13 +451,14 @@ namespace locust
         		{
 				PatchAntenna *currentPatch;
 				currentPatch = &allChannels[ch][patch];
-				double distance=currentPatch->GetPosition().Perp();
-
-            			if (index > 0) dtauConvolutionTime = 0;
+				double patchPosX=currentPatch->GetPosition().GetX() - fAntennaPositionX;
+				double patchPosY=currentPatch->GetPosition().GetY() - fAntennaPositionY;
+            			double patchAntennaDistance = sqrt(patchPosX*patchPosX + patchPosY*patchPosY); 
+				if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;
             			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
 		            	VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, fAcquisitionRate*aSignal->DecimationFactor());
-				VoltageSample = VoltageSample/distance;
+				VoltageSample = VoltageSample/patchAntennaDistance;
 				AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
 // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
             			//aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatchesPerStrip+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatchesPerStrip+patch].front());
