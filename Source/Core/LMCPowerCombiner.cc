@@ -28,7 +28,8 @@ namespace locust
 	if (z_index >= NPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
 
 	std::vector<double> D = GetPartialGains(RJunction, R0, RGround, NPAIRS);  // calculate new vector of gains.
-	return D[NPAIRS-1];
+	double dampingfactor = 0.6*0.66;  // patch loss * T-junction loss.
+	return dampingfactor * D[NPAIRS-1];
   }
 
   std::vector<double> PowerCombiner::GetResistances(double RJunction, double R0, double RGround, int NPAIRS)

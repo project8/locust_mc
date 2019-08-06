@@ -356,13 +356,12 @@ namespace locust
           }
         if (fPowerCombiner == 5)
           {
-        	// voltage divider with 7/8 patch and T factors, no junctions.
-    	    VoltageFIRSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, fNPatchesPerStrip/2);
             VoltageFIRSample *= aPowerCombiner.GetVoltageDividerWeight(fRJunction, 1.0, 10.e6, fNPatchesPerStrip, patchIndex);
           }
 
     	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
         aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
 
     }
 
