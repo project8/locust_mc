@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.13.2)
+project( locust_mc VERSION 1.13.3)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -163,9 +163,9 @@ add_subdirectory( Source )
 ###############
 # executables #
 ###############
-if (locust_mc_ENABLE_EXECUTBALES )
+if (locust_mc_ENABLE_EXECUTABLES )
     add_subdirectory( Source/Applications )
-endif (locust_mc_ENABLE_EXECUTBALES )
+endif (locust_mc_ENABLE_EXECUTABLES )
 
 
 
