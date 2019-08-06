@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.12.0)
+project( locust_mc VERSION 1.13.3)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -18,6 +18,29 @@ set_option( USE_CPP11 TRUE )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
+
+#####################
+# locust submodules #
+#####################
+
+
+pbuilder_add_submodule( Scarab Scarab/library )
+
+pbuilder_add_submodule( Monarch monarch )
+# we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
+set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
+
+# set this up before the Kassiopeia build, so that the Kassiopeia build can use Locust include directories
+set (LOCUST_MC_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
+)
+
+include_directories( BEFORE ${LOCUST_MC_INCLUDE_DIRECTORIES} )
+
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -35,33 +58,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)    
     set( DATA_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/data )    
 
-endif (locust_mc_BUILD_WITH_KASSIOPEIA)
-
-
-set (LOCUST_MC_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
-)
-include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
-
-
-
-#####################
-# locust submodules #
-#####################
-
-
-pbuilder_add_submodule( Scarab Scarab/library )
-
-pbuilder_add_submodule( Monarch monarch )
-# we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
-set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
-
-
-if (locust_mc_BUILD_WITH_KASSIOPEIA)
     add_subdirectory( kassiopeia )
     
     if( Kommon_ENABLE_DEBUG )
@@ -123,8 +119,6 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 # locust dependencies #
 #######################
 
-include_directories( ${PROJECT_SOURCE_DIR}/Scarab/library/param/codec/json/RapidJSON )
-
 # FFTW
 find_package(FFTW REQUIRED)
 if (NOT FFTW_THREADS_FOUND)
@@ -169,8 +163,9 @@ add_subdirectory( Source )
 ###############
 # executables #
 ###############
-
-add_subdirectory( Source/Applications )
+if (locust_mc_ENABLE_EXECUTABLES )
+    add_subdirectory( Source/Applications )
+endif (locust_mc_ENABLE_EXECUTABLES )
 
 
 

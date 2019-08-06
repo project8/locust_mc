@@ -63,6 +63,7 @@ namespace locust
             double fPatchSpacing; // from json file.
             std::string gxml_filename;
             int fPowerCombiner;
+            double fRJunction;
             bool fTextFileWriting;
 
             double fFilter_resolution;
@@ -86,7 +87,6 @@ namespace locust
             std::vector<std::deque<double>> LOPhaseBuffer;
             std::vector<std::deque<unsigned>> IndexBuffer;
             std::vector<std::deque<double>> PatchFIRBuffer;
-            std::vector<std::deque<unsigned>> ConvolutionTimeBuffer;
 
 
             bool DoGenerate( Signal* aSignal );
