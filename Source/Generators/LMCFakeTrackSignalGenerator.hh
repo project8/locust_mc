@@ -79,6 +79,12 @@ namespace locust
             double GetStartFrequencyMin() const;
             void SetStartFrequencyMin( double aFrequencyMin );
 
+            double GetStartPitchMax() const;
+            void SetStartPitchMax( double aPitchMax );
+
+            double GetStartPitchMin() const;
+            void SetStartPitchMin( double aPitchMin );
+
             double GetTrackLengthMean() const;
             void SetTrackLengthMean( double aTrackLengthMean );
 
@@ -122,12 +128,15 @@ namespace locust
             double rel_energy(double frequency, double b_field) const;
             void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
             double EnergyLossSpectrum(double eLoss, double oscillator_strength);
-            double GetPitchAngle(double thetaScatter, double pitchAngle, double phi);
+            double GetScatteredPitchAngle(double thetaScatter, double pitchAngle, double phi);
             void SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data);
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
             double GetEnergyLoss(double u, bool hydrogenScatter);
             double GetKa2(double eLoss, double T);
             double GetThetaScatter(double eLoss, double T);
+            double GetBField(double z);
+            double GetPitchAngleZ(double theta_i, double B_i, double B_f);
+            double GetPitchCorrectedFrequency(double frequency) const;
 
 
             double slope_val = 0.;
@@ -157,6 +166,8 @@ namespace locust
             double fSlopeStd;
             double fStartTimeMax;
             double fStartTimeMin;
+            double fStartPitchMin;
+            double fStartPitchMax;
             double fLO_frequency;
             double fTrackLengthMean;
             double fNTracksMean;
@@ -168,6 +179,7 @@ namespace locust
             std::default_random_engine fRandomEngine;
             boost::math::barycentric_rational<double> fH2Interpolant;
             boost::math::barycentric_rational<double> fKrInterpolant;
+            const double fTrapLength;
 
 
     };

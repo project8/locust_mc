@@ -35,6 +35,8 @@ namespace locust
         fSlopeStd( 0. ),
         fStartTimeMin( 0. ),
         fStartTimeMax( 0. ),
+        fStartPitchMin( 89.9 ),
+        fStartPitchMax( 90. ),
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
         fNTracksMean(1 ),
@@ -43,6 +45,7 @@ namespace locust
         fNEvents(1),
         fRandomEngine(0),
         fHydrogenFraction(1),
+        fTrapLength(0.00502920),  //Phase II trap radius
         fH2Interpolant(std::vector<double>(1),std::vector<double>(1),0),
         fKrInterpolant(std::vector<double>(1),std::vector<double>(1),0),
         fRoot_filename("LocustEvent.root")
@@ -50,8 +53,8 @@ namespace locust
     {
         fRequiredSignalState = Signal::kTime;
         std::vector<std::pair<double, double> > h2Data, krData;
-        ReadFile("h2OscillatorStrength.txt", h2Data);
-        ReadFile("krOscillatorStrength.txt", krData);
+        ReadFile("H2OscillatorStrength.txt", h2Data);
+        ReadFile("KrOscillatorStrength.txt", krData);
         SetInterpolator(fH2Interpolant,h2Data);
         SetInterpolator(fKrInterpolant,krData);
     }
@@ -73,6 +76,12 @@ namespace locust
 
         if( aParam->has( "start-frequency-min" ) )
             SetStartFrequencyMin( aParam->get_value< double >( "start-frequency-min", fStartFrequencyMin ) );
+
+        if( aParam->has( "start-pitch-max" ) )
+            SetStartPitchMax( aParam->get_value< double >( "start-pitch-max", fStartPitchMax ) );
+
+        if( aParam->has( "start-pitch-min" ) )
+            SetStartPitchMin( aParam->get_value< double >( "start-pitch-min", fStartPitchMin ) );
 
         if( aParam->has( "start-vphase" ) )
             SetStartVPhase( aParam->get_value< double >( "start-vphase", fStartVPhase ) );
@@ -188,6 +197,28 @@ namespace locust
     void FakeTrackSignalGenerator::SetStartFrequencyMin( double aFrequencyMin )
     {
         fStartFrequencyMin = aFrequencyMin;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetStartPitchMax() const
+    {
+        return fStartPitchMax;
+    }
+
+    void FakeTrackSignalGenerator::SetStartPitchMax( double aPitchMax )
+    {
+        fStartPitchMax = aPitchMax;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetStartPitchMin() const
+    {
+        return fStartPitchMin;
+    }
+
+    void FakeTrackSignalGenerator::SetStartPitchMin( double aPitchMin )
+    {
+        fStartPitchMin = aPitchMin;
         return;
     }
 
@@ -377,13 +408,13 @@ namespace locust
 
     double FakeTrackSignalGenerator::EnergyLossSpectrum(double eLoss, double oscillator_strength)
     {
-        double T = rel_cyc(fStartFrequencyMax, fBField);
+        double T = rel_energy(fStartFrequencyMax, fBField);
         return (LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * eLoss / pow(LMCConst::E_Rydberg(), 3.) ); // Produces energy loss spectrum (N. Buzinsky report Eqn XXX) 
         // NOTE: because this formula depends only on log T, I do NOT update with each change in kinetic energy (ie. from radiative losses). Including these changes may be better
 
     }
 
-    double FakeTrackSignalGenerator::GetPitchAngle(double thetaScatter, double pitchAngle, double phi)
+    double FakeTrackSignalGenerator::GetScatteredPitchAngle(double thetaScatter, double pitchAngle, double phi)
     {
         LMCThreeVector v(cos(phi) * sin(thetaScatter), sin(phi) * sin(thetaScatter), cos(thetaScatter)); //random unit vector at angle thetaScatter around z axis
         LMCThreeVector xHat(1.,0.,0.);
@@ -392,6 +423,17 @@ namespace locust
         LMCThreeVector v_new = v * cos(pitchAngle)  + xHat.Cross(v) * sin(pitchAngle)  + xHat * xHat.Dot(v) * (1. - cos(pitchAngle));
 
         return acos(v_new.Z());
+    }
+
+    double FakeTrackSignalGenerator::GetBField(double z) //magnetic field profile (harmonic model)
+    {
+        return fBField*(1. + pow(z / fTrapLength, 2.));
+    }
+
+    double FakeTrackSignalGenerator::GetPitchAngleZ(double theta_i, double B_i, double B_f)
+    {
+        double sinTheta_f = sin(theta_i) * sqrt(B_f / B_i);
+        return asin(sinTheta_f);
     }
 
     void FakeTrackSignalGenerator::SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data)
@@ -427,17 +469,25 @@ namespace locust
         return cyc_freq / ( 1. + (energy/LMCConst::M_el_eV()) ) / (2. * LMCConst::Pi()); // takes energy in eV, magnetic field in T, returns in Hz
     }
 
+
     double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field) const
     {
         double cyc_freq = LMCConst::Q() * b_field / LMCConst::M_el_kg();
         return (cyc_freq / (2.*LMCConst::Pi()*frequency)-1.) *LMCConst::M_el_eV(); // takes frequency in Hz, magnetic field in T, returns in eV
     }
 
+    double FakeTrackSignalGenerator::GetPitchCorrectedFrequency(double frequency) const
+    {
+        if (pitch !=  LMCConst::Pi() / 2.)
+            return frequency * ( 1. + 1. / (2. * pow(tan(pitch), 2.)));
+        else
+            return frequency;
+    } // non-90 pitches change average B, changing apparent frequency (A. Astari Esfahani et al. (2019) (Eqn 56))
+
     double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double pitchAngle)
     {
-        const double L0 = 0.00502920; //Phase II trap radius
         double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
-        double zMax = L0 / tan(pitchAngle);
+        double zMax = fTrapLength / tan(pitchAngle);
         return j0(k_lambda * zMax);
     }
 
@@ -491,6 +541,7 @@ namespace locust
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
+        std::uniform_real_distribution<double> startpitch_distribution(cos(fStartPitchMin),cos(fStartPitchMax));
         std::uniform_real_distribution<double> dist(0,1);
 
         if(TrackID==0)
@@ -504,6 +555,7 @@ namespace locust
                 starttime_val = TimeOffset;
             }
             startfreq_val = startfreq_distribution(fRandomEngine);
+            //startpitch_val = acos(startpitch_distribution(fRandomEngine));
             aTrack.StartTime = starttime_val;
             aTrack.StartFrequency = startfreq_val;
         }
@@ -515,7 +567,7 @@ namespace locust
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
             theta_scatter = GetThetaScatter(energy_loss, current_energy); // get scattering angle (NOT Pitch)
-            pitch_angle = GetPitchAngle( theta_scatter, pitch_angle, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
+            pitch_angle = GetScatteredPitchAngle( theta_scatter, pitch_angle, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
             startfreq_val += jumpsize_val;
@@ -631,7 +683,7 @@ namespace locust
                             if ( (time >= starttime_val) && (time <= endtime_val) )
                             {
                                 startfreq_val += slope_val*1.e6/1.e-3*dt;
-                                voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
+                                voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(startfreq_val)*(dt);
                                 aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
                                 aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                             }
