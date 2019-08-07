@@ -25,8 +25,6 @@ namespace locust
         fDoGenerateFunc( &DipoleSignalGenerator::DoGenerateTime ),
         gfilter_filename("blank.txt"),
         fFilter_resolution( 0. ),
-	fAntennaPositionX( 0.0 ),
-	fAntennaPositionY( 0.0 ),
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
 	fArrayRadius( 0. ),
@@ -69,16 +67,6 @@ namespace locust
             	fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
         }
 	
-	if( aParam->has( "antenna-x-position" ) )
-        {
-        	fAntennaPositionX= aParam->get_value< double >( "antenna-x-position");
-        }
-	
-	if( aParam->has( "antenna-y-position" ) )
-        {
-        	fAntennaPositionY= aParam->get_value< double >( "antenna-y-position");
-        }
-
 	if( aParam->has( "array-radius" ) )
 	{
 		fArrayRadius = aParam->get_value< double >( "array-radius" );
@@ -176,16 +164,6 @@ namespace locust
     double DipoleSignalGenerator::GetRFFrequency() const
     {
         return fRF_frequency;
-    }
-
-    double DipoleSignalGenerator::GetAntennaXPosition() const
-    {
-        return fAntennaPositionX;
-    }
-
-    double DipoleSignalGenerator::GetAntennaYPosition() const
-    {
-        return fAntennaPositionY;
     }
 
     void DipoleSignalGenerator::SetRFFrequency( double aFrequency )
@@ -443,7 +421,10 @@ namespace locust
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
 		double fieldValue=fAntennaSignalGenerator.GenerateSignal(aSignal,fAcquisitionRate);
-          	LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
+          	double antennaPositionX=fAntennaSignalGenerator.GetAntennaPosition().GetX();
+          	double antennaPositionY=fAntennaSignalGenerator.GetAntennaPosition().GetY();
+          	double antennaPositionZ=fAntennaSignalGenerator.GetAntennaPosition().GetZ();
+		LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
           	field_phase += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6) ;
           	for (unsigned ch = 0; ch < nchannels; ++ch)
             	{
@@ -451,9 +432,15 @@ namespace locust
         		{
 				PatchAntenna *currentPatch;
 				currentPatch = &allChannels[ch][patch];
-				double patchPosX=currentPatch->GetPosition().GetX() - fAntennaPositionX;
-				double patchPosY=currentPatch->GetPosition().GetY() - fAntennaPositionY;
-            			double patchAntennaDistance = sqrt(patchPosX*patchPosX + patchPosY*patchPosY); 
+				double relativePatchPosX=currentPatch->GetPosition().GetX() - antennaPositionX;
+				double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
+				double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
+            			double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ); 
+				std::cout<< currentPatch->GetPosition().GetZ() <<":"<< antennaPositionZ<<std::endl;
+				std::cout<< fArrayRadius <<":"<< patchAntennaDistance<<std::endl;
+
+				double initialPhaseDelay = -2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
+				field_phase+=initialPhaseDelay;
 				if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;
             			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);

@@ -26,6 +26,8 @@ namespace locust
     AntennaSignalTransmitter::AntennaSignalTransmitter() :
 	fInputSignalType(1),
 	fInputFrequency(27.0e9), //Should be the samne as the value used in the dipole signal generator
+	fAntennaPositionX( 0.0 ),
+	fAntennaPositionY( 0.0 ),
         fInputAmplitude(1)
     {
     }
@@ -57,6 +59,21 @@ namespace locust
 	{
 		fArrayRadius = aParam->get_value< double >( "array-radius" );
 	}
+
+	if( aParam->has( "antenna-x-position" ) )
+        {
+        	fAntennaPositionX= aParam->get_value< double >( "antenna-x-position");
+        }
+	
+	if( aParam->has( "antenna-y-position" ) )
+        {
+        	fAntennaPositionY= aParam->get_value< double >( "antenna-y-position");
+        }
+
+	if( aParam->has( "antenna-z-position" ) )
+        {
+        	fAntennaPositionZ= aParam->get_value< double >( "antenna-z-position");
+        }
 
 	if( aParam->has( "input-signal-amplitude" ) )
         {
@@ -97,13 +114,15 @@ namespace locust
 
     bool AntennaSignalTransmitter::InitializeTransmitter()
     {
+	fAntennaPosition.SetComponents(fAntennaPositionX,fAntennaPositionY,fAntennaPositionZ);
+
 	if(!fFieldEstimator.ReadFIRFile())
 	{
 		return false;
 	}
 	double filterSize=fFieldEstimator.GetFilterSize();
 	InitializeBuffers(filterSize);
-	fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fFieldEstimator.GetFilterResolution()+fArrayRadius/LMCConst::C())*fInputFrequency;
+	fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fFieldEstimator.GetFilterResolution())*fInputFrequency;
 	fPhaseDelay = fInitialPhaseDelay;
 	return true;
     }

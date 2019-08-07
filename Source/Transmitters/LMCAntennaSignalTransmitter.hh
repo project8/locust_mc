@@ -31,6 +31,9 @@ namespace locust
      - "input-signal-type": 1 -- Leaving an option open for generating different types of signals,
      - "input-signal-frequency": 25.9281e9,
      - "input-signal-amplitude": 1
+     - "antenna-x-position": double -- Location of the antenna in the x direction
+     - "antenna-y-position": double -- Location of the antenna in the y direction
+     - "antenna-z-position": double -- Location of the antenna in the z direction
           
     */
     class AntennaSignalTransmitter
@@ -48,6 +51,12 @@ namespace locust
 	    /// Get initial phase delay 
 	    double GetInitialPhaseDelay();
             
+	    /// Get the positions of the antenna w.r.t the center of the detector
+	    LMCThreeVector GetAntennaPosition() const;
+	    
+	    /// Set the positions of the antenna w.r.t the center of the detector
+	    void SetAntennaPosition(const LMCThreeVector &);
+	    
 	    /// Initialize the FIR filter and the field estimator 
 	    bool InitializeTransmitter();
            
@@ -61,6 +70,11 @@ namespace locust
 	    double fPhaseDelay=0.0; //Delay in the phase that changes for each time sample
 	    double fInitialPhaseDelay = 0.0;  //Initial delay in the phase from the the signal arriving from the back of the buffer as well as the delay from signal travel
 	    double fArrayRadius=0.0; //Array radius to be used to obtain the phase delay from the tranmistter to the reciever patch
+	    
+	    double fAntennaPositionX;
+	    double fAntennaPositionY;
+	    double fAntennaPositionZ;
+	    LMCThreeVector fAntennaPosition; // Position of the antenna w.r.t to the center of the array
 
 	    void InitializeBuffers(unsigned); 
 
@@ -68,6 +82,16 @@ namespace locust
 
     };
 
+    inline LMCThreeVector AntennaSignalTransmitter::GetAntennaPosition() const
+    {
+	    return fAntennaPosition;
+    } 
+
+    inline void AntennaSignalTransmitter::SetAntennaPosition(const LMCThreeVector &antennaPosition)
+    {
+	    fAntennaPosition=antennaPosition;
+    } 
+
 } /* namespace locust */
 
-#endif /* LMCANTENNASIGNALGENERATOR_HH_ */
+#endif /* LMCANTENNASIGNALTRANSMITTER_HH_ */
