@@ -33,6 +33,9 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCSimulationController.hh
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
+    Core/LMCPowerCombiner.hh
+    Core/LMCParticle.hh
+    Core/LMCReceiver.hh
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -47,6 +50,7 @@ set( LOCUST_MC_HEADER_FILES
 
     Transmitters/LMCFieldEstimator.hh
     Transmitters/LMCFieldBuffer.hh
+    Transmitters/LMCAntennaSignalTransmitter.hh
     Transforms/LMCHilbertTransform.hh
 
 #    Generators/LMCBasebandTrackGenerator.hh
@@ -64,6 +68,9 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCSimulationController.cc
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
+    Core/LMCPatchAntenna.cc
+    Core/LMCPowerCombiner.cc
+    Core/LMCReceiver.cc
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
@@ -78,6 +85,7 @@ set( LOCUST_MC_SOURCE_FILES
 
     Transmitters/LMCFieldEstimator.cc
     Transmitters/LMCFieldBuffer.cc
+    Transmitters/LMCAntennaSignalTransmitter.cc
     Transforms/LMCHilbertTransform.cc
 
 #    Generators/LMCBasebandTrackGenerator.cc
@@ -91,15 +99,11 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCPlaneWaveSignalGenerator.hh
-        Transmitters/LMCAntennaSignalTransmitter.hh
 
         Core/LMCChannel.hh
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
         Core/LMCPatchAntenna.hh
-        Core/LMCPowerCombiner.hh
-        Core/LMCParticle.hh
-        Core/LMCReceiver.hh
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
@@ -117,14 +121,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCPatchSignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
         Generators/LMCPlaneWaveSignalGenerator.cc
-        Transmitters/LMCAntennaSignalTransmitter.cc
 
         Core/LMCChannel.cc
         Core/LMCHFSSReader.cc
         Core/LMCParticle.cc
-        Core/LMCPatchAntenna.cc
-        Core/LMCPowerCombiner.cc
-        Core/LMCReceiver.cc
 
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCFieldCalculatorBuilder.cc
