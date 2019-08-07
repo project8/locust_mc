@@ -34,6 +34,7 @@ namespace locust
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
+		fRJunction( 0.3 ),
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
         phiLO_t(0.),
@@ -47,7 +48,6 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
-		ConvolutionTimeBuffer( 1 ),
         fFieldBufferSize( 50 ),
         fFieldBufferMargin( 25 )
 
@@ -110,16 +110,27 @@ namespace locust
             fTextFileWriting = aParam->get_value< bool >( "text-filewriting" );
         }
         if( aParam->has( "feed" ) )
+          {
+    	if (aParam->get_value< std::string >( "feed" ) == "corporate")
+    	  fPowerCombiner = 0;  // default
+    	else if (aParam->get_value< std::string >( "feed" ) == "series")
+    	  fPowerCombiner = 1;
+    	else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
+    	  fPowerCombiner = 2;
+    	else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
+    	  fPowerCombiner = 3;
+    	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
+    	  fPowerCombiner = 4;
+    	else if (aParam->get_value< std::string >( "feed") == "voltage-divider")
+    	  fPowerCombiner = 5;
+    	else
+    	  fPowerCombiner = 0;  // default
+          }
+        if( aParam->has( "junction-resistance" ) )
         {
-            if (aParam->get_value< std::string >( "feed" ) == "corporate")
-                fPowerCombiner = 0;  // default
-            else if (aParam->get_value< std::string >( "feed" ) == "series")
-                fPowerCombiner = 1;
-            else if (aParam->get_value< std::string >( "feed" ) == "quadrature")
-                fPowerCombiner = 2;
-            else
-            	fPowerCombiner = 0;  // default
+            fRJunction = aParam->get_value< double >( "junction-resistance" );
         }
+
 
         return true;
     }
@@ -332,8 +343,25 @@ namespace locust
     void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
     {
 
+    	PowerCombiner aPowerCombiner;
+
+        if (fPowerCombiner == 0 ) //corporate feed, for testing
+          {
+    	    VoltageFIRSample *= aPowerCombiner.GetCorporateVoltageDamping();
+          }
+
+        if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
+          {
+    	    VoltageFIRSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, patchIndex);
+          }
+        if (fPowerCombiner == 5)
+          {
+            VoltageFIRSample *= aPowerCombiner.GetVoltageDividerWeight(fRJunction, 1.0, 10.e6, fNPatchesPerStrip, patchIndex);
+          }
+
     	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
         aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
 
     }
 
@@ -509,7 +537,6 @@ namespace locust
     EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(DopplerFrequency/2./LMCConst::Pi());
     LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
     IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
-    ConvolutionTimeBuffer[channel*fNPatchesPerStrip+patch].push_back(dtauConvolutionTime);
 
     }
 
@@ -519,17 +546,16 @@ namespace locust
 
     void PatchSignalGenerator::PopBuffers(unsigned channel, unsigned patch)
     {
+
     	EFieldBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-    	ConvolutionTimeBuffer[channel*fNPatchesPerStrip+patch].pop_front();
 
     	EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        ConvolutionTimeBuffer[channel+fNPatchesPerStrip+patch].shrink_to_fit();
 
     }
 
@@ -545,7 +571,6 @@ namespace locust
     EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
     LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
     IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    ConvolutionTimeBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
 
     PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
 
@@ -560,7 +585,6 @@ namespace locust
     EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
     LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
     IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
-    ConvolutionTimeBuffer = aFieldBuffer.CleanupBuffer(ConvolutionTimeBuffer);
 
     }
 
@@ -592,7 +616,7 @@ namespace locust
         double zPosition;
         double theta;
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
-        const double dRotateVoltages = 360. / nChannels * LMCConst::Pi() / 180.;  
+        const double dRotateVoltages = 0.;  // set to zero to not rotate patch polarities.
 
         PatchAntenna modelPatch;
 
