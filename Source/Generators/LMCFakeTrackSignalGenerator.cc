@@ -52,11 +52,6 @@ namespace locust
 
     {
         fRequiredSignalState = Signal::kTime;
-        std::vector<std::pair<double, double> > h2Data, krData;
-        ReadFile("H2OscillatorStrength.txt", h2Data);
-        ReadFile("KrOscillatorStrength.txt", krData);
-        SetInterpolator(fH2Interpolant,h2Data);
-        SetInterpolator(fKrInterpolant,krData);
     }
 
     FakeTrackSignalGenerator::~FakeTrackSignalGenerator()
@@ -156,6 +151,12 @@ namespace locust
                 return false;
             }
         }
+
+        std::vector<std::pair<double, double> > h2Data, krData;
+        ReadFile("H2OscillatorStrength.txt", h2Data);
+        ReadFile("KrOscillatorStrength.txt", krData);
+        SetInterpolator(fH2Interpolant,h2Data);
+        SetInterpolator(fKrInterpolant,krData);
 
         return true;
     }
