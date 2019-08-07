@@ -82,15 +82,6 @@ namespace locust
 
     };
 
-    inline LMCThreeVector AntennaSignalTransmitter::GetAntennaPosition() const
-    {
-	    return fAntennaPosition;
-    } 
-
-    inline void AntennaSignalTransmitter::SetAntennaPosition(const LMCThreeVector &antennaPosition)
-    {
-	    fAntennaPosition=antennaPosition;
-    } 
 
 } /* namespace locust */
 

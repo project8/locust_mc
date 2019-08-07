@@ -28,6 +28,7 @@ namespace locust
 	fInputFrequency(27.0e9), //Should be the samne as the value used in the dipole signal generator
 	fAntennaPositionX( 0.0 ),
 	fAntennaPositionY( 0.0 ),
+	fAntennaPositionZ( 0.0 ),
         fInputAmplitude(1)
     {
     }
@@ -82,6 +83,15 @@ namespace locust
 	return true;
     }
     
+    LMCThreeVector AntennaSignalTransmitter::GetAntennaPosition() const
+    {
+	    return fAntennaPosition;
+    } 
+
+    void AntennaSignalTransmitter::SetAntennaPosition(const LMCThreeVector &antennaPosition)
+    {
+	    fAntennaPosition=antennaPosition;
+    } 
     double AntennaSignalTransmitter::GenerateSignal(Signal *aSignal,double acquisitionRate)
     {
 	double estimatedField=0.0;

@@ -147,7 +147,7 @@ namespace locust
             }
         }
 
-	if(!fAntennaSignalGenerator.Configure(aParam))
+	if(!fAntennaSignalTransmitter.Configure(aParam))
 	{
 		LERROR(lmclog,"Error Configuring antenna signal generator class");
 	}	
@@ -410,20 +410,20 @@ namespace locust
         double dtfilter = fFilter_resolution;
         unsigned dtauConvolutionTime = 0;
 
-	if(!fAntennaSignalGenerator.InitializeTransmitter())
+	if(!fAntennaSignalTransmitter.InitializeTransmitter())
 	{
 		return false;
 	}
 
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
-	field_phase=fAntennaSignalGenerator.GetInitialPhaseDelay();	
+	field_phase=fAntennaSignalTransmitter.GetInitialPhaseDelay();	
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
-		double fieldValue=fAntennaSignalGenerator.GenerateSignal(aSignal,fAcquisitionRate);
-          	double antennaPositionX=fAntennaSignalGenerator.GetAntennaPosition().GetX();
-          	double antennaPositionY=fAntennaSignalGenerator.GetAntennaPosition().GetY();
-          	double antennaPositionZ=fAntennaSignalGenerator.GetAntennaPosition().GetZ();
+		double fieldValue=fAntennaSignalTransmitter.GenerateSignal(aSignal,fAcquisitionRate);
+          	double antennaPositionX=fAntennaSignalTransmitter.GetAntennaPosition().GetX();
+          	double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
+          	double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
 		LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
           	field_phase += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6) ;
           	for (unsigned ch = 0; ch < nchannels; ++ch)
