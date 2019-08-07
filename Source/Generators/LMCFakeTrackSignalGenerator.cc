@@ -460,8 +460,7 @@ namespace locust
         double cdf_end = cdf.back();
         std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](double& c){return c/cdf_end;});
 
-        interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size());
-
+        interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size(), 1); //linear interpolation: don't change, doesnt converge
     }
 
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
@@ -473,8 +472,8 @@ namespace locust
 
     double FakeTrackSignalGenerator::rel_energy(double frequency, double b_field) const
     {
-        double cyc_freq = LMCConst::Q() * b_field / LMCConst::M_el_kg();
-        return (cyc_freq / (2.*LMCConst::Pi()*frequency)-1.) *LMCConst::M_el_eV(); // takes frequency in Hz, magnetic field in T, returns in eV
+        double gamma = LMCConst::Q() * b_field / (2. * LMCConst::Pi() * frequency * LMCConst::M_el_kg()); //omega = q B / m Gamma
+        return (gamma - 1.) *LMCConst::M_el_eV(); // takes frequency in Hz, magnetic field in T, returns in kinetic energy eV
     }
 
     double FakeTrackSignalGenerator::GetPitchCorrectedFrequency(double frequency) const
@@ -488,7 +487,9 @@ namespace locust
     double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double pitchAngle)
     {
         double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
-        double zMax = fTrapLength / tan(pitchAngle);
+        double zMax = 0;
+        if (pitchAngle != LMCConst::Pi() / 2.)
+            zMax = fTrapLength / tan(pitchAngle);
         return j0(k_lambda * zMax);
     }
 
@@ -511,7 +512,7 @@ namespace locust
     {
         double gamma = 1. + rel_energy(startfreq_val, fBField) / LMCConst::M_el_eV();
         double v0 = LMCConst::C() * sqrt( 1. - 1. / pow(gamma, 2.));
-        return  v0 * sin(pitch_val) / fTrapLength;
+        return v0 * sin(pitch_val) / fTrapLength;
 
     }
 
@@ -521,7 +522,7 @@ namespace locust
         double ka2Max = 4. * T / LMCConst::E_Rydberg()  * (1. - eLoss / (2. * T));
         std::uniform_real_distribution<double> uniform_dist(log(ka2Min), log(ka2Max));
         double ka2Transfer = uniform_dist(fRandomEngine);
-        return ka2Transfer;
+        return exp(ka2Transfer);
 
     }
     
@@ -672,6 +673,7 @@ namespace locust
         double LO_phase = 0.;
         double dt = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
         double TimeOffset = 0.; // event start time
+        double signalAmplitude;
 
         for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
         {
@@ -704,8 +706,9 @@ namespace locust
                             {
                                 startfreq_val += slope_val*1.e6/1.e-3*dt;
                                 voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(startfreq_val)*(dt);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                                signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(startfreq_val, pitch_val);
+                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
+                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                             }
                             else if ( time>endtime_val )
                             {
@@ -729,8 +732,9 @@ namespace locust
                     {
 		                startfreq_val += slope_val*1.e6/1.e-3*dt;
                         voltage_phase += 2.*LMCConst::Pi()*startfreq_val*(dt);
-                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += sqrt(50.)*sqrt(fSignalPower)*cos(voltage_phase-LO_phase);
-                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += sqrt(50.)*sqrt(fSignalPower)*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(startfreq_val, pitch_val);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                         nexttrack_flag = false; // now we stay on this track
                     }
                 }  // eventdone is false
