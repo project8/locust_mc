@@ -137,10 +137,11 @@ namespace locust
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetPitchCorrectedFrequency(double frequency) const;
+            double GetAxialFrequency();
 
 
             double slope_val = 0.;
-            double pitch = 0.;
+            double pitch_val = 0.;
             double tracklength_val = 0.;
             double starttime_val = 0.;
             double endtime_val = 0.;

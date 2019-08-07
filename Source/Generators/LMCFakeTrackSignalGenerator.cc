@@ -478,8 +478,8 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetPitchCorrectedFrequency(double frequency) const
     {
-        if (pitch !=  LMCConst::Pi() / 2.)
-            return frequency * ( 1. + 1. / (2. * pow(tan(pitch), 2.)));
+        if (pitch_val !=  LMCConst::Pi() / 2.)
+            return frequency * ( 1. + 1. / (2. * pow(tan(pitch_val), 2.)));
         else
             return frequency;
     } // non-90 pitches change average B, changing apparent frequency (A. Astari Esfahani et al. (2019) (Eqn 56))
@@ -504,6 +504,14 @@ namespace locust
             interpolant = &fKrInterpolant;
         }
         return (*interpolant)(u);
+    }
+
+    double FakeTrackSignalGenerator::GetAxialFrequency() //angular frequency of axial motion Ali et al. (54) (harmonic trap)
+    {
+        double gamma = 1. + rel_energy(startfreq_val, fBField) / LMCConst::M_el_eV();
+        double v0 = LMCConst::C() * sqrt( 1. - 1. / pow(gamma, 2.));
+        return  v0 * sin(pitch_val) / fTrapLength;
+
     }
 
     double FakeTrackSignalGenerator::GetKa2(double eLoss, double T)  //Generate random momentum transfer (Ka_0)^2. Note rndm generator is encapsulated within function
@@ -532,16 +540,18 @@ namespace locust
         double energy_loss = 0.;
         double new_energy = 0.;
         double scattering_cdf_val = 0.;
+        double zScatter = 0.;
         bool scatter_hydrogen;
         double pitch_angle;
         double theta_scatter;
+        const double deg_to_rad = LMCConst::Pi() / 180.;
 
 
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
-        std::uniform_real_distribution<double> startpitch_distribution(cos(fStartPitchMin),cos(fStartPitchMax));
+        std::uniform_real_distribution<double> startpitch_distribution(cos(fStartPitchMin * deg_to_rad),cos(fStartPitchMax * deg_to_rad));
         std::uniform_real_distribution<double> dist(0,1);
 
         if(TrackID==0)
@@ -555,7 +565,7 @@ namespace locust
                 starttime_val = TimeOffset;
             }
             startfreq_val = startfreq_distribution(fRandomEngine);
-            //startpitch_val = acos(startpitch_distribution(fRandomEngine));
+            pitch_val = acos(startpitch_distribution(fRandomEngine));
             aTrack.StartTime = starttime_val;
             aTrack.StartFrequency = startfreq_val;
         }
@@ -563,11 +573,20 @@ namespace locust
        {
             starttime_val = endtime_val + 0.;  // old track endtime + margin=0.
             current_energy = rel_energy(startfreq_val,fBField); // convert current frequency to energy
+
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
             theta_scatter = GetThetaScatter(energy_loss, current_energy); // get scattering angle (NOT Pitch)
-            pitch_angle = GetScatteredPitchAngle( theta_scatter, pitch_angle, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
+
+            // Compute new pitch angle, given initial pitch angle, scattering angle. Account for how kinematics change with different axial position of scatter
+            if(pitch_val != LMCConst::Pi() / 2.)
+                zScatter = fTrapLength / tan(pitch_val) * sin( GetAxialFrequency() * starttime_val);
+
+            double thetaTop = GetPitchAngleZ(pitch_val, fBField, GetBField(zScatter));
+            double newThetaTop = GetScatteredPitchAngle( theta_scatter, thetaTop, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
+            pitch_val = GetPitchAngleZ(newThetaTop, GetBField(zScatter), fBField);
+
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             jumpsize_val = rel_cyc(new_energy,fBField) - startfreq_val; // in Hz
             startfreq_val += jumpsize_val;
