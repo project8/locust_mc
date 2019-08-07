@@ -40,7 +40,8 @@ namespace locust
     gpatchfilter_filename("blank.txt"),
     fPatchFIRfilter_resolution( 0. ),
     fAmplitude( 0.),
-    fFieldBufferMargin( 50 )
+    fFieldBufferMargin( 50 ),
+    fRJunction( 0.3 )
   {
     fRequiredSignalState = Signal::kTime;
   }
@@ -96,6 +97,8 @@ namespace locust
 	  fPowerCombiner = 3;
 	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
 	  fPowerCombiner = 4;
+	else if (aParam->get_value< std::string >( "feed") == "voltage-divider")
+    	  fPowerCombiner = 5;
 	else
 	  fPowerCombiner = 0;  // default
       }
@@ -124,6 +127,10 @@ namespace locust
       {
 	fFieldBufferMargin = aParam->get_value< unsigned >( "buffer-margin" );
       }
+     if( aParam->has( "junction-resistance" ) )
+        {
+            fRJunction = aParam->get_value< double >( "junction-resistance" );
+        }
 
     return true;
   }
@@ -345,6 +352,11 @@ namespace locust
 	    VoltageAmplitude *= aPowerCombiner.GetNineSixteenthsVoltageDamping(fNPatchesPerStrip, z_index);
 	  }
       }
+
+    if (fPowerCombiner == 5) // parallel voltage summing method
+          {
+            VoltageAmplitude *= aPowerCombiner.GetVoltageDividerWeight(fRJunction, 1.0, 10.e6, fNPatchesPerStrip, patchIndex);
+          }
     
     // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
     
