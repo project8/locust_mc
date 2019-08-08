@@ -460,7 +460,7 @@ namespace locust
         double cdf_end = cdf.back();
         std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](double& c){return c/cdf_end;});
 
-        interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size(), 1); //linear interpolation: don't change, doesnt converge
+        interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size(), 0); //linear interpolation: don't change, doesnt converge
     }
 
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const
@@ -521,8 +521,8 @@ namespace locust
         double ka2Min = pow(eLoss, 2.) / (4.* LMCConst::E_Rydberg() * T) * (1. + eLoss / (2. *  LMCConst::E_Rydberg()));
         double ka2Max = 4. * T / LMCConst::E_Rydberg()  * (1. - eLoss / (2. * T));
         std::uniform_real_distribution<double> uniform_dist(log(ka2Min), log(ka2Max));
-        double ka2Transfer = uniform_dist(fRandomEngine);
-        return exp(ka2Transfer);
+        double lnka2Transfer = uniform_dist(fRandomEngine);
+        return exp(lnka2Transfer);
 
     }
     
@@ -547,7 +547,6 @@ namespace locust
         double pitch_angle;
         double theta_scatter;
         const double deg_to_rad = LMCConst::Pi() / 180.;
-
 
         std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
