@@ -51,10 +51,6 @@ namespace locust
   {
     const unsigned nchannels = fNChannels;
 
-    //text file for VI for testing.
-    // std::ofstream voltagefile;
-    // voltagefile.open("voltagefile.txt");
-	
     // Decimate Fs -> Fs/10
     for (int ch=0; ch<nchannels; ch++)
       {
@@ -67,16 +63,9 @@ namespace locust
 		aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index/aSignal->DecimationFactor()][1] =
 		  aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1];	
 	      }
-	    /*	voltagefile << index;
-		voltagefile << "\n";
-		voltagefile << aSignal->LongSignalTimeComplex()[index][0];
-		voltagefile << "\n";
-		voltagefile << aSignal->LongSignalTimeComplex()[index][1];
-		voltagefile << "\n";
-	    */
 	  }
       }
-    //voltagefile.close();
+
     return true;
   }
 
