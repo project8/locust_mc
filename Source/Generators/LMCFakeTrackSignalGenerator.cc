@@ -458,7 +458,7 @@ namespace locust
         std::vector<double> cdf(energy_loss.size());
 
         for(int i=1;i<cdf.size();++i) //manual trapezoidal rule for cdf integral
-            cdf[i] = cdf[i-1] + (energy_loss[i-1] + energy_loss[i]) / 2.;
+            cdf[i] = cdf[i-1] + (energy_loss[i-1] + energy_loss[i]) * (energies[i] - energies[i-1]) / 2.;
 
         double cdf_end = cdf.back();
         std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](double& c){return c/cdf_end;});
