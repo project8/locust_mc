@@ -25,6 +25,7 @@ namespace locust
     class KassSignalGenerator;
     class FreeFieldSignalGenerator;
     class PatchSignalGenerator;
+    class DipoleSignalGenerator;
     class LocalOscillatorGenerator;
     class DecimateSignalGenerator;
 
@@ -51,6 +52,7 @@ namespace locust
             virtual void Visit( const HighPassFilterFFTGenerator* ) = 0;
             virtual void Visit( const LocalOscillatorGenerator* ) = 0;
             virtual void Visit( const DecimateSignalGenerator* ) = 0;
+            virtual void Visit( const DipoleSignalGenerator* ) = 0;
             virtual void Visit( const Digitizer* ) = 0;
     };
 

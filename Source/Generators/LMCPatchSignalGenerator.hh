@@ -13,6 +13,8 @@
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
+#include "LMCFieldBuffer.hh"
+#include "LMCHilbertTransform.hh"
 
 
 namespace locust
@@ -48,6 +50,7 @@ namespace locust
             void Accept( GeneratorVisitor* aVisitor ) const;
               
             void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
+            void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
 
 
 
@@ -60,11 +63,34 @@ namespace locust
             double fPatchSpacing; // from json file.
             std::string gxml_filename;
             int fPowerCombiner;
+            double fRJunction;
             bool fTextFileWriting;
+
+            double fFilter_resolution;
+            std::string gfilter_filename;
+            unsigned fFieldBufferSize;
+            unsigned fFieldBufferMargin;
+
+            double* GetFIRFilter(int nskips);
+            int GetNFilterBins(double* filterarray);
+            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
+            void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
+            void CleanupBuffers();
+            void PopBuffers(unsigned channel, unsigned patch);
+            void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);
+
+
+            std::vector<std::deque<double>> EFieldBuffer;
+            std::vector<std::deque<double>> EPhaseBuffer;
+            std::vector<std::deque<double>> EAmplitudeBuffer;
+            std::vector<std::deque<double>> EFrequencyBuffer;
+            std::vector<std::deque<double>> LOPhaseBuffer;
+            std::vector<std::deque<unsigned>> IndexBuffer;
+            std::vector<std::deque<double>> PatchFIRBuffer;
 
 
             bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal);
+            void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
             void InitializePatchArray();
 
             int FindNode(double tNew) const;

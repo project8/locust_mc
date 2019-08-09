@@ -171,6 +171,11 @@ namespace locust
         return;
     }
 
+    void RunLengthCalculator::Visit( const DipoleSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
 
     void RunLengthCalculator::Visit( const TestFIRFilterGenerator* )
     {
