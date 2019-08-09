@@ -10,7 +10,6 @@
 #include "logger.hh"
 #include "LMCConst.hh"
 #include "LMCThreeVector.hh"
-#include <boost/math/special_functions/erf.hpp>
 #include <random>
 #include <math.h>
 #include <sstream>
@@ -155,6 +154,8 @@ namespace locust
         std::vector<std::pair<double, double> > h2Data, krData;
         ReadFile("H2OscillatorStrength.txt", h2Data);
         ReadFile("KrOscillatorStrength.txt", krData);
+        ExtrapolateData(h2Data, std::array<double, 3>{0.0556, 12.5, 14.30});
+        ExtrapolateData(krData, std::array<double, 3>{0.4019, 22.31, 16.725});
         SetInterpolator(fH2Interpolant,h2Data);
         SetInterpolator(fKrInterpolant,krData);
 
@@ -455,12 +456,35 @@ namespace locust
         }
 
         std::vector<double> cdf(energy_loss.size());
-        std::partial_sum(energy_loss.begin(), energy_loss.end(), cdf.begin(), std::plus<double>());
+
+        for(int i=1;i<cdf.size();++i) //manual trapezoidal rule for cdf integral
+            cdf[i] = cdf[i-1] + (energy_loss[i-1] + energy_loss[i]) / 2.;
 
         double cdf_end = cdf.back();
         std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](double& c){return c/cdf_end;});
 
         interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size(), 0); //linear interpolation: don't change, doesnt converge
+    }
+
+    //extrapolate oscillator strength to +1000 eV energy loss using Aseev energy loss formula
+    void FakeTrackSignalGenerator::ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars)
+    {
+        //rename for convenience
+        double A = fitPars[0];
+        double w = fitPars[1];
+        double e = fitPars[2];
+        const double eMax = 1000.;
+        const double dE = 1.;
+        double oscillator_strength;
+
+        double eBack = data.back().first;
+        while( eBack < eMax)
+        {
+            eBack +=dE;
+            oscillator_strength = A * pow(w,2.) / (pow(w,2.) + 4. * pow(e - eBack, 2.));
+            data.push_back(std::pair<double, double>(eBack, oscillator_strength));
+        }
+
     }
 
     double FakeTrackSignalGenerator::rel_cyc(double energy, double b_field) const

@@ -138,6 +138,7 @@ namespace locust
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetPitchCorrectedFrequency(double frequency) const;
             double GetAxialFrequency();
+            void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
 
 
             double slope_val = 0.;
