@@ -34,8 +34,9 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
     Core/LMCPowerCombiner.hh
-    Core/LMCParticle.hh
     Core/LMCReceiver.hh
+    Core/LMCPatchAntenna.hh
+    Core/LMCChannel.hh
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -69,6 +70,7 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
     Core/LMCPatchAntenna.cc
+    Core/LMCChannel.cc
     Core/LMCPowerCombiner.cc
     Core/LMCReceiver.cc
 
@@ -100,10 +102,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCPlaneWaveSignalGenerator.hh
 
-        Core/LMCChannel.hh
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
-        Core/LMCPatchAntenna.hh
+        Core/LMCParticle.hh
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
@@ -122,7 +123,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCKassSignalGenerator.cc
         Generators/LMCPlaneWaveSignalGenerator.cc
 
-        Core/LMCChannel.cc
         Core/LMCHFSSReader.cc
         Core/LMCParticle.cc
 
