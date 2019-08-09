@@ -61,6 +61,7 @@ namespace locust
     int fNPatchesPerStrip; // from json file.
     double fPatchSpacing; // from json file.
     double fAOI; // from json file, in degrees.
+    double fRJunction; // for parallel voltage summing
 
     // options to turn on/off or to select
     int fPowerCombiner; // internally keeps track of power combiner type
@@ -81,12 +82,6 @@ namespace locust
     double FIR_array[1000];
     int nfilterbins;
 
-    // for cascaded S31
-    double* GetPatchFIRWaveform(double dottedamp, double startphase, int patchIndex);
-    void CascadeVoltageToAmp(double* startwaveform, Signal* aSignal, unsigned bufferIndex, int patchIndex);
-    std::string gjunctionfilter_filename;
-    double fJunctionFIRfilter_resolution;
-    double S31FIR_array[1000];
     
     bool DoGenerate( Signal* aSignal );
     void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
