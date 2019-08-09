@@ -45,8 +45,8 @@ namespace locust
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.00502920),  //Phase II trap radius
-        fH2Interpolant(std::vector<double>(1),std::vector<double>(1),0),
-        fKrInterpolant(std::vector<double>(1),std::vector<double>(1),0),
+        fH2Interpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
+        fKrInterpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
         fRoot_filename("LocustEvent.root")
 
     {
