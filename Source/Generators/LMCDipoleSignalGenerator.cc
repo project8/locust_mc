@@ -350,8 +350,8 @@ namespace locust
 		VoltageSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, patchIndex);
 	}
 
-	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageSample * sin(phi_LO);
-	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageSample * cos(phi_LO);
+	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageSample * cos(phi_LO);
+	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageSample * sin(phi_LO);
 
 }
 
@@ -417,7 +417,7 @@ namespace locust
 
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
-	field_phase=fAntennaSignalTransmitter.GetInitialPhaseDelay();	
+	double initialPhaseDelay=fAntennaSignalTransmitter.GetInitialPhaseDelay();	
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
 		double fieldValue=fAntennaSignalTransmitter.GenerateSignal(aSignal,fAcquisitionRate);
@@ -425,7 +425,7 @@ namespace locust
           	double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
           	double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
 		LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-          	field_phase += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6) ;
+          	initialPhaseDelay += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6) ;
           	for (unsigned ch = 0; ch < nchannels; ++ch)
             	{
         		for (unsigned patch = 0; patch < npatches; ++patch)
@@ -436,11 +436,7 @@ namespace locust
 				double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
 				double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
             			double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ); 
-				std::cout<< currentPatch->GetPosition().GetZ() <<":"<< antennaPositionZ<<std::endl;
-				std::cout<< fArrayRadius <<":"<< patchAntennaDistance<<std::endl;
-
-				double initialPhaseDelay = -2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
-				field_phase+=initialPhaseDelay;
+				double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
 				if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;
             			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
