@@ -96,7 +96,7 @@ namespace locust
 
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
-            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
+            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch,double fieldPhase,double AcquisitionRate);
 
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);

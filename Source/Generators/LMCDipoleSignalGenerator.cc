@@ -282,7 +282,7 @@ namespace locust
     }
 
 
-    double DipoleSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate)
+    double DipoleSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch,double fieldPhase, double AcquisitionRate)
     {
 
     double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
@@ -300,6 +300,7 @@ namespace locust
         HilbertPhase = HilbertMagPhaseMean[1];
         delete[] HilbertMagPhaseMean;
 
+    	HilbertPhase += fieldPhase;
    	for (int i=0; i < nfilterbins - ConvolutionTimeBuffer[channel*fNPatchesPerStrip+patch].front(); i++)  // populate filter with field.
       {
     	  HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*dtfilter;
@@ -436,11 +437,11 @@ namespace locust
 				double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
 				double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
             			double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ); 
-				double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
+				double field_phase=initialPhaseDelay-2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
 				if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;
             			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
-		            	VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, fAcquisitionRate*aSignal->DecimationFactor());
+		            	VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
 				VoltageSample = VoltageSample/patchAntennaDistance;
 				AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
 // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
