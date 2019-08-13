@@ -34,25 +34,23 @@ namespace locust
         }
     }
 
-    bool GeneratorToolbox::Configure( const scarab::param_node* aNode )
+    bool GeneratorToolbox::Configure( const scarab::param_node& aNode )
     {
-        if( aNode == NULL ) return false;
 
         LINFO( lmclog, "Creating generators" );
 
         scarab::factory< Generator >* genFactory = scarab::factory< Generator >::get_instance();
 
-        const scarab::param_array* generatorList = aNode->array_at( "generators" );
-        if( generatorList == NULL )
-        {
-            LERROR( lmclog, "No generator list was found" );
-            return false;
-        } 
+        const scarab::param_array& generatorList = aNode["generators"].as_array();
+
+
+
 
         Generator* lastGenerator = NULL;
-        for( scarab::param_array::const_iterator it = generatorList->begin(); it != generatorList->end(); ++it )
+
+        for( scarab::param_array::const_iterator it = generatorList.begin(); it != generatorList.end(); ++it )
         {
-            if( ! (*it)->is_value() )
+            if( ! (*it).is_value() )
             {
                 LERROR( lmclog, "Non-value-type array element found in generator-list" );
                 continue;
@@ -62,11 +60,11 @@ namespace locust
 //                LDEBUG( lmclog, "Reading in reasonable generator: " << (*it)->AsValue().Get() );
 //            }
 
-            Generator* newGenerator = genFactory->create( (*it)->as_value().as_string() );
+            Generator* newGenerator = genFactory->create( (*it).as_value().as_string() );
 //            LDEBUG( lmclog, "And the new generator is ... " << newGenerator->GetName());
             if( newGenerator == NULL )
             {
-                LERROR( lmclog, "Unrecognized generator name: " << (*it)->as_value().as_string() );
+                LERROR( lmclog, "Unrecognized generator name: " << (*it).as_value().as_string() );
                 continue;
             }
 
@@ -92,7 +90,7 @@ namespace locust
         while( nextGenerator != NULL )
         {
             LINFO( lmclog, "Configuring generator <" << nextGenerator->GetName() << ">" );
-            nextGenerator->Configure( aNode->node_at( nextGenerator->GetName() ) );
+            nextGenerator->Configure( &aNode[ nextGenerator->GetName() ].as_node() );
             nextGenerator = nextGenerator->GetNextGenerator();
         }
 
