@@ -84,14 +84,13 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     #pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
     #message( STATUS "kommon include dirs:  ${Kommon_INCLUDE_DIRS}" )
     #message( STATUS "kommon libraries: ${Kommon_LIBRARIES}" )
-    
-    set( KASS_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include )    
-        
+            
     set (LOCUST_MC_INCLUDE_DIRECTORIES
-        $LOCUST_MC_INCLUDE_DIRECTORIES
+        ${LOCUST_MC_INCLUDE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
+        ${CMAKE_INSTALL_PREFIX}/include
+        ${PROJECT_SOURCE_DIR}/kassiopeia/KEMField/Source/Bindings/Utilities/include/
         ${INCLUDE_INSTALL_DIR}
-        ${KASS_INCLUDE_INSTALL_DIR}
     )
  
     set (LOCUST_MC_LINK_DIRECTORIES

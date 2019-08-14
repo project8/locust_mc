@@ -94,15 +94,13 @@ namespace locust
 
         tElementProcessor.InsertAfter( &tTagProcessor );
 
-        KToolbox* tToolbox = KToolbox::GetInstance();
-
         CyclotronRadiationExtractor* tCyclotronRadiationExtractor = new locust::CyclotronRadiationExtractor();
         tCyclotronRadiationExtractor->SetName( "cyclotron_radiation_extractor" );
-        tToolbox->Add(tCyclotronRadiationExtractor);
+        KToolbox::GetInstance().Add(tCyclotronRadiationExtractor);
 
         FieldCalculator* tFieldCalculator = new FieldCalculator();
         tFieldCalculator->SetName( "field_calculator");
-        tToolbox->Add(tFieldCalculator);
+        KToolbox::GetInstance().Add(tFieldCalculator);
 
         KTextFile* tFile;
 

@@ -3,6 +3,7 @@
 #define LOCUST_LMCCYCLOTRONRADIATIONEXTRACTOR_HH_
 
 #include "KSStepModifier.h"
+#include "KSTrajectory.h"
 
 #include "LMCParticle.hh"
 
