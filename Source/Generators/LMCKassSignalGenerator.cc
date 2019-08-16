@@ -45,20 +45,20 @@ namespace locust
 
     bool KassSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam->has( "lo-frequency" ) )
+        if( aParam.has( "lo-frequency" ) )
         {
-            fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
+            fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
 
-        if( aParam->has( "xml-filename" ) )
+        if( aParam.has( "xml-filename" ) )
         {
-            gxml_filename = aParam->get_value< std::string >( "xml-filename" );
-            gpitchangle_filename = aParam->get_value< std::string >( "pitchangle-filename" );
+            gxml_filename = aParam["xml-filename"]().as_string();
+            gpitchangle_filename = aParam["pitchangle-filename"]().as_string();
         }
 
-        if( aParam->has( "truth" ) )
+        if( aParam.has( "truth" ) )
         {
-            fTruth = aParam->get_value< bool >( "truth" );
+            fTruth = aParam["truth"]().as_bool();
         }
 
         return true;

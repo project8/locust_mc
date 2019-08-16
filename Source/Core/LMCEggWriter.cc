@@ -61,7 +61,7 @@ namespace locust
         f_date = aNode.get_value( "date", f_date );
         f_description = aNode.get_value( "description", f_description );
 
-        if (f_filename=="locust_mc.egg") // placeholder egg file.
+/*        if (f_filename=="locust_mc.egg") // placeholder egg file.
           {
 	  const char *homedir;
           char fname[200];
@@ -72,7 +72,7 @@ namespace locust
           int n = sprintf(fname, "locust_mc.egg", homedir);
           f_filename = fname;
           }
-
+*/
         return true;
     }
 
