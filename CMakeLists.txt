@@ -89,7 +89,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         ${LOCUST_MC_INCLUDE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
         ${CMAKE_INSTALL_PREFIX}/include
-        ${PROJECT_SOURCE_DIR}/kassiopeia/KEMField/Source/Bindings/Utilities/include/
         ${INCLUDE_INSTALL_DIR}
     )
 
