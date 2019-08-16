@@ -92,10 +92,17 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         ${INCLUDE_INSTALL_DIR}
     )
 
-    file(GLOB KASS_LIBS "${LIB_INSTALL_DIR}/*.so")
+#    file(GLOB KASS_LIBS "${LIB_INSTALL_DIR}/*.so")
 
+    set (LOCUST_MC_LINK_DIRECTORIES
+        ${LIB_INSTALL_DIR}
+    )
+
+    message( STATUS "@@@@@ ${LIB_INSTALL_DIR}" )
+    find_package( Kommon REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/Kommon )
     
-    
+    message( STATUS "##### ${Kommon_FOUND}" )
+    message( STATUS "##### ${Kommon_LIBRARIES}" )
 
     #pbuilder_add_ext_libraries(
     #    Kommon
