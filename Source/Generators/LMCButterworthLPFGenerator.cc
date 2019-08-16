@@ -116,7 +116,7 @@ namespace locust
         }
 
 
-        delete FilteredSignal;
+        delete [] FilteredSignal;
         return true;
     }
 
