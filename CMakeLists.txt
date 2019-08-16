@@ -92,10 +92,11 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         ${PROJECT_SOURCE_DIR}/kassiopeia/KEMField/Source/Bindings/Utilities/include/
         ${INCLUDE_INSTALL_DIR}
     )
- 
-    set (LOCUST_MC_LINK_DIRECTORIES
-        ${LIB_INSTALL_DIR}
-    )
+
+    file(GLOB KASS_LIBS "${LIB_INSTALL_DIR}/*.so")
+
+    
+    
 
     #pbuilder_add_ext_libraries(
     #    Kommon
@@ -225,9 +226,10 @@ include_directories (${ROOT_INCLUDE_DIR})
 ###########
 
 include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
-if( ${LOCUST_MC_LINK_DIRECTORIES} )
-    link_directories( ${LOCUST_MC_LINK_DIRECTORIES} )
-endif( ${LOCUST_MC_LINK_DIRECTORIES} )
+
+#add_executable(hello ${PROJECT_SOURCE_DIR}/Source/test.cpp)
+#target_link_libraries (hello ${KASSLIBS})
+
 
 add_subdirectory( Source )
 

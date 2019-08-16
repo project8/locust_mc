@@ -190,10 +190,13 @@ if (locust_mc_BUILD_WITH_ROOT)
 endif(locust_mc_BUILD_WITH_ROOT)
 
 
+
 #pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE)
 add_library(LocustMC ${LOCUST_MC_SOURCE_FILES} ${DICT_OUTFILES})
+target_link_libraries (LocustMC ${KASS_LIBS})
 target_link_libraries (LocustMC ${EXTERNAL_LIBRARIES})
 add_dependencies( LocustMC Kassiopeia )
+
 
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
 pbuilder_install_libraries( LocustMC )
