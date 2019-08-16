@@ -43,10 +43,8 @@ namespace locust
     {
     }
 
-    bool KassSignalGenerator::Configure( const scarab::param_node* aParam )
+    bool KassSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-
         if( aParam->has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam->get_value< double >( "lo-frequency" );

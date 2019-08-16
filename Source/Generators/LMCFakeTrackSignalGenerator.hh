@@ -68,7 +68,7 @@ namespace locust
             FakeTrackSignalGenerator( const std::string& aName = "fake-track" );
             virtual ~FakeTrackSignalGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
             bool Configure2( const Digitizer* aDig );
 
 

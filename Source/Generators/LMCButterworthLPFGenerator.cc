@@ -28,9 +28,8 @@ namespace locust
     {
     }
 
-    bool ButterworthLPFGenerator::Configure( const scarab::param_node* aParam )
+    bool ButterworthLPFGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
         return true;
     }
 

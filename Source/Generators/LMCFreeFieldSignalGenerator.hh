@@ -43,7 +43,7 @@ namespace locust
             FreeFieldSignalGenerator( const std::string& aName = "freefield-signal" );
             virtual ~FreeFieldSignalGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 

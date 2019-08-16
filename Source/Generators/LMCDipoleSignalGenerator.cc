@@ -53,84 +53,84 @@ namespace locust
     }
 
 
-    bool DipoleSignalGenerator::Configure( const scarab::param_node* aParam )
+    bool DipoleSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-
-        if( aParam->has( "filter-filename" ) )
+        if( aParam.has( "filter-filename" ) )
         {
-            	gfilter_filename = aParam->get_value< std::string >( "filter-filename" );
+            gfilter_filename = aParam["filter-filename"]().as_string();
         }
 
-        if( aParam->has( "filter-resolution" ) )
+        if( aParam.has( "filter-resolution" ) )
         {
-            	fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
+            fFilter_resolution = aParam["filter-resolution"]().as_double();
         }
 	
-	if( aParam->has( "array-radius" ) )
-	{
-		fArrayRadius = aParam->get_value< double >( "array-radius" );
-	}
-
-        if( aParam->has( "input-signal-frequency"))
+        if( aParam.has( "array-radius" ) )
         {
-        	SetRFFrequency( aParam->get_value< double >( "input-signal-frequency", fRF_frequency ) );
+            fArrayRadius = aParam["array-radius"]().as_double();
         }
 
-        if( aParam->has( "lo-frequency" ) )
+        if( aParam.has( "input-signal-frequency"))
         {
-        	SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
+        	SetRFFrequency( aParam.get_value< double >( "input-signal-frequency", fRF_frequency ) );
+        }
+
+        if( aParam.has( "lo-frequency" ) )
+        {
+        	SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
         }
         
-        if( aParam->has( "buffer-size" ) )
+        if( aParam.has( "buffer-size" ) )
         {
-		SetBufferSize( aParam->get_value< double >( "buffer-size", fFieldBufferSize ) );
+		SetBufferSize( aParam.get_value< double >( "buffer-size", fFieldBufferSize ) );
         }
 
-        if( aParam->has( "buffer-margin" ) )
+        if( aParam.has( "buffer-margin" ) )
         {
-		SetBufferMargin( aParam->get_value< double >( "buffer-margin", fFieldBufferMargin ) );
+		SetBufferMargin( aParam.get_value< double >( "buffer-margin", fFieldBufferMargin ) );
 	}
 
-        if( aParam->has( "input-signal-amplitude" ) )
+        if( aParam.has( "input-signal-amplitude" ) )
         {
-		SetAmplitude( aParam->get_value< double >( "input-signal-amplitude", fAmplitude ) );
+            SetAmplitude( aParam.get_value< double >( "input-signal-amplitude", fAmplitude ) );
         }
-	if( aParam->has( "npatches-per-strip" ) )
-	{
-		fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
-	}
-	if( aParam->has( "patch-spacing" ) )
-	{
-		fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
-	}
-	if( aParam->has( "xml-filename" ) )
-	{
-		gxml_filename = aParam->get_value< std::string >( "xml-filename" );
-	}
-	if( aParam->has( "text-filewriting" ) )
-	{
-		fTextFileWriting = aParam->get_value< bool >( "text-filewriting" );
-	}
-	if( aParam->has( "feed" ) )
-	{
-		if (aParam->get_value< std::string >( "feed" ) == "corporate")
-			fPowerCombiner = 0;  // default
-		else if (aParam->get_value< std::string >( "feed" ) == "series")
-			fPowerCombiner = 1;
-		else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
-			fPowerCombiner = 2;
-		else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
-			fPowerCombiner = 3;
-		else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
-			fPowerCombiner = 4;
-		else
-			fPowerCombiner = 0;  // default
-	}
 
-        if( aParam->has( "domain" ) )
+        if( aParam.has( "npatches-per-strip" ) )
         {
-            string domain = aParam->get_value( "domain" );
+            fNPatchesPerStrip = aParam["npatches-per-strip"]().as_int();
+        }
+
+        if( aParam.has( "patch-spacing" ) )
+        {
+            fPatchSpacing = aParam["patch-spacing"]().as_double();
+        }
+        if( aParam.has( "xml-filename" ) )
+        {
+            gxml_filename = aParam["xml-filename"]().as_string();
+        }
+        if( aParam.has( "text-filewriting" ) )
+        {
+            fTextFileWriting = aParam["text-filewriting"]().as_bool();
+        }
+        if( aParam.has( "feed" ) )
+        {
+            if (aParam["feed"]().as_string() == "corporate")
+                fPowerCombiner = 0;  // default
+            else if (aParam["feed"]().as_string() == "series")
+                fPowerCombiner = 1;
+            else if (aParam["feed"]().as_string() == "one-quarter")
+                fPowerCombiner = 2;
+            else if (aParam["feed"]().as_string() == "seven-eighths")
+                fPowerCombiner = 3;
+            else if (aParam["feed"]().as_string() == "nine-sixteenths")
+                fPowerCombiner = 4;
+            else
+                fPowerCombiner = 0;  // default
+        }
+
+        if( aParam.has( "domain" ) )
+        {
+            string domain = aParam["domain"]().as_string();
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );

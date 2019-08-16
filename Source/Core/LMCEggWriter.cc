@@ -49,7 +49,7 @@ namespace locust
         }
     }
 
-    bool EggWriter::Configure( const scarab::param_node* aNode )
+    bool EggWriter::Configure( const scarab::param_node& aNode )
     {
         if( f_state != kClosed )
         {
@@ -57,11 +57,9 @@ namespace locust
             return false;
         }
 
-        if( aNode == NULL ) return true;
-
-        f_filename = aNode->get_value( "egg-filename", f_filename );
-        f_date = aNode->get_value( "date", f_date );
-        f_description = aNode->get_value( "description", f_description );
+        f_filename = aNode.get_value( "egg-filename", f_filename );
+        f_date = aNode.get_value( "date", f_date );
+        f_description = aNode.get_value( "description", f_description );
 
         if (f_filename=="locust_mc.egg") // placeholder egg file.
           {

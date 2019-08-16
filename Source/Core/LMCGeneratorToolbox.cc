@@ -90,7 +90,7 @@ namespace locust
         while( nextGenerator != NULL )
         {
             LINFO( lmclog, "Configuring generator <" << nextGenerator->GetName() << ">" );
-            nextGenerator->Configure( &aNode[ nextGenerator->GetName() ].as_node() );
+            nextGenerator->Configure( aNode[ nextGenerator->GetName() ].as_node() );
             nextGenerator = nextGenerator->GetNextGenerator();
         }
 
