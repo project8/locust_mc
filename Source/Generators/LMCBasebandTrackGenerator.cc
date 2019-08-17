@@ -30,17 +30,15 @@ namespace locust
     {
     }
 
-    bool BasebandTrackGenerator::Configure( const scarab::param_node* aParam )
+    bool BasebandTrackGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-
-        SetElectronEnergy( aParam->get_value< double >( "electron-energy", fElectronEnergy ) );
-        SetTotalLOFreqs( aParam->get_value< double >( "total-lo-freqs", fTotalLOFreqs ) );
+        SetElectronEnergy( aParam.get_value< double >( "electron-energy", fElectronEnergy ) );
+        SetTotalLOFreqs( aParam.get_value< double >( "total-lo-freqs", fTotalLOFreqs ) );
 
 
-        if( aParam->has( "domain" ) )
+        if( aParam.has( "domain" ) )
         {
-            string domain = aParam->get_value( "domain" );
+            string domain = aParam["domain"]().as_string();
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );

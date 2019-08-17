@@ -29,13 +29,11 @@ namespace locust
     {
     }
 
-    bool SimulationController::Configure( const scarab::param_node* aNode )
+    bool SimulationController::Configure( const scarab::param_node& aNode )
     {
-        if( aNode == NULL ) return true;
-
-        if( aNode->has( "rng-seed" ) )
+        if( aNode.has( "rng-seed" ) )
         {
-            SetRNGSeed( aNode->get_value< int >( "rng-seed" ) );
+            SetRNGSeed( aNode["rng-seed"]().as_int() );
         }
 
 

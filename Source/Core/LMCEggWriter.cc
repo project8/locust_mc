@@ -27,7 +27,7 @@ namespace locust
     LOGGER( lmclog, "EggWriter" );
 
     EggWriter::EggWriter() :
-            f_filename( "/home/hep/heeger/ps48/locust_mc/cbuild/bin/locust_mc_1.egg" ),
+            f_filename( "locust_mc.egg" ),
             f_date(),
             f_description(),
             f_record_length( 0 ),
@@ -49,7 +49,7 @@ namespace locust
         }
     }
 
-    bool EggWriter::Configure( const scarab::param_node* aNode )
+    bool EggWriter::Configure( const scarab::param_node& aNode )
     {
         if( f_state != kClosed )
         {
@@ -57,13 +57,11 @@ namespace locust
             return false;
         }
 
-        if( aNode == NULL ) return true;
+        f_filename = aNode.get_value( "egg-filename", f_filename );
+        f_date = aNode.get_value( "date", f_date );
+        f_description = aNode.get_value( "description", f_description );
 
-        f_filename = aNode->get_value( "egg-filename", f_filename );
-        f_date = aNode->get_value( "date", f_date );
-        f_description = aNode->get_value( "description", f_description );
-
-        if (f_filename=="locust_mc.egg") // placeholder egg file.
+/*        if (f_filename=="locust_mc.egg") // placeholder egg file.
           {
 	  const char *homedir;
           char fname[200];
@@ -71,17 +69,15 @@ namespace locust
 	    {
 	    homedir = getpwuid(getuid())->pw_dir;
             }	              
-          int n = sprintf(fname, "%s/data/Simulation/Tutorial/locust_mc.egg", homedir);
+          int n = sprintf(fname, "locust_mc.egg", homedir);
           f_filename = fname;
           }
-
+*/
         return true;
     }
 
     bool EggWriter::PrepareEgg( const RunLengthCalculator* a_rlc, const Digitizer* a_digitizer )
     {
-
-    	bool IQStream = true; // get rid of this.
 
 
         if( f_state != kClosed )
@@ -100,7 +96,7 @@ namespace locust
         header->SetFilename( f_filename );
         if( f_date.empty() )
         {
-            header->SetTimestamp( scarab::get_absolute_time_string()  );
+            header->SetTimestamp( scarab::get_formatted_now()  );
         }
         else
         {
@@ -125,22 +121,11 @@ namespace locust
         std::vector< unsigned > t_chan_vec;
         uint32_t t_stream_id;
 
-        if (!IQStream)
-        {
-            t_stream_id = header->AddStream( "locust_mc",
-                a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), 1,
-                t_data_type_size, t_signed_vals,
-                t_bit_depth, t_bits_right_aligned,
-                &t_chan_vec );
-        }
-        else
-        {
             t_stream_id = header->AddStream( "locust_mc", n_channels, 1,
                 a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), a_rlc->GetSampleSize(),
                 t_data_type_size, t_signed_vals,
                 t_bit_depth, t_bits_right_aligned,
                 &t_chan_vec );
-        }
 
 
         for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )

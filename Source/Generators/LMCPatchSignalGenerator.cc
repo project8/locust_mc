@@ -34,6 +34,7 @@ namespace locust
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
         fPowerCombiner( 0 ),
+		fRJunction( 0.3 ),
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
         phiLO_t(0.),
@@ -58,71 +59,74 @@ namespace locust
     {
     }
 
-    bool PatchSignalGenerator::Configure( const scarab::param_node* aParam )
+    bool PatchSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam->has( "filter-filename" ) )
+        if( aParam.has( "filter-filename" ) )
         {
-            gfilter_filename = aParam->get_value< std::string >( "filter-filename" );
+            gfilter_filename = aParam["filter-filename"]().as_string();
         }
 
-        if( aParam->has( "filter-resolution" ) )
+        if( aParam.has( "filter-resolution" ) )
         {
-            fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
+            fFilter_resolution = aParam["filter-resolution"]().as_double();
         }
 
-        if( aParam->has( "buffer-size" ) )
+        if( aParam.has( "buffer-size" ) )
         {
-        	fFieldBufferSize = aParam->get_value< double >( "buffer-size" );
+        	fFieldBufferSize = aParam["buffer-size"]().as_double();
         }
 
-        if( aParam->has( "buffer-margin" ) )
+        if( aParam.has( "buffer-margin" ) )
         {
-        	fFieldBufferMargin = aParam->get_value< double >( "buffer-margin" );
+        	fFieldBufferMargin = aParam["buffer-margin"]().as_double();
         }
 
-
-
-        if( aParam == NULL) return true;
-
-        if( aParam->has( "lo-frequency" ) )
+        if( aParam.has( "lo-frequency" ) )
         {
-            fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
+            fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
-        if( aParam->has( "array-radius" ) )
+        if( aParam.has( "array-radius" ) )
         {
-            fArrayRadius = aParam->get_value< double >( "array-radius" );
+            fArrayRadius = aParam["array-radius"]().as_double();
         }
-        if( aParam->has( "npatches-per-strip" ) )
+        if( aParam.has( "npatches-per-strip" ) )
         {
-            fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+            fNPatchesPerStrip = aParam["npatches-per-strip"]().as_int();
         }
-        if( aParam->has( "patch-spacing" ) )
+        if( aParam.has( "patch-spacing" ) )
         {
-            fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+            fPatchSpacing = aParam["patch-spacing"]().as_double();
         }
-        if( aParam->has( "xml-filename" ) )
+        if( aParam.has( "xml-filename" ) )
         {
-            gxml_filename = aParam->get_value< std::string >( "xml-filename" );
+            gxml_filename = aParam["xml-filename"]().as_string();
         }
-        if( aParam->has( "text-filewriting" ) )
+        if( aParam.has( "text-filewriting" ) )
         {
-            fTextFileWriting = aParam->get_value< bool >( "text-filewriting" );
+            fTextFileWriting = aParam["text-filewriting"]().as_bool();
         }
-        if( aParam->has( "feed" ) )
+        if( aParam.has( "feed" ) )
           {
-    	if (aParam->get_value< std::string >( "feed" ) == "corporate")
+    	if (aParam["feed"]().as_string() == "corporate")
     	  fPowerCombiner = 0;  // default
-    	else if (aParam->get_value< std::string >( "feed" ) == "series")
+    	else if (aParam["feed"]().as_string() == "series")
     	  fPowerCombiner = 1;
-    	else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
+    	else if (aParam["feed"]().as_string() == "one-quarter")
     	  fPowerCombiner = 2;
-    	else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
+    	else if (aParam["feed"]().as_string()  == "seven-eighths")
     	  fPowerCombiner = 3;
-    	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
+    	else if (aParam["feed"]().as_string() == "nine-sixteenths")
     	  fPowerCombiner = 4;
+    	else if (aParam["feed"]().as_string() ==  "voltage-divider")
+    	  fPowerCombiner = 5;
     	else
     	  fPowerCombiner = 0;  // default
           }
+        if( aParam.has( "junction-resistance" ) )
+        {
+            fRJunction = aParam["junction-resistance"]().as_double();
+        }
+
 
         return true;
     }
@@ -346,9 +350,14 @@ namespace locust
           {
     	    VoltageFIRSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, patchIndex);
           }
+        if (fPowerCombiner == 5)
+          {
+            VoltageFIRSample *= aPowerCombiner.GetVoltageDividerWeight(fRJunction, 1.0, 10.e6, fNPatchesPerStrip, patchIndex);
+          }
 
     	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
         aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
 
     }
 

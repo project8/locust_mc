@@ -2,6 +2,7 @@
 #define LMCFIELDESTIMATOR_HH_ 
 
 //#include "LMCThreeVector.hh"
+#include "LMCGenerator.hh"
 #include "LMCException.hh"
 #include "param.hh"
 
@@ -21,6 +22,7 @@ namespace locust
 	 Available configuration options:
      	 - "generator-type": string -- Define if the generator to be used is based on impulse response or a analytical
 	 - "fir-filename": string -- The location of the file containing impulse response
+	 - "filter-dt": double (1e-12) -- The size of filter sample width (seconds)
     */
     
     class FieldEstimator 
@@ -30,15 +32,24 @@ namespace locust
             virtual ~FieldEstimator();
 	    
 	    // Member functions
-	    bool Configure( const scarab::param_node* aNode );
+	    bool Configure( const scarab::param_node& aNode );
 	    bool ReadFIRFile();
+	    double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal with FIR 
+	    int GetFilterSize();//Number of entries in the filter
+	    double GetFilterResolution();//Get the resolution of the filter
+	    //Apply derivative of a given signal. This will be more complicated with implmentation of other field types 
+	    double ApplyDerivative(double voltagePhase);
+	    //Get the value of the field for a given amplitude and phase. 
+	    //Perhaps has to be moved to LMCAntennaSignalTransmitter
+	    double GetFieldAtOrigin(double inputAmplitude,double voltagePhase); 
 
         private:
 
 	    // Member variables
 	    std::string fFIRFilename;
-	    std::string fGeneratorType;
 	    std::vector<double> fFIRFilter;
+	    int fNFIRFilterBins;
+	    double fFilterResolution;
 
 	    //Member functions
 	    bool ends_with(const std::string &, const std::string &);

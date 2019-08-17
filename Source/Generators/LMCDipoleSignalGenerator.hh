@@ -1,17 +1,21 @@
 /*
- * LMCTestFIRFilterGenerator.hh
+ * LMCDipoleSignalGenerator.hh
  *
- *  Created on: May 3 2019
- *      Author: plslocum
+ *  Created on: July 11 2019
+ *      Author: Pranava Teja Surukuchi
  */
 
-#ifndef LMCTESTFIRFILTERGENERATOR_HH_
-#define LMCTESTFIRFILTERGENERATOR_HH_
+#ifndef LMCDIPOLESIGNALGENERATOR_HH_
+#define LMCDIPOLESIGNALGENERATOR_HH_ 
 
+#include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
-#include "LMCRunLengthCalculator.hh"
+#include "LMCChannel.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
+#include "LMCAntennaSignalTransmitter.hh"
 
 
 namespace scarab
@@ -24,18 +28,17 @@ namespace locust
   class Digitizer;
 
     /*!
-     @class TestFIRFilterGenerator
-     @author P. L. Slocum
+     @class DipoleSignalGenerator
+     @author  Pranava Teja Surukuchi 
 
-     @brief Compute FIR response to a sinusoidal E field, treating the E field as a real arbitrary signal.  Buffer E fields to constrain arrival times (roughly).  Extract mag and phase of incident E field with Hilbert transform and convolve it with FIR filter to generate each voltage.  
+     @brief Signal generator for a dipole antenna. 
+     
+     @details Uses AntennaSignalTransmitter for obtaining the field which is thewen used to calculate the voltage measured by the patches
 
-     @details
-     Can operate in time or frequency space
-
-     Configuration name: "test-firfilter"
+     Configuration name: "dipole-signal-generator"
 
      Available configuration options:
-     - "rf-frequency": double -- Frequency of the incident sine wave.
+     - "input-signal-frequency": double -- Frequency of the incident sine wave.
      - "lo-frequency": double -- Frequency of the local oscillator.
      - "amplitude": double -- Amplitude of the incident sine wave.
      - "filter-filename": double -- path to FIR text file.
@@ -45,21 +48,24 @@ namespace locust
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
             or frequency domain
     
-     Available options: "time" and "freq" [default]
+     Available options: "time"[default] and "freq" 
 
     */
-    class TestFIRFilterGenerator : public Generator
+    class DipoleSignalGenerator : public Generator
     {
         public:
-            TestFIRFilterGenerator( const std::string& aName = "test-firfilter" );
-            virtual ~TestFIRFilterGenerator();
+            DipoleSignalGenerator( const std::string& aName = "antenna-dipole-generator" );
+            virtual ~DipoleSignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
-            bool Configure2( const Digitizer* aDig );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
-            double GetRFFrequency() const;
+	    void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
+
+	    void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
+
+	    double GetRFFrequency() const;
             void SetRFFrequency( double aFrequency );
 
             double GetLOFrequency() const;
@@ -80,11 +86,14 @@ namespace locust
 
         private:
             bool DoGenerate( Signal* aSignal );
-
             bool DoGenerateTime( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
+            bool (DipoleSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
-            bool (TestFIRFilterGenerator::*fDoGenerateFunc)( Signal* aSignal );
+	    //void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
+	    double RotateZ(int component, double angle, double x, double y);
+	    void InitializePatchArray();
+
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
             double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
@@ -94,7 +103,17 @@ namespace locust
             void PopBuffers(unsigned channel, unsigned patch);
             void CleanupBuffers();
 
-            double* filterarray;
+            AntennaSignalTransmitter fAntennaSignalTransmitter; 
+	    std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+	    std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            double fArrayRadius;  // from json file.
+            int fNPatchesPerStrip; // from json file.
+            double fPatchSpacing; // from json file.
+            std::string gxml_filename;// from json file.
+            int fPowerCombiner;// from json file.
+            bool fTextFileWriting;// from json file.
+
+	    double* filterarray;
             double fRF_frequency;
             double fLO_frequency;
             double fAmplitude;
@@ -102,8 +121,6 @@ namespace locust
             std::string gfilter_filename;
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
-            unsigned fNPatches; // placeholder for buffer dimensioning.
-
 
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EPhaseBuffer;
@@ -117,5 +134,5 @@ namespace locust
 
 } /* namespace locust */
 
-#endif /* LMCTestFIRFilterGENERATOR_HH_ */
+#endif /* LMCDIPOLESIGNALGENERATOR_HH_ */
 

@@ -36,30 +36,28 @@ namespace locust
     {
     }
 
-    bool RunLengthCalculator::Configure( const scarab::param_node* aNode )
+    bool RunLengthCalculator::Configure( const scarab::param_node& aNode )
     {
-
-        if( aNode == NULL ) return false;
 
         // first, configure items that will affect the method for calculating the run length
 
-        if( aNode->has( "n-records" ) )
-            SetNRecords( aNode->get_value< unsigned >( "n-records" ) );
+        if( aNode.has( "n-records" ) )
+            SetNRecords( aNode["n-records"]().as_uint() );
 
-        if( aNode->has( "duration" ) )
-            SetDuration( aNode->get_value< double >( "duration" ) );
+        if( aNode.has( "duration" ) )
+            SetDuration( aNode["duration"]().as_double() );
 
         // next, configure items that are needed no matter what.
 
-          SetRecordSize( aNode->get_value< unsigned >( "record-size", fRecordSize ) );
+          SetRecordSize( aNode.get_value< unsigned >( "record-size", fRecordSize ) );
 
-        if( aNode->has( "acquisition-rate" ) )
-            SetAcquisitionRate( aNode->get_value< double >( "acquisition-rate" ) );
-        if( aNode->has( "bin-width" ) )
-            SetBinWidth( aNode->get_value< double >( "bin-width" ) );
+        if( aNode.has( "acquisition-rate" ) )
+            SetAcquisitionRate( aNode["acquisition-rate"]().as_double() );
+        if( aNode.has( "bin-width" ) )
+            SetBinWidth( aNode["bin-width"]().as_double() );
 
-        if(aNode->has( "n-channels" ) )
-	  SetNChannels( aNode->get_value< unsigned >( "n-channels" ) );
+        if(aNode.has( "n-channels" ) )
+            SetNChannels( aNode["n-channels"]().as_uint() );
 
         return true;
     }
@@ -171,6 +169,11 @@ namespace locust
         return;
     }
 
+    void RunLengthCalculator::Visit( const DipoleSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
 
     void RunLengthCalculator::Visit( const TestFIRFilterGenerator* )
     {

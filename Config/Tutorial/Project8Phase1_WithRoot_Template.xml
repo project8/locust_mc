@@ -13,8 +13,8 @@
 
 <external_define name="alignment" value="0."/>
 
-<!-- <external_define name="generator" value="gen_uniform"/> -->
- <external_define name="generator" value="gen_krypton"/>
+ <external_define name="generator" value="gen_uniform"/>
+<!-- <external_define name="generator" value="gen_krypton"/> -->
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
@@ -30,7 +30,7 @@
 
 
 <geometry>
-    <include name="/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase1Geometry.xml"/>
+    <include name="/home/penny/locust_mc/Config/Tutorial/Project8Phase1Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -395,7 +395,7 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-3"/>
+    <ksterm_max_time name="term_max_time" time="5.0e-6"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="25000."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
@@ -521,7 +521,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="100"
+        events="1"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"

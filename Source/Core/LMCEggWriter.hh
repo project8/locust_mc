@@ -51,7 +51,7 @@ namespace locust
             EggWriter();
             virtual ~EggWriter();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             mv_referrable( std::string, filename );
             mv_referrable( std::string, date );
