@@ -1,28 +1,4 @@
 
-if (locust_mc_BUILD_WITH_KASSIOPEIA)
-    if(FALSE)
-
-    # Make up for variables not created by PackageBuilder, but required by kasper_module_paths
-    set_path(DATA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/data" "Install directory for data files")
-    set_path(SCRATCH_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/scratch" "Directory for temporary files")
-    set_path(OUTPUT_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/output" "Directory for output files")
-    set_path(CACHE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/cache" "Directory for cache files")
-    set_path(LOG_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/log" "Directory for log files")
-    
-    kasper_module_paths( locust_mc )
-    
-    foreach( FLAG ${Kassiopeia_CFLAGS} )
-        message( STATUS "%%% adding {FLAG}" )
-        add_definitions( -D${FLAG} )
-    endforeach( FLAG )
-        
-    # include directories
-    #kasper_internal_include_directories(
-    #)
-endif(FALSE)
-endif (locust_mc_BUILD_WITH_KASSIOPEIA)
-
-
 set( LOCUST_MC_HEADER_FILES
     Core/LMCConst.hh
     Core/LMCEggWriter.hh
@@ -184,19 +160,17 @@ if (locust_mc_BUILD_WITH_ROOT)
             ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCLinkDef.hh 
         VERBATIM
     )
+
+    set (LOCUST_MC_SOURCE_FILES
+        ${LOCUST_MC_SOURCE_FILES}
+        ${DICT_OUTFILES}
+    )
     
     pbuilder_install_files (${LIB_INSTALL_DIR} ${DICT_PCMFILES})
         
 endif(locust_mc_BUILD_WITH_ROOT)
 
 
-
-#pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE)
-add_library(LocustMC ${LOCUST_MC_SOURCE_FILES} ${DICT_OUTFILES})
-target_link_libraries (LocustMC ${KASS_LIBS})
-target_link_libraries (LocustMC ${EXTERNAL_LIBRARIES})
-add_dependencies( LocustMC Kassiopeia )
-
+pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
 
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
-pbuilder_install_libraries( LocustMC )

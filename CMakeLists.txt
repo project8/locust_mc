@@ -30,35 +30,10 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
-    # Keep KasperDefaults from overriding the install prefix
-    #set( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT FALSE )
-
-    #list( APPEND CMAKE_MODULE_PATH 
-    #    ${PROJECT_SOURCE_DIR}/kassiopeia/Kommon/cmake 
-    #)
-    #include( KasperDefaults )
-    #set( Kommon_DIR ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
-    #set( KGeoBag_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
-    #set( KEMField_DIR ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
-
-    #set( CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)    
-    #set( DATA_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/data )    
-    
     include(ExternalProject)
     message( STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}" )
-
     
-    #ExternalProject_Add( Kassiopeia_prelim
-    #    PREFIX            ${CMAKE_INSTALL_PREFIX}
-    #    SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    CMAKE_CACHE_ARGS  -DCMAKE_INSTALL_PREFX:STRING=${CMAKE_INSTALL_PREFIX} -DDATA_INSTALL_DIR:STRING=${CMAKE_INSTALL_PREFIX}/data -DCMAKE_INSTALL_LIBDIR:STRING=${CMAKE_INSTALL_PREFIX}/lib -DBUILD_KASSIOPEIA:BOOL=FALSE -DBUILD_KEMFIELD:BOOL=FALSE -DBUILD_KGEOBAG:BOOL=FALSE -DBUILD_COMMON:BOOL=TRUE -DCMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT:BOOL=FALSE
-    #    BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
-    #    CMAKE_COMMAND     cmake
-    #    BUILD_COMMAND     ""
-    #    INSTALL_COMMAND   ""
-    #)        
-    
-    ExternalProject_Add( Kassiopeia
+    ExternalProject_Add( KassiopeiaExt
         PREFIX            ${CMAKE_INSTALL_PREFIX}
         SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
         CMAKE_ARGS        -U *_INSTALL_DIR
@@ -71,7 +46,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         INSTALL_COMMAND   make install
     )
 
-    ExternalProject_Add_Step( Kassiopeia prelim_configure
+    ExternalProject_Add_Step( KassiopeiaExt prelim_configure
         COMMAND           cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
         DEPENDERS         configure
         BYPRODUCTS        ${PROJECT_BINARY_DIR}/kassiopeia/CMakeCache.txt
@@ -79,12 +54,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         USES_TERMINAL     1
     )
 
-    #include( ${PROJECT_BINARY_DIR}/kassiopeia/Kommon/KommonConfig.cmake )
-    #include_directories( ${Kommon_INCLUDE_DIRS} )
-    #pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
-    #message( STATUS "kommon include dirs:  ${Kommon_INCLUDE_DIRS}" )
-    #message( STATUS "kommon libraries: ${Kommon_LIBRARIES}" )
-            
     set (LOCUST_MC_INCLUDE_DIRECTORIES
         ${LOCUST_MC_INCLUDE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
@@ -92,101 +61,34 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         ${INCLUDE_INSTALL_DIR}
     )
 
-#    file(GLOB KASS_LIBS "${LIB_INSTALL_DIR}/*.so")
-
     set (LOCUST_MC_LINK_DIRECTORIES
         ${LIB_INSTALL_DIR}
     )
 
-    message( STATUS "@@@@@ ${LIB_INSTALL_DIR}" )
     find_package( Kommon REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/Kommon )
-    
-    message( STATUS "##### ${Kommon_FOUND}" )
-    message( STATUS "##### ${Kommon_LIBRARIES}" )
+    find_package( KGeoBag REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/KGeoBag )
+    find_package( KEMField REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/KEMField )
+    find_package( Kassiopeia REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/Kassiopeia )
 
-    #pbuilder_add_ext_libraries(
-    #    Kommon
-    #    KGeoBag
-    #    KEMField
-    #    Kassiopeia
-    #)
+    pbuilder_add_ext_libraries(
+        ${Kommon_LIBRARIES}
+        ${KGeoBag_LIBRARIES}
+        ${KEMField_LIBRARIES}
+        ${Kassiopeia_LIBRARIES}
+    )
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
-
-
-
 
 
 #####################
 # locust submodules #
 #####################
 
-
 pbuilder_add_submodule( Scarab Scarab/library )
 
 pbuilder_add_submodule( Monarch monarch )
 # we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
 set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
-
-
-#if (locust_mc_BUILD_WITH_KASSIOPEIA)
-if (FALSE)
-    add_subdirectory( kassiopeia )
-    
-    if( Kommon_ENABLE_DEBUG )
-        add_definitions( -DKommon_ENABLE_DEBUG )
-    endif( Kommon_ENABLE_DEBUG )
-    if( Kommon_USE_VTK )
-        add_definitions( -DKommon_ENABLE_DEBUG )
-    endif( Kommon_USE_VTK )
-    if( Kommon_USE_ROOT )
-        add_definitions( -DKommon_USE_ROOT )
-    endif( Kommon_USE_ROOT )
-    
-    if( KGeoBag_ENABLE_DEBUG )
-        add_definitions( -DKGeoBag_ENABLE_DEBUG )
-    endif( KGeoBag_ENABLE_DEBUG )
-    if( KGeoBag_USE_ROOT )
-        add_definitions( -DKGeoBag_USE_ROOT )
-    endif( KGeoBag_USE_ROOT )
-    if( KGeoBag_USE_VTK )
-        add_definitions( -DKGeoBag_USE_VTK )
-    endif( KGeoBag_USE_VTK )
-    
-    if( KEMField_USE_ROOT )
-        add_definitions( -DKEMField_USE_ROOT )
-    endif( KEMField_USE_ROOT )
-    if( KEMField_USE_VTK )
-        add_definitions( -DKEMField_USE_VTK )
-    endif( KEMField_USE_VTK )
-    
-    if( Kassiopeia_ENABLE_DEBUG )
-        add_definitions( -DKassiopeia_ENABLE_DEBUG )
-    endif( Kassiopeia_ENABLE_DEBUG )
-    if( Kassiopeia_USE_ROOT )
-        add_definitions( -DKassiopeia_USE_ROOT )
-    endif( Kassiopeia_USE_ROOT )
-    if( Kassiopeia_USE_VTK )
-        add_definitions( -DKassiopeia_USE_VTK )
-    endif( Kassiopeia_USE_VTK )
-    
-    include( ${PROJECT_BINARY_DIR}/kassiopeia/Kommon/KommonConfig.cmake )
-    include_directories( ${Kommon_INCLUDE_DIRS} )
-    pbuilder_add_ext_libraries( ${Kommon_LIBRARIES} )
-    
-    include( ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag/KGeoBagConfig.cmake )
-    include_directories( ${KGeoBag_INCLUDE_DIRS} )
-    pbuilder_add_ext_libraries( ${KGeoBag_LIBRARIES} )
-    
-    include( ${PROJECT_BINARY_DIR}/kassiopeia/KEMField/KEMFieldConfig.cmake )
-    include_directories( ${KEMField_INCLUDE_DIRS} )
-    pbuilder_add_ext_libraries( ${KEMField_LIBRARIES} )
-    
-    include( ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia/KassiopeiaConfig.cmake )
-    include_directories( ${Kassiopeia_INCLUDE_DIRS} )
-    pbuilder_add_ext_libraries( ${Kassiopeia_LIBRARIES} )
-endif (FALSE)
-#endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
 #######################
@@ -223,23 +125,23 @@ endif (ROOT_FOUND)
 include_directories (${ROOT_INCLUDE_DIR})
 
 
-
-
-
-
 ###########
 # library #
 ###########
 
+if( locust_mc_BUILD_WITH_KASSIOPEIA )
+    pbuilder_add_ext_libraries(
+        ${Kommon_LIBRARIES}
+        ${KGeoBag_LIBRARIES}
+        ${KEMField_LIBRARIES}
+        ${Kassiopeia_LIBRARIES}
+    )
+endif( locust_mc_BUILD_WITH_KASSIOPEIA )
+
 include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
-
-#add_executable(hello ${PROJECT_SOURCE_DIR}/Source/test.cpp)
-#target_link_libraries (hello ${KASSLIBS})
-
+link_directories( ${LOCUST_MC_LINK_DIRECTORIES} )
 
 add_subdirectory( Source )
-
-
 
 ###############
 # executables #
