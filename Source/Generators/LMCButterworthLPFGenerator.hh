@@ -20,9 +20,10 @@ namespace locust
      @brief Apply digital low pass filter to signal.
 
      @details
-     This is an 8th order Butterworth low-pass filter defined by coefficients that are
-     presently hard-coded in LMCButterworthLPFGenerator::SetCoefficients().  The coefficients
-     are calculated in the Mathematica notebook as in
+     This is an 8th order Butterworth low-pass filter that operates only in the time domain,
+     defined by coefficients that are presently hard-coded in
+     LMCButterworthLPFGenerator::SetCoefficients().  The coefficients are calculated in the
+     Mathematica notebook as in
      https://github.com/project8/scripts/blob/master/slocum/RFButterworth8thOrder.nb .
 
      To check the output of this filter, use the following two generators:  "gaussian-noise"
@@ -30,7 +31,7 @@ namespace locust
      should be clearly visible.
 
      This generator can only be used after decimation.  It does not stop frequency aliasing.
-     The filter behavior is wc = 70.e6 Hz, 100X attenuation at 95 MHz, fs=200 MHz.
+     The present filter behavior is wc = 70.e6 Hz, 100X attenuation at 95 MHz, fs=200 MHz.
 
      If a Butterworth filter is desired for use before decimation, then the filter coefficients
      would need to be recalculated at the faster pre-decimation sampling frequency.  The filtering

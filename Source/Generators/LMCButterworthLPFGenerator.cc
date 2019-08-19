@@ -2,7 +2,7 @@
  * LMCButterworthLPFGenerator.cc
  *
  *  Created on: Sept 9, 2016
- *      Author: plslocum after nsoblath
+ *      Author: plslocum
  */
 
 #include "LMCButterworthLPFGenerator.hh"
@@ -95,8 +95,10 @@ namespace locust
 
     bool ButterworthLPFGenerator::DoGenerateTime( Signal* aSignal )
     {
-        // 8th order Butterworth filter with wc = 70.e6 Hz, 100X attenuation at 95 MHz, fs=200 MHz.
+        const unsigned nchannels = fNChannels;
 
+        for (int ch=0; ch<nchannels; ch++)
+        {
         for( unsigned IQindex = 0; IQindex < 2; IQindex++ )
         {
 
@@ -106,7 +108,7 @@ namespace locust
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index ) // initialize
           {
           FilteredMagnitude[index] = 0.;
-          RawMagnitude[index] = aSignal->SignalTimeComplex()[index][IQindex];
+          RawMagnitude[index] = aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][IQindex];
           }
 
         for( unsigned index = fN; index < aSignal->TimeSize(); ++index )
@@ -130,13 +132,14 @@ namespace locust
 
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )  // apply filter
           {
-          aSignal->SignalTimeComplex()[index][IQindex] = FilteredMagnitude[index];
+          aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][IQindex] = FilteredMagnitude[index];
           }
 
         delete FilteredMagnitude;
         delete RawMagnitude;
 
         } // IQindex
+        } // nchannels
 
 
 
