@@ -157,6 +157,7 @@ include_directories (${ROOT_INCLUDE_DIR})
 ###########
 
 add_subdirectory( Source )
+add_subdirectory( Data )
 
 
 

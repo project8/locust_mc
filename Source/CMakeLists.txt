@@ -94,11 +94,6 @@ set( LOCUST_MC_SOURCE_FILES
 #    Generators/LMCTrappedElectronGenerator.cc
 )
 
-set( LOCUST_MC_DATA_FILES
-    Core/Data/H2OscillatorStrength.txt
-    Core/Data/KrOscillatorStrength.txt
-)
-
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
 
@@ -202,5 +197,4 @@ add_library(LocustMC ${LOCUST_MC_SOURCE_FILES} ${DICT_OUTFILES})
 target_link_libraries (LocustMC ${EXTERNAL_LIBRARIES})
 
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
-pbuilder_install_data( ${LOCUST_MC_DATA_FILES} )
 pbuilder_install_libraries( LocustMC )
