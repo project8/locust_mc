@@ -25,16 +25,15 @@ namespace locust
     {
     }
 
-    bool FieldEstimator::Configure(const scarab::param_node* aParam)
+    bool FieldEstimator::Configure(const scarab::param_node& aParam)
     {
-	    if( aParam == NULL) return true;
-	    if( aParam->has( "fir-filename" ) )
+	    if( aParam.has( "fir-filename" ) )
 	    {
-		    fFIRFilename=aParam->get_value<std::string>("fir-filename");
+		    fFIRFilename=aParam["fir-filename"]().as_string();
 	    }
-	    if( aParam->has( "filter-dt" ) )
+	    if( aParam.has( "filter-dt" ) )
 	    {
-		    fFilterResolution=aParam->get_value<double>("filter-dt");
+		    fFilterResolution=aParam["filter-dt"]().as_double();
 	    }
 	    return true;
     }

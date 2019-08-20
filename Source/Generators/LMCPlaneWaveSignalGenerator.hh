@@ -42,7 +42,7 @@ namespace locust
     PlaneWaveSignalGenerator( const std::string& aName = "planewave-signal" );
     virtual ~PlaneWaveSignalGenerator();
 
-    bool Configure( const scarab::param_node* aNode );
+    bool Configure( const scarab::param_node& aNode );
 
     void Accept( GeneratorVisitor* aVisitor ) const;
               

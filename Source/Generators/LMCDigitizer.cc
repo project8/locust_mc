@@ -35,20 +35,16 @@ namespace locust
     {
     }
 
-    bool Digitizer::Configure( const scarab::param_node* aNode )
+    bool Digitizer::Configure( const scarab::param_node& aNode )
     {
-        if( aNode == NULL ) return true;
+        if( aNode.has( "adc-values-signed" ) )
+            SetADCValuesSigned( aNode.get_value< bool >( "adc-values-signed", fADCValuesSigned ) );
 
-        if( aNode->has( "adc-values-signed" ) )
-            SetADCValuesSigned( aNode->get_value< bool >( "adc-values-signed", fADCValuesSigned ) );
-
-
-        unsigned bitDepth = aNode->get_value( "bit-depth", fParams.bit_depth );
-        unsigned dataTypeSize = aNode->get_value( "data-type-size", fParams.data_type_size );
-        double vRange = aNode->get_value( "v-range", fParams.v_range );
-        double vMin = aNode->get_value( "v-offset", fParams.v_offset );
+        unsigned bitDepth = aNode.get_value( "bit-depth", fParams.bit_depth );
+        unsigned dataTypeSize = aNode.get_value( "data-type-size", fParams.data_type_size );
+        double vRange = aNode.get_value( "v-range", fParams.v_range );
+        double vMin = aNode.get_value( "v-offset", fParams.v_offset );
         
-      
 
         get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
 

@@ -29,9 +29,8 @@ namespace locust
   {
   }
 
-  bool DecimateSignalGenerator::Configure( const scarab::param_node* aParam )
+  bool DecimateSignalGenerator::Configure( const scarab::param_node& aParam )
   {
-    if( aParam == NULL) return true;
     return true;
   }
 

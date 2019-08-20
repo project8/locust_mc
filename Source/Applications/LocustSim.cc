@@ -35,7 +35,7 @@ int main( int argc, char** argv )
 
         LPROG( lmclog, "Setting up generator toolbox" );
         GeneratorToolbox toolbox;
-        if( ! toolbox.Configure( &configurator.config() ) )
+        if( ! toolbox.Configure( configurator.config() ) )
         {
             LERROR( lmclog, "Unable to configure the generator toolbox" );
             return -1;
@@ -44,7 +44,7 @@ int main( int argc, char** argv )
         LPROG( lmclog, "Setting up simulation controller" );
         SimulationController controller;
         controller.SetFirstGenerator( toolbox.GetFirstGenerator() );
-        if( ! controller.Configure( configurator.config().node_at( "simulation" ) ) )
+        if( ! controller.Configure( configurator.config()[ "simulation"].as_node()  ) )
         {
             LERROR( lmclog, "Unable to configure the simulation controller" );
             return -1;

@@ -34,33 +34,30 @@ namespace locust
     {
     }
 
-    bool GaussianNoiseGenerator::Configure( const scarab::param_node* aParam )
+    bool GaussianNoiseGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-
-
-        if( aParam->has( "noise-floor" ) )
+        if( aParam.has( "noise-floor" ) )
         {
-//            tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
-            fSigma = sqrt( aParam->get_value< double >( "noise-floor" ));
-//            printf("sigma is %g and fAcquisitionRate is %g\n", tSigma, fAcquisitionRate); getchar();
+            //tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
+            fSigma = sqrt( aParam["noise-floor"]().as_double() );
+            //printf("sigma is %g and fAcquisitionRate is %g\n", tSigma, fAcquisitionRate); getchar();
         }
         else
         {
-            fSigma = aParam->get_value< double >( "sigma");
+            fSigma = aParam["sigma"]().as_double();
         }
 
   //      SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
 
-        if (aParam->has( "random-seed") )
+        if (aParam.has( "random-seed") )
         {
-            SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
+            SetRandomSeed(  aParam.get_value< int >( "random-seed",fRandomSeed) );
         }
 
 
-        if( aParam->has( "domain" ) )
+        if( aParam.has( "domain" ) )
         {
-            string domain = aParam->get_value( "domain" );
+            string domain = aParam["domain"]().as_string();
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );

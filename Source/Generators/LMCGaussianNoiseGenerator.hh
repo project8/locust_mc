@@ -44,7 +44,7 @@ namespace locust
             GaussianNoiseGenerator( const std::string& aName = "gaussian-noise" );
             virtual ~GaussianNoiseGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
