@@ -19,6 +19,10 @@ set_option( USE_CPP11 TRUE )
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 
+# make the data install directory available as a preprocessor macro
+add_definitions( -DPB_DATA_INSTALL_DIR=${DATA_INSTALL_DIR} )
+
+
 #####################
 # locust submodules #
 #####################

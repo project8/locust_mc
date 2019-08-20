@@ -10,6 +10,7 @@
 #include "logger.hh"
 #include "LMCConst.hh"
 #include "LMCThreeVector.hh"
+#include "path.hh"
 #include <random>
 #include <math.h>
 #include <sstream>
@@ -150,8 +151,9 @@ namespace locust
         }
 
         std::vector<std::pair<double, double> > h2Data, krData;
-        ReadFile("H2OscillatorStrength.txt", h2Data);
-        ReadFile("KrOscillatorStrength.txt", krData);
+        scarab::path dataDir( TOSTRING(PB_DATA_INSTALL_DIR) );
+        ReadFile((dataDir / "H2OscillatorStrength.txt").string(), h2Data);
+        ReadFile((dataDir / "KrOscillatorStrength.txt").string(), krData);
         ExtrapolateData(h2Data, std::array<double, 3>{0.195, 14.13, 10.60});
         ExtrapolateData(krData, std::array<double, 3>{0.4019, 22.31, 16.725});
         SetInterpolator(fH2Interpolant,h2Data);
