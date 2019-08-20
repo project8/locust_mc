@@ -35,30 +35,28 @@ namespace locust
     }
 
 
-    bool TestSignalGenerator::Configure( const scarab::param_node* aParam )
+    bool TestSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-
-        if( aParam->has( "rf-frequency" ) )
+        if( aParam.has( "rf-frequency" ) )
         {
-        SetRFFrequency( aParam->get_value< double >( "rf-frequency", fRF_frequency ) );
+        SetRFFrequency( aParam.get_value< double >( "rf-frequency", fRF_frequency ) );
         }
 
-        if( aParam->has( "lo-frequency" ) )
+        if( aParam.has( "lo-frequency" ) )
         {
-        SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
-        }
-
-
-        if( aParam->has( "amplitude" ) )
-        {
-        SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
+        SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
         }
 
 
-        if( aParam->has( "domain" ) )
+        if( aParam.has( "amplitude" ) )
         {
-            string domain = aParam->get_value( "domain" );
+        SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude ) );
+        }
+
+
+        if( aParam.has( "domain" ) )
+        {
+            string domain = aParam["domain"]().as_string();
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );

@@ -58,69 +58,67 @@ namespace locust
     }
 
 
-    bool FakeTrackSignalGenerator::Configure( const scarab::param_node* aParam )
+    bool FakeTrackSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
+        if( aParam.has( "signal-power" ) )
+            SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
 
-        if( aParam->has( "signal-power" ) )
-            SetSignalPower( aParam->get_value< double >( "signal-power", fSignalPower ) );
+        if( aParam.has( "start-frequency-max" ) )
+            SetStartFrequencyMax( aParam.get_value< double >( "start-frequency-max", fStartFrequencyMax ) );
 
-        if( aParam->has( "start-frequency-max" ) )
-            SetStartFrequencyMax( aParam->get_value< double >( "start-frequency-max", fStartFrequencyMax ) );
+        if( aParam.has( "start-frequency-min" ) )
+            SetStartFrequencyMin( aParam.get_value< double >( "start-frequency-min", fStartFrequencyMin ) );
 
-        if( aParam->has( "start-frequency-min" ) )
-            SetStartFrequencyMin( aParam->get_value< double >( "start-frequency-min", fStartFrequencyMin ) );
+        if( aParam.has( "start-vphase" ) )
+            SetStartVPhase( aParam.get_value< double >( "start-vphase", fStartVPhase ) );
 
-        if( aParam->has( "start-pitch-max" ) )
-            SetStartPitchMax( aParam->get_value< double >( "start-pitch-max", fStartPitchMax ) );
+        if( aParam.has( "start-pitch-max" ) )
+            SetStartPitchMax( aParam.get_value< double >( "start-pitch-max", fStartPitchMax ) );
 
-        if( aParam->has( "start-pitch-min" ) )
-            SetStartPitchMin( aParam->get_value< double >( "start-pitch-min", fStartPitchMin ) );
+        if( aParam.has( "start-pitch-min" ) )
+            SetStartPitchMin( aParam.get_value< double >( "start-pitch-min", fStartPitchMin ) );
 
-        if( aParam->has( "start-vphase" ) )
-            SetStartVPhase( aParam->get_value< double >( "start-vphase", fStartVPhase ) );
+        if( aParam.has( "slope-mean" ) )
+            SetSlopeMean( aParam.get_value< double >( "slope-mean", fSlopeMean ) );
 
-        if( aParam->has( "slope-mean" ) )
-            SetSlopeMean( aParam->get_value< double >( "slope-mean", fSlopeMean ) );
+        if( aParam.has( "slope-std" ) )
+            SetSlopeStd( aParam.get_value< double >( "slope-std", fSlopeStd ) );
 
-        if( aParam->has( "slope-std" ) )
-            SetSlopeStd( aParam->get_value< double >( "slope-std", fSlopeStd ) );
+        if( aParam.has( "start-time-max" ) )
+            SetStartTimeMax( aParam.get_value< double >( "start-time-max", fStartTimeMax ) );
 
-        if( aParam->has( "start-time-max" ) )
-            SetStartTimeMax( aParam->get_value< double >( "start-time-max", fStartTimeMax ) );
+        if( aParam.has( "start-time-min" ) )
+            SetStartTimeMin( aParam.get_value< double >( "start-time-min", fStartTimeMin ) );
 
-        if( aParam->has( "start-time-min" ) )
-            SetStartTimeMin( aParam->get_value< double >( "start-time-min", fStartTimeMin ) );
+        if( aParam.has( "lo-frequency" ) )
+            SetFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
 
-        if( aParam->has( "lo-frequency" ) )
-            SetFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
+        if( aParam.has( "track-length-mean" ) )
+            SetTrackLengthMean( aParam.get_value< double >( "track-length-mean", fTrackLengthMean ) );
 
-        if( aParam->has( "track-length-mean" ) )
-            SetTrackLengthMean( aParam->get_value< double >( "track-length-mean", fTrackLengthMean ) );
+        if (aParam.has( "ntracks-mean") )
+            SetNTracksMean( aParam.get_value< double >( "ntracks-mean",fNTracksMean) );
 
-        if (aParam->has( "ntracks-mean") )
-            SetNTracksMean( aParam->get_value< double >( "ntracks-mean",fNTracksMean) );
+        if (aParam.has("magnetic-field") )
+            SetBField(  aParam.get_value< double >("magnetic-field", fBField) );
 
-        if (aParam->has("magnetic-field") )
-            SetBField(  aParam->get_value< double >("magnetic-field", fBField) );
+        if (aParam.has( "random-seed") )
+            SetRandomSeed(  aParam.get_value< int >( "random-seed",fRandomSeed) );
 
-        if (aParam->has( "random-seed") )
-            SetRandomSeed(  aParam->get_value< int >( "random-seed",fRandomSeed) );
+        if (aParam.has( "n-events") )
+            SetNEvents(  aParam.get_value< int >( "n-events",fNEvents) );
 
-        if (aParam->has( "hydrogen-fraction") )
+        if (aParam.has( "hydrogen-fraction") )
         {
-            SetHydrogenFraction(  aParam->get_value< int >( "hydrogen-fraction",fHydrogenFraction) );
+            SetHydrogenFraction(  aParam.get_value< int >( "hydrogen-fraction",fHydrogenFraction) );
 
             if( fHydrogenFraction > 1 ||  fHydrogenFraction < 0)
                 LERROR( lmclog, "hydrogen-fraction must be between 0 and 1!");
         }
 
-        if (aParam->has( "n-events") )
-            SetNEvents(  aParam->get_value< int >( "n-events",fNEvents) );
-
-        if( aParam->has( "root-filename" ) )
+        if( aParam.has( "root-filename" ) )
         {
-            fRoot_filename = aParam->get_value< std::string >( "root-filename" );
+            fRoot_filename = aParam["root-filename"]().as_string();
         }
 
         if(fRandomSeed)
@@ -132,9 +130,9 @@ namespace locust
         }
 
 
-        if( aParam->has( "domain" ) )
+        if( aParam.has( "domain" ) )
         {
-            string domain = aParam->get_value( "domain" );
+            string domain = aParam["domain"]().as_string();
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );

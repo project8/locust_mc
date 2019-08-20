@@ -46,42 +46,40 @@ namespace locust
     {
     }
 
-    bool FreeFieldSignalGenerator::Configure( const scarab::param_node* aParam )
+    bool FreeFieldSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-
-        if( aParam->has( "xml-filename" ) )
+        if( aParam.has( "xml-filename" ) )
         {
-            gxml_filename = aParam->get_value< std::string >( "xml-filename" );
+            gxml_filename = aParam["xml-filename"]().as_string();
         }
 
-        if( aParam->has( "array-radius" ) )
+        if( aParam.has( "array-radius" ) )
         {
-            fArrayRadius = aParam->get_value< double>( "array-radius" );
+            fArrayRadius = aParam["array-radius"]().as_double();
         }
 
-        if( aParam->has( "npatches-per-strip" ) )
+        if( aParam.has( "npatches-per-strip" ) )
         {
-            fNPatchesPerStrip = aParam->get_value< double>( "npatches-per-strip" );
+            fNPatchesPerStrip = aParam["npatches-per-strip"]().as_double();
         }
 
-        if( aParam->has( "patch-spacing" ) )
+        if( aParam.has( "patch-spacing" ) )
         {
-            fPatchSpacing = aParam->get_value< double>( "patch-spacing" );
+            fPatchSpacing = aParam["patch-spacing"]().as_double();
         }
 
-        if( aParam->has( "pileup" ) )
+        if( aParam.has( "pileup" ) )
         {
-            fPileupMode = aParam->get_value< bool>( "pileup" );
+            fPileupMode = aParam["pileup"]().as_bool();
         }
 
-        if( aParam->has( "pileup-seed" ) )
+        if( aParam.has( "pileup-seed" ) )
         {
-            fPileupSeed = aParam->get_value< int>( "pileup-seed" );
+            fPileupSeed = aParam["pileup-seed"]().as_int();
         }
-        if( aParam->has( "feed" ) )
+        if( aParam.has( "feed" ) )
         {
-            std::string feedInput = aParam->get_value< std::string>( "feed" );
+            std::string feedInput = aParam["feed"]().as_string();
             if(feedInput == "series")
                 fCorporateFeed = false;
         }

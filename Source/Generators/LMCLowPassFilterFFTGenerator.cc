@@ -30,12 +30,11 @@ namespace locust
     {
     }
 
-    bool LowPassFilterFFTGenerator::Configure( const scarab::param_node* aParam )
+    bool LowPassFilterFFTGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-        if( aParam->has( "threshold" ) )
+        if( aParam.has( "threshold" ) )
         {
-        SetThreshold( aParam->get_value< double >( "threshold", fThreshold ) ); 
+        SetThreshold( aParam.get_value< double >( "threshold", fThreshold ) ); 
         }
 
         return true;

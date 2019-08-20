@@ -38,7 +38,7 @@ namespace locust
             GeneratorToolbox();
             virtual ~GeneratorToolbox();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             const Generator* GetFirstGenerator() const;
             Generator* GetFirstGenerator();
