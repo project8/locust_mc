@@ -49,7 +49,7 @@ namespace locust
             RunLengthCalculator();
             virtual ~RunLengthCalculator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             bool VisitGenerators();
 
@@ -106,6 +106,7 @@ namespace locust
             void Visit( const HighPassFilterFFTGenerator* );
             void Visit( const LocalOscillatorGenerator* );
             void Visit( const DecimateSignalGenerator* );
+            void Visit( const DipoleSignalGenerator* );
             void Visit( const Digitizer* );
 
             RunLengthState fState;

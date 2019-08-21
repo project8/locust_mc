@@ -34,7 +34,7 @@ namespace locust
             [name]Generator( const std::string& aName = "config-name" );
             virtual ~[name]Generator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 

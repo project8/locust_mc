@@ -45,7 +45,7 @@ namespace locust
             PatchSignalGenerator( const std::string& aName = "patch-signal" );
             virtual ~PatchSignalGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
@@ -63,6 +63,7 @@ namespace locust
             double fPatchSpacing; // from json file.
             std::string gxml_filename;
             int fPowerCombiner;
+            double fRJunction;
             bool fTextFileWriting;
 
             double fFilter_resolution;

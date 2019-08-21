@@ -78,6 +78,16 @@ public:
         return 510.998918E3;
     } //!< electron mass in ev/c^2
 
+    constexpr static double a0()
+    {
+        return 5.29177210903E-11;
+    } //!< bohr radius in m
+
+    constexpr static double E_Rydberg()
+    {
+        return 13.605693009;
+    } //!< hydrogen ionization energy in eV
+
 };
 
 }
