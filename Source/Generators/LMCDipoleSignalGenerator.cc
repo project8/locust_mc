@@ -241,7 +241,12 @@ namespace locust
         }
         return;
     }
-
+    
+    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmittingPatchNormal,LMCThreeVector ReceivingPatchNormal)
+    {
+	double AOIFactor = fabs(TrasmittingPatchNormal.Unit().Dot(ReceivingPatchNormal.Unit()));
+        return AOIFactor;
+    }
 
     double* DipoleSignalGenerator::GetFIRFilter(int nskips)
     {
@@ -422,7 +427,7 @@ namespace locust
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
 		double fieldValue=fAntennaSignalTransmitter.GenerateSignal(aSignal,fAcquisitionRate);
-          	double antennaPositionX=fAntennaSignalTransmitter.GetAntennaPosition().GetX();
+		double antennaPositionX=fAntennaSignalTransmitter.GetAntennaPosition().GetX();
           	double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
           	double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
 		LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
@@ -437,6 +442,7 @@ namespace locust
 				double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
 				double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
             			double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ); 
+          			fieldValue=fieldValue*GetAOIFactor(fAntennaSignalTransmitter.GetAntennaPosition()-currentPatch->GetNormalDirection(),currentPatch->GetNormalDirection());
 				double field_phase=initialPhaseDelay-2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
 				if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;

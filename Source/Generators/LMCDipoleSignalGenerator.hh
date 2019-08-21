@@ -89,7 +89,8 @@ namespace locust
             bool DoGenerateTime( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
             bool (DipoleSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
-
+	    
+	    double GetAOIFactor(LMCThreeVector TrasmittingPatchNormal,LMCThreeVector ReceivingPatchNormal);
 	    //void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
 	    double RotateZ(int component, double angle, double x, double y);
 	    void InitializePatchArray();
