@@ -5,9 +5,8 @@
 #include "KSStepModifier.h"
 #include "KSTrajectory.h"
 
-#include "LMCParticle.hh"
-
 #include <deque>
+#include "LMCParticle.hh"
 
 namespace locust
 {

@@ -11,6 +11,8 @@
 #include "KSRunModifier.h"
 #include "KSComponentTemplate.h"
 
+#include "LMCKassLocustInterface.hh"
+
 namespace locust
 {
 
@@ -18,7 +20,7 @@ namespace locust
             public Kassiopeia::KSComponentTemplate< RunPause, Kassiopeia::KSRunModifier >
     {
         public:
-            RunPause();
+            RunPause( kl_interface_ptr_t aInterface );
             RunPause( const RunPause& aOrig );
             virtual ~RunPause();
 
@@ -41,6 +43,8 @@ namespace locust
             virtual void PullDeupdateComponent();
             virtual void PushDeupdateComponent();
 
+        protected:
+            kl_interface_ptr_t fInterface;
 
     };
 

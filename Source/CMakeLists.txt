@@ -78,10 +78,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCPlaneWaveSignalGenerator.hh
-
-        Core/LMCGlobalsDeclaration.hh
-        Core/LMCGlobalsDefinition.hh
-        Core/LMCParticle.hh
+        
+        # Why is this here?
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
@@ -90,8 +88,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCFieldCalculatorBuilder.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
+        Kassiopeia/LMCParticle.hh
         Kassiopeia/LMCRootBuilder.hh
         Kassiopeia/LMCRunKassiopeia.hh
+        Kassiopeia/LMCRunPause.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -100,15 +100,17 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCKassSignalGenerator.cc
         Generators/LMCPlaneWaveSignalGenerator.cc
 
+        # Why is this here?
         Core/LMCHFSSReader.cc
-        Core/LMCParticle.cc
 
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCFieldCalculatorBuilder.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
+        Kassiopeia/LMCParticle.cc
         Kassiopeia/LMCRootBuilder.cc
         Kassiopeia/LMCRunKassiopeia.cc
+        Kassiopeia/LMCRunPause.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 

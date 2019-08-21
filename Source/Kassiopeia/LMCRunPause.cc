@@ -7,16 +7,14 @@
 
 #include "LMCRunPause.hh"
 
-#include "LMCGlobalsDeclaration.hh"
-#include "LMCGlobalsDefinition.hh"
-
 #include <csignal>
 
 
 namespace locust
 {
 
-    RunPause::RunPause()
+    RunPause::RunPause( kl_interface_ptr_t aInterface ) :
+            fInterface( aInterface )
     {
     }
 
@@ -40,21 +38,21 @@ namespace locust
         printf("Kass is waiting for event trigger.\n");
 
 
-        fKassEventReady = true;
-        fFalseStartKassiopeia = false;
-        fDigitizerCondition.notify_one();  // unlock if still locked.
-        if( fWaitBeforeEvent )  // true by default
+        fInterface->fKassEventReady = true;
+        fInterface->fFalseStartKassiopeia = false;
+        fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
+        if( fInterface->fWaitBeforeEvent )  // true by default
         {
-            fKassReadyCondition.notify_one();
-            std::unique_lock< std::mutex >tLock( fMutex );
-            fPreEventCondition.wait( tLock );
-            fKassEventReady = false;
-            fEventInProgress = true; // possibly redundant.
-            t_old = 0.;  // reset time on digitizer.
+            fInterface->fKassReadyCondition.notify_one();
+            std::unique_lock< std::mutex >tLock( fInterface->fMutex );
+            fInterface->fPreEventCondition.wait( tLock );
+            fInterface->fKassEventReady = false;
+            fInterface->fEventInProgress = true; // possibly redundant.
+            fInterface->fTOld = 0.;  // reset time on digitizer.
         }
 
         printf("Kass got the event trigger\n");
-        if (! fRunInProgress)
+        if (! fInterface->fRunInProgress)
         {
             printf("Raising sigint to cancel Kassiopeia");
             raise(SIGINT);
@@ -71,13 +69,13 @@ namespace locust
 
     void RunPause::WakeAfterEvent(unsigned TotalEvents, unsigned EventsSoFar)
     {
-        fEventInProgress = false;
+        fInterface->fEventInProgress = false;
         if( TotalEvents == EventsSoFar )
         {
-            fRunInProgress = false;
-            fKassReadyCondition.notify_one();
+            fInterface->fRunInProgress = false;
+            fInterface->fKassReadyCondition.notify_one();
         }
-        fDigitizerCondition.notify_one();  // unlock
+        fInterface->fDigitizerCondition.notify_one();  // unlock
         printf("Kass is waking after event\n");
         return;
     }

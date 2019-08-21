@@ -94,7 +94,13 @@ namespace locust
 
         tElementProcessor.InsertAfter( &tTagProcessor );
 
-        CyclotronRadiationExtractor* tCyclotronRadiationExtractor = new locust::CyclotronRadiationExtractor();
+        kl_interface_ptr_t tInterface = std::make_shared< KassLocustInterface >();
+
+        RunPause* tRunPause = new RunPause( tInterface );
+        tRunPause->SetName( "run_pause" );
+        KToolbox::GetInstance().Add(tRunPause);
+
+        CyclotronRadiationExtractor* tCyclotronRadiationExtractor = new CyclotronRadiationExtractor();
         tCyclotronRadiationExtractor->SetName( "cyclotron_radiation_extractor" );
         KToolbox::GetInstance().Add(tCyclotronRadiationExtractor);
 
