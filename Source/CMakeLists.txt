@@ -122,7 +122,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Core/LMCTrack.hh
         Generators/LMCFakeTrackSignalGenerator.hh
     )
-    
+
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Core/LMCEvent.cc
         Core/LMCTrack.cc
