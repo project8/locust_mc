@@ -140,17 +140,14 @@ namespace locust
             double GetAxialFrequency();
             void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
 
-
-            double slope_val = 0.;
-            double pitch_val = 0.;
-            double tracklength_val = 0.;
-            double starttime_val = 0.;
-            double endtime_val = 0.;
-            double startfreq_val = 0.;
-            double jumpsize_val = 0.002e9;
-            int ntracks_val = 0;
-
-
+            double fSlope;
+            double fPitch;
+            double fTrackLength;
+            double fStartTime;
+            double fEndTime;
+            double fStartFreq;
+            double fJumpSize;
+            int fNTracks;
 
         private:
 
