@@ -1,21 +1,20 @@
 #include "LMCCyclotronRadiationExtractor.hh"
-#include "LMCGlobalsDeclaration.hh"
 #include "KSModifiersMessage.h"
 #include "LMCFieldCalculator.hh"
 
 namespace locust
 {
     CyclotronRadiationExtractor::CyclotronRadiationExtractor() :
-            fP8Phase( 0 ),
             fNewParticleHistory(),
-            fPitchAngle( -99. )
+            fPitchAngle( -99. ),
+            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
-            fP8Phase( aCopy.fP8Phase ),
             fNewParticleHistory(),
-            fPitchAngle( aCopy.fPitchAngle )
+            fPitchAngle( aCopy.fPitchAngle ),
+            fInterface( aCopy.fInterface )
     {
     }
     CyclotronRadiationExtractor* CyclotronRadiationExtractor::Clone() const
@@ -28,17 +27,16 @@ namespace locust
 
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
-        fP8Phase = P8Phase;
-        Project8Phase = P8Phase;
+        fInterface->fProject8Phase = P8Phase;
         if (P8Phase==1)
         {
-            CENTER_TO_SHORT = 0.0488; // m, 0.047 is tuned.
-            CENTER_TO_ANTENNA = 0.045; // m
+            fInterface->fCENTER_TO_SHORT = 0.0488; // m, 0.047 is tuned.
+            fInterface->fCENTER_TO_ANTENNA = 0.045; // m
         }
         if (P8Phase==2)
         {
-            CENTER_TO_SHORT = 0.075; // m
-            CENTER_TO_ANTENNA = 0.075; // m  
+            fInterface->fCENTER_TO_SHORT = 0.075; // m
+            fInterface->fCENTER_TO_ANTENNA = 0.075; // m
         }
     }
 
@@ -78,7 +76,10 @@ namespace locust
 
     }
 
-
+    bool CyclotronRadiationExtractor::ExecutePreStepModification( Kassiopeia::KSParticle& , Kassiopeia::KSParticleQueue&  )
+    {
+        return true;
+    }
 
     bool CyclotronRadiationExtractor::ExecutePostStepModification( Kassiopeia::KSParticle& anInitialParticle,
                                                                    Kassiopeia::KSParticle& aFinalParticle,
@@ -92,49 +93,49 @@ namespace locust
 
         //	printf("dE/dt is %g\n", (aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy())/(aFinalParticle.GetTime() - anInitialParticle.GetTime())); getchar();
 
-        if(fP8Phase==1)
+        if(fInterface->fProject8Phase==1)
         {
             DeltaE = aFieldCalculator.GetDampingFactorPhase1(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
-        if(fP8Phase==2)  // this code can be commented out to save time as DeltaE will be small.
+        if(fInterface->fProject8Phase==2)  // this code can be commented out to save time as DeltaE will be small.
         {
             DeltaE = aFieldCalculator.GetDampingFactorPhase2(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
 
-        if (!fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
+        if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
 
-            if (t_old == 0.) 
+            if (fInterface->fTOld == 0.)
             {
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             }
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
-            if (t_poststep - t_old >= fKassTimeStep) //take a digitizer sample every KassTimeStep
+            if (t_poststep - fInterface->fTOld >= fInterface->fKassTimeStep) //take a digitizer sample every KassTimeStep
             {
-                std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
+                std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();
 
                 unsigned tHistoryMaxSize;
 
                 //Dont want to check .back() of history if it is empty! -> Segfault
-                if(fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fParticleHistory.back().GetTime()))
+                if(fInterface->fParticleHistory.size() && (fNewParticleHistory.back().GetTime() < fInterface->fParticleHistory.back().GetTime()))
                 {
                     t_poststep = 0.;
-                    fParticleHistory.clear();
+                    fInterface->fParticleHistory.clear();
                 }
                 //                else {printf("history is empty at t_old %g\n", t_old); getchar();}
 
 
                 //Put in new entries in global ParticleHistory
-                fParticleHistory.insert(fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
+                fInterface->fParticleHistory.insert(fInterface->fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());
 
-                for(unsigned i=fParticleHistory.size()-fNewParticleHistory.size()-1;i<fParticleHistory.size()-1;i++)
+                for(unsigned i=fInterface->fParticleHistory.size()-fNewParticleHistory.size()-1;i<fInterface->fParticleHistory.size()-1;i++)
                 {
-                    fParticleHistory[i].SetSpline(fParticleHistory[i+1]);
+                    fInterface->fParticleHistory[i].SetSpline(fInterface->fParticleHistory[i+1]);
                 }
 
                 tHistoryMaxSize = 5000;
@@ -142,13 +143,13 @@ namespace locust
                 fNewParticleHistory.clear();
 
                 //Purge fParticleHistory of overly old entries	    
-                while(t_poststep-fParticleHistory.front().GetTime()>1e-7 || fParticleHistory.size() > tHistoryMaxSize)
+                while(t_poststep-fInterface->fParticleHistory.front().GetTime()>1e-7 || fInterface->fParticleHistory.size() > tHistoryMaxSize)
                 {
-                    fParticleHistory.pop_front();
+                    fInterface->fParticleHistory.pop_front();
                 }
 
                 tLock.unlock();
-                fDigitizerCondition.notify_one();  // notify Locust after writing.
+                fInterface->fDigitizerCondition.notify_one();  // notify Locust after writing.
 
             }
         } // DoneWithSignalGeneration

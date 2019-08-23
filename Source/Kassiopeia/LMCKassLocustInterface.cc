@@ -7,6 +7,8 @@
 
 #include "LMCKassLocustInterface.hh"
 
+#include <exception>
+
 namespace locust
 {
 
@@ -28,8 +30,32 @@ namespace locust
             fPreEventCondition(),
             fPostEventCondition(),
             fDigitizerCondition(),
-            fKassReadyCondition()
+            fKassReadyCondition(),
+            fProject8Phase( 0 ),
+            fCENTER_TO_SHORT( 0. ),
+            fCENTER_TO_ANTENNA( 0. )
+    {}
+
+    KLInterfaceBootstrapper::KLInterfaceBootstrapper() :
+            fInterface()
+    {}
+
+    KLInterfaceBootstrapper::~KLInterfaceBootstrapper()
+    {}
+
+    kl_interface_ptr_t KLInterfaceBootstrapper::GetInterface() const
     {
+        if( ! fInterface )
+        {
+            throw std::runtime_error( "Interface has not been set" );
+        }
+        return fInterface;
+    }
+
+    void KLInterfaceBootstrapper::SetInterface( kl_interface_ptr_t aInterface )
+    {
+        fInterface = aInterface;
+        return;
     }
 
 } /* namespace locust */

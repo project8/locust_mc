@@ -7,8 +7,11 @@
 
 #include "LMCRunKassiopeia.hh"
 
+#include "LMCEventHold.hh"
 #include "LMCFieldCalculator.hh"
 #include "LMCCyclotronRadiationExtractor.hh"
+#include "LMCKassLocustInterface.hh"
+#include "LMCRunPause.hh"
 
 #include "KSSimulation.h"
 #include "KSRoot.h"
@@ -55,7 +58,7 @@ namespace locust
     }
 
 
-    int RunKassiopeia::Run( const std::vector< std::string >& aFiles )
+    int RunKassiopeia::Run( const std::vector< std::string >& aFiles, kl_interface_ptr_t aInterface )
     {
 
 
@@ -94,11 +97,13 @@ namespace locust
 
         tElementProcessor.InsertAfter( &tTagProcessor );
 
-        kl_interface_ptr_t tInterface = std::make_shared< KassLocustInterface >();
-
-        RunPause* tRunPause = new RunPause( tInterface );
+        RunPause* tRunPause = new RunPause();
         tRunPause->SetName( "run_pause" );
         KToolbox::GetInstance().Add(tRunPause);
+
+        EventHold* tEventHold = new EventHold();
+        tEventHold->SetName( "event_hold" );
+        KToolbox::GetInstance().Add(tEventHold);
 
         CyclotronRadiationExtractor* tCyclotronRadiationExtractor = new CyclotronRadiationExtractor();
         tCyclotronRadiationExtractor->SetName( "cyclotron_radiation_extractor" );
@@ -129,11 +134,11 @@ namespace locust
         return 0;
     }
 
-    int RunKassiopeia::Run( const std::string& aFile )
+    int RunKassiopeia::Run( const std::string& aFile, kl_interface_ptr_t aInterface )
     {
         std::vector< std::string > tFileVec( 1 );
         tFileVec[ 0 ] = aFile;
-        return Run( tFileVec );
+        return Run( tFileVec, aInterface );
 
     }
 

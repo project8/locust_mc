@@ -74,10 +74,10 @@ set( LOCUST_MC_SOURCE_FILES
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
 
-        Generators/LMCFreeFieldSignalGenerator.hh
-        Generators/LMCPatchSignalGenerator.hh
+        #Generators/LMCFreeFieldSignalGenerator.hh
+        #Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
-        Generators/LMCPlaneWaveSignalGenerator.hh
+        #Generators/LMCPlaneWaveSignalGenerator.hh
         
         # Why is this here?
         Core/LMCHFSSReader.hh
@@ -87,28 +87,32 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCFieldCalculator.hh
         Kassiopeia/LMCFieldCalculatorBuilder.hh
         Kassiopeia/LMCEventHold.hh
-        Kassiopeia/LMCEventHoldBuilder.hh
+        #Kassiopeia/LMCEventHoldBuilder.hh
+        Kassiopeia/LMCKassLocustInterface.hh
         Kassiopeia/LMCParticle.hh
-        Kassiopeia/LMCRootBuilder.hh
+        #Kassiopeia/LMCRootBuilder.hh
         Kassiopeia/LMCRunKassiopeia.hh
         Kassiopeia/LMCRunPause.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
-        Generators/LMCFreeFieldSignalGenerator.cc
-        Generators/LMCPatchSignalGenerator.cc        
+        #Generators/LMCFreeFieldSignalGenerator.cc
+        #Generators/LMCPatchSignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
-        Generators/LMCPlaneWaveSignalGenerator.cc
+        #Generators/LMCPlaneWaveSignalGenerator.cc
 
         # Why is this here?
         Core/LMCHFSSReader.cc
 
+        Kassiopeia/LMCCyclotronRadiationExtractor.cc
+        Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCFieldCalculatorBuilder.cc
         Kassiopeia/LMCEventHold.cc
-        Kassiopeia/LMCEventHoldBuilder.cc
+        #Kassiopeia/LMCEventHoldBuilder.cc
+        Kassiopeia/LMCKassLocustInterface.cc
         Kassiopeia/LMCParticle.cc
-        Kassiopeia/LMCRootBuilder.cc
+        #Kassiopeia/LMCRootBuilder.cc
         Kassiopeia/LMCRunKassiopeia.cc
         Kassiopeia/LMCRunPause.cc
     )

@@ -7,19 +7,22 @@
 
 #include "LMCRunPause.hh"
 
+#include "KSRun.h"
+
 #include <csignal>
 
 
 namespace locust
 {
 
-    RunPause::RunPause( kl_interface_ptr_t aInterface ) :
-            fInterface( aInterface )
+    RunPause::RunPause() :
+            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
-    RunPause::RunPause( const RunPause& ) :
-            KSComponent()
+    RunPause::RunPause( const RunPause& aCopy ) :
+            KSComponent(),
+            fInterface( aCopy.fInterface )
     {
     }
 
@@ -33,7 +36,7 @@ namespace locust
     }
 
 
-    bool RunPause::ExecutePreEventModification(Kassiopeia::KSRun &aRun)
+    bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
         printf("Kass is waiting for event trigger.\n");
 
@@ -61,40 +64,11 @@ namespace locust
         return true;
     }
 
-    bool RunPause::ExecutePostEventModification(Kassiopeia::KSRun &aRun)
+    bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun &)
     {
-        WakeAfterEvent(fSimulation->GetEvents(), fRun->GetTotalEvents());
+        fInterface->fRunInProgress = false;
+        fInterface->fKassReadyCondition.notify_one();
         return true;
-    }
-
-    void RunPause::WakeAfterEvent(unsigned TotalEvents, unsigned EventsSoFar)
-    {
-        fInterface->fEventInProgress = false;
-        if( TotalEvents == EventsSoFar )
-        {
-            fInterface->fRunInProgress = false;
-            fInterface->fKassReadyCondition.notify_one();
-        }
-        fInterface->fDigitizerCondition.notify_one();  // unlock
-        printf("Kass is waking after event\n");
-        return;
-    }
-
-
-
-    void RunPause::InitializeComponent()
-    {
-    }
-
-    void RunPause::DeinitializeComponent()
-    {
-    }
-
-    void RunPause::PullDeupdateComponent()
-    {
-    }
-    void RunPause::PushDeupdateComponent()
-    {
     }
 
 

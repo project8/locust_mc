@@ -8,13 +8,10 @@
 #ifndef LMC_LMCRUNKASSIOPEIA_HH_
 #define LMC_LMCRUNKASSIOPEIA_HH_
 
+#include "LMCKassLocustInterface.hh"
+
 #include <vector>
 #include <string>
-
-
-
-
-
 
 namespace locust
 {
@@ -30,8 +27,8 @@ namespace locust
             RunKassiopeia();
             virtual ~RunKassiopeia();
 
-            int Run( const std::vector< std::string >& aFiles );
-            int Run( const std::string& aFile );
+            int Run( const std::vector< std::string >& aFiles, kl_interface_ptr_t aInterface );
+            int Run( const std::string& aFile, kl_interface_ptr_t aInterface );
 
         private:
            

@@ -20,7 +20,7 @@ namespace locust
             public Kassiopeia::KSComponentTemplate< RunPause, Kassiopeia::KSRunModifier >
     {
         public:
-            RunPause( kl_interface_ptr_t aInterface );
+            RunPause();
             RunPause( const RunPause& aOrig );
             virtual ~RunPause();
 
@@ -30,18 +30,6 @@ namespace locust
 
             virtual bool ExecutePreRunModification( Kassiopeia::KSRun& aRun );
             virtual bool ExecutePostRunModification( Kassiopeia::KSRun& aRun );
-
-        protected:
-            void WakeAfterEvent(unsigned TotalEvents, unsigned EventsSoFar);
-            bool ReceivedEventStartCondition()
-
-        private:
-            void InitializeComponent();
-            void DeinitializeComponent();
-
-        protected:
-            virtual void PullDeupdateComponent();
-            virtual void PushDeupdateComponent();
 
         protected:
             kl_interface_ptr_t fInterface;

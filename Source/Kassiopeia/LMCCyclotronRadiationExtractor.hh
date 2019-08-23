@@ -5,8 +5,10 @@
 #include "KSStepModifier.h"
 #include "KSTrajectory.h"
 
-#include <deque>
+#include "LMCKassLocustInterface.hh"
 #include "LMCParticle.hh"
+
+#include <deque>
 
 namespace locust
 {
@@ -35,15 +37,10 @@ namespace locust
             void SetTrajectory( Kassiopeia::KSTrajectory* aTrajectory );
             void SetP8Phase( int P8Phase );
 
-
-            virtual void PushUpdateComponent();
-            virtual void PushDeupdateComponent();
-
         private:
-            int fP8Phase; // 1, 2, 3, or 4.
             std::deque<locust::Particle> fNewParticleHistory;
             double fPitchAngle;
-
+            kl_interface_ptr_t fInterface;
     };
 
 

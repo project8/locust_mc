@@ -1,6 +1,7 @@
 #ifndef LMCFIELDCALCULATOR_HH_
 #define LMCFIELDCALCULATOR_HH_
 
+#include "LMCKassLocustInterface.hh"
 
 #include "KSSpaceInteraction.h"
 #include "KSList.h"
@@ -10,8 +11,8 @@
 
 #include "KMathBracketingSolver.h"
 
-#include "LMCConst.hh"
-#include "LMCThreeVector.hh"
+//#include "LMCConst.hh"
+//#include "LMCThreeVector.hh"
 #include <vector>
 using std::vector;
 
@@ -88,6 +89,8 @@ namespace locust
             Kassiopeia::KSParticle* fFinalParticle;
             Kassiopeia::KSParticleQueue* fParticleQueue;
             Kassiopeia::KSTrajectory* fTrajectory;
+
+            kl_interface_ptr_t fInterface;
     };
 
 }

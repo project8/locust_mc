@@ -11,20 +11,12 @@ namespace locust
 {
 
     EventHold::EventHold() :
-            fWaitBeforeEvent( false ),
-            fWaitAfterEvent( false ),
-            fMutex(),
-            fPreEventCondition(),
-            fPostEventCondition()
+            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
-    EventHold::EventHold( const EventHold& aOrig ) :
-            fWaitBeforeEvent( aOrig.fWaitBeforeEvent ),
-            fWaitAfterEvent( aOrig.fWaitAfterEvent ),
-            fMutex(),
-            fPreEventCondition(),
-            fPostEventCondition()
+    EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
+            fInterface( aOrig.fInterface )
     {
     }
 
@@ -40,55 +32,16 @@ namespace locust
 
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
-
-    	printf("check 1\n"); getchar();
-        if( fWaitBeforeEvent )
-        {
-            std::unique_lock< std::mutex >tLock( fMutex );
-            fPreEventCondition.wait( tLock );
-            return true;
-        }
-        return false;
+        return true;
     }
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
-        if( fWaitAfterEvent )
-        {
-            std::unique_lock< std::mutex >tLock( fMutex );
-            fPostEventCondition.wait( tLock );
-            return true;
-        }
-        return false;
+        fInterface->fEventInProgress = false;
+        fInterface->fDigitizerCondition.notify_one();  // unlock
+        printf("Kass is waking after event\n");
+        return true;
     }
-
-    void EventHold::WakeBeforeEvent()
-    {
-        fPreEventCondition.notify_one();
-        return;
-    }
-
-    void EventHold::WakeAfterEvent()
-    {
-        fPostEventCondition.notify_one();
-        return;
-    }
-
-    void EventHold::InitializeComponent()
-    {
-    }
-
-    void EventHold::DeinitializeComponent()
-    {
-    }
-
-    void EventHold::PullDeupdateComponent()
-    {
-    }
-    void EventHold::PushDeupdateComponent()
-    {
-    }
-
 
 } /* namespace locust */
 

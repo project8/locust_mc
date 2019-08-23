@@ -32,52 +32,60 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
+    message( STATUS "#####CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}" )
+
+    execute_process( 
+        COMMAND mkdir kassiopeia
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
+    execute_process( 
+        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    )
+    execute_process( 
+        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    )
+    #execute_process( 
+    #    COMMAND mkdir build && cd build
+    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    #)
+
+
+
     include(ExternalProject)
-    message( STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}" )
     
     ExternalProject_Add( KassiopeiaExt
         PREFIX            ${CMAKE_INSTALL_PREFIX}
         SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
-        CMAKE_ARGS        -U *_INSTALL_DIR
-        CMAKE_CACHE_ARGS  -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE
+    #    CMAKE_ARGS        -U *_INSTALL_DIR
+    #    CMAKE_CACHE_ARGS  -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE
         BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
-        CMAKE_COMMAND     cmake
+    #    CMAKE_COMMAND     cmake
+        CONFIGURE_COMMAND ""
         BUILD_ALWAYS      1
         BUILD_COMMAND     make
         INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
         INSTALL_COMMAND   make install
     )
 
-    ExternalProject_Add_Step( KassiopeiaExt prelim_configure
-        COMMAND           cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-        DEPENDERS         configure
-        BYPRODUCTS        ${PROJECT_BINARY_DIR}/kassiopeia/CMakeCache.txt
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-        USES_TERMINAL     1
-    )
+    #ExternalProject_Add_Step( KassiopeiaExt prelim_configure
+    #    COMMAND           cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+    #    DEPENDERS         configure
+    #    BYPRODUCTS        ${PROJECT_BINARY_DIR}/kassiopeia/CMakeCache.txt
+    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    #    USES_TERMINAL     1
+    #)
 
-    set (LOCUST_MC_INCLUDE_DIRECTORIES
-        ${LOCUST_MC_INCLUDE_DIRECTORIES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
-        ${CMAKE_INSTALL_PREFIX}/include
-        ${INCLUDE_INSTALL_DIR}
-    )
+    #ExternalProject_Get_property(KassiopeiaExt EP_STEP_TARGETS)
+    #message("Build system targets = ${EP_STEP_TARGETS}")
 
-    set (LOCUST_MC_LINK_DIRECTORIES
-        ${LIB_INSTALL_DIR}
-    )
-
-    find_package( Kommon REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/Kommon )
-    find_package( KGeoBag REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/KGeoBag )
-    find_package( KEMField REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/KEMField )
-    find_package( Kassiopeia REQUIRED CONFIG HINTS ${LIB_INSTALL_DIR}/cmake/Kassiopeia )
-
-    pbuilder_add_ext_libraries(
-        ${Kommon_LIBRARIES}
-        ${KGeoBag_LIBRARIES}
-        ${KEMField_LIBRARIES}
-        ${Kassiopeia_LIBRARIES}
-    )
+    find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
+    find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
+    find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
+    find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -132,6 +140,20 @@ include_directories (${ROOT_INCLUDE_DIR})
 ###########
 
 if( locust_mc_BUILD_WITH_KASSIOPEIA )
+    set (LOCUST_MC_INCLUDE_DIRECTORIES
+        ${LOCUST_MC_INCLUDE_DIRECTORIES}
+        ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
+        ${Kommon_INCLUDE_DIRS}
+        ${KGeoBag_INCLUDE_DIRS}
+        ${KEMField_INCLUDE_DIRS}
+        ${Kassiopeia_INCLUDE_DIRS}
+    )
+
+    set (LOCUST_MC_LINK_DIRECTORIES
+        ${LOCUST_MC_LINK_DIRECTORIES}
+        ${LIB_INSTALL_DIR}
+    )
+
     pbuilder_add_ext_libraries(
         ${Kommon_LIBRARIES}
         ${KGeoBag_LIBRARIES}

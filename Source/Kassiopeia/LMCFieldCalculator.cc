@@ -1,7 +1,6 @@
 
 #include "LMCFieldCalculator.hh"
 #include "KSParticleFactory.h"
-#include "LMCGlobalsDeclaration.hh"
 #include <algorithm>
 
 #include "KSInteractionsMessage.h"
@@ -22,7 +21,8 @@ namespace locust
             fInteractionParticle( NULL ),
             fFinalParticle( NULL ),
             fParticleQueue( NULL ),
-            fTrajectory( NULL )
+            fTrajectory( NULL ),
+            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
@@ -35,7 +35,8 @@ namespace locust
             fInteractionParticle( aCopy.fInteractionParticle ),
             fFinalParticle( aCopy.fFinalParticle ),
             fParticleQueue( aCopy.fParticleQueue ),
-            fTrajectory( aCopy.fTrajectory )
+            fTrajectory( aCopy.fTrajectory ),
+            fInterface( aCopy.fInterface )
     {
     }
     FieldCalculator* FieldCalculator::Clone() const
@@ -106,7 +107,7 @@ namespace locust
         double GammaZ = 1.0/pow(1.0-pow(zvelocity/GetGroupVelocityTE10(aFinalParticle),2.),0.5);
 
         double fprime_short = fcyc*GammaZ*(1.+zvelocity/GroupVelocity);
-        double phi_shortTE10 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition) + CENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.
+        double phi_shortTE10 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fabs(zPosition) + fInterface->fCENTER_TO_SHORT)/(GroupVelocity/fprime_short);  // phase of reflected field at position of electron.
 
         double FieldFromShort = cos(0.) + cos(phi_shortTE10);
 
@@ -128,7 +129,7 @@ namespace locust
         double GammaZ = 1.0/sqrt(1.0-pow(tVelocityZ / GetGroupVelocityTM01(aFinalParticle),2.) );
         double fprime_polarizer = tCyclotronFrequency*GammaZ*(1.-tVelocityZ/GroupVelocity);
 
-        double phi_polarizerTM01 = 2.*LMCConst::Pi()*(2.*(CENTER_TO_ANTENNA-fabs(tPositionZ)))/(GroupVelocity/fprime_polarizer);
+        double phi_polarizerTM01 = 2.*LMCConst::Pi()*(2.*(fInterface->fCENTER_TO_ANTENNA-fabs(tPositionZ)))/(GroupVelocity/fprime_polarizer);
         double TM01FieldWithTerminator = cos(0.) + cos(phi_polarizerTM01);
         //printf("TM01FieldWithTerminator is %f\n", TM01FieldWithTerminator);
         //getchar();

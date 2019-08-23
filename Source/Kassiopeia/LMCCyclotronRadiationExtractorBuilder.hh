@@ -12,7 +12,7 @@ using namespace Kassiopeia;
 using namespace locust;
 namespace katrin
 {
-typedef KComplexElement< CyclotronRadiationExtractor > CyclotronRadiationExtractorBuilder;
+    typedef KComplexElement< CyclotronRadiationExtractor > CyclotronRadiationExtractorBuilder;
 
     template< >
     inline bool CyclotronRadiationExtractorBuilder::AddAttribute(KContainer *aContainer)
@@ -24,12 +24,7 @@ typedef KComplexElement< CyclotronRadiationExtractor > CyclotronRadiationExtract
         }
         if( aContainer->GetName() == "P8Phase" )
         {
-	    aContainer->CopyTo( fObject, &CyclotronRadiationExtractor::SetP8Phase );
-            return true;
-        }
-        if( aContainer->GetName() == "add_modifier" )
-        {
-            fObject->AddModifier( KToolbox::GetInstance().Get< KSStepModifier >( aContainer->AsReference< std::string >() ) );
+            aContainer->CopyTo( fObject, &CyclotronRadiationExtractor::SetP8Phase );
             return true;
         }
         return false;
