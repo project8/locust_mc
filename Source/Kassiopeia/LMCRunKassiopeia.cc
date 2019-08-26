@@ -6,6 +6,8 @@
  */
 
 #include "LMCRunKassiopeia.hh"
+#include "KSRootSurfaceNavigator.h"
+
 
 #include "LMCEventHold.hh"
 #include "LMCFieldCalculator.hh"
@@ -108,6 +110,8 @@ namespace locust
         CyclotronRadiationExtractor* tCyclotronRadiationExtractor = new CyclotronRadiationExtractor();
         tCyclotronRadiationExtractor->SetName( "cyclotron_radiation_extractor" );
         KToolbox::GetInstance().Add(tCyclotronRadiationExtractor);
+        tCyclotronRadiationExtractor->Initialize();
+        tCyclotronRadiationExtractor->Activate();
 
         FieldCalculator* tFieldCalculator = new FieldCalculator();
         tFieldCalculator->SetName( "field_calculator");
