@@ -6,8 +6,6 @@
  */
 
 #include "LMCRunKassiopeia.hh"
-#include "KSRootSurfaceNavigator.h"
-
 
 #include "LMCEventHold.hh"
 #include "LMCFieldCalculator.hh"
