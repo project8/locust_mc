@@ -20,6 +20,8 @@ RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
 ########################
 FROM locust_common as locust_done
 
+#COPY Config /tmp_source/Config
+COPY Data /tmp_source/Data
 COPY kassiopeia /tmp_source/kassiopeia
 COPY monarch /tmp_source/monarch
 COPY Scarab /tmp_source/Scarab
