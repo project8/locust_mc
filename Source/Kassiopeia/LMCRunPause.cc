@@ -47,6 +47,7 @@ namespace locust
         if( fInterface->fWaitBeforeEvent )  // true by default
         {
             fInterface->fKassReadyCondition.notify_one();
+            std::cout << "going to wait on the pre-event condition now" << std::endl;
             std::unique_lock< std::mutex >tLock( fInterface->fMutex );
             fInterface->fPreEventCondition.wait( tLock );
             fInterface->fKassEventReady = false;
