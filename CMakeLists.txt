@@ -32,8 +32,15 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
-    message( STATUS "#####CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}" )
+    # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
+    # In other words, the configuration and build environments need to be kept separate.
+    # However, Locust needs to build against Kassiopeia.
+    # When Kassiopeia is run from within Locust it knows about the Kassiopeia-derived Locust classes.
 
+    # First we run the configure stage of Kassiopeia during the configure (cmake) process of Locust.
+    # This build takes place in its own build directory, but it installs in the same place as Locust.
+    # We run cmake twice so that we get all of the variables setup correctly.
+    # We do this here instead of below in the ExternalProject so that Locust can learn about the Kassiopeia targets at the configure stage.
     execute_process( 
         COMMAND mkdir kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -46,53 +53,24 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
-    #execute_process( 
-    #    COMMAND mkdir build && cd build
-    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    #)
 
-
-
+    # Second we use the ExternalProject module to build and install Kassiopeia.
+    # This takes place during the build phase of Locust.
+    # Note that we disable the configure stage of the ExternalProject because we already took care of the configure stage above.
     include(ExternalProject)
     
     ExternalProject_Add( KassiopeiaExt
         PREFIX            ${CMAKE_INSTALL_PREFIX}
         SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    CMAKE_ARGS        -DCMAKE_INCLUDE_PATH:string=${CMAKE_INSTALL_PREFIX}/lib/locust
-    #    CMAKE_ARGS        -DCMAKE_PROJECT_KassiopeiaExt_INCLUDE=${CMAKE_SOURCE_DIR}/fix_KassiopeiaExt.cmake
-    #    CMAKE_ARGS        -U *_INSTALL_DIR
-    #    CMAKE_CACHE_ARGS  -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE
         BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
-    #    CMAKE_COMMAND     cmake
         CONFIGURE_COMMAND ""
         BUILD_ALWAYS      1
         BUILD_COMMAND     make
         INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
         INSTALL_COMMAND   make install
     )
-    
 
-    #ExternalProject_Add_Step( KassiopeiaExt prelim_configure
-    #    COMMAND           cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    DEPENDERS         configure
-    #    BYPRODUCTS        ${PROJECT_BINARY_DIR}/kassiopeia/CMakeCache.txt
-    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    #    USES_TERMINAL     1
-    #)
-    
-    
-    
-    #ExternalProject_Get_property(KassiopeiaExt CMAKE_ARGS)
-    #message (STATUS "cmakeargs is &&&&&&&&&&&&&&&&&&&&&&&&& ${CMAKE_ARGS}")
-    
-
-    #ExternalProject_Get_property(KassiopeiaExt EP_STEP_TARGETS)
-    #message("Build system targets = ${EP_STEP_TARGETS}")
-    
-    
-
+    # Finally we use find_package() to learn about the Kassiopeia build targets.
     find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
     find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
     find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
@@ -151,6 +129,8 @@ include_directories (${ROOT_INCLUDE_DIR})
 ###########
 
 if( locust_mc_BUILD_WITH_KASSIOPEIA )
+    # Here we add the include directories, link directories, and libraries that will be used by Kassiopeia to Locust's build configuration.
+    
     set (LOCUST_MC_INCLUDE_DIRECTORIES
         ${LOCUST_MC_INCLUDE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
