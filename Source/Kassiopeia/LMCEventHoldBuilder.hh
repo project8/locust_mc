@@ -12,32 +12,24 @@
 
 #include "LMCEventHold.hh"
 
-namespace katrin
+namespace locust
 {
 
     typedef katrin::KComplexElement< locust::EventHold > EventHoldBuilder;
 
-    template< >
-    inline bool EventHoldBuilder::AddAttribute(KContainer *aContainer)
-    {
-        if( aContainer->GetName() == "name" )
-        {
-            aContainer->CopyTo( fObject, &KNamed::SetName );
-            return true;
-        }
-        if( aContainer->GetName() == "wait_before_event" )
-        {
-            fObject->SetWaitBeforeEvent( aContainer->AsReference< bool >() );
-            return true;
-        }
-        if( aContainer->GetName() == "wait_after_event" )
-        {
-            fObject->SetWaitAfterEvent( aContainer->AsReference< bool >() );
-            return true;
-        }
-        return false;
-    }
+} /* namespace locust */
 
-} /* namespace katrin */
+template< >
+inline bool locust::EventHoldBuilder::AddAttribute(KContainer *aContainer)
+{
+    if( aContainer->GetName() == "name" )
+    {
+        aContainer->CopyTo( fObject, &KNamed::SetName );
+        std::cout << "setting the name of the event hold" << std::endl;
+        return true;
+    }
+    return false;
+}
+
 
 #endif /* LOCUST_LMCEVENTHOLDBUILDER_HH_ */
