@@ -7,12 +7,6 @@
 
 #include "LMCRunKassiopeia.hh"
 
-#include "LMCEventHold.hh"
-#include "LMCFieldCalculator.hh"
-#include "LMCCyclotronRadiationExtractor.hh"
-#include "LMCKassLocustInterface.hh"
-#include "LMCRunPause.hh"
-
 #include "KSSimulation.h"
 #include "KSRoot.h"
 #include "KMessage.h"
@@ -96,24 +90,6 @@ namespace locust
         tTagProcessor.InsertAfter( &tPrintProcessor );
 
         tElementProcessor.InsertAfter( &tTagProcessor );
-
-        RunPause* tRunPause = new RunPause();
-        tRunPause->SetName( "run_pause" );
-        KToolbox::GetInstance().Add(tRunPause);
-
-        EventHold* tEventHold = new EventHold();
-        tEventHold->SetName( "event_hold" );
-        KToolbox::GetInstance().Add(tEventHold);
-
-        CyclotronRadiationExtractor* tCyclotronRadiationExtractor = new CyclotronRadiationExtractor();
-        tCyclotronRadiationExtractor->SetName( "cyclotron_radiation_extractor" );
-        KToolbox::GetInstance().Add(tCyclotronRadiationExtractor);
-        tCyclotronRadiationExtractor->Initialize();
-        tCyclotronRadiationExtractor->Activate();
-
-        FieldCalculator* tFieldCalculator = new FieldCalculator();
-        tFieldCalculator->SetName( "field_calculator");
-        KToolbox::GetInstance().Add(tFieldCalculator);
 
         KTextFile* tFile;
 
