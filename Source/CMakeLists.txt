@@ -85,14 +85,15 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
         Kassiopeia/LMCFieldCalculator.hh
-        Kassiopeia/LMCFieldCalculatorBuilder.hh
+        #Kassiopeia/LMCFieldCalculatorBuilder.hh
         Kassiopeia/LMCEventHold.hh
-        #Kassiopeia/LMCEventHoldBuilder.hh
+        Kassiopeia/LMCEventHoldBuilder.hh
         Kassiopeia/LMCKassLocustInterface.hh
         Kassiopeia/LMCParticle.hh
         #Kassiopeia/LMCRootBuilder.hh
         Kassiopeia/LMCRunKassiopeia.hh
         Kassiopeia/LMCRunPause.hh
+        Kassiopeia/LMCRunPauseBuilder.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -107,14 +108,15 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
         Kassiopeia/LMCFieldCalculator.cc
-        Kassiopeia/LMCFieldCalculatorBuilder.cc
+        #Kassiopeia/LMCFieldCalculatorBuilder.cc
         Kassiopeia/LMCEventHold.cc
-        #Kassiopeia/LMCEventHoldBuilder.cc
+        Kassiopeia/LMCEventHoldBuilder.cc
         Kassiopeia/LMCKassLocustInterface.cc
         Kassiopeia/LMCParticle.cc
         #Kassiopeia/LMCRootBuilder.cc
         Kassiopeia/LMCRunKassiopeia.cc
         Kassiopeia/LMCRunPause.cc
+        Kassiopeia/LMCRunPauseBuilder.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 

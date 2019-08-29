@@ -60,8 +60,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     ExternalProject_Add( KassiopeiaExt
         PREFIX            ${CMAKE_INSTALL_PREFIX}
         SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
-   #     CMAKE_ARGS        -DCMAKE_INCLUDE_PATH:string=${CMAKE_INSTALL_PREFIX}/lib/locust
-        CMAKE_ARGS        -DCMAKE_PROJECT_KassiopeiaExt_INCLUDE=${CMAKE_SOURCE_DIR}/fix_KassiopeiaExt.cmake
+    #    CMAKE_ARGS        -DCMAKE_INCLUDE_PATH:string=${CMAKE_INSTALL_PREFIX}/lib/locust
+    #    CMAKE_ARGS        -DCMAKE_PROJECT_KassiopeiaExt_INCLUDE=${CMAKE_SOURCE_DIR}/fix_KassiopeiaExt.cmake
     #    CMAKE_ARGS        -U *_INSTALL_DIR
     #    CMAKE_CACHE_ARGS  -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE
         BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
@@ -84,8 +84,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     
     
     
-    ExternalProject_Get_property(KassiopeiaExt CMAKE_ARGS)
-    message (STATUS "cmakeargs is &&&&&&&&&&&&&&&&&&&&&&&&& ${CMAKE_ARGS}")
+    #ExternalProject_Get_property(KassiopeiaExt CMAKE_ARGS)
+    #message (STATUS "cmakeargs is &&&&&&&&&&&&&&&&&&&&&&&&& ${CMAKE_ARGS}")
     
 
     #ExternalProject_Get_property(KassiopeiaExt EP_STEP_TARGETS)
