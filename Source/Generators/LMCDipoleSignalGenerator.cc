@@ -242,7 +242,7 @@ namespace locust
         return;
     }
 
-
+    //PTS: This part(function) should be unified with the other parts where a filter is extracted
     double* DipoleSignalGenerator::GetFIRFilter(int nskips)
     {
 
@@ -281,7 +281,7 @@ namespace locust
     return nbins;
     }
 
-
+    //PTS: This function should be unified with the other FIR Filter-using generators where a filter is extracted
     double DipoleSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate)
     {
 
@@ -319,8 +319,7 @@ namespace locust
 
     }
     
-    
-    
+    // Should be moved to somewhere more general
     double DipoleSignalGenerator::RotateZ(int component, double angle, double x, double y)
     {
 	double newcomponent = 0.;

@@ -151,6 +151,7 @@ namespace locust
 
 
 
+    //PTS: This and other fucntions in the file should be functions of the class
     static void WakeBeforeEvent()
     {
         fPreEventCondition.notify_one();
@@ -335,7 +336,7 @@ namespace locust
         return VoltageAmplitude;
     }
 
-
+    //PTS: This fucntion should be same for all the FIR-using generators
     void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
     {
 
