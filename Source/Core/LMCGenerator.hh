@@ -25,7 +25,7 @@ namespace locust
             Generator( const std::string& aName = "generic-generator" );
             virtual ~Generator();
 
-            virtual bool Configure( const scarab::param_node* aNode ) = 0;
+            virtual bool Configure( const scarab::param_node& aNode ) = 0;
             void ConfigureNChannels( unsigned nchannels ) const;
             void ConfigureAcquisitionRate( double ar ) const;
 

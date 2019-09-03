@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.13.3)
+project( locust_mc VERSION 1.14.2)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -18,6 +18,10 @@ set_option( USE_CPP11 TRUE )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
+
+# make the data install directory available as a preprocessor macro
+add_definitions( -DPB_DATA_INSTALL_DIR=${DATA_INSTALL_DIR} )
+
 
 #####################
 # locust submodules #
@@ -157,6 +161,7 @@ include_directories (${ROOT_INCLUDE_DIR})
 ###########
 
 add_subdirectory( Source )
+add_subdirectory( Data )
 
 
 

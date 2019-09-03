@@ -36,7 +36,7 @@ class HighPassFilterFFTGenerator : public Generator
             HighPassFilterFFTGenerator( const std::string& aName = "hpf-fft" );
             virtual ~HighPassFilterFFTGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
             double GetThreshold() const;

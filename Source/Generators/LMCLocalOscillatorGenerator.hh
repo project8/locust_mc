@@ -32,7 +32,7 @@ class LocalOscillatorGenerator : public Generator
             LocalOscillatorGenerator( const std::string& aName = "local-oscillator" );
             virtual ~LocalOscillatorGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 

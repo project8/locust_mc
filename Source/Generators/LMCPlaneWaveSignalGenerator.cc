@@ -50,86 +50,84 @@ namespace locust
   {
   }
 
-  bool PlaneWaveSignalGenerator::Configure( const scarab::param_node* aParam )
+  bool PlaneWaveSignalGenerator::Configure( const scarab::param_node& aParam )
   {
-    if( aParam == NULL) return true;
-
-    if( aParam->has( "phase-delay" ) )
+    if( aParam.has( "phase-delay" ) )
       {
-	fPhaseDelay = aParam->get_value< bool >( "phase-delay" );
+        fPhaseDelay = aParam["phase-delay"]().as_bool();
       }
 
-    if( aParam->has( "voltage-damping" ) )
+    if( aParam.has( "voltage-damping" ) )
       {
-	fVoltageDamping = aParam->get_value< bool >( "voltage-damping" );
+        fVoltageDamping = aParam["voltage-damping"]().as_bool();
       }
 
-    if( aParam->has( "planewave-frequency" ) )
+    if( aParam.has( "planewave-frequency" ) )
       {
-	fRF_Frequency = aParam->get_value< double >( "planewave-frequency" );
+        fRF_Frequency = aParam["planewave-frequency"]().as_double();
       }
 
-    if( aParam->has( "lo-frequency" ) )
+    if( aParam.has( "lo-frequency" ) )
       {
-	fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
+        fLO_Frequency = aParam["lo-frequency"]().as_double();
       }
-    if( aParam->has( "array-radius" ) )
+    if( aParam.has( "array-radius" ) )
       {
-	fArrayRadius = aParam->get_value< double >( "array-radius" );
+        fArrayRadius = aParam["array-radius"]().as_double();
       }
-    if( aParam->has( "npatches-per-strip" ) )
+    if( aParam.has( "npatches-per-strip" ) )
       {
-	fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+        fNPatchesPerStrip = aParam["npatches-per-strip"]().as_int();
       }
-    if( aParam->has( "patch-spacing" ) )
+    if( aParam.has( "patch-spacing" ) )
       {
-	fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+        fPatchSpacing = aParam["patch-spacing"]().as_double();
       }
-    if( aParam->has( "feed" ) )
+    if( aParam.has( "feed" ) )
       {
-	if (aParam->get_value< std::string >( "feed" ) == "corporate")
+        if (aParam["feed"]().as_string() == "corporate")
 	  fPowerCombiner = 0;  // default
-	else if (aParam->get_value< std::string >( "feed" ) == "series")
+	else if (aParam["feed"]().as_string() == "series")
 	  fPowerCombiner = 1;
-	else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
+	else if (aParam["feed"]().as_string() == "one-quarter")
 	  fPowerCombiner = 2;
-	else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
+	else if (aParam["feed"]().as_string() == "seven-eighths")
 	  fPowerCombiner = 3;
-	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
+	else if (aParam["feed"]().as_string() == "nine-sixteenths")
 	  fPowerCombiner = 4;
-	else if (aParam->get_value< std::string >( "feed") == "voltage-divider")
+	else if (aParam["feed"]().as_string() == "voltage-divider")
     	  fPowerCombiner = 5;
 	else
 	  fPowerCombiner = 0;  // default
       }
-    if( aParam->has( "AOI" ) )
+    if( aParam.has( "AOI" ) )
       {
-	fAOI = aParam->get_value< double >( "AOI" );
-	fAOI *= (2*LMCConst::Pi()/360); //convert to radians
+        fAOI = aParam["A0I"]().as_double();
+        fAOI *= (2*LMCConst::Pi()/360); //convert to radians
       }
-    if ( aParam->has(  "patch-filter"  ) )
+    if ( aParam.has(  "patch-filter"  ) )
       {
-	fPatchFIRfilter = aParam->get_value< bool >( "patch-filter" );
+        fPatchFIRfilter = aParam["patch-filter"]().as_bool();
       }
-    if( aParam->has( "patch-filter-filename" ) )
+    if( aParam.has( "patch-filter-filename" ) )
       {
-	gpatchfilter_filename = aParam->get_value< std::string >( "patch-filter-filename" );
+        gpatchfilter_filename = aParam["patch-filter-filename"]().as_string();
       }
-    if( aParam->has( "patch-filter-resolution" ) )
+    if( aParam.has( "patch-filter-resolution" ) )
       {
-	fPatchFIRfilter_resolution = aParam->get_value< double >( "patch-filter-resolution" );
+        fPatchFIRfilter_resolution = aParam["patch-filter-resolution"]().as_double();
       }
-    if( aParam->has( "amplitude" ) )
+    if( aParam.has( "amplitude" ) )
       {
-	fAmplitude = aParam->get_value< double >( "amplitude" );
+	fAmplitude = aParam["amplitude"]().as_double();
       }
-    if( aParam->has( "buffer-margin" ) )
+    if( aParam.has( "buffer-margin" ) )
       {
-	fFieldBufferMargin = aParam->get_value< unsigned >( "buffer-margin" );
+	fFieldBufferMargin = aParam["buffer-margin"]().as_uint();
       }
-     if( aParam->has( "junction-resistance" ) )
+     if( aParam.has( "junction-resistance" ) )
         {
-            fRJunction = aParam->get_value< double >( "junction-resistance" );
+            fRJunction = aParam["junction-resistance"]().as_double();
         }
 
     return true;

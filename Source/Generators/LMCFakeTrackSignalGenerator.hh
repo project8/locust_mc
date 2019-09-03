@@ -13,15 +13,10 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCEvent.hh"
 #include <random>
 #include <vector>
-#include "LMCEvent.hh"
-
-
-const double PI = 3.141592653589793;
-double m_kg = 9.10938291*1e-31; // electron mass in kg
-double q_C = 1.60217657*1e-19; // electron charge in C
-double me_keV = 510.998; // electron mass in keV
+#include <boost/math/interpolators/barycentric_rational.hpp>
 
 namespace scarab
 {
@@ -44,7 +39,7 @@ namespace locust
       Configuration name: "fake-track"
 
       Available configuration options:
-      - "signal-power": double -- PSD of signal (W/Hz).
+      - "signal-power": double -- PSD of signal (at 90 degrees) (W/Hz).
       - "start-frequency-max": double -- Upper bound for start frequency of signal (Hz); distribution: uniform.
       - "start-frequency-min": double -- Lower bound for start frequency of signal (Hz); distribution: uniform.
       - "track-length-mean": double -- Average of track length (s); distribution: exponential.
@@ -68,9 +63,7 @@ namespace locust
             FakeTrackSignalGenerator( const std::string& aName = "fake-track" );
             virtual ~FakeTrackSignalGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
-            bool Configure2( const Digitizer* aDig );
-
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
@@ -85,6 +78,12 @@ namespace locust
 
             double GetStartFrequencyMin() const;
             void SetStartFrequencyMin( double aFrequencyMin );
+
+            double GetStartPitchMax() const;
+            void SetStartPitchMax( double aPitchMax );
+
+            double GetStartPitchMin() const;
+            void SetStartPitchMin( double aPitchMin );
 
             double GetTrackLengthMean() const;
             void SetTrackLengthMean( double aTrackLengthMean );
@@ -110,6 +109,9 @@ namespace locust
             double GetBField() const;
             void SetBField( double aBField );
 
+            double GetHydrogenFraction() const;
+            void SetHydrogenFraction( double aHydrogenFraction );
+
             int GetRandomSeed() const;
             void SetRandomSeed(  int aRandomSeed );
 
@@ -119,23 +121,33 @@ namespace locust
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            void SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset) const;
-            void InitiateEvent(Event* anEvent, int eventID) const;
+            void SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset);
+            void InitiateEvent(Event* anEvent, int eventID);
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
             double rel_cyc(double energy, double b_field) const;
             double rel_energy(double frequency, double b_field) const;
-            float myErfInv(float x) const;
-            double scattering_inverseCDF(double p) const;
+            void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
+            double EnergyLossSpectrum(double eLoss, double oscillator_strength);
+            double GetScatteredPitchAngle(double thetaScatter, double pitchAngle, double phi);
+            void SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data);
+            double WaveguidePowerCoupling(double frequency, double pitchAngle);
+            double GetEnergyLoss(double u, bool hydrogenScatter);
+            double GetKa2(double eLoss, double T);
+            double GetThetaScatter(double eLoss, double T);
+            double GetBField(double z);
+            double GetPitchAngleZ(double theta_i, double B_i, double B_f);
+            double GetPitchCorrectedFrequency(double frequency) const;
+            double GetAxialFrequency();
+            void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
 
-            mutable double slope_val = 0.;
-            mutable double tracklength_val = 0.;
-            mutable double starttime_val = 0.;
-            mutable double endtime_val = 0.;
-            mutable double startfreq_val = 0.;
-            mutable double jumpsize_val = 0.002e9;
-            mutable int ntracks_val = 0;
-
-
+            double fSlope;
+            double fPitch;
+            double fTrackLength;
+            double fStartTime;
+            double fEndTime;
+            double fStartFreq;
+            double fJumpSize;
+            int fNTracks;
 
         private:
 
@@ -153,15 +165,20 @@ namespace locust
             double fSlopeStd;
             double fStartTimeMax;
             double fStartTimeMin;
+            double fStartPitchMin;
+            double fStartPitchMax;
             double fLO_frequency;
             double fTrackLengthMean;
             double fNTracksMean;
             double fBField;
             int fRandomSeed;
             int fNEvents;
+            double fHydrogenFraction;
             std::string fRoot_filename;
-
-
+            std::default_random_engine fRandomEngine;
+            boost::math::barycentric_rational<double> fH2Interpolant;
+            boost::math::barycentric_rational<double> fKrInterpolant;
+            const double fTrapLength;
 
 
     };

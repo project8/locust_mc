@@ -47,7 +47,7 @@ namespace locust
             TestSignalGenerator( const std::string& aName = "test-signal" );
             virtual ~TestSignalGenerator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
       bool Configure2( const Digitizer* aDig );
 
 
