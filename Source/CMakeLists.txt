@@ -48,6 +48,7 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCLocalOscillatorGenerator.hh
     Generators/LMCButterworthLPFGenerator.hh
     Generators/LMCDipoleSignalGenerator.cc
+    Generators/LMCPlaneWaveSignalGenerator.hh
 
     Transmitters/LMCFieldEstimator.hh
     Transmitters/LMCFieldBuffer.hh
@@ -84,6 +85,7 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCLocalOscillatorGenerator.cc
     Generators/LMCButterworthLPFGenerator.cc
     Generators/LMCDipoleSignalGenerator.cc
+    Generators/LMCPlaneWaveSignalGenerator.cc
 
     Transmitters/LMCFieldEstimator.cc
     Transmitters/LMCFieldBuffer.cc
@@ -100,7 +102,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
-        Generators/LMCPlaneWaveSignalGenerator.hh
+
 
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
@@ -121,7 +123,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCPatchSignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
-        Generators/LMCPlaneWaveSignalGenerator.cc
 
         Core/LMCHFSSReader.cc
         Core/LMCParticle.cc
@@ -140,25 +141,25 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 #  Check root build.
 if (locust_mc_BUILD_WITH_ROOT)
 
-set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
-    Core/LMCEvent.hh
-    Core/LMCTrack.hh
-    Generators/LMCFakeTrackSignalGenerator.hh
-   )
+    set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+        Core/LMCEvent.hh
+        Core/LMCTrack.hh
+        Generators/LMCFakeTrackSignalGenerator.hh
+       )
 
-set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
-    Core/LMCEvent.cc
-    Core/LMCTrack.cc
-    Generators/LMCFakeTrackSignalGenerator.cc
-   )
+    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+        Core/LMCEvent.cc
+        Core/LMCTrack.cc
+        Generators/LMCFakeTrackSignalGenerator.cc
+       )
 
 
-  if (CMAKE_COMPILER_IS_GNUCXX)
-      option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
-    if( GCC_FORCE_LINKING )
-        set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
-    endif( )
-  endif()
+    if (CMAKE_COMPILER_IS_GNUCXX)
+        option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
+        if( GCC_FORCE_LINKING )
+            set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed" )
+        endif( )
+    endif()
 
     pbuilder_add_ext_libraries (${ROOT_LIBRARIES})
     message(STATUS "${ROOT_LIBRARIES}")

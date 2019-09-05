@@ -37,48 +37,46 @@ namespace locust
     {
     }
 
-    bool AntennaSignalTransmitter::Configure( const scarab::param_node* aParam )
+    bool AntennaSignalTransmitter::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-	 
 	if(!fFieldEstimator.Configure(aParam))
 	{
 		LERROR(lmclog,"Error configuring field estimator class");
 	}
 
-	if( aParam->has( "input-signal-type" ) )
+	if( aParam.has( "input-signal-type" ) )
         {
-            fInputSignalType = aParam->get_value< int >( "input-signal-type" );
+            fInputSignalType = aParam["input-signal-type"]().as_int();
         }
 
-	if( aParam->has( "input-signal-frequency" ) )
+	if( aParam.has( "input-signal-frequency" ) )
         {
-            fInputFrequency= aParam->get_value< double >( "input-signal-frequency" );
+            fInputFrequency= aParam["input-signal-frequency"]().as_double();
         }
 
-	if( aParam->has( "array-radius" ) )
+	if( aParam.has( "array-radius" ) )
 	{
-		fArrayRadius = aParam->get_value< double >( "array-radius" );
+		fArrayRadius = aParam["array-radius"]().as_double();
 	}
 
-	if( aParam->has( "antenna-x-position" ) )
+	if( aParam.has( "antenna-x-position" ) )
         {
-        	fAntennaPositionX= aParam->get_value< double >( "antenna-x-position");
+        	fAntennaPositionX= aParam["antenna-x-position"]().as_double();
         }
 	
-	if( aParam->has( "antenna-y-position" ) )
+	if( aParam.has( "antenna-y-position" ) )
         {
-        	fAntennaPositionY= aParam->get_value< double >( "antenna-y-position");
+        	fAntennaPositionY = aParam["antenna-y-position"]().as_double();
         }
 
-	if( aParam->has( "antenna-z-position" ) )
+	if( aParam.has( "antenna-z-position" ) )
         {
-        	fAntennaPositionZ= aParam->get_value< double >( "antenna-z-position");
+        	fAntennaPositionZ = aParam["antenna-z-position"]().as_double();
         }
 
-	if( aParam->has( "input-signal-amplitude" ) )
+	if( aParam.has( "input-signal-amplitude" ) )
         {
-            fInputAmplitude = aParam->get_value< double >( "input-signal-amplitude" );
+            fInputAmplitude = aParam["input-signal-amplitude"]().as_double();
         }
 	return true;
     }

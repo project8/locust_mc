@@ -44,7 +44,7 @@ namespace locust
             SimulationController();
             virtual ~SimulationController();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             bool Prepare();
 

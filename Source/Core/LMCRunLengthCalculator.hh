@@ -49,7 +49,7 @@ namespace locust
             RunLengthCalculator();
             virtual ~RunLengthCalculator();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             bool VisitGenerators();
 

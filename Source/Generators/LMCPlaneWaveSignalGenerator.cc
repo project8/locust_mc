@@ -50,90 +50,256 @@ namespace locust
   {
   }
 
-  bool PlaneWaveSignalGenerator::Configure( const scarab::param_node* aParam )
+  bool PlaneWaveSignalGenerator::Configure( const scarab::param_node& aParam )
   {
-    if( aParam == NULL) return true;
 
-    if( aParam->has( "phase-delay" ) )
+    if( aParam.has( "phase-delay" ) )
       {
-	fPhaseDelay = aParam->get_value< bool >( "phase-delay" );
-      }
-
-    if( aParam->has( "voltage-damping" ) )
-      {
-	fVoltageDamping = aParam->get_value< bool >( "voltage-damping" );
+        SetPhaseDelay( aParam.get_value< bool >( "phase-delay", fPhaseDelay ) );
       }
 
-    if( aParam->has( "planewave-frequency" ) )
+    if( aParam.has( "voltage-damping" ) )
       {
-	fRF_Frequency = aParam->get_value< double >( "planewave-frequency" );
+        SetVoltageDamping( aParam.get_value< bool >( "voltage-damping", fVoltageDamping ) );
       }
 
-    if( aParam->has( "lo-frequency" ) )
+    if( aParam.has( "planewave-frequency" ) )
       {
-	fLO_Frequency = aParam->get_value< double >( "lo-frequency" );
+        SetPlaneWaveFrequency( aParam.get_value< double >( "planewave-frequency", fRF_Frequency ));
       }
-    if( aParam->has( "array-radius" ) )
+
+    if( aParam.has( "lo-frequency" ) )
       {
-	fArrayRadius = aParam->get_value< double >( "array-radius" );
+        SetLOFrequency( aParam.get_value< double >( "fLO_Frequency", fLO_Frequency ));
       }
-    if( aParam->has( "npatches-per-strip" ) )
+
+    if( aParam.has( "array-radius" ) )
       {
-	fNPatchesPerStrip = aParam->get_value< int >( "npatches-per-strip" );
+        SetArrayRadius( aParam.get_value< double >( "array-radius", fArrayRadius ));
       }
-    if( aParam->has( "patch-spacing" ) )
+    if( aParam.has( "npatches-per-strip" ) )
       {
-	fPatchSpacing = aParam->get_value< double >( "patch-spacing" );
+        SetNPatchesPerStrip( aParam.get_value< int >( "npatches-per-strip", fNPatchesPerStrip ));
       }
-    if( aParam->has( "feed" ) )
+    if( aParam.has( "patch-spacing" ) )
       {
-	if (aParam->get_value< std::string >( "feed" ) == "corporate")
-	  fPowerCombiner = 0;  // default
-	else if (aParam->get_value< std::string >( "feed" ) == "series")
-	  fPowerCombiner = 1;
-	else if (aParam->get_value< std::string >( "feed" ) == "one-quarter")
-	  fPowerCombiner = 2;
-	else if (aParam->get_value< std::string >( "feed" ) == "seven-eighths")
-	  fPowerCombiner = 3;
-	else if (aParam->get_value< std::string >( "feed") == "nine-sixteenths")
-	  fPowerCombiner = 4;
-	else if (aParam->get_value< std::string >( "feed") == "voltage-divider")
-    	  fPowerCombiner = 5;
-	else
-	  fPowerCombiner = 0;  // default
+        SetPatchSpacing( aParam.get_value< double >( "patch-spacing", fPatchSpacing ) );
       }
-    if( aParam->has( "AOI" ) )
+    if( aParam.has( "feed" ) )
       {
-	fAOI = aParam->get_value< double >( "AOI" );
-	fAOI *= (2*LMCConst::Pi()/360); //convert to radians
+        SetPowerCombiner( aParam["feed"]().as_string() );
       }
-    if ( aParam->has(  "patch-filter"  ) )
+    if( aParam.has( "AOI" ) )
       {
-	fPatchFIRfilter = aParam->get_value< bool >( "patch-filter" );
+        SetAOI( aParam.get_value< double >( "AOI", fAOI ));
       }
-    if( aParam->has( "patch-filter-filename" ) )
+    if ( aParam.has(  "patch-filter"  ) )
       {
-	gpatchfilter_filename = aParam->get_value< std::string >( "patch-filter-filename" );
+        SetPatchFIRfilter( aParam.get_value< bool >( "patch-filter", fPatchFIRfilter) );
       }
-    if( aParam->has( "patch-filter-resolution" ) )
+    if( aParam.has( "patch-filter-filename" ) )
       {
-	fPatchFIRfilter_resolution = aParam->get_value< double >( "patch-filter-resolution" );
+        SetPatchFIRfilter_filename( aParam.get_value< std::string >( "patch-filter-filename", gpatchfilter_filename) );
       }
-    if( aParam->has( "amplitude" ) )
+    if( aParam.has( "patch-filter-resolution" ) )
       {
-	fAmplitude = aParam->get_value< double >( "amplitude" );
+        SetPatchFIRfilter_resolution( aParam.get_value< double >( "patch-filter-resolution", fPatchFIRfilter_resolution) );
       }
-    if( aParam->has( "buffer-margin" ) )
+    if( aParam.has( "amplitude" ) )
       {
-	fFieldBufferMargin = aParam->get_value< unsigned >( "buffer-margin" );
+	  SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude) );
       }
-     if( aParam->has( "junction-resistance" ) )
-        {
-            fRJunction = aParam->get_value< double >( "junction-resistance" );
-        }
+    if( aParam.has( "buffer-margin" ) )
+      {
+  	  SetBufferMargin( aParam.get_value< double >( "buffer-margin", fFieldBufferMargin) );
+      }
+    if( aParam.has( "junction-resistance" ) )
+      {
+      SetJunctionResistance( aParam.get_value< double >( "junction-resistance", fRJunction) );
+      }
 
     return true;
   }
+
+  bool PlaneWaveSignalGenerator::GetPhaseDelay() const
+   {
+       return fPhaseDelay;
+   }
+
+   void PlaneWaveSignalGenerator::SetPhaseDelay( bool aPhaseDelay )
+   {
+       fPhaseDelay = aPhaseDelay;
+       return;
+   }
+
+   bool PlaneWaveSignalGenerator::GetVoltageDamping() const
+    {
+        return fVoltageDamping;
+    }
+
+    void PlaneWaveSignalGenerator::SetVoltageDamping( bool aVoltageDamping )
+    {
+        fVoltageDamping = aVoltageDamping;
+        return;
+    }
+
+    double PlaneWaveSignalGenerator::GetPlaneWaveFrequency() const
+     {
+         return fRF_Frequency;
+     }
+
+     void PlaneWaveSignalGenerator::SetPlaneWaveFrequency( double aPlaneWaveFrequency )
+     {
+         fRF_Frequency = aPlaneWaveFrequency;
+         return;
+     }
+
+     double PlaneWaveSignalGenerator::GetLOFrequency() const
+       {
+           return fLO_Frequency;
+       }
+
+       void PlaneWaveSignalGenerator::SetLOFrequency( double aLOFrequency )
+       {
+           fLO_Frequency = aLOFrequency;
+           return;
+       }
+
+       double PlaneWaveSignalGenerator::GetArrayRadius() const
+         {
+             return fArrayRadius;
+         }
+
+         void PlaneWaveSignalGenerator::SetArrayRadius( double aArrayRadius )
+         {
+             fArrayRadius = aArrayRadius;
+             return;
+         }
+
+         int PlaneWaveSignalGenerator::GetNPatchesPerStrip() const
+           {
+               return fNPatchesPerStrip;
+           }
+
+         void PlaneWaveSignalGenerator::SetNPatchesPerStrip( int aNPatchesPerStrip )
+           {
+               fNPatchesPerStrip = aNPatchesPerStrip;
+               return;
+           }
+
+         double PlaneWaveSignalGenerator::GetPatchSpacing() const
+           {
+               return fPatchSpacing;
+           }
+
+         void PlaneWaveSignalGenerator::SetPatchSpacing( double aPatchSpacing )
+           {
+               fPatchSpacing = aPatchSpacing;
+               return;
+           }
+
+         int PlaneWaveSignalGenerator::GetPowerCombiner() const
+           {
+               return fPowerCombiner;
+           }
+
+         void PlaneWaveSignalGenerator::SetPowerCombiner( std::string feed )
+           {
+               if (feed == "corporate")
+               	fPowerCombiner = 0;  // default
+               else if (feed == "series")
+               	fPowerCombiner = 1;
+               else if (feed == "one-quarter")
+               	fPowerCombiner = 2;
+               else if (feed == "seven-eighths")
+               	fPowerCombiner = 3;
+               else if (feed == "nine-sixteenths")
+               	fPowerCombiner = 4;
+               else if (feed == "voltage-divider")
+               	fPowerCombiner = 5;
+               else
+               	fPowerCombiner = 0;  // default
+
+               return;
+           }
+
+         double PlaneWaveSignalGenerator::GetAOI() const
+           {
+               return fAOI;
+           }
+
+         void PlaneWaveSignalGenerator::SetAOI( double aAOI )
+           {
+               fAOI = aAOI*(2*LMCConst::Pi()/360); //convert to radians
+               return;
+           }
+         double PlaneWaveSignalGenerator::GetAmplitude() const
+            {
+                return fAmplitude;
+            }
+
+          void PlaneWaveSignalGenerator::SetAmplitude( double aAmplitude )
+            {
+                fAmplitude = aAmplitude;
+                return;
+            }
+
+
+         bool PlaneWaveSignalGenerator::GetPatchFIRfilter() const
+           {
+               return fPatchFIRfilter;
+           }
+
+         void PlaneWaveSignalGenerator::SetPatchFIRfilter( bool aPatchFIRfilter )
+           {
+               fPatchFIRfilter = aPatchFIRfilter;
+               return;
+           }
+         std::string PlaneWaveSignalGenerator::GetPatchFIRfilter_filename() const
+            {
+                return gpatchfilter_filename;
+            }
+
+          void PlaneWaveSignalGenerator::SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename )
+            {
+                gpatchfilter_filename = aPatchFIRfilterfilename;
+                return;
+            }
+          double PlaneWaveSignalGenerator::GetPatchFIRfilter_resolution() const
+              {
+                  return fPatchFIRfilter_resolution;
+              }
+
+          void PlaneWaveSignalGenerator::SetPatchFIRfilter_resolution( double aPatchFIRfilter_resolution )
+             {
+                 fPatchFIRfilter_resolution = aPatchFIRfilter_resolution;
+                 return;
+             }
+          double PlaneWaveSignalGenerator::GetBufferMargin() const
+              {
+                  return fFieldBufferMargin;
+              }
+
+          void PlaneWaveSignalGenerator::SetBufferMargin( double aBufferMargin )
+             {
+                 fFieldBufferMargin = aBufferMargin;
+                 return;
+             }
+          double PlaneWaveSignalGenerator::GetJunctionResistance() const
+              {
+                  return fRJunction;
+              }
+
+          void PlaneWaveSignalGenerator::SetJunctionResistance( double aRJunction )
+             {
+                 fRJunction = aRJunction;
+                 return;
+             }
+
+
+
+
+
 
   void PlaneWaveSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
   {
@@ -249,7 +415,7 @@ namespace locust
 	phase += 2*LMCConst::Pi()*dtfilter*fRF_Frequency;
 
 	// TEST PRINT STATEMENT
-	//	printf("genpoints %d is %g", i, generatedpoints[i]); getchar();
+	//	printf("genpoints %d is %g, amp is %g\n", i, generatedpoints[i], amp); getchar();
       }
 
     double total = 0.;
@@ -258,9 +424,9 @@ namespace locust
 	total += generatedpoints[j]*FIR_array[j];
       }
     delete[] generatedpoints;
+
     return total;
 
-    //  printf("total is %e", total);
       
   }
   
@@ -368,7 +534,7 @@ namespace locust
       printf("Voltage Amplitude for patch at %d is %e\n", sampleIndex, VoltageAmplitude);
       printf("summedvoltageamplitude at %d is %e\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
       getchar();
-    */
+     */
 
   }
 
@@ -416,7 +582,7 @@ namespace locust
 	    
 	   
 	    // TEST PRINT STATEMENTS
-	    /*
+/*
 	      printf("Channel is %d\n", channelIndex);
 	      printf("Patch is %d\n", patchIndex);
 	      printf("Digitizer Sample is %d\n", index);
@@ -436,7 +602,7 @@ namespace locust
 	      printf("Resulting VI[%d] is %e\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
 	    
 	      getchar();
-	    */
+*/
 
 	    //text file for hilbert transform testing.
 	    /*

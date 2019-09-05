@@ -32,7 +32,7 @@ namespace locust
             virtual ~FieldEstimator();
 	    
 	    // Member functions
-	    bool Configure( const scarab::param_node* aNode );
+	    bool Configure( const scarab::param_node& aNode );
 	    bool ReadFIRFile();
 	    double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal with FIR 
 	    int GetFilterSize();//Number of entries in the filter

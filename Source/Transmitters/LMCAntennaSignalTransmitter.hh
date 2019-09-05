@@ -43,7 +43,7 @@ namespace locust
             AntennaSignalTransmitter();
             virtual ~AntennaSignalTransmitter();
 
-            bool Configure( const scarab::param_node* aNode );
+            bool Configure( const scarab::param_node& aNode );
 
 	    /// Generate the electric field based on the voltage input from the config file and convolution with FIR
             double GenerateSignal(Signal *,double acquisitionRate);

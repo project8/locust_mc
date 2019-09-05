@@ -49,50 +49,48 @@ namespace locust
     }
 
 
-    bool TestFIRFilterGenerator::Configure( const scarab::param_node* aParam )
+    bool TestFIRFilterGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam == NULL) return true;
-
-        if( aParam->has( "filter-filename" ) )
+        if( aParam.has( "filter-filename" ) )
         {
-            gfilter_filename = aParam->get_value< std::string >( "filter-filename" );
+            gfilter_filename = aParam["filter-filename"]().as_string();
         }
 
-        if( aParam->has( "filter-resolution" ) )
+        if( aParam.has( "filter-resolution" ) )
         {
-            fFilter_resolution = aParam->get_value< double >( "filter-resolution" );
-        }
-
-
-        if( aParam->has( "rf-frequency" ) )
-        {
-        SetRFFrequency( aParam->get_value< double >( "rf-frequency", fRF_frequency ) );
-        }
-
-        if( aParam->has( "lo-frequency" ) )
-        {
-        SetLOFrequency( aParam->get_value< double >( "lo-frequency", fLO_frequency ) );
-        }
-
-        if( aParam->has( "buffer-size" ) )
-        {
-        SetBufferSize( aParam->get_value< double >( "buffer-size", fFieldBufferSize ) );
-        }
-
-        if( aParam->has( "buffer-margin" ) )
-        {
-        SetBufferMargin( aParam->get_value< double >( "buffer-margin", fFieldBufferMargin ) );
-        }
-
-        if( aParam->has( "amplitude" ) )
-        {
-        SetAmplitude( aParam->get_value< double >( "amplitude", fAmplitude ) );
+            fFilter_resolution = aParam["filter-resolution"]().as_double();
         }
 
 
-        if( aParam->has( "domain" ) )
+        if( aParam.has( "rf-frequency" ) )
         {
-            string domain = aParam->get_value( "domain" );
+            SetRFFrequency( aParam.get_value< double >( "rf-frequency", fRF_frequency ) );
+        }
+
+        if( aParam.has( "lo-frequency" ) )
+        {
+            SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
+        }
+
+        if( aParam.has( "buffer-size" ) )
+        {
+            SetBufferSize( aParam.get_value< double >( "buffer-size", fFieldBufferSize ) );
+        }
+
+        if( aParam.has( "buffer-margin" ) )
+        {
+            SetBufferMargin( aParam.get_value< double >( "buffer-margin", fFieldBufferMargin ) );
+        }
+
+        if( aParam.has( "amplitude" ) )
+        {
+            SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude ) );
+        }
+
+
+        if( aParam.has( "domain" ) )
+        {
+            string domain = aParam["domain"]().as_string();
             if( domain == "time" )
             {
                 SetDomain( Signal::kTime );
