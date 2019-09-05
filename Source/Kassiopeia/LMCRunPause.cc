@@ -38,8 +38,8 @@ namespace locust
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
+    	/*
         printf("Kass is waiting for event trigger.\n");
-
 
         fInterface->fKassEventReady = true;
         fInterface->fFalseStartKassiopeia = false;
@@ -62,11 +62,13 @@ namespace locust
             raise(SIGINT);
             return false;
         }
+        */
         return true;
     }
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun &)
     {
+        std::cout << "executing post-run mod now" << std::endl;
         fInterface->fRunInProgress = false;
         fInterface->fKassReadyCondition.notify_one();
         return true;
