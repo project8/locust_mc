@@ -50,6 +50,39 @@ namespace locust
     double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
     double GetVoltageAmpFromPlaneWave(int z_index);
     double GetPWPhaseDelayAtPatch(int z_index);
+
+    bool GetPhaseDelay() const;
+    void SetPhaseDelay( bool aPhaseDelay );
+    bool GetVoltageDamping() const;
+    void SetVoltageDamping( bool aVoltageDamping );
+    double GetPlaneWaveFrequency() const;
+    void SetPlaneWaveFrequency( double aPlaneWaveFrequency );
+    double GetLOFrequency() const;
+    void SetLOFrequency( double aLOFrequency );
+    double GetArrayRadius() const;
+    void SetArrayRadius( double aArrayRadius );
+    int GetNPatchesPerStrip() const;
+    void SetNPatchesPerStrip( int aNPatchesPerStrip );
+    double GetPatchSpacing() const;
+    void SetPatchSpacing( double aPatchSpacing );
+    int GetPowerCombiner() const;
+    void SetPowerCombiner( std::string feed );
+    double GetAOI() const;
+    void SetAOI( double aAOI );
+    bool GetPatchFIRfilter() const;
+    void SetPatchFIRfilter( bool aPatchFIRfilter );
+    std::string GetPatchFIRfilter_filename() const;
+    void SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename );
+    double GetPatchFIRfilter_resolution() const;
+    void SetPatchFIRfilter_resolution( double aAmplitude );
+    double GetAmplitude() const;
+    void SetAmplitude( double aAmplitude );
+    double GetBufferMargin() const;
+    void SetBufferMargin( double aBufferMargin );
+    double GetJunctionResistance() const;
+    void SetJunctionResistance( double aRJunction );
+
+
       
   private:
     // patch and plane wave parameters
