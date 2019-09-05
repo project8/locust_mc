@@ -431,7 +431,6 @@ namespace locust
           	double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
           	double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
 		LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-          	initialPhaseDelay += 2.*LMCConst::Pi()*fRF_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6) ;
           	for (unsigned ch = 0; ch < nchannels; ++ch)
             	{
         		for (unsigned patch = 0; patch < npatches; ++patch)
@@ -443,7 +442,7 @@ namespace locust
 				double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
             			double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ); 
           			fieldValue=fieldValue*GetAOIFactor(fAntennaSignalTransmitter.GetAntennaPosition()-currentPatch->GetNormalDirection(),currentPatch->GetNormalDirection());
-				double field_phase=initialPhaseDelay-2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
+				double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
 				if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;
             			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
