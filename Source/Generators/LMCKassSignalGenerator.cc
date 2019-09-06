@@ -94,7 +94,7 @@ namespace locust
     bool KassSignalGenerator::ReceivedKassReady()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        printf("LMC about to wait ..\n");
+        printf("LMC about to wait ..\n ");
 
         if( ! fInterface->fKassEventReady)
         {
@@ -203,7 +203,7 @@ namespace locust
 
         }
 
-        /*
+/*
                                 printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
                                 printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
                                 printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
@@ -213,8 +213,8 @@ namespace locust
 //                    getchar();
 
 
-        printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
-         */
+        printf("fLO_Frequency is %g\n", fLO_Frequency); //getchar();
+*/
 
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());  // advance time here instead of in step modifier.  This preserves the freefield sampling.
@@ -288,13 +288,15 @@ namespace locust
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
+//        	printf("at index %d loop says fRunInProgress is %d, %d\n", index, fInterface->fRunInProgress, fInterface->fPreEventInProgress);
             if ((! fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (! fInterface->fPreEventInProgress))
             {
                 if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-                printf("LMC says it ReceivedKassReady()\n");                
+//                printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+//                getchar();
             }
 
-            if (fInterface->fPreEventInProgress)
+            if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
             {
                 PreEventCounter += 1;
 
@@ -310,8 +312,8 @@ namespace locust
 
             if (fInterface->fEventInProgress)  // fEventInProgress
             {
-                if (fInterface->fEventInProgress)  // check again.
-                {
+//                if (fInterface->fEventInProgress)  // check again.
+//                {
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                     tLock.lock();
                     fInterface->fDigitizerCondition.wait( tLock );
@@ -321,7 +323,7 @@ namespace locust
                         PreEventCounter = 0; // reset
                     }
                     tLock.unlock();
-                }
+//                }
             }
         }  // for loop
 
