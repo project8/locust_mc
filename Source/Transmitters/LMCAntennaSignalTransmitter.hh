@@ -8,9 +8,10 @@
 #ifndef LMCANTENNASIGNALTRANSMITTER_HH_
 #define LMCANTENNASIGNALTRANSMITTER_HH_
 
+#include "LMCSignal.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
-#include "LMCFieldEstimator.hh"
+#include "LMCFIRHandler.hh"
 #include "LMCConst.hh"
 
 namespace locust
@@ -61,7 +62,7 @@ namespace locust
 	    bool InitializeTransmitter();
            
         private:
-	    FieldEstimator fFieldEstimator;
+	    FIRHandler fFIRHandler;
 	    
 	    /// Placeholder for now. Input signal type, 1 for dipole antenna, could be chaged later on.
 	    int fInputSignalType;
@@ -76,6 +77,9 @@ namespace locust
 	    double fAntennaPositionZ;
 	    LMCThreeVector fAntennaPosition; // Position of the antenna w.r.t to the center of the array
 
+        //Get the value of the field at the origin for a given amplitude and phase.
+        double GetFieldAtOrigin(double inputAmplitude,double voltagePhase);
+        
 	    void InitializeBuffers(unsigned); 
 
 	    std::vector<std::deque<double>> delayedVoltageBuffer;

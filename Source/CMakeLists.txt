@@ -37,6 +37,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCReceiver.hh
     Core/LMCPatchAntenna.hh
     Core/LMCChannel.hh
+    Core/LMCFIRHandler.hh
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -50,7 +51,6 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.hh
 
-    Transmitters/LMCFieldEstimator.hh
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transforms/LMCHilbertTransform.hh
@@ -74,6 +74,7 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCChannel.cc
     Core/LMCPowerCombiner.cc
     Core/LMCReceiver.cc
+    Core/LMCFIRHandler.cc
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
@@ -87,7 +88,6 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.cc
 
-    Transmitters/LMCFieldEstimator.cc
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
     Transforms/LMCHilbertTransform.cc
