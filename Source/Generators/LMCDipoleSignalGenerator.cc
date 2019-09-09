@@ -287,13 +287,8 @@ namespace locust
     return nbins;
     }
 
-<<<<<<< HEAD
     //PTS: This function should be unified with the other FIR Filter-using generators where a filter is extracted
-    double DipoleSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate)
-=======
-
     double DipoleSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch,double fieldPhase, double AcquisitionRate)
->>>>>>> origin/feature/antenna_signal_generator
     {
 
     double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
