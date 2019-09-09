@@ -13,7 +13,8 @@ namespace locust
      @details
      Available configuration options:
      - "fir-filename": string -- The location of the file containing impulse response
-     - "filter-dt": double (1e-12) -- The size of filter sample width (seconds)
+     - "fir-dt": double (1e-12) -- The size of filter sample width (seconds)
+     - "fir-nskips": int (1) -- Number of skips to be peformed in reading from the FIR file, this will deteremine the number of FIR bins
      */
     
     class FIRHandler
@@ -34,8 +35,9 @@ namespace locust
         // Member variables
         std::string fFIRFilename;
         std::vector<double> fFIRFilter;
-        int fNFIRFilterBins;
-        double fFilterResolution;
+        int fNFIRBins;
+        double fFIRResolution;
+        int fNFIRSkips;
         
         //Member functions
         //Check weather the given input string ends with another string
@@ -45,12 +47,12 @@ namespace locust
     
     inline int FIRHandler::GetFilterSize() const
     {
-        return fNFIRFilterBins;
+        return fNFIRBins;
     }
     
     inline double FIRHandler::GetFilterResolution() const
     {
-        return fFilterResolution;
+        return fFIRResolution;
     }
 } /*namespace locust*/
 

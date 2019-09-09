@@ -15,8 +15,9 @@ namespace locust
     LOGGER( lmclog, "FIRHandler" );
     
     FIRHandler::FIRHandler():
-    fNFIRFilterBins(-99),
-    fFilterResolution(1e-12)
+    fNFIRBins(-99),
+    fFIRResolution(1e-12),
+    fNFIRSkips(1)
     {
     }
     
@@ -30,9 +31,13 @@ namespace locust
         {
             fFIRFilename=aParam["fir-filename"]().as_string();
         }
-        if( aParam.has( "filter-dt" ) )
+        if( aParam.has( "fir-dt" ) )
         {
-            fFilterResolution=aParam["filter-dt"]().as_double();
+            fFIRResolution=aParam["fir-dt"]().as_double();
+        }
+        if( aParam.has( "fir-nskips" ) )
+        {
+            fNFIRSkips=aParam["fir-nskips"]().as_int();
         }
         return true;
     }
@@ -46,7 +51,7 @@ namespace locust
     
     bool FIRHandler::ReadFIRFile()
     {
-        fNFIRFilterBins=0;
+        fNFIRBins=0;
         if(!ends_with(fFIRFilename,".txt"))
         {
             LERROR(lmclog,"The FIR file should end in .txt");
@@ -60,7 +65,7 @@ namespace locust
         while (!feof(firFile)){
             fscanf(firFile,"%lf %lf",&firIndex,&filterMagnitude);
             fFIRFilter.push_back(filterMagnitude);
-            ++fNFIRFilterBins;
+            ++fNFIRBins;
         }
         fclose(firFile);
         return true;
@@ -69,10 +74,10 @@ namespace locust
     double FIRHandler::ConvolveWithFIRFilter(std::deque<double> delayedVoltageBuffer)
     {
         double convolution=0.0;
-        if(fNFIRFilterBins<=0){
+        if(fNFIRBins<=0){
             LERROR(lmclog,"Number of bins in the filter should be positive");
         }
-        for(int i=0;i<fNFIRFilterBins;++i)
+        for(int i=0;i<fNFIRBins;++i)
         {
             convolution+=fFIRFilter[i]*delayedVoltageBuffer[i];
         }
