@@ -48,6 +48,7 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCLocalOscillatorGenerator.hh
     Generators/LMCButterworthLPFGenerator.hh
     Generators/LMCDipoleSignalGenerator.cc
+    Generators/LMCPlaneWaveSignalGenerator.hh
 
     Transmitters/LMCFieldEstimator.hh
     Transmitters/LMCFieldBuffer.hh
@@ -84,6 +85,7 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCLocalOscillatorGenerator.cc
     Generators/LMCButterworthLPFGenerator.cc
     Generators/LMCDipoleSignalGenerator.cc
+    Generators/LMCPlaneWaveSignalGenerator.cc
 
     Transmitters/LMCFieldEstimator.cc
     Transmitters/LMCFieldBuffer.cc
@@ -100,7 +102,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
-        Generators/LMCPlaneWaveSignalGenerator.hh
+
 
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
@@ -121,7 +123,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCPatchSignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
-        Generators/LMCPlaneWaveSignalGenerator.cc
 
         Core/LMCHFSSReader.cc
         Core/LMCParticle.cc
