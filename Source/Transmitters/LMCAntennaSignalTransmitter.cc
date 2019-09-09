@@ -147,10 +147,11 @@ namespace locust
     }
     
     
+    
     double AntennaSignalTransmitter::GetFieldAtOrigin(double inputAmplitude,double voltagePhase)
     {
         //double normalizedVoltage = cos(voltagePhase);
-        double normalizedDerivative = fFIRHandler.ApplyDerivative(voltagePhase);
+        double normalizedDerivative = ApplyDerivative(voltagePhase);
         // Only missing tau, f_g
         // And distance will be applied later
         double field = inputAmplitude*normalizedDerivative/(2*LMCConst::Pi()*LMCConst::C());

@@ -49,7 +49,7 @@ namespace locust
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
         double GenerateSignal(Signal *,double acquisitionRate);
         
-        /// Get initial phase delay 
+        /// Get initial phase delay
         double GetInitialPhaseDelay();
         
         /// Get the positions of the antenna w.r.t the center of the detector
@@ -58,7 +58,7 @@ namespace locust
         /// Set the positions of the antenna w.r.t the center of the detector
         void SetAntennaPosition(const LMCThreeVector &);
         
-        /// Initialize the FIR filter and the field estimator 
+        /// Initialize the FIR filter and the field estimator
         bool InitializeTransmitter();
         
     private:
@@ -77,15 +77,23 @@ namespace locust
         double fAntennaPositionZ;
         LMCThreeVector fAntennaPosition; // Position of the antenna w.r.t to the center of the array
         
+        //Apply derivative of a given signal. This will be more complicated with implmentation of other field types
+        //PTS: Move this to a core file sometime later
+        double ApplyDerivative(double voltagePhase);
+        
         //Get the value of the field at the origin for a given amplitude and phase.
         double GetFieldAtOrigin(double inputAmplitude,double voltagePhase);
         
-        void InitializeBuffers(unsigned); 
+        void InitializeBuffers(unsigned);
         
         std::vector<std::deque<double>> delayedVoltageBuffer;
         
     };
     
+    inline double AntennaSignalTransmitter::ApplyDerivative(double voltagePhase)
+    {
+        return -sin(voltagePhase);
+    }
     
 } /* namespace locust */
 

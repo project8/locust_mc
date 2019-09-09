@@ -87,9 +87,4 @@ namespace locust
         return convolution;
     }
     
-    double FIRHandler::ApplyDerivative(double voltagePhase)
-    {
-        return -sin(voltagePhase);
-    }
-    
 } /* namespace locust */

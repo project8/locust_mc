@@ -25,11 +25,9 @@ namespace locust
         // Member functions
         bool Configure( const scarab::param_node& aNode );
         bool ReadFIRFile();
-        double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal with FIR
+        double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
         int GetFilterSize();//Number of entries in the filter
         double GetFilterResolution();//Get the resolution of the filter
-        //Apply derivative of a given signal. This will be more complicated with implmentation of other field types 
-        double ApplyDerivative(double voltagePhase);
         
     private:
         
