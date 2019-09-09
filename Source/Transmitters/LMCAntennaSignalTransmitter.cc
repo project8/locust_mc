@@ -14,7 +14,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>       
-#include "LMCGlobalsDeclaration.hh"
+//#include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
 using std::string;
