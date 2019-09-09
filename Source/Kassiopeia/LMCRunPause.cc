@@ -9,9 +9,12 @@
 
 #include "KSRun.h"
 
+
+#include "KToolbox.h"
+
 #include <csignal>
 
-
+using namespace katrin;
 namespace locust
 {
 
@@ -38,8 +41,8 @@ namespace locust
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
-        printf("Kass is waiting for event trigger.\n");
 
+        printf("Kass is waiting for event trigger.\n");
 
         fInterface->fKassEventReady = true;
         fInterface->fFalseStartKassiopeia = false;
@@ -51,24 +54,36 @@ namespace locust
             std::unique_lock< std::mutex >tLock( fInterface->fMutex );
             fInterface->fPreEventCondition.wait( tLock );
             fInterface->fKassEventReady = false;
-            fInterface->fEventInProgress = true; // possibly redundant.
             fInterface->fTOld = 0.;  // reset time on digitizer.
         }
 
         printf("Kass got the event trigger\n");
         if (! fInterface->fRunInProgress)
         {
-            printf("Raising sigint to cancel Kassiopeia");
-            raise(SIGINT);
-            return false;
+//         printf("Raising sigint to cancel Kassiopeia");
+//         raise(SIGINT);
+         return false;
         }
+
         return true;
     }
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun &)
     {
-        fInterface->fRunInProgress = false;
-        fInterface->fKassReadyCondition.notify_one();
+        Kassiopeia::KSRun* fRun = KToolbox::GetInstance().Get<Kassiopeia::KSRun>("run");
+
+// still need to access fSimulation->GetEvents() for this to work.
+//        if ( fRun->GetTotalEvents() < fSimulation->GetEvents())
+        if ( fRun->GetTotalEvents() < 1)
+        {
+        	return true;
+        }
+        else
+        {
+        	fInterface->fRunInProgress = false;
+        }
+
+
         return true;
     }
 

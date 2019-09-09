@@ -32,7 +32,9 @@ namespace locust
 
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
+
         return true;
+
     }
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
