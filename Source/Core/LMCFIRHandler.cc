@@ -62,10 +62,15 @@ namespace locust
         FILE *firFile;
         firFile=fopen(fFIRFilename.c_str(),"r");
         //logic copied from /LMCPatchSignalGenerator.cc
+        int count=0;
         while (!feof(firFile)){
             fscanf(firFile,"%lf %lf",&firIndex,&filterMagnitude);
-            fFIRFilter.push_back(filterMagnitude);
-            ++fNFIRBins;
+            if (count%fNFIRSkips==0)
+            {
+                fFIRFilter.push_back(filterMagnitude);
+                ++fNFIRBins;
+            }
+            ++count;
         }
         fclose(firFile);
         return true;
