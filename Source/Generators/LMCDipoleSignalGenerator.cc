@@ -418,7 +418,7 @@ namespace locust
         
         if(!fAntennaSignalTransmitter.InitializeTransmitter())
         {
-            return false;
+            exit(-1);
         }
         
         InitializeBuffers(nfilterbins, nfieldbufferbins);

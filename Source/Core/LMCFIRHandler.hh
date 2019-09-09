@@ -26,8 +26,8 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         bool ReadFIRFile();
         double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
-        int GetFilterSize();//Number of entries in the filter
-        double GetFilterResolution();//Get the resolution of the filter
+        int GetFilterSize() const;//Number of entries in the filter
+        double GetFilterResolution() const;//Get the resolution of the filter
         
     private:
         
@@ -38,9 +38,20 @@ namespace locust
         double fFilterResolution;
         
         //Member functions
+        //Check weather the given input string ends with another string
+        //PTS: Should be moved into a core class
         bool ends_with(const std::string &, const std::string &);
     };
     
+    inline int FIRHandler::GetFilterSize() const
+    {
+        return fNFIRFilterBins;
+    }
+    
+    inline double FIRHandler::GetFilterResolution() const
+    {
+        return fFilterResolution;
+    }
 } /*namespace locust*/
 
 #endif/*LMCFIRHANDLER_HH_ */

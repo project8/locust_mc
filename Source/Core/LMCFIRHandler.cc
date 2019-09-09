@@ -15,7 +15,6 @@ namespace locust
     LOGGER( lmclog, "FIRHandler" );
     
     FIRHandler::FIRHandler():
-    fFIRFilename("blank.txt"),
     fNFIRFilterBins(-99),
     fFilterResolution(1e-12)
     {
@@ -50,7 +49,7 @@ namespace locust
         fNFIRFilterBins=0;
         if(!ends_with(fFIRFilename,".txt"))
         {
-            LERROR(lmclog,"The FIR files should be a .txt file");
+            LERROR(lmclog,"The FIR file should end in .txt");
             return false;
         }
         double firIndex;
@@ -67,19 +66,12 @@ namespace locust
         return true;
     }
     
-    int FIRHandler::GetFilterSize()
-    {
-        return fNFIRFilterBins;
-    }
-    
-    double FIRHandler::GetFilterResolution()
-    {
-        return fFilterResolution;
-    }
-    
     double FIRHandler::ConvolveWithFIRFilter(std::deque<double> delayedVoltageBuffer)
     {
         double convolution=0.0;
+        if(fNFIRFilterBins<=0){
+            LERROR(lmclog,"Number of bins in the filter should be positive");
+        }
         for(int i=0;i<fNFIRFilterBins;++i)
         {
             convolution+=fFIRFilter[i]*delayedVoltageBuffer[i];
