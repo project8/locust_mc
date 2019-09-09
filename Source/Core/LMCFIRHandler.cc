@@ -25,19 +25,38 @@ namespace locust
     {
     }
     
-    bool FIRHandler::Configure(const scarab::param_node& aParam)
+    bool FIRHandler::Configure(const scarab::param_node& aParam,bool isTransmitter)
     {
-        if( aParam.has( "fir-filename" ) )
+        fIsTransmitter =isTransmitter;
+        if(fIsTransmitter)
         {
-            fFIRFilename=aParam["fir-filename"]().as_string();
+            if( aParam.has( "fir-transmitter-filename" ) )
+            {
+                fFIRFilename=aParam["fir-transmitter-filename"]().as_string();
+            }
+            if( aParam.has( "fir-transmitter-dt" ) )
+            {
+                fFIRResolution=aParam["fir-transmitter-dt"]().as_double();
+            }
+            if( aParam.has( "fir-transmitter-nskips" ) )
+            {
+                fNFIRSkips=aParam["fir-transmitter-nskips"]().as_int();
+            }
         }
-        if( aParam.has( "fir-dt" ) )
+        else
         {
-            fFIRResolution=aParam["fir-dt"]().as_double();
-        }
-        if( aParam.has( "fir-nskips" ) )
-        {
-            fNFIRSkips=aParam["fir-nskips"]().as_int();
+            if( aParam.has( "fir-receiver-filename" ) )
+            {
+                fFIRFilename=aParam["fir-receiver-filename"]().as_string();
+            }
+            if( aParam.has( "fir-receiver-dt" ) )
+            {
+                fFIRResolution=aParam["fir-receiver-dt"]().as_double();
+            }
+            if( aParam.has( "fir-receiver-nskips" ) )
+            {
+                fNFIRSkips=aParam["fir-receiver-nskips"]().as_int();
+            }
         }
         return true;
     }

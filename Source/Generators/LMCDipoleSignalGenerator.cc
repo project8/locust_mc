@@ -23,8 +23,6 @@ namespace locust
     DipoleSignalGenerator::DipoleSignalGenerator( const std::string& aName ) :
     Generator( aName ),
     fDoGenerateFunc( &DipoleSignalGenerator::DoGenerateTime ),
-    gfilter_filename("blank.txt"),
-    fFilter_resolution( 0. ),
     fLO_frequency( 20.05e9 ),
     fRF_frequency( 20.1e9 ),
     fArrayRadius( 0. ),
@@ -55,16 +53,10 @@ namespace locust
     
     bool DipoleSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "filter-filename" ) )
+        if(!fReceiverFIRHandler.Configure(aParam,false))
         {
-            gfilter_filename = aParam["filter-filename"]().as_string();
+            LERROR(lmclog,"Error configuring receiver FIRHandler class");
         }
-        
-        if( aParam.has( "filter-resolution" ) )
-        {
-            fFilter_resolution = aParam["filter-resolution"]().as_double();
-        }
-        
         if( aParam.has( "array-radius" ) )
         {
             fArrayRadius = aParam["array-radius"]().as_double();
@@ -249,52 +241,12 @@ namespace locust
         return AOIFactor;
     }
     
-    double* DipoleSignalGenerator::GetFIRFilter(int nskips)
-    {
-        
-        FILE *fp;
-        double *filterarray = new double[1000];
-        double filter;
-        double index;
-        fp = fopen(gfilter_filename.c_str(),"r");
-        int count = 0;
-        
-        
-        for (int i=0; i<1000; i++)
-            filterarray[i] = -99.;
-        
-        
-        
-        while (!feof(fp))
-        {
-            fscanf(fp, "%lf %lf\n", &index, &filter);
-            if (count%nskips==0) filterarray[count/nskips] = filter;
-            count += 1;
-        }
-        
-        fclose(fp);
-        return filterarray;
-        
-    }
-    
-    int DipoleSignalGenerator::GetNFilterBins(double* filterarray)
-    {
-        int nbins = 0;
-        for (int i=0; i<1000; i++)
-        {
-            if (filterarray[i]>0.) nbins += 1;
-        }
-        return nbins;
-    }
-    
-    //PTS: This function should be unified with the other FIR Filter-using generators where a filter is extracted
-    double DipoleSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch,double fieldPhase, double AcquisitionRate)
+    double DipoleSignalGenerator::GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase, double AcquisitionRate)
     {
         
         double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
         double HilbertMag = 0.;
         double HilbertPhase = 0.;
-        double convolution = 0.0;
         
         if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
         {
@@ -307,17 +259,14 @@ namespace locust
             delete[] HilbertMagPhaseMean;
             
             HilbertPhase += fieldPhase;
-            for (int i=0; i < nfilterbins - ConvolutionTimeBuffer[channel*fNPatchesPerStrip+patch].front(); i++)  // populate filter with field.
+            for (int i=0; i < fReceiverFIRHandler.GetFilterSize() - ConvolutionTimeBuffer[channel*fNPatchesPerStrip+patch].front(); i++)  // populate filter with field.
             {
-                HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*dtfilter;
+                HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*fReceiverFIRHandler.GetFilterResolution();
                 PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
                 PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
             }
             
-            for (int j=0; j<nfilterbins; j++)  // sum products in filter.
-            {
-                convolution += filterarray[j]*PatchFIRBuffer[channel*fNPatchesPerStrip+patch].at(j);
-            }
+            double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
             
             PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
             return convolution;
@@ -361,9 +310,12 @@ namespace locust
         
     }
     
-    void  DipoleSignalGenerator::InitializePatchArray()
+    bool  DipoleSignalGenerator::InitializePatchArray()
     {
-        
+        if(!fReceiverFIRHandler.ReadFIRFile())
+        {
+            return false;
+        }
         const unsigned nChannels = fNChannels;
         const int nReceivers = fNPatchesPerStrip;
         const double patchSpacingZ = fPatchSpacing;
@@ -392,6 +344,7 @@ namespace locust
                 allChannels[channelIndex].AddReceiver(modelPatch);
             }
         }
+        return true;
     }
     
     bool DipoleSignalGenerator::DoGenerate( Signal* aSignal )
@@ -410,10 +363,9 @@ namespace locust
         double LO_phase = 0.;
         double field_phase = 0.;
         double VoltageSample = 0.;
-        double* filterarray = GetFIRFilter(1);
-        unsigned nfilterbins = GetNFilterBins(filterarray);
+        unsigned nfilterbins = fReceiverFIRHandler.GetFilterSize();
         unsigned nfieldbufferbins = fFieldBufferSize;
-        double dtfilter = fFilter_resolution;
+        double dtfilter = fReceiverFIRHandler.GetFilterResolution();
         unsigned dtauConvolutionTime = 0;
         
         if(!fAntennaSignalTransmitter.InitializeTransmitter())
@@ -446,16 +398,12 @@ namespace locust
                     if (index > 0) dtauConvolutionTime = 0;
                     else dtauConvolutionTime = nfilterbins/2;
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
-                    VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
+                    VoltageSample = GetVoltageFromField(ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
                     VoltageSample = VoltageSample/patchAntennaDistance;
                     AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
-                    // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
-                    //aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatchesPerStrip+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatchesPerStrip+patch].front());
-                    //aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatchesPerStrip+patch].front()][1] += 2.*VoltageSample*(-sin(LOPhaseBuffer[ch*fNPatchesPerStrip+patch].front()));
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel
-            //std::cout<< "index: "<< index <<std::endl;
         }  // index
         CleanupBuffers();
         return true;

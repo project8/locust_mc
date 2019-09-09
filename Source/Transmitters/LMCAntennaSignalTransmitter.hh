@@ -62,7 +62,7 @@ namespace locust
         bool InitializeTransmitter();
         
     private:
-        FIRHandler fFIRHandler;
+        FIRHandler fTransmitterFIRHandler;
         
         /// Placeholder for now. Input signal type, 1 for dipole antenna, could be chaged later on.
         int fInputSignalType;

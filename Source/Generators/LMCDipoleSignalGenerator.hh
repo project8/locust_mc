@@ -93,17 +93,15 @@ namespace locust
         double GetAOIFactor(LMCThreeVector TrasmittingPatchNormal,LMCThreeVector ReceivingPatchNormal);
         //void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
         double RotateZ(int component, double angle, double x, double y);
-        void InitializePatchArray();
-        
-        double* GetFIRFilter(int nskips);
-        int GetNFilterBins(double* filterarray);
-        double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch,double fieldPhase,double AcquisitionRate);
+        bool InitializePatchArray();
+        double GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase,double AcquisitionRate);
         
         void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
         void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);
         void PopBuffers(unsigned channel, unsigned patch);
         void CleanupBuffers();
         
+        FIRHandler fReceiverFIRHandler;
         AntennaSignalTransmitter fAntennaSignalTransmitter;
         std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
         std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
@@ -114,12 +112,9 @@ namespace locust
         int fPowerCombiner;// from json file.
         bool fTextFileWriting;// from json file.
         
-        double* filterarray;
         double fRF_frequency;
         double fLO_frequency;
         double fAmplitude;
-        double fFilter_resolution;
-        std::string gfilter_filename;
         unsigned fFieldBufferSize;
         unsigned fFieldBufferMargin;
         

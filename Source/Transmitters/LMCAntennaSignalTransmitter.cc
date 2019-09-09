@@ -39,9 +39,9 @@ namespace locust
     
     bool AntennaSignalTransmitter::Configure( const scarab::param_node& aParam )
     {
-        if(!fFIRHandler.Configure(aParam))
+        if(!fTransmitterFIRHandler.Configure(aParam,true))
         {
-            LERROR(lmclog,"Error configuring field estimator class");
+            LERROR(lmclog,"Error configuring FIRHandler class");
         }
         
         if( aParam.has( "input-signal-type" ) )
@@ -96,26 +96,26 @@ namespace locust
         double voltagePhase=fPhaseDelay;
         if(fInputSignalType==1) //sinusoidal wave for dipole antenna
         {
-            for( unsigned index = 0; index <fFIRHandler.GetFilterSize();index++)
+            for( unsigned index = 0; index <fTransmitterFIRHandler.GetFilterSize();index++)
             {
                 double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
                 delayedVoltageBuffer[0].push_back(voltageValue);
                 delayedVoltageBuffer[0].pop_front();
-                voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFIRHandler.GetFilterResolution();
+                voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterFIRHandler.GetFilterResolution();
             }
         }
         
         else// For now using sinusoidal as well
         {
-            for( unsigned index = 0; index <fFIRHandler.GetFilterSize();index++)
+            for( unsigned index = 0; index <fTransmitterFIRHandler.GetFilterSize();index++)
             {
                 double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
                 delayedVoltageBuffer[0].push_back(voltageValue);
                 delayedVoltageBuffer[0].pop_front();
-                voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fFIRHandler.GetFilterResolution();
+                voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterFIRHandler.GetFilterResolution();
             }
         }
-        estimatedField=fFIRHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]);
+        estimatedField=fTransmitterFIRHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]);
         fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency/aSignal->DecimationFactor()/(acquisitionRate*1.e6);
         return estimatedField;
     }
@@ -124,13 +124,13 @@ namespace locust
     {
         fAntennaPosition.SetComponents(fAntennaPositionX,fAntennaPositionY,fAntennaPositionZ);
         
-        if(!fFIRHandler.ReadFIRFile())
+        if(!fTransmitterFIRHandler.ReadFIRFile())
         {
             return false;
         }
-        double filterSize=fFIRHandler.GetFilterSize();
+        double filterSize=fTransmitterFIRHandler.GetFilterSize();
         InitializeBuffers(filterSize);
-        fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fFIRHandler.GetFilterResolution())*fInputFrequency;
+        fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fTransmitterFIRHandler.GetFilterResolution())*fInputFrequency;
         fPhaseDelay = fInitialPhaseDelay;
         return true;
     }
