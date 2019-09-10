@@ -70,7 +70,7 @@ namespace locust
 
     if( aParam.has( "lo-frequency" ) )
       {
-        SetLOFrequency( aParam.get_value< double >( "fLO_Frequency", fLO_Frequency ));
+        SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_Frequency ));
       }
 
     if( aParam.has( "array-radius" ) )
@@ -730,6 +730,7 @@ namespace locust
     for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
       {
 	DriveAntenna(PreEventCounter, index, aSignal);
+	
 	/*
 	  voltagefile << index;
 	  voltagefile << "\n";
