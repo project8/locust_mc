@@ -104,14 +104,9 @@ namespace locust
     bool fPatchFIRfilter; // yes/no to use the patch FIR filter
     bool fJunctionCascade; // yes/no to use the S31 junction cascade
 
-//    void ProcessFIRFilter(int nskips);
-//    int GetNFilterBins();
+      //PTS: This functionality could be fleshed out a little bit and moved to a more global location to be used by several generators
     double GetPatchFIRSample(double amp, double startphase, int patchIndex);
-//    std::string gpatchfilter_filename;
-//    double fPatchFIRfilter_resolution;
-//    double FIR_array[1000];
-//    int nfilterbins;
-
+      
       // for FIR filter
     FIRHandler fReceiverFIRHandler;
     double* GetHilbertMagPhase(unsigned bufferIndex);

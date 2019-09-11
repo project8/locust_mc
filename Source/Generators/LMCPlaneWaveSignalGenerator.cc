@@ -37,8 +37,6 @@ namespace locust
     fPowerCombiner( 0 ),
     fAOI( 0.),
     fPatchFIRfilter( 0.),
-//    gpatchfilter_filename("blank.txt"),
-//    fPatchFIRfilter_resolution( 0. ),
     fAmplitude( 0.),
     fFieldBufferMargin( 50 ),
     fRJunction( 0.3 )
@@ -97,19 +95,7 @@ namespace locust
     if( aParam.has( "AOI" ) )
       {
         SetAOI( aParam.get_value< double >( "AOI", fAOI ));
-      }/*
-    if ( aParam.has(  "patch-filter"  ) )
-      {
-        SetPatchFIRfilter( aParam.get_value< bool >( "patch-filter", fPatchFIRfilter) );
       }
-    if( aParam.has( "patch-filter-filename" ) )
-      {
-        SetPatchFIRfilter_filename( aParam.get_value< std::string >( "patch-filter-filename", gpatchfilter_filename) );
-      }
-    if( aParam.has( "patch-filter-resolution" ) )
-      {
-        SetPatchFIRfilter_resolution( aParam.get_value< double >( "patch-filter-resolution", fPatchFIRfilter_resolution) );
-      }*/
     if( aParam.has( "amplitude" ) )
       {
 	  SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude) );
@@ -248,38 +234,7 @@ namespace locust
                 fAmplitude = aAmplitude;
                 return;
             }
-
-/*
-         bool PlaneWaveSignalGenerator::GetPatchFIRfilter() const
-           {
-               return fPatchFIRfilter;
-           }
-
-         void PlaneWaveSignalGenerator::SetPatchFIRfilter( bool aPatchFIRfilter )
-           {
-               fPatchFIRfilter = aPatchFIRfilter;
-               return;
-           }
-         std::string PlaneWaveSignalGenerator::GetPatchFIRfilter_filename() const
-            {
-                return gpatchfilter_filename;
-            }
-
-          void PlaneWaveSignalGenerator::SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename )
-            {
-                gpatchfilter_filename = aPatchFIRfilterfilename;
-                return;
-            }
-          double PlaneWaveSignalGenerator::GetPatchFIRfilter_resolution() const
-              {
-                  return fPatchFIRfilter_resolution;
-              }
-
-          void PlaneWaveSignalGenerator::SetPatchFIRfilter_resolution( double aPatchFIRfilter_resolution )
-             {
-                 fPatchFIRfilter_resolution = aPatchFIRfilter_resolution;
-                 return;
-             }*/
+    
           double PlaneWaveSignalGenerator::GetBufferMargin() const
               {
                   return fFieldBufferMargin;
@@ -364,46 +319,6 @@ namespace locust
       }
     return phasedelay;
   }
-  
-    /*
-  void PlaneWaveSignalGenerator::ProcessFIRFilter(int nskips)
-  {
-
-    FILE *fp;
-    double filter;
-    double index;
-    fp = fopen(gpatchfilter_filename.c_str(),"r");
-    int count = 0;
-
-
-    for (int i=0; i<sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
-      FIR_array[i] = -99.;
-
-
-    while (!feof(fp))
-      {
-        fscanf(fp, "%lf %lf\n", &index, &filter);
-        if (count%nskips==0) FIR_array[count/nskips] = filter;
-        count += 1;
-      }
-
-    fclose(fp);
-
-  }
-
-  int PlaneWaveSignalGenerator::GetNFilterBins()
-  {
-    int nbins = 0;
-    for (int i=0; i<sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
-      {
-	if (FIR_array[i]>0.) nbins += 1;
-
-	// TEST
-	// printf("FIR_array[%d] is %g\n", i, FIR_array[i]); getchar();
-	
-      }    
-    return nbins;
-  }*/
 
   double PlaneWaveSignalGenerator::GetPatchFIRSample(double dottedamp, double startphase, int patchIndex)
   {   
@@ -718,14 +633,6 @@ namespace locust
 
     InitializePatchArray();
 
-//    // initialize FIR filter array
-//    for (unsigned i=0; i < sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
-//      {
-//    FIR_array[i] = 0.;
-//      }
-    
-//    ProcessFIRFilter(1);
-//    nfilterbins = GetNFilterBins();
     int nfilterbins = fReceiverFIRHandler.GetFilterSize();
     int tempfieldbuffersize = 100;
  
