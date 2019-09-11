@@ -15,6 +15,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
+#include "LMCFIRHandler.hh"
 
 namespace locust
 {
@@ -69,12 +70,12 @@ namespace locust
     void SetPowerCombiner( std::string feed );
     double GetAOI() const;
     void SetAOI( double aAOI );
-    bool GetPatchFIRfilter() const;
-    void SetPatchFIRfilter( bool aPatchFIRfilter );
-    std::string GetPatchFIRfilter_filename() const;
-    void SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename );
-    double GetPatchFIRfilter_resolution() const;
-    void SetPatchFIRfilter_resolution( double aAmplitude );
+//    bool GetPatchFIRfilter() const;
+//    void SetPatchFIRfilter( bool aPatchFIRfilter );
+//    std::string GetPatchFIRfilter_filename() const;
+//    void SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename );
+//    double GetPatchFIRfilter_resolution() const;
+//    void SetPatchFIRfilter_resolution( double aAmplitude );
     double GetAmplitude() const;
     void SetAmplitude( double aAmplitude );
     double GetBufferMargin() const;
@@ -103,22 +104,23 @@ namespace locust
     bool fPatchFIRfilter; // yes/no to use the patch FIR filter
     bool fJunctionCascade; // yes/no to use the S31 junction cascade
 
-    
-    // for FIR filter 
-    void ProcessFIRFilter(int nskips);
-    int GetNFilterBins();
+//    void ProcessFIRFilter(int nskips);
+//    int GetNFilterBins();
     double GetPatchFIRSample(double amp, double startphase, int patchIndex);
+//    std::string gpatchfilter_filename;
+//    double fPatchFIRfilter_resolution;
+//    double FIR_array[1000];
+//    int nfilterbins;
+
+      // for FIR filter
+    FIRHandler fReceiverFIRHandler;
     double* GetHilbertMagPhase(unsigned bufferIndex);
-    std::string gpatchfilter_filename;
-    double fPatchFIRfilter_resolution;
     double fAmplitude;
-    double FIR_array[1000];
-    int nfilterbins;
 
     
     bool DoGenerate( Signal* aSignal );
     void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
-    void InitializePatchArray();
+    bool InitializePatchArray();
 
     
     // for buffers

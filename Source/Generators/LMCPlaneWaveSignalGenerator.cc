@@ -37,8 +37,8 @@ namespace locust
     fPowerCombiner( 0 ),
     fAOI( 0.),
     fPatchFIRfilter( 0.),
-    gpatchfilter_filename("blank.txt"),
-    fPatchFIRfilter_resolution( 0. ),
+//    gpatchfilter_filename("blank.txt"),
+//    fPatchFIRfilter_resolution( 0. ),
     fAmplitude( 0.),
     fFieldBufferMargin( 50 ),
     fRJunction( 0.3 )
@@ -52,6 +52,11 @@ namespace locust
 
   bool PlaneWaveSignalGenerator::Configure( const scarab::param_node& aParam )
   {
+      
+    if(!fReceiverFIRHandler.Configure(aParam,false))
+      {
+          LERROR(lmclog,"Error configuring receiver FIRHandler class");
+      }
 
     if( aParam.has( "phase-delay" ) )
       {
@@ -92,7 +97,7 @@ namespace locust
     if( aParam.has( "AOI" ) )
       {
         SetAOI( aParam.get_value< double >( "AOI", fAOI ));
-      }
+      }/*
     if ( aParam.has(  "patch-filter"  ) )
       {
         SetPatchFIRfilter( aParam.get_value< bool >( "patch-filter", fPatchFIRfilter) );
@@ -104,7 +109,7 @@ namespace locust
     if( aParam.has( "patch-filter-resolution" ) )
       {
         SetPatchFIRfilter_resolution( aParam.get_value< double >( "patch-filter-resolution", fPatchFIRfilter_resolution) );
-      }
+      }*/
     if( aParam.has( "amplitude" ) )
       {
 	  SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude) );
@@ -244,7 +249,7 @@ namespace locust
                 return;
             }
 
-
+/*
          bool PlaneWaveSignalGenerator::GetPatchFIRfilter() const
            {
                return fPatchFIRfilter;
@@ -274,7 +279,7 @@ namespace locust
              {
                  fPatchFIRfilter_resolution = aPatchFIRfilter_resolution;
                  return;
-             }
+             }*/
           double PlaneWaveSignalGenerator::GetBufferMargin() const
               {
                   return fFieldBufferMargin;
@@ -360,6 +365,7 @@ namespace locust
     return phasedelay;
   }
   
+    /*
   void PlaneWaveSignalGenerator::ProcessFIRFilter(int nskips)
   {
 
@@ -397,37 +403,39 @@ namespace locust
 	
       }    
     return nbins;
-  }
-  
+  }*/
 
   double PlaneWaveSignalGenerator::GetPatchFIRSample(double dottedamp, double startphase, int patchIndex)
   {   
    
-    double* generatedpoints = new double [nfilterbins];
-    double dtfilter = fPatchFIRfilter_resolution;
+//    double* generatedpoints = new double [nfilterbins];
+    std::deque<double> generatedpoints;
+    int nfilterbins = fReceiverFIRHandler.GetFilterSize();
+    double dtfilter = fReceiverFIRHandler.GetFilterResolution();
+//    double dtfilter = fPatchFIRfilter_resolution;
     //double phase = startphase;
     double phase = startphase + GetPWPhaseDelayAtPatch(patchIndex);
     double amp = dottedamp;
     
     for(int i=0; i < nfilterbins; i++)
-      {
-	generatedpoints[i] = amp*cos(phase);
+    {
+	generatedpoints.push_back(amp*cos(phase));
 	phase += 2*LMCConst::Pi()*dtfilter*fRF_Frequency;
 
 	// TEST PRINT STATEMENT
 	//	printf("genpoints %d is %g, amp is %g\n", i, generatedpoints[i], amp); getchar();
-      }
+    }
 
-    double total = 0.;
-    for(int j=0; j < nfilterbins; j++)
-      {
-	total += generatedpoints[j]*FIR_array[j];
-      }
-    delete[] generatedpoints;
-
-    return total;
-
+    double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(generatedpoints);
       
+    generatedpoints.shrink_to_fit();  // memory deallocation.
+//    double total = 0.;
+//    for(int j=0; j < nfilterbins; j++)
+//      {
+//    total += generatedpoints[j]*FIR_array[j];
+//      }
+//    delete[] generatedpoints;=
+    return convolution;
   }
   
   double* PlaneWaveSignalGenerator::GetHilbertMagPhase(unsigned bufferIndex)
@@ -667,8 +675,12 @@ namespace locust
     
   }
 
-  void PlaneWaveSignalGenerator::InitializePatchArray()
-  {
+  bool PlaneWaveSignalGenerator::InitializePatchArray()
+    {
+    if(!fReceiverFIRHandler.ReadFIRFile())
+    {
+        return false;
+    }
     const unsigned nChannels = fNChannels;
     const int nReceivers = fNPatchesPerStrip;
 
@@ -696,6 +708,7 @@ namespace locust
 	    allChannels[channelIndex].AddReceiver(modelPatch);
 	  }
       }
+    return true;
   }
 
 
@@ -705,14 +718,15 @@ namespace locust
 
     InitializePatchArray();
 
-    // initialize FIR filter array
-    for (unsigned i=0; i < sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
-      {  
-	FIR_array[i] = 0.;
-      }
+//    // initialize FIR filter array
+//    for (unsigned i=0; i < sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
+//      {
+//    FIR_array[i] = 0.;
+//      }
     
-    ProcessFIRFilter(1);
-    nfilterbins = GetNFilterBins();
+//    ProcessFIRFilter(1);
+//    nfilterbins = GetNFilterBins();
+    int nfilterbins = fReceiverFIRHandler.GetFilterSize();
     int tempfieldbuffersize = 100;
  
     InitializeBuffers(tempfieldbuffersize);
