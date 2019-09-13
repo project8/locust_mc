@@ -151,14 +151,13 @@ namespace locust
 
 
 
-    //PTS: This and other fucntions in the file should be functions of the class
-    static void WakeBeforeEvent()
+    bool PatchSignalGenerator::WakeBeforeEvent()
     {
         fPreEventCondition.notify_one();
-        return;
+        return true;
     }
 
-    static bool ReceivedKassReady()
+    bool PatchSignalGenerator::ReceivedKassReady()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         printf("LMC about to wait ..\n");
@@ -179,32 +178,22 @@ namespace locust
     }
 
 
-
+    // this needs to be moved into a new free-field solution class.  Nick is working on this.
     double PatchSignalGenerator::GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition )
     {
         return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
     }
 
 
-    double GetPatchStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
+// this needs to be moved into a new free-field solution class.  Nick is working on this.
+    double GetPatchStepRoot(const locust::Particle aParticle, double aReceiverTime, locust::LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
     {
         double tRetardedTime = aParticle.GetTime(true);
         return tRetardedTime + aSpaceTimeInterval;
     }
 
 
-    double GetMismatchFactor(double f)  
-    {
-        //f /= 2.*LMCConst::Pi();
-        // placeholder = 1 - mag(S11)
-        // fit to HFSS output
-        //double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
-        //    printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
-        double MismatchFactor = 0.85;  // punt.
-        return MismatchFactor;
-    }
-
-    double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
+    double PatchSignalGenerator::GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
     {
         LMCThreeVector PatchNormalVector;
         PatchNormalVector.SetComponents(cos(PatchPhi), sin(PatchPhi), 0.0);
@@ -215,7 +204,7 @@ namespace locust
 
 
     // fields incident on patch.
-    void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    void PatchSignalGenerator::RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
         double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
         LMCThreeVector PatchPolarizationVector;
@@ -311,7 +300,7 @@ namespace locust
 
 
     // EField cross pol with aoi dot product, at patch.
-    double GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    double PatchSignalGenerator::GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
         double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
         LMCThreeVector PatchPolarizationVector = currentPatch->GetPolarizationDirection();
@@ -320,21 +309,6 @@ namespace locust
         return EFieldCoPol;
     }
 
-
-    // voltage amplitude induced at patch.
-    double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
-    {
-        double AntennaFactor = 1./400.;
-        double MismatchFactor = GetMismatchFactor(DopplerFrequency);
-        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
-        LMCThreeVector PatchPolarizationVector;
-        PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
-        double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
-        //double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Magnitude()); // test case.  
-
-        //    if (VoltageAmplitude>0.) {printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();}
-        return VoltageAmplitude;
-    }
 
     //PTS: This fucntion should be same for all the FIR-using generators
     void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
@@ -389,7 +363,7 @@ namespace locust
     }
 
 
-    void* PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter)
+    void PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter)
     {
         if (PreEventCounter > 0)  // new event starting.                                                    
         {
@@ -512,10 +486,10 @@ namespace locust
 
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-        return 0;
     }
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
+    // this needs to be moved into a new free field solution class.  Nick is working on this.
     int PatchSignalGenerator::FindNode(double tNew) const
     {
         std::deque<locust::Particle>::iterator it;

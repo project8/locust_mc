@@ -71,6 +71,11 @@ namespace locust
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
 
+            bool WakeBeforeEvent();
+            bool ReceivedKassReady();
+            double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi);
+            double GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
+            void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
             double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
@@ -90,7 +95,7 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
+            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
             void InitializePatchArray();
 
             int FindNode(double tNew) const;

@@ -9,7 +9,6 @@
 #define LMCSIGNAL_HH_
 
 #include <fftw3.h>
-#include <complex.h>
 #include <stdint.h>
 
 
