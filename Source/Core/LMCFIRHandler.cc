@@ -1,5 +1,5 @@
 /*
- * LMCFIRHandler.cc
+ * LMCFIRHandlerCore.cc
  *
  *  Created on: May 11, 2018
  *      Author: P. T. Surukuchi
@@ -12,63 +12,32 @@
 
 namespace locust
 {
-    LOGGER( lmclog, "FIRHandler" );
+    LOGGER( lmclog, "FIRHandlerCore" );
     
-    FIRHandler::FIRHandler():
+    FIRHandlerCore::FIRHandlerCore():
     fNFIRBins(-99),
     fFIRResolution(1e-12),
     fNFIRSkips(1)
     {
     }
     
-    FIRHandler::~FIRHandler()
+    FIRHandlerCore::~FIRHandlerCore()
     {
     }
     
-    bool FIRHandler::Configure(const scarab::param_node& aParam,bool isTransmitter)
+    bool FIRHandlerCore::Configure(const scarab::param_node& aParam)
     {
-        fIsTransmitter =isTransmitter;
-        if(fIsTransmitter)
-        {
-            if( aParam.has( "fir-transmitter-filename" ) )
-            {
-                fFIRFilename=aParam["fir-transmitter-filename"]().as_string();
-            }
-            if( aParam.has( "fir-transmitter-dt" ) )
-            {
-                fFIRResolution=aParam["fir-transmitter-dt"]().as_double();
-            }
-            if( aParam.has( "fir-transmitter-nskips" ) )
-            {
-                fNFIRSkips=aParam["fir-transmitter-nskips"]().as_int();
-            }
-        }
-        else
-        {
-            if( aParam.has( "fir-receiver-filename" ) )
-            {
-                fFIRFilename=aParam["fir-receiver-filename"]().as_string();
-            }
-            if( aParam.has( "fir-receiver-dt" ) )
-            {
-                fFIRResolution=aParam["fir-receiver-dt"]().as_double();
-            }
-            if( aParam.has( "fir-receiver-nskips" ) )
-            {
-                fNFIRSkips=aParam["fir-receiver-nskips"]().as_int();
-            }
-        }
         return true;
     }
     
-    bool FIRHandler::ends_with(const std::string &str, const std::string &suffix)
+    bool FIRHandlerCore::ends_with(const std::string &str, const std::string &suffix)
     {
         //copied from https://stackoverflow.com/a/20446239
         return str.size() >= suffix.size() &&
         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
     }
     
-    bool FIRHandler::ReadFIRFile()
+    bool FIRHandlerCore::ReadFIRFile()
     {
         fNFIRBins=0;
         if(!ends_with(fFIRFilename,".txt"))
@@ -95,7 +64,7 @@ namespace locust
         return true;
     }
     
-    double FIRHandler::ConvolveWithFIRFilter(std::deque<double> delayedVoltageBuffer)
+    double FIRHandlerCore::ConvolveWithFIRFilter(std::deque<double> delayedVoltageBuffer)
     {
         double convolution=0.0;
         if(fNFIRBins<=0){
@@ -106,6 +75,56 @@ namespace locust
             convolution+=fFIRFilter[i]*delayedVoltageBuffer[i];
         }
         return convolution;
+    }
+    
+    FIRTransmitterHandler::FIRTransmitterHandler():FIRHandlerCore()
+    {
+    }
+    
+    FIRTransmitterHandler::~FIRTransmitterHandler()
+    {
+    }
+    
+    bool FIRTransmitterHandler::Configure(const scarab::param_node& aParam)
+    {
+        if( aParam.has( "fir-transmitter-filename" ) )
+        {
+            fFIRFilename=aParam["fir-transmitter-filename"]().as_string();
+        }
+        if( aParam.has( "fir-transmitter-dt" ) )
+        {
+            fFIRResolution=aParam["fir-transmitter-dt"]().as_double();
+        }
+        if( aParam.has( "fir-transmitter-nskips" ) )
+        {
+            fNFIRSkips=aParam["fir-transmitter-nskips"]().as_int();
+        }
+        return true;
+    }
+    
+    FIRReceiverHandler::FIRReceiverHandler():FIRHandlerCore()
+    {
+    }
+    
+    FIRReceiverHandler::~FIRReceiverHandler()
+    {
+    }
+    
+    bool FIRReceiverHandler::Configure(const scarab::param_node& aParam)
+    {
+        if( aParam.has( "fir-receiver-filename" ) )
+        {
+            fFIRFilename=aParam["fir-receiver-filename"]().as_string();
+        }
+        if( aParam.has( "fir-receiver-dt" ) )
+        {
+            fFIRResolution=aParam["fir-receiver-dt"]().as_double();
+        }
+        if( aParam.has( "fir-receiver-nskips" ) )
+        {
+            fNFIRSkips=aParam["fir-receiver-nskips"]().as_int();
+        }
+        return true;
     }
     
 } /* namespace locust */

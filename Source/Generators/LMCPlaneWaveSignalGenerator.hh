@@ -70,12 +70,6 @@ namespace locust
     void SetPowerCombiner( std::string feed );
     double GetAOI() const;
     void SetAOI( double aAOI );
-//    bool GetPatchFIRfilter() const;
-//    void SetPatchFIRfilter( bool aPatchFIRfilter );
-//    std::string GetPatchFIRfilter_filename() const;
-//    void SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename );
-//    double GetPatchFIRfilter_resolution() const;
-//    void SetPatchFIRfilter_resolution( double aAmplitude );
     double GetAmplitude() const;
     void SetAmplitude( double aAmplitude );
     double GetBufferMargin() const;
@@ -108,7 +102,7 @@ namespace locust
     double GetPatchFIRSample(double amp, double startphase, int patchIndex);
       
       // for FIR filter
-    FIRHandler fReceiverFIRHandler;
+    FIRReceiverHandler fReceiverFIRHandler;
     double* GetHilbertMagPhase(unsigned bufferIndex);
     double fAmplitude;
 

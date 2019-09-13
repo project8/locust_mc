@@ -101,7 +101,7 @@ namespace locust
         void PopBuffers(unsigned channel, unsigned patch);
         void CleanupBuffers();
         
-        FIRHandler fReceiverFIRHandler;
+        FIRReceiverHandler fReceiverFIRHandler;
         AntennaSignalTransmitter fAntennaSignalTransmitter;
         std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
         std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
