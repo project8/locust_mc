@@ -47,7 +47,7 @@ namespace locust
 
     void Accept( GeneratorVisitor* aVisitor ) const;
               
-    void AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex);
+//    void AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex);
     double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
     double GetVoltageAmpFromPlaneWave(int z_index);
     double GetPWPhaseDelayAtPatch(int z_index);
@@ -121,6 +121,8 @@ namespace locust
     bool DoGenerate( Signal* aSignal );
     void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
     bool InitializePatchArray();
+    bool InitializePowerCombining();
+    PowerCombiner testPowerCombiner;
 
     
     // for buffers

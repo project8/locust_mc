@@ -2,7 +2,7 @@
  * LMCPowerCombiner.cc
  *
  *  Created on: Jan 27, 2019
- *      Author: penny
+ *      Author: p. l. slocum
  */
 
 #include "LMCPowerCombiner.hh"
@@ -12,7 +12,13 @@
 namespace locust
 {
 
-  PowerCombiner::PowerCombiner()
+  PowerCombiner::PowerCombiner():
+  nPatchesPerStrip( 0 ),
+  junctionLoss( 0 ),
+  patchLoss( 0 ),
+  amplifierLoss( 0 ),
+  endPatchLoss( 0 ),
+  dampingFactors( 0 )
   {
   }
 
@@ -20,6 +26,21 @@ namespace locust
   PowerCombiner::~PowerCombiner()
   {
   }
+
+
+  bool PowerCombiner::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
+  {
+      VoltageFIRSample *= dampingFactors[z_index];
+
+	  aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
+      aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
+      return true;
+
+  }
+
+
+
 
 
   double PowerCombiner::GetVoltageDividerWeight(double RJunction, double R0, double RGround, int NPatchesPerStrip, unsigned z_index)
@@ -66,10 +87,10 @@ namespace locust
 
 	return D;
 
-
   }
   double PowerCombiner::GetParallelResistance(std::vector<double> R, int NRESISTORS, int resistorindex)
   {
+
 	double OneOverR = 0.;
 	for (unsigned i=0; i<NRESISTORS; i++)
 	  {
@@ -80,7 +101,7 @@ namespace locust
   }
 
 
-
+/*
   double PowerCombiner::GetCorporateVoltageDamping()
   {
     // currently hard-coded for one-quarter power combining
@@ -89,6 +110,8 @@ namespace locust
     dampingfactor = 0.38*0.66; // the patch and the amplifier only.
     return dampingfactor;
   }
+
+  */
 
   // **NOTE FOR THE FOLLOWING ROUTINES**
   // z_index is the index of the current patch, starting at zero.
@@ -105,6 +128,32 @@ namespace locust
     return dphi;
   }
 
+
+
+  void PowerCombiner::SetVoltageDividerDampingFactors()
+  {
+	  for (unsigned z_index=0; z_index<nPatchesPerStrip; z_index++)
+	  {
+		  int NPAIRS = fabs((double)z_index - (double)nPatchesPerStrip/2.);
+		  if (z_index >= nPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
+		  std::vector<double> D = GetPartialGains(junctionResistance, 1.0, 10.e6, NPAIRS);  // calculate new vector of gains.
+		  dampingFactors[z_index] = patchLoss*amplifierLoss * D[NPAIRS-1];  // patch loss * T-junction loss
+	  }
+  }
+
+
+  void PowerCombiner::SetSeriesFedDampingFactors()
+  {
+
+      for (unsigned z_index=0; z_index<nPatchesPerStrip; z_index++)
+      {
+          int njunctions = z_index;
+          dampingFactors[z_index] = patchLoss*amplifierLoss*pow(junctionLoss, njunctions);
+      }
+
+  }
+
+/*
   double PowerCombiner::GetSeriesVoltageDamping(unsigned z_index)
   {
     // currently hard-coded one quarter power combining
@@ -113,12 +162,12 @@ namespace locust
     dampingfactor = 0.38*0.66*pow(0.87, njunctions);
     return dampingfactor;
   }
+*/
 
   double PowerCombiner::GetCenterFedPhaseDelay(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing)
   {
     int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
     if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
-    // printf("z_index is %d and njunctions is %d\n", z_index, njunctions); getchar();
     double D = PatchSpacing; // m.  18.0 keV 90 degree electron, lambda in kapton.
     double c_n = LMCConst::C()/1.704;  // speed of light in Kapton.
     double lambda = c_n/DopplerFrequency;
@@ -126,7 +175,50 @@ namespace locust
     return dphi;
   }
 
+  void PowerCombiner::SetCenterFedDampingFactors()
+  {
 
+	  for (unsigned z_index=0; z_index<nPatchesPerStrip; z_index++)
+	  {
+	      int njunctions = fabs((double)z_index - (double)nPatchesPerStrip/2.) - 1;
+	      if (z_index >= nPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
+	      if (z_index == 0 || z_index == nPatchesPerStrip-1)
+	      	  {
+	    	  dampingFactors[z_index] = endPatchLoss*pow(junctionLoss, njunctions)*amplifierLoss;
+	      	  }
+	      else
+	      	  {
+	    	  dampingFactors[z_index] = patchLoss*pow(junctionLoss, njunctions)*amplifierLoss; // patch loss * junction loss * amplifier loss
+	      	  }
+	  }
+
+  }
+
+  void PowerCombiner::SetVoltageDampingFactors(int aPowerCombiner, int aPatchesPerStrip)
+  {
+
+	  SetNPatchesPerStrip(aPatchesPerStrip);
+	  dampingFactors.resize(nPatchesPerStrip);
+
+	  if ((aPowerCombiner == 0) || (aPowerCombiner == 2) || (aPowerCombiner == 3) || (aPowerCombiner == 4))
+	  {
+		  SetCenterFedDampingFactors();
+	  }
+
+	  else if (aPowerCombiner == 1)
+	  {
+		  SetSeriesFedDampingFactors();
+	  }
+
+	  else if (aPowerCombiner == 5)
+	  {
+          SetVoltageDividerDampingFactors();
+	  }
+
+  }
+
+
+/*
   double PowerCombiner::GetOneQuarterVoltageDamping(int NPatchesPerStrip, unsigned z_index)
   {
     int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
@@ -178,6 +270,83 @@ namespace locust
     //   printf("dampingfactor is %g\n", dampingfactor); getchar();
     return dampingfactor;
   }
+*/
+
+  void PowerCombiner::SetSMatrixParameters(int powerCombiner, int aPatchesPerStrip)
+  {
+	  nPatchesPerStrip = aPatchesPerStrip;
+
+	  if (powerCombiner == 0) // corporate
+	  {
+		  junctionLoss = 0.;
+		  patchLoss = 0.6;
+	      amplifierLoss = 0.66;
+	      endPatchLoss = 0.6;
+	  }
+
+	  else if (powerCombiner == 1) // series
+	  {
+		  junctionLoss = 0.87;
+		  patchLoss = 0.38;
+	      amplifierLoss = 0.66;
+	      endPatchLoss = 0.38;
+	  }
+
+	  else if (powerCombiner == 2) // one-quarter
+	  {
+		  junctionLoss = 0.87;
+		  patchLoss = 0.38;
+	      amplifierLoss = 0.66;
+	      endPatchLoss = 0.95;
+	  }
+
+	  else if (powerCombiner == 3) // seven-eighths
+	  {
+		  junctionLoss = 0.75;
+		  patchLoss = 0.6;
+	      amplifierLoss = 0.66;
+	      endPatchLoss = 0.95;
+	  }
+
+	  else if (powerCombiner == 4) // nine-sixteenths
+	  {
+		  junctionLoss = 0.8;
+		  patchLoss = 0.52;
+	      amplifierLoss = 0.66;
+	      endPatchLoss = 0.95;
+	  }
+
+	  else if (powerCombiner == 5) // voltage-divider
+	  {
+		  junctionResistance = 0.3;
+		  patchLoss = 0.6;
+	      amplifierLoss = 0.66;
+	  }
+
+
+  }
+
+  void PowerCombiner::SetNPatchesPerStrip(int aPatchesPerStrip)
+  {
+	  nPatchesPerStrip = aPatchesPerStrip;
+  }
+  void PowerCombiner::SetJunctionLoss(double aJunctionLoss)
+  {
+	  junctionLoss = aJunctionLoss;
+  }
+  void PowerCombiner::SetPatchLoss(double aPatchLoss)
+  {
+	  patchLoss = aPatchLoss;
+  }
+  void PowerCombiner::SetAmplifierLoss(double aAmplifierLoss)
+  {
+	  amplifierLoss = aAmplifierLoss;
+  }
+  void PowerCombiner::SetEndPatchLoss(double aEndPatchLoss)
+  {
+	  endPatchLoss = aEndPatchLoss;
+  }
+
 
 }
 

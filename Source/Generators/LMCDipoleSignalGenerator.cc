@@ -289,7 +289,7 @@ namespace locust
         }
         return newcomponent;
     }
-    
+/*
     void DipoleSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
     {
         
@@ -309,6 +309,17 @@ namespace locust
         aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageSample * sin(phi_LO);
         
     }
+*/
+
+
+    bool DipoleSignalGenerator::InitializePowerCombining()
+    {
+    	testPowerCombiner.SetSMatrixParameters(fPowerCombiner, fNPatchesPerStrip);
+    	testPowerCombiner.SetVoltageDampingFactors(fPowerCombiner, fNPatchesPerStrip);
+    	return true;
+
+    }
+
     
     bool  DipoleSignalGenerator::InitializePatchArray()
     {
@@ -357,6 +368,7 @@ namespace locust
     {
         
         InitializePatchArray();
+        InitializePowerCombining();
         const unsigned nchannels = fNChannels;
         const unsigned npatches = fNPatchesPerStrip;
         
@@ -400,7 +412,8 @@ namespace locust
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
                     VoltageSample = GetVoltageFromField(ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
                     VoltageSample = VoltageSample/patchAntennaDistance;
-                    AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
+     	            testPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
+//                    AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel

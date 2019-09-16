@@ -311,6 +311,7 @@ namespace locust
 
 
     //PTS: This fucntion should be same for all the FIR-using generators
+    /*
     void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
     {
 
@@ -333,34 +334,8 @@ namespace locust
     	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
         aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageFIRSample * cos(phi_LO);
 
-
     }
-
-
-    // z-index ranges from 0 to npatches-per-strip-1.
-    void PatchSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency)
-    {
-    	PowerCombiner aPowerCombiner;
-        if (fPowerCombiner == 1)  // series feed
-        {
-        	//lossless series feed with amp at one end:
-        	//VoltagePhase += aPowerCombiner.GetLinePhaseCorr(z_index, DopplerFrequency);
-        }
-        if (fPowerCombiner == 2) // quadrature feed
-        {
-        	// assume 2PI delay between junctions, so we don't calculated phase mismatches.
-        	// instead calculate damping on voltage amplitude:
-            int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
-           // VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(fNPatchesPerStrip, z_index);
-        }
-
-//	        if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
-        aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
-        aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
-	//        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
-
-
-    }
+*/
 
 
     void PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter)
@@ -475,7 +450,7 @@ namespace locust
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, phiLO_t, index, channelIndex, patchIndex, 0);
  	            double VoltageFIRSample = GetFIRSample(filterarray, nfilterbins, dtfilter, channelIndex, patchIndex, fAcquisitionRate*aSignal->DecimationFactor());
- 	            AddOneFIRVoltageToStripSum(aSignal, VoltageFIRSample, phiLO_t, channelIndex, patchIndex);
+ 	            testPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, phiLO_t, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
                 PopBuffers(channelIndex, patchIndex);
 
 // 	            AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
@@ -560,19 +535,13 @@ namespace locust
     }
 
 
-  double RotateZ(int component, double angle, double x, double y)
-    {
-      double newcomponent = 0.;
-      if (component==0)
-        {
-        newcomponent = x*cos(angle) - y*sin(angle);
-        }
-      if (component==1)
-        {
-        newcomponent = x*sin(angle) + y*cos(angle);
-        }
 
-      return newcomponent;
+    bool PatchSignalGenerator::InitializePowerCombining()
+    {
+    	testPowerCombiner.SetSMatrixParameters(fPowerCombiner, fNPatchesPerStrip);
+    	testPowerCombiner.SetVoltageDampingFactors(fPowerCombiner, fNPatchesPerStrip);
+    	return true;
+
     }
 
 
@@ -602,7 +571,7 @@ namespace locust
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
-                modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
+                modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
            
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
@@ -618,7 +587,7 @@ namespace locust
         FILE *fp = fopen("incidentfields.txt", "w");
 
         InitializePatchArray();
-
+        InitializePowerCombining();
 
         //n samples for event spacing.
         int PreEventCounter = 0;

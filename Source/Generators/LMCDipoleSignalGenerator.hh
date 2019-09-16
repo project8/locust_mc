@@ -61,9 +61,9 @@ namespace locust
         
         void Accept( GeneratorVisitor* aVisitor ) const;
         
-        void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
+//        void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
         
-        void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
+//        void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
         
         double GetRFFrequency() const;
         void SetRFFrequency( double aFrequency );
@@ -94,6 +94,8 @@ namespace locust
         //void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
         double RotateZ(int component, double angle, double x, double y);
         bool InitializePatchArray();
+        bool InitializePowerCombining();
+        PowerCombiner testPowerCombiner;
         double GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase,double AcquisitionRate);
         
         void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);

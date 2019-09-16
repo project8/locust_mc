@@ -49,14 +49,13 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
-            void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
-            void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
+//            void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
 
 
 
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
-            std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
+            PowerCombiner aPowerCombiner;
             double fLO_Frequency;  // typically defined by a parameter in json file.
             double fArrayRadius;  // from json file.
             int fNPatchesPerStrip; // from json file.
@@ -97,6 +96,8 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
             void InitializePatchArray();
+            bool InitializePowerCombining();
+            PowerCombiner testPowerCombiner;
 
             int FindNode(double tNew) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );

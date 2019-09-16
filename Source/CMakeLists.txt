@@ -33,10 +33,6 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCSimulationController.hh
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
-    Core/LMCPowerCombiner.hh
-    Core/LMCReceiver.hh
-    Core/LMCPatchAntenna.hh
-    Core/LMCChannel.hh
     Core/LMCFIRHandler.hh
     
     Generators/LMCDigitizer.hh
@@ -54,7 +50,12 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transforms/LMCHilbertTransform.hh
-
+    
+    RxComponents/LMCPowerCombiner.hh
+    RxComponents/LMCReceiver.hh
+    RxComponents/LMCPatchAntenna.hh
+    RxComponents/LMCChannel.hh
+    
 #    Generators/LMCBasebandTrackGenerator.hh
 #    Generators/LMCTrappedElectronGenerator.hh
 )
@@ -70,10 +71,6 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCSimulationController.cc
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
-    Core/LMCPatchAntenna.cc
-    Core/LMCChannel.cc
-    Core/LMCPowerCombiner.cc
-    Core/LMCReceiver.cc
     Core/LMCFIRHandler.cc
 
     Generators/LMCDigitizer.cc
@@ -91,6 +88,11 @@ set( LOCUST_MC_SOURCE_FILES
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
     Transforms/LMCHilbertTransform.cc
+    
+    RxComponents/LMCPowerCombiner.cc
+    RxComponents/LMCReceiver.cc
+    RxComponents/LMCPatchAntenna.cc
+    RxComponents/LMCChannel.cc
 
 #    Generators/LMCBasebandTrackGenerator.cc
 #    Generators/LMCTrappedElectronGenerator.cc

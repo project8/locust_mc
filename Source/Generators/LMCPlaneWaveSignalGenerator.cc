@@ -460,6 +460,7 @@ namespace locust
   
 
   // z-index ranges from 0 to npatches-per-strip-1.
+  /*
   void PlaneWaveSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex)
   {
     unsigned sampleIndex = SampleIndexBuffer[bufferIndex].front();
@@ -537,14 +538,11 @@ namespace locust
     aSignal->LongSignalTimeComplex()[sampleIndex][0] += VoltageAmplitude * 2. * cos(phi_LO);
     aSignal->LongSignalTimeComplex()[sampleIndex][1] += VoltageAmplitude * 2. * cos(LMCConst::Pi()/2 + phi_LO);
 
-    // TEST
-    /*
-      printf("Voltage Amplitude for patch at %d is %e\n", sampleIndex, VoltageAmplitude);
-      printf("summedvoltageamplitude at %d is %e\n", sampleIndex, aSignal->LongSignalTimeComplex()[sampleIndex][0]);
-      getchar();
-     */
+
 
   }
+*/
+
 
   void* PlaneWaveSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
   {     
@@ -586,7 +584,9 @@ namespace locust
 	    PatchVoltageBuffer[bufferIndex].pop_front();
 	    PatchVoltageBuffer[bufferIndex].shrink_to_fit();
 
-	    AddOnePatchVoltageToStripSum(aSignal, bufferIndex, patchIndex);
+//	    AddOnePatchVoltageToStripSum(aSignal, bufferIndex, patchIndex);
+//        testPowerCombiner.AddOneVoltageToStripSum(aSignal, GetPatchFIRSample(hilbertmagphase[0], hilbertmagphase[1], patchIndex), LOPhaseBuffer[bufferIndex].front();, patchIndex, sampleIndex);
+        testPowerCombiner.AddOneVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].front(), LOPhaseBuffer[bufferIndex].front(), patchIndex, SampleIndexBuffer[bufferIndex].front());
 	    
 	   
 	    // TEST PRINT STATEMENTS
@@ -675,6 +675,19 @@ namespace locust
     
   }
 
+
+
+  bool PlaneWaveSignalGenerator::InitializePowerCombining()
+  {
+  	testPowerCombiner.SetSMatrixParameters(fPowerCombiner, fNPatchesPerStrip);
+  	testPowerCombiner.SetVoltageDampingFactors(fPowerCombiner, fNPatchesPerStrip);
+
+  	return true;
+
+  }
+
+
+
   bool PlaneWaveSignalGenerator::InitializePatchArray()
     {
     if(!fReceiverFIRHandler.ReadFIRFile())
@@ -717,6 +730,7 @@ namespace locust
   {
 
     InitializePatchArray();
+    InitializePowerCombining();
 
 //    // initialize FIR filter array
 //    for (unsigned i=0; i < sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
