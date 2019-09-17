@@ -66,8 +66,6 @@ namespace locust
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
             void InitializePatchArray();
 
-            int FindNode(double tNew) const;
-
     };
 
 } /* namespace locust */
