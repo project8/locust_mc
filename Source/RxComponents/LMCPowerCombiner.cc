@@ -30,6 +30,7 @@ namespace locust
 
   bool PowerCombiner::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
   {
+
       VoltageFIRSample *= dampingFactors[z_index];
 
 	  aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
@@ -101,18 +102,6 @@ namespace locust
   }
 
 
-/*
-  double PowerCombiner::GetCorporateVoltageDamping()
-  {
-    // currently hard-coded for one-quarter power combining
-
-    double dampingfactor = 0.;
-    dampingfactor = 0.38*0.66; // the patch and the amplifier only.
-    return dampingfactor;
-  }
-
-  */
-
   // **NOTE FOR THE FOLLOWING ROUTINES**
   // z_index is the index of the current patch, starting at zero.
   // njunctions is the number of junctions the signal has to pass through between this patch and the amp.
@@ -152,17 +141,6 @@ namespace locust
       }
 
   }
-
-/*
-  double PowerCombiner::GetSeriesVoltageDamping(unsigned z_index)
-  {
-    // currently hard-coded one quarter power combining
-    int njunctions = z_index;
-    double dampingfactor = 0.;
-    dampingfactor = 0.38*0.66*pow(0.87, njunctions);
-    return dampingfactor;
-  }
-*/
 
   double PowerCombiner::GetCenterFedPhaseDelay(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing)
   {
@@ -205,12 +183,12 @@ namespace locust
 		  SetCenterFedDampingFactors();
 	  }
 
-	  else if (aPowerCombiner == 1)
+	  else if (aPowerCombiner == 1)  // series
 	  {
 		  SetSeriesFedDampingFactors();
 	  }
 
-	  else if (aPowerCombiner == 5)
+	  else if (aPowerCombiner == 5)  // voltage divider
 	  {
           SetVoltageDividerDampingFactors();
 	  }
@@ -218,65 +196,11 @@ namespace locust
   }
 
 
-/*
-  double PowerCombiner::GetOneQuarterVoltageDamping(int NPatchesPerStrip, unsigned z_index)
-  {
-    int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
-    if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
-    double dampingfactor = 0.;
-    if(z_index == 0 || z_index == NPatchesPerStrip-1)
-      {
-	dampingfactor = 0.95*pow(0.87, njunctions)*0.66;
-      }
-    else
-      {
-	dampingfactor = 0.38*pow(0.87, njunctions)*0.66; // patch loss * junction loss * amplifier loss
-      }
-    // printf("dampingfactor is %g\n", dampingfactor); getchar();
-    return dampingfactor;
-  }
-
-  double PowerCombiner::GetSevenEighthsVoltageDamping(int NPatchesPerStrip, unsigned z_index)
-  {
-    int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
-    if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
-    double dampingfactor = 0.;
-    // adjust last patch to a 2-port junction.
-    if(z_index == 0 || z_index == NPatchesPerStrip-1)
-      {
-  	dampingfactor = 0.95*pow(0.75, njunctions)*0.66;
-      }
-    else
-      {
-	dampingfactor = 0.6*pow(0.75, njunctions)*0.66; // patch loss * junction loss * amplifier loss
-      }
-    //   printf("dampingfactor is %g\n", dampingfactor); getchar();
-    return dampingfactor;
-  }
-
-  double PowerCombiner::GetNineSixteenthsVoltageDamping(int NPatchesPerStrip, unsigned z_index)
-  {
-    int njunctions = fabs((double)z_index - (double)NPatchesPerStrip/2.) - 1;
-    if (z_index >= NPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
-    double dampingfactor = 0.;
-    if(z_index == 0 || z_index == NPatchesPerStrip-1)
-      {
-	dampingfactor = 0.95*pow(0.8, njunctions)*0.66;
-	  }
-    else
-      {
-	dampingfactor = 0.52*pow(0.8, njunctions)*0.66; // patch loss * junction loss * amplifier loss
-      }
-    //   printf("dampingfactor is %g\n", dampingfactor); getchar();
-    return dampingfactor;
-  }
-*/
-
-  void PowerCombiner::SetSMatrixParameters(int powerCombiner, int aPatchesPerStrip)
+  void PowerCombiner::SetSMatrixParameters(int aPowerCombiner, int aPatchesPerStrip)
   {
 	  nPatchesPerStrip = aPatchesPerStrip;
 
-	  if (powerCombiner == 0) // corporate
+	  if (aPowerCombiner == 0) // corporate
 	  {
 		  junctionLoss = 0.;
 		  patchLoss = 0.6;
@@ -284,7 +208,7 @@ namespace locust
 	      endPatchLoss = 0.6;
 	  }
 
-	  else if (powerCombiner == 1) // series
+	  else if (aPowerCombiner == 1) // series
 	  {
 		  junctionLoss = 0.87;
 		  patchLoss = 0.38;
@@ -292,7 +216,7 @@ namespace locust
 	      endPatchLoss = 0.38;
 	  }
 
-	  else if (powerCombiner == 2) // one-quarter
+	  else if (aPowerCombiner == 2) // one-quarter
 	  {
 		  junctionLoss = 0.87;
 		  patchLoss = 0.38;
@@ -300,7 +224,7 @@ namespace locust
 	      endPatchLoss = 0.95;
 	  }
 
-	  else if (powerCombiner == 3) // seven-eighths
+	  else if (aPowerCombiner == 3) // seven-eighths
 	  {
 		  junctionLoss = 0.75;
 		  patchLoss = 0.6;
@@ -308,7 +232,7 @@ namespace locust
 	      endPatchLoss = 0.95;
 	  }
 
-	  else if (powerCombiner == 4) // nine-sixteenths
+	  else if (aPowerCombiner == 4) // nine-sixteenths
 	  {
 		  junctionLoss = 0.8;
 		  patchLoss = 0.52;
@@ -316,7 +240,7 @@ namespace locust
 	      endPatchLoss = 0.95;
 	  }
 
-	  else if (powerCombiner == 5) // voltage-divider
+	  else if (aPowerCombiner == 5) // voltage-divider
 	  {
 		  junctionResistance = 0.3;
 		  patchLoss = 0.6;

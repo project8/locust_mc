@@ -16,6 +16,8 @@
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCAntennaSignalTransmitter.hh"
+#include "LMCFIRHandler.hh"
+
 
 
 namespace scarab
@@ -99,7 +101,7 @@ namespace locust
         double GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase,double AcquisitionRate);
         
         void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
-        void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);
+        void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch);
         void PopBuffers(unsigned channel, unsigned patch);
         void CleanupBuffers();
         
@@ -127,7 +129,6 @@ namespace locust
         std::vector<std::deque<double>> LOPhaseBuffer;
         std::vector<std::deque<unsigned>> IndexBuffer;
         std::vector<std::deque<double>> PatchFIRBuffer;
-        std::vector<std::deque<unsigned>> ConvolutionTimeBuffer;
     };
     
 } /* namespace locust */

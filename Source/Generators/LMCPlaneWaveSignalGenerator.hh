@@ -22,7 +22,7 @@ namespace locust
 
   /*!
     @class PlaneWaveSignalGenerator
-    @author P. L. Slocum
+    @author A. B. Telles, P. L. Slocum
 
     @brief Generate artibtrary plane wave for calibration and detect with patch array.
 
@@ -47,7 +47,6 @@ namespace locust
 
     void Accept( GeneratorVisitor* aVisitor ) const;
               
-//    void AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex);
     double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
     double GetVoltageAmpFromPlaneWave(int z_index);
     double GetPWPhaseDelayAtPatch(int z_index);
@@ -70,12 +69,6 @@ namespace locust
     void SetPowerCombiner( std::string feed );
     double GetAOI() const;
     void SetAOI( double aAOI );
-//    bool GetPatchFIRfilter() const;
-//    void SetPatchFIRfilter( bool aPatchFIRfilter );
-//    std::string GetPatchFIRfilter_filename() const;
-//    void SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename );
-//    double GetPatchFIRfilter_resolution() const;
-//    void SetPatchFIRfilter_resolution( double aAmplitude );
     double GetAmplitude() const;
     void SetAmplitude( double aAmplitude );
     double GetBufferMargin() const;
@@ -104,13 +97,7 @@ namespace locust
     bool fPatchFIRfilter; // yes/no to use the patch FIR filter
     bool fJunctionCascade; // yes/no to use the S31 junction cascade
 
-//    void ProcessFIRFilter(int nskips);
-//    int GetNFilterBins();
     double GetPatchFIRSample(double amp, double startphase, int patchIndex);
-//    std::string gpatchfilter_filename;
-//    double fPatchFIRfilter_resolution;
-//    double FIR_array[1000];
-//    int nfilterbins;
 
       // for FIR filter
     FIRHandler fReceiverFIRHandler;
@@ -119,7 +106,7 @@ namespace locust
 
     
     bool DoGenerate( Signal* aSignal );
-    void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
+    void DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
     bool InitializePatchArray();
     bool InitializePowerCombining();
     PowerCombiner testPowerCombiner;
@@ -127,7 +114,7 @@ namespace locust
     
     // for buffers
     void InitializeBuffers(unsigned fieldbuffersize);
-    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwval);
+    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double pwphase, double pwval);
     void PopBuffers(unsigned bufferIndex);
 
     unsigned fFieldBufferMargin;
@@ -139,6 +126,8 @@ namespace locust
     std::vector<std::deque<double>> PWValueBuffer;
     
     std::vector<std::deque<double>> PatchVoltageBuffer;
+    double fphiLO; // voltage phase of LO in radians;
+
 
   };
 

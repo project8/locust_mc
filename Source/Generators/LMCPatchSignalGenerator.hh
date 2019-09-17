@@ -15,6 +15,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
+#include "LMCFIRHandler.hh"
 
 
 namespace locust
@@ -49,13 +50,11 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
-//            void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
 
 
 
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
-            PowerCombiner aPowerCombiner;
             double fLO_Frequency;  // typically defined by a parameter in json file.
             double fArrayRadius;  // from json file.
             int fNPatchesPerStrip; // from json file.
@@ -64,9 +63,6 @@ namespace locust
             int fPowerCombiner;
             double fRJunction;
             bool fTextFileWriting;
-
-            double fFilter_resolution;
-            std::string gfilter_filename;
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
 
@@ -75,13 +71,11 @@ namespace locust
             double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi);
             double GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
             void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
-            double* GetFIRFilter(int nskips);
-            int GetNFilterBins(double* filterarray);
-            double GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
+            double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned channel, unsigned patch);
-            void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);
+            void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch);
 
 
             std::vector<std::deque<double>> EFieldBuffer;
@@ -94,17 +88,16 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
-            void InitializePatchArray();
+            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
+            bool InitializePatchArray();
             bool InitializePowerCombining();
+            FIRHandler fReceiverFIRHandler;
             PowerCombiner testPowerCombiner;
 
             int FindNode(double tNew) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
 
-
             double phiLO_t; // voltage phase of LO in radians;
-            double VoltagePhase_t[10000];
 
     };
 
