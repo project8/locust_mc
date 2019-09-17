@@ -8,7 +8,9 @@
 #ifndef LMCLIENARDWIECHERT_HH_
 #define LMCLIENARDWIECHERT_HH_
 
+#include "LMCParticle.hh"
 #include "LMCThreeVector.hh"
+#include <vector>
 
 namespace locust
 {
@@ -27,32 +29,30 @@ namespace locust
             LienardWiechert();
             virtual ~LienardWiechert();
             void SolveFieldSolutions();
-            void SetFieldPoint(double aTime, LMCThreeVector aFieldPoint);
+            void SetFieldEvent(const double aTime, const LMCThreeVector aFieldPoint);
             LMCThreeVector GetElectricField();
             LMCThreeVector GetMagneticField();
-            //void SetFieldPoint(double aTime, double aFieldPointX, double aFieldPointY, double aFieldPointZ);
 
 
         private:
             int FindNode(double tNew) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition ) const;
             double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval) const;
-            void CacheSolution();
+            void CacheSolution(const int aCurrentIndex, const double aRetardedTime);
             void InitialRetardedTimeGuess();
             bool IsInLightCone();
 
-        const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
-        const int historySize = fParticleHistory.size();
-        locust::Particle tCurrentParticle = fParticleHistory.back();
-        int CurrentIndex;
-        double tSpaceTimeInterval=99.;
-        double dtRetarded=0;
-        double tTolerance=1e-23;
+            std::vector<std::pair<int, double> > fPreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
+            LMCParticle fCurrentParticle;
+            LMCThreeVector fFieldPosition;
+            double fFieldTime;
+            unsigned fPatchIndex;
 
+            ///////////////
 
 };
 
 
 } /* namespace locust */
 
-#endif /* LMCPARTICLE_HH_ */
+#endif /* LMCLIENARDWIECHERT_HH_ */

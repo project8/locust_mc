@@ -22,6 +22,28 @@ namespace locust
 
     }
 
+    void SolveFieldSolutions()
+    {
+        FindRoot();
+        CacheSolution(tParticleIndex, tRetardedTime);
+    }
+
+    void LienardWiechert::SetFieldEvent(const double aTime, const LMCThreeVector aFieldPoint)
+    {
+        fFieldPosition = aFieldPoint;
+        fFieldTime = aTime;
+    }
+
+    LMCThreeVector LienardWiechert::GetElectricField()
+    {
+        return fCurrentParticle.CalculateElectricField(fFieldPosition);
+    }
+
+    LMCThreeVector LienardWiechert::GetMagneticField()
+    {
+        return fCurrentParticle.CalculateMagneticField(fFieldPosition);
+    }
+
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
     int LienardWiechert::FindNode(double tNew) const
@@ -85,7 +107,7 @@ namespace locust
     {
         if(currentPatch->GetPreviousRetardedIndex() == -99.)
         {
-            CurrentIndex=FindNode(tReceiverTime);
+            CurrentIndex = FindNode(tReceiverTime);
             tCurrentParticle = fParticleHistory[CurrentIndex];
             tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() / LMCConst::C();
             if(tRetardedTime < 0) 
@@ -103,10 +125,9 @@ namespace locust
         CurrentIndex = FindNode(tRetardedTime);
     }
 
-    void LienardWiechert::Cache()
+    void LienardWiechert::CacheSolution(const int aCurrentIndex, const double aRetardedTime)
     {
-        currentPatch->SetPreviousRetardedIndex(CurrentIndex);
-        currentPatch->SetPreviousRetardedTime(tRetardedTime);
+        fPreviousTime[fPatchIndex] = std::pair<int, double>(aCurrentIndex, aRetardedTime);
     }
 
 } /* namespace locust */

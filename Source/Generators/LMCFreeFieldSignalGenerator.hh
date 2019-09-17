@@ -51,7 +51,6 @@ namespace locust
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
 
-            std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
             double fArrayRadius;
             int fNPatchesPerStrip;
