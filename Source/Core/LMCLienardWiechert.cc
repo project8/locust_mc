@@ -15,6 +15,7 @@ namespace locust
             fFieldTime( 0. ),
             fAntennaIndex( 0 ),
             fAntennaPositions(),
+            fCurrentParticle(),
             fHasCachedSolution()
     {
 
@@ -46,10 +47,17 @@ namespace locust
             return false;
         }
 
-        GuessRetardedTime();
+        std::pair<unsigned, double> tRetardedSolution;
+        tRetardedSolution = GuessRetardedTime();
 
-        FindRoot();
-        CacheSolution(tParticleIndex, tRetardedTime);
+        tRetardedSolution = FindRoot(tRetardedSolution);
+        unsigned tIndex = tRetardedSolution.first;
+        double tRetardedTime = tRetardedSolution.second;
+
+        fCurrentParticle = fParticleHistory[tIndex];
+        fCurrentParticle.Interpolate(tRetardedTime);
+
+        CacheSolution(tIndex, tRetardedTime);
 
         return true;
     }
@@ -103,11 +111,13 @@ namespace locust
         return true;
     }
 
-    std::pair<unsigned, double> LienardWiechert::FindRoot() const
+    std::pair<unsigned, double> LienardWiechert::FindRoot(std::pair<unsigned, double> aRetardedSolution) const
     {
-            double tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
-            double tRetardedTime;
-            unsigned tIndex;
+        unsigned tIndex = aRetardedSolution.first;
+        double tRetardedTime = aRetardedSolution.second;
+
+        locust::Particle tCurrentParticle = fParticleHistory[tIndex];
+        double tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
 
         for(int j=0;j<25;++j)
         {
@@ -141,22 +151,23 @@ namespace locust
         else
         {
             tIndex = FindNode(fFieldTime);
-            tCurrentParticle = fParticleHistory[tIndex];
+            locust::Particle tCurrentParticle = fParticleHistory[tIndex];
             tRetardedTime = tFieldTime - (tCurrentParticle.GetPosition() - fFieldPosition).Magnitude() / LMCConst::C();
             if(tRetardedTime < 0) 
             {
                 tRetardedTime = 0;
                 tIndex = 0;
             }
+            fHasCachedSolution[fAntennaIndex] = true;
         }
 
-        CurrentIndex = FindNode(tRetardedTime);
+        tIndex = FindNode(tRetardedTime);
         return std::pair<unsigned, double>(tIndex, tRetardedTime);
     }
 
-    void LienardWiechert::CacheSolution(const int aCurrentIndex, const double aRetardedTime)
+    void LienardWiechert::CacheSolution(const int aIndex, const double aRetardedTime)
     {
-        fPreviousTime[fPatchIndex] = std::pair<int, double>(aCurrentIndex, aRetardedTime);
+        fPreviousTime[fPatchIndex] = std::pair<int, double>(aIndex, aRetardedTime);
     }
 
 } /* namespace locust */

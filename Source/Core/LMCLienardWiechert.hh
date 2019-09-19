@@ -43,9 +43,9 @@ namespace locust
             double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval) const;
             unsigned FindClosestParticle(double tNew) const;
             std::pair<unsigned, double> FindRoot() const;
-            void CacheSolution(const int aCurrentIndex, const double aRetardedTime);
+            void CacheSolution(const int aIndex, const double aRetardedTime);
 
-            LMCParticle fCurrentParticle;
+            locust::Particle fCurrentParticle;
             LMCThreeVector fFieldPosition;
             double fFieldTime;
             unsigned fAntennaIndex;
