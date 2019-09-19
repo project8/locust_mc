@@ -89,7 +89,7 @@ namespace locust
         return tRetardedTime + aSpaceTimeInterval;
     }
 
-     bool LienardWiechert::IsInLightCone()
+     bool LienardWiechert::IsInLightCone() const
     {
         if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
         {
@@ -103,26 +103,29 @@ namespace locust
         return true;
     }
 
-    void LienardWiechert::FindRoot()
+    std::pair<unsigned, double> LienardWiechert::FindRoot() const
     {
+            double tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
+            double tRetardedTime;
+            unsigned tIndex;
+
         for(int j=0;j<25;++j)
         {
-            tRetardedTime = GetStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
+            tRetardedTime = GetStepRoot(tCurrentParticle, fFieldTime, fFieldPosition, tSpaceTimeInterval);
             tCurrentParticle.Interpolate(tRetardedTime);
 
             //Change the kassiopeia step we expand around if the interpolation time displacement is too large
             if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
             {
-                CurrentIndex=FindNode(tRetardedTime);
-                tCurrentParticle=fParticleHistory[CurrentIndex];
+                tIndex = FindNode(tRetardedTime);
+                tCurrentParticle = fParticleHistory[tIndex];
                 tCurrentParticle.Interpolate(tRetardedTime);
             }
 
-            tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
-            tOldSpaceTimeInterval = tSpaceTimeInterval;
+            tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
         }
 
-        return std::pair<unsigned, double>(tCurrentIndex, tRetardedTime);
+        return std::pair<unsigned, double>(tIndex, tRetardedTime);
     }
 
     std::pair<unsigned, double> LienardWiechert::GuessRetardedTime()  const

@@ -37,11 +37,12 @@ namespace locust
             LMCThreeVector GetMagneticField();
 
         private:
-            bool IsInLightCone();
+            bool IsInLightCone() const;
             std::pair<unsigned, double> GuessRetardedTime()  const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition ) const;
             double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval) const;
             unsigned FindClosestParticle(double tNew) const;
+            std::pair<unsigned, double> FindRoot() const;
             void CacheSolution(const int aCurrentIndex, const double aRetardedTime);
 
             LMCParticle fCurrentParticle;
