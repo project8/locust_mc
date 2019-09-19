@@ -22,33 +22,36 @@ namespace locust
  Available configuration options:
  No input parameters
  */
-    class LienardWeichert
+    class LienardWiechert
     {
 
         public:
             LienardWiechert();
             virtual ~LienardWiechert();
-            void SolveFieldSolutions();
-            void SetFieldEvent(const double aTime, const LMCThreeVector aFieldPoint);
+
+            void AddFieldPoint(const LMCThreeVector aFieldPoint);
+            void SetFieldEvent(const double aTime, const unsigned aFieldPointIndex);
+            boolt SolveFieldSolutions();
+
             LMCThreeVector GetElectricField();
             LMCThreeVector GetMagneticField();
 
-
         private:
-            int FindNode(double tNew) const;
+            bool IsInLightCone();
+            std::pair<unsigned, double> GuessRetardedTime()  const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition ) const;
             double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval) const;
+            unsigned FindClosestParticle(double tNew) const;
             void CacheSolution(const int aCurrentIndex, const double aRetardedTime);
-            void InitialRetardedTimeGuess();
-            bool IsInLightCone();
 
-            std::vector<std::pair<int, double> > fPreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             LMCParticle fCurrentParticle;
             LMCThreeVector fFieldPosition;
             double fFieldTime;
-            unsigned fPatchIndex;
+            unsigned fAntennaIndex;
 
-            ///////////////
+            std::vector<LMCThreeVector> fAntennaPositions;
+            std::vector<std::pair<unsigned, double> > fCachedSolutions; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
+            std::vector<bool> fHasCachedSolution;
 
 };
 
