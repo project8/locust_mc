@@ -22,7 +22,7 @@ namespace locust
 
   /*!
     @class PlaneWaveSignalGenerator
-    @author P. L. Slocum
+    @author A. B. Telles, P. L. Slocum
 
     @brief Generate artibtrary plane wave for calibration and detect with patch array.
 
@@ -47,7 +47,6 @@ namespace locust
 
     void Accept( GeneratorVisitor* aVisitor ) const;
               
-    void AddOnePatchVoltageToStripSum(Signal* aSignal, unsigned bufferIndex, int patchIndex);
     double GetAOIFactor(double AOI, LMCThreeVector PatchNormalVector);
     double GetVoltageAmpFromPlaneWave(int z_index);
     double GetPWPhaseDelayAtPatch(int z_index);
@@ -72,11 +71,6 @@ namespace locust
     void SetAOI( double aAOI );
     double GetAmplitude() const;
     void SetAmplitude( double aAmplitude );
-    double GetBufferMargin() const;
-    void SetBufferMargin( double aBufferMargin );
-    double GetJunctionResistance() const;
-    void SetJunctionResistance( double aRJunction );
-
 
       
   private:
@@ -89,43 +83,37 @@ namespace locust
     int fNPatchesPerStrip; // from json file.
     double fPatchSpacing; // from json file.
     double fAOI; // from json file, in degrees.
-    double fRJunction; // for parallel voltage summing
-
-    // options to turn on/off or to select
-    int fPowerCombiner; // internally keeps track of power combiner type
-    bool fPhaseDelay; // yes/no for calculating phase delays
-    bool fVoltageDamping; // yes/no for calculating voltage damping due to junctions
-    bool fPatchFIRfilter; // yes/no to use the patch FIR filter
-    bool fJunctionCascade; // yes/no to use the S31 junction cascade
-
-      //PTS: This functionality could be fleshed out a little bit and moved to a more global location to be used by several generators
-    double GetPatchFIRSample(double amp, double startphase, int patchIndex);
-      
-      // for FIR filter
-    FIRReceiverHandler fReceiverFIRHandler;
-    double* GetHilbertMagPhase(unsigned bufferIndex);
     double fAmplitude;
+    double fFieldBufferSize;
+    double fphiLO; // voltage phase of LO in radians;
 
+    double GetPatchFIRSample(double amp, double startphase, int patchIndex);
+
+      // for FIR filter
+    FIRHandler fReceiverFIRHandler;
+    PowerCombiner fPowerCombiner;
+    HilbertTransform fHilbertTransform;
+
+    double* GetHilbertMagPhase(unsigned bufferIndex);
     
     bool DoGenerate( Signal* aSignal );
-    void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
+    void DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
     bool InitializePatchArray();
+    bool InitializePowerCombining();
 
     
     // for buffers
-    void InitializeBuffers(unsigned fieldbuffersize);
-    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double phiLO, double pwphase, double pwval);
+    void InitializeBuffers();
+    void FillBuffers(unsigned bufferIndex, int digitizerIndex, double pwphase, double pwval);
     void PopBuffers(unsigned bufferIndex);
-
-    unsigned fFieldBufferMargin;
     
     std::vector<std::deque<unsigned>> SampleIndexBuffer;
     std::vector<std::deque<double>> LOPhaseBuffer;
     std::vector<std::deque<double>> PWFreqBuffer;
     std::vector<std::deque<double>> PWPhaseBuffer;
     std::vector<std::deque<double>> PWValueBuffer;
-    
     std::vector<std::deque<double>> PatchVoltageBuffer;
+
 
   };
 

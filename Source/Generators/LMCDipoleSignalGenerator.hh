@@ -16,6 +16,8 @@
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCAntennaSignalTransmitter.hh"
+#include "LMCFIRHandler.hh"
+
 
 
 namespace scarab
@@ -60,11 +62,7 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         
         void Accept( GeneratorVisitor* aVisitor ) const;
-        
-        void AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency);
-        
-        void AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelindex, unsigned patchIndex);
-        
+
         double GetRFFrequency() const;
         void SetRFFrequency( double aFrequency );
         
@@ -94,13 +92,17 @@ namespace locust
         //void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
         double RotateZ(int component, double angle, double x, double y);
         bool InitializePatchArray();
-        double GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase,double AcquisitionRate);
+        bool InitializePowerCombining();
+        double GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase);
         
         void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
-        void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime);
+        void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch);
         void PopBuffers(unsigned channel, unsigned patch);
         void CleanupBuffers();
         
+        PowerCombiner fPowerCombiner;
+        FIRHandler fReceiverFIRHandler;
+        HilbertTransform fHilbertTransform;
         FIRReceiverHandler fReceiverFIRHandler;
         AntennaSignalTransmitter fAntennaSignalTransmitter;
         std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
@@ -109,14 +111,12 @@ namespace locust
         int fNPatchesPerStrip; // from json file.
         double fPatchSpacing; // from json file.
         std::string gxml_filename;// from json file.
-        int fPowerCombiner;// from json file.
         bool fTextFileWriting;// from json file.
         
         double fRF_frequency;
         double fLO_frequency;
         double fAmplitude;
         unsigned fFieldBufferSize;
-        unsigned fFieldBufferMargin;
         
         std::vector<std::deque<double>> EFieldBuffer;
         std::vector<std::deque<double>> EPhaseBuffer;
@@ -125,7 +125,6 @@ namespace locust
         std::vector<std::deque<double>> LOPhaseBuffer;
         std::vector<std::deque<unsigned>> IndexBuffer;
         std::vector<std::deque<double>> PatchFIRBuffer;
-        std::vector<std::deque<unsigned>> ConvolutionTimeBuffer;
     };
     
 } /* namespace locust */
