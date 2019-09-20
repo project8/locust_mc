@@ -235,9 +235,13 @@ namespace locust
     }
     
     //PTS: This part(function) should be unified with the other parts where a filter is extracted
-    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmittingPatchNormal,LMCThreeVector ReceivingPatchNormal)
+    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmitterReceiverNormal,LMCThreeVector ReceivingPatchNormal)
     {
-        double AOIFactor = fabs(TrasmittingPatchNormal.Unit().Dot(ReceivingPatchNormal.Unit()));
+	if(TrasmitterReceiverNormal==LMCThreeVector::sZero)
+	{
+	    return 1.0; //Unusual case where source is same as the receiver
+	}
+	double AOIFactor = fabs(TrasmitterReceiverNormal.Unit().Dot(ReceivingPatchNormal.Unit()));
         return AOIFactor;
     }
     
@@ -378,32 +382,35 @@ namespace locust
         double initialPhaseDelay=fAntennaSignalTransmitter.GetInitialPhaseDelay();
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
-            double fieldValue=fAntennaSignalTransmitter.GenerateSignal(aSignal,fAcquisitionRate);
-            double antennaPositionX=fAntennaSignalTransmitter.GetAntennaPosition().GetX();
-            double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
-            double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
-            LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-            for (unsigned ch = 0; ch < nchannels; ++ch)
-            {
-                for (unsigned patch = 0; patch < npatches; ++patch)
-                {
-                    PatchAntenna *currentPatch;
-                    currentPatch = &allChannels[ch][patch];
-                    double relativePatchPosX=currentPatch->GetPosition().GetX() - antennaPositionX;
-                    double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
-                    double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
-                    double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
-                    fieldValue=fieldValue*GetAOIFactor(fAntennaSignalTransmitter.GetAntennaPosition()-currentPatch->GetNormalDirection(),currentPatch->GetNormalDirection());
-                    double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
-                    if (index > 0) dtauConvolutionTime = 0;
-                    else dtauConvolutionTime = nfilterbins/2;
-                    FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
-                    VoltageSample = GetVoltageFromField(ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
-                    VoltageSample = VoltageSample/patchAntennaDistance;
-                    AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
-                    PopBuffers(ch, patch);
-                }  // patch
-            }  // channel
+		double fieldValue=fAntennaSignalTransmitter.GenerateSignal(aSignal,fAcquisitionRate);
+		double antennaPositionX=fAntennaSignalTransmitter.GetAntennaPosition().GetX();
+          	double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
+          	double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
+		LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
+          	for (unsigned ch = 0; ch < nchannels; ++ch)
+            	{
+        		for (unsigned patch = 0; patch < npatches; ++patch)
+        		{
+				PatchAntenna *currentPatch;
+				currentPatch = &allChannels[ch][patch];
+				double relativePatchPosX=currentPatch->GetPosition().GetX() - antennaPositionX;
+				double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
+				double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
+            			double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ); 
+          			fieldValue=fieldValue;
+				double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
+				if (index > 0) dtauConvolutionTime = 0;
+            			else dtauConvolutionTime = nfilterbins/2;
+            			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
+		            	VoltageSample = GetVoltageFromField(ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
+				VoltageSample = VoltageSample*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;
+				AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
+// factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
+            			//aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatchesPerStrip+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatchesPerStrip+patch].front());
+            			//aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatchesPerStrip+patch].front()][1] += 2.*VoltageSample*(-sin(LOPhaseBuffer[ch*fNPatchesPerStrip+patch].front()));
+				PopBuffers(ch, patch);
+        		}  // patch
+            	}  // channel
         }  // index
         CleanupBuffers();
         return true;
