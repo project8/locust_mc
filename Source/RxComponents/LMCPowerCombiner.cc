@@ -7,10 +7,15 @@
 
 #include "LMCPowerCombiner.hh"
 #include <iostream>
+#include "logger.hh"
+
 
 
 namespace locust
 {
+
+	LOGGER( lmclog, "PowerCombiner" );
+
 
 	PowerCombiner::PowerCombiner():
 	fpowerCombiner( 0 ),
@@ -118,7 +123,7 @@ namespace locust
 	}
 
 
-	void PowerCombiner::SetVoltageDividerDampingFactors()
+	bool PowerCombiner::SetVoltageDividerDampingFactors()
 	{
 		for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
 		{
@@ -127,16 +132,18 @@ namespace locust
 			std::vector<double> D = GetPartialGains(fjunctionResistance, 1.0, 10.e6, NPAIRS);  // calculate new vector of gains.
 			fdampingFactors[z_index] = fpatchLoss*famplifierLoss * D[NPAIRS-1];  // patch loss * T-junction loss
 		}
+		return true;
 	}
 
 
-	void PowerCombiner::SetSeriesFedDampingFactors()
+	bool PowerCombiner::SetSeriesFedDampingFactors()
 	{
 		for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
 		{
 			int njunctions = z_index;
 			fdampingFactors[z_index] = fpatchLoss*famplifierLoss*pow(fjunctionLoss, njunctions);
 		}
+		return true;
 	}
 
 	double PowerCombiner::GetCenterFedPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing)
@@ -150,7 +157,7 @@ namespace locust
 		return dphi;
 	}
 
-	void PowerCombiner::SetCenterFedDampingFactors()
+	bool PowerCombiner::SetCenterFedDampingFactors()
 	{
 		for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
 		{
@@ -165,10 +172,32 @@ namespace locust
 					fdampingFactors[z_index] = fpatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss; // patch loss * junction loss * amplifier loss
 	      	 	}
 		}
+		return true;
 
 	}
 
-	void PowerCombiner::SetVoltageDampingFactors(int aPatchesPerStrip)
+    bool PowerCombiner::SetSmatrix10patchDampingFactors()
+    {
+    	if (fnPatchesPerStrip != 10)
+    	{
+    		LERROR(lmclog,"The S-matrix is expecting 10 patches per strip.");
+    		return false;
+    	}
+
+		for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
+		{
+//			fdampingFactors[z_index] = something goes here.
+//			it should be related to PowerCombiner::fsMatrix10patch[].
+		}
+
+
+
+    	return true;
+
+    }
+
+
+	bool PowerCombiner::SetVoltageDampingFactors(int aPatchesPerStrip)
 	{
 		SetNPatchesPerStrip(aPatchesPerStrip);
 		fdampingFactors.resize(fnPatchesPerStrip);
@@ -184,63 +213,69 @@ namespace locust
 		}
 
 		else if (fpowerCombiner == 5)  // voltage divider
-			{
+		{
 			SetVoltageDividerDampingFactors();
-			}
+		}
+		else if (fpowerCombiner == 6)
+		{
+			SetSmatrix10patchDampingFactors();
+		}
+		return true;
 	}
 
 
-	void PowerCombiner::SetSMatrixParameters(int aPatchesPerStrip)
+	bool PowerCombiner::SetSMatrixParameters(int aPatchesPerStrip)
 	{
 
 		fnPatchesPerStrip = aPatchesPerStrip;
 
 		if (fpowerCombiner == 0) // corporate
-			{
-				fjunctionLoss = 0.;
-				fpatchLoss = 0.6;
-				famplifierLoss = 0.66;
-				fendPatchLoss = 0.6;
-			}
+		{
+			fjunctionLoss = 0.;
+			fpatchLoss = 0.6;
+			famplifierLoss = 0.66;
+			fendPatchLoss = 0.6;
+		}
 
 		else if (fpowerCombiner == 1) // series
-			{
-				fjunctionLoss = 0.87;
-				fpatchLoss = 0.38;
-				famplifierLoss = 0.66;
-				fendPatchLoss = 0.38;
-			}
+		{
+			fjunctionLoss = 0.87;
+			fpatchLoss = 0.38;
+			famplifierLoss = 0.66;
+			fendPatchLoss = 0.38;
+		}
 
 		else if (fpowerCombiner == 2) // one-quarter
-			{
-				fjunctionLoss = 0.87;
-				fpatchLoss = 0.38;
-				famplifierLoss = 0.66;
-				fendPatchLoss = 0.95;
-			}
+		{
+			fjunctionLoss = 0.87;
+			fpatchLoss = 0.38;
+			famplifierLoss = 0.66;
+			fendPatchLoss = 0.95;
+		}
 
 		else if (fpowerCombiner == 3) // seven-eighths
-			{
-				fjunctionLoss = 0.75;
-				fpatchLoss = 0.6;
-				famplifierLoss = 0.66;
-				fendPatchLoss = 0.95;
-			}
+		{
+			fjunctionLoss = 0.75;
+			fpatchLoss = 0.6;
+			famplifierLoss = 0.66;
+			fendPatchLoss = 0.95;
+		}
 
 		else if (fpowerCombiner == 4) // nine-sixteenths
-			{
-				fjunctionLoss = 0.8;
-				fpatchLoss = 0.52;
-				famplifierLoss = 0.66;
-				fendPatchLoss = 0.95;
-			}
+		{
+			fjunctionLoss = 0.8;
+			fpatchLoss = 0.52;
+			famplifierLoss = 0.66;
+			fendPatchLoss = 0.95;
+		}
 
 		else if (fpowerCombiner == 5) // voltage-divider
-			{
-				fjunctionResistance = 0.3;
-				fpatchLoss = 0.6;
-				famplifierLoss = 0.66;
-			}
+		{
+			fjunctionResistance = 0.3;
+			fpatchLoss = 0.6;
+			famplifierLoss = 0.66;
+		}
+		return true;
 
 	}
 

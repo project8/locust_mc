@@ -34,8 +34,8 @@ namespace locust
             bool Configure( const scarab::param_node& aNode);
 
             bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-            void SetVoltageDampingFactors(int aPatchesPerStrip);
-            void SetSMatrixParameters(int aPatchesPerStrip);
+            bool SetVoltageDampingFactors(int aPatchesPerStrip);
+            bool SetSMatrixParameters(int aPatchesPerStrip);
             void SetNPatchesPerStrip(int aPatchesPerStrip);
             void SetJunctionLoss(double aJunctionLoss);
             void SetPatchLoss(double aPatchLoss);
@@ -48,9 +48,10 @@ namespace locust
         private:
             double GetSeriesPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
             double GetCenterFedPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            void SetCenterFedDampingFactors();
-            void SetSeriesFedDampingFactors();
-            void SetVoltageDividerDampingFactors();
+            bool SetCenterFedDampingFactors();
+            bool SetSeriesFedDampingFactors();
+            bool SetVoltageDividerDampingFactors();
+            bool SetSmatrix10patchDampingFactors();
             std::vector<double> GetResistances(double RJunction, double R0, double RGround, int NPAIRS);
             std::vector<double> GetPartialGains(double RJunction, double R0, double RGround, int NPAIRS);
             double GetVoltageDividerWeight(double RJunction, double R0, double Rground, unsigned z_index);
@@ -64,6 +65,7 @@ namespace locust
             double fjunctionResistance;
       	    std::vector<double> fdampingFactors;
 
+      	    std::vector<double> fsMatrix10patch = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
     };
 
