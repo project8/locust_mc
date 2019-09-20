@@ -55,7 +55,7 @@ namespace locust
 
     bool PatchSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-    	if(!fReceiverFIRHandler.Configure(aParam,false))
+    	if(!fReceiverFIRHandler.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}

@@ -89,7 +89,7 @@ namespace locust
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializePatchArray();
             bool InitializePowerCombining();
-            FIRHandler fReceiverFIRHandler;
+            FIRReceiverHandler fReceiverFIRHandler;
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
 

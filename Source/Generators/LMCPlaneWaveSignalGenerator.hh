@@ -90,7 +90,7 @@ namespace locust
     double GetPatchFIRSample(double amp, double startphase, int patchIndex);
 
       // for FIR filter
-    FIRHandler fReceiverFIRHandler;
+    FIRReceiverHandler fReceiverFIRHandler;
     PowerCombiner fPowerCombiner;
     HilbertTransform fHilbertTransform;
 

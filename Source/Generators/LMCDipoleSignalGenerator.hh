@@ -101,7 +101,6 @@ namespace locust
         void CleanupBuffers();
         
         PowerCombiner fPowerCombiner;
-        FIRHandler fReceiverFIRHandler;
         HilbertTransform fHilbertTransform;
         FIRReceiverHandler fReceiverFIRHandler;
         AntennaSignalTransmitter fAntennaSignalTransmitter;
