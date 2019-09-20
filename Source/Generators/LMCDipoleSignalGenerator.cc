@@ -28,7 +28,6 @@ namespace locust
     fArrayRadius( 0. ),
     fNPatchesPerStrip( 1 ),
     fPatchSpacing( 0. ),
-    fPowerCombiner( 0 ),
     fTextFileWriting( 0 ),
     fAmplitude( 5.e-8 ),
     EFieldBuffer( 1 ),
@@ -38,8 +37,7 @@ namespace locust
     LOPhaseBuffer( 1 ),
     IndexBuffer( 1 ),
     PatchFIRBuffer( 1 ),
-    fFieldBufferSize( 50 ),
-    fFieldBufferMargin( 25 )
+    fFieldBufferSize( 50 )
     
     {
         fRequiredSignalState = Signal::kTime;
@@ -56,6 +54,17 @@ namespace locust
         {
             LERROR(lmclog,"Error configuring receiver FIRHandler class");
         }
+
+        if(!fPowerCombiner.Configure(aParam))
+        {
+            LERROR(lmclog,"Error configuring receiver FIRHandler class");
+        }
+
+    	if(!fHilbertTransform.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
+    	}
+
         if( aParam.has( "array-radius" ) )
         {
             fArrayRadius = aParam["array-radius"]().as_double();
@@ -74,11 +83,7 @@ namespace locust
         if( aParam.has( "buffer-size" ) )
         {
             SetBufferSize( aParam.get_value< double >( "buffer-size", fFieldBufferSize ) );
-        }
-        
-        if( aParam.has( "buffer-margin" ) )
-        {
-            SetBufferMargin( aParam.get_value< double >( "buffer-margin", fFieldBufferMargin ) );
+        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
         }
         
         if( aParam.has( "input-signal-amplitude" ) )
@@ -103,22 +108,7 @@ namespace locust
         {
             fTextFileWriting = aParam["text-filewriting"]().as_bool();
         }
-        if( aParam.has( "feed" ) )
-        {
-            if (aParam["feed"]().as_string() == "corporate")
-                fPowerCombiner = 0;  // default
-            else if (aParam["feed"]().as_string() == "series")
-                fPowerCombiner = 1;
-            else if (aParam["feed"]().as_string() == "one-quarter")
-                fPowerCombiner = 2;
-            else if (aParam["feed"]().as_string() == "seven-eighths")
-                fPowerCombiner = 3;
-            else if (aParam["feed"]().as_string() == "nine-sixteenths")
-                fPowerCombiner = 4;
-            else
-                fPowerCombiner = 0;  // default
-        }
-        
+
         if( aParam.has( "domain" ) )
         {
             string domain = aParam["domain"]().as_string();
@@ -196,18 +186,6 @@ namespace locust
         return;
     }
     
-    double DipoleSignalGenerator::GetBufferMargin() const
-    {
-        return fFieldBufferMargin;
-    }
-    
-    void DipoleSignalGenerator::SetBufferMargin( double aBufferMargin )
-    {
-        fFieldBufferMargin = aBufferMargin;
-        return;
-    }
-    
-    
     
     Signal::State DipoleSignalGenerator::GetDomain() const
     {
@@ -240,7 +218,7 @@ namespace locust
         return AOIFactor;
     }
     
-    double DipoleSignalGenerator::GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase, double AcquisitionRate)
+    double DipoleSignalGenerator::GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase)
     {
         
         double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
@@ -252,7 +230,7 @@ namespace locust
             HilbertTransform aHilbertTransform;
             
             double* HilbertMagPhaseMean = new double[3];
-            HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch], fFieldBufferMargin, AcquisitionRate);
+            HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch]);
             HilbertMag = HilbertMagPhaseMean[0];
             HilbertPhase = HilbertMagPhaseMean[1];
             delete[] HilbertMagPhaseMean;
@@ -292,8 +270,8 @@ namespace locust
 
     bool DipoleSignalGenerator::InitializePowerCombining()
     {
-    	testPowerCombiner.SetSMatrixParameters(fPowerCombiner, fNPatchesPerStrip);
-    	testPowerCombiner.SetVoltageDampingFactors(fPowerCombiner, fNPatchesPerStrip);
+    	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
+    	fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip);
     	return true;
 
     }
@@ -385,10 +363,9 @@ namespace locust
                     fieldValue=fieldValue*GetAOIFactor(fAntennaSignalTransmitter.GetAntennaPosition()-currentPatch->GetNormalDirection(),currentPatch->GetNormalDirection());
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
-                    VoltageSample = GetVoltageFromField(ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
+                    VoltageSample = GetVoltageFromField(ch, patch, field_phase);
                     VoltageSample = VoltageSample/patchAntennaDistance;
-     	            testPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
-//                    AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
+     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel

@@ -38,7 +38,6 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCTestSignalGenerator.hh
-    Generators/LMCTestFIRFilterGenerator.hh
     Generators/LMCDecimateSignalGenerator.hh
     Generators/LMCLowPassFilterFFTGenerator.hh
     Generators/LMCHighPassFilterFFTGenerator.hh
@@ -76,7 +75,6 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCTestSignalGenerator.cc
-    Generators/LMCTestFIRFilterGenerator.cc
     Generators/LMCDecimateSignalGenerator.cc
     Generators/LMCLowPassFilterFFTGenerator.cc
     Generators/LMCHighPassFilterFFTGenerator.cc

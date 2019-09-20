@@ -31,16 +31,10 @@ namespace locust
     fphiLO(0.),
     fRF_Frequency( 0.),
     fArrayRadius( 0. ),
-    fPhaseDelay( 0 ),
-    fVoltageDamping( 0 ),
     fNPatchesPerStrip( 0. ),
     fPatchSpacing( 0. ),
-    fPowerCombiner( 0 ),
     fAOI( 0.),
-    fPatchFIRfilter( 0.),
-    fAmplitude( 0.),
-    fFieldBufferMargin( 50 ),
-    fRJunction( 0.3 )
+    fAmplitude( 0.)
   {
     fRequiredSignalState = Signal::kTime;
   }
@@ -57,14 +51,14 @@ namespace locust
           LERROR(lmclog,"Error configuring receiver FIRHandler class");
       }
 
-    if( aParam.has( "phase-delay" ) )
+    if(!fPowerCombiner.Configure(aParam))
       {
-        SetPhaseDelay( aParam.get_value< bool >( "phase-delay", fPhaseDelay ) );
+        LERROR(lmclog,"Error configuring PowerCombiner class");
       }
 
-    if( aParam.has( "voltage-damping" ) )
+    if(!fHilbertTransform.Configure(aParam))
       {
-        SetVoltageDamping( aParam.get_value< bool >( "voltage-damping", fVoltageDamping ) );
+        LERROR(lmclog,"Error configuring HilbertTransform class");
       }
 
     if( aParam.has( "planewave-frequency" ) )
@@ -89,63 +83,23 @@ namespace locust
       {
         SetPatchSpacing( aParam.get_value< double >( "patch-spacing", fPatchSpacing ) );
       }
-    if( aParam.has( "feed" ) )
-      {
-        SetPowerCombiner( aParam["feed"]().as_string() );
-      }
     if( aParam.has( "AOI" ) )
       {
         SetAOI( aParam.get_value< double >( "AOI", fAOI ));
-      }/*
-    if ( aParam.has(  "patch-filter"  ) )
-      {
-        SetPatchFIRfilter( aParam.get_value< bool >( "patch-filter", fPatchFIRfilter) );
       }
-    if( aParam.has( "patch-filter-filename" ) )
-      {
-        SetPatchFIRfilter_filename( aParam.get_value< std::string >( "patch-filter-filename", gpatchfilter_filename) );
-      }
-    if( aParam.has( "patch-filter-resolution" ) )
-      {
-        SetPatchFIRfilter_resolution( aParam.get_value< double >( "patch-filter-resolution", fPatchFIRfilter_resolution) );
-      }*/
     if( aParam.has( "amplitude" ) )
       {
 	  SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude) );
       }
-    if( aParam.has( "buffer-margin" ) )
-      {
-  	  SetBufferMargin( aParam.get_value< double >( "buffer-margin", fFieldBufferMargin) );
-      }
-    if( aParam.has( "junction-resistance" ) )
-      {
-      SetJunctionResistance( aParam.get_value< double >( "junction-resistance", fRJunction) );
-      }
+    if( aParam.has( "buffer-size" ) )
+     {
+     	fFieldBufferSize = aParam["buffer-size"]().as_int();
+     	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
+     }
+
 
     return true;
   }
-
-  bool PlaneWaveSignalGenerator::GetPhaseDelay() const
-   {
-       return fPhaseDelay;
-   }
-
-   void PlaneWaveSignalGenerator::SetPhaseDelay( bool aPhaseDelay )
-   {
-       fPhaseDelay = aPhaseDelay;
-       return;
-   }
-
-   bool PlaneWaveSignalGenerator::GetVoltageDamping() const
-    {
-        return fVoltageDamping;
-    }
-
-    void PlaneWaveSignalGenerator::SetVoltageDamping( bool aVoltageDamping )
-    {
-        fVoltageDamping = aVoltageDamping;
-        return;
-    }
 
     double PlaneWaveSignalGenerator::GetPlaneWaveFrequency() const
      {
@@ -202,32 +156,7 @@ namespace locust
                return;
            }
 
-         int PlaneWaveSignalGenerator::GetPowerCombiner() const
-           {
-               return fPowerCombiner;
-           }
-
-         void PlaneWaveSignalGenerator::SetPowerCombiner( std::string feed )
-           {
-               if (feed == "corporate")
-               	fPowerCombiner = 0;  // default
-               else if (feed == "series")
-               	fPowerCombiner = 1;
-               else if (feed == "one-quarter")
-               	fPowerCombiner = 2;
-               else if (feed == "seven-eighths")
-               	fPowerCombiner = 3;
-               else if (feed == "nine-sixteenths")
-               	fPowerCombiner = 4;
-               else if (feed == "voltage-divider")
-               	fPowerCombiner = 5;
-               else
-               	fPowerCombiner = 0;  // default
-
-               return;
-           }
-
-         double PlaneWaveSignalGenerator::GetAOI() const
+           double PlaneWaveSignalGenerator::GetAOI() const
            {
                return fAOI;
            }
@@ -248,60 +177,6 @@ namespace locust
                 return;
             }
 
-/*
-         bool PlaneWaveSignalGenerator::GetPatchFIRfilter() const
-           {
-               return fPatchFIRfilter;
-           }
-
-         void PlaneWaveSignalGenerator::SetPatchFIRfilter( bool aPatchFIRfilter )
-           {
-               fPatchFIRfilter = aPatchFIRfilter;
-               return;
-           }
-         std::string PlaneWaveSignalGenerator::GetPatchFIRfilter_filename() const
-            {
-                return gpatchfilter_filename;
-            }
-
-          void PlaneWaveSignalGenerator::SetPatchFIRfilter_filename( std::string aPatchFIRfilterfilename )
-            {
-                gpatchfilter_filename = aPatchFIRfilterfilename;
-                return;
-            }
-          double PlaneWaveSignalGenerator::GetPatchFIRfilter_resolution() const
-              {
-                  return fPatchFIRfilter_resolution;
-              }
-
-          void PlaneWaveSignalGenerator::SetPatchFIRfilter_resolution( double aPatchFIRfilter_resolution )
-             {
-                 fPatchFIRfilter_resolution = aPatchFIRfilter_resolution;
-                 return;
-             }*/
-          double PlaneWaveSignalGenerator::GetBufferMargin() const
-              {
-                  return fFieldBufferMargin;
-              }
-
-          void PlaneWaveSignalGenerator::SetBufferMargin( double aBufferMargin )
-             {
-                 fFieldBufferMargin = aBufferMargin;
-                 return;
-             }
-          double PlaneWaveSignalGenerator::GetJunctionResistance() const
-              {
-                  return fRJunction;
-              }
-
-          void PlaneWaveSignalGenerator::SetJunctionResistance( double aRJunction )
-             {
-                 fRJunction = aRJunction;
-                 return;
-             }
-
-
-
 
 
 
@@ -320,36 +195,6 @@ namespace locust
   }
 
 
-  double PlaneWaveSignalGenerator::GetVoltageAmpFromPlaneWave(int z_index)
-  {
-    // This is the method before the patch FIR filter was implemented
-    double AntennaFactor = 0.;
-    double amplitude = 0.;
-    if(z_index == 0 || z_index == fNPatchesPerStrip-1)
-      {
-	AntennaFactor = 1./430.;
-      }
-    else
-      {
-	AntennaFactor = 1./460.;
-      }
-
-    // Calculation:
-    // S = epsilon0 c E0^2 / 2.  // power/area
-    //  0.6e-21 W/Hz * 24.e3 Hz / (0.00375*0.002916) = S = 1.3e-12 W/m^2
-    // We should detect 0.6e-21 W/Hz * 24.e3 Hz in Katydid.
-    // E0 = sqrt(2.*S/epsilon0/c)
-    // effective patch area 0.00004583662 m^2
-
-    double S = 0.6e-21*24.e3/(0.00004271);  // W/m^2, effective aperture.
-    double E0 = sqrt(2.*S/(LMCConst::EpsNull() * LMCConst::C()));
-    //    double E0 = 1.0; // V/m, test case
-    amplitude = E0*AntennaFactor;  // volts
-      
-    // printf("amplitude is %g\n", amplitude); getchar();
-    return amplitude;
-  }
-
   double PlaneWaveSignalGenerator::GetPWPhaseDelayAtPatch(int z_index)
   {
     double phasedelay = 0.;
@@ -364,45 +209,6 @@ namespace locust
     return phasedelay;
   }
   
-    /*
-  void PlaneWaveSignalGenerator::ProcessFIRFilter(int nskips)
-  {
-
-    FILE *fp;
-    double filter;
-    double index;
-    fp = fopen(gpatchfilter_filename.c_str(),"r");
-    int count = 0;
-
-
-    for (int i=0; i<sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
-      FIR_array[i] = -99.;
-
-
-    while (!feof(fp))
-      {
-        fscanf(fp, "%lf %lf\n", &index, &filter);
-        if (count%nskips==0) FIR_array[count/nskips] = filter;
-        count += 1;
-      }
-
-    fclose(fp);
-
-  }
-
-  int PlaneWaveSignalGenerator::GetNFilterBins()
-  {
-    int nbins = 0;
-    for (int i=0; i<sizeof(FIR_array)/sizeof(FIR_array[0]); i++)
-      {
-	if (FIR_array[i]>0.) nbins += 1;
-
-	// TEST
-	// printf("FIR_array[%d] is %g\n", i, FIR_array[i]); getchar();
-	
-      }    
-    return nbins;
-  }*/
 
   double PlaneWaveSignalGenerator::GetPatchFIRSample(double dottedamp, double startphase, int patchIndex)
   {   
@@ -442,7 +248,7 @@ namespace locust
 	HilbertTransform aHilbertTransform;
 	double* HilbertMagPhaseMean = new double[3];
 	
-	HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(PWValueBuffer[bufferIndex], PWFreqBuffer[bufferIndex], fFieldBufferMargin, 1.e6*fAcquisitionRate*10);
+	HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(PWValueBuffer[bufferIndex], PWFreqBuffer[bufferIndex]);
 	magphase[0] = HilbertMagPhaseMean[0];
 	magphase[1] = HilbertMagPhaseMean[1];
 	delete[] HilbertMagPhaseMean;
@@ -484,11 +290,12 @@ namespace locust
 	    PopBuffers(bufferIndex);
 
 	    hilbertmagphase = GetHilbertMagPhase(bufferIndex);
+	    int hilbertbuffermargin = fHilbertTransform.GetBufferMargin();
 
-	    PatchVoltageBuffer[bufferIndex].emplace(PatchVoltageBuffer[bufferIndex].begin()+fFieldBufferMargin+1, GetPatchFIRSample(hilbertmagphase[0], hilbertmagphase[1], patchIndex));
+	    PatchVoltageBuffer[bufferIndex].emplace(PatchVoltageBuffer[bufferIndex].begin()+hilbertbuffermargin+1, GetPatchFIRSample(hilbertmagphase[0], hilbertmagphase[1], patchIndex));
 	    PatchVoltageBuffer[bufferIndex].pop_front();
 	    PatchVoltageBuffer[bufferIndex].shrink_to_fit();
-        testPowerCombiner.AddOneVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].front(), fphiLO, patchIndex, SampleIndexBuffer[bufferIndex].front());
+        fPowerCombiner.AddOneVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].front(), fphiLO, patchIndex, SampleIndexBuffer[bufferIndex].front());
 	   
 	    // TEST PRINT STATEMENTS
 /*
@@ -557,18 +364,18 @@ namespace locust
     PWValueBuffer[bufferIndex].shrink_to_fit();
   }
   
-  void PlaneWaveSignalGenerator::InitializeBuffers(unsigned fieldbuffersize)
+  void PlaneWaveSignalGenerator::InitializeBuffers()
   {
     const unsigned nchannels = fNChannels;
     const int nReceivers = fNPatchesPerStrip;
     
     FieldBuffer aFieldBuffer;
 
-    SampleIndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(nchannels, nReceivers, fieldbuffersize);
-    PWFreqBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
-    PWValueBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
-    PWPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);   
-    PatchVoltageBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fieldbuffersize);
+    SampleIndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(nchannels, nReceivers, fFieldBufferSize);
+    PWFreqBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fFieldBufferSize);
+    PWValueBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fFieldBufferSize);
+    PWPhaseBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fFieldBufferSize);
+    PatchVoltageBuffer = aFieldBuffer.InitializeBuffer(nchannels, nReceivers, fFieldBufferSize);
     
   }
 
@@ -576,8 +383,8 @@ namespace locust
 
   bool PlaneWaveSignalGenerator::InitializePowerCombining()
   {
-  	testPowerCombiner.SetSMatrixParameters(fPowerCombiner, fNPatchesPerStrip);
-  	testPowerCombiner.SetVoltageDampingFactors(fPowerCombiner, fNPatchesPerStrip);
+  	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
+  	fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip);
 
   	return true;
 
@@ -629,9 +436,8 @@ namespace locust
     InitializePatchArray();
     InitializePowerCombining();
     int nfilterbins = fReceiverFIRHandler.GetFilterSize();
-    int tempfieldbuffersize = 100;
  
-    InitializeBuffers(tempfieldbuffersize);
+    InitializeBuffers();
 
     // text file for VI for testing.
     // note: this is pre-low pass filter. better to put this into LMCDecimateSignalGenerator.cc

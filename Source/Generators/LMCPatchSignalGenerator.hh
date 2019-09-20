@@ -34,7 +34,7 @@ namespace locust
 
      Available configuration options:
      - "param-name": type -- Description
-     - "lo-frequency" : double -- the special value tuned down by the local oscillator, e.g., the 24.something giga hertz.
+     - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      
 
@@ -60,18 +60,16 @@ namespace locust
             int fNPatchesPerStrip; // from json file.
             double fPatchSpacing; // from json file.
             std::string gxml_filename;
-            int fPowerCombiner;
-            double fRJunction;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
-            unsigned fFieldBufferMargin;
+            double fphiLO; // voltage phase of LO in radians;
 
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
             double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi);
             double GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
             void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
-            double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate);
+            double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned channel, unsigned patch);
@@ -92,12 +90,11 @@ namespace locust
             bool InitializePatchArray();
             bool InitializePowerCombining();
             FIRHandler fReceiverFIRHandler;
-            PowerCombiner testPowerCombiner;
+            PowerCombiner fPowerCombiner;
+            HilbertTransform fHilbertTransform;
 
             int FindNode(double tNew) const;
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
-
-            double phiLO_t; // voltage phase of LO in radians;
 
     };
 

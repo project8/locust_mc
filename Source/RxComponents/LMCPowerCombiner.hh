@@ -2,9 +2,12 @@
 #ifndef LMCPOWERCOMBINER_HH_
 #define LMCPOWERCOMBINER_HH_
 
+#include "LMCException.hh"
+#include "param.hh"
 #include "LMCSignal.hh"
 #include "LMCConst.hh"
 #include <vector>
+
 
 namespace locust
 {
@@ -13,11 +16,12 @@ namespace locust
  @author P. Slocum
  @brief Class to describe the power combining in the patch array.
  S-matrix and voltage damping factors for the array are defined with functions
- SetSMatrixParameters(int powerCombiner, int aPatchesPerStrip) and
- SetVoltageDampingFactors(int aPowerCombiner, int aPatchesPerStrip) .
+ SetSMatrixParameters(int aPatchesPerStrip) and
+ SetVoltageDampingFactors(int aPatchesPerStrip) .
 
  @details
  Available configuration options:
+ "power-combining-feed" is an integer to select the appropriate power combining configuration.
  No input parameters
  */
     class PowerCombiner
@@ -27,35 +31,38 @@ namespace locust
             PowerCombiner();
 
             virtual ~PowerCombiner();
+            bool Configure( const scarab::param_node& aNode);
 
             bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-            void SetVoltageDampingFactors(int aPowerCombiner, int aPatchesPerStrip);
-            void SetSMatrixParameters(int powerCombiner, int aPatchesPerStrip);
+            void SetVoltageDampingFactors(int aPatchesPerStrip);
+            void SetSMatrixParameters(int aPatchesPerStrip);
             void SetNPatchesPerStrip(int aPatchesPerStrip);
             void SetJunctionLoss(double aJunctionLoss);
             void SetPatchLoss(double aPatchLoss);
             void SetAmplifierLoss(double aAmplifierLoss);
             void SetEndPatchLoss(double aEndPatchLoss);
+            void SetPowerCombiner(int aPowerCombiner);
 
 
 
         private:
             double GetSeriesPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            double GetCenterFedPhaseDelay(int NPatchesPerStrip, unsigned z_index, double DopplerFrequency, double PatchSpacing);
+            double GetCenterFedPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
             void SetCenterFedDampingFactors();
             void SetSeriesFedDampingFactors();
             void SetVoltageDividerDampingFactors();
             std::vector<double> GetResistances(double RJunction, double R0, double RGround, int NPAIRS);
             std::vector<double> GetPartialGains(double RJunction, double R0, double RGround, int NPAIRS);
-            double GetVoltageDividerWeight(double RJunction, double R0, double Rground, int NPatchesPerStrip, unsigned z_index);
+            double GetVoltageDividerWeight(double RJunction, double R0, double Rground, unsigned z_index);
             double GetParallelResistance(std::vector<double> R, int NRESISTORS, int resistorindex);
-            int nPatchesPerStrip;
-            double junctionLoss;
-            double patchLoss;
-            double amplifierLoss;
-            double endPatchLoss;
-            double junctionResistance;
-      	    std::vector<double> dampingFactors;
+            int fpowerCombiner;
+            int fnPatchesPerStrip;
+            double fjunctionLoss;
+            double fpatchLoss;
+            double famplifierLoss;
+            double fendPatchLoss;
+            double fjunctionResistance;
+      	    std::vector<double> fdampingFactors;
 
 
     };
