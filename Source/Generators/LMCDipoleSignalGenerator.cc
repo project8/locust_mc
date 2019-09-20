@@ -50,7 +50,7 @@ namespace locust
     
     bool DipoleSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if(!fReceiverFIRHandler.Configure(aParam,false))
+        if(!fReceiverFIRHandler.Configure(aParam))
         {
             LERROR(lmclog,"Error configuring receiver FIRHandler class");
         }
@@ -212,9 +212,13 @@ namespace locust
     }
     
     //PTS: This part(function) should be unified with the other parts where a filter is extracted
-    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmittingPatchNormal,LMCThreeVector ReceivingPatchNormal)
+    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmitterReceiverNormal,LMCThreeVector ReceivingPatchNormal)
     {
-        double AOIFactor = fabs(TrasmittingPatchNormal.Unit().Dot(ReceivingPatchNormal.Unit()));
+	if(TrasmitterReceiverNormal==LMCThreeVector::sZero)
+	{
+	    return 1.0; //Unusual case where source is same as the receiver
+	}
+	double AOIFactor = fabs(TrasmitterReceiverNormal.Unit().Dot(ReceivingPatchNormal.Unit()));
         return AOIFactor;
     }
     
@@ -365,7 +369,7 @@ namespace locust
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
                     VoltageSample = GetVoltageFromField(ch, patch, field_phase);
                     VoltageSample = VoltageSample/patchAntennaDistance;
-     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
+     	              fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel

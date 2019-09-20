@@ -46,7 +46,7 @@ namespace locust
   bool PlaneWaveSignalGenerator::Configure( const scarab::param_node& aParam )
   {
       
-    if(!fReceiverFIRHandler.Configure(aParam,false))
+    if(!fReceiverFIRHandler.Configure(aParam))
       {
           LERROR(lmclog,"Error configuring receiver FIRHandler class");
       }
@@ -178,8 +178,6 @@ namespace locust
             }
 
 
-
-
   void PlaneWaveSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
   {
     aVisitor->Visit( this );
@@ -209,7 +207,6 @@ namespace locust
     return phasedelay;
   }
   
-
   double PlaneWaveSignalGenerator::GetPatchFIRSample(double dottedamp, double startphase, int patchIndex)
   {   
    
@@ -435,6 +432,7 @@ namespace locust
 
     InitializePatchArray();
     InitializePowerCombining();
+
     int nfilterbins = fReceiverFIRHandler.GetFilterSize();
  
     InitializeBuffers();

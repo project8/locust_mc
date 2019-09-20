@@ -39,7 +39,7 @@ namespace locust
     
     bool AntennaSignalTransmitter::Configure( const scarab::param_node& aParam )
     {
-        if(!fTransmitterFIRHandler.Configure(aParam,true))
+        if(!fTransmitterFIRHandler.Configure(aParam))
         {
             LERROR(lmclog,"Error configuring FIRHandler class");
         }
