@@ -39,11 +39,23 @@ namespace locust
 
 		if( aParam.has( "power-combining-feed" ) )
 		{
-			fpowerCombiner=aParam["power-combining-feed"]().as_int();
+			SetPowerCombiner(aParam["power-combining-feed"]().as_string());
 		}
 
 		return true;
 	}
+
+    bool PowerCombiner::SetPowerCombiner( std::string feed )
+    {
+    	if (feed == "corporate") fpowerCombiner = 0;  // default
+    	else if (feed == "series") fpowerCombiner = 1;
+        else if (feed == "one-quarter") fpowerCombiner = 2;
+        else if (feed == "seven-eighths") fpowerCombiner = 3;
+        else if (feed == "nine-sixteenths") fpowerCombiner = 4;
+        else if (feed == "voltage-divider") fpowerCombiner = 5;
+        else fpowerCombiner = 0;  // default
+    	return true;
+          }
 
 
 
@@ -216,6 +228,7 @@ namespace locust
 		{
 			SetVoltageDividerDampingFactors();
 		}
+
 		else if (fpowerCombiner == 6)
 		{
 			SetSmatrix10patchDampingFactors();
@@ -277,11 +290,6 @@ namespace locust
 		}
 		return true;
 
-	}
-
-	void PowerCombiner::SetPowerCombiner(int aPowerCombiner)
-	{
-		fpowerCombiner = aPowerCombiner;
 	}
 
 	void PowerCombiner::SetNPatchesPerStrip(int aPatchesPerStrip)
