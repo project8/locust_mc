@@ -242,9 +242,13 @@ namespace locust
         return;
     }
     
-    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmittingPatchNormal,LMCThreeVector ReceivingPatchNormal)
+    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmitterReceiverNormal,LMCThreeVector ReceivingPatchNormal)
     {
-	double AOIFactor = fabs(TrasmittingPatchNormal.Unit().Dot(ReceivingPatchNormal.Unit()));
+	if(TrasmitterReceiverNormal==LMCThreeVector::sZero)
+	{
+	    return 1.0; //Unusual case where source is same as the receiver
+	}
+	double AOIFactor = fabs(TrasmitterReceiverNormal.Unit().Dot(ReceivingPatchNormal.Unit()));
         return AOIFactor;
     }
 
@@ -441,13 +445,13 @@ namespace locust
 				double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
 				double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
             			double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ); 
-          			fieldValue=fieldValue*GetAOIFactor(fAntennaSignalTransmitter.GetAntennaPosition()-currentPatch->GetNormalDirection(),currentPatch->GetNormalDirection());
+          			fieldValue=fieldValue;
 				double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
 				if (index > 0) dtauConvolutionTime = 0;
             			else dtauConvolutionTime = nfilterbins/2;
             			FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch, dtauConvolutionTime);
 		            	VoltageSample = GetFIRSample(filterarray, nfilterbins, dtfilter, ch, patch, field_phase,fAcquisitionRate*aSignal->DecimationFactor());
-				VoltageSample = VoltageSample/patchAntennaDistance;
+				VoltageSample = VoltageSample*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;
 				AddOneFIRVoltageToStripSum(aSignal, VoltageSample, LO_phase, ch, patch);
 // factor of 2 is needed for cosA*cosB = 1/2*(cos(A+B)+cos(A-B)); usually we leave out the 1/2 for e.g. sinusoidal RF.
             			//aSignal->LongSignalTimeComplex()[IndexBuffer[ch*fNPatchesPerStrip+patch].front()][0] += 2.*VoltageSample*cos(LOPhaseBuffer[ch*fNPatchesPerStrip+patch].front());
