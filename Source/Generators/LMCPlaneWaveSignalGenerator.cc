@@ -33,6 +33,7 @@ namespace locust
     fArrayRadius( 0. ),
     fNPatchesPerStrip( 0. ),
     fPatchSpacing( 0. ),
+	fFieldBufferSize( 50 ),
     fAOI( 0.),
     fAmplitude( 0.)
   {
@@ -96,7 +97,6 @@ namespace locust
      	fFieldBufferSize = aParam["buffer-size"]().as_int();
      	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
      }
-
 
     return true;
   }
@@ -257,7 +257,7 @@ namespace locust
 
   void PlaneWaveSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
   {     
-    unsigned bufferIndex = 0;
+	unsigned bufferIndex = 0;
     const int signalSize = aSignal->TimeSize();
     const double timeSampleSize = 1./(1.e6 * fAcquisitionRate * aSignal->DecimationFactor());
     unsigned sampleIndex = 0;
