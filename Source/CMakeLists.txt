@@ -55,8 +55,6 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCChannel.hh
     
-#    Generators/LMCBasebandTrackGenerator.hh
-#    Generators/LMCTrappedElectronGenerator.hh
 )
 
 
@@ -92,8 +90,6 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCPatchAntenna.cc
     RxComponents/LMCChannel.cc
 
-#    Generators/LMCBasebandTrackGenerator.cc
-#    Generators/LMCTrappedElectronGenerator.cc
 )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)

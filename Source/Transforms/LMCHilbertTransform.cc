@@ -25,13 +25,13 @@ namespace locust
     {
 
     	if( aParam.has( "hilbert-buffer-margin" ) )
-            {
-                fbufferMargin=aParam["hilbert-buffer-margin"]().as_int();
-            }
+        {
+    		fbufferMargin=aParam["hilbert-buffer-margin"]().as_int();
+        }
        	if( aParam.has( "hilbert-buffer-size" ) )
-            {
-                fbufferSize=aParam["hilbert-buffer-size"]().as_int();
-            }
+        {
+       		fbufferSize=aParam["hilbert-buffer-size"]().as_int();
+        }
     	return true;
     }
 
@@ -122,7 +122,7 @@ namespace locust
 
 
     double* HilbertTransform::GetSpan( fftw_complex* array, int IQ, int size )
-    	{
+    {
     	double* span = new double[2];
     	double max = -99.;
     	double min = 99.;
@@ -134,7 +134,7 @@ namespace locust
     	span[0] = min;
     	span[1] = max;
     	return span;
-    	}
+    }
 
 
 

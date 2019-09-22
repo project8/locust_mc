@@ -99,12 +99,6 @@ namespace locust
         return;
     }
 
-    void RunLengthCalculator::Visit( const TrappedElectronGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-
     void RunLengthCalculator::Visit( const LowPassFilterFFTGenerator* )
     {
         // nothing to see here, move along, please
@@ -170,18 +164,6 @@ namespace locust
     }
 
     void RunLengthCalculator::Visit( const DipoleSignalGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-
-    void RunLengthCalculator::Visit( const TestFIRFilterGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-
-  void RunLengthCalculator::Visit( const BasebandTrackGenerator* )
     {
         // nothing to see here, move along, please
         return;
