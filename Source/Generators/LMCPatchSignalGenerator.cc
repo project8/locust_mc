@@ -262,8 +262,6 @@ namespace locust
 
         PatchAntenna *currentPatch;
 
-        FILE *fp2 = fopen("EvsZ.txt", "a");
-
         for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
         {
             double PatchPhi = (double)channelIndex*360./allChannels.size()*LMCConst::Pi()/180.; // radians.    
@@ -335,17 +333,12 @@ namespace locust
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
- 	            fprintf(fp2, "%d %g %g\n", patchIndex, currentPatch->GetPosition().GetZ(), tEFieldCoPol);
  	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
                 PopBuffers(channelIndex, patchIndex);
 
             } // patch loop
 
         } // channels loop
-
-        fclose(fp2);
-
-        printf("finished text file write\n"); getchar();
 
 
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
