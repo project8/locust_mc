@@ -231,10 +231,9 @@ namespace locust
         
         if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
         {
-            HilbertTransform aHilbertTransform;
             
             double* HilbertMagPhaseMean = new double[3];
-            HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch]);
+            HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch]);
             HilbertMag = HilbertMagPhaseMean[0];
             HilbertPhase = HilbertMagPhaseMean[1];
             delete[] HilbertMagPhaseMean;
@@ -364,12 +363,12 @@ namespace locust
                     double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
                     double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
                     double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
-                    fieldValue=fieldValue*GetAOIFactor(fAntennaSignalTransmitter.GetAntennaPosition()-currentPatch->GetNormalDirection(),currentPatch->GetNormalDirection());
+                    fieldValue=fieldValue;
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
-                    VoltageSample = GetVoltageFromField(ch, patch, field_phase);
+                    VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
                     VoltageSample = VoltageSample/patchAntennaDistance;
-     	              fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
+     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel
