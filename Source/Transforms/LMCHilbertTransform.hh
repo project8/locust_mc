@@ -12,6 +12,8 @@
 #include <math.h>
 #include <deque>
 #include "LMCConst.hh"
+#include "param.hh"
+
 
 namespace locust
 {
@@ -29,7 +31,12 @@ namespace locust
         public:
             HilbertTransform();
             virtual ~HilbertTransform();
-            double* GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer, unsigned edge_margin, double AcquisitionRate);
+            bool Configure( const scarab::param_node& aNode);
+            double* GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer);
+            void SetBufferSize( int aBufferSize );
+            void SetBufferMargin( int aBufferMargin );
+            int GetBufferSize();
+            int GetBufferMargin();
 
         private:
 
@@ -40,6 +47,8 @@ namespace locust
             double* GetSpan( fftw_complex* array, int IQ, int size );
             double GetPhase( double VI, double VQ, double VMean);
             double QuadrantCorrection( double VI, double HilbertPhase, double HilbertMean );
+            int fbufferMargin;
+            int fbufferSize;
 
     };
 
