@@ -363,11 +363,10 @@ namespace locust
                     double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
                     double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
                     double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
-                    fieldValue=fieldValue;
+                    fieldValue=fieldValue;  // pls:  can this be removed?
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
                     VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
-                    VoltageSample = VoltageSample/patchAntennaDistance;
      	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
                     PopBuffers(ch, patch);
                 }  // patch
