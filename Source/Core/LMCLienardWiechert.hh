@@ -37,6 +37,7 @@ namespace locust
             LMCThreeVector GetMagneticField();
 
         private:
+            void SetKassiopeiaTimeStep();
             bool IsInLightCone() const;
             std::pair<unsigned, double> GuessRetardedTime();
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition ) const;
@@ -48,7 +49,9 @@ namespace locust
             locust::Particle fCurrentParticle;
             LMCThreeVector fFieldPosition;
             double fFieldTime;
+            double fPreviousFieldTime;
             unsigned fAntennaIndex;
+            double fKassiopeiaTimeStep;
 
             std::vector<LMCThreeVector> fAntennaPositions;
             std::vector<std::pair<unsigned, double> > fCachedSolutions; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution

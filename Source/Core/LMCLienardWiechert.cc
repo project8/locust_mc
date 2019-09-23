@@ -15,7 +15,9 @@ namespace locust
     LienardWiechert::LienardWiechert() :
             fFieldPosition( 0., 0., 0. ),
             fFieldTime( 0. ),
+            fPreviousFieldTime( 0. ),
             fAntennaIndex( 0 ),
+            fKassiopeiaTimeStep( 0. ),
             fAntennaPositions(),
             fCurrentParticle(),
             fHasCachedSolution()
@@ -39,11 +41,15 @@ namespace locust
     {
         fAntennaIndex = aFieldPointIndex;
         fFieldPosition = fAntennaPositions[fAntennaIndex];
+        fPreviousFieldTime = fFieldTime;
         fFieldTime = aTime;
     }
 
     bool LienardWiechert::SolveFieldSolutions()
     {
+        if(!fKassiopeiaTimeStep)
+            SetKassiopeiaTimeStep();
+
         if(!IsInLightCone())
         {
             return false;
@@ -99,9 +105,14 @@ namespace locust
         return tRetardedTime + aSpaceTimeInterval;
     }
 
+    void LienardWiechert::SetKassiopeiaTimeStep()
+    {
+        fKassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
+    }
+
      bool LienardWiechert::IsInLightCone() const
     {
-        if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
+        if(fParticleHistory.front().GetTime()<=3.*fKassiopeiaTimeStep)
         {
             fParticleHistory.front().Interpolate(0);
             if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), fFieldTime , fParticleHistory.front().GetPosition(true), fFieldPosition ) < 0 )
@@ -127,7 +138,7 @@ namespace locust
             tCurrentParticle.Interpolate(tRetardedTime);
 
             //Change the kassiopeia step we expand around if the interpolation time displacement is too large
-            if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
+            if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > fKassiopeiaTimeStep)
             {
                 tIndex = FindClosestParticle(tRetardedTime);
                 tCurrentParticle = fParticleHistory[tIndex];
@@ -145,10 +156,11 @@ namespace locust
         unsigned tIndex;
         double tRetardedTime;
 
+
         if(fHasCachedSolution[fAntennaIndex])
         {
             tIndex = fCachedSolutions[fAntennaIndex].first;
-            tRetardedTime = fCachedSolutions[fAntennaIndex].second + tLocustStep;
+            tRetardedTime = fCachedSolutions[fAntennaIndex].second + (fFieldTime - fPreviousFieldTime);
         }
         else
         {
