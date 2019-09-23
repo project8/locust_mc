@@ -107,6 +107,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
         Core/LMCParticle.hh
+        Core/LMCLienardWiechert.hh
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
@@ -126,6 +127,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Core/LMCHFSSReader.cc
         Core/LMCParticle.cc
+        Core/LMCLienardWiechert.cc
 
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCFieldCalculatorBuilder.cc

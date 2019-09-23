@@ -28,7 +28,6 @@ namespace locust
 
     FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
         Generator( aName ),
-        //fWriteNFD(0.),
         fLO_Frequency( 0.),
         fArrayRadius(0.),
         fPatchSpacing(0.),
@@ -261,8 +260,6 @@ namespace locust
             ++index;
 
         }  // for loop
-
-        //if(fWriteNFD) NFDWrite();
 
         //delete [] ImaginarySignal;
 

@@ -5,8 +5,10 @@
  *      Author: nbuzinsky
  */
 
-#include "LMCLienardWiechert.hh"
+#include <deque>
 
+#include "LMCGlobalsDeclaration.hh"
+#include "LMCLienardWiechert.hh"
 
 namespace locust
 {
@@ -29,7 +31,7 @@ namespace locust
     void LienardWiechert::AddFieldPoint(const LMCThreeVector aFieldPoint)
     {
         fAntennaPositions.push_back(aFieldPoint);
-        fPreviousTimes.push_back(std::pair<unsigned, int>(0,0));
+        fCachedSolutions.push_back(std::pair<unsigned, int>(0,0));
         fHasCachedSolution.push_back(false);
     }
 
@@ -102,7 +104,7 @@ namespace locust
         if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
         {
             fParticleHistory.front().Interpolate(0);
-            if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), fAntennaTime , fParticleHistory.front().GetPosition(true), fFieldPosition ) < 0 )
+            if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), fFieldTime , fParticleHistory.front().GetPosition(true), fFieldPosition ) < 0 )
             {
                 return false;
             }
@@ -117,7 +119,7 @@ namespace locust
         double tRetardedTime = aRetardedSolution.second;
 
         locust::Particle tCurrentParticle = fParticleHistory[tIndex];
-        double tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
+        double tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), fFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
 
         for(int j=0;j<25;++j)
         {
@@ -127,18 +129,18 @@ namespace locust
             //Change the kassiopeia step we expand around if the interpolation time displacement is too large
             if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
             {
-                tIndex = FindNode(tRetardedTime);
+                tIndex = FindClosestParticle(tRetardedTime);
                 tCurrentParticle = fParticleHistory[tIndex];
                 tCurrentParticle.Interpolate(tRetardedTime);
             }
 
-            tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
+            tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), fFieldTime, tCurrentParticle.GetPosition(true), fFieldPosition);
         }
 
         return std::pair<unsigned, double>(tIndex, tRetardedTime);
     }
 
-    std::pair<unsigned, double> LienardWiechert::GuessRetardedTime()  const
+    std::pair<unsigned, double> LienardWiechert::GuessRetardedTime()
     {
         unsigned tIndex;
         double tRetardedTime;
@@ -150,9 +152,9 @@ namespace locust
         }
         else
         {
-            tIndex = FindNode(fFieldTime);
+            tIndex = FindClosestParticle(fFieldTime);
             locust::Particle tCurrentParticle = fParticleHistory[tIndex];
-            tRetardedTime = tFieldTime - (tCurrentParticle.GetPosition() - fFieldPosition).Magnitude() / LMCConst::C();
+            tRetardedTime = fFieldTime - (tCurrentParticle.GetPosition() - fFieldPosition).Magnitude() / LMCConst::C();
             if(tRetardedTime < 0) 
             {
                 tRetardedTime = 0;
@@ -161,13 +163,13 @@ namespace locust
             fHasCachedSolution[fAntennaIndex] = true;
         }
 
-        tIndex = FindNode(tRetardedTime);
+        tIndex = FindClosestParticle(tRetardedTime);
         return std::pair<unsigned, double>(tIndex, tRetardedTime);
     }
 
     void LienardWiechert::CacheSolution(const int aIndex, const double aRetardedTime)
     {
-        fPreviousTime[fPatchIndex] = std::pair<int, double>(aIndex, aRetardedTime);
+        fCachedSolutions[fAntennaIndex] = std::pair<int, double>(aIndex, aRetardedTime);
     }
 
 } /* namespace locust */

@@ -31,18 +31,18 @@ namespace locust
 
             void AddFieldPoint(const LMCThreeVector aFieldPoint);
             void SetFieldEvent(const double aTime, const unsigned aFieldPointIndex);
-            boolt SolveFieldSolutions();
+            bool SolveFieldSolutions();
 
             LMCThreeVector GetElectricField();
             LMCThreeVector GetMagneticField();
 
         private:
             bool IsInLightCone() const;
-            std::pair<unsigned, double> GuessRetardedTime()  const;
+            std::pair<unsigned, double> GuessRetardedTime();
             double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition ) const;
             double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval) const;
             unsigned FindClosestParticle(double tNew) const;
-            std::pair<unsigned, double> FindRoot() const;
+            std::pair<unsigned, double> FindRoot(std::pair<unsigned, double> aRetardedSolution) const;
             void CacheSolution(const int aIndex, const double aRetardedTime);
 
             locust::Particle fCurrentParticle;
