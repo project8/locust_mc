@@ -198,6 +198,7 @@ namespace locust
                 modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); 
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
+                fFieldSolver.AddFieldPoint(modelPatch.GetPosition());
             }
         }
     }
