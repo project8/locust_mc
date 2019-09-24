@@ -80,7 +80,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
-        Core/LMCParticle.hh
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
