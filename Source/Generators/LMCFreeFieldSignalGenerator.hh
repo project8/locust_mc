@@ -13,6 +13,7 @@
 
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
+#include "LMCLienardWiechert.hh"
 
 namespace locust
 {
@@ -58,6 +59,7 @@ namespace locust
             bool fCorporateFeed;
             bool fPileupMode; //simulate tracks in sequence or as piling up?
             int fPileupSeed; 
+            LienardWiechert fFieldSolver;
 
             std::string gxml_filename;
 

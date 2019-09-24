@@ -45,14 +45,14 @@ namespace locust
         fFieldTime = aTime;
     }
 
-    bool LienardWiechert::SolveFieldSolutions()
+    void LienardWiechert::SolveFieldSolutions()
     {
         if(!fKassiopeiaTimeStep)
             SetKassiopeiaTimeStep();
 
         if(!IsInLightCone())
         {
-            return false;
+            return;
         }
 
         std::pair<unsigned, double> tRetardedSolution;
@@ -66,9 +66,8 @@ namespace locust
         fCurrentParticle.Interpolate(tRetardedTime);
 
         CacheSolution(tIndex, tRetardedTime);
-
-        return true;
     }
+
 
     LMCThreeVector LienardWiechert::GetElectricField()
     {
@@ -78,6 +77,11 @@ namespace locust
     LMCThreeVector LienardWiechert::GetMagneticField()
     {
         return fCurrentParticle.CalculateMagneticField(fFieldPosition);
+    }
+
+    locust::Particle LienardWiechert::GetRetardedParticle()
+    {
+        return fCurrentParticle;
     }
 
 

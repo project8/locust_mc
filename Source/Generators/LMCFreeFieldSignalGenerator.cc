@@ -127,15 +127,23 @@ namespace locust
         //Receiver Properties
         double tReceiverTime = t_old;
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
-        const double tLocustStep = 1. / (fAquisitionRate * 1e6 * aSignal->DecimationFactor());
+        const double tLocustStep = 1. / (fAcquisitionRate * 1e6 * aSignal->DecimationFactor());
 
         PatchAntenna *currentPatch;
+        unsigned tTotalPatchIndex = 0;
 
         for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
         {
             for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
             {
                 currentPatch = &allChannels[channelIndex][patchIndex]; 
+
+                fFieldSolver.SetFieldEvent(tReceiverTime, tTotalPatchIndex);
+                fFieldSolver.SolveFieldSolutions();
+
+                LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
+                LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
+                locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
 
 
                 //////////////////////////////////////////////
@@ -145,12 +153,13 @@ namespace locust
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
                 currentPatch->SetInstantaneousFrequency( tDopplerFrequency / (2. * LMCConst::Pi() ));
-                currentPatch->SetIncidentElectricField( tCurrentParticle.CalculateElectricField(currentPatch->GetPosition() ));
-                currentPatch->SetIncidentMagneticField( tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition() ));
+                currentPatch->SetIncidentElectricField( tRadiatedElectricField );
+                currentPatch->SetIncidentElectricField( tRadiatedMagneticField );
 
                 aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
                 //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
+                ++tTotalPatchIndex;
 
             } // z_position waveguide element stepping loop.
         } // nChannels loop.
