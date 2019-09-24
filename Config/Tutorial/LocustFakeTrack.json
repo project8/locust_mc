@@ -28,7 +28,7 @@
     
     "simulation":
     {
-        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust.egg",
+        "egg-filename": "/Users/psurukuc/P8/Apps/locust_mc/run_dir/locust_mc.egg",
         "n-records": 1,
         "n-channels": 1,
         "record-size": 4194304
@@ -44,6 +44,14 @@
     {
     "v-range": 1.0e-5,
     "v-offset": -0.5e-5
+    },
+    
+    "decimate-signal":
+    {
+    },
+    
+    "lpf-fft":
+    {
     }
 
 }

@@ -8,7 +8,28 @@ Run the	simulation like this:
 /path/to/LocustSim config=~/locust_mc/Config/Tutorial/LocustPhase1Template.json
 ```
 
-In the LocustPhase1Template.json file, the "generators" field should contain these generators (in order):  "kass-signal", "lpf-fft", "decimate-signal", "gaussian-noise", "digitizer".  The "gaussian-noise" generator can be omitted as needed.
+In the LocustPhase1Template.json file, the "generators" field should contain these generators (in order):  "kass-signal", "lpf-fft", "decimate-signal", "gaussian-noise", "digitizer".  The "gaussian-noise" generator can be omitted as needed.  For Locust 1.14 or greater, each generator listed in the "generators" field should have a code block to define its parameters, regardless of whether there are any parameters.  For example, generators "lpf-fft" and "decimate-signal" do not have parameters, but a section of the config file should look like this:
+```
+    "generators":
+    [          
+       "fake-track",
+       "lpf-fft",
+       "decimate-signal",
+       "gaussian-noise",
+       "digitizer"
+    ],
+
+    "lpf-fft":
+    {
+
+    },
+
+    "decimate-signal":
+    {
+
+    },
+
+```
 
 
 Check or configure the following Kassiopeia fields in Project8Phase1_WithRoot_Template.xml:

@@ -198,8 +198,8 @@ namespace locust
         {  // assume 50 ohm impedance
 
             //	    RealVoltage2 *= 0.25; // some loss at short.
-            aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
-            aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
+        	aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
+        	aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
 
         }
 
