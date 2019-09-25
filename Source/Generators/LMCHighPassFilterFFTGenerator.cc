@@ -104,11 +104,11 @@ namespace locust
                 // High Pass FilterFFT
                 for( unsigned index = 0; index < windowsize; ++index )
                 {
-                if ((index < windowsize/2. * CutoffFreq/FastNyquist)||(index > windowsize/2.))
-                  {
-                  FFTComplex[index][0] = 0.;
-                  FFTComplex[index][1] = 0.;
-                  }
+                	if ((index < windowsize/2. * CutoffFreq/FastNyquist)||(index > windowsize/2.))
+                	{
+                		FFTComplex[index][0] = 0.;
+                		FFTComplex[index][1] = 0.;
+                	}
                 }
 
                 fftw_execute(ReversePlan);

@@ -33,14 +33,9 @@ namespace locust
         fArrayRadius( 0. ),
         fNPatchesPerStrip( 0. ),
         fPatchSpacing( 0. ),
-        fPowerCombiner( 0 ),
-		fRJunction( 0.3 ),
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
-        phiLO_t(0.),
-        VoltagePhase_t {0.},
-		gfilter_filename("blank.txt"),
-        fFilter_resolution( 0. ),
+        fphiLO(0.),
         EFieldBuffer( 1 ),
         EPhaseBuffer( 1 ),
         EAmplitudeBuffer( 1 ),
@@ -48,8 +43,7 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
-        fFieldBufferSize( 50 ),
-        fFieldBufferMargin( 25 )
+        fFieldBufferSize( 50 )
 
     {
         fRequiredSignalState = Signal::kTime;
@@ -61,30 +55,32 @@ namespace locust
 
     bool PatchSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "filter-filename" ) )
-        {
-            gfilter_filename = aParam["filter-filename"]().as_string();
-        }
+    	if(!fReceiverFIRHandler.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    	}
 
-        if( aParam.has( "filter-resolution" ) )
-        {
-            fFilter_resolution = aParam["filter-resolution"]().as_double();
-        }
+    	if(!fPowerCombiner.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
+    	}
+
+    	if(!fHilbertTransform.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
+    	}
 
         if( aParam.has( "buffer-size" ) )
         {
-        	fFieldBufferSize = aParam["buffer-size"]().as_double();
-        }
-
-        if( aParam.has( "buffer-margin" ) )
-        {
-        	fFieldBufferMargin = aParam["buffer-margin"]().as_double();
+        	fFieldBufferSize = aParam["buffer-size"]().as_int();
+        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
         }
 
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
+
         if( aParam.has( "array-radius" ) )
         {
             fArrayRadius = aParam["array-radius"]().as_double();
@@ -105,28 +101,6 @@ namespace locust
         {
             fTextFileWriting = aParam["text-filewriting"]().as_bool();
         }
-        if( aParam.has( "feed" ) )
-          {
-    	if (aParam["feed"]().as_string() == "corporate")
-    	  fPowerCombiner = 0;  // default
-    	else if (aParam["feed"]().as_string() == "series")
-    	  fPowerCombiner = 1;
-    	else if (aParam["feed"]().as_string() == "one-quarter")
-    	  fPowerCombiner = 2;
-    	else if (aParam["feed"]().as_string()  == "seven-eighths")
-    	  fPowerCombiner = 3;
-    	else if (aParam["feed"]().as_string() == "nine-sixteenths")
-    	  fPowerCombiner = 4;
-    	else if (aParam["feed"]().as_string() ==  "voltage-divider")
-    	  fPowerCombiner = 5;
-    	else
-    	  fPowerCombiner = 0;  // default
-          }
-        if( aParam.has( "junction-resistance" ) )
-        {
-            fRJunction = aParam["junction-resistance"]().as_double();
-        }
-
 
         return true;
     }
@@ -151,13 +125,13 @@ namespace locust
 
 
 
-    static void WakeBeforeEvent()
+    bool PatchSignalGenerator::WakeBeforeEvent()
     {
         fPreEventCondition.notify_one();
-        return;
+        return true;
     }
 
-    static bool ReceivedKassReady()
+    bool PatchSignalGenerator::ReceivedKassReady()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         printf("LMC about to wait ..\n");
@@ -177,18 +151,8 @@ namespace locust
         return true;
     }
 
-    double GetMismatchFactor(double f)  
-    {
-        //f /= 2.*LMCConst::Pi();
-        // placeholder = 1 - mag(S11)
-        // fit to HFSS output
-        //double MismatchFactor = 1. - (-5.39e16 / ((f-25.9141e9)*(f-25.9141e9) + 7.23e16) + 0.88);
-        //    printf("dopplerfrequency is %f and mismatchfactor is %g\n", f, MismatchFactor);  getchar();
-        double MismatchFactor = 0.85;  // punt.
-        return MismatchFactor;
-    }
 
-    double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
+    double PatchSignalGenerator::GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
     {
         LMCThreeVector PatchNormalVector;
         PatchNormalVector.SetComponents(cos(PatchPhi), sin(PatchPhi), 0.0);
@@ -199,7 +163,7 @@ namespace locust
 
 
     // fields incident on patch.
-    void RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    void PatchSignalGenerator::RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
         double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
         LMCThreeVector PatchPolarizationVector;
@@ -213,89 +177,44 @@ namespace locust
     }
 
 
-    double* PatchSignalGenerator::GetFIRFilter(int nskips)
+
+    double PatchSignalGenerator::GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch)
     {
 
-    FILE *fp;
-    double *filterarray = new double[1000];
-    double filter;
-    double index;
-    fp = fopen(gfilter_filename.c_str(),"r");
-    int count = 0;
+    	double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
+    	double HilbertMag = 0.;
+    	double HilbertPhase = 0.;
+    	double convolution = 0.0;
 
-    for (int i=0; i<1000; i++)
-      filterarray[i] = -99.;
+    	if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
+    	{
 
+    		double* HilbertMagPhaseMean = new double[3];
+    		HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch]);
+    		HilbertMag = HilbertMagPhaseMean[0];
+    		HilbertPhase = HilbertMagPhaseMean[1];
+    		delete[] HilbertMagPhaseMean;
 
+    		for (int i=0; i < nfilterbins; i++)  // populate filter with field.
+    		{
+    			HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
+    			PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
+    			PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+    		}
 
-      while (!feof(fp))
-        {
-        fscanf(fp, "%lf %lf\n", &index, &filter);
-        if (count%nskips==0) filterarray[count/nskips] = filter;
-    //    printf("filter %d is %g\n", count, filterarray[count]);
-        count += 1;
-        }
+    		convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
 
-    fclose(fp);
-    return filterarray;
-
-    }
-
-    int PatchSignalGenerator::GetNFilterBins(double* filterarray)
-    {
-    int nbins = 0;
-    for (int i=0; i<1000; i++)
-      {
-      if (filterarray[i]>0.) nbins += 1;
-      }
-    return nbins;
-    }
-
-
-    double PatchSignalGenerator::GetFIRSample(double* filterarray, int nfilterbins, double dtfilter, unsigned channel, unsigned patch, double AcquisitionRate)
-    {
-
-    double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
-    double HilbertMag = 0.;
-    double HilbertPhase = 0.;
-    double convolution = 0.0;
-
-    if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
-    {
-    	HilbertTransform aHilbertTransform;
-
-    	double* HilbertMagPhaseMean = new double[3];
-        HilbertMagPhaseMean = aHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch], fFieldBufferMargin, AcquisitionRate);
-        HilbertMag = HilbertMagPhaseMean[0];
-        HilbertPhase = HilbertMagPhaseMean[1];
-        delete[] HilbertMagPhaseMean;
-
-   	for (int i=0; i < nfilterbins; i++)  // populate filter with field.
-      {
-    	  HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
-    	  PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
-    	  PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-      }
-
-    for (int j=0; j<nfilterbins; j++)  // sum products in filter.
-      {
-    	  convolution += filterarray[j]*PatchFIRBuffer[channel*fNPatchesPerStrip+patch].at(j);
-      }
-
-    PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
-    return convolution;
-    }
-    else return 0.;
-
-//    return EFieldBuffer[channel*fNPatchesPerStrip+patch].front(); // debug
-//    return HilbertMag*cos(HilbertPhase);  // debug
+    		PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
+    		return convolution;
+    	}
+    	else return 0.;
 
     }
 
 
 
     // EField cross pol with aoi dot product, at patch.
-    double GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    double PatchSignalGenerator::GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
     {
         double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
         LMCThreeVector PatchPolarizationVector = currentPatch->GetPolarizationDirection();
@@ -305,90 +224,15 @@ namespace locust
     }
 
 
-    // voltage amplitude induced at patch.
-    double GetVoltageAmplitude(LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+
+    void PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
-        double AntennaFactor = 1./400.;
-        double MismatchFactor = GetMismatchFactor(DopplerFrequency);
-        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
-        LMCThreeVector PatchPolarizationVector;
-        PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
-        double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Dot(PatchPolarizationVector) * MismatchFactor * AOIFactor);
-        //double VoltageAmplitude = fabs( AntennaFactor * IncidentElectricField.Magnitude()); // test case.  
-
-        //    if (VoltageAmplitude>0.) {printf("IncidentElectricField.Dot(PatchPolarizationVector) is %g and VoltageAmplitude is %g\n", IncidentElectricField.Dot(PatchPolarizationVector), VoltageAmplitude); getchar();}
-        return VoltageAmplitude;
-    }
-
-
-    void PatchSignalGenerator::AddOneFIRVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned channelIndex, unsigned patchIndex)
-    {
-
-    	PowerCombiner aPowerCombiner;
-
-        if (fPowerCombiner == 0 ) //corporate feed, for testing
-          {
-    	    VoltageFIRSample *= aPowerCombiner.GetCorporateVoltageDamping();
-          }
-
-        if (fPowerCombiner == 3) // seven-eighths power combining, center fed strip
-          {
-    	    VoltageFIRSample *= aPowerCombiner.GetSevenEighthsVoltageDamping(fNPatchesPerStrip, patchIndex);
-          }
-        if (fPowerCombiner == 5)
-          {
-            VoltageFIRSample *= aPowerCombiner.GetVoltageDividerWeight(fRJunction, 1.0, 10.e6, fNPatchesPerStrip, patchIndex);
-          }
-
-    	aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][0] += 2.*VoltageFIRSample * sin(phi_LO);
-        aSignal->LongSignalTimeComplex()[IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front()][1] += 2.*VoltageFIRSample * cos(phi_LO);
-
-
-    }
-
-
-    // z-index ranges from 0 to npatches-per-strip-1.
-    void PatchSignalGenerator::AddOnePatchVoltageToStripSum(Signal* aSignal, double VoltageAmplitude, double VoltagePhase, double phi_LO, unsigned channelindex, unsigned z_index, double DopplerFrequency)
-    {
-    	PowerCombiner aPowerCombiner;
-        if (fPowerCombiner == 1)  // series feed
-        {
-        	//lossless series feed with amp at one end:
-        	//VoltagePhase += aPowerCombiner.GetLinePhaseCorr(z_index, DopplerFrequency);
-        }
-        if (fPowerCombiner == 2) // quadrature feed
-        {
-        	// assume 2PI delay between junctions, so we don't calculated phase mismatches.
-        	// instead calculate damping on voltage amplitude:
-            int njunctions = (int)fabs(z_index - fNPatchesPerStrip/2);
-           // VoltageAmplitude *= aPowerCombiner.GetVoltageDamping(fNPatchesPerStrip, z_index);
-        }
-
-//	        if (VoltageAmplitude>0.) {printf("voltageamplitude is %g\n", VoltageAmplitude); getchar();}
-        aSignal->LongSignalTimeComplex()[channelindex][0] += VoltageAmplitude * cos(VoltagePhase - phi_LO);
-        aSignal->LongSignalTimeComplex()[channelindex][1] += VoltageAmplitude * sin(VoltagePhase - phi_LO);
-	//        if (VoltageAmplitude>0.) {printf("summedvoltageamplitude is %g\n", aSignal->LongSignalTimeComplex()[channelindex][0]); getchar();}                           
-
-
-    }
-
-
-    void* PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter)
-    {
-        if (PreEventCounter > 0)  // new event starting.                                                    
-        {
-            // initialize patch voltage phases.                                                             
-            for (unsigned i=0; i < sizeof(VoltagePhase_t)/sizeof(VoltagePhase_t[0]); i++)
-            {
-                VoltagePhase_t[i] = {0.};
-            }
-        }
 
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
 
         //Receiver Properties
-        phiLO_t += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         double tReceiverTime = t_old;
 
         PatchAntenna *currentPatch;
@@ -409,49 +253,35 @@ namespace locust
                 LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
                 locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
 
-                //////////////////////////////////////////////
                 LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
                 double tVelZ = tCurrentParticle.GetVelocity(true).Z();
                 double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
 
-                if (VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex]>0.)  // not first sample                                                        
-                {
-                    VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-                }
-                else  // if this is the first light at this patch, the voltage phase doesn't advance for the full dt.
-                {              
-                    VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex] += tDopplerFrequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()); //tRetardedTime is the wrong quantity here
-                    //printf("tDopplerFrequency is %g\n", tDopplerFrequency); getchar();
-                }      
-
  		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
                 if (fTextFileWriting==1) RecordIncidentFields(fp, tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())) , PatchPhi, tDopplerFrequency);
 
- 	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, phiLO_t, index, channelIndex, patchIndex, 0);
- 	            double VoltageFIRSample = GetFIRSample(filterarray, nfilterbins, dtfilter, channelIndex, patchIndex, fAcquisitionRate*aSignal->DecimationFactor());
- 	            AddOneFIRVoltageToStripSum(aSignal, VoltageFIRSample, phiLO_t, channelIndex, patchIndex);
+ 	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
+ 	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
+ 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
                 PopBuffers(channelIndex, patchIndex);
-
-// 	            AddOnePatchVoltageToStripSum(aSignal, tVoltageAmplitude, VoltagePhase_t[channelIndex*fNPatchesPerStrip+patchIndex], phiLO_t, sampleIndex, patchIndex, tDopplerFrequency);
 
             } // patch loop
 
         } // channels loop
 
+
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-        return 0;
     }
 
-    void PatchSignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch, unsigned dtauConvolutionTime)
+    void PatchSignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch)
     {
-    EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(EFieldValue);
-    EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(DopplerFrequency/2./LMCConst::Pi());
-    LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
-    IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
-
+    	EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(EFieldValue);
+    	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(DopplerFrequency/2./LMCConst::Pi());
+    	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
+    	IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
     }
 
 
@@ -465,7 +295,6 @@ namespace locust
     	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-
     	EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
@@ -479,48 +308,45 @@ namespace locust
     void PatchSignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
 
-    FieldBuffer aFieldBuffer;
-
-    EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-
-    PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
-
+    	FieldBuffer aFieldBuffer;
+    	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+    	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+    	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+    	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+    	PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
 
     }
 
 
     void PatchSignalGenerator::CleanupBuffers()
     {
-    FieldBuffer aFieldBuffer;
-    EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-    EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-    LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-    IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
+    	FieldBuffer aFieldBuffer;
+    	EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    	LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
 
     }
 
 
-  double RotateZ(int component, double angle, double x, double y)
-    {
-      double newcomponent = 0.;
-      if (component==0)
-        {
-        newcomponent = x*cos(angle) - y*sin(angle);
-        }
-      if (component==1)
-        {
-        newcomponent = x*sin(angle) + y*cos(angle);
-        }
 
-      return newcomponent;
+    bool PatchSignalGenerator::InitializePowerCombining()
+    {
+    	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
+    	fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip);
+    	return true;
+
     }
 
 
-    void PatchSignalGenerator::InitializePatchArray()
+    bool PatchSignalGenerator::InitializePatchArray()
     {
+
+        if(!fReceiverFIRHandler.ReadFIRFile())
+        {
+            return false;
+        }
+
 
         const unsigned nChannels = fNChannels;
         const int nReceivers = fNPatchesPerStrip;
@@ -545,13 +371,14 @@ namespace locust
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
-                modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
+                modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
            
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
                 fFieldSolver.AddFieldPoint(modelPatch.GetPosition());
             }
         }
+        return true;
     }
 
 
@@ -562,7 +389,7 @@ namespace locust
         FILE *fp = fopen("incidentfields.txt", "w");
 
         InitializePatchArray();
-
+        InitializePowerCombining();
 
         //n samples for event spacing.
         int PreEventCounter = 0;
@@ -572,11 +399,9 @@ namespace locust
         std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
-        double* filterarray = GetFIRFilter(1);
-        unsigned nfilterbins = GetNFilterBins(filterarray);
+        int nfilterbins = fReceiverFIRHandler.GetFilterSize();
+        double dtfilter = fReceiverFIRHandler.GetFilterResolution();
         unsigned nfieldbufferbins = fFieldBufferSize;
-        double dtfilter = fFilter_resolution;
-        unsigned dtauConvolutionTime = 0;
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
@@ -609,7 +434,7 @@ namespace locust
                     if (fEventInProgress)
                     {
                         //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(fp, PreEventCounter, index, aSignal, filterarray, nfilterbins, dtfilter);
+                        DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
                         PreEventCounter = 0; // reset
                     }
                     tLock.unlock();
@@ -623,8 +448,6 @@ namespace locust
         CleanupBuffers();
         fRunInProgress = false;  // tell Kassiopeia to finish.
         fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-        //if (fEventInProgress)
-        //  if (ReceivedKassReady())
         WakeBeforeEvent();
         Kassiopeia.join();
 

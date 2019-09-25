@@ -10,6 +10,7 @@
 
 #include "LMCParticle.hh"
 #include "LMCThreeVector.hh"
+#include <algorithm>
 #include <vector>
 
 namespace locust

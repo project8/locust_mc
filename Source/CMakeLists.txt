@@ -33,15 +33,11 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCSimulationController.hh
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
-    Core/LMCPowerCombiner.hh
-    Core/LMCReceiver.hh
-    Core/LMCPatchAntenna.hh
-    Core/LMCChannel.hh
+    Core/LMCFIRHandler.hh
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCTestSignalGenerator.hh
-    Generators/LMCTestFIRFilterGenerator.hh
     Generators/LMCDecimateSignalGenerator.hh
     Generators/LMCLowPassFilterFFTGenerator.hh
     Generators/LMCHighPassFilterFFTGenerator.hh
@@ -50,13 +46,15 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.hh
 
-    Transmitters/LMCFieldEstimator.hh
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transforms/LMCHilbertTransform.hh
-
-#    Generators/LMCBasebandTrackGenerator.hh
-#    Generators/LMCTrappedElectronGenerator.hh
+    
+    RxComponents/LMCPowerCombiner.hh
+    RxComponents/LMCReceiver.hh
+    RxComponents/LMCPatchAntenna.hh
+    RxComponents/LMCChannel.hh
+    
 )
 
 
@@ -70,15 +68,11 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCSimulationController.cc
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
-    Core/LMCPatchAntenna.cc
-    Core/LMCChannel.cc
-    Core/LMCPowerCombiner.cc
-    Core/LMCReceiver.cc
+    Core/LMCFIRHandler.cc
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCTestSignalGenerator.cc
-    Generators/LMCTestFIRFilterGenerator.cc
     Generators/LMCDecimateSignalGenerator.cc
     Generators/LMCLowPassFilterFFTGenerator.cc
     Generators/LMCHighPassFilterFFTGenerator.cc
@@ -87,13 +81,15 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.cc
 
-    Transmitters/LMCFieldEstimator.cc
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
     Transforms/LMCHilbertTransform.cc
+    
+    RxComponents/LMCPowerCombiner.cc
+    RxComponents/LMCReceiver.cc
+    RxComponents/LMCPatchAntenna.cc
+    RxComponents/LMCChannel.cc
 
-#    Generators/LMCBasebandTrackGenerator.cc
-#    Generators/LMCTrappedElectronGenerator.cc
 )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
