@@ -259,13 +259,15 @@ namespace locust
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
 
- 		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
-                if (fTextFileWriting==1) RecordIncidentFields(fp, tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())) , PatchPhi, tDopplerFrequency);
+ 		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, tRadiatedMagneticField, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField) , PatchPhi, tDopplerFrequency);
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
  	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
                 PopBuffers(channelIndex, patchIndex);
+
+                ++tTotalPatchIndex;
 
             } // patch loop
 

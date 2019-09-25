@@ -153,10 +153,9 @@ namespace locust
 
                 currentPatch->SetInstantaneousFrequency( tDopplerFrequency / (2. * LMCConst::Pi() ));
                 currentPatch->SetIncidentElectricField( tRadiatedElectricField );
-                currentPatch->SetIncidentElectricField( tRadiatedMagneticField );
+                currentPatch->SetIncidentMagneticField( tRadiatedMagneticField );
 
                 aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
-                std::cout<<currentPatch->GetVoltage()<<std::endl;
                 //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
                 ++tTotalPatchIndex;
