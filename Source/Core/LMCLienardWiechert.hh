@@ -33,9 +33,9 @@ namespace locust
             void SetFieldEvent(const double aTime, const unsigned aFieldPointIndex);
             void SolveFieldSolutions();
 
-            LMCThreeVector GetElectricField();
-            LMCThreeVector GetMagneticField();
-            locust::Particle GetRetardedParticle();
+            LMCThreeVector GetElectricField( ) const;
+            LMCThreeVector GetMagneticField() const;
+            locust::Particle GetRetardedParticle() const;
 
         private:
             void SetKassiopeiaTimeStep();

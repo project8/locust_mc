@@ -69,21 +69,26 @@ namespace locust
     }
 
 
-    LMCThreeVector LienardWiechert::GetElectricField()
+    LMCThreeVector LienardWiechert::GetElectricField() const
     {
-        return fCurrentParticle.CalculateElectricField(fFieldPosition);
+        if(IsInLightCone())
+            return fCurrentParticle.CalculateElectricField(fFieldPosition);
+        else
+            return LMCThreeVector(0,0,0);
     }
 
-    LMCThreeVector LienardWiechert::GetMagneticField()
+    LMCThreeVector LienardWiechert::GetMagneticField() const
     {
-        return fCurrentParticle.CalculateMagneticField(fFieldPosition);
+        if(IsInLightCone())
+            return fCurrentParticle.CalculateMagneticField(fFieldPosition);
+        else
+            return LMCThreeVector(0,0,0);
     }
 
-    locust::Particle LienardWiechert::GetRetardedParticle()
+    locust::Particle LienardWiechert::GetRetardedParticle() const
     {
         return fCurrentParticle;
     }
-
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
     unsigned LienardWiechert::FindClosestParticle(double tNew) const

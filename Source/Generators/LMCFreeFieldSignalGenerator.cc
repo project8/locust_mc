@@ -145,7 +145,6 @@ namespace locust
                 LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
                 locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
 
-
                 //////////////////////////////////////////////
                 LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
                 double tVelZ = tCurrentParticle.GetVelocity(true).Z();
@@ -157,6 +156,7 @@ namespace locust
                 currentPatch->SetIncidentElectricField( tRadiatedMagneticField );
 
                 aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
+                std::cout<<currentPatch->GetVoltage()<<std::endl;
                 //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
                 ++tTotalPatchIndex;

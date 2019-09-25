@@ -15,6 +15,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
+#include "LMCLienardWiechert.hh"
 
 
 namespace locust
@@ -70,6 +71,7 @@ namespace locust
             std::string gfilter_filename;
             unsigned fFieldBufferSize;
             unsigned fFieldBufferMargin;
+            LienardWiechert fFieldSolver;
 
             double* GetFIRFilter(int nskips);
             int GetNFilterBins(double* filterarray);
@@ -93,13 +95,8 @@ namespace locust
             void* DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, double* filterarray, unsigned nfilterbins, double dtfilter);
             void InitializePatchArray();
 
-            int FindNode(double tNew) const;
-            double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
-
-
             double phiLO_t; // voltage phase of LO in radians;
             double VoltagePhase_t[10000];
-
     };
 
 } /* namespace locust */
