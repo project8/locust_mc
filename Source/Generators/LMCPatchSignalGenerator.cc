@@ -32,6 +32,7 @@ namespace locust
         fLO_Frequency( 0.),
         fArrayRadius( 0. ),
         fNPatchesPerStrip( 0. ),
+		fZShiftArray( 0. ),
         fPatchSpacing( 0. ),
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
@@ -92,6 +93,10 @@ namespace locust
         if( aParam.has( "patch-spacing" ) )
         {
             fPatchSpacing = aParam["patch-spacing"]().as_double();
+        }
+        if( aParam.has( "zshift-array" ) )
+        {
+            fZShiftArray = aParam["zshift-array"]().as_double();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -370,7 +375,7 @@ namespace locust
 
             for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
             {
-                zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
+                zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
                 modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
