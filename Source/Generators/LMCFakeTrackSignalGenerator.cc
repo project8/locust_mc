@@ -632,7 +632,7 @@ namespace locust
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
-        aTrack.TrackPower = fSignalPower;
+        aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFreq, fPitch),2.);
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
