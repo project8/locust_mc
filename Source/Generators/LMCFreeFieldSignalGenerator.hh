@@ -13,6 +13,7 @@
 
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
+#include "LMCLienardWiechert.hh"
 
 namespace locust
 {
@@ -51,7 +52,6 @@ namespace locust
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
 
-            std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
             double fArrayRadius;
             int fNPatchesPerStrip;
@@ -59,14 +59,13 @@ namespace locust
             bool fCorporateFeed;
             bool fPileupMode; //simulate tracks in sequence or as piling up?
             int fPileupSeed; 
+            LienardWiechert fFieldSolver;
 
             std::string gxml_filename;
 
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
             void InitializePatchArray();
-
-            int FindNode(double tNew) const;
 
     };
 
