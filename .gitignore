@@ -29,6 +29,9 @@ install/*
 .project
 .cproject
 
+# VSCode
+.vscode/
+
 # GEdit
 *~
 /Default/
