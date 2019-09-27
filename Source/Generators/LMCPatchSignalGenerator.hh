@@ -15,6 +15,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
+#include "LMCLienardWiechert.hh"
 #include "LMCFIRHandler.hh"
 
 
@@ -55,10 +56,11 @@ namespace locust
 
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
-            double fLO_Frequency;  // typically defined by a parameter in json file.
-            double fArrayRadius;  // from json file.
-            int fNPatchesPerStrip; // from json file.
-            double fPatchSpacing; // from json file.
+            double fLO_Frequency;
+            double fArrayRadius;
+            int fNPatchesPerStrip;
+            double fZShiftArray;
+            double fPatchSpacing;
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
@@ -92,9 +94,7 @@ namespace locust
             FIRReceiverHandler fReceiverFIRHandler;
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
-
-            int FindNode(double tNew) const;
-            double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
+            LienardWiechert fFieldSolver;
 
     };
 
