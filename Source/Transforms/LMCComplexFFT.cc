@@ -12,7 +12,11 @@ namespace locust
     ComplexFFT::ComplexFFT():
     IsInitialized(false),
     fTransformFlag("MEASURE"),
-    fWisdomFilename("wisdom_complexfft.fftw3")
+    fWisdomFilename("wisdom_complexfft.fftw3"),
+    fInputArray(NULL),
+    fOutputArray(NULL),
+    fForwardPlan(),
+    fReversePlan()
     {
     }
     
@@ -29,8 +33,8 @@ namespace locust
             fftw_free(fOutputArray);
             fOutputArray = NULL;
         }
-        fftw_destroy_plan(ReversePlan);
-        fftw_destroy_plan(ForwardPlan);
+        fftw_destroy_plan(fReversePlan);
+        fftw_destroy_plan(fForwardPlan);
     }
     
     bool ComplexFFT::Configure(const scarab::param_node& aParam)
@@ -64,25 +68,27 @@ namespace locust
         return true;
     }
     
-    bool ComplexFFT::ForwardFFT()
+    bool ComplexFFT::ForwardFFT(int size, fftw_complex* in, fftw_complex* out)
     {
         if(IsInitialized) return false;
         
-        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
-        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
         
-        ForwardPlan = fftw_plan_dft_1d(fSize,fInputArray,fOutputArray,FFTW_FORWARD,fTransform);
+        fForwardPlan = fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_FORWARD,fTransform);
+        fftw_execute_dft(fForwardPlan,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out));
         return true;
     }
     
-    bool ComplexFFT::ReverseFFT()
+    bool ComplexFFT::ReverseFFT(int size, fftw_complex* in, fftw_complex* out)
     {
         if(IsInitialized) return false;
         
-        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
-        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
         
-        ReversePlan = fftw_plan_dft_1d(fSize,fInputArray,fOutputArray,FFTW_BACKWARD,fTransform);
+        fReversePlan = fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_BACKWARD,fTransform);
+        fftw_execute_dft(fReversePlan,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out));
         return true;
     }
 

@@ -11,6 +11,8 @@
 #include <fftw3.h>
 #include <math.h>
 #include <string>
+#include <complex>
+#include <boost/numeric/ublas/vector.hpp>
 
 #include "param.hh"
 
@@ -41,15 +43,15 @@ namespace locust
         virtual ~ComplexFFT();
         bool Configure( const scarab::param_node& aNode);
         
-        bool ReverseFFT();
-        bool ForwardFFT();
+        bool ForwardFFT(int, fftw_complex*, fftw_complex*);
+        bool ReverseFFT(int, fftw_complex*, fftw_complex*);
         
     private:
         fftw_complex* fInputArray;
         fftw_complex* fOutputArray;
         
-        fftw_plan ReversePlan;
-        fftw_plan ForwardPlan;
+        fftw_plan fReversePlan;
+        fftw_plan fForwardPlan;
         
         enum Transform
         {
@@ -62,7 +64,6 @@ namespace locust
         bool fUseWisdom;
         std::string fWisdomFilename;
         bool IsInitialized;
-        int fSize;
     };
     
 } /* namespace locust */
