@@ -18,6 +18,17 @@ namespace locust
     
     ComplexFFT::~ComplexFFT()
     {
+        if (fInputArray != NULL)
+        {
+            fftw_free(fInputArray);
+            fInputArray = NULL;
+        }
+        
+        if (fOutputArray != NULL)
+        {
+            fftw_free(fOutputArray);
+            fOutputArray = NULL;
+        }
         fftw_destroy_plan(ReversePlan);
         fftw_destroy_plan(ForwardPlan);
     }
