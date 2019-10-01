@@ -10,8 +10,9 @@
 
 #include <fftw3.h>
 #include <math.h>
-#include "param.hh"
+#include <string>
 
+#include "param.hh"
 
 namespace locust
 {
@@ -24,7 +25,7 @@ namespace locust
      By default uses
      
      Available configuration options:
-     -"Transform-flag": string -- The flags argument is FFTW_MEASURE (default) or FFTW_ESTIMATE
+     -"transform-flag": string -- The flags argument is FFTW_MEASURE (default) or FFTW_ESTIMATE
      -"use-wisdom": bool -- Option to use FFTW wisdom file if it already exists to improve FFT performance
      -"wisdom-filename": string -- The wisdom file name to use
      
@@ -37,20 +38,31 @@ namespace locust
         
     public:
         ComplexFFT();
-        virtual ComplexFFT();
+        virtual ~ComplexFFT();
         bool Configure( const scarab::param_node& aNode);
         
-        enum Domain
-        {
-            kNone,
-            kFrequencyDomain,
-            kTimeDomain
-        };
+        bool ReverseFFT();
+        bool ForwardFFT();
         
     private:
+        fftw_complex* fInputArray;
+        fftw_complex* fOutputArray;
         
-        fftw_complex* ReverseTransform();
-        fftw_complex* ForwardTransform();
+        fftw_plan ReversePlan;
+        fftw_plan ForwardPlan;
+        
+        enum Transform
+        {
+            measure=FFTW_MEASURE,
+            estimate=FFTW_ESTIMATE
+        };
+        Transform fTransform;
+        
+        std::string fTransformFlag;
+        bool fUseWisdom;
+        std::string fWisdomFilename;
+        bool IsInitialized;
+        int fSize;
     };
     
 } /* namespace locust */

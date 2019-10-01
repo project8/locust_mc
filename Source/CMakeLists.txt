@@ -48,8 +48,10 @@ set( LOCUST_MC_HEADER_FILES
 
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
-    Transforms/LMCHilbertTransform.hh
     
+    Transforms/LMCHilbertTransform.hh
+    Transforms/LMCComplexFFT.hh    
+
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCReceiver.hh
     RxComponents/LMCPatchAntenna.hh
@@ -83,7 +85,9 @@ set( LOCUST_MC_SOURCE_FILES
 
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
+
     Transforms/LMCHilbertTransform.cc
+    Transforms/LMCComplexFFT.cc    
     
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCReceiver.cc

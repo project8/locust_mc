@@ -9,28 +9,70 @@
 
 namespace locust
 {
-    ComplexFFT::ComplexFFT()
+    ComplexFFT::ComplexFFT():
+    IsInitialized(false),
+    fTransformFlag("MEASURE"),
+    fWisdomFilename("wisdom_complexfft.fftw3")
     {
     }
-
+    
     ComplexFFT::~ComplexFFT()
     {
+        fftw_destroy_plan(ReversePlan);
+        fftw_destroy_plan(ForwardPlan);
     }
-
+    
     bool ComplexFFT::Configure(const scarab::param_node& aParam)
     {
-    	if( aParam.has("Transform-flag"))
+        if( aParam.has("transform-flag"))
         {
-    		fbufferMargin=aParam["Transform-flag"]().as_bool();
+            fTransformFlag=aParam["transform-flag"]().as_bool();
         }
-       	if(aParam.has("use-wisdom"))
+        if(aParam.has("use-wisdom"))
         {
-       		fbufferSize=aParam["use-wisdom"]().as_bool();
+            fUseWisdom=aParam["use-wisdom"]().as_bool();
         }
         if(aParam.has("wisdom-filename"))
         {
-            fbufferSize=aParam["wisdom-filename"]().as_string();
+            fWisdomFilename=aParam["wisdom-filename"]().as_string();
         }
-    	return true;
+        
+        if(fTransformFlag.compare("MEASURE"))
+        {
+            fTransform=Transform::measure;
+        }
+        else if(fTransformFlag.compare("ESTIMATE"))
+        {
+            fTransform=Transform::estimate;
+        }
+        else
+        {
+            return false;
+        }
+        IsInitialized=true;
+        return true;
     }
+    
+    bool ComplexFFT::ForwardFFT()
+    {
+        if(IsInitialized) return false;
+        
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        
+        ForwardPlan = fftw_plan_dft_1d(fSize,fInputArray,fOutputArray,FFTW_FORWARD,fTransform);
+        return true;
+    }
+    
+    bool ComplexFFT::ReverseFFT()
+    {
+        if(IsInitialized) return false;
+        
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        
+        ReversePlan = fftw_plan_dft_1d(fSize,fInputArray,fOutputArray,FFTW_BACKWARD,fTransform);
+        return true;
+    }
+
 } /* namespace locust */
