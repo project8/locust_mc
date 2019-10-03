@@ -27,7 +27,7 @@ namespace locust
         Generator( aName ),
         fLO_Frequency( 0.),
         gxml_filename("blank.xml"),
-        gpitchangle_filename("blank.xml"),
+        gpitchangle_filename("blank.txt"),
 		fTruth( 0 ),
         phi_t1(0.),
         phi_t2(0.),
@@ -53,6 +53,10 @@ namespace locust
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
+        }
+
+        if( aParam.has( "pitchangle-filename" ) )
+        {
             gpitchangle_filename = aParam["pitchangle-filename"]().as_string();
         }
 
@@ -114,7 +118,6 @@ namespace locust
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
     {
 
-        double gain=1.;  //voltage gain
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
         double tDopplerFrequencyShort = 0.;  
         double RealVoltage1 = 0.;
@@ -131,14 +134,10 @@ namespace locust
             tCutOffFrequency = LMCConst::C() * LMCConst::Pi() / 10.668e-3; // a in m
         }
 
-	int currentIndex = FindNode(t_old);
+        int currentIndex = FindNode(t_old);
         locust::Particle tParticle = fParticleHistory[currentIndex];
         tParticle.Interpolate(t_old);
 	
-
-        RunLengthCalculator RunLengthCalculator1;
-
-
         //Set as positive, even though really negative for the particle.
         double tLarmorPower = tParticle.GetLarmorPower();
         double tCyclotronFrequency = tParticle.GetCyclotronFrequency()/2./LMCConst::Pi();
@@ -148,12 +147,8 @@ namespace locust
         double tGroupVelocity = LMCConst::C() * sqrt( 1. - pow(tCutOffFrequency/( 2.*LMCConst::Pi()*tCyclotronFrequency  ), 2.) );
         double tGammaZ = 1. / sqrt( 1. - pow(tVelocityZ / tGroupVelocity , 2. ) ); //generalization of lorentz factor to XXX mode waveguides, using only axial velocity of electrons
 
-
-//standard lines.  old solutions.
         tDopplerFrequencyAntenna = tCyclotronFrequency * tGammaZ *( 1. - tVelocityZ / tGroupVelocity);
         tDopplerFrequencyShort = tCyclotronFrequency *  tGammaZ *( 1. + tVelocityZ / tGroupVelocity);
-// end old solutions.
-
 
         double tPositionZ = tParticle.GetPosition().Z();
 
@@ -166,7 +161,7 @@ namespace locust
             phi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA) /
                     (tGroupVelocity / tDopplerFrequencyShort);  // phase of reflected field at antenna.
 
-            EventStartTime = (double)index/RunLengthCalculator1.GetAcquisitionRate()/1.e6/aSignal->DecimationFactor();
+            EventStartTime = (double)index/fAcquisitionRate/1.e6/aSignal->DecimationFactor();
             EventToFile = false;
         }
 
@@ -190,31 +185,27 @@ namespace locust
         {
             RealVoltage2 *= 0.03;  // replace short with terminator.                        
             ImagVoltage2 *= 0.03;  // replace short with terminator.                                          
-            aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
-            aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
+            aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (RealVoltage1 + RealVoltage2);
+            aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.)*TE11ModeExcitation() * sqrt(tLarmorPower/2.) * (ImagVoltage1 + ImagVoltage2);
         }
         else if (Project8Phase == 1)
-        {  // assume 50 ohm impedance
-
+        {
             //	    RealVoltage2 *= 0.25; // some loss at short.
-        	aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
-        	aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
-
+        	aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
+        	aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
         }
 
+        // test print statements:
 /*
-                                printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
-                                printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
-                                printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
-                                printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
-                                "  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
-                                index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-//                    getchar();
-
-
-        printf("fLO_Frequency is %g\n", fLO_Frequency); getchar();
+        printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
+        printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
+        printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
+        printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
+        	"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
+      	  	index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
+        printf("fLO_Frequency is %g\n", fLO_Frequency);
+        getchar();
 */
-
 
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 
