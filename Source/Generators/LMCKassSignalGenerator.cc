@@ -29,11 +29,12 @@ namespace locust
         gxml_filename("blank.xml"),
         gpitchangle_filename("blank.txt"),
 		fTruth( 0 ),
-        phi_t1(0.),
-        phi_t2(0.),
-        phiLO_t(0.),
-        EventStartTime(-99.),
-        EventToFile(0)
+        fPhi_t1(0.),
+        fPhi_t2(0.),
+        fPhiLO_t(0.),
+		fNPreEventSamples( 1500000 ),
+        fEventStartTime(-99.),
+        fEventToFile(0)
 
     {
         fRequiredSignalState = Signal::kTime;
@@ -155,31 +156,31 @@ namespace locust
         if (PreEventCounter > 0)
         {
             // initialize phases.
-            phi_t1 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
+            fPhi_t1 = 2.*LMCConst::Pi()*(CENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
             //            printf("center_to_antenna is %f and tPositionZ is %f\n", CENTER_TO_ANTENNA, tPositionZ);
 
-            phi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA) /
+            fPhi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(CENTER_TO_SHORT + CENTER_TO_ANTENNA) /
                     (tGroupVelocity / tDopplerFrequencyShort);  // phase of reflected field at antenna.
 
-            EventStartTime = (double)index/fAcquisitionRate/1.e6/aSignal->DecimationFactor();
-            EventToFile = false;
+            fEventStartTime = (double)index/fAcquisitionRate/1.e6/aSignal->DecimationFactor();
+            fEventToFile = false;
         }
 
 
-        if ((tPitchAngle>0.)&&(EventToFile==false))
+        if ((tPitchAngle>0.)&&(fEventToFile==false))
         {
-            fprintf(fp, "%10.4g   %g\n", EventStartTime, tPitchAngle);
-            EventToFile = true;
+            fprintf(fp, "%10.4g   %g\n", fEventStartTime, tPitchAngle);
+            fEventToFile = true;
         }
 
 
-        phi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        phi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        phiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        RealVoltage1 = cos( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t ));  // antenna
-        ImagVoltage1 = sin( phi_t1 - phiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
-        RealVoltage2 = cos( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t ));  // short
-        ImagVoltage2 = sin( phi_t2 - phiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
+        fPhi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fPhi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fPhiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        RealVoltage1 = cos( fPhi_t1 - fPhiLO_t ); // + cos( phi_t1 + phiLO_t ));  // antenna
+        ImagVoltage1 = sin( fPhi_t1 - fPhiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
+        RealVoltage2 = cos( fPhi_t2 - fPhiLO_t ); // + cos( phi_t2 + phiLO_t ));  // short
+        ImagVoltage2 = sin( fPhi_t2 - fPhiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
 
         if (Project8Phase == 2)
         {
@@ -261,20 +262,15 @@ namespace locust
 
     bool KassSignalGenerator::DoGenerate( Signal* aSignal )
     {
-        //n samples for event spacing.
         int PreEventCounter = 0;
-        int NPreEventSamples = 1500000;
         fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-        //FILE *fp = fopen("timing.txt","wb");  // time stamp checking.
-        //fprintf(fp, "testing\n");
         FILE *fp = fopen(gpitchangle_filename.c_str(), "w");
 
 
         std::thread Kassiopeia (KassiopeiaInit,gxml_filename);     // spawn new thread
         fRunInProgress = true;
         fKassEventReady = false;
-        int StartEventTimer = 0;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
@@ -288,12 +284,11 @@ namespace locust
             {
                 PreEventCounter += 1;
 
-                if (((!fTruth)&&(PreEventCounter > NPreEventSamples))||((fTruth)&&(PreEventCounter > NPreEventSamples)&&(index%(8192*aSignal->DecimationFactor())==0)  ))// finished pre-samples.  Start event.
+                if (((!fTruth)&&(PreEventCounter > fNPreEventSamples))||((fTruth)&&(PreEventCounter > fNPreEventSamples)&&(index%(8192*aSignal->DecimationFactor())==0)  ))// finished pre-samples.  Start event.
                 {
                     fPreEventInProgress = false;  // reset.
                     fEventInProgress = true;
                     printf("LMC about to WakeBeforeEvent()\n");
-                    StartEventTimer = index;
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }
@@ -315,14 +310,10 @@ namespace locust
 
         printf("finished signal loop.\n");
 
-
         fclose(fp);
         fRunInProgress = false;  // tell Kassiopeia to finish.
         fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-        //	if (fEventInProgress)
-        //  if (ReceivedKassReady())
         WakeBeforeEvent();
-
 
         Kassiopeia.join();  // wait for Kassiopeia to finish.
 
