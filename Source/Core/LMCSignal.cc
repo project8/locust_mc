@@ -72,7 +72,7 @@ namespace locust
         fLongPlanToTimeComplex = fftw_plan_dft_1d( TimeSize()*DecimationFactor(), fLongSignalFreqComplex, fLongSignalTimeComplex, FFTW_BACKWARD, aFFTFlags);
 
 
-        fState = kTime;  // pls confused here.
+        fState = kTime;
 //        fState = kFreq;
 
         LDEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
@@ -364,7 +364,7 @@ namespace locust
     }
 
 //    bool Signal::ToDigital( uint64_t* anArray, unsigned aDigSize )    
-    bool Signal::ToDigital( int8_t* anArray, unsigned aDigSize )  // pls
+    bool Signal::ToDigital( int8_t* anArray, unsigned aDigSize )
     {
         if( fDigitalIsSigned ) delete [] fSignalDigital.fSigned;
         else delete [] fSignalDigital.fUnsigned;
@@ -375,7 +375,7 @@ namespace locust
         return true;
     }
 
-    bool Signal::ToDigital( uint8_t* anArray, unsigned aDigSize )  // pls
+    bool Signal::ToDigital( uint8_t* anArray, unsigned aDigSize )
     {
         if( fDigitalIsSigned ) delete [] fSignalDigital.fSigned;
         else delete [] fSignalDigital.fUnsigned;
@@ -399,7 +399,7 @@ namespace locust
         LDEBUG( lmclog, "Performing forward FFT to frequency domain" );
         fftw_execute( fPlanToFreq );
         fState = kFreq;
-        return true;  // pls
+        return true;
     }
 
     const double* Signal::SignalTime() const
@@ -467,35 +467,35 @@ namespace locust
     }
 */
 //    const uint64_t* Signal::SignalDigital() const    
-    const int8_t* Signal::SignalDigitalS() const  // pls
+    const int8_t* Signal::SignalDigitalS() const
     {
         return fSignalDigital.fSigned;
     }
 
-    const uint8_t* Signal::SignalDigitalUS() const  // pls
+    const uint8_t* Signal::SignalDigitalUS() const
     {
         return fSignalDigital.fUnsigned;
     }
 
 //    uint64_t* Signal::SignalDigital()    
-    int8_t* Signal::SignalDigitalS()  // pls
+    int8_t* Signal::SignalDigitalS()
     {
         return fSignalDigital.fSigned;
     }
 
-    uint8_t* Signal::SignalDigitalUS()  // pls
+    uint8_t* Signal::SignalDigitalUS()
     {
         return fSignalDigital.fUnsigned;
     }
 /*
 //    uint64_t Signal::SignalDigital( unsigned anIndex ) const    
-    uint8_t Signal::SignalDigital( unsigned anIndex ) const  // pls
+    uint8_t Signal::SignalDigital( unsigned anIndex ) const
     {
         return fSignalDigital[ anIndex ];
     }
 
 //    uint64_t& Signal::SignalDigital( unsigned anIndex )    
-    uint8_t& Signal::SignalDigital( unsigned anIndex )  // pls
+    uint8_t& Signal::SignalDigital( unsigned anIndex )
     {
         return fSignalDigital[ anIndex ];
     }

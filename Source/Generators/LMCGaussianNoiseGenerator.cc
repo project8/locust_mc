@@ -132,7 +132,7 @@ namespace locust
     void GaussianNoiseGenerator::SetDomain( Signal::State aDomain )
     {
         if( aDomain == fRequiredSignalState ) return;
-        fRequiredSignalState = aDomain;  // pls changed == to =.
+        fRequiredSignalState = aDomain;
         if( fRequiredSignalState == Signal::kTime )
         {
             fDoGenerateFunc = &GaussianNoiseGenerator::DoGenerateTime;

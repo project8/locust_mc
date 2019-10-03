@@ -85,7 +85,7 @@ namespace locust
                 lastGenerator->SetNextGenerator( newGenerator );
                 LINFO( lmclog, "Adding generator <" << lastGenerator->GetNextGenerator()->GetName() << ">");
                 LDEBUG( lmclog, "Meanwhile the previous one was <" << lastGenerator->GetName() << ">" );
-                lastGenerator = lastGenerator->GetNextGenerator();  // pls addition to advance list pointer.
+                lastGenerator = lastGenerator->GetNextGenerator();
             }
         }
 
