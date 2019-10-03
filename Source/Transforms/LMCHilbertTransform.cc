@@ -7,7 +7,6 @@
 
 #include "LMCHilbertTransform.hh"
 
-
 namespace locust
 {
 
@@ -32,7 +31,15 @@ namespace locust
         {
        		fbufferSize=aParam["hilbert-buffer-size"]().as_int();
         }
-    	return true;
+
+       	if (2*fbufferMargin < fbufferSize)
+       	{
+       		return false;
+       	}
+       	else
+       	{
+       		return true;
+       	}
     }
 
     void HilbertTransform::SetBufferSize( int abufferSize )
