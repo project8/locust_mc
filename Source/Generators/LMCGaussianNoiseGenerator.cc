@@ -26,7 +26,6 @@ namespace locust
         fMean( 0. ),
         fSigma( 1. ),
         fRandomSeed(0),
-        fSamplingRate(fAcquisitionRate * 1e6),
         fNormDist( fMean, fSigma )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -48,7 +47,7 @@ namespace locust
         }
         else if( aParam.has( "noise-temperature" ))
         {
-            fSigma = sqrt(LMCConst::kB() *  aParam["noise-temperature"]().as_double() * fSamplingRate);
+            fSigma = sqrt(LMCConst::kB() *  aParam["noise-temperature"]().as_double());
         }
         else
         {
