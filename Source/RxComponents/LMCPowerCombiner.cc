@@ -78,7 +78,8 @@ namespace locust
 		int NPAIRS = fabs((double)z_index - (double)fnPatchesPerStrip/2.);
 		if (z_index >= fnPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
 		std::vector<double> D = GetPartialGains(RJunction, R0, RGround, NPAIRS);  // calculate new vector of gains.
-		double dampingfactor = 0.6*0.66;  // patch loss * T-junction loss.
+		//double dampingfactor = 0.6*0.66;  // patch loss * T-junction loss.
+		double dampingfactor = 0.425; // "active S-matrix" for the 2 patch case
 		return dampingfactor * D[NPAIRS-1];
 	}
 
@@ -135,15 +136,17 @@ namespace locust
 	}
 
 
-	bool PowerCombiner::SetVoltageDividerDampingFactors()
-	{
-		for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
-		{
-			int NPAIRS = fabs((double)z_index - (double)fnPatchesPerStrip/2.);
-			if (z_index >= fnPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
-			std::vector<double> D = GetPartialGains(fjunctionResistance, 1.0, 10.e6, NPAIRS);  // calculate new vector of gains.
-			fdampingFactors[z_index] = fpatchLoss*famplifierLoss * D[NPAIRS-1];  // patch loss * T-junction loss
-		}
+        bool PowerCombiner::SetVoltageDividerDampingFactors()
+        {
+               
+                for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
+		  {
+		    int NPAIRS = fabs((double)z_index - (double)fnPatchesPerStrip/2.);
+		    if (z_index >= fnPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
+		    std::vector<double> D = GetPartialGains(fjunctionResistance, 1.0, 10.e6, NPAIRS);  // calculate new vector of gains.
+		    fdampingFactors[z_index] = fpatchLoss*famplifierLoss * D[NPAIRS-1];  // patch loss * T-junction loss
+		  }
+		
 		return true;
 	}
 
@@ -171,6 +174,11 @@ namespace locust
 
 	bool PowerCombiner::SetCenterFedDampingFactors()
 	{
+	  if(fnPatchesPerStrip == 1)
+	    {
+	      fdampingFactors[0] = .7071; // added for the ability to run the 1-patch case
+	    }
+	  else{
 		for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
 		{
 			int njunctions = fabs((double)z_index - (double)fnPatchesPerStrip/2.) - 1;
@@ -184,7 +192,7 @@ namespace locust
 					fdampingFactors[z_index] = fpatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss; // patch loss * junction loss * amplifier loss
 	      	 	}
 		}
-
+	  }
 		return true;
 
 	}
@@ -246,9 +254,9 @@ namespace locust
 		if (fpowerCombiner == 0) // corporate
 		{
 			fjunctionLoss = 1.0;
-			fpatchLoss = 0.6;
-			famplifierLoss = 0.66;
-			fendPatchLoss = 0.6;
+			fpatchLoss = 1.0;
+			famplifierLoss = 0.425; // hard coded active S-matrix for 2 patches for now
+			fendPatchLoss = 1.0;
 		}
 
 		else if (fpowerCombiner == 1) // series
