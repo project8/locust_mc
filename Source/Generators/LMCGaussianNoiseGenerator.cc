@@ -6,6 +6,7 @@
  */
 
 #include "LMCGaussianNoiseGenerator.hh"
+#include "LMCConst.hh"
 
 #include "logger.hh"
 #include <random>
@@ -25,6 +26,7 @@ namespace locust
         fMean( 0. ),
         fSigma( 1. ),
         fRandomSeed(0),
+        fSamplingRate(fAcquisitionRate * 1e6),
         fNormDist( fMean, fSigma )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -36,18 +38,23 @@ namespace locust
 
     bool GaussianNoiseGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "noise-floor" ) )
+
+        if( aParam.has( "noise-floor-psd" ) )
         {
             //tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
-            fSigma = sqrt( aParam["noise-floor"]().as_double() );
-            //printf("sigma is %g and fAcquisitionRate is %g\n", tSigma, fAcquisitionRate); getchar();
+            fSigma = sqrt( aParam["noise-floor-psd"]().as_double() );
+            if(aParam.has("noise-temperature"))
+                LERROR( lmclog, "Both noise-floor-psd and noise-temperature are defined. Only one can be used!");
         }
         else
         {
             fSigma = aParam["sigma"]().as_double();
         }
 
-  //      SetMeanAndSigma( aParam->get_value< double >( "mean", fMean ), tSigma );
+        if( aParam.has( "noise-temperature" )
+        {
+            fSigma = sqrt(LMCConst::kB() *  aParam["noise-temperature"]().as_double() * fSamplingRate);
+        }
 
         if (aParam.has( "random-seed") )
         {
@@ -108,7 +115,6 @@ namespace locust
     void GaussianNoiseGenerator::SetMeanAndSigma( double aMean, double aSigma, double aSampledSigma )
     {
         fNormDist = std::normal_distribution< double >( aMean, aSampledSigma );
-        //fUniDist = std::uniform_real_distribution< double >(0.,360.);
         fMean = aMean;
         fSigma = aSigma;
         return;
@@ -176,6 +182,7 @@ namespace locust
         //double phi = 0.;  // voltage phase
         double mag_r = 0.;  // voltage mag
         double mag_i = 0.;
+        const double tResistance = 50.;
 
         for (int ch=0; ch<nchannels; ch++)
         {
@@ -184,9 +191,8 @@ namespace locust
                 //phi = fUniDist( fRNG );
                 mag_r = fNormDist( generator ) * sqrt(0.5);
                 mag_i = fNormDist( generator ) * sqrt(0.5);
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(50.)* mag_r;
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(50.)* mag_i;
-                //	    printf("noise signal is %g\n", aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1]); getchar();
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(tResistance)* mag_r;
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += gain*sqrt(tResistance)* mag_i;
             }
         }
 

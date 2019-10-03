@@ -78,10 +78,9 @@ namespace locust
             double fSigma;
             int fRandomSeed;
 
+            const double fSamplingRate;
+
             mutable std::normal_distribution< double > fNormDist;
-            //mutable std::uniform_real_distribution<double> fUniDist;
-
-
     };
 
 } /* namespace locust */
