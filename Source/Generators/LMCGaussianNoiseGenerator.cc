@@ -46,15 +46,15 @@ namespace locust
             if(aParam.has("noise-temperature"))
                 LERROR( lmclog, "Both noise-floor-psd and noise-temperature are defined. Only one can be used!");
         }
+        else if( aParam.has( "noise-temperature" ))
+        {
+            fSigma = sqrt(LMCConst::kB() *  aParam["noise-temperature"]().as_double() * fSamplingRate);
+        }
         else
         {
             fSigma = aParam["sigma"]().as_double();
         }
 
-        if( aParam.has( "noise-temperature" )
-        {
-            fSigma = sqrt(LMCConst::kB() *  aParam["noise-temperature"]().as_double() * fSamplingRate);
-        }
 
         if (aParam.has( "random-seed") )
         {
