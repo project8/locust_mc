@@ -32,7 +32,7 @@ namespace locust
        		fbufferSize=aParam["hilbert-buffer-size"]().as_int();
         }
 
-       	if (2*fbufferMargin < fbufferSize)
+       	if (2*fbufferMargin > fbufferSize)
        	{
        		return false;
        	}
