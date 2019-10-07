@@ -28,11 +28,11 @@ namespace locust
         fLO_Frequency( 0.),
         gxml_filename("blank.xml"),
         gpitchangle_filename("blank.txt"),
-		fTruth( 0 ),
+	fTruth( 0 ),
         fPhi_t1(0.),
         fPhi_t2(0.),
         fPhiLO_t(0.),
-		fNPreEventSamples( 1500000 ),
+	fNPreEventSamples( 1500000 ),
         fEventStartTime(-99.),
         fEventToFile(0)
 
