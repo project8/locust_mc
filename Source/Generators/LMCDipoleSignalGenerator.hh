@@ -16,7 +16,7 @@
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCAntennaSignalTransmitter.hh"
-#include "LMCFIRHandler.hh"
+#include "LMCHFSSResponseFileHandler.hh"
 
 
 

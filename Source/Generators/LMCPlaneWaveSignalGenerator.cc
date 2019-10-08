@@ -388,7 +388,7 @@ namespace locust
 
     bool PlaneWaveSignalGenerator::InitializePatchArray()
     {
-    	if(!fReceiverFIRHandler.ReadFIRFile())
+    	if(!fReceiverFIRHandler.ReadHFSSFile())
     	{
     		return false;
     	}

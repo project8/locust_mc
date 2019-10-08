@@ -282,7 +282,7 @@ namespace locust
     
     bool DipoleSignalGenerator::InitializePatchArray()
     {
-        if(!fReceiverFIRHandler.ReadFIRFile())
+        if(!fReceiverFIRHandler.ReadHFSSFile())
         {
             return false;
         }

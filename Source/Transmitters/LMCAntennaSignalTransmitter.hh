@@ -11,7 +11,7 @@
 #include "LMCSignal.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
-#include "LMCFIRHandler.hh"
+#include "LMCHFSSResponseFileHandler.hh"
 #include "LMCConst.hh"
 
 namespace locust

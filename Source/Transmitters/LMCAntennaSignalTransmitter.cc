@@ -124,7 +124,7 @@ namespace locust
     {
         fAntennaPosition.SetComponents(fAntennaPositionX,fAntennaPositionY,fAntennaPositionZ);
         
-        if(!fTransmitterFIRHandler.ReadFIRFile())
+        if(!fTransmitterFIRHandler.ReadHFSSFile())
         {
             return false;
         }
