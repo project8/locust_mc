@@ -22,8 +22,8 @@ namespace locust
     MT_REGISTER_GENERATOR(LocalOscillatorGenerator, "local-oscillator");
 
     LocalOscillatorGenerator::LocalOscillatorGenerator( const std::string& aName ) :
-            Generator( aName ),
-            fDoGenerateFunc( &LocalOscillatorGenerator::DoGenerateTime )
+        Generator( aName ),
+        fDoGenerateFunc( &LocalOscillatorGenerator::DoGenerateTime )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -34,9 +34,9 @@ namespace locust
 
     bool LocalOscillatorGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "LO-Frequency" ) )
+        if( aParam.has( "lo-frequency" ) )
         {
-            fLOFrequency = aParam["LO-Frequency"]().as_double();
+            fLOFrequency = aParam["lo-frequency"]().as_double();
         }
 
         return true;
@@ -75,12 +75,11 @@ namespace locust
             {
                 localOscillatorPhase += 2. * LMCConst::Pi() * fLOFrequency * acquisitionTimeStep;
                 fftw_complex LOMixingPhase = {cos(localOscillatorPhase), -sin(localOscillatorPhase) };
-                    ComplexMultiplication( aSignal->LongSignalTimeComplex()[channelIndex*signalSize*decimationFactor + index] , LOMixingPhase);
+                downmixedSignal = ComplexMultiplication( aSignal->LongSignalTimeComplex()[channelIndex*signalSize*decimationFactor + index] , LOMixingPhase);
 
                 //Assign to aSignal
                 aSignal->LongSignalTimeComplex()[channelIndex*signalSize*decimationFactor + index][0] = downmixedSignal[0];
                 aSignal->LongSignalTimeComplex()[channelIndex*signalSize*decimationFactor + index][1] = downmixedSignal[1];
-
             }
         }
 

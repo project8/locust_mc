@@ -46,7 +46,6 @@ namespace locust
       - "start-vphase": double -- Starting voltage phase (V).
       - "slope-mean": double -- Mean value of Gaussian slope distribution (MHz/ms); distribution: gaussian.
       - "slope-std": double -- Standard deviation of Gaussian slope distribution (MHz/ms); distribution: gaussian.
-      - "lo-frequency": double -- Frequency of local oscillator (Hz).
       - "start-time-max": double -- Upper bound for track start time (s); distribution: uniform.
       - "start-time-min": double -- Lower bound for track start time (s); distribution: uniform.
       - "ntracks-mean": double -- Average number of tracks per event (integer); distribution: exponential.
@@ -167,7 +166,6 @@ namespace locust
             double fStartTimeMin;
             double fStartPitchMin;
             double fStartPitchMax;
-            double fLO_frequency;
             double fTrackLengthMean;
             double fNTracksMean;
             double fBField;

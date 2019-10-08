@@ -37,7 +37,6 @@ namespace locust
         fStartTimeMax( 0. ),
         fStartPitchMin( 89.9 ),
         fStartPitchMax( 90. ),
-        fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
         fNTracksMean(1 ),
         fBField(1.0),
@@ -97,9 +96,6 @@ namespace locust
 
         if( aParam.has( "start-time-min" ) )
             SetStartTimeMin( aParam.get_value< double >( "start-time-min", fStartTimeMin ) );
-
-        if( aParam.has( "lo-frequency" ) )
-            SetFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
 
         if( aParam.has( "track-length-mean" ) )
             SetTrackLengthMean( aParam.get_value< double >( "track-length-mean", fTrackLengthMean ) );
@@ -294,17 +290,6 @@ namespace locust
     void FakeTrackSignalGenerator::SetStartTimeMax( double aTimeMax )
     {
         fStartTimeMax = aTimeMax;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetFrequency() const
-    {
-        return fLO_frequency;
-    }
-
-    void FakeTrackSignalGenerator::SetFrequency( double aFrequency )
-    {
-        fLO_frequency = aFrequency;
         return;
     }
 
@@ -631,7 +616,6 @@ namespace locust
         aTrack.Slope = fSlope;
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
-        aTrack.LOFrequency = fLO_frequency;
         aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFreq, fPitch),2.);
         aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
@@ -655,7 +639,6 @@ namespace locust
 
         anEvent->EventID = eventID;
         anEvent->ntracks = fNTracks;
-        anEvent->LOFrequency = fLO_frequency;
         anEvent->StartFrequencies.resize(fNTracks);
         anEvent->TrackPower.resize(fNTracks);
         anEvent->StartTimes.resize(fNTracks);
@@ -691,7 +674,6 @@ namespace locust
         aTree->Branch("EndTimes", "std::vector<double>", &anEvent->EndTimes);
         aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
         aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
-        aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
         aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
         aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->PitchAngles);
         aTree->Fill();
@@ -704,7 +686,6 @@ namespace locust
         TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
         const unsigned nchannels = fNChannels;
-        double LO_phase = 0.;
         double dt = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
         double TimeOffset = 0.; // event start time
         double signalAmplitude;
@@ -730,7 +711,6 @@ namespace locust
                 for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
                 {
                     double time = (double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                    LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
 
                     if ( eventdone_flag == false ) // if not done with event
                     {
@@ -741,8 +721,8 @@ namespace locust
                                 fStartFreq += fSlope*1.e6/1.e-3*dt;
                                 voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
                                 signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase);
+                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase);
                             }
                             else if ( time>fEndTime )
                             {
@@ -767,8 +747,8 @@ namespace locust
 		                fStartFreq += fSlope*1.e6/1.e-3*dt;
                         voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
                         signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
-                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
-                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase);
+                        aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase);
                         nexttrack_flag = false; // now we stay on this track
                     }
                 }  // eventdone is false

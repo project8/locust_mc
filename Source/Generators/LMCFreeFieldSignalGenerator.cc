@@ -28,7 +28,6 @@ namespace locust
 
     FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
         Generator( aName ),
-        fLO_Frequency( 0.),
         fArrayRadius(0.),
         fPatchSpacing(0.),
         fNPatchesPerStrip(0.),

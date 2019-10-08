@@ -31,7 +31,6 @@ namespace locust
      Configuration name: "kass-signal"
 
      Available configuration options:
-     - "lo-frequency": double -- Frequency of downmixer
      - "xml-filename": string -- Name of the locust config file
 
     */
@@ -48,7 +47,6 @@ namespace locust
 
 
         private:
-            double fLO_Frequency;  // typically defined by a parameter in json file.
             bool fTruth; // parameter in json file.  default is false.
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
@@ -59,7 +57,6 @@ namespace locust
             std::string gpitchangle_filename;
             double fPhi_t1; // antenna voltage phase in radians.
             double fPhi_t2; // reflecting short voltage phase in radians.
-            double fPhiLO_t; // voltage phase of LO in radians;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             mutable double fPreviousRetardedTime;
             mutable int fPreviousRetardedIndex;

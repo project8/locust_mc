@@ -25,14 +25,12 @@ namespace locust
 
     KassSignalGenerator::KassSignalGenerator( const std::string& aName ) :
         Generator( aName ),
-        fLO_Frequency( 0.),
         gxml_filename("blank.xml"),
         gpitchangle_filename("blank.txt"),
-	fTruth( 0 ),
+        fTruth( 0 ),
         fPhi_t1(0.),
         fPhi_t2(0.),
-        fPhiLO_t(0.),
-	fNPreEventSamples( 1500000 ),
+        fNPreEventSamples( 1500000 ),
         fEventStartTime(-99.),
         fEventToFile(0)
 
@@ -46,11 +44,6 @@ namespace locust
 
     bool KassSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "lo-frequency" ) )
-        {
-            fLO_Frequency = aParam["lo-frequency"]().as_double();
-        }
-
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
@@ -176,11 +169,10 @@ namespace locust
 
         fPhi_t1 += 2.*LMCConst::Pi()*tDopplerFrequencyAntenna * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         fPhi_t2 += 2.*LMCConst::Pi()*tDopplerFrequencyShort * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        fPhiLO_t += 2.* LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        RealVoltage1 = cos( fPhi_t1 - fPhiLO_t ); // + cos( phi_t1 + phiLO_t ));  // antenna
-        ImagVoltage1 = sin( fPhi_t1 - fPhiLO_t ); // + cos( phi_t1 + phiLO_t - PI/2.));
-        RealVoltage2 = cos( fPhi_t2 - fPhiLO_t ); // + cos( phi_t2 + phiLO_t ));  // short
-        ImagVoltage2 = sin( fPhi_t2 - fPhiLO_t ); // + cos( phi_t2 + phiLO_t - PI/2.));
+        RealVoltage1 = cos( fPhi_t1 ); // + cos( phi_t1 ));  // antenna
+        ImagVoltage1 = sin( fPhi_t1 ); // + cos( phi_t1 - PI/2.));
+        RealVoltage2 = cos( fPhi_t2 ); // + cos( phi_t2 ));  // short
+        ImagVoltage2 = sin( fPhi_t2 ); // + cos( phi_t2 - PI/2.));
 
         if (Project8Phase == 2)
         {
@@ -204,7 +196,6 @@ namespace locust
         printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
         	"  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
       	  	index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-        printf("fLO_Frequency is %g\n", fLO_Frequency);
         getchar();
 */
 
