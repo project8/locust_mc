@@ -23,24 +23,22 @@
 
     "simulation":
     {
-        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
+        "egg-filename": "/Users/psurukuc/P8/Apps/locust_mc/run_dir/locust_mc.egg",
         "n-records": 1,
         "record-size": 81920,
         "n-channels": 1
     },
-     
-  
-    "gaussian-noise":
+    
+    "lpf-fft":
     {
-    "noise-floor": 4.2e-22,
-    "domain": "time"
     },
 
     "digitizer":
     {
-    "v-range": 3.0e-8,
-    "v-offset": -1.5e-8
+    },
+  
+    "decimate-signal":
+    {
     }
-
 }
 

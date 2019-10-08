@@ -26,7 +26,7 @@ namespace locust
 
     */
 
-class DecimateSignalGenerator : public Generator
+	class DecimateSignalGenerator : public Generator
     {
         public:
             DecimateSignalGenerator( const std::string& aName = "decimate-signal" );

@@ -16,7 +16,7 @@ namespace locust
  /*!
  @class Track
  @author P. Slocum
- @brief Class to describe tracks generated in LMCFakeTrackGenerator
+ @brief Class to describe tracks for writing to Root file.
  @details
  Available configuration options:
  No input parameters

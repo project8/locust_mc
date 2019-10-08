@@ -43,12 +43,6 @@ namespace locust
             LMCThreeVector GetPosition();
             LMCThreeVector GetNormalDirection();
 
-            int GetPreviousRetardedIndex();
-            double  GetPreviousRetardedTime();
-
-            void SetPreviousRetardedIndex(const int& index);
-            void SetPreviousRetardedTime(const double &time);
-
             void SetCenterPosition(const LMCThreeVector &newPosition);
             void SetPolarizationDirection(const LMCThreeVector &copolDirection);
             LMCThreeVector GetPolarizationDirection();

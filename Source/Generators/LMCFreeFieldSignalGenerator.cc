@@ -19,7 +19,6 @@
 #include <ctime>
 
 #include "LMCGlobalsDeclaration.hh"
-#include "LMCHFSSReader.hh"
 
 namespace locust
 {
@@ -29,7 +28,6 @@ namespace locust
 
     FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
         Generator( aName ),
-        //fWriteNFD(0.),
         fLO_Frequency( 0.),
         fArrayRadius(0.),
         fPatchSpacing(0.),
@@ -121,141 +119,55 @@ namespace locust
         return true;
     }
 
-    double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition )
-    {
-        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
-    }
-
-    double GetStepRoot(const locust::Particle aParticle, double aReceiverTime, LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
-    {
-        double tRetardedTime = aParticle.GetTime(true);
-        return tRetardedTime + aSpaceTimeInterval;
-    }
-
-
     void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
     {
 
-        locust::Particle tCurrentParticle = fParticleHistory.back();
-        int CurrentIndex;
         const int signalSize = aSignal->TimeSize();
-
-        const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
-        const int historySize = fParticleHistory.size();
 
         //Receiver Properties
         double tReceiverTime = t_old;
-
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
-
-        double tSpaceTimeInterval=99.;
-        double dtRetarded=0;
-        double tTolerance=1e-23;
+        const double tLocustStep = 1. / (fAcquisitionRate * 1e6 * aSignal->DecimationFactor());
 
         PatchAntenna *currentPatch;
+        unsigned tTotalPatchIndex = 0;
 
         for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
         {
             for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
             {
                 currentPatch = &allChannels[channelIndex][patchIndex]; 
-                //tReceiverTime = t_old - fabs(currentPatch->GetPosition().Z()) / LMCConst::C();
 
-                if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
-                {
-                    fParticleHistory.front().Interpolate(0);
-                    if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), currentPatch->GetPosition() ) < 0 )
-                    {
-                        //printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
-                        continue;
-                    }
-                }
+                fFieldSolver.SetFieldEvent(tReceiverTime, tTotalPatchIndex);
+                fFieldSolver.SolveFieldSolutions();
 
-                if(currentPatch->GetPreviousRetardedIndex() == -99.)
-                {
-                    CurrentIndex=FindNode(tReceiverTime);
-                    tCurrentParticle = fParticleHistory[CurrentIndex];
-                    const double vGroup = 1.674e8;
-                    tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  vGroup;
-                    if(tRetardedTime < 0) 
-                    {
-                        tRetardedTime = 0;
-                        CurrentIndex = 0;
-                    }
-                }
-                else
-                {
-                    CurrentIndex = currentPatch->GetPreviousRetardedIndex();
-                    tRetardedTime = currentPatch->GetPreviousRetardedTime() + 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-                }
+                LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
+                LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
+                locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
 
-
-                CurrentIndex = FindNode(tRetardedTime);
-
-                tCurrentParticle = fParticleHistory[CurrentIndex];
-                tCurrentParticle.Interpolate(tRetardedTime);
-                tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
-
-                double tOldSpaceTimeInterval=99.;
-
-                //Converge to root
-                for(int j=0;j<25;++j)
-                {
-                    //++tAverageIterations;
-
-                    tRetardedTime = GetStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
-                    tCurrentParticle.Interpolate(tRetardedTime);
-
-                    //Change the kassiopeia step we expand around if the interpolation time displacement is too large
-                    if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
-                    {
-                        CurrentIndex=FindNode(tRetardedTime);
-                        tCurrentParticle=fParticleHistory[CurrentIndex];
-                        tCurrentParticle.Interpolate(tRetardedTime);
-                    }
-
-                    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
-                    tOldSpaceTimeInterval = tSpaceTimeInterval;
-                }
-
-                currentPatch->SetPreviousRetardedIndex(CurrentIndex);
-                currentPatch->SetPreviousRetardedTime(tRetardedTime);
-
+                //////////////////////////////////////////////
                 LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
                 double tVelZ = tCurrentParticle.GetVelocity(true).Z();
                 double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
                 currentPatch->SetInstantaneousFrequency( tDopplerFrequency / (2. * LMCConst::Pi() ));
-                currentPatch->SetIncidentElectricField( tCurrentParticle.CalculateElectricField(currentPatch->GetPosition() ));
-                currentPatch->SetIncidentMagneticField( tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition() ));
+                currentPatch->SetIncidentElectricField( tRadiatedElectricField );
+                currentPatch->SetIncidentMagneticField( tRadiatedMagneticField );
 
                 aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][0] += currentPatch->GetVoltage();
                 //aSignal->LongSignalTimeComplex()[channelIndex*signalSize*aSignal->DecimationFactor() + index][1] += currentPatch->GetVoltage();
 
-
+                ++tTotalPatchIndex;
 
             } // z_position waveguide element stepping loop.
         } // nChannels loop.
 
-        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        t_old += tLocustStep;
 
         return 0;
     }
 
-
-    //Return index of fParticleHistory particle closest to the time we are evaluating
-    int FreeFieldSignalGenerator::FindNode(double tNew) const
-    {
-        std::deque<locust::Particle>::iterator it;
-
-        //Get iterator pointing to particle step closest to tNew
-        it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
-
-        int tNodeIndex = it - fParticleHistory.begin();
-
-        return tNodeIndex;
-    }
 
     void FreeFieldSignalGenerator::InitializePatchArray()
     {
@@ -285,6 +197,7 @@ namespace locust
                 modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.}); 
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
+                fFieldSolver.AddFieldPoint(modelPatch.GetPosition());
             }
         }
     }
@@ -356,8 +269,6 @@ namespace locust
             ++index;
 
         }  // for loop
-
-        //if(fWriteNFD) NFDWrite();
 
         //delete [] ImaginarySignal;
 

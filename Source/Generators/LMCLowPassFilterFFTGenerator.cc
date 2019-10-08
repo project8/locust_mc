@@ -34,7 +34,7 @@ namespace locust
     {
         if( aParam.has( "threshold" ) )
         {
-        SetThreshold( aParam.get_value< double >( "threshold", fThreshold ) ); 
+        	SetThreshold( aParam.get_value< double >( "threshold", fThreshold ) );
         }
 
         return true;
@@ -103,11 +103,11 @@ namespace locust
                 // Low Pass FilterFFT
                 for( unsigned index = 0; index < windowsize; ++index )
                 {
-                if ( (index > windowsize/2.*CutoffFreq/FastNyquist) && (index < windowsize/2. * (1. + (FastNyquist-CutoffFreq)/FastNyquist)))
-                  {
-                  FFTComplex[index][0] = 0.;
-                  FFTComplex[index][1] = 0.;
-                  }
+                	if ( (index > windowsize/2.*CutoffFreq/FastNyquist) && (index < windowsize/2. * (1. + (FastNyquist-CutoffFreq)/FastNyquist)))
+                	{
+                		FFTComplex[index][0] = 0.;
+                		FFTComplex[index][1] = 0.;
+                	}
                 }
 
                 fftw_execute(ReversePlan);
