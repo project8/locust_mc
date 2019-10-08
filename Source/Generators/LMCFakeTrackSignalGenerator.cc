@@ -655,6 +655,7 @@ namespace locust
         anEvent->EventID = eventID;
         anEvent->ntracks = fNTracks;
         anEvent->LOFrequency = fLO_frequency;
+        anEvent->RandomSeed = random_seed_val;
         anEvent->StartFrequencies.resize(fNTracks);
         anEvent->TrackPower.resize(fNTracks);
         anEvent->StartTimes.resize(fNTracks);
@@ -689,6 +690,7 @@ namespace locust
         aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
         aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
         aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
+        aTree->Branch("RandomSeed", &anEvent->RandomSeed, "RandomSeed/I");
         aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
         aTree->Fill();
         aTree->Write();

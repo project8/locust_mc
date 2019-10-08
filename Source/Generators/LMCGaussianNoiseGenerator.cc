@@ -51,7 +51,7 @@ namespace locust
         }
         else
         {
-            fSigma = aParam["sigma"]().as_double();
+            LERROR( lmclog, "LMCGaussianNoiseGenerator has been configured without a noise background.");
         }
 
 
