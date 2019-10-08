@@ -634,6 +634,7 @@ namespace locust
         aTrack.LOFrequency = fLO_frequency;
         aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFreq, fPitch),2.);
         aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
+        aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
@@ -661,6 +662,7 @@ namespace locust
         anEvent->EndTimes.resize(fNTracks);
         anEvent->TrackLengths.resize(fNTracks);
         anEvent->Slopes.resize(fNTracks);
+        anEvent->PitchAngles.resize(fNTracks);
     }
 
     void FakeTrackSignalGenerator::PackEvent(Track& aTrack, Event* anEvent, int trackID) const
@@ -671,6 +673,7 @@ namespace locust
     	anEvent->TrackLengths[trackID] = aTrack.TrackLength;
     	anEvent->EndTimes[trackID] = aTrack.EndTime;
     	anEvent->Slopes[trackID] = aTrack.Slope;
+        anEvent->PitchAngles[trackID] = aTrack.PitchAngle;
     }
 
 
@@ -690,6 +693,7 @@ namespace locust
         aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
         aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
         aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
+        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->PitchAngles);
         aTree->Fill();
         aTree->Write();
         delete aTree;
