@@ -35,6 +35,7 @@ namespace locust
             std::vector<double> EndTimes;
             std::vector<double> TrackLengths;
             std::vector<double> Slopes;
+            std::vector<double> PitchAngles;
 
 
             ClassDef(Event,1)  // Root syntax.
