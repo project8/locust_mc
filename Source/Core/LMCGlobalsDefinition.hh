@@ -30,9 +30,9 @@ bool fFalseStartKassiopeia = true; // flag to avoid false start on some Macs.
 bool fDoneWithSignalGeneration = false;  // do not continue to generate voltages and advance digitizer time.
 
 
-std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
+std::mutex fMutex;
 std::mutex fKassReadyMutex;  
-std::mutex fMutexDigitizer;  // pls:  not completely sure we need an extra mutex, but it may help clarify.
+std::mutex fMutexDigitizer;
 
 std::condition_variable fPreEventCondition;
 std::condition_variable fPostEventCondition;

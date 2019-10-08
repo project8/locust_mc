@@ -79,9 +79,6 @@ namespace locust
             int fRandomSeed;
 
             mutable std::normal_distribution< double > fNormDist;
-            //mutable std::uniform_real_distribution<double> fUniDist;
-
-
     };
 
 } /* namespace locust */
