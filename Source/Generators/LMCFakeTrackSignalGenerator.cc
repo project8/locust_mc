@@ -633,7 +633,7 @@ namespace locust
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
         aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFreq, fPitch),2.);
-        aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
+        //aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
     }
 
@@ -739,7 +739,7 @@ namespace locust
                             if ( (time >= fStartTime) && (time <= fEndTime) )
                             {
                                 fStartFreq += fSlope*1.e6/1.e-3*dt;
-                                voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
+                                voltage_phase += 2.*LMCConst::Pi()*fStartFreq; //GetPitchCorrectedFrequency(fStartFreq)*(dt);
                                 signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
                                 aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                                 aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
@@ -765,7 +765,7 @@ namespace locust
                     else if ( nexttrack_flag == true )
                     {
 		                fStartFreq += fSlope*1.e6/1.e-3*dt;
-                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
+                        voltage_phase += 2.*LMCConst::Pi()*fStartFreq; //GetPitchCorrectedFrequency(fStartFreq)*(dt);
                         signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
