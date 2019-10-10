@@ -33,7 +33,7 @@ namespace locust
             virtual ~PowerCombiner();
             bool Configure( const scarab::param_node& aNode);
 
-            bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
+            bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, unsigned z_index, unsigned sampleIndex);
             bool SetVoltageDampingFactors(int aPatchesPerStrip);
             bool SetSMatrixParameters(int aPatchesPerStrip);
             void SetNPatchesPerStrip(int aPatchesPerStrip);

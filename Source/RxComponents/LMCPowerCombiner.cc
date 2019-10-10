@@ -60,12 +60,12 @@ namespace locust
 
 
 
-	bool PowerCombiner::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
+	bool PowerCombiner::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, unsigned z_index, unsigned sampleIndex)
 	{
 
 		VoltageFIRSample *= fdampingFactors[z_index];
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample;
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample;
 		return true;
 	}
 

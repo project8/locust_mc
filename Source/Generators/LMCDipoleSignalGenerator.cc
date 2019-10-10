@@ -23,7 +23,6 @@ namespace locust
     DipoleSignalGenerator::DipoleSignalGenerator( const std::string& aName ) :
     Generator( aName ),
     fDoGenerateFunc( &DipoleSignalGenerator::DoGenerateTime ),
-    fLO_frequency( 20.05e9 ),
     fRF_frequency( 20.1e9 ),
     fArrayRadius( 0. ),
     fNPatchesPerStrip( 1 ),
@@ -34,7 +33,6 @@ namespace locust
     EPhaseBuffer( 1 ),
     EAmplitudeBuffer( 1 ),
     EFrequencyBuffer( 1 ),
-    LOPhaseBuffer( 1 ),
     IndexBuffer( 1 ),
     PatchFIRBuffer( 1 ),
     fFieldBufferSize( 50 )
@@ -73,11 +71,6 @@ namespace locust
         if( aParam.has( "input-signal-frequency"))
         {
             SetRFFrequency( aParam.get_value< double >( "input-signal-frequency", fRF_frequency ) );
-        }
-        
-        if( aParam.has( "lo-frequency" ) )
-        {
-            SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
         }
         
         if( aParam.has( "buffer-size" ) )
@@ -150,17 +143,6 @@ namespace locust
     void DipoleSignalGenerator::SetRFFrequency( double aFrequency )
     {
         fRF_frequency = aFrequency;
-        return;
-    }
-    
-    double DipoleSignalGenerator::GetLOFrequency() const
-    {
-        return fLO_frequency;
-    }
-    
-    void DipoleSignalGenerator::SetLOFrequency( double aFrequency )
-    {
-        fLO_frequency = aFrequency;
         return;
     }
     
@@ -331,7 +313,6 @@ namespace locust
         const unsigned nchannels = fNChannels;
         const unsigned npatches = fNPatchesPerStrip;
         
-        double LO_phase = 0.;
         double field_phase = 0.;
         double VoltageSample = 0.;
         unsigned nfilterbins = fReceiverFIRHandler.GetFilterSize();
@@ -352,7 +333,6 @@ namespace locust
             double antennaPositionX=fAntennaSignalTransmitter.GetAntennaPosition().GetX();
             double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
             double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
-            LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
             for (unsigned ch = 0; ch < nchannels; ++ch)
             {
                 for (unsigned patch = 0; patch < npatches; ++patch)
@@ -364,9 +344,9 @@ namespace locust
                     double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
                     double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
-                    FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
+                    FillBuffers(aSignal, fieldValue, field_phase, index, ch, patch);
                     VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
-     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
+     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel
@@ -375,14 +355,13 @@ namespace locust
         return true;
     }
     
-    void DipoleSignalGenerator::FillBuffers(Signal* aSignal, double FieldValue, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch)
+    void DipoleSignalGenerator::FillBuffers(Signal* aSignal, double FieldValue, double FieldPhase, unsigned index, unsigned channel, unsigned patch)
     {
         
         EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(FieldValue);
         EPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(FieldPhase);
         EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].push_back(fAmplitude);
         EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(fRF_frequency);
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
         IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
         
     }
@@ -394,14 +373,12 @@ namespace locust
         EPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
         EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].pop_front();
         EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
         IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
         
         EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         EPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         // PTS: Seg faults when shrink-to-fit used on ConvolutionTimeBuffer, removed for now. Need to revisit what the problem is
         //ConvolutionTimeBuffer[channel+fNPatchesPerStrip+patch].shrink_to_fit();
@@ -418,7 +395,6 @@ namespace locust
         EPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
         EAmplitudeBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
         EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
         IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
         
     }
@@ -432,7 +408,6 @@ namespace locust
         EPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         
         PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);

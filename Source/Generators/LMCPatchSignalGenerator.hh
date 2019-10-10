@@ -35,7 +35,6 @@ namespace locust
 
      Available configuration options:
      - "param-name": type -- Description
-     - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      
 
@@ -50,13 +49,9 @@ namespace locust
             bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
-              
-
-
 
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
-            double fLO_Frequency;
             double fArrayRadius;
             int fNPatchesPerStrip;
             double fZShiftArray;
@@ -64,7 +59,6 @@ namespace locust
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
-            double fphiLO; // voltage phase of LO in radians;
 
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
@@ -75,14 +69,13 @@ namespace locust
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned channel, unsigned patch);
-            void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch);
+            void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, unsigned index, unsigned channel, unsigned patch);
 
 
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EPhaseBuffer;
             std::vector<std::deque<double>> EAmplitudeBuffer;
             std::vector<std::deque<double>> EFrequencyBuffer;
-            std::vector<std::deque<double>> LOPhaseBuffer;
             std::vector<std::deque<unsigned>> IndexBuffer;
             std::vector<std::deque<double>> PatchFIRBuffer;
 

@@ -41,7 +41,6 @@ namespace locust
      
      Available configuration options:
      - "input-signal-frequency": double -- Frequency of the incident sine wave.
-     - "lo-frequency": double -- Frequency of the local oscillator.
      - "amplitude": double -- Amplitude of the incident sine wave.
      - "filter-filename": double -- path to FIR text file.
      - "filter-resolution": double -- time resolution of coefficients in filter-filename.
@@ -65,9 +64,6 @@ namespace locust
 
         double GetRFFrequency() const;
         void SetRFFrequency( double aFrequency );
-        
-        double GetLOFrequency() const;
-        void SetLOFrequency( double aFrequency );
         
         double GetAmplitude() const;
         void SetAmplitude( double aAmplitude );
@@ -96,7 +92,7 @@ namespace locust
         double GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase);
         
         void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
-        void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch);
+        void FillBuffers(Signal* aSignal, double FieldAmplitude, double FieldPhase, unsigned index, unsigned channel, unsigned patch);
         void PopBuffers(unsigned channel, unsigned patch);
         void CleanupBuffers();
         
@@ -113,7 +109,6 @@ namespace locust
         bool fTextFileWriting;// from json file.
         
         double fRF_frequency;
-        double fLO_frequency;
         double fAmplitude;
         unsigned fFieldBufferSize;
         
@@ -121,7 +116,6 @@ namespace locust
         std::vector<std::deque<double>> EPhaseBuffer;
         std::vector<std::deque<double>> EAmplitudeBuffer;
         std::vector<std::deque<double>> EFrequencyBuffer;
-        std::vector<std::deque<double>> LOPhaseBuffer;
         std::vector<std::deque<unsigned>> IndexBuffer;
         std::vector<std::deque<double>> PatchFIRBuffer;
     };

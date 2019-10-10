@@ -25,8 +25,6 @@ namespace locust
 	MT_REGISTER_GENERATOR(PlaneWaveSignalGenerator, "planewave-signal");
 	PlaneWaveSignalGenerator::PlaneWaveSignalGenerator( const std::string& aName ) :
     	Generator( aName ),
-		fLO_Frequency( 0.),
-		fphiLO(0.),
 		fRF_Frequency( 0.),
 		fArrayRadius( 0. ),
 		fNPatchesPerStrip( 0. ),
@@ -63,11 +61,6 @@ namespace locust
 		if( aParam.has( "planewave-frequency" ) )
 		{
 			SetPlaneWaveFrequency( aParam.get_value< double >( "planewave-frequency", fRF_Frequency ));
-		}
-
-		if( aParam.has( "lo-frequency" ) )
-		{
-			SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_Frequency ));
 		}
 
 		if( aParam.has( "array-radius" ) )
@@ -108,17 +101,6 @@ namespace locust
     {
         fRF_Frequency = aPlaneWaveFrequency;
         return;
-    }
-
-    double PlaneWaveSignalGenerator::GetLOFrequency() const
-    {
-    	return fLO_Frequency;
-    }
-
-    void PlaneWaveSignalGenerator::SetLOFrequency( double aLOFrequency )
-    {
-    	fLO_Frequency = aLOFrequency;
-    	return;
     }
 
     double PlaneWaveSignalGenerator::GetArrayRadius() const
@@ -262,7 +244,6 @@ namespace locust
     	double fieldphase = 0.;
     	double fieldvalue = 0.;
     	double* hilbertmagphase = new double[2];
-    	fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
     	for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
     	{
@@ -289,7 +270,7 @@ namespace locust
     			PatchVoltageBuffer[bufferIndex].emplace(PatchVoltageBuffer[bufferIndex].begin()+hilbertbuffermargin+1, GetPatchFIRSample(hilbertmagphase[0], hilbertmagphase[1], patchIndex));
     			PatchVoltageBuffer[bufferIndex].pop_front();
     			PatchVoltageBuffer[bufferIndex].shrink_to_fit();
-    			fPowerCombiner.AddOneVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].front(), fphiLO, patchIndex, SampleIndexBuffer[bufferIndex].front());
+    			fPowerCombiner.AddOneVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].front(), patchIndex, SampleIndexBuffer[bufferIndex].front());
 	   
     			// TEST PRINT STATEMENTS
 /*

@@ -33,7 +33,6 @@ namespace locust
 
     Available configuration options:
     - "param-name": type -- Description
-    - "lo-frequency" : double -- the special value tuned down by the local oscillator, e.g., the 24.something giga hertz.
      
   */
   class PlaneWaveSignalGenerator : public Generator
@@ -57,8 +56,6 @@ namespace locust
 	  	  void SetVoltageDamping( bool aVoltageDamping );
 	  	  double GetPlaneWaveFrequency() const;
 	  	  void SetPlaneWaveFrequency( double aPlaneWaveFrequency );
-	  	  double GetLOFrequency() const;
-	  	  void SetLOFrequency( double aLOFrequency );
 	  	  double GetArrayRadius() const;
 	  	  void SetArrayRadius( double aArrayRadius );
 	  	  int GetNPatchesPerStrip() const;
@@ -76,7 +73,6 @@ namespace locust
 	  	  // patch and plane wave parameters
 	  	  std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
 	  	  std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
-	  	  double fLO_Frequency;  // typically defined by a parameter in json file.
 	  	  double fRF_Frequency;  // typically defined by a parameter in json file.
 	  	  double fArrayRadius;  // from json file.
 	  	  int fNPatchesPerStrip; // from json file.
@@ -84,7 +80,6 @@ namespace locust
 	  	  double fAOI; // from json file, in degrees.
 	  	  double fAmplitude;
 	  	  double fFieldBufferSize;
-	  	  double fphiLO; // voltage phase of LO in radians;
 
 	  	  double GetPatchFIRSample(double amp, double startphase, int patchIndex);
 
@@ -107,7 +102,6 @@ namespace locust
 	  	  void PopBuffers(unsigned bufferIndex);
     
 	  	  std::vector<std::deque<unsigned>> SampleIndexBuffer;
-	  	  std::vector<std::deque<double>> LOPhaseBuffer;
 	  	  std::vector<std::deque<double>> PWFreqBuffer;
 	  	  std::vector<std::deque<double>> PWPhaseBuffer;
 	  	  std::vector<std::deque<double>> PWValueBuffer;
