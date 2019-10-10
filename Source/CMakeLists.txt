@@ -34,6 +34,8 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
     Core/LMCHFSSResponseFileHandler.hh
+    Core/LMCFIRFileHandler.hh
+    Core/LMCTFFileHandler.hh
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -71,6 +73,8 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
     Core/LMCHFSSResponseFileHandler.cc
+    Core/LMCFIRFileHandler.cc
+    Core/LMCTFFileHandler.cc
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc

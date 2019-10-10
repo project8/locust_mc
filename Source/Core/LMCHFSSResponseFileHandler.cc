@@ -78,113 +78,29 @@ namespace locust
         return convolution;
     }
     
-    // Handler for FIR transmitter
-    FIRTransmitterHandler::FIRTransmitterHandler():HFSSResponseFileHandlerCore()
+    TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore()
     {
     }
     
-    FIRTransmitterHandler::~FIRTransmitterHandler()
+    TFFileHandlerCore::~TFFileHandlerCore()
     {
     }
     
-    bool FIRTransmitterHandler::Configure(const scarab::param_node& aParam)
+    bool TFFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
-        if( aParam.has( "fir-transmitter-filename" ) )
-        {
-            fHFSSFilename=aParam["fir-transmitter-filename"]().as_string();
-        }
-        if( aParam.has( "fir-transmitter-dt" ) )
-        {
-            fResolution=aParam["fir-transmitter-dt"]().as_double();
-        }
-        if( aParam.has( "fir-transmitter-nskips" ) )
-        {
-            fNSkips=aParam["fir-transmitter-nskips"]().as_int();
-        }
-        fHFSSFiletype="fir";
         return true;
     }
     
-    
-    // Handler for FIR receiver
-    FIRReceiverHandler::FIRReceiverHandler():HFSSResponseFileHandlerCore()
+    FIRFileHandlerCore::FIRFileHandlerCore():HFSSResponseFileHandlerCore()
     {
     }
     
-    FIRReceiverHandler::~FIRReceiverHandler()
+    FIRFileHandlerCore::~FIRFileHandlerCore()
     {
     }
     
-    bool FIRReceiverHandler::Configure(const scarab::param_node& aParam)
+    bool FIRFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
-        if( aParam.has( "fir-receiver-filename" ) )
-        {
-            fHFSSFilename=aParam["fir-receiver-filename"]().as_string();
-        }
-        if( aParam.has( "fir-receiver-dt" ) )
-        {
-            fResolution=aParam["fir-receiver-dt"]().as_double();
-        }
-        if( aParam.has( "fir-receiver-nskips" ) )
-        {
-            fNSkips=aParam["fir-receiver-nskips"]().as_int();
-        }
-        fHFSSFiletype="fir";
         return true;
     }
-    
-    // Handler for TF trasnmitter
-    TFTransmitterHandler::TFTransmitterHandler():HFSSResponseFileHandlerCore()
-    {
-    }
-    
-    TFTransmitterHandler::~TFTransmitterHandler()
-    {
-    }
-    
-    bool TFTransmitterHandler::Configure(const scarab::param_node& aParam)
-    {
-        if( aParam.has( "tf-transmitter-filename" ) )
-        {
-            fHFSSFilename=aParam["tf-transmitter-filename"]().as_string();
-        }
-        if( aParam.has( "tf-transmitter-dt" ) )
-        {
-            fResolution=aParam["tf-transmitter-dt"]().as_double();
-        }
-        if( aParam.has( "tf-transmitter-nskips" ) )
-        {
-            fNSkips=aParam["tf-transmitter-nskips"]().as_int();
-        }
-        fHFSSFiletype="tf";
-        return true;
-    }
-    
-    // Handler for TF receiver
-    TFReceiverHandler::TFReceiverHandler():HFSSResponseFileHandlerCore()
-    {
-    }
-    
-    TFReceiverHandler::~TFReceiverHandler()
-    {
-    }
-    
-    bool TFReceiverHandler::Configure(const scarab::param_node& aParam)
-    {
-        if( aParam.has( "tf-receiver-filename" ) )
-        {
-            fHFSSFilename=aParam["tf-receiver-filename"]().as_string();
-        }
-        if( aParam.has( "tf-receiver-dt" ) )
-        {
-            fResolution=aParam["tf-receiver-dt"]().as_double();
-        }
-        if( aParam.has( "tf-receiver-nskips" ) )
-        {
-            fNSkips=aParam["tf-receiver-nskips"]().as_int();
-        }
-        fHFSSFiletype="tf";
-        return true;
-    }
-    
 } /* namespace locust */

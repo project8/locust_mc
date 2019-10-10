@@ -15,7 +15,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
-#include "LMCHFSSResponseFileHandler.hh"
+#include "LMCFIRFileHandler.hh"
 
 namespace locust
 {
