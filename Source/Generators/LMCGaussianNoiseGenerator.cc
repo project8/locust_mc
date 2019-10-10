@@ -52,6 +52,7 @@ namespace locust
         else
         {
             LERROR( lmclog, "LMCGaussianNoiseGenerator has been configured without a noise background.");
+            return false;
         }
 
 
