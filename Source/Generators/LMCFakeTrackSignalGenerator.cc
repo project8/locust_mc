@@ -43,7 +43,7 @@ namespace locust
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
-        fPitchCorrection( 1 ),
+        fPitchCorrection( true ),
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.00502920),  //Phase II trap radius
