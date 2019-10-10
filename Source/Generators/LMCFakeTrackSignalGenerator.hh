@@ -54,6 +54,7 @@ namespace locust
       - "n-events": int -- Number of events per simulation, spaced by 0.5 ms (hardcoded).
       - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used.
       - "root-filename": str -- Name of root file containing event information to be written at output. 
+      - "pitch-correction": bool -- Flag to switch pitch angle corrections on [default] or off.
 
 
 */
@@ -118,6 +119,9 @@ namespace locust
             int GetNEvents() const;
             void SetNEvents(  int aNEvents );
 
+            bool GetPitchCorrection() const;
+            void SetPitchCorrection(  bool aPitchCorrection );
+
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -173,6 +177,7 @@ namespace locust
             double fBField;
             int fRandomSeed;
             int fNEvents;
+            bool fPitchCorrection;
             double fHydrogenFraction;
             std::string fRoot_filename;
             std::default_random_engine fRandomEngine;

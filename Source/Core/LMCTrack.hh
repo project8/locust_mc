@@ -36,6 +36,7 @@ namespace locust
             double LOFrequency = -99.;
             double TrackPower = -99.;
             double Slope = -99.;
+            double PitchAngle = -99.;
 
             ClassDef(Track,1)  // Root syntax.
 

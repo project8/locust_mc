@@ -29,12 +29,14 @@ namespace locust
             int EventID = -99;
             int ntracks = -99;
             double LOFrequency = -99.;
+            int RandomSeed = -99;
             std::vector<double> StartFrequencies;
             std::vector<double> TrackPower;
             std::vector<double> StartTimes;
             std::vector<double> EndTimes;
             std::vector<double> TrackLengths;
             std::vector<double> Slopes;
+            std::vector<double> PitchAngles;
 
 
             ClassDef(Event,1)  // Root syntax.
