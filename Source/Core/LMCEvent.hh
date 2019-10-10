@@ -29,6 +29,7 @@ namespace locust
             int EventID = -99;
             int ntracks = -99;
             double LOFrequency = -99.;
+            int RandomSeed = -99;
             std::vector<double> StartFrequencies;
             std::vector<double> TrackPower;
             std::vector<double> StartTimes;
