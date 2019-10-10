@@ -43,6 +43,7 @@ namespace locust
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
+        fPitchCorrection( true ),
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.00502920),  //Phase II trap radius
@@ -115,6 +116,9 @@ namespace locust
 
         if (aParam.has( "n-events") )
             SetNEvents(  aParam.get_value< int >( "n-events",fNEvents) );
+
+        if (aParam.has( "pitch-correction") )
+            SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
 
         if (aParam.has( "hydrogen-fraction") )
         {
@@ -364,6 +368,19 @@ namespace locust
     }
 
 
+    bool FakeTrackSignalGenerator::GetPitchCorrection() const
+    {
+        return fPitchCorrection;
+    }
+
+
+    void FakeTrackSignalGenerator::SetPitchCorrection( bool aPitchCorrection )
+    {
+        fPitchCorrection = aPitchCorrection;
+        return;
+    }
+
+
     Signal::State FakeTrackSignalGenerator::GetDomain() const
     {
         return fRequiredSignalState;
@@ -508,7 +525,7 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetPitchCorrectedFrequency(double frequency) const
     {
-        if (fPitch !=  LMCConst::Pi() / 2.)
+        if ( (fPitch !=  LMCConst::Pi() / 2.) && ( fPitchCorrection == 1 ) )
             return frequency * ( 1. + 1. / (2. * pow(tan(fPitch), 2.)));
         else
             return frequency;
