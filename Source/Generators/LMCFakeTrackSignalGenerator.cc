@@ -43,6 +43,7 @@ namespace locust
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
+        fPitchCorrection( true ),
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.00502920),  //Phase II trap radius
@@ -115,6 +116,9 @@ namespace locust
 
         if (aParam.has( "n-events") )
             SetNEvents(  aParam.get_value< int >( "n-events",fNEvents) );
+
+        if (aParam.has( "pitch-correction") )
+            SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
 
         if (aParam.has( "hydrogen-fraction") )
         {
@@ -364,6 +368,19 @@ namespace locust
     }
 
 
+    bool FakeTrackSignalGenerator::GetPitchCorrection() const
+    {
+        return fPitchCorrection;
+    }
+
+
+    void FakeTrackSignalGenerator::SetPitchCorrection( bool aPitchCorrection )
+    {
+        fPitchCorrection = aPitchCorrection;
+        return;
+    }
+
+
     Signal::State FakeTrackSignalGenerator::GetDomain() const
     {
         return fRequiredSignalState;
@@ -508,7 +525,7 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetPitchCorrectedFrequency(double frequency) const
     {
-        if (fPitch !=  LMCConst::Pi() / 2.)
+        if ( (fPitch !=  LMCConst::Pi() / 2.) && ( fPitchCorrection == 1 ) )
             return frequency * ( 1. + 1. / (2. * pow(tan(fPitch), 2.)));
         else
             return frequency;
@@ -633,6 +650,8 @@ namespace locust
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
         aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFreq, fPitch),2.);
+        aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
+        aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
@@ -654,12 +673,14 @@ namespace locust
         anEvent->EventID = eventID;
         anEvent->ntracks = fNTracks;
         anEvent->LOFrequency = fLO_frequency;
+        anEvent->RandomSeed = random_seed_val;
         anEvent->StartFrequencies.resize(fNTracks);
         anEvent->TrackPower.resize(fNTracks);
         anEvent->StartTimes.resize(fNTracks);
         anEvent->EndTimes.resize(fNTracks);
         anEvent->TrackLengths.resize(fNTracks);
         anEvent->Slopes.resize(fNTracks);
+        anEvent->PitchAngles.resize(fNTracks);
     }
 
     void FakeTrackSignalGenerator::PackEvent(Track& aTrack, Event* anEvent, int trackID) const
@@ -670,6 +691,7 @@ namespace locust
     	anEvent->TrackLengths[trackID] = aTrack.TrackLength;
     	anEvent->EndTimes[trackID] = aTrack.EndTime;
     	anEvent->Slopes[trackID] = aTrack.Slope;
+        anEvent->PitchAngles[trackID] = aTrack.PitchAngle;
     }
 
 
@@ -688,7 +710,9 @@ namespace locust
         aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
         aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
         aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
+        aTree->Branch("RandomSeed", &anEvent->RandomSeed, "RandomSeed/I");
         aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
+        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->PitchAngles);
         aTree->Fill();
         aTree->Write();
         delete aTree;
@@ -760,7 +784,7 @@ namespace locust
                     else if ( nexttrack_flag == true )
                     {
 		                fStartFreq += fSlope*1.e6/1.e-3*dt;
-                        voltage_phase += 2.*LMCConst::Pi()*fStartFreq*(dt);
+                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
                         signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
