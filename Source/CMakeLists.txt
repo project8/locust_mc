@@ -47,6 +47,7 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCButterworthLPFGenerator.hh
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.hh
+    Generators/LMCTurnStileSignalGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
@@ -86,6 +87,7 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCButterworthLPFGenerator.cc
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.cc
+    Generators/LMCTurnStileSignalGenerator.cc
 
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
