@@ -42,7 +42,7 @@ namespace locust
      Available configuration options:
      - "input-signal-frequency": double -- Frequency of the incident sine wave.
      - "lo-frequency": double -- Frequency of the local oscillator.
-     - "amplitude": double -- Amplitude of the incident sine wave.
+     - "input-signal-amplitude": double -- Amplitude of the incident sine wave.
      - "filter-filename": double -- path to FIR text file.
      - "filter-resolution": double -- time resolution of coefficients in filter-filename.
      - "buffer-size": double -- size of buffer to contain incident E field values.
@@ -56,7 +56,7 @@ namespace locust
     class TurnstileSignalGenerator : public Generator
     {
     public:
-        TurnstileSignalGenerator( const std::string& aName = "antenna-turnstile-generator" );
+        TurnstileSignalGenerator( const std::string& aName = "turnstile-signal-generator" );
         virtual ~TurnstileSignalGenerator();
         
         bool Configure( const scarab::param_node& aNode );

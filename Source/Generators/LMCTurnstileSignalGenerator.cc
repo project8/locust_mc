@@ -18,7 +18,7 @@ namespace locust
 {
     LOGGER( lmclog, "TurnstileSignalGenerator" );
     
-    MT_REGISTER_GENERATOR(TurnstileSignalGenerator, "antenna-turnstile-generator");
+    MT_REGISTER_GENERATOR(TurnstileSignalGenerator, "turnstile-signal-generator");
     
     TurnstileSignalGenerator::TurnstileSignalGenerator( const std::string& aName ) :
     Generator( aName ),
