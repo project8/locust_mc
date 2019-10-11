@@ -6,6 +6,7 @@
  */
 
 #include "LMCConst.hh"
+#include "LMCException.hh"
 #include "LMCHFSSResponseFileHandler.hh"
 
 #include "logger.hh"
@@ -37,8 +38,118 @@ namespace locust
         return str.size() >= suffix.size() &&
         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
     }
-   
+    
     bool HFSSResponseFileHandlerCore::ReadHFSSFile()
+    {
+        return true;
+    }
+    
+    double HFSSResponseFileHandlerCore::ConvolveWithFIRFilter(std::deque<double> inputBuffer)
+    {
+        double convolution=0.0;
+        if(fNBins<=0){
+            LERROR(lmclog,"Number of bins in the filter should be positive");
+        }
+        for(int i=0;i<fNBins;++i)
+        {
+            convolution+=fFilter[i]*inputBuffer[i];
+        }
+        return convolution;
+    }
+    
+    TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
+    fTFComplex(NULL),
+    fFIRComplex(NULL)
+    {
+    }
+    
+    TFFileHandlerCore::~TFFileHandlerCore()
+    {
+        if (fTFComplex != NULL)
+        {
+            fftw_free(fTFComplex);
+            fTFComplex = NULL;
+        }
+        
+        if (fFIRComplex != NULL)
+        {
+            fftw_free(fFIRComplex);
+            fFIRComplex = NULL;
+        }
+    }
+    
+    bool TFFileHandlerCore::Configure(const scarab::param_node& aParam)
+    {
+        return true;
+    }
+    
+    bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray)
+    {
+        //Might need to be moved to a different function
+        fTFComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fNBins);
+        fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fNBins);
+        for (int i = 0; i < fNBins; ++i)
+        {
+            fTFComplex[i][0]=tfArray.at(i).real();
+            fTFComplex[i][0]=tfArray.at(i).imag();
+        }
+        fIFFT.ReverseFFT(fNBins,fTFComplex,fFIRComplex);
+        //Still not normalized
+        
+        for (int i = 0; i < fNBins; ++i){
+            fFilter[i]=fFIRComplex[i][0];
+        }
+        return true;
+    }
+    
+    bool TFFileHandlerCore::ReadHFSSFile()
+    {
+        fNBins=0;
+        if(!ends_with(fHFSSFilename,".txt"))
+        {
+            LERROR(lmclog,"The TF file should end in .txt");
+            return false;
+        }
+        double tfIndex;
+        double tfMagnitude;
+        double tfRealValue;
+        double tfImaginaryValue;
+        std::vector<std::complex<double>> tfArray;
+        FILE *tfFile;
+        tfFile=fopen(fHFSSFilename.c_str(),"r");
+        //logic copied from /LMCPatchSignalGenerator.cc
+        int count=0;
+        while (!feof(tfFile)){
+            fscanf(tfFile,"%lf %lf %lf %lf",&tfIndex,&tfMagnitude,&tfRealValue,&tfImaginaryValue);
+            if (count%fNSkips==0)
+            {
+                const std::complex<double> temp(tfRealValue,tfImaginaryValue);
+                tfArray.push_back(temp);
+                ++fNBins;
+            }
+            ++count;
+        }
+        fclose(tfFile);
+        if(!ConvertTFtoFIR(tfArray)){
+            return false;
+        }
+        return true;
+    }
+    
+    FIRFileHandlerCore::FIRFileHandlerCore():HFSSResponseFileHandlerCore()
+    {
+    }
+    
+    FIRFileHandlerCore::~FIRFileHandlerCore()
+    {
+    }
+    
+    bool FIRFileHandlerCore::Configure(const scarab::param_node& aParam)
+    {
+        return true;
+    }
+    
+    bool FIRFileHandlerCore::ReadHFSSFile()
     {
         fNBins=0;
         if(!ends_with(fHFSSFilename,".txt"))
@@ -65,42 +176,4 @@ namespace locust
         return true;
     }
     
-    double HFSSResponseFileHandlerCore::ConvolveWithFIRFilter(std::deque<double> delayedVoltageBuffer)
-    {
-        double convolution=0.0;
-        if(fNBins<=0){
-            LERROR(lmclog,"Number of bins in the filter should be positive");
-        }
-        for(int i=0;i<fNBins;++i)
-        {
-            convolution+=fFilter[i]*delayedVoltageBuffer[i];
-        }
-        return convolution;
-    }
-    
-    TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore()
-    {
-    }
-    
-    TFFileHandlerCore::~TFFileHandlerCore()
-    {
-    }
-    
-    bool TFFileHandlerCore::Configure(const scarab::param_node& aParam)
-    {
-        return true;
-    }
-    
-    FIRFileHandlerCore::FIRFileHandlerCore():HFSSResponseFileHandlerCore()
-    {
-    }
-    
-    FIRFileHandlerCore::~FIRFileHandlerCore()
-    {
-    }
-    
-    bool FIRFileHandlerCore::Configure(const scarab::param_node& aParam)
-    {
-        return true;
-    }
 } /* namespace locust */

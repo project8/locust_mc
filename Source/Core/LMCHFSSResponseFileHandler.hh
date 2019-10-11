@@ -1,8 +1,10 @@
 #ifndef LMCHFSSRESPONSEFILEHANDLER_HH_
 #define LMCHFSSRESPONSEFILEHANDLER_HH_
 
-#include "LMCException.hh"
+#include <fftw3.h>
+
 #include "param.hh"
+#include "LMCComplexFFT.hh"
 
 namespace locust
 {
@@ -23,8 +25,8 @@ namespace locust
         
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode);
-        bool ReadHFSSFile();
-        double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
+        virtual bool ReadHFSSFile();
+        virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
         
@@ -66,7 +68,17 @@ namespace locust
         virtual ~TFFileHandlerCore();
         
         // Member functions
-        virtual bool Configure( const scarab::param_node& aNode);
+        virtual bool Configure( const scarab::param_node& aNode) override;
+        bool ReadHFSSFile() override;
+    
+    private:
+        //Member variables
+        fftw_complex *fTFComplex;
+        fftw_complex *fFIRComplex;
+        ComplexFFT fIFFT;
+        
+        //Member functions
+        bool ConvertTFtoFIR(std::vector<std::complex<double>> &);
     };
     
     /*!
@@ -83,7 +95,8 @@ namespace locust
         virtual ~FIRFileHandlerCore();
         
         // Member functions
-        virtual bool Configure( const scarab::param_node& aNode);
+        virtual bool Configure( const scarab::param_node& aNode) override;
+        bool ReadHFSSFile() override;
     };
 } /*namespace locust*/
 
