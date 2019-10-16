@@ -86,6 +86,9 @@ namespace locust
             double GetStartPitchMin() const;
             void SetStartPitchMin( double aPitchMin );
 
+            double GetPitchMin() const;
+            void SetPitchMin( double aPitchMin );
+
             double GetTrackLengthMean() const;
             void SetTrackLengthMean( double aTrackLengthMean );
 
@@ -171,6 +174,7 @@ namespace locust
             double fStartTimeMin;
             double fStartPitchMin;
             double fStartPitchMax;
+            double fPitchMin;
             double fLO_frequency;
             double fTrackLengthMean;
             double fNTracksMean;

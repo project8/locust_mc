@@ -22,18 +22,15 @@ namespace locust
 
     void Event::AddTrack(const Track aTrack)
     {
-        StartFrequencies.push_back( aTrack.StartFrequency );
-        TrackPower.push_back( aTrack.TrackPower );
-        StartTimes.push_back( aTrack.StartTime );
-        TrackLengths.push_back( aTrack.TrackLength );
-        EndTimes.push_back( aTrack.EndTime );
-        Slopes.push_back( aTrack.Slope );
-        PitchAngles.push_back( aTrack.PitchAngle );
+        fStartFrequencies.push_back( aTrack.StartFrequency );
+        fTrackPowers.push_back( aTrack.TrackPower );
+        fStartTimes.push_back( aTrack.StartTime );
+        fTrackLengths.push_back( aTrack.TrackLength );
+        fEndTimes.push_back( aTrack.EndTime );
+        fSlopes.push_back( aTrack.Slope );
+        fPitchAngles.push_back( aTrack.PitchAngle );
 
         //update size
-        nTracks = StartFrequencies.size();
+        fNTracks = fStartFrequencies.size();
     }
-
 }
-
-

@@ -37,10 +37,10 @@ namespace locust
         fStartTimeMax( 0. ),
         fStartPitchMin( 89.9 ),
         fStartPitchMax( 90. ),
-        fPitchMin( 80. ),
+        fPitchMin( 0. ),
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
-        fNTracksMean(1 ),
+        fNTracksMean(0 ),
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
@@ -87,6 +87,9 @@ namespace locust
 
         if( aParam.has( "start-pitch-min" ) )
             SetStartPitchMin( aParam.get_value< double >( "start-pitch-min", fStartPitchMin ) );
+
+        if( aParam.has( "min-pitch" ) )
+            SetPitchMin( aParam.get_value< double >( "min-pitch", fPitchMin ) );
 
         if( aParam.has( "slope-mean" ) )
             SetSlopeMean( aParam.get_value< double >( "slope-mean", fSlopeMean ) );
@@ -233,6 +236,17 @@ namespace locust
     void FakeTrackSignalGenerator::SetStartPitchMin( double aPitchMin )
     {
         fStartPitchMin = aPitchMin;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetPitchMin() const
+    {
+        return fPitchMin;
+    }
+
+    void FakeTrackSignalGenerator::SetPitchMin( double aPitchMin )
+    {
+        fPitchMin = aPitchMin;
         return;
     }
 
@@ -671,30 +685,30 @@ namespace locust
         std::geometric_distribution<int> ntracks_distribution(1./fNTracksMean);
         fNTracks = ntracks_distribution(fRandomEngine)+1;
 
-        anEvent->EventID = eventID;
-        anEvent->LOFrequency = fLO_frequency;
-        anEvent->RandomSeed = random_seed_val;
+        anEvent->fEventID = eventID;
+        anEvent->fLOFrequency = fLO_frequency;
+        anEvent->fRandomSeed = random_seed_val;
     }
 
 
     void WriteRootFile(Event* anEvent, TFile* hfile)
     {
     	char buffer[100];
-    	int n=sprintf(buffer, "Event_%d", anEvent->EventID);
+        int n=sprintf(buffer, "Event_%d", anEvent->fEventID);
     	char* treename = buffer;
 
         TTree *aTree = new TTree(treename,"Locust Tree");
-        aTree->Branch("EventID", &anEvent->EventID, "EventID/I");
-        aTree->Branch("ntracks", &anEvent->ntracks, "ntracks/I");
-        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->StartFrequencies);
-        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->StartTimes);
-        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->EndTimes);
-        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
-        aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
-        aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
-        aTree->Branch("RandomSeed", &anEvent->RandomSeed, "RandomSeed/I");
-        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
-        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->PitchAngles);
+        aTree->Branch("EventID", &anEvent->fEventID, "EventID/I");
+        aTree->Branch("ntracks", &anEvent->fNTracks, "ntracks/I");
+        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
+        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->fStartTimes);
+        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->fEndTimes);
+        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->fTrackLengths);
+        aTree->Branch("Slopes", "std::vector<double>", &anEvent->fSlopes);
+        aTree->Branch("LOFrequency", &anEvent->fLOFrequency, "LOFrequency/D");
+        aTree->Branch("RandomSeed", &anEvent->fRandomSeed, "RandomSeed/I");
+        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->fTrackPowers);
+        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->fPitchAngles);
         aTree->Fill();
         aTree->Write();
         delete aTree;
@@ -720,18 +734,19 @@ namespace locust
 
             unsigned tTrackIndex = 0;
 
-            while( tTrackIndex < anEvent->GetNTracks()) //loop over tracks in event
+            while( tTrackIndex < anEvent->fNTracks) //loop over tracks in event
             {
 
                 for(unsigned ch = 0; ch < nChannels; ++ch) // over all channels
                 {
-                    unsigned tTrackIndexRange[2] = {fStartTime / tLocustStep, fEndTime / tLocustStep};
-                    tTrackIndexRange[1] = min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
+                    double voltage_phase = fStartVPhase;
+                    unsigned tTrackIndexRange[2] = {static_cast<unsigned>(fStartTime / tLocustStep), static_cast<unsigned>(fEndTime / tLocustStep)};
+                    tTrackIndexRange[1] = std::min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
 
                     for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
-                        fStartFreq += fSlope*1.e6/1.e-3*dt;
-                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
+                        fStartFreq += fSlope * 1.e6/1.e-3 * tLocustStep;
+                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq) * tLocustStep;
                         signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
@@ -742,7 +757,7 @@ namespace locust
                 ++tTrackIndex;
                 SetTrackProperties(aTrack, tTrackIndex, TimeOffset);
 
-                if( (!fNTracksMean && (fPitch < fMinimnumPitchAngle)) || (fNTracksMean && (tTrackIndex == fNTracks)))
+                if( (!fNTracksMean && (fPitch < fPitchMin)) || (fNTracksMean && (tTrackIndex == fNTracks)))
                 {
                     break;
                 }

@@ -27,23 +27,21 @@ namespace locust
             Event();
             virtual ~Event();
 
-            int EventID;
-            double LOFrequency;
-            int RandomSeed;
+            void AddTrack(const Track aTrack);
 
-            void AddTrack(const Track aTrack)
+            int fEventID;
+            double fLOFrequency;
+            int fRandomSeed;
 
-        private:
-            std::vector<double> StartFrequencies;
-            std::vector<double> TrackPower;
-            std::vector<double> StartTimes;
-            std::vector<double> EndTimes;
-            std::vector<double> TrackLengths;
-            std::vector<double> Slopes;
-            std::vector<double> PitchAngles;
+            std::vector<double> fStartFrequencies;
+            std::vector<double> fTrackPowers;
+            std::vector<double> fStartTimes;
+            std::vector<double> fEndTimes;
+            std::vector<double> fTrackLengths;
+            std::vector<double> fSlopes;
+            std::vector<double> fPitchAngles;
 
-            unsigned ntracks;
-
+            unsigned fNTracks;
 
             ClassDef(Event,1)  // Root syntax.
 
