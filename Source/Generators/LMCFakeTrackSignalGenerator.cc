@@ -37,6 +37,7 @@ namespace locust
         fStartTimeMax( 0. ),
         fStartPitchMin( 89.9 ),
         fStartPitchMax( 90. ),
+        fPitchMin( 80. ),
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
         fNTracksMean(1 ),
@@ -671,27 +672,8 @@ namespace locust
         fNTracks = ntracks_distribution(fRandomEngine)+1;
 
         anEvent->EventID = eventID;
-        anEvent->ntracks = fNTracks;
         anEvent->LOFrequency = fLO_frequency;
         anEvent->RandomSeed = random_seed_val;
-        anEvent->StartFrequencies.resize(fNTracks);
-        anEvent->TrackPower.resize(fNTracks);
-        anEvent->StartTimes.resize(fNTracks);
-        anEvent->EndTimes.resize(fNTracks);
-        anEvent->TrackLengths.resize(fNTracks);
-        anEvent->Slopes.resize(fNTracks);
-        anEvent->PitchAngles.resize(fNTracks);
-    }
-
-    void FakeTrackSignalGenerator::PackEvent(Track& aTrack, Event* anEvent, int trackID) const
-    {
-    	anEvent->StartFrequencies[trackID] = aTrack.StartFrequency;
-    	anEvent->TrackPower[trackID] = aTrack.TrackPower;
-    	anEvent->StartTimes[trackID] = aTrack.StartTime;
-    	anEvent->TrackLengths[trackID] = aTrack.TrackLength;
-    	anEvent->EndTimes[trackID] = aTrack.EndTime;
-    	anEvent->Slopes[trackID] = aTrack.Slope;
-        anEvent->PitchAngles[trackID] = aTrack.PitchAngle;
     }
 
 
@@ -722,80 +704,58 @@ namespace locust
     {
         TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
-        const unsigned nchannels = fNChannels;
+        const unsigned nChannels = fNChannels;
         double LO_phase = 0.;
-        double dt = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
+        const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
         double TimeOffset = 0.; // event start time
         double signalAmplitude;
 
-        for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
+        for(unsigned eventID = 0; eventID < fNEvents; ++eventID)// event loop.
         {
             Event* anEvent = new Event();
             InitiateEvent(anEvent, eventID);
             Track aTrack;
             SetTrackProperties(aTrack, 0, TimeOffset);
-            PackEvent(aTrack, anEvent, 0);
+            anEvent->AddTrack(aTrack);
 
-        if ( fEndTime < 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) )
-        {
+            unsigned tTrackIndex = 0;
 
-            for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
+            while( tTrackIndex < anEvent->GetNTracks()) //loop over tracks in event
             {
-                double voltage_phase = fStartVPhase;
-                bool nexttrack_flag = false;
-                int event_tracks_counter = 0;
-                bool eventdone_flag = false; 
 
-                for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
+                for(unsigned ch = 0; ch < nChannels; ++ch) // over all channels
                 {
-                    double time = (double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                    LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
+                    unsigned tTrackIndexRange[2] = {fStartTime / tLocustStep, fEndTime / tLocustStep};
+                    tTrackIndexRange[1] = min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
 
-                    if ( eventdone_flag == false ) // if not done with event
+                    for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
-                        if ( nexttrack_flag == false ) // if on same track
-                        {
-                            if ( (time >= fStartTime) && (time <= fEndTime) )
-                            {
-                                fStartFreq += fSlope*1.e6/1.e-3*dt;
-                                voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
-                                signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                            }
-                            else if ( time>fEndTime )
-                            {
-                                event_tracks_counter += 1;
-                                if (event_tracks_counter > fNTracks-1) // if done with all tracks in event
-                                {
-                                    eventdone_flag = true; // mark end of event   
-                                    WriteRootFile(anEvent, hfile);
-                                    TimeOffset = aTrack.EndTime + 0.0005; // event spacing.
-                                    continue;  
-                                }
-                                else
-                                {
-                                    SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
-                                    PackEvent(aTrack, anEvent, event_tracks_counter);
-                                }
-                                nexttrack_flag = true; // next track
-                            }
-                        }
-                    else if ( nexttrack_flag == true )
-                    {
-		                fStartFreq += fSlope*1.e6/1.e-3*dt;
+                        fStartFreq += fSlope*1.e6/1.e-3*dt;
                         voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
                         signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                        nexttrack_flag = false; // now we stay on this track
                     }
-                }  // eventdone is false
-            }  // index loop.
-        }  // channel loop.
-        }  // endtime boolean loop.
-        delete anEvent;
-        } // eventID loop.
+
+                } //channel loop
+
+                ++tTrackIndex;
+                SetTrackProperties(aTrack, tTrackIndex, TimeOffset);
+
+                if( (!fNTracksMean && (fPitch < fMinimnumPitchAngle)) || (fNTracksMean && (tTrackIndex == fNTracks)))
+                {
+                    break;
+                }
+                else
+                {
+                    anEvent->AddTrack(aTrack);
+                }
+
+            } //track loop
+            WriteRootFile(anEvent, hfile);
+            delete anEvent;
+        } //event loop
+
         hfile->Close();
         return true;
     }

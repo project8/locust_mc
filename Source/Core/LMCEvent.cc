@@ -19,6 +19,21 @@ namespace locust
 {
     Event::Event() {}
     Event::~Event() {}
+
+    void Event::AddTrack(const Track aTrack)
+    {
+        StartFrequencies.push_back( aTrack.StartFrequency );
+        TrackPower.push_back( aTrack.TrackPower );
+        StartTimes.push_back( aTrack.StartTime );
+        TrackLengths.push_back( aTrack.TrackLength );
+        EndTimes.push_back( aTrack.EndTime );
+        Slopes.push_back( aTrack.Slope );
+        PitchAngles.push_back( aTrack.PitchAngle );
+
+        //update size
+        nTracks = StartFrequencies.size();
+    }
+
 }
 
 
