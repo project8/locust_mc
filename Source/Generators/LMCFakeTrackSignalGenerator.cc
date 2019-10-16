@@ -742,12 +742,13 @@ namespace locust
                     double voltage_phase = fStartVPhase;
                     unsigned tTrackIndexRange[2] = {static_cast<unsigned>(fStartTime / tLocustStep), static_cast<unsigned>(fEndTime / tLocustStep)};
                     tTrackIndexRange[1] = std::min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
+                    double tInstantaneousFrequency = fStartFreq;
 
                     for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
-                        fStartFreq += fSlope * 1.e6/1.e-3 * tLocustStep;
-                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq) * tLocustStep;
-                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
+                        tInstantaneousFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
+                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(tInstantaneousFrequency) * tLocustStep;
+                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(tInstantaneousFrequency, fPitch);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                     }
