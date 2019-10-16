@@ -6,6 +6,7 @@
  */
 
 #include "LMCEventHold.hh"
+#include <csignal>
 
 namespace locust
 {
@@ -32,6 +33,29 @@ namespace locust
 
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
+
+        printf("Kass is waiting for event trigger.\n");
+
+        fInterface->fKassEventReady = true;
+        fInterface->fFalseStartKassiopeia = false;
+        fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
+        if(( fInterface->fWaitBeforeEvent ) && (fInterface->fRunInProgress))
+        {
+            fInterface->fKassReadyCondition.notify_one();
+            std::cout << "going to wait on the pre-event condition now" << std::endl;
+            std::unique_lock< std::mutex >tLock( fInterface->fMutex );
+            fInterface->fPreEventCondition.wait( tLock );
+            fInterface->fKassEventReady = false;
+            fInterface->fTOld = 0.;  // reset time on event clock
+            printf("Kass got the event trigger\n");
+        }
+        else if (fInterface->fRunInProgress == false)
+        {
+         printf("Raising sigint to cancel Kassiopeia");
+         raise(SIGINT);
+//         return false;
+        }
+
 
         return true;
 

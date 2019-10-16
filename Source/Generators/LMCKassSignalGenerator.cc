@@ -292,8 +292,8 @@ namespace locust
             if ((! fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (! fInterface->fPreEventInProgress))
             {
                 if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-//                printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
-//                getchar();
+                printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+                getchar();
             }
 
             if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
@@ -312,8 +312,6 @@ namespace locust
 
             if (fInterface->fEventInProgress)  // fEventInProgress
             {
-//                if (fInterface->fEventInProgress)  // check again.
-//                {
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                     tLock.lock();
                     fInterface->fDigitizerCondition.wait( tLock );
