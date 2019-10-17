@@ -41,15 +41,13 @@ namespace locust
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
-
-
         return true;
     }
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun &)
     {
 
-    	// for some reason this is being executed after every event.
+    	fInterface->fRunInProgress = false;  // let Locust know the run is finished.
 
         return true;
     }

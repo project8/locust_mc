@@ -284,16 +284,18 @@ namespace locust
         std::thread tKassiopeia (&KassSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
         fInterface->fRunInProgress = true;
         fInterface->fKassEventReady = false;
-        int StartEventTimer = 0;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
-//        	printf("at index %d loop says fRunInProgress is %d, %d\n", index, fInterface->fRunInProgress, fInterface->fPreEventInProgress);
             if ((! fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (! fInterface->fPreEventInProgress))
             {
-                if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-                printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
-                getchar();
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            	if (fInterface->fRunInProgress)
+            	{
+            		if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
+            		fInterface->fPreEventInProgress = true;
+            		printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+            	}
             }
 
             if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
@@ -305,7 +307,6 @@ namespace locust
                     fInterface->fPreEventInProgress = false;  // reset.
                     fInterface->fEventInProgress = true;
                     printf("LMC about to WakeBeforeEvent()\n");
-                    StartEventTimer = index;
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }

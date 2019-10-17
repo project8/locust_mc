@@ -39,7 +39,8 @@ namespace locust
         fInterface->fKassEventReady = true;
         fInterface->fFalseStartKassiopeia = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
-        if(( fInterface->fWaitBeforeEvent ) && (fInterface->fRunInProgress))
+//        if(( fInterface->fWaitBeforeEvent ) && (fInterface->fRunInProgress))
+        if(( fInterface->fWaitBeforeEvent ))
         {
             fInterface->fKassReadyCondition.notify_one();
             std::cout << "going to wait on the pre-event condition now" << std::endl;
@@ -49,11 +50,9 @@ namespace locust
             fInterface->fTOld = 0.;  // reset time on event clock
             printf("Kass got the event trigger\n");
         }
-        else if (fInterface->fRunInProgress == false)
+        else
         {
-         printf("Raising sigint to cancel Kassiopeia");
-         raise(SIGINT);
-//         return false;
+         return true;
         }
 
 
