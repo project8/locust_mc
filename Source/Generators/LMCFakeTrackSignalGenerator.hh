@@ -128,7 +128,7 @@ namespace locust
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            void SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset);
+            void SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset);
             void InitiateEvent(Event* anEvent, int eventID);
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
             double rel_cyc(double energy, double b_field) const;
@@ -152,8 +152,8 @@ namespace locust
             double fTrackLength;
             double fStartTime;
             double fEndTime;
-            double fStartFreq;
-            double fJumpSize;
+            double fStartFrequency;
+            double fCurrentFrequency;
             int fNTracks;
 
         private:

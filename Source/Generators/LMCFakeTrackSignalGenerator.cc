@@ -40,7 +40,7 @@ namespace locust
         fPitchMin( 0. ),
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
-        fNTracksMean(0 ),
+        fNTracksMean( 0. ),
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
@@ -56,8 +56,8 @@ namespace locust
         fTrackLength( 0. ),
         fStartTime( 0. ),
         fEndTime( 0. ),
-        fStartFreq( 0. ),
-        fJumpSize( 2e6),
+        fStartFrequency( 0. ),
+        fCurrentFrequency( 0. ),
         fNTracks(0)
     {
         fRequiredSignalState = Signal::kTime;
@@ -144,6 +144,9 @@ namespace locust
             std::random_device rd;
             fRandomEngine.seed(rd());
         }
+
+        if(!fNTracksMean && !fPitchMin)
+            LERROR( lmclog, "No condition set for NTracks per event! Set one of pitch-min or ntracks-mean");
 
 
         if( aParam.has( "domain" ) )
@@ -572,7 +575,7 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetAxialFrequency() //angular frequency of axial motion Ali et al. (54) (harmonic trap)
     {
-        double gamma = 1. + rel_energy(fStartFreq, fBField) / LMCConst::M_el_eV();
+        double gamma = 1. + rel_energy(fStartFrequency, fBField) / LMCConst::M_el_eV();
         double v0 = LMCConst::C() * sqrt( 1. - 1. / pow(gamma, 2.));
         return v0 * sin(fPitch) / fTrapLength;
 
@@ -598,7 +601,7 @@ namespace locust
 
     }
 
-    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset)
+    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset)
     {
         double current_energy = 0.;
         double energy_loss = 0.;
@@ -619,23 +622,23 @@ namespace locust
 
         if(TrackID==0)
         {
-            if (TimeOffset==0) // first event
+            if (aTimeOffset==0) // first event
         	{
                 fStartTime = starttime_distribution(fRandomEngine);
         	}
             else
             {
-                fStartTime = TimeOffset;
+                fStartTime = aTimeOffset;
             }
-            fStartFreq = startfreq_distribution(fRandomEngine);
+            fStartFrequency = startfreq_distribution(fRandomEngine);
             fPitch = acos(startpitch_distribution(fRandomEngine));
             aTrack.StartTime = fStartTime;
-            aTrack.StartFrequency = fStartFreq;
+            aTrack.StartFrequency = fStartFrequency;
         }
        else
        {
             fStartTime = fEndTime + 0.;  // old track endtime + margin=0.
-            current_energy = rel_energy(fStartFreq,fBField); // convert current frequency to energy
+            current_energy = rel_energy(fCurrentFrequency, fBField); // convert current frequency to energy
 
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
@@ -651,10 +654,10 @@ namespace locust
             fPitch = GetPitchAngleZ(newThetaTop, GetBField(zScatter), fBField);
 
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
-            fJumpSize = rel_cyc(new_energy,fBField) - fStartFreq; // in Hz
-            fStartFreq += fJumpSize;
+            fStartFrequency = rel_cyc(new_energy, fBField);
+            fCurrentFrequency = fStartFrequency;
             aTrack.StartTime = fEndTime + 0.; // margin of time is 0.
-            aTrack.StartFrequency += fJumpSize;
+            aTrack.StartFrequency += fStartFrequency;
         }
 
         fSlope = slope_distribution(fRandomEngine);
@@ -664,7 +667,7 @@ namespace locust
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
-        aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFreq, fPitch),2.);
+        aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFrequency, fPitch),2.);
         aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
     }
@@ -721,15 +724,16 @@ namespace locust
         const unsigned nChannels = fNChannels;
         double LO_phase = 0.;
         const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-        double TimeOffset = 0.; // event start time
         double signalAmplitude;
+        double tTimeOffset = 0;
+        const double tEventSpacing = 5e-4;
 
         for(unsigned eventID = 0; eventID < fNEvents; ++eventID)// event loop.
         {
             Event* anEvent = new Event();
             InitiateEvent(anEvent, eventID);
             Track aTrack;
-            SetTrackProperties(aTrack, 0, TimeOffset);
+            SetTrackProperties(aTrack, 0, tTimeOffset);
             anEvent->AddTrack(aTrack);
 
             unsigned tTrackIndex = 0;
@@ -742,13 +746,13 @@ namespace locust
                     double voltage_phase = fStartVPhase;
                     unsigned tTrackIndexRange[2] = {static_cast<unsigned>(fStartTime / tLocustStep), static_cast<unsigned>(fEndTime / tLocustStep)};
                     tTrackIndexRange[1] = std::min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
-                    double tInstantaneousFrequency = fStartFreq;
+                    fCurrentFrequency = fStartFrequency;
 
                     for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
-                        tInstantaneousFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
-                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(tInstantaneousFrequency) * tLocustStep;
-                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(tInstantaneousFrequency, fPitch);
+                        fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
+                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fCurrentFrequency) * tLocustStep;
+                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                     }
@@ -756,10 +760,13 @@ namespace locust
                 } //channel loop
 
                 ++tTrackIndex;
-                SetTrackProperties(aTrack, tTrackIndex, TimeOffset);
+                tTimeOffset = fEndTime;
+                SetTrackProperties(aTrack, tTrackIndex, tTimeOffset);
+                double tPitchMinRad = fPitchMin * LMCConst::Pi() / 180.;
 
-                if( (!fNTracksMean && (fPitch < fPitchMin)) || (fNTracksMean && (tTrackIndex == fNTracks)))
+                if( (!fNTracksMean && (fPitch < tPitchMinRad )) || (fNTracksMean && (tTrackIndex == fNTracks)))
                 {
+                    tTimeOffset += tEventSpacing;
                     break;
                 }
                 else
