@@ -25,10 +25,7 @@ namespace locust
             fADCValuesSigned( false )
     {
         fRequiredSignalState = Signal::kTime;
-
-	//					        get_calib_params( 8, 1, -3.e-6, 6.e-6, false, &fParams );  // if Gaussian noise is included.
-
-						      get_calib_params( 8, 1, -1.e-8, 2.e-8, false, &fParams );  // if Gaussian noise is not included.
+		get_calib_params( 8, 1, -1.e-8, 2.e-8, false, &fParams );
     }
 
     Digitizer::~Digitizer()
@@ -80,9 +77,6 @@ namespace locust
         double* analogData = aSignal->SignalTime();
 //        uint64_t* digitizedData = new uint64_t[ signalSize ];
 
-        std::ofstream dgvoltagefile;
-        dgvoltagefile.open("digitizedvoltagefile.txt");
-
         if( fADCValuesSigned )
         {
 
@@ -103,15 +97,6 @@ namespace locust
                     LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
                 }
 
-                //print out digitized voltages
-
-                dgvoltagefile << index;
-                dgvoltagefile << "\n";
-                dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2 ];
-                dgvoltagefile << "\n";
-                dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2+1 ] ;
-                dgvoltagefile << "\n";
-
             } // signalsize
             } // channels
             aSignal->ToDigital( digitizedData, signalSizeComplex );
@@ -120,18 +105,11 @@ namespace locust
         {
                
                 uint8_t* digitizedData = new uint8_t[ signalSizeComplex ];
-		//FILE *fp = fopen("/home/hep/baker/ps48/data/Simulation/Phase3/timedata.txt", "w");  // write raw time series for testing.
-
 
                 for (unsigned ch = 0; ch < nchannels; ++ch)
                 {
-		  //fprintf(fp, "[%d]\n", ch);
                 for( unsigned index = 0; index < signalSize; ++index )
                 {
-
-		  //fprintf(fp, "%g %g\n", aSignal->SignalTimeComplex()[ch*signalSize + index ][0], aSignal->SignalTimeComplex()[ch*signalSize + index ][1]);
-		  // if (aSignal->SignalTimeComplex()[ch*signalSize + index ][0]>0.){printf("%g %g\n", aSignal->SignalTimeComplex()[ch*signalSize + index ][0], aSignal->SignalTimeComplex()[ch*signalSize + index ][1]); getchar();}
-
 
                     digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
                     digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
@@ -143,21 +121,12 @@ namespace locust
                         LWARN( lmclog, "digitizing channel " << ch << ": " << index << " Q: " << aSignal->SignalTimeComplex()[ch*signalSize + index ][1] << " --> " << (int) digitizedData[2*ch*signalSize + index*2+1 ] );  // pls added (int)
                     }
 
-                    dgvoltagefile << index;
-                    dgvoltagefile << "\n";
-                    dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2 ];
-                    dgvoltagefile << "\n";
-                    dgvoltagefile << (int) digitizedData[2*ch*signalSize + index*2+1 ] ;
-                    dgvoltagefile << "\n";
-
                 } // signalsize
                 } // channels
-		  //fclose(fp);
                 aSignal->ToDigital( digitizedData, signalSizeComplex );
 
         }  // unsigned
 
-        dgvoltagefile.close();
         return true;
 
     }

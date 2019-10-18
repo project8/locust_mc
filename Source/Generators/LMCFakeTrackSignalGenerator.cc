@@ -398,13 +398,12 @@ namespace locust
     void FakeTrackSignalGenerator::ReadFile(std::string filename, std::vector<std::pair<double,double> > &data)
     {
         std::ifstream input( filename );
-        std::stringstream ss;
         std::vector<std::pair<double, double> > readData; // energies/ oscillator strengths
         double bufferE, bufferOsc;
         for( std::string line; getline( input, line ); )
         {
-            if(line[0] == std::string("#")) continue;
-            ss = std::stringstream(line);
+            if(line.empty() || line[0] == std::string("#")) continue;
+            std::stringstream ss(line);
             ss >> bufferE;
             ss >> bufferOsc;
             readData.push_back(std::make_pair(bufferE, bufferOsc));

@@ -198,8 +198,8 @@ namespace locust
         {  // assume 50 ohm impedance
 
             //	    RealVoltage2 *= 0.25; // some loss at short.
-            aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
-            aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
+        	aSignal->LongSignalTimeComplex()[ index ][0] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
+        	aSignal->LongSignalTimeComplex()[ index ][1] += gain*sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
 
         }
 
@@ -284,16 +284,18 @@ namespace locust
         std::thread tKassiopeia (&KassSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
         fInterface->fRunInProgress = true;
         fInterface->fKassEventReady = false;
-        int StartEventTimer = 0;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
-//        	printf("at index %d loop says fRunInProgress is %d, %d\n", index, fInterface->fRunInProgress, fInterface->fPreEventInProgress);
             if ((! fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (! fInterface->fPreEventInProgress))
             {
-                if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-//                printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
-//                getchar();
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            	if (fInterface->fRunInProgress)
+            	{
+            		if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
+            		fInterface->fPreEventInProgress = true;
+            		printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+            	}
             }
 
             if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
@@ -305,15 +307,12 @@ namespace locust
                     fInterface->fPreEventInProgress = false;  // reset.
                     fInterface->fEventInProgress = true;
                     printf("LMC about to WakeBeforeEvent()\n");
-                    StartEventTimer = index;
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }
 
             if (fInterface->fEventInProgress)  // fEventInProgress
             {
-//                if (fInterface->fEventInProgress)  // check again.
-//                {
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                     tLock.lock();
                     fInterface->fDigitizerCondition.wait( tLock );
