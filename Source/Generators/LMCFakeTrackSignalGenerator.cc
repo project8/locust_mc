@@ -726,7 +726,6 @@ namespace locust
         const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
         double signalAmplitude;
         double tTimeOffset = 0;
-        const double tEventSpacing = 5e-4;
 
         for(unsigned eventID = 0; eventID < fNEvents; ++eventID)// event loop.
         {
@@ -766,7 +765,6 @@ namespace locust
 
                 if( (!fNTracksMean && (fPitch < tPitchMinRad )) || (fNTracksMean && (tTrackIndex == fNTracks)))
                 {
-                    tTimeOffset += tEventSpacing;
                     break;
                 }
                 else
