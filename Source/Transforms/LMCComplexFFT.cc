@@ -121,12 +121,12 @@ namespace locust
         
         fftw_execute(fReversePlan);
         for (int i = 0; i < fTotalWindowSize; ++i){
+	   if(i<fSize) out[i][0]=fOutputArray[i][0]/fTotalWindowSize;
 	   myfile<<i;
 	   myfile<<",";
-	   myfile<<fOutputArray[i][0];
+	   myfile<<fOutputArray[i][0]/fTotalWindowSize;
 	   myfile<<"\n";
 
-	   if(i<fSize) out[i][0]=fOutputArray[i][0];
         }
 	myfile.close();
         return true;
