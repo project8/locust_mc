@@ -85,7 +85,6 @@ namespace locust
     
     bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray)
     {
-        std::cout<< "Enter ConvertTFtoFIR"<<std::endl;
         if(fNBins<=0)
         {
             LERROR(lmclog,"The size of transfer function has to be positive integer");
@@ -95,23 +94,18 @@ namespace locust
         fTFComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fNBins);
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fNBins);
         
-        std::cout<< "99"<<std::endl;
         for (int i = 0; i < fNBins; ++i)
         {
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
         fIFFT.SetupFFT(fNBins, fTFComplex,fFIRComplex);
-        std::cout<< "105"<<std::endl;
-        std::cout<< "fNbins" << fNBins<<std::endl;
         fIFFT.ReverseFFT(fNBins,fTFComplex,fFIRComplex);
         
-        std::cout<< "108"<<std::endl;
         //Still not normalized
         
         for (int i = 0; i < fNBins; ++i){
-            std::cout <<fFIRComplex[i][0] <<std::endl;
-            fFilter[i]=fFIRComplex[i][0];
+            fFilter.push_back(fFIRComplex[i][0]);
         }
         LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
         return true;
@@ -160,7 +154,7 @@ namespace locust
                             LERROR(lmclog, "There are more column than expected in the input TF file");
                             return false;
                         }
-                        printf("%f\n", tfMagnitude);
+                        //printf("%f\n", tfMagnitude);
                         ++wordCount;
                     }
                     const std::complex<double> temp(tfRealValue,tfImaginaryValue);
@@ -169,18 +163,6 @@ namespace locust
                 }
             }
         }
-        /*
-         while (!feof(tfFile)){
-         fscanf(tfFile,"%lf %lf %lf %lf",&tfIndex,&tfMagnitude,&tfRealValue,&tfImaginaryValue);
-         std::cout<<tfIndex<<" "<<tfMagnitude<<" "<<tfRealValue<<" "<<tfImaginaryValue<<" "<<std::endl;
-         if (count%fNSkips==0)
-         {
-         const std::complex<double> temp(tfRealValue,tfImaginaryValue);
-         tfArray.push_back(temp);
-         ++fNBins;
-         }
-         ++count;
-         }*/
         tfFile.close();
         LDEBUG( lmclog, "Finished reading transfer function file");
         if(!ConvertTFtoFIR(tfArray)){
@@ -228,7 +210,6 @@ namespace locust
         }
         fclose(firFile);
         LDEBUG( lmclog, "Finished reading FIR file");
-        exit(1);
         return true;
     }
     

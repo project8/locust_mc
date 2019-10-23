@@ -12,6 +12,7 @@
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
 #include "LMCConst.hh"
 
 namespace locust
@@ -62,7 +63,7 @@ namespace locust
         bool InitializeTransmitter();
         
     private:
-        FIRTransmitterHandler fTransmitterFIRHandler;
+        TFTransmitterHandler fTransmitterHandler;
         
         /// Placeholder for now. Input signal type, 1 for dipole antenna, could be chaged later on.
         int fInputSignalType;

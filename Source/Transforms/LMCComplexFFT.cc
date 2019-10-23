@@ -84,34 +84,22 @@ namespace locust
     {
         fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
         fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
+        fReversePlan = fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_BACKWARD,fTransform);
         for (int i = 0; i < size; ++i)
         {
             fInputArray[i][0]=in[i][0];
-            fInputArray[i][1]=out[i][1];
-            fOutputArray[i][0]=0;
-            fOutputArray[i][1]=0;
+            fInputArray[i][1]=in[i][1];
         }
-        fReversePlan = fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_BACKWARD,fTransform);
-    }
+	fReversePlan= fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_BACKWARD,FFTW_ESTIMATE);
+   }
     
     bool ComplexFFT::ReverseFFT(int size, fftw_complex* in, fftw_complex* out)
     {
         if(IsInitialized) return false;
         
-        std::cout<< "87"<<std::endl;
-        //        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-        //        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-        
-        std::cout<< "91"<<std::endl;
-        
-        //        fInputArray=in;
-        //        fOutputArray=out;
-        std::cout<< "size" << size<<std::endl;
-        std::cout<< "94"<<std::endl;
         fftw_execute(fReversePlan);
-        std::cout<< "95"<<std::endl;
         for (int i = 0; i < size; ++i){
-            std::cout <<fOutputArray[i][0] <<std::endl;
+	    out[i][0]=fOutputArray[i][0];
         }
         return true;
     }

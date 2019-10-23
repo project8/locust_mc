@@ -18,7 +18,7 @@
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCAntennaSignalTransmitter.hh"
-#include "LMCTFFileHandler.hh"
+#include "LMCFIRFileHandler.hh"
 
 namespace scarab
 {
@@ -101,7 +101,7 @@ namespace locust
         
         PowerCombiner fPowerCombiner;
         HilbertTransform fHilbertTransform;
-        TFTransmitterHandler fReceiverHandler;
+        FIRReceiverHandler fReceiverHandler;
         AntennaSignalTransmitter fAntennaSignalTransmitter;
         std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
         std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
