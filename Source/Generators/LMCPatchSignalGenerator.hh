@@ -17,6 +17,7 @@
 #include "LMCHilbertTransform.hh"
 #include "LMCLienardWiechert.hh"
 #include "LMCFIRHandler.hh"
+#include "LMCKassLocustInterface.hh"
 
 
 namespace locust
@@ -57,6 +58,7 @@ namespace locust
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
             double fLO_Frequency;
+            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             double fArrayRadius;
             int fNPatchesPerStrip;
             double fZShiftArray;
@@ -66,6 +68,7 @@ namespace locust
             unsigned fFieldBufferSize;
             double fphiLO; // voltage phase of LO in radians;
 
+            void KassiopeiaInit(const std::string &aFile);
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
             double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi);
@@ -95,6 +98,9 @@ namespace locust
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
             LienardWiechert fFieldSolver;
+
+            kl_interface_ptr_t fInterface;
+
 
     };
 

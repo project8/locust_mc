@@ -6,7 +6,6 @@
  */
 
 #include "LMCFreeFieldSignalGenerator.hh"
-#include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 
 #include "logger.hh"
@@ -18,7 +17,6 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "LMCGlobalsDeclaration.hh"
 
 namespace locust
 {
@@ -29,15 +27,22 @@ namespace locust
     FreeFieldSignalGenerator::FreeFieldSignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fLO_Frequency( 0.),
+		fNPreEventSamples( 150000 ),
         fArrayRadius(0.),
         fPatchSpacing(0.),
         fNPatchesPerStrip(0.),
         fCorporateFeed(1),
         fPileupSeed( 0.),
         fPileupMode( false),
-        gxml_filename("blank.xml")
+        gxml_filename("blank.xml"),
+		fInterface( new KassLocustInterface() )
+
     {
-        fRequiredSignalState = Signal::kTime;
+
+    	fRequiredSignalState = Signal::kTime;
+
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
+
     }
 
     FreeFieldSignalGenerator::~FreeFieldSignalGenerator()
@@ -93,31 +98,43 @@ namespace locust
     }
 
 
-    static void* KassiopeiaInit(const std::string &aFile)
+    void FreeFieldSignalGenerator::KassiopeiaInit(const std::string &aFile)
     {
-        RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-        RunKassiopeia1->Run(aFile);
-        delete RunKassiopeia1;
-
-        return 0;
-    }
-
-    static void WakeBeforeEvent()
-    {
-        fPreEventCondition.notify_one();
+        RunKassiopeia tRunKassiopeia;
+        tRunKassiopeia.Run(aFile, fInterface);
         return;
     }
 
-    static bool ReceivedKassReady()
-    {
-        printf("LMC about to wait ..\n");
 
-        std::unique_lock< std::mutex >tLock( fKassReadyMutex);
-        fKassReadyCondition.wait( tLock, [](){return fKassEventReady;} );
-        printf("LMC Got the fKassReadyCondition signal\n");
+
+    bool FreeFieldSignalGenerator::WakeBeforeEvent()
+    {
+        fInterface->fPreEventCondition.notify_one();
+        return true;
+    }
+
+    bool FreeFieldSignalGenerator::ReceivedKassReady()
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        printf("LMC about to wait ..\n ");
+
+        if((fInterface->fRunInProgress)&&( ! fInterface->fKassEventReady))
+        {
+            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
+            fInterface->fKassReadyCondition.wait( tLock );
+        }
+
+        if (fInterface->fFalseStartKassiopeia)  // workaround for some Macs
+        {
+            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
+            fInterface->fKassReadyCondition.wait( tLock );
+
+        }
 
         return true;
     }
+
+
 
     void* FreeFieldSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal)
     {
@@ -125,7 +142,7 @@ namespace locust
         const int signalSize = aSignal->TimeSize();
 
         //Receiver Properties
-        double tReceiverTime = t_old;
+        double tReceiverTime = fInterface->fTOld;
         double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
         const double tLocustStep = 1. / (fAcquisitionRate * 1e6 * aSignal->DecimationFactor());
 
@@ -163,7 +180,7 @@ namespace locust
             } // z_position waveguide element stepping loop.
         } // nChannels loop.
 
-        t_old += tLocustStep;
+        fInterface->fTOld += tLocustStep;
 
         return 0;
     }
@@ -217,69 +234,61 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
-        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-        std::thread Kassiopeia (KassiopeiaInit, gxml_filename);     // spawn new thread
+        std::thread tKassiopeia (&FreeFieldSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
+        fInterface->fRunInProgress = true;
 
-        fRunInProgress = true;
         unsigned index = 0;
 
-        while( index < aSignal->DecimationFactor()*aSignal->TimeSize() && fRunInProgress)
+        while( index < aSignal->DecimationFactor()*aSignal->TimeSize() && fInterface->fRunInProgress)
         {
-            if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
+            if ((!fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (!fInterface->fPreEventInProgress))
             {
-                if (ReceivedKassReady()) fPreEventInProgress = true;
+            	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
+            	fInterface->fPreEventInProgress = true;
+            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+
             }
 
-            if (fPreEventInProgress)
+            if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
             {
                 PreEventCounter += 1;
-                if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
+
+                if (PreEventCounter > fNPreEventSamples) // finished pre-samples.  Start event.
                 {
-                    fPreEventInProgress = false;  // reset.
-                    fEventInProgress = true;
+                    fInterface->fPreEventInProgress = false;  // reset.
+                    fInterface->fEventInProgress = true;
+                    printf("LMC about to WakeBeforeEvent()\n");
                     WakeBeforeEvent();  // trigger Kass event.
                     if(fPileupMode)
-                    {
-                        index = rand() % aSignal->DecimationFactor()*aSignal->TimeSize();
-                    }
-
+                      {
+                          index = rand() % aSignal->DecimationFactor()*aSignal->TimeSize();
+                      }
                 }
             }
 
-
-            if (fEventInProgress)  // fEventInProgress
-                if (fEventInProgress)  // check again.
-                {
-                    //printf("waiting for digitizer trigger ... index is %d\n", index);
-                    std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
+            if (fInterface->fEventInProgress)  // fEventInProgress
+            {
+                    std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                     tLock.lock();
-                    fDigitizerCondition.wait( tLock );
-                    if (fEventInProgress)
+                    fInterface->fDigitizerCondition.wait( tLock );
+                    if (fInterface->fEventInProgress)
                     {
-                        //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
                         DriveAntenna(PreEventCounter, index, aSignal);
-
                         PreEventCounter = 0; // reset
                     }
                     tLock.unlock();
-                }
-
-            ++index;
-
+            }
         }  // for loop
 
-        //delete [] ImaginarySignal;
 
-        // trigger any remaining events in Kassiopeia so that its thread can finish.
-        while (fRunInProgress)
-        {
-            if (fRunInProgress)
-                if (ReceivedKassReady()) WakeBeforeEvent();
-        }
+        fInterface->fRunInProgress = false;  // tell Kassiopeia to finish.
+        fInterface->fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
+        WakeBeforeEvent();  // trigger one last Kass event if we are locked up.
+        tKassiopeia.join();  // finish thread
 
-        Kassiopeia.join();  // wait for Kassiopeia to finish.
+
 
         return true;
     }

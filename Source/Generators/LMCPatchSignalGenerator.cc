@@ -6,7 +6,6 @@
  */
 
 #include "LMCPatchSignalGenerator.hh"
-#include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 
 #include "logger.hh"
@@ -16,8 +15,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "LMCGlobalsDeclaration.hh"
-#include "LMCDigitizer.hh"
 #include <chrono>
 
 
@@ -37,6 +34,7 @@ namespace locust
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
         fphiLO(0.),
+		fNPreEventSamples( 150000 ),
         EFieldBuffer( 1 ),
         EPhaseBuffer( 1 ),
         EAmplitudeBuffer( 1 ),
@@ -44,10 +42,15 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
-        fFieldBufferSize( 50 )
+        fFieldBufferSize( 50 ),
+		fInterface( new KassLocustInterface() )
 
     {
+
         fRequiredSignalState = Signal::kTime;
+
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
+
     }
 
     PatchSignalGenerator::~PatchSignalGenerator()
@@ -66,18 +69,18 @@ namespace locust
     		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
     	}
 
-    	if(!fHilbertTransform.Configure(aParam))
-    	{
-    		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
-    	}
-
         if( aParam.has( "buffer-size" ) )
         {
         	fFieldBufferSize = aParam["buffer-size"]().as_int();
         	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
         }
 
-        if( aParam.has( "lo-frequency" ) )
+    	if(!fHilbertTransform.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
+    	}
+
+    	if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
@@ -117,40 +120,36 @@ namespace locust
     }
 
 
-    static void* KassiopeiaInit(const std::string &aFile)
+    void PatchSignalGenerator::KassiopeiaInit(const std::string &aFile)
     {
-        //RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-        RunKassiopeia RunKassiopeia1;
-        RunKassiopeia1.Run(aFile);
-        RunKassiopeia1.~RunKassiopeia();
-        //delete RunKassiopeia1;
-
-        return 0;
+        RunKassiopeia tRunKassiopeia;
+        tRunKassiopeia.Run(aFile, fInterface);
+        return;
     }
-
 
 
     bool PatchSignalGenerator::WakeBeforeEvent()
     {
-        fPreEventCondition.notify_one();
+        fInterface->fPreEventCondition.notify_one();
         return true;
     }
 
     bool PatchSignalGenerator::ReceivedKassReady()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        printf("LMC about to wait ..\n");
+        printf("LMC about to wait ..\n ");
 
-        if( !fKassEventReady)
+        if((fInterface->fRunInProgress)&&( ! fInterface->fKassEventReady))
         {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
+            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
+            fInterface->fKassReadyCondition.wait( tLock );
         }
 
-        if (fFalseStartKassiopeia)  // workaround for some Macs
+        if (fInterface->fFalseStartKassiopeia)  // workaround for some Macs
         {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
+            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
+            fInterface->fKassReadyCondition.wait( tLock );
+
         }
 
         return true;
@@ -178,7 +177,7 @@ namespace locust
 
         double EFieldPatch = IncidentElectricField.Dot(PatchPolarizationVector);
         double BFieldPatch = IncidentMagneticField.Dot(PatchCrossPolarizationVector);
-        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), t_old);
+        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), fInterface->fTOld);
     }
 
 
@@ -238,7 +237,7 @@ namespace locust
 
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        double tReceiverTime = t_old;
+        double tReceiverTime = fInterface->fTOld;
 
         PatchAntenna *currentPatch;
         unsigned tTotalPatchIndex = 0;
@@ -263,12 +262,12 @@ namespace locust
                 double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
-
  		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
                 if (fTextFileWriting==1) RecordIncidentFields(fp, tRadiatedMagneticField, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField) , PatchPhi, tDopplerFrequency);
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
+ 	            if (fabs(tRadiatedElectricField.GetX())>0.) {printf("efield is %g and voltage is %g\n", tRadiatedElectricField.GetX(), VoltageFIRSample); getchar();}
  	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
                 PopBuffers(channelIndex, patchIndex);
 
@@ -279,7 +278,7 @@ namespace locust
         } // channels loop
 
 
-        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 
     }
 
@@ -400,11 +399,10 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
-        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-        std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
-        fRunInProgress = true;
+        std::thread tKassiopeia (&PatchSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
+        fInterface->fRunInProgress = true;
 
         int nfilterbins = fReceiverFIRHandler.GetFilterSize();
         double dtfilter = fReceiverFIRHandler.GetFilterResolution();
@@ -413,50 +411,48 @@ namespace locust
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
-            if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
+            if ((!fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (!fInterface->fPreEventInProgress))
             {
-                if (ReceivedKassReady()) fPreEventInProgress = true;
+            	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
+            	fInterface->fPreEventInProgress = true;
+            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+
             }
 
-            if (fPreEventInProgress)
+            if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
             {
                 PreEventCounter += 1;
-                //printf("preeventcounter is %d\n", PreEventCounter);
-                if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
+
+                if (PreEventCounter > fNPreEventSamples) // finished pre-samples.  Start event.
                 {
-                    fPreEventInProgress = false;  // reset.
-                    fEventInProgress = true;
-                    //printf("LMC about to wakebeforeevent\n");
+                    fInterface->fPreEventInProgress = false;  // reset.
+                    fInterface->fEventInProgress = true;
+                    printf("LMC about to WakeBeforeEvent()\n");
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }
 
-            if (fEventInProgress)  // fEventInProgress
-                if (fEventInProgress)  // check again.
-                {
-                    //printf("waiting for digitizer trigger ... index is %d\n", index);
-                    std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
+            if (fInterface->fEventInProgress)  // fEventInProgress
+            {
+                    std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                     tLock.lock();
-                    fDigitizerCondition.wait( tLock );
-                    if (fEventInProgress)
+                    fInterface->fDigitizerCondition.wait( tLock );
+                    if (fInterface->fEventInProgress)
                     {
-                        //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
                         DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
                         PreEventCounter = 0; // reset
                     }
                     tLock.unlock();
-                }
-
+            }
         }  // for loop
 
-        printf("finished signal loop\n");
-
+        fInterface->fRunInProgress = false;  // tell Kassiopeia to finish.
+        fInterface->fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
         fclose(fp);
-        CleanupBuffers();
-        fRunInProgress = false;  // tell Kassiopeia to finish.
-        fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-        WakeBeforeEvent();
-        Kassiopeia.join();
+        printf("finished signal loop.\n");
+        WakeBeforeEvent();  // trigger one last Kass event if we are locked up.
+        tKassiopeia.join();  // finish thread
+
 
         return true;
     }
