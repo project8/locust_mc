@@ -19,6 +19,7 @@ namespace locust
     fNBins(1000),
     fResolution(1e-12),
     fNSkips(1),
+    fComplexFFT(),
     fHFSSFiletype("")
     {
     }
@@ -59,7 +60,8 @@ namespace locust
     
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
-    fFIRComplex(NULL)
+    fFIRComplex(NULL),
+    fInitialTFIndex(0.0)
     {
     }
     
@@ -99,8 +101,8 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
-        fIFFT.SetupFFT(fNBins, fTFComplex,fFIRComplex);
-        fIFFT.ReverseFFT(fNBins,fTFComplex,fFIRComplex);
+        fComplexFFT.SetupIFFT(fNBins,fInitialTFIndex,fResolution);
+        fComplexFFT.ReverseFFT(fNBins,fTFComplex,fFIRComplex);
         
         //Still not normalized
         
@@ -157,6 +159,7 @@ namespace locust
                         //printf("%f\n", tfMagnitude);
                         ++wordCount;
                     }
+		    if(fNBins==0)fInitialTFIndex=tfIndex;
                     const std::complex<double> temp(tfRealValue,tfImaginaryValue);
                     tfArray.push_back(temp);
                     ++fNBins;

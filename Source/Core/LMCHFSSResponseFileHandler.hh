@@ -39,6 +39,7 @@ namespace locust
         double fResolution;
         int fNSkips;
         bool fHFSSFiletype;
+        ComplexFFT fComplexFFT;
         
         //Member functions
         bool ends_with(const std::string &, const std::string &);
@@ -75,10 +76,12 @@ namespace locust
         //Member variables
         fftw_complex *fTFComplex;
         fftw_complex *fFIRComplex;
-        ComplexFFT fIFFT;
         
         //Member functions
         bool ConvertTFtoFIR(std::vector<std::complex<double>> &);
+    protected:
+        //Member variables
+        double fInitialTFIndex;
     };
     
     /*!

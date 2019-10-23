@@ -24,13 +24,17 @@ namespace locust
     
     bool TFTransmitterHandler::Configure(const scarab::param_node& aParam)
     {
+        if(!fComplexFFT.Configure(aParam))
+        {
+            LERROR(lmclog,"Error configuring ComplexFFT class");
+        }
         if( aParam.has( "tf-transmitter-filename" ) )
         {
             fHFSSFilename=aParam["tf-transmitter-filename"]().as_string();
         }
-        if( aParam.has( "tf-transmitter-dt" ) )
+        if( aParam.has( "tf-transmitter-resolution" ) )
         {
-            fResolution=aParam["tf-transmitter-dt"]().as_double();
+            fResolution=aParam["tf-transmitter-resolution"]().as_double();
         }
         if( aParam.has( "tf-transmitter-nskips" ) )
         {
@@ -51,13 +55,17 @@ namespace locust
     
     bool TFReceiverHandler::Configure(const scarab::param_node& aParam)
     {
+        if(!fComplexFFT.Configure(aParam))
+        {
+            LERROR(lmclog,"Error configuring ComplexFFT class");
+        }
         if( aParam.has( "tf-receiver-filename" ) )
         {
             fHFSSFilename=aParam["tf-receiver-filename"]().as_string();
         }
-        if( aParam.has( "tf-receiver-dt" ) )
+        if( aParam.has( "tf-receiver-resolution" ) )
         {
-            fResolution=aParam["tf-receiver-dt"]().as_double();
+            fResolution=aParam["tf-receiver-resolution"]().as_double();
         }
         if( aParam.has( "tf-receiver-nskips" ) )
         {

@@ -4,6 +4,8 @@
  *  Created on: Sep 30, 2019
  *      Author: P. T. Surukuchi
  */
+#include <iostream>
+#include <fstream>
 
 #include "LMCComplexFFT.hh"
 
@@ -13,6 +15,9 @@ namespace locust
     IsInitialized(false),
     fTransformFlag("MEASURE"),
     fWisdomFilename("wisdom_complexfft.fftw3"),
+    fSize(0),
+    fTotalWindowSize(0),
+    fZeroPaddingSize(0),
     fInputArray(NULL),
     fOutputArray(NULL),
     fForwardPlan(),
@@ -51,6 +56,11 @@ namespace locust
         {
             fWisdomFilename=aParam["wisdom-filename"]().as_string();
         }
+        if(aParam.has("zero-padding-size"))
+
+        {
+            fZeroPaddingSize=aParam["zero-padding-size"]().as_int();
+        }
         
         if(fTransformFlag.compare("MEASURE"))
         {
@@ -70,7 +80,7 @@ namespace locust
     
     bool ComplexFFT::ForwardFFT(int size, fftw_complex* in, fftw_complex* out)
     {
-        if(IsInitialized) return false;
+        if(!IsInitialized) return false;
         
         fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
         fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
@@ -80,27 +90,45 @@ namespace locust
         return true;
     }
     
-    bool ComplexFFT::SetupFFT(int size, fftw_complex* in, fftw_complex* out)
+    bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double resolution)
     {
-        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-        fReversePlan = fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_BACKWARD,fTransform);
-        for (int i = 0; i < size; ++i)
-        {
-            fInputArray[i][0]=in[i][0];
-            fInputArray[i][1]=in[i][1];
-        }
-	fReversePlan= fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_BACKWARD,FFTW_ESTIMATE);
-   }
-    
+        fSize=size;	
+	fPreFilterBins=(int) intialBinValue/resolution;
+	fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
+	return true;
+    }
     bool ComplexFFT::ReverseFFT(int size, fftw_complex* in, fftw_complex* out)
     {
-        if(IsInitialized) return false;
+	    std::ofstream myfile;
+	    myfile.open ("example.txt");
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        if(!IsInitialized) return false;
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+	    if(i>fPreFilterBins && i<fSize+fPreFilterBins)
+	    {
+              fInputArray[i][0]=in[i-fPreFilterBins][0];
+              fInputArray[i][1]=in[i-fPreFilterBins][1];
+	    }
+	    else
+	    {
+	      fInputArray[i][0]=0.0;
+	      fInputArray[i][1]=0.0;
+	    }
+        }
+	fReversePlan= fftw_plan_dft_1d(fTotalWindowSize,fInputArray,fOutputArray,FFTW_BACKWARD,FFTW_ESTIMATE);
         
         fftw_execute(fReversePlan);
-        for (int i = 0; i < size; ++i){
-	    out[i][0]=fOutputArray[i][0];
+        for (int i = 0; i < fTotalWindowSize; ++i){
+	   myfile<<i;
+	   myfile<<",";
+	   myfile<<fOutputArray[i][0];
+	   myfile<<"\n";
+
+	   if(i<fSize) out[i][0]=fOutputArray[i][0];
         }
+	myfile.close();
         return true;
     }
     

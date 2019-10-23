@@ -43,8 +43,7 @@ namespace locust
         virtual ~ComplexFFT();
         bool Configure( const scarab::param_node& aNode);
         
-        
-        bool SetupFFT(int,fftw_complex*, fftw_complex*);
+        bool SetupIFFT(int,double, double);
         bool ForwardFFT(int, fftw_complex*, fftw_complex*);
         bool ReverseFFT(int, fftw_complex*, fftw_complex*);
         
@@ -65,6 +64,10 @@ namespace locust
         std::string fTransformFlag;
         bool fUseWisdom;
         std::string fWisdomFilename;
+	int fSize;
+	int fTotalWindowSize;
+	int fZeroPaddingSize;
+	int fPreFilterBins;
         bool IsInitialized;
     };
     
