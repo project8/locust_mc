@@ -85,20 +85,35 @@ namespace locust
     
     bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray)
     {
+        std::cout<< "Enter ConvertTFtoFIR"<<std::endl;
+        if(fNBins<=0)
+        {
+            LERROR(lmclog,"The size of transfer function has to be positive integer");
+            return false;
+        }
         //Might need to be moved to a different function
         fTFComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fNBins);
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fNBins);
+        
+        std::cout<< "99"<<std::endl;
         for (int i = 0; i < fNBins; ++i)
         {
             fTFComplex[i][0]=tfArray.at(i).real();
-            fTFComplex[i][0]=tfArray.at(i).imag();
+            fTFComplex[i][1]=tfArray.at(i).imag();
         }
+        fIFFT.SetupFFT(fNBins, fTFComplex,fFIRComplex);
+        std::cout<< "105"<<std::endl;
+        std::cout<< "fNbins" << fNBins<<std::endl;
         fIFFT.ReverseFFT(fNBins,fTFComplex,fFIRComplex);
+        
+        std::cout<< "108"<<std::endl;
         //Still not normalized
         
         for (int i = 0; i < fNBins; ++i){
+            std::cout <<fFIRComplex[i][0] <<std::endl;
             fFilter[i]=fFIRComplex[i][0];
         }
+        LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
         return true;
     }
     
@@ -115,21 +130,59 @@ namespace locust
         double tfRealValue;
         double tfImaginaryValue;
         std::vector<std::complex<double>> tfArray;
-        FILE *tfFile;
-        tfFile=fopen(fHFSSFilename.c_str(),"r");
+        //        FILE *tfFile;
+        std::fstream tfFile(fHFSSFilename.c_str(),std::ios::in);
+        //        tfFile=fopen(fHFSSFilename.c_str(),"r");
         //logic copied from /LMCPatchSignalGenerator.cc
-        int count=0;
-        while (!feof(tfFile)){
-            fscanf(tfFile,"%lf %lf %lf %lf",&tfIndex,&tfMagnitude,&tfRealValue,&tfImaginaryValue);
-            if (count%fNSkips==0)
+        int totalcount=0;
+        
+        while (!tfFile.eof()){
+            std::string lineContent;
+            while(std::getline(tfFile,lineContent))
             {
-                const std::complex<double> temp(tfRealValue,tfImaginaryValue);
-                tfArray.push_back(temp);
-                ++fNBins;
+                if (lineContent.find('#')==std::string::npos)
+                {
+                    if (totalcount%fNSkips!=0){
+                        ++totalcount;
+                        continue;
+                    }
+                    std::string token;
+                    std::stringstream ss(lineContent);
+                    int wordCount=0;
+                    while (ss >> token)
+                    {
+                        if(wordCount==0)tfIndex=std::stod(token);
+                        else if(wordCount==1)tfMagnitude=std::stod(token);
+                        else if(wordCount==2)tfRealValue=std::stod(token);
+                        else if(wordCount==3)tfImaginaryValue=std::stod(token);
+                        else
+                        {
+                            LERROR(lmclog, "There are more column than expected in the input TF file");
+                            return false;
+                        }
+                        printf("%f\n", tfMagnitude);
+                        ++wordCount;
+                    }
+                    const std::complex<double> temp(tfRealValue,tfImaginaryValue);
+                    tfArray.push_back(temp);
+                    ++fNBins;
+                }
             }
-            ++count;
         }
-        fclose(tfFile);
+        /*
+         while (!feof(tfFile)){
+         fscanf(tfFile,"%lf %lf %lf %lf",&tfIndex,&tfMagnitude,&tfRealValue,&tfImaginaryValue);
+         std::cout<<tfIndex<<" "<<tfMagnitude<<" "<<tfRealValue<<" "<<tfImaginaryValue<<" "<<std::endl;
+         if (count%fNSkips==0)
+         {
+         const std::complex<double> temp(tfRealValue,tfImaginaryValue);
+         tfArray.push_back(temp);
+         ++fNBins;
+         }
+         ++count;
+         }*/
+        tfFile.close();
+        LDEBUG( lmclog, "Finished reading transfer function file");
         if(!ConvertTFtoFIR(tfArray)){
             return false;
         }
@@ -163,6 +216,7 @@ namespace locust
         firFile=fopen(fHFSSFilename.c_str(),"r");
         //logic copied from /LMCPatchSignalGenerator.cc
         int count=0;
+        
         while (!feof(firFile)){
             fscanf(firFile,"%lf %lf",&firIndex,&filterMagnitude);
             if (count%fNSkips==0)
@@ -173,6 +227,8 @@ namespace locust
             ++count;
         }
         fclose(firFile);
+        LDEBUG( lmclog, "Finished reading FIR file");
+        exit(1);
         return true;
     }
     

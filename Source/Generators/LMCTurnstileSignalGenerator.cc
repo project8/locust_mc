@@ -284,7 +284,7 @@ namespace locust
     {
         if(!fReceiverHandler.ReadHFSSFile())
         {
-            return false;
+            exit(-1);
         }
         const unsigned nChannels = fNChannels;
         const int nReceivers = fNPatchesPerStrip;
@@ -325,7 +325,6 @@ namespace locust
     
     bool TurnstileSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-        
         InitializePatchArray();
         InitializePowerCombining();
         const unsigned nchannels = fNChannels;
