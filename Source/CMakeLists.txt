@@ -78,17 +78,16 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         #Generators/LMCPatchSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
 
-        Core/LMCGlobalsDeclaration.hh
-        Core/LMCGlobalsDefinition.hh
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
+        Kassiopeia/LMCLienardWiechert.hh
+        Kassiopeia/LMCParticle.hh
         Kassiopeia/LMCFieldCalculator.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
         Kassiopeia/LMCKassLocustInterface.hh
-        Kassiopeia/LMCParticle.hh
         Kassiopeia/LMCRunKassiopeia.hh
         Kassiopeia/LMCRunPause.hh
         Kassiopeia/LMCRunPauseBuilder.hh
@@ -104,11 +103,12 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
+        Kassiopeia/LMCParticle.cc
+        Kassiopeia/LMCLienardWiechert.cc
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
         Kassiopeia/LMCKassLocustInterface.cc
-        Kassiopeia/LMCParticle.cc
         Kassiopeia/LMCRunKassiopeia.cc
         Kassiopeia/LMCRunPause.cc
         Kassiopeia/LMCRunPauseBuilder.cc

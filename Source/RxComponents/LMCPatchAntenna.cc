@@ -20,8 +20,6 @@ namespace locust
         incidentElectricField(0,0,0),
         incidentMagneticField(0,0,0),
         instantaneousFrequency(0.),
-        previousRetardedIndex(-99),
-        previousRetardedTime(-99),
         timeDelay(0.)
     {
     }
@@ -53,30 +51,10 @@ namespace locust
         instantaneousFrequency = dopplerFrequency;
     }
 
-    int PatchAntenna::GetPreviousRetardedIndex()
-    {
-        return previousRetardedIndex;
-    }
-
-    double PatchAntenna::GetPreviousRetardedTime()
-    {
-        return previousRetardedTime;
-    }
-
     double PatchAntenna::GetAnalogTimeDelay()
     {
         return timeDelay;
     }
-
-    void PatchAntenna::SetPreviousRetardedIndex(const int& index)
-    {
-        previousRetardedIndex = index;
-    }
-    void PatchAntenna::SetPreviousRetardedTime(const double &time)
-    {
-        previousRetardedTime = time;
-    }
-
 
     double PatchAntenna::GetVoltage()
     {

@@ -53,7 +53,7 @@ namespace locust
             bool ToFreq();
 //            bool ToDigital( uint64_t* anArray, unsigned aDigSize );            
             bool ToDigital( int8_t* anArray, unsigned aDigSize );
-            bool ToDigital( uint8_t* anArray, unsigned aDigSize );  // pls
+            bool ToDigital( uint8_t* anArray, unsigned aDigSize );
 
             const double* SignalTime() const;
             double* SignalTime();
@@ -82,17 +82,17 @@ namespace locust
 
 //            const uint64_t* SignalDigital() const;
             const int8_t* SignalDigitalS() const;
-            const uint8_t* SignalDigitalUS() const;  // pls
+            const uint8_t* SignalDigitalUS() const;
 //            uint64_t* SignalDigital();
             int8_t* SignalDigitalS();
-            uint8_t* SignalDigitalUS();  // pls
+            uint8_t* SignalDigitalUS();
 
             bool GetDigitalIsSigned() const;
 
 //            uint64_t SignalDigital( unsigned anIndex ) const;            
-            //uint8_t SignalDigital( unsigned anIndex ) const;  // pls
+            //uint8_t SignalDigital( unsigned anIndex ) const;
 //            uint64_t& SignalDigital( unsigned anIndex );            
-            //uint8_t& SignalDigital( unsigned anIndex );  // pls
+            //uint8_t& SignalDigital( unsigned anIndex );
 
         private:
             bool FFTToTime();
