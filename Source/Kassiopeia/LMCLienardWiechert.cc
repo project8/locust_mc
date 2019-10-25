@@ -12,7 +12,7 @@
 namespace locust
 {
     LienardWiechert::LienardWiechert() :
-            fFieldPosition( 0., 0., 0. ),
+    		fFieldPosition( 0., 0., 0. ),
             fFieldTime( 0. ),
             fPreviousFieldTime( 0. ),
             fAntennaIndex( 0 ),
@@ -23,12 +23,17 @@ namespace locust
 			fInterface( new KassLocustInterface() )
 
     {
-
+    	KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
     LienardWiechert::~LienardWiechert()
     {
 
+    }
+
+    void LienardWiechert::SetParticleHistory( std::deque<Particle> aParticleHistory )
+    {
+    	fInterface->fParticleHistory = aParticleHistory;
     }
 
     void LienardWiechert::AddFieldPoint(const LMCThreeVector aFieldPoint)
@@ -123,6 +128,7 @@ namespace locust
 
      bool LienardWiechert::IsInLightCone() const
     {
+
         if(fInterface->fParticleHistory.front().GetTime()<=3.*fKassiopeiaTimeStep)
         {
             fInterface->fParticleHistory.front().Interpolate(0);

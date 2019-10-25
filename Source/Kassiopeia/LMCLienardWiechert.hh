@@ -31,6 +31,7 @@ namespace locust
             LienardWiechert();
             virtual ~LienardWiechert();
 
+            void SetParticleHistory( std::deque<Particle> aParticleHistory );
             void AddFieldPoint(const LMCThreeVector aFieldPoint);
             void SetFieldEvent(const double aTime, const unsigned aFieldPointIndex);
             void SolveFieldSolutions();

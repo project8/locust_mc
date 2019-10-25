@@ -8,7 +8,6 @@
 #include "LMCKassSignalGenerator.hh"
 
 #include "LMCRunKassiopeia.hh"
-#include "LMCSimulationController.hh"
 
 #include "logger.hh"
 

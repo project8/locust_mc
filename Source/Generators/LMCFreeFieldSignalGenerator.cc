@@ -149,6 +149,8 @@ namespace locust
         PatchAntenna *currentPatch;
         unsigned tTotalPatchIndex = 0;
 
+        fFieldSolver.SetParticleHistory(fInterface->fParticleHistory);
+
         for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
         {
             for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)

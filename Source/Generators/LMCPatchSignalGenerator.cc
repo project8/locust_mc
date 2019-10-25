@@ -242,6 +242,8 @@ namespace locust
         PatchAntenna *currentPatch;
         unsigned tTotalPatchIndex = 0;
 
+        fFieldSolver.SetParticleHistory(fInterface->fParticleHistory);
+
         for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
         {
             double PatchPhi = (double)channelIndex*360./allChannels.size()*LMCConst::Pi()/180.; // radians.    
@@ -267,7 +269,6 @@ namespace locust
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
- 	            if (fabs(tRadiatedElectricField.GetX())>0.) {printf("efield is %g and voltage is %g\n", tRadiatedElectricField.GetX(), VoltageFIRSample); getchar();}
  	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
                 PopBuffers(channelIndex, patchIndex);
 
