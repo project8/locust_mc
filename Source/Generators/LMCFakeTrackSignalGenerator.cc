@@ -657,7 +657,7 @@ namespace locust
             fStartFrequency = rel_cyc(new_energy, fBField);
             fCurrentFrequency = fStartFrequency;
             aTrack.StartTime = fEndTime + 0.; // margin of time is 0.
-            aTrack.StartFrequency += fStartFrequency;
+            aTrack.StartFrequency = fStartFrequency;
         }
 
         fSlope = slope_distribution(fRandomEngine);
