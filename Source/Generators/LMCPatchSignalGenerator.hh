@@ -15,7 +15,9 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
+#include "LMCLienardWiechert.hh"
 #include "LMCFIRHandler.hh"
+#include "LMCKassLocustInterface.hh"
 
 
 namespace locust
@@ -55,15 +57,18 @@ namespace locust
 
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
-            double fLO_Frequency;  // typically defined by a parameter in json file.
-            double fArrayRadius;  // from json file.
-            int fNPatchesPerStrip; // from json file.
-            double fPatchSpacing; // from json file.
+            double fLO_Frequency;
+            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            double fArrayRadius;
+            int fNPatchesPerStrip;
+            double fZShiftArray;
+            double fPatchSpacing;
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
             double fphiLO; // voltage phase of LO in radians;
 
+            void KassiopeiaInit(const std::string &aFile);
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
             double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi);
@@ -92,9 +97,10 @@ namespace locust
             FIRReceiverHandler fReceiverFIRHandler;
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
+            LienardWiechert fFieldSolver;
 
-            int FindNode(double tNew) const;
-            double GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition );
+            kl_interface_ptr_t fInterface;
+
 
     };
 

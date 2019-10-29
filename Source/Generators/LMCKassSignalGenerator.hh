@@ -65,9 +65,10 @@ namespace locust
             bool fTruth; // parameter in json file.  default is false.
             std::string gxml_filename;
             std::string gpitchangle_filename;
-            double phi_t1; // antenna voltage phase in radians.
-            double phi_t2; // reflecting short voltage phase in radians.
-            double phiLO_t; // voltage phase of LO in radians;
+            double fPhi_t1; // antenna voltage phase in radians.
+            double fPhi_t2; // reflecting short voltage phase in radians.
+            double fPhiLO_t; // voltage phase of LO in radians;
+            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             mutable double fPreviousRetardedTime;
             mutable int fPreviousRetardedIndex;
             double fEventStartTime;

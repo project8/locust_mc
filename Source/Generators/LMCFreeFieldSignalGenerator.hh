@@ -13,6 +13,9 @@
 
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
+#include "LMCLienardWiechert.hh"
+#include "LMCKassLocustInterface.hh"
+
 
 namespace locust
 {
@@ -51,22 +54,26 @@ namespace locust
         private:
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
 
-            std::vector<std::pair<int, double> > PreviousTimes; //Cache the results from previous iteration. [0] is previous index, [1] is corresponding retarded time of previous solution
             double fLO_Frequency;  // typically defined by a parameter in json file.
+            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             double fArrayRadius;
             int fNPatchesPerStrip;
             double fPatchSpacing;
             bool fCorporateFeed;
             bool fPileupMode; //simulate tracks in sequence or as piling up?
             int fPileupSeed; 
+            LienardWiechert fFieldSolver;
+
+            kl_interface_ptr_t fInterface;
 
             std::string gxml_filename;
 
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
             void InitializePatchArray();
-
-            int FindNode(double tNew) const;
+            void KassiopeiaInit(const std::string &aFile);
+            bool WakeBeforeEvent();
+            bool ReceivedKassReady();
 
     };
 

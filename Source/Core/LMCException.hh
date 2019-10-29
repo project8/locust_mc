@@ -2,7 +2,7 @@
 #define LMCEXCEPTION_HH_
 
 #include <sstream>
-//#include <Exception>   // pls edit
+//#include <Exception>
 
 namespace locust
 {

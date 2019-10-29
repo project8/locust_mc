@@ -6,7 +6,6 @@
  */
 
 #include "LMCPatchSignalGenerator.hh"
-#include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 
 #include "logger.hh"
@@ -16,8 +15,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "LMCGlobalsDeclaration.hh"
-#include "LMCDigitizer.hh"
 #include <chrono>
 
 
@@ -32,10 +29,12 @@ namespace locust
         fLO_Frequency( 0.),
         fArrayRadius( 0. ),
         fNPatchesPerStrip( 0. ),
+		fZShiftArray( 0. ),
         fPatchSpacing( 0. ),
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
         fphiLO(0.),
+		fNPreEventSamples( 150000 ),
         EFieldBuffer( 1 ),
         EPhaseBuffer( 1 ),
         EAmplitudeBuffer( 1 ),
@@ -43,10 +42,15 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
-        fFieldBufferSize( 50 )
+        fFieldBufferSize( 50 ),
+		fInterface( new KassLocustInterface() )
 
     {
+
         fRequiredSignalState = Signal::kTime;
+
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
+
     }
 
     PatchSignalGenerator::~PatchSignalGenerator()
@@ -65,18 +69,18 @@ namespace locust
     		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
     	}
 
-    	if(!fHilbertTransform.Configure(aParam))
-    	{
-    		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
-    	}
-
         if( aParam.has( "buffer-size" ) )
         {
         	fFieldBufferSize = aParam["buffer-size"]().as_int();
         	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
         }
 
-        if( aParam.has( "lo-frequency" ) )
+    	if(!fHilbertTransform.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
+    	}
+
+    	if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
@@ -92,6 +96,10 @@ namespace locust
         if( aParam.has( "patch-spacing" ) )
         {
             fPatchSpacing = aParam["patch-spacing"]().as_double();
+        }
+        if( aParam.has( "zshift-array" ) )
+        {
+            fZShiftArray = aParam["zshift-array"]().as_double();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -112,58 +120,39 @@ namespace locust
     }
 
 
-    static void* KassiopeiaInit(const std::string &aFile)
+    void PatchSignalGenerator::KassiopeiaInit(const std::string &aFile)
     {
-        //RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
-        RunKassiopeia RunKassiopeia1;
-        RunKassiopeia1.Run(aFile);
-        RunKassiopeia1.~RunKassiopeia();
-        //delete RunKassiopeia1;
-
-        return 0;
+        RunKassiopeia tRunKassiopeia;
+        tRunKassiopeia.Run(aFile, fInterface);
+        return;
     }
-
 
 
     bool PatchSignalGenerator::WakeBeforeEvent()
     {
-        fPreEventCondition.notify_one();
+        fInterface->fPreEventCondition.notify_one();
         return true;
     }
 
     bool PatchSignalGenerator::ReceivedKassReady()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        printf("LMC about to wait ..\n");
+        printf("LMC about to wait ..\n ");
 
-        if( !fKassEventReady)
+        if((fInterface->fRunInProgress)&&( ! fInterface->fKassEventReady))
         {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
+            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
+            fInterface->fKassReadyCondition.wait( tLock );
         }
 
-        if (fFalseStartKassiopeia)  // workaround for some Macs
+        if (fInterface->fFalseStartKassiopeia)  // workaround for some Macs
         {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
+            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
+            fInterface->fKassReadyCondition.wait( tLock );
+
         }
 
         return true;
-    }
-
-
-    // this needs to be moved into a new free-field solution class.  Nick is working on this.
-    double PatchSignalGenerator::GetSpaceTimeInterval(const double &aParticleTime, const double &aReceiverTime, const LMCThreeVector &aParticlePosition, const LMCThreeVector &aReceiverPosition )
-    {
-        return aReceiverTime - aParticleTime - (aReceiverPosition - aParticlePosition).Magnitude() / LMCConst::C();
-    }
-
-
-// this needs to be moved into a new free-field solution class.  Nick is working on this.
-    double GetPatchStepRoot(const locust::Particle aParticle, double aReceiverTime, locust::LMCThreeVector aReceiverPosition, double aSpaceTimeInterval)
-    {
-        double tRetardedTime = aParticle.GetTime(true);
-        return tRetardedTime + aSpaceTimeInterval;
     }
 
 
@@ -188,7 +177,7 @@ namespace locust
 
         double EFieldPatch = IncidentElectricField.Dot(PatchPolarizationVector);
         double BFieldPatch = IncidentMagneticField.Dot(PatchCrossPolarizationVector);
-        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), t_old);
+        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), fInterface->fTOld);
     }
 
 
@@ -243,24 +232,17 @@ namespace locust
     void PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
-        locust::Particle tCurrentParticle = fParticleHistory.back();
-        int CurrentIndex;
         const int signalSize = aSignal->TimeSize();
-
-        const double kassiopeiaTimeStep = fabs(fParticleHistory[0].GetTime() - fParticleHistory[1].GetTime());
-        const int historySize = fParticleHistory.size();
         unsigned sampleIndex = 0;
 
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        double tReceiverTime = t_old;
-        double tRetardedTime = 0.; //Retarded time of particle corresponding to when emission occurs, reaching receiver at tReceiverTime
-
-        double tSpaceTimeInterval=99.;
-        double dtRetarded=0;
-        double tTolerance=1e-23;
+        double tReceiverTime = fInterface->fTOld;
 
         PatchAntenna *currentPatch;
+        unsigned tTotalPatchIndex = 0;
+
+        fFieldSolver.SetParticleHistory(fInterface->fParticleHistory);
 
         for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
         {
@@ -270,94 +252,36 @@ namespace locust
                 currentPatch = &allChannels[channelIndex][patchIndex]; 
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                if(fParticleHistory.front().GetTime()<=3.*kassiopeiaTimeStep)
-                {
-                    fParticleHistory.front().Interpolate(0);
-                    if(GetSpaceTimeInterval(fParticleHistory.front().GetTime(true), tReceiverTime , fParticleHistory.front().GetPosition(true), currentPatch->GetPosition() ) < 0 )
-                    {
-                        //printf("Skipping! out of Bounds!: tReceiverTime=%e\n",tReceiverTime);
-                        continue;
-                    }
-                }
+                fFieldSolver.SetFieldEvent(tReceiverTime, tTotalPatchIndex);
+                fFieldSolver.SolveFieldSolutions();
 
-                if(currentPatch->GetPreviousRetardedIndex() == -99.)
-                {
-                    CurrentIndex=FindNode(tReceiverTime);
-                    tCurrentParticle = fParticleHistory[CurrentIndex];
-                    tRetardedTime = tReceiverTime - (tCurrentParticle.GetPosition() - currentPatch->GetPosition() ).Magnitude() /  LMCConst::C();
-                }
-                else
-                {
-                    CurrentIndex = currentPatch->GetPreviousRetardedIndex();
-                    tRetardedTime = currentPatch->GetPreviousRetardedTime() + 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-                }
-
-                CurrentIndex = FindNode(tRetardedTime);
-                CurrentIndex = std::min(std::max(CurrentIndex,0) , historySize - 1);
-
-                tCurrentParticle = fParticleHistory[CurrentIndex];
-                tCurrentParticle.Interpolate(tRetardedTime);
-                tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
-
-                double tOldSpaceTimeInterval=99.;
-
-                //Converge to root
-                for(int j=0;j<25;++j)
-                {
-                    tRetardedTime = GetPatchStepRoot(tCurrentParticle, tReceiverTime, currentPatch->GetPosition(), tSpaceTimeInterval);
-                    tCurrentParticle.Interpolate(tRetardedTime);
-
-                    //Change the kassiopeia step we expand around if the interpolation time displacement is too large
-                    if(fabs(tCurrentParticle.GetTime(true) - tCurrentParticle.GetTime(false)) > kassiopeiaTimeStep)
-                    {
-                        CurrentIndex=FindNode(tRetardedTime);
-                        tCurrentParticle=fParticleHistory[CurrentIndex];
-                        tCurrentParticle.Interpolate(tRetardedTime);
-                    }
-
-                    tSpaceTimeInterval = GetSpaceTimeInterval(tCurrentParticle.GetTime(true), tReceiverTime, tCurrentParticle.GetPosition(true), currentPatch->GetPosition());
-                    tOldSpaceTimeInterval = tSpaceTimeInterval;
-                }
-
-
-                currentPatch->SetPreviousRetardedIndex(CurrentIndex);
-                currentPatch->SetPreviousRetardedTime(tRetardedTime);
+                LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
+                LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
+                locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
 
                 LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
                 double tVelZ = tCurrentParticle.GetVelocity(true).Z();
                 double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
- 		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())), PatchPhi, tDopplerFrequency);
-                if (fTextFileWriting==1) RecordIncidentFields(fp, tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()), tCurrentParticle.CalculateElectricField(currentPatch->GetPosition()).Cross(tCurrentParticle.CalculateMagneticField(currentPatch->GetPosition())) , PatchPhi, tDopplerFrequency);
+ 		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, tRadiatedMagneticField, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField) , PatchPhi, tDopplerFrequency);
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
  	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
                 PopBuffers(channelIndex, patchIndex);
 
+                ++tTotalPatchIndex;
+
             } // patch loop
 
         } // channels loop
 
 
-        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 
     }
-
-    //Return index of fParticleHistory particle closest to the time we are evaluating
-    // this needs to be moved into a new free field solution class.  Nick is working on this.
-    int PatchSignalGenerator::FindNode(double tNew) const
-    {
-        std::deque<locust::Particle>::iterator it;
-        it = std::upper_bound( fParticleHistory.begin() , fParticleHistory.end() , tNew, [] (const double &a , const locust::Particle &b) { return a < b.GetTime();} );
-
-        int tNodeIndex = it - fParticleHistory.begin();
-
-        return tNodeIndex;
-    }
-
-
 
     void PatchSignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch)
     {
@@ -451,13 +375,14 @@ namespace locust
 
             for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
             {
-                zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
+                zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
                 modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
            
                 modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allChannels[channelIndex].AddReceiver(modelPatch);
+                fFieldSolver.AddFieldPoint(modelPatch.GetPosition());
             }
         }
         return true;
@@ -475,11 +400,10 @@ namespace locust
 
         //n samples for event spacing.
         int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
-        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-        std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
-        fRunInProgress = true;
+        std::thread tKassiopeia (&PatchSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
+        fInterface->fRunInProgress = true;
 
         int nfilterbins = fReceiverFIRHandler.GetFilterSize();
         double dtfilter = fReceiverFIRHandler.GetFilterResolution();
@@ -488,50 +412,48 @@ namespace locust
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
-            if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
+            if ((!fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (!fInterface->fPreEventInProgress))
             {
-                if (ReceivedKassReady()) fPreEventInProgress = true;
+            	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
+            	fInterface->fPreEventInProgress = true;
+            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+
             }
 
-            if (fPreEventInProgress)
+            if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
             {
                 PreEventCounter += 1;
-                //printf("preeventcounter is %d\n", PreEventCounter);
-                if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
+
+                if (PreEventCounter > fNPreEventSamples) // finished pre-samples.  Start event.
                 {
-                    fPreEventInProgress = false;  // reset.
-                    fEventInProgress = true;
-                    //printf("LMC about to wakebeforeevent\n");
+                    fInterface->fPreEventInProgress = false;  // reset.
+                    fInterface->fEventInProgress = true;
+                    printf("LMC about to WakeBeforeEvent()\n");
                     WakeBeforeEvent();  // trigger Kass event.
                 }
             }
 
-            if (fEventInProgress)  // fEventInProgress
-                if (fEventInProgress)  // check again.
-                {
-                    //printf("waiting for digitizer trigger ... index is %d\n", index);
-                    std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
+            if (fInterface->fEventInProgress)  // fEventInProgress
+            {
+                    std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                     tLock.lock();
-                    fDigitizerCondition.wait( tLock );
-                    if (fEventInProgress)
+                    fInterface->fDigitizerCondition.wait( tLock );
+                    if (fInterface->fEventInProgress)
                     {
-                        //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
                         DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
                         PreEventCounter = 0; // reset
                     }
                     tLock.unlock();
-                }
-
+            }
         }  // for loop
 
-        printf("finished signal loop\n");
-
+        fInterface->fRunInProgress = false;  // tell Kassiopeia to finish.
+        fInterface->fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
         fclose(fp);
-        CleanupBuffers();
-        fRunInProgress = false;  // tell Kassiopeia to finish.
-        fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-        WakeBeforeEvent();
-        Kassiopeia.join();
+        printf("finished signal loop.\n");
+        WakeBeforeEvent();  // trigger one last Kass event if we are locked up.
+        tKassiopeia.join();  // finish thread
+
 
         return true;
     }

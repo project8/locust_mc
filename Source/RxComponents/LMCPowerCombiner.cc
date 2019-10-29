@@ -184,6 +184,7 @@ namespace locust
 					fdampingFactors[z_index] = fpatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss; // patch loss * junction loss * amplifier loss
 	      	 	}
 		}
+
 		return true;
 
 	}
@@ -244,7 +245,7 @@ namespace locust
 
 		if (fpowerCombiner == 0) // corporate
 		{
-			fjunctionLoss = 0.;
+			fjunctionLoss = 1.0;
 			fpatchLoss = 0.6;
 			famplifierLoss = 0.66;
 			fendPatchLoss = 0.6;

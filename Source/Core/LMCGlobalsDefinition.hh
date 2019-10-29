@@ -9,8 +9,5 @@
 #define GLOBALSDEFINITION_HH_
 
 
-
-
-
 #endif /* GLOBALSDEFINITION_HH_ */
 
