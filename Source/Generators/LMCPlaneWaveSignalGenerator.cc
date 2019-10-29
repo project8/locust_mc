@@ -15,7 +15,7 @@
 #include <fstream>
 #include <math.h>       /* sin */
 
-#include "LMCGlobalsDeclaration.hh"
+//#include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 
 
