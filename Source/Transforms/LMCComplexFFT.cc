@@ -57,7 +57,6 @@ namespace locust
             fWisdomFilename=aParam["wisdom-filename"]().as_string();
         }
         if(aParam.has("zero-padding-size"))
-
         {
             fZeroPaddingSize=aParam["zero-padding-size"]().as_int();
         }
@@ -101,6 +100,8 @@ namespace locust
     {
 	    std::ofstream myfile;
 	    myfile.open ("example.txt");
+	    std::ofstream filterfile;
+	    filterfile.open ("filter.txt");
         fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         if(!IsInitialized) return false;

@@ -404,7 +404,6 @@ namespace locust
         IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         // PTS: Seg faults when shrink-to-fit used on ConvolutionTimeBuffer, removed for now. Need to revisit what the problem is
         //ConvolutionTimeBuffer[channel+fNPatchesPerStrip+patch].shrink_to_fit();
-        
     }
     
     
@@ -433,10 +432,7 @@ namespace locust
         EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        
         PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
-        
-        
     }
     
     
