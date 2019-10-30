@@ -306,6 +306,11 @@ namespace locust
             for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
             {
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
+
+                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
+                {
+                	zPosition = 0.;
+                }
                 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
                 modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});

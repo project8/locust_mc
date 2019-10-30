@@ -37,9 +37,10 @@ namespace locust
         fStartTimeMax( 0. ),
         fStartPitchMin( 89.9 ),
         fStartPitchMax( 90. ),
+        fPitchMin( 0. ),
         fLO_frequency( 0. ),
         fTrackLengthMean( 0. ),
-        fNTracksMean(1 ),
+        fNTracksMean( 0. ),
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
@@ -55,8 +56,8 @@ namespace locust
         fTrackLength( 0. ),
         fStartTime( 0. ),
         fEndTime( 0. ),
-        fStartFreq( 0. ),
-        fJumpSize( 2e6),
+        fStartFrequency( 0. ),
+        fCurrentFrequency( 0. ),
         fNTracks(0)
     {
         fRequiredSignalState = Signal::kTime;
@@ -86,6 +87,9 @@ namespace locust
 
         if( aParam.has( "start-pitch-min" ) )
             SetStartPitchMin( aParam.get_value< double >( "start-pitch-min", fStartPitchMin ) );
+
+        if( aParam.has( "min-pitch" ) )
+            SetPitchMin( aParam.get_value< double >( "min-pitch", fPitchMin ) );
 
         if( aParam.has( "slope-mean" ) )
             SetSlopeMean( aParam.get_value< double >( "slope-mean", fSlopeMean ) );
@@ -140,6 +144,9 @@ namespace locust
             std::random_device rd;
             fRandomEngine.seed(rd());
         }
+
+        if(!fNTracksMean && !fPitchMin)
+            LERROR( lmclog, "No condition set for NTracks per event! Set one of pitch-min or ntracks-mean");
 
 
         if( aParam.has( "domain" ) )
@@ -232,6 +239,17 @@ namespace locust
     void FakeTrackSignalGenerator::SetStartPitchMin( double aPitchMin )
     {
         fStartPitchMin = aPitchMin;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetPitchMin() const
+    {
+        return fPitchMin;
+    }
+
+    void FakeTrackSignalGenerator::SetPitchMin( double aPitchMin )
+    {
+        fPitchMin = aPitchMin;
         return;
     }
 
@@ -557,7 +575,7 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetAxialFrequency() //angular frequency of axial motion Ali et al. (54) (harmonic trap)
     {
-        double gamma = 1. + rel_energy(fStartFreq, fBField) / LMCConst::M_el_eV();
+        double gamma = 1. + rel_energy(fStartFrequency, fBField) / LMCConst::M_el_eV();
         double v0 = LMCConst::C() * sqrt( 1. - 1. / pow(gamma, 2.));
         return v0 * sin(fPitch) / fTrapLength;
 
@@ -583,7 +601,7 @@ namespace locust
 
     }
 
-    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset)
+    void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset)
     {
         double current_energy = 0.;
         double energy_loss = 0.;
@@ -604,23 +622,23 @@ namespace locust
 
         if(TrackID==0)
         {
-            if (TimeOffset==0) // first event
+            if (aTimeOffset==0) // first event
         	{
                 fStartTime = starttime_distribution(fRandomEngine);
         	}
             else
             {
-                fStartTime = TimeOffset;
+                fStartTime = aTimeOffset;
             }
-            fStartFreq = startfreq_distribution(fRandomEngine);
+            fStartFrequency = startfreq_distribution(fRandomEngine);
             fPitch = acos(startpitch_distribution(fRandomEngine));
             aTrack.StartTime = fStartTime;
-            aTrack.StartFrequency = fStartFreq;
+            aTrack.StartFrequency = fStartFrequency;
         }
        else
        {
             fStartTime = fEndTime + 0.;  // old track endtime + margin=0.
-            current_energy = rel_energy(fStartFreq,fBField); // convert current frequency to energy
+            current_energy = rel_energy(fCurrentFrequency, fBField); // convert current frequency to energy
 
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
@@ -636,10 +654,10 @@ namespace locust
             fPitch = GetPitchAngleZ(newThetaTop, GetBField(zScatter), fBField);
 
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
-            fJumpSize = rel_cyc(new_energy,fBField) - fStartFreq; // in Hz
-            fStartFreq += fJumpSize;
+            fStartFrequency = rel_cyc(new_energy, fBField);
+            fCurrentFrequency = fStartFrequency;
             aTrack.StartTime = fEndTime + 0.; // margin of time is 0.
-            aTrack.StartFrequency += fJumpSize;
+            aTrack.StartFrequency = fStartFrequency;
         }
 
         fSlope = slope_distribution(fRandomEngine);
@@ -649,7 +667,7 @@ namespace locust
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
-        aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFreq, fPitch),2.);
+        aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFrequency, fPitch),2.);
         aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
     }
@@ -670,49 +688,30 @@ namespace locust
         std::geometric_distribution<int> ntracks_distribution(1./fNTracksMean);
         fNTracks = ntracks_distribution(fRandomEngine)+1;
 
-        anEvent->EventID = eventID;
-        anEvent->ntracks = fNTracks;
-        anEvent->LOFrequency = fLO_frequency;
-        anEvent->RandomSeed = random_seed_val;
-        anEvent->StartFrequencies.resize(fNTracks);
-        anEvent->TrackPower.resize(fNTracks);
-        anEvent->StartTimes.resize(fNTracks);
-        anEvent->EndTimes.resize(fNTracks);
-        anEvent->TrackLengths.resize(fNTracks);
-        anEvent->Slopes.resize(fNTracks);
-        anEvent->PitchAngles.resize(fNTracks);
-    }
-
-    void FakeTrackSignalGenerator::PackEvent(Track& aTrack, Event* anEvent, int trackID) const
-    {
-    	anEvent->StartFrequencies[trackID] = aTrack.StartFrequency;
-    	anEvent->TrackPower[trackID] = aTrack.TrackPower;
-    	anEvent->StartTimes[trackID] = aTrack.StartTime;
-    	anEvent->TrackLengths[trackID] = aTrack.TrackLength;
-    	anEvent->EndTimes[trackID] = aTrack.EndTime;
-    	anEvent->Slopes[trackID] = aTrack.Slope;
-        anEvent->PitchAngles[trackID] = aTrack.PitchAngle;
+        anEvent->fEventID = eventID;
+        anEvent->fLOFrequency = fLO_frequency;
+        anEvent->fRandomSeed = random_seed_val;
     }
 
 
     void WriteRootFile(Event* anEvent, TFile* hfile)
     {
     	char buffer[100];
-    	int n=sprintf(buffer, "Event_%d", anEvent->EventID);
+        int n=sprintf(buffer, "Event_%d", anEvent->fEventID);
     	char* treename = buffer;
 
         TTree *aTree = new TTree(treename,"Locust Tree");
-        aTree->Branch("EventID", &anEvent->EventID, "EventID/I");
-        aTree->Branch("ntracks", &anEvent->ntracks, "ntracks/I");
-        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->StartFrequencies);
-        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->StartTimes);
-        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->EndTimes);
-        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->TrackLengths);
-        aTree->Branch("Slopes", "std::vector<double>", &anEvent->Slopes);
-        aTree->Branch("LOFrequency", &anEvent->LOFrequency, "LOFrequency/D");
-        aTree->Branch("RandomSeed", &anEvent->RandomSeed, "RandomSeed/I");
-        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->TrackPower);
-        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->PitchAngles);
+        aTree->Branch("EventID", &anEvent->fEventID, "EventID/I");
+        aTree->Branch("ntracks", &anEvent->fNTracks, "ntracks/I");
+        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
+        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->fStartTimes);
+        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->fEndTimes);
+        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->fTrackLengths);
+        aTree->Branch("Slopes", "std::vector<double>", &anEvent->fSlopes);
+        aTree->Branch("LOFrequency", &anEvent->fLOFrequency, "LOFrequency/D");
+        aTree->Branch("RandomSeed", &anEvent->fRandomSeed, "RandomSeed/I");
+        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->fTrackPowers);
+        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->fPitchAngles);
         aTree->Fill();
         aTree->Write();
         delete aTree;
@@ -722,80 +721,62 @@ namespace locust
     {
         TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
-        const unsigned nchannels = fNChannels;
+        const unsigned nChannels = fNChannels;
         double LO_phase = 0.;
-        double dt = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-        double TimeOffset = 0.; // event start time
+        const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
         double signalAmplitude;
+        double tTimeOffset = 0;
 
-        for (int eventID=0; eventID<fNEvents; eventID++) // event loop.
+        for(unsigned eventID = 0; eventID < fNEvents; ++eventID)// event loop.
         {
             Event* anEvent = new Event();
             InitiateEvent(anEvent, eventID);
             Track aTrack;
-            SetTrackProperties(aTrack, 0, TimeOffset);
-            PackEvent(aTrack, anEvent, 0);
+            SetTrackProperties(aTrack, 0, tTimeOffset);
+            anEvent->AddTrack(aTrack);
 
-        if ( fEndTime < 0.99*aSignal->TimeSize()/(fAcquisitionRate*1.e6) )
-        {
+            unsigned tTrackIndex = 0;
 
-            for (unsigned ch = 0; ch < nchannels; ++ch) // over all channels
+            while( tTrackIndex < anEvent->fNTracks) //loop over tracks in event
             {
-                double voltage_phase = fStartVPhase;
-                bool nexttrack_flag = false;
-                int event_tracks_counter = 0;
-                bool eventdone_flag = false; 
 
-                for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index ) // advance sampling time
+                for(unsigned ch = 0; ch < nChannels; ++ch) // over all channels
                 {
-                    double time = (double)index/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
-                    LO_phase += 2.*LMCConst::Pi()*fLO_frequency*dt;
+                    double voltage_phase = fStartVPhase;
+                    unsigned tTrackIndexRange[2] = {static_cast<unsigned>(fStartTime / tLocustStep), static_cast<unsigned>(fEndTime / tLocustStep)};
+                    tTrackIndexRange[1] = std::min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
+                    fCurrentFrequency = fStartFrequency;
 
-                    if ( eventdone_flag == false ) // if not done with event
+                    for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
-                        if ( nexttrack_flag == false ) // if on same track
-                        {
-                            if ( (time >= fStartTime) && (time <= fEndTime) )
-                            {
-                                fStartFreq += fSlope*1.e6/1.e-3*dt;
-                                voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
-                                signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
-                                aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                            }
-                            else if ( time>fEndTime )
-                            {
-                                event_tracks_counter += 1;
-                                if (event_tracks_counter > fNTracks-1) // if done with all tracks in event
-                                {
-                                    eventdone_flag = true; // mark end of event   
-                                    WriteRootFile(anEvent, hfile);
-                                    TimeOffset = aTrack.EndTime + 0.0005; // event spacing.
-                                    continue;  
-                                }
-                                else
-                                {
-                                    SetTrackProperties(aTrack, event_tracks_counter, 0.); // jump.
-                                    PackEvent(aTrack, anEvent, event_tracks_counter);
-                                }
-                                nexttrack_flag = true; // next track
-                            }
-                        }
-                    else if ( nexttrack_flag == true )
-                    {
-		                fStartFreq += fSlope*1.e6/1.e-3*dt;
-                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fStartFreq)*(dt);
-                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fStartFreq, fPitch);
+                        fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
+                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fCurrentFrequency) * tLocustStep;
+                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-                        nexttrack_flag = false; // now we stay on this track
                     }
-                }  // eventdone is false
-            }  // index loop.
-        }  // channel loop.
-        }  // endtime boolean loop.
-        delete anEvent;
-        } // eventID loop.
+
+                } //channel loop
+
+                ++tTrackIndex;
+                tTimeOffset = fEndTime;
+                SetTrackProperties(aTrack, tTrackIndex, tTimeOffset);
+                double tPitchMinRad = fPitchMin * LMCConst::Pi() / 180.;
+
+                if( (!fNTracksMean && (fPitch < tPitchMinRad )) || (fNTracksMean && (tTrackIndex == fNTracks)))
+                {
+                    break;
+                }
+                else
+                {
+                    anEvent->AddTrack(aTrack);
+                }
+
+            } //track loop
+            WriteRootFile(anEvent, hfile);
+            delete anEvent;
+        } //event loop
+
         hfile->Close();
         return true;
     }
