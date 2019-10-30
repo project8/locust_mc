@@ -159,7 +159,7 @@ namespace locust
                         //printf("%f\n", tfMagnitude);
                         ++wordCount;
                     }
-		    if(fNBins==0)fInitialTFIndex=tfIndex*1e(-9);
+		    if(fNBins==0)fInitialTFIndex=tfIndex*pow(10.0,9);
                     const std::complex<double> temp(tfRealValue,tfImaginaryValue);
                     tfArray.push_back(temp);
                     ++fNBins;

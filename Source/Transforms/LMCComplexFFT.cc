@@ -8,6 +8,7 @@
 #include <fstream>
 
 #include "LMCComplexFFT.hh"
+#include "LMCConst.hh"
 
 namespace locust
 {
@@ -18,6 +19,8 @@ namespace locust
     fSize(0),
     fTotalWindowSize(0),
     fZeroPaddingSize(0),
+    fWindowFunctionType(1),
+    fWindowFunction(NULL),
     fInputArray(NULL),
     fOutputArray(NULL),
     fForwardPlan(),
@@ -60,6 +63,10 @@ namespace locust
         {
             fZeroPaddingSize=aParam["zero-padding-size"]().as_int();
         }
+        if(aParam.has("window-function-type"))
+        {
+            fWindowFunctionType=aParam["window-function-type"]().as_int();
+        }
         
         if(fTransformFlag.compare("MEASURE"))
         {
@@ -77,6 +84,50 @@ namespace locust
         return true;
     }
     
+    bool ComplexFFT::GenerateWindowFunction()
+    {
+	std::ofstream myfile;
+	myfile.open ("WindowFunction.txt");
+        if(fWindowFunctionType==1)
+	{
+	    //Tukey window is defined as 
+	    //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-1))); if 0<=n<alpha*N/2
+	    //w[n]= 1; alpha*N/2<=n<=N(1-alpha/2)
+	    //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-2/alpha+1))) if N(1-alpha/2)<n<=N
+	    double tukeyWindowAlpha = 0.5;
+	    int firstWindowFirstBin = fPreFilterBins;
+	    int midWindowFirstBin = fPreFilterBins+tukeyWindowAlpha*fSize/2.0;
+	    int midWindowFinalBin = fPreFilterBins+fSize-tukeyWindowAlpha*fSize/2.0;
+	    int finalWindowFinalBin = fPreFilterBins+fSize;
+            for (int i = 0; i < fTotalWindowSize; ++i)
+            {
+	        fWindowFunction.push_back(0.0);
+	    }
+
+            for (int i = 0; i < fTotalWindowSize; ++i)
+            {
+		if(i>fPreFilterBins && i<midWindowFirstBin)
+		{
+	            fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1)));
+		}
+		else if(i>=midWindowFirstBin && i<=midWindowFinalBin)
+		{
+		    fWindowFunction[i]=1.0;
+		}
+		else if(i>midWindowFinalBin && i<=finalWindowFinalBin)
+		{
+		    fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1.0/tukeyWindowAlpha+1)));
+		}
+	        myfile<<i;
+	        myfile<<",";
+	        myfile<<fWindowFunction[i];
+	        myfile<<"\n";
+	    }
+	}	
+	myfile.close();
+	return true;
+    }
+
     bool ComplexFFT::ForwardFFT(int size, fftw_complex* in, fftw_complex* out)
     {
         if(!IsInitialized) return false;
@@ -92,16 +143,19 @@ namespace locust
     bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double resolution)
     {
         fSize=size;	
-	fPreFilterBins=(int) intialBinValue/resolution;
+	fPreFilterBins=(int)(intialBinValue*1.0/resolution);
 	fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
+	if(GenerateWindowFunction()==false)
+	{
+	    exit(-1);
+	}
 	return true;
     }
+
     bool ComplexFFT::ReverseFFT(int size, fftw_complex* in, fftw_complex* out)
     {
-	    std::ofstream myfile;
-	    myfile.open ("example.txt");
-	    std::ofstream filterfile;
-	    filterfile.open ("filter.txt");
+	std::ofstream myfile;
+	myfile.open ("example.txt");
         fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         if(!IsInitialized) return false;
@@ -109,8 +163,8 @@ namespace locust
         {
 	    if(i>fPreFilterBins && i<fSize+fPreFilterBins)
 	    {
-              fInputArray[i][0]=in[i-fPreFilterBins][0];
-              fInputArray[i][1]=in[i-fPreFilterBins][1];
+              fInputArray[i][0]=fWindowFunction.at(i)*in[i-fPreFilterBins][0];
+              fInputArray[i][1]=fWindowFunction.at(i)*in[i-fPreFilterBins][1];
 	    }
 	    else
 	    {
@@ -127,7 +181,6 @@ namespace locust
 	   myfile<<",";
 	   myfile<<fOutputArray[i][0]/fTotalWindowSize;
 	   myfile<<"\n";
-
         }
 	myfile.close();
         return true;

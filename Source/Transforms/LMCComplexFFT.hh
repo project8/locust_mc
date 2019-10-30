@@ -30,6 +30,8 @@ namespace locust
      -"transform-flag": string -- The flags argument is FFTW_MEASURE (default) or FFTW_ESTIMATE
      -"use-wisdom": bool -- Option to use FFTW wisdom file if it already exists to improve FFT performance
      -"wisdom-filename": string -- The wisdom file name to use
+     -"zero-padding-size": int -- The number of zeros to append at the end of the TF before IFFT to FIR
+     -"window-function-type": int -- The window function to use for IFFT
      
      Information from FFTW website (http://www.fftw.org/fftw3_doc/Complex-One_002dDimensional-DFTs.html#Complex-One_002dDimensional-DFTs)
      FFTW_MEASURE instructs FFTW to run and measure the execution time of several FFTs in order to find the best way to compute the transform of size n. This process takes some time (usually a few seconds), depending on your machine and on the size of the transform.
@@ -48,6 +50,7 @@ namespace locust
         bool ReverseFFT(int, fftw_complex*, fftw_complex*);
         
     private:
+	// Member variables
         fftw_complex* fInputArray;
         fftw_complex* fOutputArray;
         
@@ -65,10 +68,15 @@ namespace locust
         bool fUseWisdom;
         std::string fWisdomFilename;
 	int fSize;
+	int fWindowFunctionType;
 	int fTotalWindowSize;
 	int fZeroPaddingSize;
 	int fPreFilterBins;
         bool IsInitialized;
+	std::vector<double> fWindowFunction;
+	
+	// Member functions
+    	bool GenerateWindowFunction();
     };
     
 } /* namespace locust */
