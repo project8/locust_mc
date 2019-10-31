@@ -377,6 +377,11 @@ namespace locust
             {
                 zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
+                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
+                {
+                	zPosition = 0.;
+                }
+
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
                 modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
            

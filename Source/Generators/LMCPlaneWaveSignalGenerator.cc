@@ -414,7 +414,12 @@ namespace locust
     		{
     			zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
-    			modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
+                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
+                {
+                	zPosition = 0.;
+                }
+
+                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
     			modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
     			modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
     			allChannels[channelIndex].AddReceiver(modelPatch);

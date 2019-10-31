@@ -42,6 +42,7 @@ namespace locust
             void SetAmplifierLoss(double aAmplifierLoss);
             void SetEndPatchLoss(double aEndPatchLoss);
             bool SetPowerCombiner( std::string feed );
+            int GetPowerCombiner();
 
 
 

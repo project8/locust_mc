@@ -35,12 +35,11 @@ extern bool fFalseStartKassiopeia;
 extern bool fDoneWithSignalGeneration;
 
 
-extern std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
-extern std::mutex fKassReadyMutex;  // pls:  this mutex is used for pre and post event mods.
-extern std::mutex fMutexDigitizer;  // pls:  not completely sure we need an extra mutex, but it may help clarify.
+extern std::mutex fMutex;
+extern std::mutex fKassReadyMutex;
+extern std::mutex fMutexDigitizer;
 
 
-//  These global condition variables are causing the simulation to hang after writing to the egg file.
 extern std::condition_variable fPreEventCondition;
 extern std::condition_variable fPostEventCondition;
 extern std::condition_variable fDigitizerCondition;
@@ -51,8 +50,8 @@ extern std::condition_variable fKassReadyCondition;
 //3 Dimensional arrays: NFDXXXField[ReceiverIndex][Time Series Index][X, Y, Z components]
 //It looks bad but is actually optimal: std::arrays give preallocated continuous storage: 
 //However, we have indeterminate number of Receiver Points: use std::vector
-//std::vector<std::array<std::array<double, 16384>, 3 > >  NFDElectricField;  // pls:  placeholder for oversampled signal.
-//std::vector<std::array<std::array<double, 16384>, 3 > >  NFDMagneticField;  // pls:  placeholder for oversampled signal.
+//std::vector<std::array<std::array<double, 16384>, 3 > >  NFDElectricField;
+//std::vector<std::array<std::array<double, 16384>, 3 > >  NFDMagneticField;
 
 #endif /* GLOBALSDECLARATION_HH_ */
 

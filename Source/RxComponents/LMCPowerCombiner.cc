@@ -53,9 +53,16 @@ namespace locust
         else if (feed == "seven-eighths") fpowerCombiner = 3;
         else if (feed == "nine-sixteenths") fpowerCombiner = 4;
         else if (feed == "voltage-divider") fpowerCombiner = 5;
+        else if (feed == "s-matrix") fpowerCombiner = 6;
+        else if (feed == "single-patch") fpowerCombiner = 7;
         else fpowerCombiner = 0;  // default
     	return true;
-          }
+    }
+
+    int PowerCombiner::GetPowerCombiner()
+    {
+    	return fpowerCombiner;
+    }
 
 
 
@@ -223,7 +230,7 @@ namespace locust
 		SetNPatchesPerStrip(aPatchesPerStrip);
 		fdampingFactors.resize(fnPatchesPerStrip);
 
-		if ((fpowerCombiner == 0) || (fpowerCombiner == 2) || (fpowerCombiner == 3) || (fpowerCombiner == 4))
+		if ((fpowerCombiner == 7) || (fpowerCombiner == 0) || (fpowerCombiner == 2) || (fpowerCombiner == 3) || (fpowerCombiner == 4))
 		{
 			SetCenterFedDampingFactors();
 		}
@@ -242,6 +249,7 @@ namespace locust
 		{
 			SetSmatrix10patchDampingFactors();
 		}
+
 		return true;
 	}
 
@@ -297,6 +305,23 @@ namespace locust
 			fpatchLoss = 0.6;
 			famplifierLoss = 0.66;
 		}
+
+		else if (fpowerCombiner == 6) // s-matrix
+		{
+			famplifierLoss = 1.0;  // this has no effect.  S-matrix takes its place.
+		}
+
+		else if (fpowerCombiner == 7) // single-patch
+		{
+			// these losses have no effect.  FIR for single patch is responsible for patch gain.
+			fjunctionLoss = 1.0;
+			fpatchLoss = 1.0;
+			famplifierLoss = 1.0;
+			fendPatchLoss = 1.0;
+		}
+
+
+
 		return true;
 
 	}

@@ -195,7 +195,7 @@ namespace locust
     void DipoleSignalGenerator::SetDomain( Signal::State aDomain )
     {
         if( aDomain == fRequiredSignalState ) return;
-        fRequiredSignalState = aDomain;  // pls changed == to =.
+        fRequiredSignalState = aDomain;
         if( fRequiredSignalState == Signal::kTime )
         {
             fDoGenerateFunc = &DipoleSignalGenerator::DoGenerateTime;
@@ -306,6 +306,11 @@ namespace locust
             for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
             {
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
+
+                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
+                {
+                	zPosition = 0.;
+                }
                 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
                 modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
@@ -363,7 +368,6 @@ namespace locust
                     double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
                     double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
                     double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
-                    fieldValue=fieldValue;  // pls:  can this be removed?
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
                     VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
