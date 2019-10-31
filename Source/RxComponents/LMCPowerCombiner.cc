@@ -239,7 +239,7 @@ namespace locust
                for (int i = 0; i < fnPatchesPerStrip; i++)
                {
 	               ftransmissionCoefficients[i] = smatrix[i+1]*sqrt(ampImpedance/patchImpedance);
-		       printf("Transmission Coeff for patch  %d is %f\n", i, ftransmissionCoefficients[i]);
+		       //printf("Transmission Coeff for patch  %d is %f\n", i, ftransmissionCoefficients[i]);
                }
 
                return true;
