@@ -82,6 +82,7 @@ namespace locust
     protected:
         //Member variables
         double fInitialTFIndex;
+	double fTFBinWidth;
     };
     
     /*!

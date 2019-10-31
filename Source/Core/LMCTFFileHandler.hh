@@ -13,7 +13,7 @@ namespace locust
      @details
      Available configuration options:
      - "tf-transmitter-filename": string -- The location of the file containing impulse response function
-     - "tf-transmitter-dt": double (1e-12) -- The size of filter sample width (seconds)
+     - "tf-transmitter-bin-width": double (1e-12) -- The size of filter sample width (seconds)
      - "tf-transmitter-nskips": int (1) -- Number of skips to be peformed in reading from the FIR file, this will deteremine the number of FIR bins
      */
     
@@ -33,9 +33,9 @@ namespace locust
      @brief Handles receiver for transfer functions, saving them into objects to be used for convolution
      @details
      Available configuration options:
-     - "tf-transmitter-filename": string -- The location of the file containing impulse response function
-     - "tf-transmitter-dt": double (1e-12) -- The size of filter sample width (seconds)
-     - "tf-transmitter-nskips": int (1) -- Number of skips to be peformed in reading from the FIR file, this will deteremine the number of FIR bins
+     - "tf-receiver-filename": string -- The location of the file containing impulse response function
+     - "tf-receiver-bin-width": double (1e-12) -- The size of filter sample width (seconds)
+     - "tf-receiver-nskips": int (1) -- Number of skips to be peformed in reading from the FIR file, this will deteremine the number of FIR bins
      */
     
     class TFReceiverHandler: public TFFileHandlerCore

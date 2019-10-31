@@ -32,9 +32,9 @@ namespace locust
         {
             fHFSSFilename=aParam["tf-transmitter-filename"]().as_string();
         }
-        if( aParam.has( "tf-transmitter-resolution" ) )
+        if( aParam.has( "tf-transmitter-bin-width" ) )
         {
-            fResolution=aParam["tf-transmitter-resolution"]().as_double();
+            fTFBinWidth=aParam["tf-transmitter-bin-width"]().as_double();
         }
         if( aParam.has( "tf-transmitter-nskips" ) )
         {
@@ -63,9 +63,9 @@ namespace locust
         {
             fHFSSFilename=aParam["tf-receiver-filename"]().as_string();
         }
-        if( aParam.has( "tf-receiver-resolution" ) )
+        if( aParam.has( "tf-receiver-bin-width" ) )
         {
-            fResolution=aParam["tf-receiver-resolution"]().as_double();
+            fTFBinWidth=aParam["tf-receiver-bin-width"]().as_double();
         }
         if( aParam.has( "tf-receiver-nskips" ) )
         {

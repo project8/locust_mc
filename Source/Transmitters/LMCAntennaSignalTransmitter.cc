@@ -124,6 +124,7 @@ namespace locust
     {
         fAntennaPosition.SetComponents(fAntennaPositionX,fAntennaPositionY,fAntennaPositionZ);
         
+	std::cout << "AntennaSignalTransmitter::InitializeTransmitter()"<<std::endl;
         if(!fTransmitterHandler.ReadHFSSFile())
         {
             return false;

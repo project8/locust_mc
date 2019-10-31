@@ -140,11 +140,13 @@ namespace locust
         return true;
     }
     
-    bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double resolution)
+    bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double freqResolution)
     {
         fSize=size;	
-	fPreFilterBins=(int)(intialBinValue*1.0/resolution);
+	fFreqResolution=freqResolution;
+	fPreFilterBins=(int)(intialBinValue*1.0/freqResolution);
 	fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
+	fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
 	if(GenerateWindowFunction()==false)
 	{
 	    exit(-1);
@@ -186,4 +188,13 @@ namespace locust
         return true;
     }
     
+    double ComplexFFT::GetTimeResolution()
+    {
+        return fTimeResolution;
+    }
+    
+    double ComplexFFT::GetFreqResolution()
+    {
+        return fFreqResolution;
+    }
 } /* namespace locust */

@@ -48,6 +48,8 @@ namespace locust
         bool SetupIFFT(int,double, double);
         bool ForwardFFT(int, fftw_complex*, fftw_complex*);
         bool ReverseFFT(int, fftw_complex*, fftw_complex*);
+	double GetTimeResolution();
+	double GetFreqResolution();
         
     private:
 	// Member variables
@@ -68,6 +70,8 @@ namespace locust
         bool fUseWisdom;
         std::string fWisdomFilename;
 	int fSize;
+	double fTimeResolution;
+	double fFreqResolution;
 	int fWindowFunctionType;
 	int fTotalWindowSize;
 	int fZeroPaddingSize;

@@ -61,7 +61,8 @@ namespace locust
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
     fFIRComplex(NULL),
-    fInitialTFIndex(0.0)
+    fInitialTFIndex(0.0),
+    fTFBinWidth(100e6)
     {
     }
     
@@ -101,10 +102,9 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
-        fComplexFFT.SetupIFFT(fNBins,fInitialTFIndex,fResolution);
+        fComplexFFT.SetupIFFT(fNBins,fInitialTFIndex,fTFBinWidth);
         fComplexFFT.ReverseFFT(fNBins,fTFComplex,fFIRComplex);
-        
-        //Still not normalized
+	fResolution=fComplexFFT.GetTimeResolution();
         
         for (int i = 0; i < fNBins; ++i){
             fFilter.push_back(fFIRComplex[i][0]);
