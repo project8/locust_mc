@@ -52,11 +52,13 @@ namespace locust
             bool SetCenterFedDampingFactors();
             bool SetSeriesFedDampingFactors();
             bool SetVoltageDividerDampingFactors();
-            bool SetSmatrix10patchDampingFactors();
+            bool SetSmatrixDampingFactors();
             std::vector<double> GetResistances(double RJunction, double R0, double RGround, int NPAIRS);
             std::vector<double> GetPartialGains(double RJunction, double R0, double RGround, int NPAIRS);
             double GetVoltageDividerWeight(double RJunction, double R0, double Rground, unsigned z_index);
             double GetParallelResistance(std::vector<double> R, int NRESISTORS, int resistorindex);
+            std::vector<double> GetSmatrixElements();
+            bool SetTransmissionCoefficients();
             int fpowerCombiner;
             int fnPatchesPerStrip;
             double fjunctionLoss;
@@ -66,8 +68,11 @@ namespace locust
             double fjunctionResistance;
       	    std::vector<double> fdampingFactors;
 
-      	    std::vector<double> fsMatrix10patch = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+      	    std::vector<double> fsMatrix2patch = {0.1, 0.1, 0.1};
+            std::vector<double> fsMatrix4patch = {0.09, 0.47, 0.47, 0.47, 0.47};
+            std::vector<double> fsMatrix6patch = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
+            std::vector<double> ftransmissionCoefficients;
     };
 
 
