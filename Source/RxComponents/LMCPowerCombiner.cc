@@ -181,11 +181,6 @@ namespace locust
 
 	bool PowerCombiner::SetCenterFedDampingFactors()
 	{
-	  if(fnPatchesPerStrip == 1)
-	    {
-	      fdampingFactors[0] = .7071; // added for the ability to run the 1-patch case
-	    }
-	  else{
 		for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
 		{
 			int njunctions = fabs((double)z_index - (double)fnPatchesPerStrip/2.) - 1;
@@ -199,7 +194,7 @@ namespace locust
 					fdampingFactors[z_index] = fpatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss; // patch loss * junction loss * amplifier loss
 	      	 	}
 		}
-	  }
+	  
 		return true;
 
 	}
@@ -313,10 +308,10 @@ namespace locust
 
 		else if (fpowerCombiner == 7) // single-patch
 		{
-			// these losses have no effect.  FIR for single patch is responsible for patch gain.
+			// there is a single impedance transformation to the amplifier.
 			fjunctionLoss = 1.0;
 			fpatchLoss = 1.0;
-			famplifierLoss = 1.0;
+			famplifierLoss = 0.7071;
 			fendPatchLoss = 1.0;
 		}
 
