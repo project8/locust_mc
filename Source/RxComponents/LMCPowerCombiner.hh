@@ -68,9 +68,9 @@ namespace locust
             double fjunctionResistance;
       	    std::vector<double> fdampingFactors;
 
-      	    std::vector<double> fsMatrix2patch = {0.1, 0.1, 0.1};
+      	    std::vector<double> fsMatrix2patch = {0.2, 0.64, 0.64};
             std::vector<double> fsMatrix4patch = {0.09, 0.47, 0.47, 0.47, 0.47};
-            std::vector<double> fsMatrix6patch = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+            std::vector<double> fsMatrix6patch = {0.03, 0.38, 0.38, 0.38, 0.38, 0.38, 0.38};
 
             std::vector<double> ftransmissionCoefficients;
     };
