@@ -233,7 +233,7 @@ namespace locust
 	fReversePlan= fftw_plan_dft_1d(fTotalWindowSize,fInputArray,fOutputArray,FFTW_BACKWARD,FFTW_ESTIMATE);
         
         fftw_execute(fReversePlan);
-	if(MakeFilterCausal(fOutputArray))
+	if(!MakeFilterCausal(fOutputArray))
 	{
 	    LERROR(lmclog,"Couldn't make FIR filter causal");
 	    exit(-1);
