@@ -18,7 +18,7 @@ namespace locust
     fWisdomFilename("wisdom_complexfft.fftw3"),
     fSize(0),
     fTotalWindowSize(0),
-    fZeroPaddingSize(0),
+    fZeroPaddingSize(10000),
     fWindowFunctionType(1),
     fWindowFunction(NULL),
     fInputArray(NULL),
@@ -93,7 +93,29 @@ namespace locust
     {
 	std::ofstream myfile;
 	myfile.open ("WindowFunction.txt");
-        if(fWindowFunctionType==1)
+        if(fWindowFunctionType==0)
+	{
+            for (int i = 0; i < fTotalWindowSize; ++i)
+            {
+	        fWindowFunction.push_back(0.0);
+	    }
+            for (int i = 0; i < fTotalWindowSize; ++i)
+            {
+		if(i>fPreFilterBins && i<=fPreFilterBins+fSize)
+		{
+	            fWindowFunction[i]=1.0;
+		}
+		else
+		{
+		    fWindowFunction[i]=0.0;
+		}
+	        myfile<<i;
+	        myfile<<",";
+	        myfile<<fWindowFunction[i];
+	        myfile<<"\n";
+	    }
+	}
+        else if(fWindowFunctionType==1)
 	{
 	    //Tukey window is defined as 
 	    //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-1))); if 0<=n<alpha*N/2
@@ -104,6 +126,10 @@ namespace locust
 	    int midWindowFirstBin = fPreFilterBins+tukeyWindowAlpha*fSize/2.0;
 	    int midWindowFinalBin = fPreFilterBins+fSize-tukeyWindowAlpha*fSize/2.0;
 	    int finalWindowFinalBin = fPreFilterBins+fSize;
+	    //std::cout<< "firstWindowFirstBin: "<<firstWindowFirstBin<<std::endl;
+	    //std::cout<< "midWindowFirstBin: "<<midWindowFirstBin<<std::endl;
+	    //std::cout<< "midWindowFinalBin: "<<midWindowFinalBin<<std::endl;
+	    //std::cout<< "finalWindowFinalBin: "<<finalWindowFinalBin<<std::endl;
             for (int i = 0; i < fTotalWindowSize; ++i)
             {
 	        fWindowFunction.push_back(0.0);
@@ -129,6 +155,10 @@ namespace locust
 	        myfile<<"\n";
 	    }
 	}	
+	else
+	{
+	    return false;
+	}
 	myfile.close();
 	return true;
     }
@@ -202,14 +232,18 @@ namespace locust
 	MakeFilterCausal(fOutputArray);
 	std::ofstream myfile;
 	myfile.open ("example.txt");
-        for (int i = 0; i < fSize; ++i){
+        for (int i = 0; i < fSize; ++i)
+	{
 	   out[i][0]=fOutputArray[i][0]/fTotalWindowSize;
+        }
+        for (int i = 0; i < fSize; ++i){
 	   myfile<<i;
 	   myfile<<",";
-	   myfile<<out[i][1];
+	   myfile<<fOutputArray[i][0]/fTotalWindowSize;
 	   myfile<<"\n";
-        }
+	}
 	myfile.close();
+	exit(1);
         return true;
     }
     
