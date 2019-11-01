@@ -236,7 +236,7 @@ namespace locust
 	{
 	   out[i][0]=fOutputArray[i][0]/fTotalWindowSize;
         }
-        for (int i = 0; i < fSize; ++i){
+        for (int i = 0; i < fTotalWindowSize; ++i){
 	   myfile<<i;
 	   myfile<<",";
 	   myfile<<fOutputArray[i][0]/fTotalWindowSize;
