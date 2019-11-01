@@ -12,6 +12,8 @@
 
 namespace locust
 {
+    LOGGER( lmclog, "ComplexFFT" );
+
     ComplexFFT::ComplexFFT():
     IsInitialized(false),
     fTransformFlag("MEASURE"),
@@ -203,6 +205,7 @@ namespace locust
 	fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
 	if(GenerateWindowFunction()==false)
 	{
+	    LERROR(lmclog,"Window couldn't be generated"):
 	    exit(-1);
 	}
 	return true;
@@ -229,7 +232,11 @@ namespace locust
 	fReversePlan= fftw_plan_dft_1d(fTotalWindowSize,fInputArray,fOutputArray,FFTW_BACKWARD,FFTW_ESTIMATE);
         
         fftw_execute(fReversePlan);
-	MakeFilterCausal(fOutputArray);
+	if(MakeFilterCausal(fOutputArray))
+	{
+	    LERROR(lmclog,"Couldn't make FIR filter causal");
+	    exit(-1);
+	}
 	std::ofstream myfile;
 	myfile.open ("example.txt");
         for (int i = 0; i < fSize; ++i)
@@ -243,7 +250,6 @@ namespace locust
 	   myfile<<"\n";
 	}
 	myfile.close();
-	exit(1);
         return true;
     }
     

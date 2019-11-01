@@ -126,6 +126,7 @@ namespace locust
         
         if(!fTransmitterHandler.ReadHFSSFile())
         {
+	    LERROR(lmclog,"Error reading HFSS file");
             return false;
         }
         double filterSize=fTransmitterHandler.GetFilterSize();
