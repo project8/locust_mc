@@ -31,6 +31,7 @@ namespace locust
      -"use-wisdom": bool -- Option to use FFTW wisdom file if it already exists to improve FFT performance
      -"wisdom-filename": string -- The wisdom file name to use
      -"zero-padding-size": int -- The number of zeros to append at the end of the TF before IFFT to FIR
+     -"shift-n-bins": int (100) -- Number of bins to be shifted to make the TF to FIR converted filter causal 
      -"window-function-type": int -- The window function to use for IFFT
      
      Information from FFTW website (http://www.fftw.org/fftw3_doc/Complex-One_002dDimensional-DFTs.html#Complex-One_002dDimensional-DFTs)
@@ -78,9 +79,11 @@ namespace locust
 	int fPreFilterBins;
         bool IsInitialized;
 	std::vector<double> fWindowFunction;
+	int fNShiftBins;
 	
 	// Member functions
     	bool GenerateWindowFunction();
+	bool MakeFilterCausal(fftw_complex*);
     };
     
 } /* namespace locust */

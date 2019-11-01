@@ -23,6 +23,7 @@ namespace locust
     fWindowFunction(NULL),
     fInputArray(NULL),
     fOutputArray(NULL),
+    fNShiftBins(100),
     fForwardPlan(),
     fReversePlan()
     {
@@ -66,6 +67,10 @@ namespace locust
         if(aParam.has("window-function-type"))
         {
             fWindowFunctionType=aParam["window-function-type"]().as_int();
+        }
+        if( aParam.has( "shift-n-bins" ) )
+        {
+            fNShiftBins=aParam["shift-n-bins"]().as_int();
         }
         
         if(fTransformFlag.compare("MEASURE"))
@@ -128,6 +133,25 @@ namespace locust
 	return true;
     }
 
+    bool ComplexFFT::MakeFilterCausal(fftw_complex* in)
+    {
+	std::vector<double> vectorToTransformReal;
+	std::vector<double> vectorToTransformImag;
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+	    vectorToTransformReal.push_back(in[i][0]);
+	    vectorToTransformImag.push_back(in[i][1]);
+	}
+	std::rotate(vectorToTransformReal.rbegin(),vectorToTransformReal.rbegin()+fNShiftBins,vectorToTransformReal.rend());
+	std::rotate(vectorToTransformImag.rbegin(),vectorToTransformImag.rbegin()+fNShiftBins,vectorToTransformImag.rend());
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+	    in[i][0]=vectorToTransformReal.at(i);
+	    in[i][1]=vectorToTransformReal.at(i);
+	}
+	return true;
+    }
+
     bool ComplexFFT::ForwardFFT(int size, fftw_complex* in, fftw_complex* out)
     {
         if(!IsInitialized) return false;
@@ -156,8 +180,6 @@ namespace locust
 
     bool ComplexFFT::ReverseFFT(int size, fftw_complex* in, fftw_complex* out)
     {
-	std::ofstream myfile;
-	myfile.open ("example.txt");
         fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         if(!IsInitialized) return false;
@@ -177,11 +199,14 @@ namespace locust
 	fReversePlan= fftw_plan_dft_1d(fTotalWindowSize,fInputArray,fOutputArray,FFTW_BACKWARD,FFTW_ESTIMATE);
         
         fftw_execute(fReversePlan);
-        for (int i = 0; i < fTotalWindowSize; ++i){
-	   if(i<fSize) out[i][0]=fOutputArray[i][0]/fTotalWindowSize;
+	MakeFilterCausal(fOutputArray);
+	std::ofstream myfile;
+	myfile.open ("example.txt");
+        for (int i = 0; i < fSize; ++i){
+	   out[i][0]=fOutputArray[i][0]/fTotalWindowSize;
 	   myfile<<i;
 	   myfile<<",";
-	   myfile<<fOutputArray[i][0]/fTotalWindowSize;
+	   myfile<<out[i][1];
 	   myfile<<"\n";
         }
 	myfile.close();

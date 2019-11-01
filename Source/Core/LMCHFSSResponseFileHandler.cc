@@ -85,7 +85,7 @@ namespace locust
     {
         return true;
     }
-    
+  
     bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray)
     {
         if(fNBins<=0)
@@ -159,6 +159,7 @@ namespace locust
                         //printf("%f\n", tfMagnitude);
                         ++wordCount;
                     }
+		    // The TF values from HFSS are in GHz, so need to convert to Hz
 		    if(fNBins==0)fInitialTFIndex=tfIndex*pow(10.0,9);
                     const std::complex<double> temp(tfRealValue,tfImaginaryValue);
                     tfArray.push_back(temp);
