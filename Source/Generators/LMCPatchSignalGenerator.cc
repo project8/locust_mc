@@ -400,7 +400,11 @@ namespace locust
 
         FILE *fp = fopen("incidentfields.txt", "w");
 
-        InitializePatchArray();
+        if(!InitializePatchArray())
+        {
+	    LERROR(lmclog,"Error configuring Patch array");
+            exit(-1);
+        }
         InitializePowerCombining();
 
         //n samples for event spacing.
