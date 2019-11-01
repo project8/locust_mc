@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "logger.hh"
 #include "LMCComplexFFT.hh"
 #include "LMCConst.hh"
 
@@ -205,7 +206,7 @@ namespace locust
 	fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
 	if(GenerateWindowFunction()==false)
 	{
-	    LERROR(lmclog,"Window couldn't be generated"):
+	    LERROR(lmclog,"Error generating window function");
 	    exit(-1);
 	}
 	return true;
