@@ -722,7 +722,6 @@ namespace locust
         TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
 
         const unsigned nChannels = fNChannels;
-        double LO_phase = 0.;
         const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
         double signalAmplitude;
         double tTimeOffset = 0;
@@ -742,6 +741,7 @@ namespace locust
 
                 for(unsigned ch = 0; ch < nChannels; ++ch) // over all channels
                 {
+                	double LO_phase = 0.;
                     double voltage_phase = fStartVPhase;
                     unsigned tTrackIndexRange[2] = {static_cast<unsigned>(fStartTime / tLocustStep), static_cast<unsigned>(fEndTime / tLocustStep)};
                     tTrackIndexRange[1] = std::min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
@@ -749,6 +749,7 @@ namespace locust
 
                     for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
+                        LO_phase += 2.*LMCConst::Pi()*fLO_frequency * tLocustStep;
                         fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
                         voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fCurrentFrequency) * tLocustStep;
                         signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch);
