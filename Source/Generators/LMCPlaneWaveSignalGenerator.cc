@@ -433,7 +433,11 @@ namespace locust
     bool PlaneWaveSignalGenerator::DoGenerate( Signal* aSignal )
     {
 
-    	InitializePatchArray();
+    	if(!InitializePatchArray())
+	{
+	    LERROR(lmclog,"Error initilizing Patch Array");
+	    exit(-1);
+	}
     	InitializePowerCombining();
 
     	int nfilterbins = fTFReceiverHandler.GetFilterSize();
