@@ -16,7 +16,7 @@
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCLienardWiechert.hh"
-#include "LMCFIRHandler.hh"
+#include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 
 
