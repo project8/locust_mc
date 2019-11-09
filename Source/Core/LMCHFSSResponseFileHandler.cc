@@ -116,10 +116,10 @@ namespace locust
     
     bool TFFileHandlerCore::ReadHFSSFile()
     {
-	//if(fIsFIRCreated) 
-	//{
-	  //  return true;	
-	//}
+	if(fIsFIRCreated) 
+	{
+	    return true;	
+	}
         fNBins=0;
         if(!ends_with(fHFSSFilename,".txt"))
         {
