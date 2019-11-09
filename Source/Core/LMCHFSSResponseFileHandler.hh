@@ -40,6 +40,7 @@ namespace locust
         int fNSkips;
         bool fHFSSFiletype;
         ComplexFFT fComplexFFT;
+        bool fIsFIRCreated;
         
         //Member functions
         bool ends_with(const std::string &, const std::string &);

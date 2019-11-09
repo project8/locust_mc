@@ -20,7 +20,8 @@ namespace locust
     fResolution(1e-12),
     fNSkips(1),
     fComplexFFT(),
-    fHFSSFiletype("")
+    fHFSSFiletype(""),
+    fIsFIRCreated(false)
     {
     }
     
@@ -115,6 +116,10 @@ namespace locust
     
     bool TFFileHandlerCore::ReadHFSSFile()
     {
+	//if(fIsFIRCreated) 
+	//{
+	  //  return true;	
+	//}
         fNBins=0;
         if(!ends_with(fHFSSFilename,".txt"))
         {
@@ -172,6 +177,7 @@ namespace locust
         if(!ConvertTFtoFIR(tfArray)){
             return false;
         }
+	fIsFIRCreated=true;
         return true;
     }
     
@@ -190,6 +196,10 @@ namespace locust
     
     bool FIRFileHandlerCore::ReadHFSSFile()
     {
+	if(fIsFIRCreated) 
+	{
+	    return true;	
+	}
         fNBins=0;
         if(!ends_with(fHFSSFilename,".txt"))
         {
@@ -214,6 +224,7 @@ namespace locust
         }
         fclose(firFile);
         LDEBUG( lmclog, "Finished reading FIR file");
+	fIsFIRCreated=true;
         return true;
     }
     
