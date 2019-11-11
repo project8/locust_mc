@@ -66,16 +66,16 @@ namespace locust
     		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
     	}
 
-    	if(!fHilbertTransform.Configure(aParam))
-    	{
-    		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
-    	}
-
         if( aParam.has( "buffer-size" ) )
         {
         	fFieldBufferSize = aParam["buffer-size"]().as_int();
         	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
         }
+
+    	if(!fHilbertTransform.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring buffer sizes in receiver HilbertTransform class");
+    	}
 
         if( aParam.has( "lo-frequency" ) )
         {
