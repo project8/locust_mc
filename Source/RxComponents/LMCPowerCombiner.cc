@@ -40,9 +40,15 @@ namespace locust
 		if( aParam.has( "power-combining-feed" ) )
 		{
 			SetPowerCombiner(aParam["power-combining-feed"]().as_string());
+			return true;
 		}
 
-		return true;
+		else
+        {
+            LERROR( lmclog, "LMCPowerCombiner has been configured without a feed type.");
+            return false;
+        }
+
 	}
 
     bool PowerCombiner::SetPowerCombiner( std::string feed )
@@ -73,6 +79,7 @@ namespace locust
 		VoltageFIRSample *= fdampingFactors[z_index];
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
 		return true;
 	}
 
