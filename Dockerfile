@@ -37,11 +37,13 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE \
+          -D CMAKE_SKIP_RPATH:BOOL=True .. &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE \
+          -D CMAKE_SKIP_RPATH:BOOL=True .. &&\
     make -j3 install &&\
     /bin/true
 
