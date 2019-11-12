@@ -26,7 +26,7 @@ namespace locust
     fWindowFunction(NULL),
     fInputArray(NULL),
     fOutputArray(NULL),
-    fNShiftBins(1000),
+    fNShiftBins(5000),
     fForwardPlan(),
     fReversePlan()
     {
