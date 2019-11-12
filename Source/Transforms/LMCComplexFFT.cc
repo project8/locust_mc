@@ -21,12 +21,12 @@ namespace locust
     fWisdomFilename("wisdom_complexfft.fftw3"),
     fSize(0),
     fTotalWindowSize(0),
-    fZeroPaddingSize(10000),
+    fZeroPaddingSize(100000),
     fWindowFunctionType(1),
     fWindowFunction(NULL),
     fInputArray(NULL),
     fOutputArray(NULL),
-    fNShiftBins(100),
+    fNShiftBins(1000),
     fForwardPlan(),
     fReversePlan()
     {
