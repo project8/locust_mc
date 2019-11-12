@@ -3,7 +3,7 @@ FROM project8/p8compute_dependencies:v0.9.0 as locust_common
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
 
-ENV LOCUST_TAG=v1.15.5
+ENV LOCUST_TAG=v1.15.6
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
@@ -37,11 +37,13 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE \
+          -D CMAKE_SKIP_RPATH:BOOL=True .. &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE \
+          -D CMAKE_SKIP_RPATH:BOOL=True .. &&\
     make -j3 install &&\
     /bin/true
 
