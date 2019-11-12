@@ -1,0 +1,9 @@
+#============================================================================================
+#ANSOFT                                                                              MM/DD/YY
+#Name of the system used								mm:ss
+#Description of the Transfer function: Include all the information needed to reproduce the 
+# 					same TF at some later time. 
+#
+#--------------------------------------------------------------------------------------------
+#        Freq [GHz]               Re []               Im [] 
+24.000000000000000    1.61803398875   	3.14159265359
