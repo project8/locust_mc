@@ -242,12 +242,12 @@ namespace locust
 	myfile.open ("example.txt");
         for (int i = 0; i < fSize; ++i)
 	{
-	   out[i][0]=fOutputArray[i][0]/fSize;
+	   out[i][0]=fOutputArray[i][0]/std::sqrt(fSize)/2.0;
         }
         for (int i = 0; i < fTotalWindowSize; ++i){
 	   myfile<<i;
 	   myfile<<",";
-	   myfile<<fOutputArray[i][0]/fSize;
+	   myfile<<fOutputArray[i][0]/std::sqrt(fSize)/2.0;
 	   myfile<<"\n";
 	}
 	myfile.close();
