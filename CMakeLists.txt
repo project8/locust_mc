@@ -172,5 +172,5 @@ endif (locust_mc_ENABLE_EXECUTABLES )
 # Config files #
 ################
 
-add_subdirectory( Config )
+#add_subdirectory( Config )
 
