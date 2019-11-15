@@ -127,7 +127,6 @@ namespace locust
             return false;
         }
         double tfIndex;
-        double tfMagnitude;
         double tfRealValue;
         double tfImaginaryValue;
         std::vector<std::complex<double>> tfArray;
@@ -160,7 +159,6 @@ namespace locust
                             LERROR(lmclog, "There are more column than expected in the input TF file");
                             return false;
                         }
-                        //printf("%f\n", tfMagnitude);
                         ++wordCount;
                     }
 		    // The TF values from HFSS are in GHz, so need to convert to Hz
