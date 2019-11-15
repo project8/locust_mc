@@ -155,7 +155,6 @@ namespace locust
                         if(wordCount==0)tfIndex=std::stod(token);
                         else if(wordCount==1)tfRealValue=std::stod(token);
                         else if(wordCount==2)tfImaginaryValue=std::stod(token);
-                        else if(wordCount==3)tfMagnitude=std::stod(token);
                         else
                         {
                             LERROR(lmclog, "There are more column than expected in the input TF file");
