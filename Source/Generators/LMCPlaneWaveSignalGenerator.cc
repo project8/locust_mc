@@ -46,9 +46,9 @@ namespace locust
 	bool PlaneWaveSignalGenerator::Configure( const scarab::param_node& aParam )
 	{
       
-		if(!fReceiverFIRHandler.Configure(aParam))
+		if(!fTFReceiverHandler.Configure(aParam))
 		{
-			LERROR(lmclog,"Error configuring receiver FIRHandler class");
+			LERROR(lmclog,"Error configuring receiver TFHandler class");
 		}
 
 		if(!fPowerCombiner.Configure(aParam))
@@ -211,8 +211,8 @@ namespace locust
    
 //    	double* generatedpoints = new double [nfilterbins];
     	std::deque<double> generatedpoints;
-    	int nfilterbins = fReceiverFIRHandler.GetFilterSize();
-    	double dtfilter = fReceiverFIRHandler.GetFilterResolution();
+    	int nfilterbins = fTFReceiverHandler.GetFilterSize();
+    	double dtfilter = fTFReceiverHandler.GetFilterResolution();
     	//double phase = startphase;
     	double phase = startphase + GetPWPhaseDelayAtPatch(patchIndex);
     	double amp = dottedamp;
@@ -226,7 +226,7 @@ namespace locust
 	//		printf("genpoints %d is %g, amp is %g\n", i, generatedpoints[i], amp); getchar();
     	}
 
-    	double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(generatedpoints);
+    	double convolution=fTFReceiverHandler.ConvolveWithFIRFilter(generatedpoints);
       
     	generatedpoints.shrink_to_fit();  // memory deallocation.
 
@@ -389,7 +389,7 @@ namespace locust
 
     bool PlaneWaveSignalGenerator::InitializePatchArray()
     {
-    	if(!fReceiverFIRHandler.ReadFIRFile())
+    	if(!fTFReceiverHandler.ReadHFSSFile())
     	{
     		return false;
     	}
@@ -433,10 +433,14 @@ namespace locust
     bool PlaneWaveSignalGenerator::DoGenerate( Signal* aSignal )
     {
 
-    	InitializePatchArray();
+    	if(!InitializePatchArray())
+	{
+	    LERROR(lmclog,"Error initilizing Patch Array");
+	    exit(-1);
+	}
     	InitializePowerCombining();
 
-    	int nfilterbins = fReceiverFIRHandler.GetFilterSize();
+    	int nfilterbins = fTFReceiverHandler.GetFilterSize();
  
     	InitializeBuffers();
 

@@ -1,12 +1,12 @@
 /*
- * LMCDipoleSignalGenerator.cc
+ * LMCTurnstileSignalGenerator.cc
  *
- *  Created on: July 11 2019
+ *  Created on: Oct 2019
  *      Author: Pranava Teja Surukuchi
  */
 
 #include <cmath>
-#include "LMCDipoleSignalGenerator.hh"
+#include "LMCTurnstileSignalGenerator.hh"
 #include "LMCDigitizer.hh"
 #include "logger.hh"
 #include "LMCConst.hh"
@@ -16,13 +16,13 @@ using std::string;
 
 namespace locust
 {
-    LOGGER( lmclog, "DipoleSignalGenerator" );
+    LOGGER( lmclog, "TurnstileSignalGenerator" );
     
-    MT_REGISTER_GENERATOR(DipoleSignalGenerator, "antenna-dipole-generator");
+    MT_REGISTER_GENERATOR(TurnstileSignalGenerator, "turnstile-signal-generator");
     
-    DipoleSignalGenerator::DipoleSignalGenerator( const std::string& aName ) :
+    TurnstileSignalGenerator::TurnstileSignalGenerator( const std::string& aName ) :
     Generator( aName ),
-    fDoGenerateFunc( &DipoleSignalGenerator::DoGenerateTime ),
+    fDoGenerateFunc( &TurnstileSignalGenerator::DoGenerateTime ),
     fLO_frequency( 20.05e9 ),
     fRF_frequency( 20.1e9 ),
     fArrayRadius( 0. ),
@@ -43,14 +43,14 @@ namespace locust
         fRequiredSignalState = Signal::kTime;
     }
     
-    DipoleSignalGenerator::~DipoleSignalGenerator()
+    TurnstileSignalGenerator::~TurnstileSignalGenerator()
     {
     }
     
     
-    bool DipoleSignalGenerator::Configure( const scarab::param_node& aParam )
+    bool TurnstileSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if(!fReceiverFIRHandler.Configure(aParam))
+        if(!fReceiverHandler.Configure(aParam))
         {
             LERROR(lmclog,"Error configuring receiver FIRHandler class");
         }
@@ -136,73 +136,73 @@ namespace locust
     }
     
     
-    void DipoleSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
+    void TurnstileSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
         return;
     }
     
-    double DipoleSignalGenerator::GetRFFrequency() const
+    double TurnstileSignalGenerator::GetRFFrequency() const
     {
         return fRF_frequency;
     }
     
-    void DipoleSignalGenerator::SetRFFrequency( double aFrequency )
+    void TurnstileSignalGenerator::SetRFFrequency( double aFrequency )
     {
         fRF_frequency = aFrequency;
         return;
     }
     
-    double DipoleSignalGenerator::GetLOFrequency() const
+    double TurnstileSignalGenerator::GetLOFrequency() const
     {
         return fLO_frequency;
     }
     
-    void DipoleSignalGenerator::SetLOFrequency( double aFrequency )
+    void TurnstileSignalGenerator::SetLOFrequency( double aFrequency )
     {
         fLO_frequency = aFrequency;
         return;
     }
     
-    double DipoleSignalGenerator::GetAmplitude() const
+    double TurnstileSignalGenerator::GetAmplitude() const
     {
         return fAmplitude;
     }
     
-    void DipoleSignalGenerator::SetAmplitude( double aAmplitude )
+    void TurnstileSignalGenerator::SetAmplitude( double aAmplitude )
     {
         fAmplitude = aAmplitude;
         return;
     }
     
-    double DipoleSignalGenerator::GetBufferSize() const
+    double TurnstileSignalGenerator::GetBufferSize() const
     {
         return fFieldBufferSize;
     }
     
-    void DipoleSignalGenerator::SetBufferSize( double aBufferSize )
+    void TurnstileSignalGenerator::SetBufferSize( double aBufferSize )
     {
         fFieldBufferSize = aBufferSize;
         return;
     }
     
     
-    Signal::State DipoleSignalGenerator::GetDomain() const
+    Signal::State TurnstileSignalGenerator::GetDomain() const
     {
         return fRequiredSignalState;
     }
     
-    void DipoleSignalGenerator::SetDomain( Signal::State aDomain )
+    void TurnstileSignalGenerator::SetDomain( Signal::State aDomain )
     {
         if( aDomain == fRequiredSignalState ) return;
         fRequiredSignalState = aDomain;
         if( fRequiredSignalState == Signal::kTime )
         {
-            fDoGenerateFunc = &DipoleSignalGenerator::DoGenerateTime;
+            fDoGenerateFunc = &TurnstileSignalGenerator::DoGenerateTime;
         }
         else if( fRequiredSignalState == Signal::kFreq )
         {
-            fDoGenerateFunc = &DipoleSignalGenerator::DoGenerateFreq;
+            fDoGenerateFunc = &TurnstileSignalGenerator::DoGenerateFreq;
         }
         else
         {
@@ -212,7 +212,7 @@ namespace locust
     }
     
     //PTS: This part(function) should be unified with the other parts where a filter is extracted
-    double DipoleSignalGenerator::GetAOIFactor(LMCThreeVector TrasmitterReceiverNormal,LMCThreeVector ReceivingPatchNormal)
+    double TurnstileSignalGenerator::GetAOIFactor(LMCThreeVector TrasmitterReceiverNormal,LMCThreeVector ReceivingPatchNormal)
     {
 	if(TrasmitterReceiverNormal==LMCThreeVector::sZero)
 	{
@@ -222,7 +222,7 @@ namespace locust
         return AOIFactor;
     }
     
-    double DipoleSignalGenerator::GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase)
+    double TurnstileSignalGenerator::GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase)
     {
         
         double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
@@ -239,14 +239,14 @@ namespace locust
             delete[] HilbertMagPhaseMean;
             
             HilbertPhase += fieldPhase;
-            for (int i=0; i < fReceiverFIRHandler.GetFilterSize(); i++)  // populate filter with field.
+            for (int i=0; i < fReceiverHandler.GetFilterSize(); i++)  // populate filter with field.
             {
-                HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*fReceiverFIRHandler.GetFilterResolution();
+                HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*fReceiverHandler.GetFilterResolution();
                 PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
                 PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
             }
             
-            double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
+            double convolution=fReceiverHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
             
             PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
             return convolution;
@@ -256,7 +256,7 @@ namespace locust
     }
     
     // Should be moved to somewhere more general
-    double DipoleSignalGenerator::RotateZ(int component, double angle, double x, double y)
+    double TurnstileSignalGenerator::RotateZ(int component, double angle, double x, double y)
     {
         double newcomponent = 0.;
         if (component==0)
@@ -271,7 +271,7 @@ namespace locust
     }
 
 
-    bool DipoleSignalGenerator::InitializePowerCombining()
+    bool TurnstileSignalGenerator::InitializePowerCombining()
     {
     	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
     	fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip);
@@ -280,11 +280,11 @@ namespace locust
     }
 
     
-    bool DipoleSignalGenerator::InitializePatchArray()
+    bool TurnstileSignalGenerator::InitializePatchArray()
     {
-        if(!fReceiverFIRHandler.ReadHFSSFile())
+        if(!fReceiverHandler.ReadHFSSFile())
         {
-            return false;
+            exit(-1);
         }
         const unsigned nChannels = fNChannels;
         const int nReceivers = fNPatchesPerStrip;
@@ -306,11 +306,6 @@ namespace locust
             for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
             {
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
-
-                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
-                {
-                	zPosition = 0.;
-                }
                 
                 modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
                 modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
@@ -322,15 +317,14 @@ namespace locust
         return true;
     }
     
-    bool DipoleSignalGenerator::DoGenerate( Signal* aSignal )
+    bool TurnstileSignalGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
     }
     
     
-    bool DipoleSignalGenerator::DoGenerateTime( Signal* aSignal )
+    bool TurnstileSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-        
         InitializePatchArray();
         InitializePowerCombining();
         const unsigned nchannels = fNChannels;
@@ -339,9 +333,9 @@ namespace locust
         double LO_phase = 0.;
         double field_phase = 0.;
         double VoltageSample = 0.;
-        unsigned nfilterbins = fReceiverFIRHandler.GetFilterSize();
+        unsigned nfilterbins = fReceiverHandler.GetFilterSize();
         unsigned nfieldbufferbins = fFieldBufferSize;
-        double dtfilter = fReceiverFIRHandler.GetFilterResolution();
+        double dtfilter = fReceiverHandler.GetFilterResolution();
         
         if(!fAntennaSignalTransmitter.InitializeTransmitter())
         {
@@ -380,7 +374,7 @@ namespace locust
         return true;
     }
     
-    void DipoleSignalGenerator::FillBuffers(Signal* aSignal, double FieldValue, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch)
+    void TurnstileSignalGenerator::FillBuffers(Signal* aSignal, double FieldValue, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch)
     {
         
         EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(FieldValue);
@@ -393,7 +387,7 @@ namespace locust
     }
     
     
-    void DipoleSignalGenerator::PopBuffers(unsigned channel, unsigned patch)
+    void TurnstileSignalGenerator::PopBuffers(unsigned channel, unsigned patch)
     {
         EFieldBuffer[channel*fNPatchesPerStrip+patch].pop_front();
         EPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
@@ -410,13 +404,12 @@ namespace locust
         IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
         // PTS: Seg faults when shrink-to-fit used on ConvolutionTimeBuffer, removed for now. Need to revisit what the problem is
         //ConvolutionTimeBuffer[channel+fNPatchesPerStrip+patch].shrink_to_fit();
-        
     }
     
     
     
     
-    void DipoleSignalGenerator::CleanupBuffers()
+    void TurnstileSignalGenerator::CleanupBuffers()
     {
         FieldBuffer aFieldBuffer;
         EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
@@ -428,7 +421,7 @@ namespace locust
         
     }
     
-    void DipoleSignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
+    void TurnstileSignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
         
         FieldBuffer aFieldBuffer;
@@ -439,14 +432,11 @@ namespace locust
         EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
         IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        
         PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
-        
-        
     }
     
     
-    bool DipoleSignalGenerator::DoGenerateFreq( Signal* aSignal )
+    bool TurnstileSignalGenerator::DoGenerateFreq( Signal* aSignal )
     {
         return true;
     }

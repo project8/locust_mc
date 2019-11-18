@@ -16,7 +16,8 @@
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCLienardWiechert.hh"
-#include "LMCFIRHandler.hh"
+#include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
 
 
 namespace locust
@@ -91,7 +92,7 @@ namespace locust
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializePatchArray();
             bool InitializePowerCombining();
-            FIRReceiverHandler fReceiverFIRHandler;
+            TFReceiverHandler fTFReceiverHandler;
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
             LienardWiechert fFieldSolver;

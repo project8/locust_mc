@@ -33,7 +33,9 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCSimulationController.hh
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
-    Core/LMCFIRHandler.hh
+    Core/LMCHFSSResponseFileHandler.hh
+    Core/LMCFIRFileHandler.hh
+    Core/LMCTFFileHandler.hh
     
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -45,11 +47,14 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCButterworthLPFGenerator.hh
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.hh
+    Generators/LMCTurnstileSignalGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
-    Transforms/LMCHilbertTransform.hh
     
+    Transforms/LMCHilbertTransform.hh
+    Transforms/LMCComplexFFT.hh    
+
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCReceiver.hh
     RxComponents/LMCPatchAntenna.hh
@@ -68,7 +73,9 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCSimulationController.cc
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
-    Core/LMCFIRHandler.cc
+    Core/LMCHFSSResponseFileHandler.cc
+    Core/LMCFIRFileHandler.cc
+    Core/LMCTFFileHandler.cc
 
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
@@ -80,10 +87,13 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCButterworthLPFGenerator.cc
     Generators/LMCDipoleSignalGenerator.cc
     Generators/LMCPlaneWaveSignalGenerator.cc
+    Generators/LMCTurnstileSignalGenerator.cc
 
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
+
     Transforms/LMCHilbertTransform.cc
+    Transforms/LMCComplexFFT.cc    
     
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCReceiver.cc

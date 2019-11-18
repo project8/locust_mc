@@ -16,7 +16,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
-#include "LMCFIRHandler.hh"
+#include "LMCTFFileHandler.hh"
 
 namespace locust
 {
@@ -90,7 +90,7 @@ namespace locust
 	  	  double GetPatchFIRSample(double amp, double startphase, int patchIndex);
 
 	  	  // external classes
-	  	  FIRReceiverHandler fReceiverFIRHandler;
+                  TFReceiverHandler fTFReceiverHandler;
 	  	  PowerCombiner fPowerCombiner;
 	  	  HilbertTransform fHilbertTransform;
 

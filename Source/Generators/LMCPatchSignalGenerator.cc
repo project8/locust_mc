@@ -56,7 +56,7 @@ namespace locust
 
     bool PatchSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-    	if(!fReceiverFIRHandler.Configure(aParam))
+    	if(!fTFReceiverHandler.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
@@ -207,7 +207,7 @@ namespace locust
     			PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     		}
 
-    		convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
+    		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
 
     		PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
     		return convolution;
@@ -349,7 +349,7 @@ namespace locust
     bool PatchSignalGenerator::InitializePatchArray()
     {
 
-        if(!fReceiverFIRHandler.ReadFIRFile())
+        if(!fTFReceiverHandler.ReadHFSSFile())
         {
             return false;
         }
@@ -400,7 +400,11 @@ namespace locust
 
         FILE *fp = fopen("incidentfields.txt", "w");
 
-        InitializePatchArray();
+        if(!InitializePatchArray())
+        {
+	    LERROR(lmclog,"Error configuring Patch array");
+            exit(-1);
+        }
         InitializePowerCombining();
 
         //n samples for event spacing.
@@ -411,8 +415,8 @@ namespace locust
         std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
-        int nfilterbins = fReceiverFIRHandler.GetFilterSize();
-        double dtfilter = fReceiverFIRHandler.GetFilterResolution();
+        int nfilterbins = fTFReceiverHandler.GetFilterSize();
+        double dtfilter = fTFReceiverHandler.GetFilterResolution();
         unsigned nfieldbufferbins = fFieldBufferSize;
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
