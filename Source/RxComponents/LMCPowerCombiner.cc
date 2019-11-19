@@ -208,7 +208,7 @@ namespace locust
 
         bool PowerCombiner::SetSmatrixDampingFactors()
         {
-                if (fnPatchesPerStrip != 2 && fnPatchesPerStrip != 4 && fnPatchesPerStrip != 6)
+                if (fnPatchesPerStrip != 2 && fnPatchesPerStrip != 4 && fnPatchesPerStrip != 6 && fnPatchesPerStrip != 8)
                 {
 	                LERROR(lmclog,"The S-matrix is implemented only for 2, 4, or 6 patches per strip.");
 	                return false;
@@ -231,6 +231,7 @@ namespace locust
                if (fnPatchesPerStrip == 2) smatrix = fsMatrix2patch;
                if (fnPatchesPerStrip == 4) smatrix = fsMatrix4patch;
                if (fnPatchesPerStrip == 6) smatrix = fsMatrix6patch;
+               if (fnPatchesPerStrip == 8) smatrix = fsMatrix8patch;
 
                return smatrix;
        }
