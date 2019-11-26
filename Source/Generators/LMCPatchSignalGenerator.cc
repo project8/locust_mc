@@ -44,7 +44,8 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
-        fFieldBufferSize( 50 )
+        fFieldBufferSize( 50 ),
+		fSwapFrequency( 1000 )
 
     {
         fRequiredSignalState = Signal::kTime;
@@ -97,6 +98,10 @@ namespace locust
         if( aParam.has( "zshift-array" ) )
         {
             fZShiftArray = aParam["zshift-array"]().as_double();
+        }
+        if( aParam.has( "swap-frequency" ) )
+        {
+            fSwapFrequency = aParam["swap-frequency"]().as_int();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -287,7 +292,7 @@ namespace locust
         } // channels loop
 
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        CleanupBuffers();
+        if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
 
     }
 
@@ -310,10 +315,6 @@ namespace locust
     	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-    	EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
 
     }
 

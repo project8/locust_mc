@@ -38,7 +38,15 @@ namespace locust
      - "param-name": type -- Description
      - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
-     
+     - "buffer-size" :  std::int -- number of elements in deque buffers to contain field information.
+     	 	 These buffers control arrival times of fields and provide a short time series for the Hilbert transform.
+     - "lo-frequency":  local oscillator frequency in Hz.
+     - "array-radius":  radius of cylindrical antenna array in meters.
+     - "npatches-per-strip":  number of patch antennas on each strip.
+     - "patch-spacing":  spacing between patches on one strip in meters.
+     - "zshift-array":  shift of whole antenna array along z axis, for testing (meters).
+     - "swap-frequency":  number of digitizer samples after which buffer memory is reset.  This
+     	 	 becomes more important for large numbers of patches
 
     */
     class PatchSignalGenerator : public Generator
@@ -65,6 +73,7 @@ namespace locust
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
+            int fSwapFrequency;
             double fphiLO; // voltage phase of LO in radians;
 
             bool WakeBeforeEvent();
