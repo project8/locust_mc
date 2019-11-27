@@ -6,9 +6,13 @@
  */
 
 #include "LMCHilbertTransform.hh"
+#include "logger.hh"
 
 namespace locust
 {
+
+	LOGGER( lmclog, "HilbertTransform" );
+
 
     HilbertTransform::HilbertTransform():
         fbufferMargin( 25 ),
@@ -22,6 +26,10 @@ namespace locust
 
     bool HilbertTransform::Configure(const scarab::param_node& aParam)
     {
+    	if(!fComplexFFT.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver ComplexFFT class");
+    	}
 
     	if( aParam.has( "hilbert-buffer-margin" ) )
         {
@@ -109,7 +117,7 @@ namespace locust
     double HilbertTransform::GetMean( std::deque<double> FieldBuffer )
     {
     	double mean = 0.;
-    	for (std::deque<double>::iterator it = FieldBuffer.begin(); it!=FieldBuffer.end(); ++it)
+    	for (std::deque<double>::iterator it = FieldBuffer.begin(); it != FieldBuffer.end(); ++it)
         {
     		mean += *it/(double)FieldBuffer.size();
         }
@@ -145,20 +153,22 @@ namespace locust
 
 
 
-    double* HilbertTransform::GetFrequencyData( std::deque<double> FrequencyBuffer )
+    fftw_complex* HilbertTransform::UnpackBuffer( std::deque<double> Buffer )
     {
 
-    	// unpack buffer into array and return it.
-    	double* frequencydata = new double[FrequencyBuffer.size()];
+        int windowsize = Buffer.size();
+        fftw_complex *arraydata;
+        arraydata = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * windowsize);
 
-        int i=0;
-        for (std::deque<double>::iterator it = FrequencyBuffer.begin(); it!=FrequencyBuffer.end(); ++it)
+        int i = 0;
+        for (std::deque<double>::iterator it = Buffer.begin(); it != Buffer.end(); ++it)
         {
-        	frequencydata[i] = *it;
+        	arraydata[i][0] = *it;
+        	arraydata[i][1] = 0.;
         	i += 1;
         }
 
-        return frequencydata;
+        return arraydata;
     }
 
 
@@ -170,29 +180,16 @@ namespace locust
         originaldata = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * windowsize);
         fftw_complex *SignalComplex;
         SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
+
         fftw_complex *FFTComplex;
         FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
         fftw_complex *hilbert;
         hilbert = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * windowsize);
 
-        fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
-        fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(windowsize, hilbert, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+        SignalComplex = UnpackBuffer( FieldBuffer );
+        originaldata = UnpackBuffer( FieldBuffer );
 
-        int i=0;
-        for (std::deque<double>::iterator it = FieldBuffer.begin(); it!=FieldBuffer.end(); ++it)
-        {
-        	SignalComplex[i][0] = *it;
-        	originaldata[i][0] = *it;
-        	SignalComplex[i][1] = 0.;
-        	originaldata[i][1] = 0.;
-        	i += 1;
-        }
-
-
-
-        fftw_execute(ForwardPlan); // SignalComplex->FFTComplex
+        fComplexFFT.ForwardFFT(windowsize, SignalComplex, FFTComplex);
 
 
         // do the phase shifts
@@ -211,7 +208,10 @@ namespace locust
         }
 
 
+        fftw_plan ReversePlan;
+        ReversePlan = fftw_plan_dft_1d(windowsize, hilbert, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
         fftw_execute(ReversePlan); // hilbert->SignalComplex
+//        fComplexFFT.ReverseFFT(windowsize, hilbert, SignalComplex);
 
 
         for (int i = 0; i < windowsize; i++)  // normalize with 1/N
@@ -241,16 +241,16 @@ namespace locust
 
 
         // dump to text file for debugging.
-/*    	FILE *fp = fopen("Hilbertresults.txt", "w");
+    	FILE *fp = fopen("Hilbertresults.txt", "w");
     	for (int i=0; i<windowsize; i++)
     	{
     		fprintf(fp, "%g %g %g %g\n", originaldata[i][0], originaldata[i][1], pow(originaldata[i][0]*originaldata[i][0] + originaldata[i][1]*originaldata[i][1], 0.5), GetPhase(originaldata[i][0], originaldata[i][1], 0.));
     	}
     	fclose (fp);
+    	printf(" *** debug file written to Hilbertresults.txt *** Press Ctrl-C to exit.\n");
     	getchar();  // Control-C to quit.
-*/
 
-        fftw_destroy_plan(ForwardPlan);
+
         fftw_destroy_plan(ReversePlan);
         delete[] hilbert;
         delete[] SignalComplex;
