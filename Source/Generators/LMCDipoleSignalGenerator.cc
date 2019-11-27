@@ -37,7 +37,8 @@ namespace locust
     LOPhaseBuffer( 1 ),
     IndexBuffer( 1 ),
     PatchFIRBuffer( 1 ),
-    fFieldBufferSize( 50 )
+    fFieldBufferSize( 50 ),
+	fSwapFrequency( 1000 )
     
     {
         fRequiredSignalState = Signal::kTime;
@@ -60,6 +61,12 @@ namespace locust
             LERROR(lmclog,"Error configuring receiver FIRHandler class");
         }
 
+        if( aParam.has( "buffer-size" ) )
+        {
+            SetBufferSize( aParam.get_value< double >( "buffer-size", fFieldBufferSize ) );
+        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
+        }
+
     	if(!fHilbertTransform.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
@@ -78,12 +85,6 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
         {
             SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
-        }
-        
-        if( aParam.has( "buffer-size" ) )
-        {
-            SetBufferSize( aParam.get_value< double >( "buffer-size", fFieldBufferSize ) );
-        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
         }
         
         if( aParam.has( "input-signal-amplitude" ) )
@@ -248,7 +249,6 @@ namespace locust
             
             double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
             
-            PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
             return convolution;
         }
         else return 0.;
@@ -375,8 +375,8 @@ namespace locust
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel
+            if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
         }  // index
-        CleanupBuffers();
         return true;
     }
     
@@ -401,16 +401,7 @@ namespace locust
         EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
         LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
         IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        
-        EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        // PTS: Seg faults when shrink-to-fit used on ConvolutionTimeBuffer, removed for now. Need to revisit what the problem is
-        //ConvolutionTimeBuffer[channel+fNPatchesPerStrip+patch].shrink_to_fit();
-        
+
     }
     
     
@@ -420,11 +411,13 @@ namespace locust
     {
         FieldBuffer aFieldBuffer;
         EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        EPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        EAmplitudeBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+        EPhaseBuffer = aFieldBuffer.CleanupBuffer(EPhaseBuffer);
+        EAmplitudeBuffer = aFieldBuffer.CleanupBuffer(EAmplitudeBuffer);
+        EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
+        LOPhaseBuffer = aFieldBuffer.CleanupBuffer(LOPhaseBuffer);
         IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
+    	PatchFIRBuffer = aFieldBuffer.CleanupBuffer(PatchFIRBuffer);
+
         
     }
     

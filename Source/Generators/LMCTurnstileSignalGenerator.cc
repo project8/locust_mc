@@ -37,7 +37,9 @@ namespace locust
     LOPhaseBuffer( 1 ),
     IndexBuffer( 1 ),
     PatchFIRBuffer( 1 ),
-    fFieldBufferSize( 50 )
+    fFieldBufferSize( 50 ),
+	fSwapFrequency( 1000 )
+
     
     {
         fRequiredSignalState = Signal::kTime;
@@ -60,6 +62,12 @@ namespace locust
             LERROR(lmclog,"Error configuring receiver FIRHandler class");
         }
 
+        if( aParam.has( "buffer-size" ) )
+        {
+            SetBufferSize( aParam.get_value< double >( "buffer-size", fFieldBufferSize ) );
+        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
+        }
+
     	if(!fHilbertTransform.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver HilbertTransform class");
@@ -78,12 +86,6 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
         {
             SetLOFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
-        }
-        
-        if( aParam.has( "buffer-size" ) )
-        {
-            SetBufferSize( aParam.get_value< double >( "buffer-size", fFieldBufferSize ) );
-        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
         }
         
         if( aParam.has( "input-signal-amplitude" ) )
@@ -369,8 +371,8 @@ namespace locust
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel
+            if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
         }  // index
-        CleanupBuffers();
         return true;
     }
     
@@ -413,10 +415,10 @@ namespace locust
     {
         FieldBuffer aFieldBuffer;
         EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        EPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        EAmplitudeBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-        LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+        EPhaseBuffer = aFieldBuffer.CleanupBuffer(EPhaseBuffer);
+        EAmplitudeBuffer = aFieldBuffer.CleanupBuffer(EAmplitudeBuffer);
+        EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
+        LOPhaseBuffer = aFieldBuffer.CleanupBuffer(LOPhaseBuffer);
         IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
         
     }
