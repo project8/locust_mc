@@ -34,7 +34,9 @@ namespace locust
 		fPatchSpacing( 0. ),
 		fFieldBufferSize( 50 ),
 		fAOI( 0.),
-		fAmplitude( 0.)
+		fAmplitude( 0.),
+		fSwapFrequency( 1000 )
+
 	{
 		fRequiredSignalState = Signal::kTime;
 	}
@@ -54,6 +56,12 @@ namespace locust
 		if(!fPowerCombiner.Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner class");
+		}
+
+		if( aParam.has( "buffer-size" ) )
+		{
+			fFieldBufferSize = aParam["buffer-size"]().as_int();
+			fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
 		}
 
 		if(!fHilbertTransform.Configure(aParam))
@@ -91,11 +99,6 @@ namespace locust
 		if( aParam.has( "amplitude" ) )
 		{
 			SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude) );
-		}
-		if( aParam.has( "buffer-size" ) )
-		{
-			fFieldBufferSize = aParam["buffer-size"]().as_int();
-			fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
 		}
 		return true;
 	}
@@ -334,6 +337,8 @@ namespace locust
 	    
     		}  // patch
     	} // channel
+        if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
+
     }
     
   
@@ -352,12 +357,17 @@ namespace locust
     	PWFreqBuffer[bufferIndex].pop_front();
     	PWPhaseBuffer[bufferIndex].pop_front();
     	PWValueBuffer[bufferIndex].pop_front();
-
-    	SampleIndexBuffer[bufferIndex].shrink_to_fit();
-    	PWFreqBuffer[bufferIndex].shrink_to_fit();
-    	PWPhaseBuffer[bufferIndex].shrink_to_fit();
-    	PWValueBuffer[bufferIndex].shrink_to_fit();
     }
+
+    void PlaneWaveSignalGenerator::CleanupBuffers()
+    {
+    	FieldBuffer aFieldBuffer;
+    	PWValueBuffer = aFieldBuffer.CleanupBuffer(PWValueBuffer);
+    	PWFreqBuffer = aFieldBuffer.CleanupBuffer(PWFreqBuffer);
+    	PWPhaseBuffer = aFieldBuffer.CleanupBuffer(PWPhaseBuffer);
+    	SampleIndexBuffer = aFieldBuffer.CleanupBuffer(SampleIndexBuffer);
+    }
+
   
     void PlaneWaveSignalGenerator::InitializeBuffers()
     {

@@ -85,6 +85,7 @@ namespace locust
 	  	  double fAOI; // from json file, in degrees.
 	  	  double fAmplitude;
 	  	  double fFieldBufferSize;
+          int fSwapFrequency;
 	  	  double fphiLO; // voltage phase of LO in radians;
 
 	  	  double GetPatchFIRSample(double amp, double startphase, int patchIndex);
@@ -106,6 +107,8 @@ namespace locust
 	  	  void InitializeBuffers();
 	  	  void FillBuffers(unsigned bufferIndex, int digitizerIndex, double pwphase, double pwval);
 	  	  void PopBuffers(unsigned bufferIndex);
+          void CleanupBuffers();
+
     
 	  	  std::vector<std::deque<unsigned>> SampleIndexBuffer;
 	  	  std::vector<std::deque<double>> LOPhaseBuffer;
