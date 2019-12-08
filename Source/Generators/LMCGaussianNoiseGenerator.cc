@@ -43,7 +43,10 @@ namespace locust
             //tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
             fSigma = sqrt( aParam["noise-floor-psd"]().as_double() );
             if(aParam.has("noise-temperature"))
+            {
                 LERROR( lmclog, "Both noise-floor-psd and noise-temperature are defined. Only one can be used!");
+                exit(-1);
+            }
         }
         else if( aParam.has( "noise-temperature" ))
         {
@@ -52,6 +55,7 @@ namespace locust
         else
         {
             LERROR( lmclog, "LMCGaussianNoiseGenerator has been configured without a noise background.");
+            exit(-1);
             return false;
         }
 
