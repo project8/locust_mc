@@ -45,8 +45,8 @@ namespace locust
 
 		else
         {
-            LERROR( lmclog, "LMCPowerCombiner has been configured without a feed type.");
-            return false;
+            LWARN( lmclog, "LMCPowerCombiner has been configured without a feed type.  Defaulting to corporate feed.");
+            return true;
         }
 
 	}
@@ -188,70 +188,64 @@ namespace locust
 
 	bool PowerCombiner::SetCenterFedDampingFactors()
 	{
-	        for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
+	    for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
 		{
 			int njunctions = fabs((double)z_index - (double)fnPatchesPerStrip/2.) - 1;
 			if (z_index >= fnPatchesPerStrip/2) njunctions += 1; // compensate for patches to the right of amp.
 			if (z_index == 0 || z_index == fnPatchesPerStrip-1)
-	      		{
-					fdampingFactors[z_index] = fendPatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss;
-	      		}
+	      	{
+				fdampingFactors[z_index] = fendPatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss;
+	      	}
 			else
-	      	 	{
-					fdampingFactors[z_index] = fpatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss; // patch loss * junction loss * amplifier loss
-	      	 	}
+	      	 {
+				fdampingFactors[z_index] = fpatchLoss*pow(fjunctionLoss, njunctions)*famplifierLoss; // patch loss * junction loss * amplifier loss
+	      	 }
 		}
 	  
 		return true;
 
 	}
 
-        bool PowerCombiner::SetSmatrixDampingFactors()
-        {
-                if (fnPatchesPerStrip != 2 && fnPatchesPerStrip != 4 && fnPatchesPerStrip != 6)
-                {
-	                LERROR(lmclog,"The S-matrix is implemented only for 2, 4, or 6 patches per strip.");
-	                return false;
-                }
-	  
-                SetTransmissionCoefficients();
-                for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
-                {
-	                fdampingFactors[z_index] = ftransmissionCoefficients[z_index];
-                }
+    bool PowerCombiner::SetSmatrixDampingFactors()
+    {
 
-                return true;
-		
-       }
+    	SetTransmissionCoefficients();
+    	for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
+    	{
+    		fdampingFactors[z_index] = ftransmissionCoefficients[z_index];
+    	}
+        return true;
 
-       std::vector<double> PowerCombiner::GetSmatrixElements()
-       {
-               std::vector<double> smatrix;
+    }
+
+    std::vector<double> PowerCombiner::GetSmatrixElements()
+    {
+    	std::vector<double> smatrix;
 	       
-               if (fnPatchesPerStrip == 2) smatrix = fsMatrix2patch;
-               if (fnPatchesPerStrip == 4) smatrix = fsMatrix4patch;
-               if (fnPatchesPerStrip == 6) smatrix = fsMatrix6patch;
+        if (fnPatchesPerStrip == 2) smatrix = fsMatrix2patch;
+        if (fnPatchesPerStrip == 4) smatrix = fsMatrix4patch;
+        if (fnPatchesPerStrip == 6) smatrix = fsMatrix6patch;
 
-               return smatrix;
-       }
+        return smatrix;
+    }
 
-       bool PowerCombiner::SetTransmissionCoefficients()
-       {
-               ftransmissionCoefficients.resize(fnPatchesPerStrip);
+    bool PowerCombiner::SetTransmissionCoefficients()
+    {
+    	ftransmissionCoefficients.resize(fnPatchesPerStrip);
 	 
-               std::vector<double> smatrix = GetSmatrixElements();
-               double patchImpedance = 100;
-               double ampImpedance = 50;
-	 
-               for (int i = 0; i < fnPatchesPerStrip; i++)
-               {
-	               ftransmissionCoefficients[i] = smatrix[i+1]*sqrt(ampImpedance/patchImpedance);
-		       //printf("Transmission Coeff for patch  %d is %f\n", i, ftransmissionCoefficients[i]);
-               }
+    	std::vector<double> smatrix = GetSmatrixElements();
+    	double patchImpedance = 100;
+    	double ampImpedance = 50;
 
-               return true;
+        for (int i = 0; i < fnPatchesPerStrip; i++)
+        {
+        	ftransmissionCoefficients[i] = smatrix[i+1]*sqrt(ampImpedance/patchImpedance);
+		    //printf("Transmission Coeff for patch  %d is %f\n", i, ftransmissionCoefficients[i]);
+        }
 
-       }
+        return true;
+
+    }
 
 	bool PowerCombiner::SetVoltageDampingFactors(int aPatchesPerStrip)
 	{
@@ -260,7 +254,12 @@ namespace locust
 
 		if ((fpowerCombiner == 7) || (fpowerCombiner == 0) || (fpowerCombiner == 2) || (fpowerCombiner == 3) || (fpowerCombiner == 4))
 		{
-		        SetCenterFedDampingFactors();
+			if ( (fnPatchesPerStrip%2 != 0)&&(fnPatchesPerStrip != 1) )
+			{
+	    		LERROR(lmclog,"Selected power combining config expects even number of patches per strip, or just one patch.");
+				return false;
+			}
+			SetCenterFedDampingFactors();
 		}
 
 		else if (fpowerCombiner == 1)  // series
@@ -270,11 +269,21 @@ namespace locust
 
 		else if (fpowerCombiner == 5)  // voltage divider
 		{
+			if ( (fnPatchesPerStrip%2 != 0) )
+			{
+	    		LERROR(lmclog,"Power combining with voltage divider config expects even number of patches per strip.");
+				return false;
+			}
 			SetVoltageDividerDampingFactors();
 		}
 
 		else if (fpowerCombiner == 6) // s-matrix
 		{
+	    	if (fnPatchesPerStrip != 2 && fnPatchesPerStrip != 4 && fnPatchesPerStrip != 6)
+	        {
+	    		LERROR(lmclog,"The S-matrix is implemented only for 2, 4, or 6 patches per strip.");
+		        return false;
+	        }
 			SetSmatrixDampingFactors();
 		}
 

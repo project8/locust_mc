@@ -276,7 +276,14 @@ namespace locust
     bool TurnstileSignalGenerator::InitializePowerCombining()
     {
     	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip);
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	{
+    		return false;
+    	}
+    	else
+    	{
+    		return true;
+    	}
     	return true;
 
     }
@@ -327,8 +334,21 @@ namespace locust
     
     bool TurnstileSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-        InitializePatchArray();
-        InitializePowerCombining();
+
+    	if(!InitializePatchArray())
+    	{
+    		LERROR(lmclog,"Error initilizing Patch Array");
+    		exit(-1);
+    	}
+
+        if (!InitializePowerCombining() )
+        {
+        	LERROR(lmclog,"Error configuring Power Combining");
+            exit(-1);
+        }
+
+
+
         const unsigned nchannels = fNChannels;
         const unsigned npatches = fNPatchesPerStrip;
         
