@@ -254,9 +254,14 @@ namespace locust
 
 		if ((fpowerCombiner == 7) || (fpowerCombiner == 0) || (fpowerCombiner == 2) || (fpowerCombiner == 3) || (fpowerCombiner == 4))
 		{
-			if ( (fnPatchesPerStrip%2 != 0)&&(fnPatchesPerStrip != 1) )
+			if ( (fpowerCombiner != 7)&&(fnPatchesPerStrip%2 != 0) )
 			{
-	    		LERROR(lmclog,"Selected power combining config expects even number of patches per strip, or just one patch.");
+	    		LERROR(lmclog,"Center-fed power combining config expects even number of patches per strip.");
+				return false;
+			}
+			else if ( (fpowerCombiner == 7)&&(fnPatchesPerStrip != 1) )
+			{
+	    		LERROR(lmclog,"single-patch power combining config expects one patch per strip.");
 				return false;
 			}
 			SetCenterFedDampingFactors();
