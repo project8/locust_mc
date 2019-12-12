@@ -250,7 +250,6 @@ namespace locust
             
             double convolution=fReceiverHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
             
-            PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
             return convolution;
         }
         else return 0.;
@@ -367,7 +366,7 @@ namespace locust
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
                     VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
-     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
+     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel

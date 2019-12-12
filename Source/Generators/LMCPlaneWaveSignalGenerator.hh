@@ -81,6 +81,7 @@ namespace locust
 	  	  double fAOI; // from json file, in degrees.
 	  	  double fAmplitude;
 	  	  double fFieldBufferSize;
+          int fSwapFrequency;
 
 	  	  double GetPatchFIRSample(double amp, double startphase, int patchIndex);
 
