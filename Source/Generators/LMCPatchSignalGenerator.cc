@@ -347,8 +347,14 @@ namespace locust
     bool PatchSignalGenerator::InitializePowerCombining()
     {
     	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip);
-    	return true;
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	{
+    		return false;
+    	}
+    	else
+    	{
+    		return true;
+    	}
     }
 
 
@@ -408,10 +414,14 @@ namespace locust
 
         if(!InitializePatchArray())
         {
-	    LERROR(lmclog,"Error configuring Patch array");
+        	LERROR(lmclog,"Error configuring Patch array");
             exit(-1);
         }
-        InitializePowerCombining();
+        if (!InitializePowerCombining() )
+        {
+        	LERROR(lmclog,"Error configuring Power Combining");
+            exit(-1);
+        }
 
         //n samples for event spacing.
         int PreEventCounter = 0;
