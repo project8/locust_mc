@@ -189,6 +189,11 @@ namespace locust
         SignalComplex = UnpackBuffer( FieldBuffer );
         originaldata = UnpackBuffer( FieldBuffer );
 
+/*        fftw_plan ForwardPlan;
+        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+        fftw_execute(ForwardPlan); // SignalComplex->FFTComplex
+*/  // old way.
+
         fComplexFFT.ForwardFFT(windowsize, SignalComplex, FFTComplex);
 
 
@@ -208,10 +213,15 @@ namespace locust
         }
 
 
-        fftw_plan ReversePlan;
+/*        fftw_plan ReversePlan;
         ReversePlan = fftw_plan_dft_1d(windowsize, hilbert, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
         fftw_execute(ReversePlan); // hilbert->SignalComplex
-//        fComplexFFT.ReverseFFT(windowsize, hilbert, SignalComplex);
+        */  // old way.
+
+
+        // this is giving a seg fault.  I think I am not defining the window function properly.
+        // I would like to have a rectangular window for now, to match the forward FFT.
+        fComplexFFT.ReverseFFT(windowsize, hilbert, SignalComplex);
 
 
         for (int i = 0; i < windowsize; i++)  // normalize with 1/N
@@ -251,7 +261,7 @@ namespace locust
     	getchar();  // Control-C to quit.
 
 
-        fftw_destroy_plan(ReversePlan);
+//        fftw_destroy_plan(ReversePlan);
         delete[] hilbert;
         delete[] SignalComplex;
         delete[] FFTComplex;
