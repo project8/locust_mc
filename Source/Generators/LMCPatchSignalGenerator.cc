@@ -278,7 +278,7 @@ namespace locust
 
  		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
  		        double tEFieldCrossPol = GetEFieldCrossPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
-                if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, patchIndex, currentPatch->GetPosition().GetZ(), tEFieldCoPol);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, fInterface->fTOld, patchIndex, currentPatch->GetPosition().GetZ(), tEFieldCoPol);
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
