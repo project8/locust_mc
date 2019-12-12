@@ -99,6 +99,20 @@ The file Project8Phase4_WithRoot_Template.xml presently references a large place
 ```
 <cycl_rad_extr name="my_rad_extr" P8Phase="4" /> 
 ```
+## Transfer Functions
+
+Config file options:
+
+- "tf-transmitter-filename": "../Data/TransferFunctions/CoupledeDipoleTF.txt", [required]
+- "tf-transmitter-bin-width": 0.01e9, [default = 10 MHz, needs to match bin width in tf-transmitter-filename]
+- "tf-transmitter-nskips": 1, [default = 1]
+- "window-function-type": 1, [default = 1 which is a Tukey window]
+- "zero-padding-size": 97199, [default = 100000], use default unless debugging something specific.
+- "shift-n-bins": 5000, [default 5000]
+- "fir-receiver-filename": "../out/Dipole/firReceiverFile.txt", [required]
+- "fir-receiver-dt": 1.0e-12, [default 1.e-12, needs to be specified to match fir-receiver-dt time resolution]
+- "fir-receiver-nskips": 1, [default = 1]
+
 
 
 ## Fake Events/Tracks

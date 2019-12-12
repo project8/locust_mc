@@ -104,6 +104,7 @@ namespace locust
             void Visit( const LocalOscillatorGenerator* );
             void Visit( const DecimateSignalGenerator* );
             void Visit( const DipoleSignalGenerator* );
+            void Visit( const TurnstileSignalGenerator* );
             void Visit( const Digitizer* );
 
             RunLengthState fState;
