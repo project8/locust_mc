@@ -53,6 +53,7 @@ namespace locust
       - "n-events": int -- Number of events per simulation, spaced by 0.5 ms (hardcoded).
       - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used.
       - "root-filename": str -- Name of root file containing event information to be written at output. 
+      - "pitch-correction": bool -- Flag to switch pitch angle corrections on [default] or off.
 
 
 */
@@ -83,6 +84,9 @@ namespace locust
 
             double GetStartPitchMin() const;
             void SetStartPitchMin( double aPitchMin );
+
+            double GetPitchMin() const;
+            void SetPitchMin( double aPitchMin );
 
             double GetTrackLengthMean() const;
             void SetTrackLengthMean( double aTrackLengthMean );
@@ -117,10 +121,13 @@ namespace locust
             int GetNEvents() const;
             void SetNEvents(  int aNEvents );
 
+            bool GetPitchCorrection() const;
+            void SetPitchCorrection(  bool aPitchCorrection );
+
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            void SetTrackProperties(Track &aTrack, int TrackID, double TimeOffset);
+            void SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset);
             void InitiateEvent(Event* anEvent, int eventID);
             void PackEvent(Track& aTrack, Event* anEvent, int trackID) const;
             double rel_cyc(double energy, double b_field) const;
@@ -144,8 +151,8 @@ namespace locust
             double fTrackLength;
             double fStartTime;
             double fEndTime;
-            double fStartFreq;
-            double fJumpSize;
+            double fStartFrequency;
+            double fCurrentFrequency;
             int fNTracks;
 
         private:
@@ -166,11 +173,13 @@ namespace locust
             double fStartTimeMin;
             double fStartPitchMin;
             double fStartPitchMax;
+            double fPitchMin;
             double fTrackLengthMean;
             double fNTracksMean;
             double fBField;
             int fRandomSeed;
             int fNEvents;
+            bool fPitchCorrection;
             double fHydrogenFraction;
             std::string fRoot_filename;
             std::default_random_engine fRandomEngine;

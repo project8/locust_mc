@@ -1,3 +1,4 @@
+
 /*
  * LMCPlaneWaveSignalGenerator.cc
  *
@@ -31,7 +32,9 @@ namespace locust
 		fPatchSpacing( 0. ),
 		fFieldBufferSize( 50 ),
 		fAOI( 0.),
-		fAmplitude( 0.)
+		fAmplitude( 0.),
+		fSwapFrequency( 1000 )
+
 	{
 		fRequiredSignalState = Signal::kTime;
 	}
@@ -43,14 +46,20 @@ namespace locust
 	bool PlaneWaveSignalGenerator::Configure( const scarab::param_node& aParam )
 	{
       
-		if(!fReceiverFIRHandler.Configure(aParam))
+		if(!fTFReceiverHandler.Configure(aParam))
 		{
-			LERROR(lmclog,"Error configuring receiver FIRHandler class");
+			LERROR(lmclog,"Error configuring receiver TFHandler class");
 		}
 
 		if(!fPowerCombiner.Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner class");
+		}
+
+		if( aParam.has( "buffer-size" ) )
+		{
+			fFieldBufferSize = aParam["buffer-size"]().as_int();
+			fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
 		}
 
 		if(!fHilbertTransform.Configure(aParam))
@@ -83,11 +92,6 @@ namespace locust
 		if( aParam.has( "amplitude" ) )
 		{
 			SetAmplitude( aParam.get_value< double >( "amplitude", fAmplitude) );
-		}
-		if( aParam.has( "buffer-size" ) )
-		{
-			fFieldBufferSize = aParam["buffer-size"]().as_int();
-			fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
 		}
 		return true;
 	}
@@ -192,8 +196,8 @@ namespace locust
    
 //    	double* generatedpoints = new double [nfilterbins];
     	std::deque<double> generatedpoints;
-    	int nfilterbins = fReceiverFIRHandler.GetFilterSize();
-    	double dtfilter = fReceiverFIRHandler.GetFilterResolution();
+    	int nfilterbins = fTFReceiverHandler.GetFilterSize();
+    	double dtfilter = fTFReceiverHandler.GetFilterResolution();
     	//double phase = startphase;
     	double phase = startphase + GetPWPhaseDelayAtPatch(patchIndex);
     	double amp = dottedamp;
@@ -207,7 +211,7 @@ namespace locust
 	//		printf("genpoints %d is %g, amp is %g\n", i, generatedpoints[i], amp); getchar();
     	}
 
-    	double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(generatedpoints);
+    	double convolution=fTFReceiverHandler.ConvolveWithFIRFilter(generatedpoints);
       
     	generatedpoints.shrink_to_fit();  // memory deallocation.
 
@@ -314,6 +318,8 @@ namespace locust
 	    
     		}  // patch
     	} // channel
+        if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
+
     }
     
   
@@ -332,12 +338,17 @@ namespace locust
     	PWFreqBuffer[bufferIndex].pop_front();
     	PWPhaseBuffer[bufferIndex].pop_front();
     	PWValueBuffer[bufferIndex].pop_front();
-
-    	SampleIndexBuffer[bufferIndex].shrink_to_fit();
-    	PWFreqBuffer[bufferIndex].shrink_to_fit();
-    	PWPhaseBuffer[bufferIndex].shrink_to_fit();
-    	PWValueBuffer[bufferIndex].shrink_to_fit();
     }
+
+    void PlaneWaveSignalGenerator::CleanupBuffers()
+    {
+    	FieldBuffer aFieldBuffer;
+    	PWValueBuffer = aFieldBuffer.CleanupBuffer(PWValueBuffer);
+    	PWFreqBuffer = aFieldBuffer.CleanupBuffer(PWFreqBuffer);
+    	PWPhaseBuffer = aFieldBuffer.CleanupBuffer(PWPhaseBuffer);
+    	SampleIndexBuffer = aFieldBuffer.CleanupBuffer(SampleIndexBuffer);
+    }
+
   
     void PlaneWaveSignalGenerator::InitializeBuffers()
     {
@@ -369,7 +380,7 @@ namespace locust
 
     bool PlaneWaveSignalGenerator::InitializePatchArray()
     {
-    	if(!fReceiverFIRHandler.ReadFIRFile())
+    	if(!fTFReceiverHandler.ReadHFSSFile())
     	{
     		return false;
     	}
@@ -394,7 +405,12 @@ namespace locust
     		{
     			zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
 
-    			modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
+                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
+                {
+                	zPosition = 0.;
+                }
+
+                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
     			modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
     			modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
     			allChannels[channelIndex].AddReceiver(modelPatch);
@@ -408,10 +424,14 @@ namespace locust
     bool PlaneWaveSignalGenerator::DoGenerate( Signal* aSignal )
     {
 
-    	InitializePatchArray();
+    	if(!InitializePatchArray())
+	{
+	    LERROR(lmclog,"Error initilizing Patch Array");
+	    exit(-1);
+	}
     	InitializePowerCombining();
 
-    	int nfilterbins = fReceiverFIRHandler.GetFilterSize();
+    	int nfilterbins = fTFReceiverHandler.GetFilterSize();
  
     	InitializeBuffers();
 

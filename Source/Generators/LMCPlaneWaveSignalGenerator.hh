@@ -1,3 +1,4 @@
+
 /*
  * LMCPlaneWaveSignalGenerator.hh
  *
@@ -15,7 +16,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
-#include "LMCFIRHandler.hh"
+#include "LMCTFFileHandler.hh"
 
 namespace locust
 {
@@ -84,7 +85,7 @@ namespace locust
 	  	  double GetPatchFIRSample(double amp, double startphase, int patchIndex);
 
 	  	  // external classes
-	  	  FIRReceiverHandler fReceiverFIRHandler;
+                  TFReceiverHandler fTFReceiverHandler;
 	  	  PowerCombiner fPowerCombiner;
 	  	  HilbertTransform fHilbertTransform;
 
@@ -100,6 +101,8 @@ namespace locust
 	  	  void InitializeBuffers();
 	  	  void FillBuffers(unsigned bufferIndex, int digitizerIndex, double pwphase, double pwval);
 	  	  void PopBuffers(unsigned bufferIndex);
+          void CleanupBuffers();
+
     
 	  	  std::vector<std::deque<unsigned>> SampleIndexBuffer;
 	  	  std::vector<std::deque<double>> PWFreqBuffer;
