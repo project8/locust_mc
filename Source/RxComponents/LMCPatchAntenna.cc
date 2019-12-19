@@ -14,9 +14,6 @@ namespace locust
     PatchAntenna::PatchAntenna():
         antennaFactorSpline(antennaFactor.begin(), antennaFactor.end(), lowerBoundFrequency, frequencySpacingSpline ),
         gainSpline(gain.begin(), gain.end(), lowerBoundAngle, angularSpacingSpline),
-        copolarizationDirection(0,0,0),
-        normalDirection(0,0,0),
-        centerPosition(0,0,0),
         incidentElectricField(0,0,0),
         incidentMagneticField(0,0,0),
         instantaneousFrequency(0.),
@@ -26,15 +23,6 @@ namespace locust
 
     PatchAntenna::~PatchAntenna()
     {
-    }
-    LMCThreeVector PatchAntenna::GetPosition()
-    {
-        return centerPosition;
-    }
-
-    LMCThreeVector PatchAntenna::GetNormalDirection()
-    {
-    	return normalDirection;
     }
 
     void PatchAntenna::SetIncidentElectricField(const LMCThreeVector &incomingElectricField)
@@ -72,7 +60,7 @@ namespace locust
     {
         LMCThreeVector waveVector = incidentElectricField.Cross(incidentMagneticField);
         waveVector = waveVector.Unit(); //Normalize
-        double incidentAngle =  acos(waveVector.Dot(normalDirection));
+        double incidentAngle =  acos(waveVector.Dot(GetNormalDirection()));
         if(incidentAngle > LMCConst::Pi() / 2.)
             incidentAngle=LMCConst::Pi() - incidentAngle;
 
@@ -81,27 +69,9 @@ namespace locust
 
     double PatchAntenna::GetCopolarizationFactor()
     {
-      return incidentElectricField.Dot(copolarizationDirection);
+      return incidentElectricField.Dot(GetPolarizationDirection());
     }
 
-    void PatchAntenna::SetCenterPosition(const LMCThreeVector &newPosition)
-    {
-        centerPosition = newPosition;
-    }
-    void PatchAntenna::SetPolarizationDirection(const LMCThreeVector &copolDirection)
-    {
-        copolarizationDirection = copolDirection;
-    }
-
-    LMCThreeVector PatchAntenna::GetPolarizationDirection()
-     {
-         return copolarizationDirection;
-     }
-
-    void PatchAntenna::SetNormalDirection(const LMCThreeVector &normDirection)
-    {
-        normalDirection = normDirection;
-    }
 
 
 
