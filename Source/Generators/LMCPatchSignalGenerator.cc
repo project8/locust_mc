@@ -44,7 +44,8 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         PatchFIRBuffer( 1 ),
-        fFieldBufferSize( 50 )
+        fFieldBufferSize( 50 ),
+		fSwapFrequency( 1000 )
 
     {
         fRequiredSignalState = Signal::kTime;
@@ -56,7 +57,7 @@ namespace locust
 
     bool PatchSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-    	if(!fReceiverFIRHandler.Configure(aParam))
+    	if(!fTFReceiverHandler.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
@@ -97,6 +98,10 @@ namespace locust
         if( aParam.has( "zshift-array" ) )
         {
             fZShiftArray = aParam["zshift-array"]().as_double();
+        }
+        if( aParam.has( "swap-frequency" ) )
+        {
+            fSwapFrequency = aParam["swap-frequency"]().as_int();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -168,17 +173,12 @@ namespace locust
 
 
     // fields incident on patch.
-    void PatchSignalGenerator::RecordIncidentFields(FILE *fp, LMCThreeVector IncidentMagneticField, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    void PatchSignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int patchIndex, double zpatch, double tEFieldCoPol)
     {
-        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
-        LMCThreeVector PatchPolarizationVector;
-        PatchPolarizationVector.SetComponents(-sin(PatchPhi), cos(PatchPhi), 0.0);
-        LMCThreeVector PatchCrossPolarizationVector;
-        PatchCrossPolarizationVector.SetComponents(0.0, 0.0, 1.0);  // axial direction.
-
-        double EFieldPatch = IncidentElectricField.Dot(PatchPolarizationVector);
-        double BFieldPatch = IncidentMagneticField.Dot(PatchCrossPolarizationVector);
-        fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", EFieldPatch, BFieldPatch, DopplerFrequency/2./LMCConst::Pi(), t_old);
+    	if (t_old > 0.5e-9)
+         	{
+         	fprintf(fp, "%d %g %g\n", patchIndex, zpatch, tEFieldCoPol);
+         	}
     }
 
 
@@ -207,9 +207,8 @@ namespace locust
     			PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     		}
 
-    		convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
+    		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
 
-    		PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
     		return convolution;
     	}
     	else return 0.;
@@ -227,6 +226,19 @@ namespace locust
 
         return EFieldCoPol;
     }
+
+
+    double PatchSignalGenerator::GetEFieldCrossPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    {
+        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
+        LMCThreeVector PatchCrossPolarizationVector;
+        PatchCrossPolarizationVector.SetComponents(0.0, 0.0, 1.0);  // axial direction.
+        double EFieldCrossPol = IncidentElectricField.Dot(PatchCrossPolarizationVector) * AOIFactor;
+
+        return EFieldCrossPol;
+    }
+
+
 
 
 
@@ -265,7 +277,8 @@ namespace locust
 
 
  		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
-                if (fTextFileWriting==1) RecordIncidentFields(fp, tRadiatedMagneticField, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField) , PatchPhi, tDopplerFrequency);
+ 		        double tEFieldCrossPol = GetEFieldCrossPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, patchIndex, currentPatch->GetPosition().GetZ(), tEFieldCoPol);
 
  	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
@@ -278,8 +291,8 @@ namespace locust
 
         } // channels loop
 
-
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
 
     }
 
@@ -302,10 +315,6 @@ namespace locust
     	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
     	IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-    	EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
 
     }
 
@@ -314,14 +323,12 @@ namespace locust
 
     void PatchSignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
-
     	FieldBuffer aFieldBuffer;
     	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
     	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
     	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
     	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
     	PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
-
     }
 
 
@@ -329,10 +336,10 @@ namespace locust
     {
     	FieldBuffer aFieldBuffer;
     	EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-    	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-    	LOPhaseBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
+    	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
+    	LOPhaseBuffer = aFieldBuffer.CleanupBuffer(LOPhaseBuffer);
+    	PatchFIRBuffer = aFieldBuffer.CleanupBuffer(PatchFIRBuffer);
     	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
-
     }
 
 
@@ -340,16 +347,21 @@ namespace locust
     bool PatchSignalGenerator::InitializePowerCombining()
     {
     	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip);
-    	return true;
-
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	{
+    		return false;
+    	}
+    	else
+    	{
+    		return true;
+    	}
     }
 
 
     bool PatchSignalGenerator::InitializePatchArray()
     {
 
-        if(!fReceiverFIRHandler.ReadFIRFile())
+        if(!fTFReceiverHandler.ReadHFSSFile())
         {
             return false;
         }
@@ -400,8 +412,16 @@ namespace locust
 
         FILE *fp = fopen("incidentfields.txt", "w");
 
-        InitializePatchArray();
-        InitializePowerCombining();
+        if(!InitializePatchArray())
+        {
+        	LERROR(lmclog,"Error configuring Patch array");
+            exit(-1);
+        }
+        if (!InitializePowerCombining() )
+        {
+        	LERROR(lmclog,"Error configuring Power Combining");
+            exit(-1);
+        }
 
         //n samples for event spacing.
         int PreEventCounter = 0;
@@ -411,8 +431,8 @@ namespace locust
         std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
         fRunInProgress = true;
 
-        int nfilterbins = fReceiverFIRHandler.GetFilterSize();
-        double dtfilter = fReceiverFIRHandler.GetFilterResolution();
+        int nfilterbins = fTFReceiverHandler.GetFilterSize();
+        double dtfilter = fTFReceiverHandler.GetFilterResolution();
         unsigned nfieldbufferbins = fFieldBufferSize;
         InitializeBuffers(nfilterbins, nfieldbufferbins);
 
@@ -457,7 +477,6 @@ namespace locust
         printf("finished signal loop\n");
 
         fclose(fp);
-        CleanupBuffers();
         fRunInProgress = false;  // tell Kassiopeia to finish.
         fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
         WakeBeforeEvent();

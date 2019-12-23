@@ -60,27 +60,41 @@ namespace locust
   std::vector<std::deque<double>> FieldBuffer::CleanupBuffer(std::vector<std::deque<double>> buffer)
     {
 
-	for (unsigned i=0; i<buffer.size(); i++)
-	{
-		buffer[i].clear();
-		buffer[i].shrink_to_fit();
-	}
-    buffer.clear();
-    buffer.shrink_to_fit();
+    std::vector<std::deque<double>> empty;
+    empty.resize(buffer.size());
+
+    for (unsigned index = 0; index < buffer.size(); index ++ )
+    {
+    	for (std::deque<double>::iterator itdeque = buffer[index].begin(); itdeque != buffer[index].end(); ++itdeque)
+    	{
+    		empty[index].push_back(buffer[index].front());
+    		buffer[index].pop_front();
+    	}
+    }
+
+    std::swap( buffer, empty );
     return buffer;
     }
 
 
   std::vector<std::deque<unsigned>> FieldBuffer::CleanupBuffer(std::vector<std::deque<unsigned>> buffer)
     {
-    for (unsigned i=0; i<buffer.size(); i++)
-	  {
-	  buffer[i].clear();
-      buffer[i].shrink_to_fit();
-      }
-    buffer.clear();
-    buffer.shrink_to_fit();
+
+	std::vector<std::deque<unsigned>> empty;
+	empty.resize(buffer.size());
+
+	for (unsigned index = 0; index < buffer.size(); index ++ )
+	{
+	    for (std::deque<unsigned>::iterator itdeque = buffer[index].begin(); itdeque != buffer[index].end(); ++itdeque)
+	    {
+	    	empty[index].push_back(buffer[index].front());
+	    	buffer[index].pop_front();
+	    }
+	}
+
+	std::swap( buffer, empty );
     return buffer;
+
     }
 
 

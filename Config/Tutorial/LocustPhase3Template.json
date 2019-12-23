@@ -6,6 +6,17 @@
        "decimate-signal", 
        "digitizer"
     ],
+
+
+    "lpf-fft":
+    {
+
+    },
+
+    "decimate-signal":
+    {
+
+    },
     
     "kass-signal":
     {
@@ -18,10 +29,15 @@
     {
         "lo-frequency": 25.8781e9,
         "array-radius": 0.05,
-        "npatches-per-strip": 21,
-        "patch-spacing": 0.0054,
-        "feed": "corporate",
-        "xml-filename": "/home/hep/baker/ps48/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
+        "npatches-per-strip": 2,
+        "zshift-array": 0.0,
+        "patch-spacing": 0.0068,
+        "power-combining-feed": "corporate",
+        "tf-receiver-filename": "/home/penny/locust_mc/Data/TransferFunctions/PatchTFLocust.txt",
+        "tf-receiver-bin-width": 0.01e9,
+        "buffer-size": 100,
+        "hilbert-buffer-margin": 50,
+        "xml-filename": "/home/penny/locust_mc/Config/Tutorial/Project8Phase3_WithRoot_Template.xml"
     },
 
     "freefield-signal":
@@ -32,10 +48,10 @@
 
     "simulation":
     {
-        "egg-filename": "/home/hep/baker/ps48/locust_mc/cbuild/bin/locust_mc.egg",
+        "egg-filename": "/home/penny/locust_mc/cbuild/bin/locust_mc.egg",
         "n-records": 1,
         "record-size": 81920,
-        "n-channels": 30
+        "n-channels": 1
     },
   
     "gaussian-noise":
@@ -46,8 +62,8 @@
 
     "digitizer":
     {
-    "v-range": 1.6e-5,
-    "v-offset": -0.8e-5
+    "v-range": 1.6e-7,
+    "v-offset": -0.8e-7
     }
 
 }
