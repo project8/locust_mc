@@ -285,7 +285,7 @@ namespace locust
 
 		else if (fpowerCombiner == 6) // s-matrix
 		{
-	    	 if (fnPatchesPerStrip != 2 || fnPatchesPerStrip != 4 || fnPatchesPerStrip != 6 || fnPatchesPerStrip != 8)
+	    	 if (fnPatchesPerStrip != 2 && fnPatchesPerStrip != 4 && fnPatchesPerStrip != 6 && fnPatchesPerStrip != 8)
        {
 	       LERROR(lmclog,"The S-matrix is implemented only for 2, 4, 6, or 8 patches per strip.");
 	       return false;
