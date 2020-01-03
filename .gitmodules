@@ -7,5 +7,5 @@
 
 [submodule "kassiopeia"]
 	path = kassiopeia
-	url = https://github.com/project8/kassiopeia.git
-	branch = feature/eventmod
+	url = https://github.com/project8/kassiopeia
+	branch = feature/readfieldmaps

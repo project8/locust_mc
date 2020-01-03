@@ -116,6 +116,7 @@ namespace locust
         double fLO_frequency;
         double fAmplitude;
         unsigned fFieldBufferSize;
+        int fSwapFrequency;
         
         std::vector<std::deque<double>> EFieldBuffer;
         std::vector<std::deque<double>> EPhaseBuffer;

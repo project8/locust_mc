@@ -22,7 +22,16 @@ namespace locust
  @details
  Available configuration options:
  "power-combining-feed" is an integer to select the appropriate power combining configuration.
- No input parameters
+     	if (feed == "corporate") fpowerCombiner = 0;  // default
+    	else if (feed == "series") fpowerCombiner = 1;
+        else if (feed == "one-quarter") fpowerCombiner = 2;
+        else if (feed == "seven-eighths") fpowerCombiner = 3;
+        else if (feed == "nine-sixteenths") fpowerCombiner = 4;
+        else if (feed == "voltage-divider") fpowerCombiner = 5;
+        else if (feed == "s-matrix") fpowerCombiner = 6;
+        else if (feed == "single-patch") fpowerCombiner = 7;
+        else fpowerCombiner = 0;  // default
+
  */
     class PowerCombiner
     {
