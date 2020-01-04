@@ -150,16 +150,16 @@ namespace locust
 	}
 
 
-        bool PowerCombiner::SetVoltageDividerDampingFactors()
+	bool PowerCombiner::SetVoltageDividerDampingFactors()
+	{
+
+        for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
         {
-               
-                for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
-		  {
-		    int NPAIRS = fabs((double)z_index - (double)fnPatchesPerStrip/2.);
-		    if (z_index >= fnPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
-		    std::vector<double> D = GetPartialGains(fjunctionResistance, 1.0, 10.e6, NPAIRS);  // calculate new vector of gains.
-		    fdampingFactors[z_index] = fpatchLoss*famplifierLoss * D[NPAIRS-1];  // patch loss * T-junction loss
-		  }
+        	int NPAIRS = fabs((double)z_index - (double)fnPatchesPerStrip/2.);
+        	if (z_index >= fnPatchesPerStrip/2) NPAIRS += 1; // compensate for patches to the right of amp.
+        	std::vector<double> D = GetPartialGains(fjunctionResistance, 1.0, 10.e6, NPAIRS);  // calculate new vector of gains.
+        	fdampingFactors[z_index] = fpatchLoss*famplifierLoss * D[NPAIRS-1];  // patch loss * T-junction loss
+        }
 		
 		return true;
 	}
@@ -206,9 +206,8 @@ namespace locust
 
 	}
 
-    bool PowerCombiner::SetSmatrixDampingFactors()
-    {
-
+  bool PowerCombiner::SetSmatrixDampingFactors()
+  {
     	SetTransmissionCoefficients();
     	for (unsigned z_index=0; z_index<fnPatchesPerStrip; z_index++)
     	{
@@ -222,9 +221,10 @@ namespace locust
     {
     	std::vector<double> smatrix;
 	       
-        if (fnPatchesPerStrip == 2) smatrix = fsMatrix2patch;
-        if (fnPatchesPerStrip == 4) smatrix = fsMatrix4patch;
-        if (fnPatchesPerStrip == 6) smatrix = fsMatrix6patch;
+    	if (fnPatchesPerStrip == 2) smatrix = fsMatrix2patch;
+    	if (fnPatchesPerStrip == 4) smatrix = fsMatrix4patch;
+    	if (fnPatchesPerStrip == 6) smatrix = fsMatrix6patch;
+    	if (fnPatchesPerStrip == 8) smatrix = fsMatrix8patch;
 
         return smatrix;
     }
@@ -284,11 +284,11 @@ namespace locust
 
 		else if (fpowerCombiner == 6) // s-matrix
 		{
-	    	if (fnPatchesPerStrip != 2 && fnPatchesPerStrip != 4 && fnPatchesPerStrip != 6)
-	        {
-	    		LERROR(lmclog,"The S-matrix is implemented only for 2, 4, or 6 patches per strip.");
-		        return false;
-	        }
+	    	 if (fnPatchesPerStrip != 2 && fnPatchesPerStrip != 4 && fnPatchesPerStrip != 6 && fnPatchesPerStrip != 8)
+	    	 {
+	    		 LERROR(lmclog,"The S-matrix is implemented only for 2, 4, 6, or 8 patches per strip.");
+	    		 return false;
+	    	 }
 			SetSmatrixDampingFactors();
 		}
 
