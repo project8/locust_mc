@@ -168,6 +168,13 @@ namespace locust
         // nothing to see here, move along, please
         return;
     }
+    
+    void RunLengthCalculator::Visit( const TurnstileSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+    
 
     bool RunLengthCalculator::CalculateRunLength()
     {
