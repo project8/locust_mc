@@ -197,6 +197,21 @@ namespace locust
         return true;
     }
     
+
+    bool ComplexFFT::RawReverseFFT(int size, fftw_complex* in, fftw_complex* out)
+    {
+        if(!IsInitialized) return false;
+
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
+
+        fReversePlan = fftw_plan_dft_1d(size, fInputArray, fOutputArray, FFTW_BACKWARD, fTransform);
+        fftw_execute_dft(fReversePlan, in, out);
+
+        return true;
+    }
+
+
     bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double freqResolution)
     {
         fSize=size;	

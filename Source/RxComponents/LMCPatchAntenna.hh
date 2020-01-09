@@ -35,29 +35,14 @@ namespace locust
             virtual double GetVoltage();
             virtual double GetAnalogTimeDelay();
 
-
             void SetIncidentElectricField(const LMCThreeVector &incomingElectricField);
             void SetIncidentMagneticField(const LMCThreeVector &incomingMagneticField);
             void SetInstantaneousFrequency(const double &dopplerFrequency);
-
-            LMCThreeVector GetPosition();
-            LMCThreeVector GetNormalDirection();
-
-            void SetCenterPosition(const LMCThreeVector &newPosition);
-            void SetPolarizationDirection(const LMCThreeVector &copolDirection);
-            LMCThreeVector GetPolarizationDirection();
-            void SetNormalDirection(const LMCThreeVector &normDirection);
-
 
         private:
             double GetAntennaFactor();
             double GetGainFactor(); 
             double GetCopolarizationFactor();
-
-            LMCThreeVector copolarizationDirection;
-            LMCThreeVector normalDirection;
-
-            LMCThreeVector centerPosition;
 
             LMCThreeVector incidentElectricField;
             LMCThreeVector incidentMagneticField;

@@ -22,7 +22,16 @@ namespace locust
  @details
  Available configuration options:
  "power-combining-feed" is an integer to select the appropriate power combining configuration.
- No input parameters
+     	if (feed == "corporate") fpowerCombiner = 0;  // default
+    	else if (feed == "series") fpowerCombiner = 1;
+        else if (feed == "one-quarter") fpowerCombiner = 2;
+        else if (feed == "seven-eighths") fpowerCombiner = 3;
+        else if (feed == "nine-sixteenths") fpowerCombiner = 4;
+        else if (feed == "voltage-divider") fpowerCombiner = 5;
+        else if (feed == "s-matrix") fpowerCombiner = 6;
+        else if (feed == "single-patch") fpowerCombiner = 7;
+        else fpowerCombiner = 0;  // default
+
  */
     class PowerCombiner
     {
@@ -69,10 +78,19 @@ namespace locust
       	    std::vector<double> fdampingFactors;
 
       	    // Uniform taper S-matrices from HFSS:
+      /*
       	    std::vector<double> fsMatrix2patch = {0.2, 0.64, 0.64};
             std::vector<double> fsMatrix4patch = {0.09, 0.47, 0.47, 0.47, 0.47};
             std::vector<double> fsMatrix6patch = {0.03, 0.38, 0.38, 0.38, 0.38, 0.38, 0.38};
+      */
             // end Uniform taper S-matrices.
+
+            // 7/8 power combiner S-matrices (traveling wave configuration) from HFSS:
+            std::vector<double> fsMatrix2patch = {0.12, 0.43, 0.43};
+            std::vector<double> fsMatrix4patch = {0.12, 0.3, 0.43, 0.43, 0.3};
+            std::vector<double> fsMatrix6patch = {0.12, 0.24, 0.3, 0.43, 0.43, 0.3, 0.24};
+            std::vector<double> fsMatrix8patch = {0.12, 0.17, 0.24, 0.3, 0.43, 0.43, 0.3, 0.24, 0.17};
+            // end 7/8 combiner S-matrices.
 
             std::vector<double> ftransmissionCoefficients;
     };

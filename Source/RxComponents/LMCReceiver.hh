@@ -25,10 +25,25 @@ namespace locust
 
         public:
             Receiver();
+            Receiver(double testvar);
             virtual ~Receiver();
 
             virtual double GetVoltage() = 0;
             virtual double GetAnalogTimeDelay() = 0;
+            LMCThreeVector GetPolarizationDirection();
+            void SetPolarizationDirection(const LMCThreeVector &copolDirection);
+            LMCThreeVector GetNormalDirection();
+            void SetNormalDirection(const LMCThreeVector &normDirection);
+            LMCThreeVector GetPosition();
+            void SetCenterPosition(const LMCThreeVector &newPosition);
+
+
+        private:
+            LMCThreeVector copolarizationDirection;
+            LMCThreeVector normalDirection;
+            LMCThreeVector centerPosition;
+
+
 };
 
 

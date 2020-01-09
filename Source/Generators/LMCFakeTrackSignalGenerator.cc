@@ -47,7 +47,7 @@ namespace locust
         fPitchCorrection( true ),
         fRandomEngine(0),
         fHydrogenFraction(1),
-        fTrapLength(0.00502920),  //Phase II trap radius
+        fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
         fH2Interpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
         fKrInterpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
         fRoot_filename("LocustEvent.root"),
@@ -169,7 +169,8 @@ namespace locust
         }
 
         std::vector<std::pair<double, double> > h2Data, krData;
-        scarab::path dataDir( TOSTRING(PB_DATA_INSTALL_DIR) );
+        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+        LDEBUG( lmclog, "Data directory: " << dataDir );
         ReadFile((dataDir / "H2OscillatorStrength.txt").string(), h2Data);
         ReadFile((dataDir / "KrOscillatorStrength.txt").string(), krData);
         ExtrapolateData(h2Data, std::array<double, 3>{0.195, 14.13, 10.60});

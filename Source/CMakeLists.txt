@@ -35,6 +35,7 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCReceiver.hh
     RxComponents/LMCPatchAntenna.hh
+    RxComponents/LMCSlotAntenna.hh
     RxComponents/LMCChannel.hh
     
 )
@@ -75,6 +76,7 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCReceiver.cc
     RxComponents/LMCPatchAntenna.cc
+    RxComponents/LMCSlotAntenna.cc
     RxComponents/LMCChannel.cc
 
 )
