@@ -170,7 +170,7 @@ namespace locust
 
         std::vector<std::pair<double, double> > h2Data, krData;
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        LERROR( lmclog, "data dir: " << dataDir );
+        LDEBUG( lmclog, "Data directory: " << dataDir );
         ReadFile((dataDir / "H2OscillatorStrength.txt").string(), h2Data);
         ReadFile((dataDir / "KrOscillatorStrength.txt").string(), krData);
         ExtrapolateData(h2Data, std::array<double, 3>{0.195, 14.13, 10.60});
