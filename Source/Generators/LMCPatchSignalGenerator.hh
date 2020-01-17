@@ -67,9 +67,9 @@ namespace locust
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
             double fLO_Frequency;
             double fArrayRadius;
-            int fNPatchesPerStrip;
+            int fNElementsPerStrip;
             double fZShiftArray;
-            double fPatchSpacing;
+            double fElementSpacing;
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;

@@ -20,6 +20,7 @@ namespace locust
 	PowerCombiner::PowerCombiner():
 	fpowerCombiner( 0 ),
 	fnPatchesPerStrip( 0 ),
+	fnSlots( 0 ),
 	fjunctionLoss( 0 ),
 	fpatchLoss( 0 ),
 	famplifierLoss( 0 ),
@@ -61,6 +62,7 @@ namespace locust
         else if (feed == "voltage-divider") fpowerCombiner = 5;
         else if (feed == "s-matrix") fpowerCombiner = 6;
         else if (feed == "single-patch") fpowerCombiner = 7;
+        else if (feed == "slotted-waveguide") fpowerCombiner = 8;
         else fpowerCombiner = 0;  // default
     	return true;
     }
@@ -206,6 +208,24 @@ namespace locust
 
 	}
 
+	bool PowerCombiner::SetSlottedWaveguideDampingFactors()
+	{
+	    for (unsigned z_index=0; z_index<fnSlots; z_index++)
+		{
+
+	    	// uniform taper, normalize with 1/sqrt(fnSlots) so that
+	    	// power from N slots scales linearly with N and not N^2.
+	    	// This is conceptually similar to the voltage divider in that energy
+	    	// conservation is enforced, but is different in that the taper is uniform.
+
+	    	fdampingFactors[z_index] = 1.0 / sqrt(fnSlots);
+		}
+
+		return true;
+
+	}
+
+
   bool PowerCombiner::SetSmatrixDampingFactors()
   {
     	SetTransmissionCoefficients();
@@ -247,10 +267,31 @@ namespace locust
 
     }
 
-	bool PowerCombiner::SetVoltageDampingFactors(int aPatchesPerStrip)
+	bool PowerCombiner::SetVoltageDampingFactors(int anElementsPerStrip, double anElementSpacing)
 	{
-		SetNPatchesPerStrip(aPatchesPerStrip);
-		fdampingFactors.resize(fnPatchesPerStrip);
+
+		if (anElementsPerStrip == 0)
+		{
+    		LERROR(lmclog,"Please configure nelements-per-strip to something other than zero.");
+			return false;
+		}
+
+		if ((anElementSpacing == 0.)&&(anElementsPerStrip>1))
+		{
+    		LERROR(lmclog,"Please configure element-spacing to something other than zero.");
+			return false;
+		}
+
+		if (fpowerCombiner != 8)
+		{
+			SetNPatchesPerStrip(anElementsPerStrip);
+		}
+		else
+		{
+			SetNSlots(anElementsPerStrip);
+		}
+
+		fdampingFactors.resize(anElementsPerStrip);
 
 		if ((fpowerCombiner == 7) || (fpowerCombiner == 0) || (fpowerCombiner == 2) || (fpowerCombiner == 3) || (fpowerCombiner == 4))
 		{
@@ -292,14 +333,26 @@ namespace locust
 			SetSmatrixDampingFactors();
 		}
 
+		else if (fpowerCombiner == 8) // slotted waveguide
+		{
+			SetSlottedWaveguideDampingFactors();
+		}
+
 		return true;
 	}
 
 
-	bool PowerCombiner::SetSMatrixParameters(int aPatchesPerStrip)
+	bool PowerCombiner::SetSMatrixParameters(int anElementsPerStrip)
 	{
 
-		fnPatchesPerStrip = aPatchesPerStrip;
+		if (fpowerCombiner != 8)
+		{
+			fnPatchesPerStrip = anElementsPerStrip;
+		}
+		else
+		{
+			fnSlots = anElementsPerStrip;
+		}
 
 		if (fpowerCombiner == 0) // corporate
 		{
@@ -362,7 +415,10 @@ namespace locust
 			fendPatchLoss = 1.0;
 		}
 
-
+		else if (fpowerCombiner == 8) // slotted-waveguide
+		{
+			famplifierLoss = 1.0;  // this presently has no effect.
+		}
 
 		return true;
 
@@ -371,6 +427,11 @@ namespace locust
 	void PowerCombiner::SetNPatchesPerStrip(int aPatchesPerStrip)
 	{
 		fnPatchesPerStrip = aPatchesPerStrip;
+	}
+
+	void PowerCombiner::SetNSlots(int aNSlots)
+	{
+		fnSlots = aNSlots;
 	}
 
 	void PowerCombiner::SetJunctionLoss(double aJunctionLoss)

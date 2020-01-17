@@ -106,8 +106,8 @@ namespace locust
         std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
         std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
         double fArrayRadius;  // from json file.
-        int fNPatchesPerStrip; // from json file.
-        double fPatchSpacing; // from json file.
+        int fNElementsPerStrip; // from json file.
+        double fElementSpacing; // from json file.
         std::string gxml_filename;// from json file.
         bool fTextFileWriting;// from json file.
         

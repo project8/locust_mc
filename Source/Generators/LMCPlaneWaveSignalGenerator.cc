@@ -30,8 +30,8 @@ namespace locust
 		fphiLO(0.),
 		fRF_Frequency( 0.),
 		fArrayRadius( 0. ),
-		fNPatchesPerStrip( 0. ),
-		fPatchSpacing( 0. ),
+		fNElementsPerStrip( 0. ),
+		fElementSpacing( 0. ),
 		fFieldBufferSize( 50 ),
 		fAOI( 0.),
 		fAmplitude( 0.),
@@ -84,13 +84,13 @@ namespace locust
 			SetArrayRadius( aParam.get_value< double >( "array-radius", fArrayRadius ));
 		}
 
-		if( aParam.has( "npatches-per-strip" ) )
+		if( aParam.has( "nelements-per-strip" ) )
 		{
-			SetNPatchesPerStrip( aParam.get_value< int >( "npatches-per-strip", fNPatchesPerStrip ));
+            fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
 		}
-		if( aParam.has( "patch-spacing" ) )
+		if( aParam.has( "element-spacing" ) )
 		{
-			SetPatchSpacing( aParam.get_value< double >( "patch-spacing", fPatchSpacing ) );
+            fElementSpacing = aParam["element-spacing"]().as_double();
 		}
 		if( aParam.has( "AOI" ) )
 		{
@@ -136,28 +136,6 @@ namespace locust
         return;
     }
 
-    int PlaneWaveSignalGenerator::GetNPatchesPerStrip() const
-    {
-    	return fNPatchesPerStrip;
-    }
-
-    void PlaneWaveSignalGenerator::SetNPatchesPerStrip( int aNPatchesPerStrip )
-    {
-    	fNPatchesPerStrip = aNPatchesPerStrip;
-    	return;
-    }
-
-    double PlaneWaveSignalGenerator::GetPatchSpacing() const
-    {
-    	return fPatchSpacing;
-    }
-
-    void PlaneWaveSignalGenerator::SetPatchSpacing( double aPatchSpacing )
-    {
-    	fPatchSpacing = aPatchSpacing;
-        return;
-    }
-
     double PlaneWaveSignalGenerator::GetAOI() const
     {
     	return fAOI;
@@ -200,11 +178,11 @@ namespace locust
     	double phasedelay = 0.;
     	if(fAOI >= 0)
     	{
-    		phasedelay = 2*LMCConst::Pi()*z_index*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
+    		phasedelay = 2*LMCConst::Pi()*z_index*fElementSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
     	}
     	else
     	{
-    		phasedelay = (fNPatchesPerStrip - z_index)*2*LMCConst::Pi()*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
+    		phasedelay = (fNElementsPerStrip - z_index)*2*LMCConst::Pi()*fElementSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
     	}
     	return phasedelay;
     }
@@ -273,7 +251,7 @@ namespace locust
     		for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
     		{
     			sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;
-    			bufferIndex = channelIndex*fNPatchesPerStrip+patchIndex;
+    			bufferIndex = channelIndex*fNElementsPerStrip+patchIndex;
 	    
     			PatchAntenna *currentPatch;
     			currentPatch = &allChannels[channelIndex][patchIndex];
@@ -372,7 +350,7 @@ namespace locust
     void PlaneWaveSignalGenerator::InitializeBuffers()
     {
     	const unsigned nchannels = fNChannels;
-    	const int nReceivers = fNPatchesPerStrip;
+    	const int nReceivers = fNElementsPerStrip;
     
     	FieldBuffer aFieldBuffer;
 
@@ -388,8 +366,8 @@ namespace locust
 
     bool PlaneWaveSignalGenerator::InitializePowerCombining()
     {
-    	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	fPowerCombiner.SetSMatrixParameters(fNElementsPerStrip);
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNElementsPerStrip, fElementSpacing) )
     	{
     		return false;
     	}
@@ -411,9 +389,9 @@ namespace locust
     		return false;
     	}
     	const unsigned nChannels = fNChannels;
-    	const int nReceivers = fNPatchesPerStrip;
+    	const int nReceivers = fNElementsPerStrip;
 
-    	const double patchSpacingZ = fPatchSpacing;
+    	const double patchSpacingZ = fElementSpacing;
     	const double patchRadius = fArrayRadius;
     	double zPosition;
     	double theta;

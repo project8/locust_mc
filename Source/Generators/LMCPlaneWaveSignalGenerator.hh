@@ -80,8 +80,8 @@ namespace locust
 	  	  double fLO_Frequency;  // typically defined by a parameter in json file.
 	  	  double fRF_Frequency;  // typically defined by a parameter in json file.
 	  	  double fArrayRadius;  // from json file.
-	  	  int fNPatchesPerStrip; // from json file.
-	  	  double fPatchSpacing; // from json file.
+	  	  int fNElementsPerStrip; // from json file.
+	  	  double fElementSpacing; // from json file.
 	  	  double fAOI; // from json file, in degrees.
 	  	  double fAmplitude;
 	  	  double fFieldBufferSize;
@@ -91,7 +91,7 @@ namespace locust
 	  	  double GetPatchFIRSample(double amp, double startphase, int patchIndex);
 
 	  	  // external classes
-                  TFReceiverHandler fTFReceiverHandler;
+          TFReceiverHandler fTFReceiverHandler;
 	  	  PowerCombiner fPowerCombiner;
 	  	  HilbertTransform fHilbertTransform;
 

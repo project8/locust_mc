@@ -26,8 +26,8 @@ namespace locust
     fLO_frequency( 20.05e9 ),
     fRF_frequency( 20.1e9 ),
     fArrayRadius( 0. ),
-    fNPatchesPerStrip( 1 ),
-    fPatchSpacing( 0. ),
+    fNElementsPerStrip( 1 ),
+    fElementSpacing( 0. ),
     fTextFileWriting( 0 ),
     fAmplitude( 5.e-8 ),
     EFieldBuffer( 1 ),
@@ -92,14 +92,14 @@ namespace locust
             SetAmplitude( aParam.get_value< double >( "input-signal-amplitude", fAmplitude ) );
         }
         
-        if( aParam.has( "npatches-per-strip" ) )
+        if( aParam.has( "nelements-per-strip" ) )
         {
-            fNPatchesPerStrip = aParam["npatches-per-strip"]().as_int();
+            fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
         }
         
-        if( aParam.has( "patch-spacing" ) )
+        if( aParam.has( "element-spacing" ) )
         {
-            fPatchSpacing = aParam["patch-spacing"]().as_double();
+            fElementSpacing = aParam["element-spacing"]().as_double();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -226,15 +226,15 @@ namespace locust
     double DipoleSignalGenerator::GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase)
     {
         
-        double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
+        double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+patch].front();
         double HilbertMag = 0.;
         double HilbertPhase = 0.;
         
-        if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
+        if (fabs(EFieldBuffer[channel*fNElementsPerStrip+patch].front()) > 0.)  // field arrived yet?
         {
             
             double* HilbertMagPhaseMean = new double[3];
-            HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch]);
+            HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNElementsPerStrip+patch], EFrequencyBuffer[channel*fNElementsPerStrip+patch]);
             HilbertMag = HilbertMagPhaseMean[0];
             HilbertPhase = HilbertMagPhaseMean[1];
             delete[] HilbertMagPhaseMean;
@@ -243,11 +243,11 @@ namespace locust
             for (int i=0; i < fReceiverFIRHandler.GetFilterSize(); i++)  // populate filter with field.
             {
                 HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*fReceiverFIRHandler.GetFilterResolution();
-                PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
-                PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+                PatchFIRBuffer[channel*fNElementsPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
+                PatchFIRBuffer[channel*fNElementsPerStrip+patch].pop_front();
             }
             
-            double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
+            double convolution=fReceiverFIRHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNElementsPerStrip+patch]);
             
             return convolution;
         }
@@ -273,8 +273,8 @@ namespace locust
 
     bool DipoleSignalGenerator::InitializePowerCombining()
     {
-    	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	fPowerCombiner.SetSMatrixParameters(fNElementsPerStrip);
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNElementsPerStrip, fElementSpacing) )
     	{
     		return false;
     	}
@@ -294,8 +294,8 @@ namespace locust
             return false;
         }
         const unsigned nChannels = fNChannels;
-        const int nReceivers = fNPatchesPerStrip;
-        const double patchSpacingZ = fPatchSpacing;
+        const int nReceivers = fNElementsPerStrip;
+        const double patchSpacingZ = fElementSpacing;
         const double patchRadius = fArrayRadius;
         double zPosition;
         double theta;
@@ -351,7 +351,7 @@ namespace locust
         }
 
         const unsigned nchannels = fNChannels;
-        const unsigned npatches = fNPatchesPerStrip;
+        const unsigned npatches = fNElementsPerStrip;
         
         double LO_phase = 0.;
         double field_phase = 0.;
@@ -388,7 +388,7 @@ namespace locust
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
                     FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
                     VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
-     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
+     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNElementsPerStrip+patch].front());
                     PopBuffers(ch, patch);
                 }  // patch
             }  // channel
@@ -400,24 +400,24 @@ namespace locust
     void DipoleSignalGenerator::FillBuffers(Signal* aSignal, double FieldValue, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch)
     {
         
-        EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(FieldValue);
-        EPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(FieldPhase);
-        EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].push_back(fAmplitude);
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(fRF_frequency);
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
-        IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
+        EFieldBuffer[channel*fNElementsPerStrip+patch].push_back(FieldValue);
+        EPhaseBuffer[channel*fNElementsPerStrip+patch].push_back(FieldPhase);
+        EAmplitudeBuffer[channel*fNElementsPerStrip+patch].push_back(fAmplitude);
+        EFrequencyBuffer[channel*fNElementsPerStrip+patch].push_back(fRF_frequency);
+        LOPhaseBuffer[channel*fNElementsPerStrip+patch].push_back(LOPhase);
+        IndexBuffer[channel*fNElementsPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
         
     }
     
     
     void DipoleSignalGenerator::PopBuffers(unsigned channel, unsigned patch)
     {
-        EFieldBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        EPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+        EFieldBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        EPhaseBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        EAmplitudeBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        EFrequencyBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        LOPhaseBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        IndexBuffer[channel*fNElementsPerStrip+patch].pop_front();
 
     }
     
@@ -443,14 +443,14 @@ namespace locust
         
         FieldBuffer aFieldBuffer;
         
-        EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        EPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
+        EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        EPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
         
-        PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
+        PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
         
         
     }
