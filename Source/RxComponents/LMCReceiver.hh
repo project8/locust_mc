@@ -28,8 +28,8 @@ namespace locust
             Receiver(double testvar);
             virtual ~Receiver();
 
-            virtual double GetVoltage() = 0;
-            virtual double GetAnalogTimeDelay() = 0;
+//            virtual double GetVoltage() = 0;
+//            virtual double GetAnalogTimeDelay() = 0;
             LMCThreeVector GetPolarizationDirection();
             void SetPolarizationDirection(const LMCThreeVector &copolDirection);
             LMCThreeVector GetNormalDirection();

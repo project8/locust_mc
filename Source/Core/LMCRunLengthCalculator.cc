@@ -93,7 +93,7 @@ namespace locust
         // nothing to see here, move along, please
         return;
     }
-    void RunLengthCalculator::Visit( const PatchSignalGenerator* )
+    void RunLengthCalculator::Visit( const ArraySignalGenerator* )
     {
         // nothing to see here, move along, please
         return;
