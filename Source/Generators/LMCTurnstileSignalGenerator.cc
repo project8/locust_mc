@@ -289,7 +289,7 @@ namespace locust
     }
 
     
-    bool TurnstileSignalGenerator::InitializePatchArray()
+    bool TurnstileSignalGenerator::InitializeElementArray()
     {
         if(!fReceiverHandler.ReadHFSSFile())
         {
@@ -304,9 +304,11 @@ namespace locust
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
         const double dRotateVoltages = 0.;  // set to zero to not rotate patch polarities.
         
-        PatchAntenna modelPatch;
+        Receiver* modelElement = new Receiver;
+        modelElement = fPowerCombiner.ChooseElement();
+
         
-        allChannels.resize(nChannels);
+        allRxChannels.resize(nChannels);
         
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         {
@@ -316,11 +318,11 @@ namespace locust
             {
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
                 
-                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
-                modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
+                modelElement->SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
+                modelElement->SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
                 
-                modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
-                allChannels[channelIndex].AddReceiver(modelPatch);
+                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+                allRxChannels[channelIndex].AddReceiver(modelElement);
             }
         }
         return true;
@@ -335,7 +337,7 @@ namespace locust
     bool TurnstileSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-    	if(!InitializePatchArray())
+    	if(!InitializeElementArray())
     	{
     		LERROR(lmclog,"Error initilizing Patch Array");
     		exit(-1);
@@ -350,7 +352,7 @@ namespace locust
 
 
         const unsigned nchannels = fNChannels;
-        const unsigned npatches = fNElementsPerStrip;
+        const unsigned nelements = fNElementsPerStrip;
         
         double LO_phase = 0.;
         double field_phase = 0.;
@@ -376,19 +378,19 @@ namespace locust
             LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
             for (unsigned ch = 0; ch < nchannels; ++ch)
             {
-                for (unsigned patch = 0; patch < npatches; ++patch)
+                for (unsigned element = 0; element < nelements; ++element)
                 {
-                    PatchAntenna *currentPatch;
-                    currentPatch = &allChannels[ch][patch];
-                    double relativePatchPosX=currentPatch->GetPosition().GetX() - antennaPositionX;
-                    double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
-                    double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
+                    Receiver *currentElement;
+                    currentElement = allRxChannels[ch][element];
+                    double relativePatchPosX=currentElement->GetPosition().GetX() - antennaPositionX;
+                    double relativePatchPosY=currentElement->GetPosition().GetY() - antennaPositionY;
+                    double relativePatchPosZ=currentElement->GetPosition().GetZ() - antennaPositionZ;
                     double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
-                    FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
-                    VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
-     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNElementsPerStrip+patch].front());
-                    PopBuffers(ch, patch);
+                    FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, element);
+                    VoltageSample = GetVoltageFromField(ch, element, field_phase)*GetAOIFactor(currentElement->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentElement->GetPosition())/patchAntennaDistance;;
+     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, element, IndexBuffer[ch*fNElementsPerStrip+element].front());
+                    PopBuffers(ch, element);
                 }  // patch
             }  // channel
             if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory

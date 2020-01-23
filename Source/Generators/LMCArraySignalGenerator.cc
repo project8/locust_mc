@@ -254,8 +254,6 @@ namespace locust
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         double tReceiverTime = t_old;
 
-        Receiver* currentElement = new Receiver;
-
         unsigned tTotalElementIndex = 0;
 
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
@@ -263,7 +261,7 @@ namespace locust
             double ElementPhi = (double)channelIndex*360./nChannels*LMCConst::Pi()/180.; // radians.
             for(int elementIndex = 0; elementIndex < nReceivers; ++elementIndex)
             {
-            	currentElement = allRxChannels[channelIndex][elementIndex];
+            	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
 
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 

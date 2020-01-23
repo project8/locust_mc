@@ -12,7 +12,6 @@
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
-#include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
@@ -75,7 +74,7 @@ namespace locust
       
   	  private:
 	  	  // patch and plane wave parameters
-	  	  std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+	  	  std::vector< Channel<Receiver*> > allRxChannels; //Vector that contains pointer to all channels
 	  	  std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
 	  	  double fLO_Frequency;  // typically defined by a parameter in json file.
 	  	  double fRF_Frequency;  // typically defined by a parameter in json file.
