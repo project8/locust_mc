@@ -19,6 +19,13 @@ namespace locust
     {
     }
 
+    void SlotAntenna::RxSayHello()
+      {
+      	printf("slot says hello\n");
+      	getchar();
+      }
+
+
 
 
 } /* namespace locust */

@@ -73,6 +73,12 @@ namespace locust
     }
 
 
+    void PatchAntenna::RxSayHello()
+     {
+     	printf("patch says hello\n");
+     	getchar();
+     }
+
 
 
 

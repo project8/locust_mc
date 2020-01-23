@@ -6,6 +6,8 @@
 #include "param.hh"
 #include "LMCSignal.hh"
 #include "LMCConst.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCSlotAntenna.hh"
 #include <vector>
 
 
@@ -46,6 +48,7 @@ namespace locust
             bool SetVoltageDampingFactors(int anElementsPerStrip, double anElementSpacing);
             bool SetSMatrixParameters(int anElementsPerStrip);
             void SetNPatchesPerStrip(int aPatchesPerStrip);
+            Receiver* ChooseElement();
             void SetNSlots(int aNSlots);
             void SetJunctionLoss(double aJunctionLoss);
             void SetPatchLoss(double aPatchLoss);

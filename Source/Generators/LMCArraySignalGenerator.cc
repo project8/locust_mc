@@ -220,6 +220,7 @@ namespace locust
     // EField cross pol with aoi dot product, at element.
     double ArraySignalGenerator::GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi, double DopplerFrequency)
     {
+//    	currentElement->RxSayHello();
         double AOIFactor = GetAOIFactor(IncidentKVector, ElementPhi);  // k dot elementnormal
         LMCThreeVector ElementPolarizationVector = currentElement->GetPolarizationDirection();
         double EFieldCoPol = IncidentElectricField.Dot(ElementPolarizationVector) * AOIFactor;
@@ -238,20 +239,6 @@ namespace locust
         return EFieldCrossPol;
     }
 
-    Receiver* ArraySignalGenerator::ChooseElement()
-    {
-    	PatchAntenna *currentPatch;
-    	SlotAntenna *currentSlot;
-    	if (fPowerCombiner.GetPowerCombiner() == 8)
-    	{
-    		return currentSlot;
-    	}
-    	else
-    	{
-    		return currentPatch;
-    	}
-    }
-
 
 
     void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
@@ -267,8 +254,7 @@ namespace locust
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         double tReceiverTime = t_old;
 
-        Receiver* currentElement;
-        currentElement = ChooseElement();
+        Receiver* currentElement = new Receiver;
 
         unsigned tTotalElementIndex = 0;
 
@@ -277,7 +263,8 @@ namespace locust
             double ElementPhi = (double)channelIndex*360./nChannels*LMCConst::Pi()/180.; // radians.
             for(int elementIndex = 0; elementIndex < nReceivers; ++elementIndex)
             {
-            	currentElement = &allChannels[channelIndex][elementIndex];
+            	currentElement = allRxChannels[channelIndex][elementIndex];
+
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
                 fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
@@ -393,9 +380,10 @@ namespace locust
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
         const double dRotateVoltages = 0.;  // set to zero to not rotate element polarities.
 
-        Receiver* modelElement = ChooseElement();  // Slot or Patch
+        Receiver* modelElement = new Receiver;
+        modelElement = fPowerCombiner.ChooseElement();
 
-        allChannels.resize(nChannels);
+        allRxChannels.resize(nChannels);
 
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         {
@@ -413,10 +401,11 @@ namespace locust
                 	modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
                 	modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
                 	modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
-                	allChannels[channelIndex].AddReceiver(*modelElement);
-                    fFieldSolver.AddFieldPoint(modelElement->GetPosition());
+                	allRxChannels[channelIndex].AddReceiver(modelElement);
+                	fFieldSolver.AddFieldPoint(modelElement->GetPosition());
             }
         }
+
         return true;
     }
 
@@ -432,6 +421,8 @@ namespace locust
         	LERROR(lmclog,"Error configuring Element array");
             exit(-1);
         }
+
+
         if (!InitializePowerCombining() )
         {
         	LERROR(lmclog,"Error configuring Power Combining");

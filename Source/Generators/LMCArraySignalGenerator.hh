@@ -11,14 +11,13 @@
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
-#include "LMCPatchAntenna.hh"
-#include "LMCSlotAntenna.hh"
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCLienardWiechert.hh"
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
+#include <vector>
 
 
 namespace locust
@@ -50,6 +49,7 @@ namespace locust
      	 	 becomes more important for large numbers of patches
 
     */
+
     class ArraySignalGenerator : public Generator
     {
         public:
@@ -65,7 +65,7 @@ namespace locust
 
 
         private:
-            std::vector< Channel<Receiver> > allChannels; //Vector that contains pointer to all channels
+            std::vector< Channel<Receiver*> > allRxChannels; //Vector that contains pointer to all channels
             double fLO_Frequency;
             double fArrayRadius;
             int fNElementsPerStrip;
@@ -84,7 +84,6 @@ namespace locust
             double GetEFieldCrossPol(Receiver* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
-            Receiver* ChooseElement();
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned channel, unsigned patch);

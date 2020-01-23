@@ -27,6 +27,8 @@ namespace locust
             SlotAntenna();
             virtual ~SlotAntenna();
 
+            virtual void RxSayHello();
+
 
     };
 

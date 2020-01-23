@@ -72,6 +72,21 @@ namespace locust
     	return fpowerCombiner;
     }
 
+    Receiver* PowerCombiner::ChooseElement()
+    {
+    	PatchAntenna* currentPatch = new PatchAntenna;
+    	SlotAntenna* currentSlot = new SlotAntenna;
+    	if (fpowerCombiner == 8)
+    	{
+    		delete currentPatch;
+    		return currentSlot;
+    	}
+    	else
+    	{
+    		delete currentSlot;
+    		return currentPatch;
+    	}
+    }
 
 
 

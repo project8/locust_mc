@@ -49,5 +49,15 @@ namespace locust
     }
 
 
+    void Receiver::RxSayHello()
+     {
+     	printf("rx says hello\n");
+     	getchar();
+     }
+
+
+
+
+
 } /* namespace locust */
 
