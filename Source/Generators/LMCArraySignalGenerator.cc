@@ -1,11 +1,11 @@
 /*
- * LMCPatchSignalGenerator.cc
+ * LMCArraySignalGenerator.cc
  *
  *  Created on: Feb 19, 2018
  *      Author: pslocum
  */
 
-#include "LMCPatchSignalGenerator.hh"
+#include "LMCArraySignalGenerator.hh"
 #include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 
@@ -23,17 +23,17 @@
 
 namespace locust
 {
-    LOGGER( lmclog, "PatchSignalGenerator" );
+    LOGGER( lmclog, "ArraySignalGenerator" );
 
-    MT_REGISTER_GENERATOR(PatchSignalGenerator, "patch-signal");
+    MT_REGISTER_GENERATOR(ArraySignalGenerator, "array-signal");
 
-    PatchSignalGenerator::PatchSignalGenerator( const std::string& aName ) :
+    ArraySignalGenerator::ArraySignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fLO_Frequency( 0.),
         fArrayRadius( 0. ),
-        fNPatchesPerStrip( 0. ),
+        fNElementsPerStrip( 0. ),
 		fZShiftArray( 0. ),
-        fPatchSpacing( 0. ),
+        fElementSpacing( 0. ),
         gxml_filename("blank.xml"),
 		fTextFileWriting( 0 ),
         fphiLO(0.),
@@ -43,7 +43,7 @@ namespace locust
         EFrequencyBuffer( 1 ),
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
-        PatchFIRBuffer( 1 ),
+        ElementFIRBuffer( 1 ),
         fFieldBufferSize( 50 ),
 		fSwapFrequency( 1000 )
 
@@ -51,11 +51,11 @@ namespace locust
         fRequiredSignalState = Signal::kTime;
     }
 
-    PatchSignalGenerator::~PatchSignalGenerator()
+    ArraySignalGenerator::~ArraySignalGenerator()
     {
     }
 
-    bool PatchSignalGenerator::Configure( const scarab::param_node& aParam )
+    bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
     {
     	if(!fTFReceiverHandler.Configure(aParam))
     	{
@@ -87,13 +87,13 @@ namespace locust
         {
             fArrayRadius = aParam["array-radius"]().as_double();
         }
-        if( aParam.has( "npatches-per-strip" ) )
+        if( aParam.has( "nelements-per-strip" ) )
         {
-            fNPatchesPerStrip = aParam["npatches-per-strip"]().as_int();
+            fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
         }
-        if( aParam.has( "patch-spacing" ) )
+        if( aParam.has( "element-spacing" ) )
         {
-            fPatchSpacing = aParam["patch-spacing"]().as_double();
+            fElementSpacing = aParam["element-spacing"]().as_double();
         }
         if( aParam.has( "zshift-array" ) )
         {
@@ -115,7 +115,7 @@ namespace locust
         return true;
     }
 
-    void PatchSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
+    void ArraySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
         return;
@@ -135,13 +135,13 @@ namespace locust
 
 
 
-    bool PatchSignalGenerator::WakeBeforeEvent()
+    bool ArraySignalGenerator::WakeBeforeEvent()
     {
         fPreEventCondition.notify_one();
         return true;
     }
 
-    bool PatchSignalGenerator::ReceivedKassReady()
+    bool ArraySignalGenerator::ReceivedKassReady()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         printf("LMC about to wait ..\n");
@@ -162,40 +162,40 @@ namespace locust
     }
 
 
-    double PatchSignalGenerator::GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi)
+    double ArraySignalGenerator::GetAOIFactor(LMCThreeVector IncidentKVector, double ElementPhi)
     {
-        LMCThreeVector PatchNormalVector;
-        PatchNormalVector.SetComponents(cos(PatchPhi), sin(PatchPhi), 0.0);
-        double AOIFactor = fabs(IncidentKVector.Unit().Dot(PatchNormalVector));
+        LMCThreeVector ElementNormalVector;
+        ElementNormalVector.SetComponents(cos(ElementPhi), sin(ElementPhi), 0.0);
+        double AOIFactor = fabs(IncidentKVector.Unit().Dot(ElementNormalVector));
         //printf("cos aoi is %f\n", AOIFactor);
         return AOIFactor;
     }
 
 
-    // fields incident on patch.
-    void PatchSignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int patchIndex, double zpatch, double tEFieldCoPol)
+    // fields incident on element.
+    void ArraySignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int elementIndex, double zelement, double tEFieldCoPol)
     {
     	if (t_old > 0.5e-9)
          	{
-         	fprintf(fp, "%d %g %g\n", patchIndex, zpatch, tEFieldCoPol);
+         	fprintf(fp, "%d %g %g\n", elementIndex, zelement, tEFieldCoPol);
          	}
     }
 
 
 
-    double PatchSignalGenerator::GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch)
+    double ArraySignalGenerator::GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned element)
     {
 
-    	double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
+    	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
     	double HilbertMag = 0.;
     	double HilbertPhase = 0.;
     	double convolution = 0.0;
 
-    	if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
+    	if (fabs(EFieldBuffer[channel*fNElementsPerStrip+element].front()) > 0.)  // field arrived yet?
     	{
 
     		double* HilbertMagPhaseMean = new double[3];
-    		HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch]);
+    		HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNElementsPerStrip+element], EFrequencyBuffer[channel*fNElementsPerStrip+element]);
     		HilbertMag = HilbertMagPhaseMean[0];
     		HilbertPhase = HilbertMagPhaseMean[1];
     		delete[] HilbertMagPhaseMean;
@@ -203,11 +203,11 @@ namespace locust
     		for (int i=0; i < nfilterbins; i++)  // populate filter with field.
     		{
     			HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
-    			PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
-    			PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+    			ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(HilbertMag*cos(HilbertPhase));
+    			ElementFIRBuffer[channel*fNElementsPerStrip+element].pop_front();
     		}
 
-    		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
+    		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
 
     		return convolution;
     	}
@@ -217,77 +217,79 @@ namespace locust
 
 
 
-    // EField cross pol with aoi dot product, at patch.
-    double PatchSignalGenerator::GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    // EField cross pol with aoi dot product, at element.
+    double ArraySignalGenerator::GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi, double DopplerFrequency)
     {
-        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
-        LMCThreeVector PatchPolarizationVector = currentPatch->GetPolarizationDirection();
-        double EFieldCoPol = IncidentElectricField.Dot(PatchPolarizationVector) * AOIFactor;
+//    	currentElement->RxSayHello();
+        double AOIFactor = GetAOIFactor(IncidentKVector, ElementPhi);  // k dot elementnormal
+        LMCThreeVector ElementPolarizationVector = currentElement->GetPolarizationDirection();
+        double EFieldCoPol = IncidentElectricField.Dot(ElementPolarizationVector) * AOIFactor;
 
         return EFieldCoPol;
     }
 
 
-    double PatchSignalGenerator::GetEFieldCrossPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency)
+    double ArraySignalGenerator::GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi, double DopplerFrequency)
     {
-        double AOIFactor = GetAOIFactor(IncidentKVector, PatchPhi);  // k dot patchnormal
-        LMCThreeVector PatchCrossPolarizationVector;
-        PatchCrossPolarizationVector.SetComponents(0.0, 0.0, 1.0);  // axial direction.
-        double EFieldCrossPol = IncidentElectricField.Dot(PatchCrossPolarizationVector) * AOIFactor;
+        double AOIFactor = GetAOIFactor(IncidentKVector, ElementPhi);  // k dot elementnormal
+        LMCThreeVector ElementCrossPolarizationVector;
+        ElementCrossPolarizationVector.SetComponents(0.0, 0.0, 1.0);  // axial direction.
+        double EFieldCrossPol = IncidentElectricField.Dot(ElementCrossPolarizationVector) * AOIFactor;
 
         return EFieldCrossPol;
     }
 
 
 
-
-
-    void PatchSignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
+    void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
+        const unsigned nChannels = fNChannels;
+        const int nReceivers = fNElementsPerStrip;
+
 
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         double tReceiverTime = t_old;
 
-        PatchAntenna *currentPatch;
-        unsigned tTotalPatchIndex = 0;
+        unsigned tTotalElementIndex = 0;
 
-        for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
+        for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         {
-            double PatchPhi = (double)channelIndex*360./allChannels.size()*LMCConst::Pi()/180.; // radians.    
-            for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
+            double ElementPhi = (double)channelIndex*360./nChannels*LMCConst::Pi()/180.; // radians.
+            for(int elementIndex = 0; elementIndex < nReceivers; ++elementIndex)
             {
-                currentPatch = &allChannels[channelIndex][patchIndex]; 
+            	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
+
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                fFieldSolver.SetFieldEvent(tReceiverTime, tTotalPatchIndex);
+                fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
                 fFieldSolver.SolveFieldSolutions();
 
                 LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
                 LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
                 locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
 
-                LMCThreeVector tDirection = currentPatch->GetPosition() - tCurrentParticle.GetPosition(true);
+                LMCThreeVector tDirection = currentElement->GetPosition() - tCurrentParticle.GetPosition(true);
                 double tVelZ = tCurrentParticle.GetVelocity(true).Z();
                 double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
                 double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
 
- 		        double tEFieldCoPol = GetEFieldCoPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
- 		        double tEFieldCrossPol = GetEFieldCrossPol(currentPatch, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), PatchPhi, tDopplerFrequency);
-                if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, patchIndex, currentPatch->GetPosition().GetZ(), tEFieldCoPol);
+ 		        double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
+ 		        double tEFieldCrossPol = GetEFieldCrossPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tEFieldCoPol);
 
- 	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, patchIndex);
- 	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, patchIndex);
- 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, patchIndex, IndexBuffer[channelIndex*fNPatchesPerStrip+patchIndex].front());
-                PopBuffers(channelIndex, patchIndex);
+ 	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, elementIndex);
+ 	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
+ 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+                PopBuffers(channelIndex, elementIndex);
 
-                ++tTotalPatchIndex;
+                ++tTotalElementIndex;
 
-            } // patch loop
+            } // element loop
 
         } // channels loop
 
@@ -296,58 +298,58 @@ namespace locust
 
     }
 
-    void PatchSignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch)
+    void ArraySignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned element)
     {
-    	EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(EFieldValue);
-    	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(DopplerFrequency/2./LMCConst::Pi());
-    	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
-    	IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
+    	EFieldBuffer[channel*fNElementsPerStrip+element].push_back(EFieldValue);
+    	EFrequencyBuffer[channel*fNElementsPerStrip+element].push_back(DopplerFrequency/2./LMCConst::Pi());
+    	LOPhaseBuffer[channel*fNElementsPerStrip+element].push_back(LOPhase);
+    	IndexBuffer[channel*fNElementsPerStrip+element].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
     }
 
 
 
 
 
-    void PatchSignalGenerator::PopBuffers(unsigned channel, unsigned patch)
+    void ArraySignalGenerator::PopBuffers(unsigned channel, unsigned element)
     {
 
-    	EFieldBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-    	EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-    	LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-    	IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+    	EFieldBuffer[channel*fNElementsPerStrip+element].pop_front();
+    	EFrequencyBuffer[channel*fNElementsPerStrip+element].pop_front();
+    	LOPhaseBuffer[channel*fNElementsPerStrip+element].pop_front();
+    	IndexBuffer[channel*fNElementsPerStrip+element].pop_front();
 
     }
 
 
 
 
-    void PatchSignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
+    void ArraySignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
     	FieldBuffer aFieldBuffer;
-    	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-    	PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
+    	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+    	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+    	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+    	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+    	ElementFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
     }
 
 
-    void PatchSignalGenerator::CleanupBuffers()
+    void ArraySignalGenerator::CleanupBuffers()
     {
     	FieldBuffer aFieldBuffer;
     	EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
     	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
     	LOPhaseBuffer = aFieldBuffer.CleanupBuffer(LOPhaseBuffer);
-    	PatchFIRBuffer = aFieldBuffer.CleanupBuffer(PatchFIRBuffer);
+    	ElementFIRBuffer = aFieldBuffer.CleanupBuffer(ElementFIRBuffer);
     	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
     }
 
 
 
-    bool PatchSignalGenerator::InitializePowerCombining()
+    bool ArraySignalGenerator::InitializePowerCombining()
     {
-    	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	fPowerCombiner.SetSMatrixParameters(fNElementsPerStrip);
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNElementsPerStrip, fElementSpacing) )
     	{
     		return false;
     	}
@@ -358,7 +360,7 @@ namespace locust
     }
 
 
-    bool PatchSignalGenerator::InitializePatchArray()
+    bool ArraySignalGenerator::InitializeElementArray()
     {
 
         if(!fTFReceiverHandler.ReadHFSSFile())
@@ -366,20 +368,20 @@ namespace locust
             return false;
         }
 
-
         const unsigned nChannels = fNChannels;
-        const int nReceivers = fNPatchesPerStrip;
+        const int nReceivers = fNElementsPerStrip;
 
-        const double patchSpacingZ = fPatchSpacing;
-        const double patchRadius = fArrayRadius;
+        const double elementSpacingZ = fElementSpacing;
+        const double elementRadius = fArrayRadius;
         double zPosition;
         double theta;
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
-        const double dRotateVoltages = 0.;  // set to zero to not rotate patch polarities.
+        const double dRotateVoltages = 0.;  // set to zero to not rotate element polarities.
 
-        PatchAntenna modelPatch;
+        Receiver* modelElement = new Receiver;
+        modelElement = fPowerCombiner.ChooseElement();
 
-        allChannels.resize(nChannels);
+        allRxChannels.resize(nChannels);
 
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         {
@@ -387,36 +389,38 @@ namespace locust
 
             for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
             {
-                zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
+                zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
                 if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
                 {
                 	zPosition = 0.;
                 }
 
-                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition }); 
-                modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
-           
-                modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
-                allChannels[channelIndex].AddReceiver(modelPatch);
-                fFieldSolver.AddFieldPoint(modelPatch.GetPosition());
+                	modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
+                	modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
+                	modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+                	allRxChannels[channelIndex].AddReceiver(modelElement);
+                	fFieldSolver.AddFieldPoint(modelElement->GetPosition());
             }
         }
+
         return true;
     }
 
 
 
-    bool PatchSignalGenerator::DoGenerate( Signal* aSignal )
+    bool ArraySignalGenerator::DoGenerate( Signal* aSignal )
     {
 
         FILE *fp = fopen("incidentfields.txt", "w");
 
-        if(!InitializePatchArray())
+        if(!InitializeElementArray())
         {
-        	LERROR(lmclog,"Error configuring Patch array");
+        	LERROR(lmclog,"Error configuring Element array");
             exit(-1);
         }
+
+
         if (!InitializePowerCombining() )
         {
         	LERROR(lmclog,"Error configuring Power Combining");

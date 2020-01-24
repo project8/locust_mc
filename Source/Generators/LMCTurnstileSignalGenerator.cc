@@ -26,8 +26,8 @@ namespace locust
     fLO_frequency( 20.05e9 ),
     fRF_frequency( 20.1e9 ),
     fArrayRadius( 0. ),
-    fNPatchesPerStrip( 1 ),
-    fPatchSpacing( 0. ),
+    fNElementsPerStrip( 1 ),
+    fElementSpacing( 0. ),
     fTextFileWriting( 0 ),
     fAmplitude( 5.e-8 ),
     EFieldBuffer( 1 ),
@@ -93,14 +93,14 @@ namespace locust
             SetAmplitude( aParam.get_value< double >( "input-signal-amplitude", fAmplitude ) );
         }
         
-        if( aParam.has( "npatches-per-strip" ) )
+        if( aParam.has( "nelements-per-strip" ) )
         {
-            fNPatchesPerStrip = aParam["npatches-per-strip"]().as_int();
+            fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
         }
         
-        if( aParam.has( "patch-spacing" ) )
+        if( aParam.has( "element-spacing" ) )
         {
-            fPatchSpacing = aParam["patch-spacing"]().as_double();
+            fElementSpacing = aParam["element-spacing"]().as_double();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -227,15 +227,15 @@ namespace locust
     double TurnstileSignalGenerator::GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase)
     {
         
-        double fieldfrequency = EFrequencyBuffer[channel*fNPatchesPerStrip+patch].front();
+        double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+patch].front();
         double HilbertMag = 0.;
         double HilbertPhase = 0.;
         
-        if (fabs(EFieldBuffer[channel*fNPatchesPerStrip+patch].front()) > 0.)  // field arrived yet?
+        if (fabs(EFieldBuffer[channel*fNElementsPerStrip+patch].front()) > 0.)  // field arrived yet?
         {
             
             double* HilbertMagPhaseMean = new double[3];
-            HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNPatchesPerStrip+patch], EFrequencyBuffer[channel*fNPatchesPerStrip+patch]);
+            HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNElementsPerStrip+patch], EFrequencyBuffer[channel*fNElementsPerStrip+patch]);
             HilbertMag = HilbertMagPhaseMean[0];
             HilbertPhase = HilbertMagPhaseMean[1];
             delete[] HilbertMagPhaseMean;
@@ -244,13 +244,13 @@ namespace locust
             for (int i=0; i < fReceiverHandler.GetFilterSize(); i++)  // populate filter with field.
             {
                 HilbertPhase += 2.*LMCConst::Pi()*fieldfrequency*fReceiverHandler.GetFilterResolution();
-                PatchFIRBuffer[channel*fNPatchesPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
-                PatchFIRBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+                PatchFIRBuffer[channel*fNElementsPerStrip+patch].push_back(HilbertMag*cos(HilbertPhase));
+                PatchFIRBuffer[channel*fNElementsPerStrip+patch].pop_front();
             }
             
-            double convolution=fReceiverHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNPatchesPerStrip+patch]);
+            double convolution=fReceiverHandler.ConvolveWithFIRFilter(PatchFIRBuffer[channel*fNElementsPerStrip+patch]);
             
-            PatchFIRBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();  // memory deallocation.
+            PatchFIRBuffer[channel*fNElementsPerStrip+patch].shrink_to_fit();  // memory deallocation.
             return convolution;
         }
         else return 0.;
@@ -275,8 +275,8 @@ namespace locust
 
     bool TurnstileSignalGenerator::InitializePowerCombining()
     {
-    	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	fPowerCombiner.SetSMatrixParameters(fNElementsPerStrip);
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNElementsPerStrip, fElementSpacing) )
     	{
     		return false;
     	}
@@ -289,24 +289,26 @@ namespace locust
     }
 
     
-    bool TurnstileSignalGenerator::InitializePatchArray()
+    bool TurnstileSignalGenerator::InitializeElementArray()
     {
         if(!fReceiverHandler.ReadHFSSFile())
         {
             exit(-1);
         }
         const unsigned nChannels = fNChannels;
-        const int nReceivers = fNPatchesPerStrip;
-        const double patchSpacingZ = fPatchSpacing;
+        const int nReceivers = fNElementsPerStrip;
+        const double patchSpacingZ = fElementSpacing;
         const double patchRadius = fArrayRadius;
         double zPosition;
         double theta;
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
         const double dRotateVoltages = 0.;  // set to zero to not rotate patch polarities.
         
-        PatchAntenna modelPatch;
+        Receiver* modelElement = new Receiver;
+        modelElement = fPowerCombiner.ChooseElement();
+
         
-        allChannels.resize(nChannels);
+        allRxChannels.resize(nChannels);
         
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         {
@@ -316,11 +318,11 @@ namespace locust
             {
                 zPosition =  (receiverIndex - (nReceivers - 1.) /2.) * patchSpacingZ;
                 
-                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
-                modelPatch.SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
+                modelElement->SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
+                modelElement->SetPolarizationDirection({RotateZ(0, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), RotateZ(1, dRotateVoltages*channelIndex, sin(theta), -cos(theta)), 0.});
                 
-                modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
-                allChannels[channelIndex].AddReceiver(modelPatch);
+                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+                allRxChannels[channelIndex].AddReceiver(modelElement);
             }
         }
         return true;
@@ -335,7 +337,7 @@ namespace locust
     bool TurnstileSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-    	if(!InitializePatchArray())
+    	if(!InitializeElementArray())
     	{
     		LERROR(lmclog,"Error initilizing Patch Array");
     		exit(-1);
@@ -350,7 +352,7 @@ namespace locust
 
 
         const unsigned nchannels = fNChannels;
-        const unsigned npatches = fNPatchesPerStrip;
+        const unsigned nelements = fNElementsPerStrip;
         
         double LO_phase = 0.;
         double field_phase = 0.;
@@ -376,19 +378,19 @@ namespace locust
             LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
             for (unsigned ch = 0; ch < nchannels; ++ch)
             {
-                for (unsigned patch = 0; patch < npatches; ++patch)
+                for (unsigned element = 0; element < nelements; ++element)
                 {
-                    PatchAntenna *currentPatch;
-                    currentPatch = &allChannels[ch][patch];
-                    double relativePatchPosX=currentPatch->GetPosition().GetX() - antennaPositionX;
-                    double relativePatchPosY=currentPatch->GetPosition().GetY() - antennaPositionY;
-                    double relativePatchPosZ=currentPatch->GetPosition().GetZ() - antennaPositionZ;
+                    Receiver *currentElement;
+                    currentElement = allRxChannels[ch][element];
+                    double relativePatchPosX=currentElement->GetPosition().GetX() - antennaPositionX;
+                    double relativePatchPosY=currentElement->GetPosition().GetY() - antennaPositionY;
+                    double relativePatchPosZ=currentElement->GetPosition().GetZ() - antennaPositionZ;
                     double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
-                    FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, patch);
-                    VoltageSample = GetVoltageFromField(ch, patch, field_phase)*GetAOIFactor(currentPatch->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentPatch->GetPosition())/patchAntennaDistance;;
-     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, patch, IndexBuffer[ch*fNPatchesPerStrip+patch].front());
-                    PopBuffers(ch, patch);
+                    FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, element);
+                    VoltageSample = GetVoltageFromField(ch, element, field_phase)*GetAOIFactor(currentElement->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentElement->GetPosition())/patchAntennaDistance;;
+     	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, element, IndexBuffer[ch*fNElementsPerStrip+element].front());
+                    PopBuffers(ch, element);
                 }  // patch
             }  // channel
             if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
@@ -399,33 +401,33 @@ namespace locust
     void TurnstileSignalGenerator::FillBuffers(Signal* aSignal, double FieldValue, double FieldPhase, double LOPhase, unsigned index, unsigned channel, unsigned patch)
     {
         
-        EFieldBuffer[channel*fNPatchesPerStrip+patch].push_back(FieldValue);
-        EPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(FieldPhase);
-        EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].push_back(fAmplitude);
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].push_back(fRF_frequency);
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].push_back(LOPhase);
-        IndexBuffer[channel*fNPatchesPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
+        EFieldBuffer[channel*fNElementsPerStrip+patch].push_back(FieldValue);
+        EPhaseBuffer[channel*fNElementsPerStrip+patch].push_back(FieldPhase);
+        EAmplitudeBuffer[channel*fNElementsPerStrip+patch].push_back(fAmplitude);
+        EFrequencyBuffer[channel*fNElementsPerStrip+patch].push_back(fRF_frequency);
+        LOPhaseBuffer[channel*fNElementsPerStrip+patch].push_back(LOPhase);
+        IndexBuffer[channel*fNElementsPerStrip+patch].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
         
     }
     
     
     void TurnstileSignalGenerator::PopBuffers(unsigned channel, unsigned patch)
     {
-        EFieldBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        EPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].pop_front();
-        IndexBuffer[channel*fNPatchesPerStrip+patch].pop_front();
+        EFieldBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        EPhaseBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        EAmplitudeBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        EFrequencyBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        LOPhaseBuffer[channel*fNElementsPerStrip+patch].pop_front();
+        IndexBuffer[channel*fNElementsPerStrip+patch].pop_front();
         
-        EFieldBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EAmplitudeBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        EFrequencyBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        LOPhaseBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
-        IndexBuffer[channel*fNPatchesPerStrip+patch].shrink_to_fit();
+        EFieldBuffer[channel*fNElementsPerStrip+patch].shrink_to_fit();
+        EPhaseBuffer[channel*fNElementsPerStrip+patch].shrink_to_fit();
+        EAmplitudeBuffer[channel*fNElementsPerStrip+patch].shrink_to_fit();
+        EFrequencyBuffer[channel*fNElementsPerStrip+patch].shrink_to_fit();
+        LOPhaseBuffer[channel*fNElementsPerStrip+patch].shrink_to_fit();
+        IndexBuffer[channel*fNElementsPerStrip+patch].shrink_to_fit();
         // PTS: Seg faults when shrink-to-fit used on ConvolutionTimeBuffer, removed for now. Need to revisit what the problem is
-        //ConvolutionTimeBuffer[channel+fNPatchesPerStrip+patch].shrink_to_fit();
+        //ConvolutionTimeBuffer[channel+fNElementsPerStrip+patch].shrink_to_fit();
     }
     
     
@@ -448,13 +450,13 @@ namespace locust
         
         FieldBuffer aFieldBuffer;
         
-        EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        EPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNPatchesPerStrip, fieldbuffersize);
-        PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNPatchesPerStrip, filterbuffersize);
+        EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        EPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
+        PatchFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
     }
     
     

@@ -13,7 +13,6 @@
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
-#include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
@@ -90,7 +89,7 @@ namespace locust
         
         double GetAOIFactor(LMCThreeVector TrasmittingPatchNormal,LMCThreeVector ReceivingPatchNormal);
         double RotateZ(int component, double angle, double x, double y);
-        bool InitializePatchArray();
+        bool InitializeElementArray();
         bool InitializePowerCombining();
         double GetVoltageFromField(unsigned channel, unsigned patch,double fieldPhase);
         
@@ -103,11 +102,11 @@ namespace locust
         HilbertTransform fHilbertTransform;
         FIRReceiverHandler fReceiverHandler;
         AntennaSignalTransmitter fAntennaSignalTransmitter;
-        std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+        std::vector< Channel<Receiver*> > allRxChannels; //Vector that contains pointer to all channels
         std::vector<LMCThreeVector > rReceiver; //Vector that contains 3D position of all points at which the fields are evaluated (ie. along receiver surface)
         double fArrayRadius;  // from json file.
-        int fNPatchesPerStrip; // from json file.
-        double fPatchSpacing; // from json file.
+        int fNElementsPerStrip; // from json file.
+        double fElementSpacing; // from json file.
         std::string gxml_filename;// from json file.
         bool fTextFileWriting;// from json file.
         

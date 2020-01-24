@@ -30,8 +30,8 @@ namespace locust
         Generator( aName ),
         fLO_Frequency( 0.),
         fArrayRadius(0.),
-        fPatchSpacing(0.),
-        fNPatchesPerStrip(0.),
+        fElementSpacing(0.),
+        fNElementsPerStrip(0.),
         fCorporateFeed(1),
         fPileupSeed( 0.),
         fPileupMode( false),
@@ -56,14 +56,14 @@ namespace locust
             fArrayRadius = aParam["array-radius"]().as_double();
         }
 
-        if( aParam.has( "npatches-per-strip" ) )
+        if( aParam.has( "nelements-per-strip" ) )
         {
-            fNPatchesPerStrip = aParam["npatches-per-strip"]().as_double();
+            fNElementsPerStrip = aParam["nelements-per-strip"]().as_double();
         }
 
-        if( aParam.has( "patch-spacing" ) )
+        if( aParam.has( "element-spacing" ) )
         {
-            fPatchSpacing = aParam["patch-spacing"]().as_double();
+            fElementSpacing = aParam["element-spacing"]().as_double();
         }
 
         if( aParam.has( "pileup" ) )
@@ -173,9 +173,9 @@ namespace locust
     {
 
         const unsigned nChannels = fNChannels;
-        const int nReceivers = fNPatchesPerStrip; //Number of receivers per channel
+        const int nReceivers = fNElementsPerStrip; //Number of receivers per channel
 
-        const double patchSpacingZ = fPatchSpacing;
+        const double patchSpacingZ = fElementSpacing;
         const double patchRadius = fArrayRadius;
         double zPosition;
         double theta;

@@ -49,5 +49,20 @@ namespace locust
     }
 
 
+    void Receiver::RxSayHello()
+     {
+     	printf("rx says hello\n");
+     	getchar();
+     }
+
+    double Receiver::GetPatternFactor(LMCThreeVector &incidentVector)
+    {
+    	return 1.0;
+    }
+
+
+
+
+
 } /* namespace locust */
 

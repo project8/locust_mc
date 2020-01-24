@@ -73,6 +73,16 @@ namespace locust
     }
 
 
+    void PatchAntenna::RxSayHello()
+     {
+     	printf("patch says hello\n");
+     	getchar();
+     }
+
+    double PatchAntenna::GetPatternFactor(LMCThreeVector &incidentVector)
+    {
+    	return 1.0;
+    }
 
 
 

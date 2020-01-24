@@ -38,6 +38,8 @@ namespace locust
             void SetIncidentElectricField(const LMCThreeVector &incomingElectricField);
             void SetIncidentMagneticField(const LMCThreeVector &incomingMagneticField);
             void SetInstantaneousFrequency(const double &dopplerFrequency);
+            virtual void RxSayHello();
+            virtual double GetPatternFactor(LMCThreeVector &incidentVector);
 
         private:
             double GetAntennaFactor();

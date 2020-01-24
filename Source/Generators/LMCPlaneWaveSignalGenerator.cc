@@ -30,8 +30,8 @@ namespace locust
 		fphiLO(0.),
 		fRF_Frequency( 0.),
 		fArrayRadius( 0. ),
-		fNPatchesPerStrip( 0. ),
-		fPatchSpacing( 0. ),
+		fNElementsPerStrip( 0. ),
+		fElementSpacing( 0. ),
 		fFieldBufferSize( 50 ),
 		fAOI( 0.),
 		fAmplitude( 0.),
@@ -84,13 +84,13 @@ namespace locust
 			SetArrayRadius( aParam.get_value< double >( "array-radius", fArrayRadius ));
 		}
 
-		if( aParam.has( "npatches-per-strip" ) )
+		if( aParam.has( "nelements-per-strip" ) )
 		{
-			SetNPatchesPerStrip( aParam.get_value< int >( "npatches-per-strip", fNPatchesPerStrip ));
+            fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
 		}
-		if( aParam.has( "patch-spacing" ) )
+		if( aParam.has( "element-spacing" ) )
 		{
-			SetPatchSpacing( aParam.get_value< double >( "patch-spacing", fPatchSpacing ) );
+            fElementSpacing = aParam["element-spacing"]().as_double();
 		}
 		if( aParam.has( "AOI" ) )
 		{
@@ -136,28 +136,6 @@ namespace locust
         return;
     }
 
-    int PlaneWaveSignalGenerator::GetNPatchesPerStrip() const
-    {
-    	return fNPatchesPerStrip;
-    }
-
-    void PlaneWaveSignalGenerator::SetNPatchesPerStrip( int aNPatchesPerStrip )
-    {
-    	fNPatchesPerStrip = aNPatchesPerStrip;
-    	return;
-    }
-
-    double PlaneWaveSignalGenerator::GetPatchSpacing() const
-    {
-    	return fPatchSpacing;
-    }
-
-    void PlaneWaveSignalGenerator::SetPatchSpacing( double aPatchSpacing )
-    {
-    	fPatchSpacing = aPatchSpacing;
-        return;
-    }
-
     double PlaneWaveSignalGenerator::GetAOI() const
     {
     	return fAOI;
@@ -200,16 +178,16 @@ namespace locust
     	double phasedelay = 0.;
     	if(fAOI >= 0)
     	{
-    		phasedelay = 2*LMCConst::Pi()*z_index*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
+    		phasedelay = 2*LMCConst::Pi()*z_index*fElementSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
     	}
     	else
     	{
-    		phasedelay = (fNPatchesPerStrip - z_index)*2*LMCConst::Pi()*fPatchSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
+    		phasedelay = (fNElementsPerStrip - z_index)*2*LMCConst::Pi()*fElementSpacing*sin(fAOI)*fRF_Frequency/LMCConst::C();
     	}
     	return phasedelay;
     }
   
-    double PlaneWaveSignalGenerator::GetPatchFIRSample(double dottedamp, double startphase, int patchIndex)
+    double PlaneWaveSignalGenerator::GetPatchFIRSample(double dottedamp, double startphase, int elementIndex)
     {
    
 //    	double* generatedpoints = new double [nfilterbins];
@@ -217,7 +195,7 @@ namespace locust
     	int nfilterbins = fTFReceiverHandler.GetFilterSize();
     	double dtfilter = fTFReceiverHandler.GetFilterResolution();
     	//double phase = startphase;
-    	double phase = startphase + GetPWPhaseDelayAtPatch(patchIndex);
+    	double phase = startphase + GetPWPhaseDelayAtPatch(elementIndex);
     	double amp = dottedamp;
     
     	for(int i=0; i < nfilterbins; i++)
@@ -268,20 +246,20 @@ namespace locust
     	double* hilbertmagphase = new double[2];
     	fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-    	for(int channelIndex = 0; channelIndex < allChannels.size(); ++channelIndex)
+    	for(int channelIndex = 0; channelIndex < allRxChannels.size(); ++channelIndex)
     	{
-    		for(int patchIndex = 0; patchIndex < allChannels[channelIndex].size(); ++patchIndex)
+    		for(int elementIndex = 0; elementIndex < allRxChannels[channelIndex].size(); ++elementIndex)
     		{
     			sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;
-    			bufferIndex = channelIndex*fNPatchesPerStrip+patchIndex;
+    			bufferIndex = channelIndex*fNElementsPerStrip+elementIndex;
 	    
-    			PatchAntenna *currentPatch;
-    			currentPatch = &allChannels[channelIndex][patchIndex];
+    			Receiver *currentElement;
+    			currentElement = allRxChannels[channelIndex][elementIndex];
 
-    			fieldamp = fAmplitude*GetAOIFactor(fAOI, currentPatch->GetNormalDirection());
+    			fieldamp = fAmplitude*GetAOIFactor(fAOI, currentElement->GetNormalDirection());
     			fieldphase = PWPhaseBuffer[bufferIndex].back();
     			fieldphase += 2. * LMCConst::Pi() * fRF_Frequency * timeSampleSize;
-	    // 		fieldphase += GetPWPhaseDelayAtPatch(patchIndex); this really does not work here for some reason. need to investigate further.
+	    // 		fieldphase += GetPWPhaseDelayAtPatch(elementIndex); this really does not work here for some reason. need to investigate further.
     			fieldvalue = fieldamp*cos(fieldphase);
 
     			FillBuffers(bufferIndex, sampleIndex, fieldphase, fieldvalue);
@@ -290,15 +268,15 @@ namespace locust
     			hilbertmagphase = GetHilbertMagPhase(bufferIndex);
     			int hilbertbuffermargin = fHilbertTransform.GetBufferMargin();
 
-    			PatchVoltageBuffer[bufferIndex].emplace(PatchVoltageBuffer[bufferIndex].begin()+hilbertbuffermargin+1, GetPatchFIRSample(hilbertmagphase[0], hilbertmagphase[1], patchIndex));
+    			PatchVoltageBuffer[bufferIndex].emplace(PatchVoltageBuffer[bufferIndex].begin()+hilbertbuffermargin+1, GetPatchFIRSample(hilbertmagphase[0], hilbertmagphase[1], elementIndex));
     			PatchVoltageBuffer[bufferIndex].pop_front();
     			PatchVoltageBuffer[bufferIndex].shrink_to_fit();
-    			fPowerCombiner.AddOneVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].front(), fphiLO, patchIndex, SampleIndexBuffer[bufferIndex].front());
+    			fPowerCombiner.AddOneVoltageToStripSum(aSignal, PatchVoltageBuffer[bufferIndex].front(), fphiLO, elementIndex, SampleIndexBuffer[bufferIndex].front());
 	   
     			// TEST PRINT STATEMENTS
 /*
 	      		printf("Channel is %d\n", channelIndex);
-	      	  	printf("Patch is %d\n", patchIndex);
+	      	  	printf("Patch is %d\n", elementIndex);
 	      	  	printf("Digitizer Sample is %d\n", index);
 
 	      	    printf("fieldamp is %f\n", fieldamp);
@@ -322,7 +300,7 @@ namespace locust
 	    /*
 	      	  	std::ofstream hilbertfile;
 	      	  	hilbertfile.open("hilbertfile.txt", std::fstream::app);
-	      	  	if(patchIndex == 0){
+	      	  	if(elementIndex == 0){
 	      		hilbertfile << PWValueBuffer[bufferIndex].front();
 	      	  	hilbertfile << ", ";
 	      	  	hilbertfile << PWPhaseBuffer[bufferIndex].front();
@@ -372,7 +350,7 @@ namespace locust
     void PlaneWaveSignalGenerator::InitializeBuffers()
     {
     	const unsigned nchannels = fNChannels;
-    	const int nReceivers = fNPatchesPerStrip;
+    	const int nReceivers = fNElementsPerStrip;
     
     	FieldBuffer aFieldBuffer;
 
@@ -388,8 +366,8 @@ namespace locust
 
     bool PlaneWaveSignalGenerator::InitializePowerCombining()
     {
-    	fPowerCombiner.SetSMatrixParameters(fNPatchesPerStrip);
-    	if (!fPowerCombiner.SetVoltageDampingFactors(fNPatchesPerStrip) )
+    	fPowerCombiner.SetSMatrixParameters(fNElementsPerStrip);
+    	if (!fPowerCombiner.SetVoltageDampingFactors(fNElementsPerStrip, fElementSpacing) )
     	{
     		return false;
     	}
@@ -411,17 +389,18 @@ namespace locust
     		return false;
     	}
     	const unsigned nChannels = fNChannels;
-    	const int nReceivers = fNPatchesPerStrip;
+    	const int nReceivers = fNElementsPerStrip;
 
-    	const double patchSpacingZ = fPatchSpacing;
+    	const double patchSpacingZ = fElementSpacing;
     	const double patchRadius = fArrayRadius;
     	double zPosition;
     	double theta;
     	const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
 
-    	PatchAntenna modelPatch;
+        Receiver* modelElement = new Receiver;
+        modelElement = fPowerCombiner.ChooseElement();
 
-    	allChannels.resize(nChannels);
+    	allRxChannels.resize(nChannels);
 
     	for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
     	{
@@ -436,10 +415,10 @@ namespace locust
                 	zPosition = 0.;
                 }
 
-                modelPatch.SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
-    			modelPatch.SetPolarizationDirection({sin(theta), -cos(theta), 0.});
-    			modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
-    			allChannels[channelIndex].AddReceiver(modelPatch);
+                modelElement->SetCenterPosition({patchRadius * cos(theta) , patchRadius * sin(theta) , zPosition });
+    			modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
+    			modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+    			allRxChannels[channelIndex].AddReceiver(modelElement);
     		}
     	}
     	return true;

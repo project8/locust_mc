@@ -54,8 +54,8 @@ namespace locust
 
             double fLO_Frequency;  // typically defined by a parameter in json file.
             double fArrayRadius;
-            int fNPatchesPerStrip;
-            double fPatchSpacing;
+            int fNElementsPerStrip;
+            double fElementSpacing;
             bool fCorporateFeed;
             bool fPileupMode; //simulate tracks in sequence or as piling up?
             int fPileupSeed; 
