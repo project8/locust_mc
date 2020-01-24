@@ -79,6 +79,10 @@ namespace locust
      	getchar();
      }
 
+    double PatchAntenna::GetPatternFactor(LMCThreeVector &incidentVector)
+    {
+    	return 1.0;
+    }
 
 
 

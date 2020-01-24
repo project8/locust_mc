@@ -37,6 +37,7 @@ namespace locust
             virtual LMCThreeVector GetPosition();
             virtual void SetCenterPosition(const LMCThreeVector &newPosition);
             virtual void RxSayHello();
+            virtual double GetPatternFactor(LMCThreeVector &incidentVector);
 
 
         private:

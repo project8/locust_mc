@@ -55,6 +55,11 @@ namespace locust
      	getchar();
      }
 
+    double Receiver::GetPatternFactor(LMCThreeVector &incidentVector)
+    {
+    	return 1.0;
+    }
+
 
 
 

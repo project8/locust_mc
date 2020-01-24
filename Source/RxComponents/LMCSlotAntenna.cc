@@ -20,12 +20,15 @@ namespace locust
     }
 
     void SlotAntenna::RxSayHello()
-      {
+    {
       	printf("slot says hello\n");
       	getchar();
-      }
+    }
 
-
+    double SlotAntenna::GetPatternFactor(LMCThreeVector &incidentVector)
+    {
+    	return 1.0;
+    }
 
 
 } /* namespace locust */

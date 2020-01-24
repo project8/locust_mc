@@ -28,6 +28,7 @@ namespace locust
             virtual ~SlotAntenna();
 
             virtual void RxSayHello();
+            virtual double GetPatternFactor(LMCThreeVector &incidentVector);
 
 
     };
