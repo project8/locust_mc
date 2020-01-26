@@ -8,6 +8,7 @@
 #ifndef LMCANTENNASIGNALTRANSMITTER_HH_
 #define LMCANTENNASIGNALTRANSMITTER_HH_
 
+#include "LMCTransmitter.hh"
 #include "LMCSignal.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
@@ -36,9 +37,10 @@ namespace locust
      - "antenna-x-position": double -- Location of the antenna in the x direction
      - "antenna-y-position": double -- Location of the antenna in the y direction
      - "antenna-z-position": double -- Location of the antenna in the z direction
+     - "transmitter-antenna-type":  string "antenna-signal-dipole" or "antenna-signal-turnstile"
      
      */
-    class AntennaSignalTransmitter
+    class AntennaSignalTransmitter : public Transmitter
     {
     public:
         
@@ -48,7 +50,8 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
-        double GenerateSignal(Signal *,double acquisitionRate);
+//        double GenerateSignal(Signal *,double acquisitionRate);
+        double* GetEFieldCoPol(LMCThreeVector elementPosition, LMCThreeVector elementPolarization);
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
@@ -62,6 +65,10 @@ namespace locust
         /// Initialize the FIR filter and the field estimator
         bool InitializeTransmitter();
         
+        /// Select dipole or turnstile
+        bool SetAntennaType( std::string antennaType );
+
+
     private:
         TFTransmitterHandler fTransmitterHandler;
         
@@ -76,6 +83,8 @@ namespace locust
         double fAntennaPositionX;
         double fAntennaPositionY;
         double fAntennaPositionZ;
+        int fAntennaType;
+
         LMCThreeVector fAntennaPosition; // Position of the antenna w.r.t to the center of the array
         
         //Apply derivative of a given signal. This will be more complicated with implmentation of other field types

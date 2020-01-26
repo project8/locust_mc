@@ -50,6 +50,7 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCTurnstileSignalGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
+    Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     
     Transforms/LMCHilbertTransform.hh
@@ -91,6 +92,7 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCTurnstileSignalGenerator.cc
 
     Transmitters/LMCFieldBuffer.cc
+    Transmitters/LMCTransmitter.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
 
     Transforms/LMCHilbertTransform.cc

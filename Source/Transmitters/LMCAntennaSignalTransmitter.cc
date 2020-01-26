@@ -29,7 +29,8 @@ namespace locust
     fAntennaPositionX( 0.0 ),
     fAntennaPositionY( 0.0 ),
     fAntennaPositionZ( 0.0 ),
-    fInputAmplitude(1)
+    fInputAmplitude(1),
+	fAntennaType(0)
     {
     }
     
@@ -78,9 +79,26 @@ namespace locust
         {
             fInputAmplitude = aParam["input-signal-amplitude"]().as_double();
         }
+
+        if( aParam.has( "transmitter-antenna-type" ) )
+        {
+            fAntennaType = SetAntennaType(aParam["transmitter-antenna-type"]().as_string());
+        }
+
+
+
         return true;
     }
     
+    bool AntennaSignalTransmitter::SetAntennaType( std::string transmitterAntennaType )
+     {
+     	if (transmitterAntennaType == "antenna-signal-dipole") fAntennaType = 0; // default
+     	else if (transmitterAntennaType == "antenna-signal-turnstile") fAntennaType = 1;
+     	else return false;
+     	return true;
+     }
+
+
     LMCThreeVector AntennaSignalTransmitter::GetAntennaPosition() const
     {
         return fAntennaPosition;
@@ -90,7 +108,7 @@ namespace locust
     {
         fAntennaPosition=antennaPosition;
     }
-    double AntennaSignalTransmitter::GenerateSignal(Signal *aSignal,double acquisitionRate)
+    double* AntennaSignalTransmitter::GetEFieldCoPol(LMCThreeVector elementPosition, LMCThreeVector elementPolarization)
     {
         double estimatedField=0.0;
         double voltagePhase=fPhaseDelay;
@@ -115,9 +133,22 @@ namespace locust
                 voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolution();
             }
         }
+        LMCThreeVector EFieldVector;
+        double* FieldSolution;
         estimatedField=fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]);
-        fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency/aSignal->DecimationFactor()/(acquisitionRate*1.e6);
-        return estimatedField;
+        double relativePatchPosX=elementPosition.GetX() - fAntennaPosition.GetX();
+        double relativePatchPosY=elementPosition.GetY() - fAntennaPosition.GetY();
+        double relativePatchPosZ=elementPosition.GetZ() - fAntennaPosition.GetZ();
+        double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
+        double field_phase=fInitialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fInputFrequency;
+        FieldSolution[0] = estimatedField*cos(field_phase);
+        FieldSolution[1] = fInputFrequency;
+
+        // plscomment:  It seems like this fPhaseDelay could be calculated without any info about the Rx config?
+//        fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency/aSignal->DecimationFactor()/(acquisitionRate*1.e6);
+//        return estimatedField;
+
+        return FieldSolution;
     }
     
     bool AntennaSignalTransmitter::InitializeTransmitter()

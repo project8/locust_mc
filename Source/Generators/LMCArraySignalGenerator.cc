@@ -57,6 +57,15 @@ namespace locust
 
     bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
     {
+
+        if( aParam.has( "transmitter-antenna-type" ) )
+        {
+        	if(!fAntennaSignalTransmitter.Configure(aParam))
+        	{
+        		LERROR(lmclog,"Error Configuring antenna signal generator class");
+        	}
+        }
+
     	if(!fTFReceiverHandler.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
@@ -265,24 +274,11 @@ namespace locust
 
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
-                fFieldSolver.SolveFieldSolutions();
+                double* tFieldSolution = fAntennaSignalTransmitter.GetEFieldCoPol(currentElement->GetPosition(), currentElement->GetPolarizationDirection());
+//                double* tFieldSolution = SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
+                if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
-                LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
-                LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
-                locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
-
-                LMCThreeVector tDirection = currentElement->GetPosition() - tCurrentParticle.GetPosition(true);
-                double tVelZ = tCurrentParticle.GetVelocity(true).Z();
-                double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
-                double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
-
-
- 		        double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
- 		        double tEFieldCrossPol = GetEFieldCrossPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
-                if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tEFieldCoPol);
-
- 	            FillBuffers(aSignal, tDopplerFrequency, tEFieldCoPol, fphiLO, index, channelIndex, elementIndex);
+ 	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
  	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
@@ -295,6 +291,30 @@ namespace locust
 
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
+
+    }
+
+
+    double* ArraySignalGenerator::SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex)
+    {
+        fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
+        fFieldSolver.SolveFieldSolutions();
+
+        LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
+        LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
+        locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
+
+        LMCThreeVector tDirection = currentElement->GetPosition() - tCurrentParticle.GetPosition(true);
+        double tVelZ = tCurrentParticle.GetVelocity(true).Z();
+        double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
+        double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
+
+	    double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
+	    double tEFieldCrossPol = GetEFieldCrossPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
+        double* tSolution = new double(2);
+        tSolution[0] = tEFieldCoPol;
+        tSolution[1] = tDopplerFrequency;
+	    return tSolution;
 
     }
 
