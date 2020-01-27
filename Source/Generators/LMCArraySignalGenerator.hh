@@ -19,6 +19,7 @@
 #include "LMCTFFileHandler.hh"
 #include "LMCAntennaSignalTransmitter.hh"
 #include "LMCPlaneWaveTransmitter.hh"
+#include "LMCKassTransmitter.hh"
 #include <vector>
 
 

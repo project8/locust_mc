@@ -84,9 +84,20 @@ namespace locust
         		fTransmitter = modelTransmitter;
         	}
 
+        	else if(aParam["transmitter"]().as_string() == "kassiopeia")
+        	{
+        		KassTransmitter* modelTransmitter = new KassTransmitter;
+        		if(!modelTransmitter->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error Configuring kassiopeia transmitter generator class");
+        		}
+
+        		fTransmitter = modelTransmitter;
+        	}
+
         	else
         	{
-        		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave in the config file.");
+        		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
                 exit(-1);
         	}
         }
@@ -305,9 +316,16 @@ namespace locust
             	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                double* tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
-//                double* tFieldSolution = SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
-//printf("efield is %g %g\n", tFieldSolution[0], tFieldSolution[1]); getchar();
+                double* tFieldSolution = new double[2];
+                if (!fTransmitter->IsKassiopeia())
+                {
+                	tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                }
+                else
+                {
+                	tFieldSolution = SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
+                }
+
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);

@@ -1,7 +1,7 @@
 /*
  * LMCPlaneWaveTransmitter.hh
  *
- *  Created on: May 4, 2019
+ *  Created on: Jan 27, 2020
  *      Author: pslocum
  */
 

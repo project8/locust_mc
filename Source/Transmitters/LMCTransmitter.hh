@@ -30,7 +30,6 @@ namespace locust
 
         public:
             Transmitter();
-            Transmitter(double testvar);
             virtual ~Transmitter();
             virtual void TxSayHello();
 
