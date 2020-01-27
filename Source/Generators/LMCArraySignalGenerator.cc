@@ -58,13 +58,44 @@ namespace locust
     bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
-        if( aParam.has( "transmitter-antenna-type" ) )
+        if( aParam.has( "transmitter" ))
         {
-        	if(!fAntennaSignalTransmitter.Configure(aParam))
+        	if(aParam["transmitter"]().as_string() == "antenna")
         	{
-        		LERROR(lmclog,"Error Configuring antenna signal generator class");
+        		AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
+        		if(!modelTransmitter->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error Configuring antenna signal generator class");
+        		}
+        		if(!modelTransmitter->InitializeTransmitter())
+        		{
+        			exit(-1);
+        		}
+        		fTransmitter = modelTransmitter;
+        	}
+        	else if(aParam["transmitter"]().as_string() == "planewave")
+        	{
+        		PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
+        		if(!modelTransmitter->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error Configuring planewave transmitter generator class");
+        		}
+
+        		fTransmitter = modelTransmitter;
+        	}
+
+        	else
+        	{
+        		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave in the config file.");
+                exit(-1);
         	}
         }
+        else
+        {
+    		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave in the config file.");
+            exit(-1);
+        }
+
 
     	if(!fTFReceiverHandler.Configure(aParam))
     	{
@@ -96,6 +127,7 @@ namespace locust
         {
             fArrayRadius = aParam["array-radius"]().as_double();
         }
+
         if( aParam.has( "nelements-per-strip" ) )
         {
             fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
@@ -271,11 +303,11 @@ namespace locust
             for(int elementIndex = 0; elementIndex < nReceivers; ++elementIndex)
             {
             	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
-
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                double* tFieldSolution = fAntennaSignalTransmitter.GetEFieldCoPol(currentElement->GetPosition(), currentElement->GetPolarizationDirection());
+                double* tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
 //                double* tFieldSolution = SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
+//printf("efield is %g %g\n", tFieldSolution[0], tFieldSolution[1]); getchar();
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
@@ -311,9 +343,10 @@ namespace locust
 
 	    double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
 	    double tEFieldCrossPol = GetEFieldCrossPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
-        double* tSolution = new double(2);
+        double* tSolution = new double[2];
         tSolution[0] = tEFieldCoPol;
         tSolution[1] = tDopplerFrequency;
+
 	    return tSolution;
 
     }
@@ -432,8 +465,6 @@ namespace locust
     bool ArraySignalGenerator::DoGenerate( Signal* aSignal )
     {
 
-        FILE *fp = fopen("incidentfields.txt", "w");
-
         if(!InitializeElementArray())
         {
         	LERROR(lmclog,"Error configuring Element array");
@@ -447,18 +478,33 @@ namespace locust
             exit(-1);
         }
 
-        //n samples for event spacing.
+        FILE *fp = fopen("incidentfields.txt", "w");
+
+
+        //n samples for event spacing in Kass.
         int PreEventCounter = 0;
         const int NPreEventSamples = 150000;
         fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-
-        std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
-        fRunInProgress = true;
 
         int nfilterbins = fTFReceiverHandler.GetFilterSize();
         double dtfilter = fTFReceiverHandler.GetFilterResolution();
         unsigned nfieldbufferbins = fFieldBufferSize;
         InitializeBuffers(nfilterbins, nfieldbufferbins);
+
+        if (!fTransmitter->IsKassiopeia())
+        {
+        	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
+        	{
+        		DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
+        	}  // for loop
+        	return true;
+        }
+
+        if (fTransmitter->IsKassiopeia())
+        {
+
+        std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
+        fRunInProgress = true;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
@@ -507,6 +553,8 @@ namespace locust
         Kassiopeia.join();
 
         return true;
+        }
+
     }
 
 } /* namespace locust */

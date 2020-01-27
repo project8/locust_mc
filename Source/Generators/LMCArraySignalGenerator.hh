@@ -18,6 +18,7 @@
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 #include "LMCAntennaSignalTransmitter.hh"
+#include "LMCPlaneWaveTransmitter.hh"
 #include <vector>
 
 
@@ -67,6 +68,7 @@ namespace locust
 
         private:
             std::vector< Channel<Receiver*> > allRxChannels; //Vector that contains pointer to all channels
+            Transmitter* fTransmitter; // transmitter object
             double fLO_Frequency;
             double fArrayRadius;
             int fNElementsPerStrip;

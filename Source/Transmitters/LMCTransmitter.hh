@@ -8,6 +8,10 @@
 #ifndef LMCTRANSMITTER_HH_
 #define LMCTRANSMITTER_HH_
 
+#include "LMCThreeVector.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCSlotAntenna.hh"
+
 
 namespace locust
 {
@@ -30,6 +34,9 @@ namespace locust
             virtual ~Transmitter();
             virtual void TxSayHello();
 
+            virtual double* GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt) {};
+
+            virtual bool IsKassiopeia() {return false;};
 
         private:
 

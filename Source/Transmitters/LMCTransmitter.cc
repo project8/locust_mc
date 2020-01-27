@@ -7,6 +7,7 @@
 
 #include "LMCTransmitter.hh"
 
+
 namespace locust
 {
     Transmitter::Transmitter() {}

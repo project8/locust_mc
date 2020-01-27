@@ -8,13 +8,15 @@
 #ifndef LMCANTENNASIGNALTRANSMITTER_HH_
 #define LMCANTENNASIGNALTRANSMITTER_HH_
 
+#include "LMCPatchAntenna.hh"
+#include "LMCSlotAntenna.hh"
 #include "LMCTransmitter.hh"
-#include "LMCSignal.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 #include "LMCConst.hh"
+
 
 namespace locust
 {
@@ -51,11 +53,15 @@ namespace locust
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
 //        double GenerateSignal(Signal *,double acquisitionRate);
-        double* GetEFieldCoPol(LMCThreeVector elementPosition, LMCThreeVector elementPolarization);
+        virtual double* GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt);
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
         
+        double GetPropagationPhaseChange(Receiver* currentElement);
+        double GetAOIFactor(Receiver* currentElement);
+
+
         /// Get the positions of the antenna w.r.t the center of the detector
         LMCThreeVector GetAntennaPosition() const;
         

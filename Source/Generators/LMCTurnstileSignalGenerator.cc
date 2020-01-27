@@ -379,11 +379,11 @@ namespace locust
             LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
             for (unsigned ch = 0; ch < nchannels; ++ch)
             {
-                for (unsigned element = 0; element < nelements; ++element)
+                for (int element = 0; element < nelements; ++element)
                 {
                     Receiver *currentElement;
                     currentElement = allRxChannels[ch][element];
-                    double* FieldSolution = fAntennaSignalTransmitter.GetEFieldCoPol(currentElement->GetPosition(), currentElement->GetPolarizationDirection());
+                    double* FieldSolution = fAntennaSignalTransmitter.GetEFieldCoPol(currentElement, element, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                     double relativePatchPosX=currentElement->GetPosition().GetX() - antennaPositionX;
                     double relativePatchPosY=currentElement->GetPosition().GetY() - antennaPositionY;
                     double relativePatchPosZ=currentElement->GetPosition().GetZ() - antennaPositionZ;
