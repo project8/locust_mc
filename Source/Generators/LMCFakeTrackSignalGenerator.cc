@@ -471,7 +471,7 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetBField(double z) //magnetic field profile (harmonic model)
     {
-        return fBField*(1. + pow(z / fTrapLength, 2.));
+        return fBField*(1. + 0.5* pow(z / fTrapLength, 2.));
     }
 
     double FakeTrackSignalGenerator::GetPitchAngleZ(double theta_i, double B_i, double B_f)
