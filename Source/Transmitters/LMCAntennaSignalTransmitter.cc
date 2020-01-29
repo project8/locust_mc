@@ -8,12 +8,6 @@
 #include "LMCAntennaSignalTransmitter.hh"
 
 #include "logger.hh"
-#include <thread>
-#include <algorithm>
-
-#include <iostream>
-#include <fstream>
-#include <math.h>       
 
 using std::string;
 
@@ -23,11 +17,11 @@ namespace locust
     
     AntennaSignalTransmitter::AntennaSignalTransmitter() :
     fInputSignalType(1),
-    fInputFrequency(25.9281e9), //Should be the samne as the value used in the dipole signal generator
+    fInputFrequency( 0.0 ),
     fAntennaPositionX( 0.0 ),
     fAntennaPositionY( 0.0 ),
     fAntennaPositionZ( 0.0 ),
-    fInputAmplitude(1),
+    fInputAmplitude(1.0),
 	fAntennaType(0)
     {
     }
@@ -48,16 +42,11 @@ namespace locust
             fInputSignalType = aParam["input-signal-type"]().as_int();
         }
         
-        if( aParam.has( "input-signal-frequency" ) )
+        if( aParam.has( "transmitter-frequency" ) )
         {
-            fInputFrequency= aParam["input-signal-frequency"]().as_double();
+            fInputFrequency= aParam["transmitter-frequency"]().as_double();
         }
-        
-        if( aParam.has( "array-radius" ) )
-        {
-            fArrayRadius = aParam["array-radius"]().as_double();
-        }
-        
+
         if( aParam.has( "antenna-x-position" ) )
         {
             fAntennaPositionX= aParam["antenna-x-position"]().as_double();
@@ -73,9 +62,9 @@ namespace locust
             fAntennaPositionZ = aParam["antenna-z-position"]().as_double();
         }
         
-        if( aParam.has( "input-signal-amplitude" ) )
+        if( aParam.has( "antenna-voltage-amplitude" ) )
         {
-            fInputAmplitude = aParam["input-signal-amplitude"]().as_double();
+            fInputAmplitude = aParam["antenna-voltage-amplitude"]().as_double();
         }
 
         if( aParam.has( "transmitter-antenna-type" ) )
@@ -132,8 +121,9 @@ namespace locust
     double* AntennaSignalTransmitter::GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt)
     {
         double estimatedField=0.0;
-        fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
+        if ( z_index == 0 ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
         double voltagePhase=fPhaseDelay + GetPropagationPhaseChange(currentElement);
+
         if(fInputSignalType==1) //sinusoidal wave for dipole antenna
         {
             for( unsigned index = 0; index <fTransmitterHandler.GetFilterSize();index++)
@@ -160,7 +150,7 @@ namespace locust
         estimatedField=fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * GetAOIFactor(currentElement);
         double* FieldSolution = new double[2];
         FieldSolution[0] = estimatedField; // field at Rx antenna.
-        FieldSolution[1] = fInputFrequency;
+        FieldSolution[1] = 2. * LMCConst::Pi() * fInputFrequency; // rad/s
 
         return FieldSolution;
     }

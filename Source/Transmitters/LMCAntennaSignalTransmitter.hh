@@ -34,8 +34,8 @@ namespace locust
      
      Available configuration options:
      - "input-signal-type": 1 -- Leaving an option open for generating different types of signals,
-     - "input-signal-frequency": 25.9281e9,
-     - "input-signal-amplitude": 1
+     - "transmitter-frequency": 0.0,
+     - "antenna-voltage-amplitude": 1
      - "antenna-x-position": double -- Location of the antenna in the x direction
      - "antenna-y-position": double -- Location of the antenna in the y direction
      - "antenna-z-position": double -- Location of the antenna in the z direction

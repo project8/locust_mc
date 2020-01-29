@@ -7,12 +7,6 @@
 
 #include "LMCPlaneWaveTransmitter.hh"
 #include "logger.hh"
-#include <thread>
-#include <algorithm>
-
-#include <iostream>
-#include <fstream>
-#include <math.h>
 
 using std::string;
 
@@ -23,7 +17,7 @@ namespace locust
 
     PlaneWaveTransmitter::PlaneWaveTransmitter():
 		fAOI( 0.),
-		fAmplitude( 1.e-5),
+		fAmplitude( 0.0 ),
 		fRF_Frequency( 0. )
     {
     }
@@ -35,18 +29,18 @@ namespace locust
     bool PlaneWaveTransmitter::Configure( const scarab::param_node& aParam )
     {
 
-		if( aParam.has( "planewave-frequency" ) )
+		if( aParam.has( "transmitter-frequency" ) )
 		{
-            fRF_Frequency= aParam["planewave-frequency"]().as_double();
+            fRF_Frequency= aParam["transmitter-frequency"]().as_double();
 		}
 		if( aParam.has( "AOI" ) )
 		{
             fAOI= aParam["AOI"]().as_double()*2.*LMCConst::Pi()/360.;
 
 		}
-		if( aParam.has( "amplitude" ) )
+		if( aParam.has( "planewave-amplitude" ) )
 		{
-            fAmplitude= aParam["amplitude"]().as_double();
+            fAmplitude= aParam["planewave-amplitude"]().as_double();
 		}
 
 
@@ -85,13 +79,16 @@ namespace locust
     	double initialPhaseDelay = GetPWPhaseDelayAtPatch(z_index, elementSpacing, nElementsPerStrip);
 		double fieldAmp = fAmplitude*GetAOIFactor(currentElement);
 
-		fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
+		initialPhaseDelay = 0.;
+		fieldAmp = fAmplitude;
+
+		if (z_index == 0) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
 
 
         double* fieldSolution = new double[2];
         fieldSolution[0] = fieldValue;
-        fieldSolution[1] = fRF_Frequency;
+        fieldSolution[1] = 2. * LMCConst::Pi() * fRF_Frequency;  // rad/s
 
         return fieldSolution;
     }

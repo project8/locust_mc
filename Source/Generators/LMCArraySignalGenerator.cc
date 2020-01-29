@@ -60,8 +60,11 @@ namespace locust
 
         if( aParam.has( "transmitter" ))
         {
+        	int ntransmitters = 0;
+
         	if(aParam["transmitter"]().as_string() == "antenna")
         	{
+        		ntransmitters += 1;
         		AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
         		if(!modelTransmitter->Configure(aParam))
         		{
@@ -73,8 +76,10 @@ namespace locust
         		}
         		fTransmitter = modelTransmitter;
         	}
-        	else if(aParam["transmitter"]().as_string() == "planewave")
+
+        	if(aParam["transmitter"]().as_string() == "planewave")
         	{
+        		ntransmitters += 1;
         		PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
         		if(!modelTransmitter->Configure(aParam))
         		{
@@ -84,8 +89,9 @@ namespace locust
         		fTransmitter = modelTransmitter;
         	}
 
-        	else if(aParam["transmitter"]().as_string() == "kassiopeia")
+        	if(aParam["transmitter"]().as_string() == "kassiopeia")
         	{
+        		ntransmitters += 1;
         		KassTransmitter* modelTransmitter = new KassTransmitter;
         		if(!modelTransmitter->Configure(aParam))
         		{
@@ -95,15 +101,15 @@ namespace locust
         		fTransmitter = modelTransmitter;
         	}
 
-        	else
+        	if (ntransmitters != 1)
         	{
-        		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
+        		LERROR(lmclog,"LMCArraySignalGenerator needs a single transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
                 exit(-1);
         	}
         }
         else
         {
-    		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave in the config file.");
+    		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
             exit(-1);
         }
 
@@ -325,6 +331,7 @@ namespace locust
                 {
                 	tFieldSolution = SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
                 }
+//                printf("tFieldSolution[0] is %g, %g\n", tFieldSolution[0], tFieldSolution[1]); getchar();
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
