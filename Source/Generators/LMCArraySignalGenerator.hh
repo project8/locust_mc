@@ -68,7 +68,7 @@ namespace locust
 
 
         private:
-            std::vector< Channel<Receiver*> > allRxChannels; //Vector that contains pointer to all channels
+            std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
             Transmitter* fTransmitter; // transmitter object
             double fLO_Frequency;
             double fArrayRadius;

@@ -331,7 +331,6 @@ namespace locust
                 {
                 	tFieldSolution = SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
                 }
-//                printf("tFieldSolution[0] is %g, %g\n", tFieldSolution[0], tFieldSolution[1]); getchar();
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
@@ -456,9 +455,6 @@ namespace locust
         const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
         const double dRotateVoltages = 0.;  // set to zero to not rotate element polarities.
 
-        Receiver* modelElement = new Receiver;
-        modelElement = fPowerCombiner.ChooseElement();
-
         allRxChannels.resize(nChannels);
 
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
@@ -474,11 +470,14 @@ namespace locust
                 	zPosition = 0.;
                 }
 
-                	modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
-                	modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
-                	modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
-                	allRxChannels[channelIndex].AddReceiver(modelElement);
-                	fFieldSolver.AddFieldPoint(modelElement->GetPosition());
+                Receiver* modelElement;
+                modelElement = fPowerCombiner.ChooseElement();  // patch or slot
+
+                modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
+                modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
+                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+                allRxChannels[channelIndex].AddReceiver(modelElement);
+                fFieldSolver.AddFieldPoint(modelElement->GetPosition());
             }
         }
 
