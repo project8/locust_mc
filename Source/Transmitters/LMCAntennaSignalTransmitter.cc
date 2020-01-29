@@ -118,10 +118,10 @@ namespace locust
     	return aoiFactor;
     }
 
-    double* AntennaSignalTransmitter::GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt)
+    double* AntennaSignalTransmitter::GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
     {
         double estimatedField=0.0;
-        if ( z_index == 0 ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
+        if ( ( zIndex == 0 ) && (channelIndex == 0) ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
         double voltagePhase=fPhaseDelay + GetPropagationPhaseChange(currentElement);
 
         if(fInputSignalType==1) //sinusoidal wave for dipole antenna

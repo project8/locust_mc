@@ -73,16 +73,16 @@ namespace locust
 
 
 
-    double* PlaneWaveTransmitter::GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt)
+    double* PlaneWaveTransmitter::GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
     {
 
-    	double initialPhaseDelay = GetPWPhaseDelayAtPatch(z_index, elementSpacing, nElementsPerStrip);
+    	double initialPhaseDelay = GetPWPhaseDelayAtPatch(zIndex, elementSpacing, nElementsPerStrip);
 		double fieldAmp = fAmplitude*GetAOIFactor(currentElement);
 
 		initialPhaseDelay = 0.;
 		fieldAmp = fAmplitude;
 
-		if (z_index == 0) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
+		if ( (zIndex == 0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
 
 

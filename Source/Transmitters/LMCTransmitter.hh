@@ -33,7 +33,7 @@ namespace locust
             virtual ~Transmitter();
             virtual void TxSayHello();
 
-            virtual double* GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt) {};
+            virtual double* GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt) {};
 
             virtual bool IsKassiopeia() {return false;};
 

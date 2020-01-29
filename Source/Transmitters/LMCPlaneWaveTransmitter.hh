@@ -39,7 +39,7 @@ namespace locust
 
         bool Configure( const scarab::param_node& aNode );
 
-        virtual double* GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt);
+        virtual double* GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt);
 
         double GetAOIFactor(Receiver* currentElement);
         double GetPWPhaseDelayAtPatch(int z_index, double elementSpacing, int nElementsPerStrip);

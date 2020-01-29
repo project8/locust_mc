@@ -53,7 +53,7 @@ namespace locust
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
 //        double GenerateSignal(Signal *,double acquisitionRate);
-        virtual double* GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt);
+        virtual double* GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt);
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
