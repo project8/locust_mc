@@ -136,6 +136,9 @@ namespace locust
                 LERROR( lmclog, "hydrogen-fraction must be between 0 and 1!");
         }
 
+        if( aParam.has( "trap-length" ) )
+            SetTrapLength( aParam.get_value< double >( "trap-length", fTrapLength ) );
+
         if( aParam.has( "root-filename" ) )
         {
             fRoot_filename = aParam["root-filename"]().as_string();
@@ -376,6 +379,16 @@ namespace locust
     void FakeTrackSignalGenerator::SetHydrogenFraction( double aHydrogenFraction )
     {
         fHydrogenFraction = aHydrogenFraction;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetTrapLength() const
+    {
+        return fTrapLength;
+    }
+    void FakeTrackSignalGenerator::SetTrapLength( double aTrapLength )
+    {
+        fTrapLength = aTrapLength;
         return;
     }
 

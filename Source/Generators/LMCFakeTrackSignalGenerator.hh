@@ -116,6 +116,9 @@ namespace locust
             double GetHydrogenFraction() const;
             void SetHydrogenFraction( double aHydrogenFraction );
 
+            double GetTrapLength() const;
+            void SetTrapLength( double aTrapLength );
+
             int GetRandomSeed() const;
             void SetRandomSeed(  int aRandomSeed );
 
@@ -191,7 +194,7 @@ namespace locust
             std::default_random_engine fRandomEngine;
             boost::math::barycentric_rational<double> fH2Interpolant;
             boost::math::barycentric_rational<double> fKrInterpolant;
-            const double fTrapLength;
+            double fTrapLength;
 
 
     };
