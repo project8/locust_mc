@@ -470,13 +470,13 @@ namespace locust
                 	zPosition = 0.;
                 }
 
-                Receiver* modelElement;
-                modelElement = fPowerCombiner.ChooseElement();  // patch or slot
+                Receiver* modelElement = fPowerCombiner.ChooseElement();  // patch or slot selection
 
                 modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
                 modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
                 modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
                 allRxChannels[channelIndex].AddReceiver(modelElement);
+
                 fFieldSolver.AddFieldPoint(modelElement->GetPosition());
             }
         }

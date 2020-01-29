@@ -79,9 +79,6 @@ namespace locust
     	double initialPhaseDelay = GetPWPhaseDelayAtPatch(zIndex, elementSpacing, nElementsPerStrip);
 		double fieldAmp = fAmplitude*GetAOIFactor(currentElement);
 
-		initialPhaseDelay = 0.;
-		fieldAmp = fAmplitude;
-
 		if ( (zIndex == 0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
 
