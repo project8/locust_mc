@@ -45,6 +45,7 @@ namespace locust
         fRandomSeed(0),
         fNEvents(1),
         fPitchCorrection( true ),
+        fPitchScatterReduction( 1. ),
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
@@ -123,6 +124,9 @@ namespace locust
 
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
+
+        if( aParam.has( "pitch-scatter-reduction" ) )
+            SetPitchScatterReduction( aParam.get_value< double >( "pitch-scatter-reduction", fPitchScatterReduction ) );
 
         if (aParam.has( "hydrogen-fraction") )
         {
@@ -399,6 +403,17 @@ namespace locust
         return;
     }
 
+    double FakeTrackSignalGenerator::GetPitchScatterReduction( ) const
+    {
+        return fPitchScatterReduction;
+    }
+
+    void FakeTrackSignalGenerator::SetPitchScatterReduction( double aPitchScatterReduction )
+    {
+        fPitchScatterReduction = aPitchScatterReduction;
+        return;
+    }
+
 
     Signal::State FakeTrackSignalGenerator::GetDomain() const
     {
@@ -651,7 +666,7 @@ namespace locust
                 zScatter = fTrapLength / tan(fPitch) * sin( GetAxialFrequency() * fStartTime);
 
             double thetaTop = GetPitchAngleZ(fPitch, fBField, GetBField(zScatter));
-            double newThetaTop = GetScatteredPitchAngle( theta_scatter, thetaTop, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
+            double newThetaTop = GetScatteredPitchAngle( theta_scatter * fPitchScatterReduction, thetaTop, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
             fPitch = GetPitchAngleZ(newThetaTop, GetBField(zScatter), fBField);
 
             new_energy = current_energy - energy_loss; // new energy after loss, in eV

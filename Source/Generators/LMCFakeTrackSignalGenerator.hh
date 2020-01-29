@@ -125,6 +125,9 @@ namespace locust
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
 
+            double GetPitchScatterReduction( ) const;
+            void SetPitchScatterReduction(  double aPitchScatterReduction );
+
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -182,6 +185,7 @@ namespace locust
             int fRandomSeed;
             int fNEvents;
             bool fPitchCorrection;
+            double fPitchScatterReduction;
             double fHydrogenFraction;
             std::string fRoot_filename;
             std::default_random_engine fRandomEngine;
