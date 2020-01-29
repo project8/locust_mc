@@ -94,12 +94,23 @@ namespace locust
         fAntennaPosition=antennaPosition;
     }
 
+
+    double AntennaSignalTransmitter::GetPropagationDistance(Receiver* currentElement)
+    {
+        double relativePatchPosX=currentElement->GetPosition().GetX() - fAntennaPosition.GetX();
+        double relativePatchPosY=currentElement->GetPosition().GetY() - fAntennaPosition.GetY();
+        double relativePatchPosZ=currentElement->GetPosition().GetZ() - fAntennaPosition.GetZ();
+        double propagationDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
+        return propagationDistance;
+    }
+
+
     double AntennaSignalTransmitter::GetPropagationPhaseChange(Receiver* currentElement)
     {
         double relativePatchPosX=currentElement->GetPosition().GetX() - fAntennaPosition.GetX();
         double relativePatchPosY=currentElement->GetPosition().GetY() - fAntennaPosition.GetY();
         double relativePatchPosZ=currentElement->GetPosition().GetZ() - fAntennaPosition.GetZ();
-        double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
+        double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*GetPropagationDistance(currentElement);
     	return phaseChange;
     }
 
@@ -149,7 +160,7 @@ namespace locust
 
         estimatedField=fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * GetAOIFactor(currentElement);
         double* FieldSolution = new double[2];
-        FieldSolution[0] = estimatedField; // field at Rx antenna.
+        FieldSolution[0] = estimatedField / GetPropagationDistance(currentElement); // field at Rx antenna.
         FieldSolution[1] = 2. * LMCConst::Pi() * fInputFrequency; // rad/s
 
         return FieldSolution;

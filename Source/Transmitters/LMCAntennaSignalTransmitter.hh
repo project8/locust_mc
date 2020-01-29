@@ -59,6 +59,7 @@ namespace locust
         double GetInitialPhaseDelay();
         
         double GetPropagationPhaseChange(Receiver* currentElement);
+        double GetPropagationDistance(Receiver* currentElement);
         double GetAOIFactor(Receiver* currentElement);
 
 
