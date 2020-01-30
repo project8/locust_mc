@@ -60,7 +60,7 @@ namespace locust
     double PlaneWaveTransmitter::GetPWPhaseDelayAtPatch(int z_index, double elementSpacing, int nElementsPerStrip)
     {
 
-    	double stripLength = nElementsPerStrip*elementSpacing;
+    	double stripLength = (nElementsPerStrip-1)*elementSpacing;
     	double distanceFromCenter = stripLength/2. - z_index*elementSpacing;
 
     	double phasedelay = 2*LMCConst::Pi()*distanceFromCenter*sin(fAOI)*fRF_Frequency/LMCConst::C();
@@ -78,7 +78,6 @@ namespace locust
 
 		if ( (zIndex == 0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
-
 
         double* fieldSolution = new double[2];
         fieldSolution[0] = fieldValue;
