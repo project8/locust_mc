@@ -45,6 +45,8 @@ namespace locust
         fRandomSeed(0),
         fNEvents(1),
         fPitchCorrection( true ),
+        fShiftStartPitchToTrapCenter( false ),
+        fStartZmax( 0. ),
         fPitchScatterReduction( 1. ),
         fRandomEngine(0),
         fHydrogenFraction(1),
@@ -124,6 +126,12 @@ namespace locust
 
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
+
+        if (aParam.has( "shift_start_pitch") )
+            SetShiftStartPitchToTrapCenter(  aParam.get_value< bool >( "shift_start_pitch", fShiftStartPitchToTrapCenter) );
+
+        if (aParam.has( "start_z_max") )
+            SetStartZmax(  aParam.get_value< double >( "start_z_max", fStartZmax) );
 
         if( aParam.has( "pitch-scatter-reduction" ) )
             SetPitchScatterReduction( aParam.get_value< double >( "pitch-scatter-reduction", fPitchScatterReduction ) );
@@ -416,6 +424,28 @@ namespace locust
         return;
     }
 
+    bool FakeTrackSignalGenerator::GetShiftStartPitchToTrapCenter() const
+    {
+        return fShiftStartPitchToTrapCenter;
+    }
+
+    void FakeTrackSignalGenerator::SetShiftStartPitchToTrapCenter( bool aShiftStartPitch )
+    {
+        fShiftStartPitchToTrapCenter = aShiftStartPitch;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetStartZmax( ) const
+    {
+        return fStartZmax;
+    }
+
+    void FakeTrackSignalGenerator::SetStartZmax( double aZmax )
+    {
+        fStartZmax = aZmax;
+        return;
+    }
+
     double FakeTrackSignalGenerator::GetPitchScatterReduction( ) const
     {
         return fPitchScatterReduction;
@@ -660,7 +690,19 @@ namespace locust
                 fStartTime = aTimeOffset;
             }
             fStartFrequency = startfreq_distribution(fRandomEngine);
-            fPitch = acos(startpitch_distribution(fRandomEngine));
+
+            if(fShiftStartPitchToTrapCenter)
+            {
+                std::uniform_real_distribution<double> start_z_distribution(0,fStartZmax);
+                double theta_top = acos(startpitch_distribution(fRandomEngine));
+                double z_start = start_z_distribution(fRandomEngine);
+                fPitch = GetPitchAngleZ(theta_top, GetBField(z_start), fBField);
+            }
+            else
+            {
+                fPitch = acos(startpitch_distribution(fRandomEngine));
+            }
+
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
         }

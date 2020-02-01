@@ -128,6 +128,12 @@ namespace locust
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
 
+            bool GetShiftStartPitchToTrapCenter( ) const;
+            void SetShiftStartPitchToTrapCenter(  bool aShiftStartPitch );
+
+            double GetStartZmax( ) const;
+            void SetStartZmax(  double aZmax );
+
             double GetPitchScatterReduction( ) const;
             void SetPitchScatterReduction(  double aPitchScatterReduction );
 
@@ -188,6 +194,8 @@ namespace locust
             int fRandomSeed;
             int fNEvents;
             bool fPitchCorrection;
+            bool fShiftStartPitchToTrapCenter;
+            double fStartZmax;
             double fPitchScatterReduction;
             double fHydrogenFraction;
             std::string fRoot_filename;
