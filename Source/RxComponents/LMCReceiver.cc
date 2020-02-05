@@ -55,7 +55,7 @@ namespace locust
      	getchar();
      }
 
-    double Receiver::GetPatternFactor(LMCThreeVector &incidentVector)
+    double Receiver::GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement)
     {
     	return 1.0;
     }

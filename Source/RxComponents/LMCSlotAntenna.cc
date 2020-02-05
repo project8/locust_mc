@@ -25,7 +25,7 @@ namespace locust
       	getchar();
     }
 
-    double SlotAntenna::GetPatternFactor(LMCThreeVector &incidentVector)
+    double SlotAntenna::GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement)
     {
     	return 1.0;
     }
