@@ -45,12 +45,13 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCHighPassFilterFFTGenerator.hh
     Generators/LMCLocalOscillatorGenerator.hh
     Generators/LMCButterworthLPFGenerator.hh
-    Generators/LMCDipoleSignalGenerator.cc
-    Generators/LMCPlaneWaveSignalGenerator.hh
     Generators/LMCTurnstileSignalGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
+    Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
+    Transmitters/LMCPlaneWaveTransmitter.hh
+    Transmitters/LMCKassTransmitter.hh
     
     Transforms/LMCHilbertTransform.hh
     Transforms/LMCComplexFFT.hh    
@@ -86,12 +87,13 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCHighPassFilterFFTGenerator.cc
     Generators/LMCLocalOscillatorGenerator.cc
     Generators/LMCButterworthLPFGenerator.cc
-    Generators/LMCDipoleSignalGenerator.cc
-    Generators/LMCPlaneWaveSignalGenerator.cc
     Generators/LMCTurnstileSignalGenerator.cc
 
     Transmitters/LMCFieldBuffer.cc
+    Transmitters/LMCTransmitter.cc
     Transmitters/LMCAntennaSignalTransmitter.cc
+    Transmitters/LMCPlaneWaveTransmitter.cc
+    Transmitters/LMCKassTransmitter.cc
 
     Transforms/LMCHilbertTransform.cc
     Transforms/LMCComplexFFT.cc    

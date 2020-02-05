@@ -17,6 +17,9 @@
 #include "LMCLienardWiechert.hh"
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
+#include "LMCAntennaSignalTransmitter.hh"
+#include "LMCPlaneWaveTransmitter.hh"
+#include "LMCKassTransmitter.hh"
 #include <vector>
 
 
@@ -65,7 +68,8 @@ namespace locust
 
 
         private:
-            std::vector< Channel<Receiver*> > allRxChannels; //Vector that contains pointer to all channels
+            std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
+            Transmitter* fTransmitter; // transmitter object
             double fLO_Frequency;
             double fArrayRadius;
             int fNElementsPerStrip;
@@ -79,6 +83,9 @@ namespace locust
 
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
+
+            double* SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex);
+
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
@@ -104,6 +111,7 @@ namespace locust
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
             LienardWiechert fFieldSolver;
+            AntennaSignalTransmitter fAntennaSignalTransmitter;
 
     };
 
