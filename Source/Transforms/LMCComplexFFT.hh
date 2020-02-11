@@ -52,6 +52,7 @@ namespace locust
         bool RawReverseFFT(int, fftw_complex*, fftw_complex*);
 	double GetTimeResolution();
 	double GetFreqResolution();
+	int GetShiftNBins();
         
     private:
 	// Member variables
