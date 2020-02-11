@@ -33,10 +33,10 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCSimulationController.hh
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
-    Core/LMCHFSSResponseFileHandler.hh
-    Core/LMCFIRFileHandler.hh
-    Core/LMCTFFileHandler.hh
-    
+	Core/LMCHFSSResponseFileHandler.hh
+	Core/LMCFIRFileHandler.hh
+	Core/LMCTFFileHandler.hh	
+	    
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
     Generators/LMCTestSignalGenerator.hh
@@ -45,10 +45,9 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCHighPassFilterFFTGenerator.hh
     Generators/LMCLocalOscillatorGenerator.hh
     Generators/LMCButterworthLPFGenerator.hh
-    Generators/LMCTurnstileSignalGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
-    Transmitters/LMCTransmitter.hh
+   	Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
     
@@ -74,10 +73,10 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCSimulationController.cc
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
-    Core/LMCHFSSResponseFileHandler.cc
+	Core/LMCHFSSResponseFileHandler.cc
     Core/LMCFIRFileHandler.cc
     Core/LMCTFFileHandler.cc
-
+    	
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
     Generators/LMCTestSignalGenerator.cc
@@ -86,14 +85,13 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCHighPassFilterFFTGenerator.cc
     Generators/LMCLocalOscillatorGenerator.cc
     Generators/LMCButterworthLPFGenerator.cc
-    Generators/LMCTurnstileSignalGenerator.cc
+    
 
-    Transmitters/LMCFieldBuffer.cc
-    Transmitters/LMCTransmitter.cc
-    Transmitters/LMCAntennaSignalTransmitter.cc
+	Transmitters/LMCTransmitter.cc
+   	Transmitters/LMCAntennaSignalTransmitter.cc
     Transmitters/LMCPlaneWaveTransmitter.cc
-    Transmitters/LMCKassTransmitter.cc
-
+   	Transmitters/LMCFieldBuffer.cc
+    
     Transforms/LMCHilbertTransform.cc
     Transforms/LMCComplexFFT.cc    
     
@@ -109,8 +107,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
 
         Generators/LMCFreeFieldSignalGenerator.hh
-        Generators/LMCArraySignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
+	    Generators/LMCTurnstileSignalGenerator.hh
+	    Generators/LMCArraySignalGenerator.hh
+
 
         Transmitters/LMCKassTransmitter.hh
 
@@ -132,8 +132,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
-        Generators/LMCArraySignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
+	    Generators/LMCTurnstileSignalGenerator.cc
+	    Generators/LMCArraySignalGenerator.cc        
         
         Transmitters/LMCKassTransmitter.cc
         
