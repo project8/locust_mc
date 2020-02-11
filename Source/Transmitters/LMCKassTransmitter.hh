@@ -13,6 +13,7 @@
 #include "param.hh"
 #include "LMCThreeVector.hh"
 #include "LMCLienardWiechert.hh"
+#include "LMCGlobalsDeclaration.hh"
 
 
 namespace locust
@@ -43,12 +44,17 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
-        virtual double* GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt);
-
+    	double* SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex);
+        double GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi);
+        double GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi);
+        double GetAOIFactor(LMCThreeVector IncidentKVector, double ElementPhi);
+        void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
 
 
 
     private:
+
+    	LienardWiechert fFieldSolver;
 
 
     };

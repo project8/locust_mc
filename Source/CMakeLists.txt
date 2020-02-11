@@ -51,7 +51,6 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
-    Transmitters/LMCKassTransmitter.hh
     
     Transforms/LMCHilbertTransform.hh
     Transforms/LMCComplexFFT.hh    
@@ -113,6 +112,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCArraySignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
 
+        Transmitters/LMCKassTransmitter.hh
 
         Core/LMCGlobalsDeclaration.hh
         Core/LMCGlobalsDefinition.hh
@@ -134,7 +134,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCArraySignalGenerator.cc        
         Generators/LMCKassSignalGenerator.cc
-
+        
+        Transmitters/LMCKassTransmitter.cc
+        
         Core/LMCHFSSReader.cc
         Core/LMCParticle.cc
         Core/LMCLienardWiechert.cc
