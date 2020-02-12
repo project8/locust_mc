@@ -50,10 +50,9 @@ namespace locust
 
     double PlaneWaveTransmitter::GetAOIFactor(Receiver* currentElement)
     {
-    	LMCThreeVector IncidentKVector;
-    	IncidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
-    	double AOIFactor = fabs(IncidentKVector.Dot(currentElement->GetNormalDirection()));
-    	return AOIFactor;
+    	LMCThreeVector incidentKVector;
+    	incidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
+    	return currentElement->GetPatternFactor(incidentKVector, *currentElement);
     }
 
 

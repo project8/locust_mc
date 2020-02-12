@@ -25,9 +25,26 @@ namespace locust
       	getchar();
     }
 
-    double SlotAntenna::GetPatternFactor(LMCThreeVector &incidentVector)
+    double SlotAntenna::GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement)
     {
-    	return 1.0;
+    	// This is the dipole aoi factor only.  It is not the dot product with the co-pol direction.
+
+    	double incidentNormal = (-1.0) * incidentKVector.Dot(currentElement.GetNormalDirection());
+    	double incidentCoPol = currentElement.GetPolarizationDirection().Dot(incidentKVector);
+    	double incidentCrossPol = currentElement.GetCrossPolarizationDirection().Dot(incidentKVector);
+    	double tTheta = LMCConst::Pi()/2.;
+    	if (fabs(incidentCoPol)>0.) tTheta = atan(incidentNormal/incidentCoPol);
+
+    	// dipole theta dependence, normalized to 1.0 for normal incidence
+    	double dipoleThetaFactor = (-1.0) * (3.*cos(tTheta)*cos(tTheta)-1.);
+
+    	double tPhi = 0.;
+    	if (fabs(incidentNormal)>0.) tPhi = atan(incidentCrossPol/incidentNormal);
+
+    	// dipole donut pinch from HFSS, normalized to 1.0 for normal incidence.
+    	double dipolePhiPinchFactor = pow(cos(tPhi),2.1);
+
+    	return dipoleThetaFactor * dipolePhiPinchFactor;
     }
 
 

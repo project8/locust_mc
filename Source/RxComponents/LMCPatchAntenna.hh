@@ -39,7 +39,7 @@ namespace locust
             void SetIncidentMagneticField(const LMCThreeVector &incomingMagneticField);
             void SetInstantaneousFrequency(const double &dopplerFrequency);
             virtual void RxSayHello();
-            virtual double GetPatternFactor(LMCThreeVector &incidentVector);
+            virtual double GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement);
 
         private:
             double GetAntennaFactor();

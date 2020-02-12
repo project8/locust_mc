@@ -220,16 +220,6 @@ namespace locust
     }
 
 
-    double ArraySignalGenerator::GetAOIFactor(LMCThreeVector IncidentKVector, double ElementPhi)
-    {
-        LMCThreeVector ElementNormalVector;
-        ElementNormalVector.SetComponents(cos(ElementPhi), sin(ElementPhi), 0.0);
-        double AOIFactor = fabs(IncidentKVector.Unit().Dot(ElementNormalVector));
-        //printf("cos aoi is %f\n", AOIFactor);
-        return AOIFactor;
-    }
-
-
     // fields incident on element.
     void ArraySignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int elementIndex, double zelement, double tEFieldCoPol)
     {
@@ -273,29 +263,6 @@ namespace locust
 
     }
 
-
-
-    // EField cross pol with aoi dot product, at element.
-    double ArraySignalGenerator::GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi, double DopplerFrequency)
-    {
-//    	currentElement->RxSayHello();
-        double AOIFactor = GetAOIFactor(IncidentKVector, ElementPhi);  // k dot elementnormal
-        LMCThreeVector ElementPolarizationVector = currentElement->GetPolarizationDirection();
-        double EFieldCoPol = IncidentElectricField.Dot(ElementPolarizationVector) * AOIFactor;
-
-        return EFieldCoPol;
-    }
-
-
-    double ArraySignalGenerator::GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi, double DopplerFrequency)
-    {
-        double AOIFactor = GetAOIFactor(IncidentKVector, ElementPhi);  // k dot elementnormal
-        LMCThreeVector ElementCrossPolarizationVector;
-        ElementCrossPolarizationVector.SetComponents(0.0, 0.0, 1.0);  // axial direction.
-        double EFieldCrossPol = IncidentElectricField.Dot(ElementCrossPolarizationVector) * AOIFactor;
-
-        return EFieldCrossPol;
-    }
 
 
 
@@ -365,8 +332,8 @@ namespace locust
         double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
         double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
-	    double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
-	    double tEFieldCrossPol = GetEFieldCrossPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi, tDopplerFrequency);
+	    double tEFieldCoPol = tRadiatedElectricField.Dot(currentElement->GetPolarizationDirection())*currentElement->GetPatternFactor(tRadiatedElectricField.Cross(tRadiatedMagneticField), *currentElement);
+
         double* tSolution = new double[2];
         tSolution[0] = tEFieldCoPol;
         tSolution[1] = tDopplerFrequency;
@@ -473,8 +440,9 @@ namespace locust
                 Receiver* modelElement = fPowerCombiner.ChooseElement();  // patch or slot selection
 
                 modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
-                modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
-                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+                modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
+                modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
+                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
                 allRxChannels[channelIndex].AddReceiver(modelElement);
 
                 fFieldSolver.AddFieldPoint(modelElement->GetPosition());

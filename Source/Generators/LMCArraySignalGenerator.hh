@@ -83,10 +83,9 @@ namespace locust
 
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
+
             double* SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex);
-            double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi);
-            double GetEFieldCoPol(Receiver* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
-            double GetEFieldCrossPol(Receiver* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
+
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
