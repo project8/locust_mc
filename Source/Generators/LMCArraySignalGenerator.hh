@@ -82,7 +82,7 @@ namespace locust
 
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
-            double GetEFieldCoPol();
+
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);

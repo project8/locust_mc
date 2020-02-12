@@ -79,9 +79,11 @@ namespace locust
      	getchar();
      }
 
-    double PatchAntenna::GetPatternFactor(LMCThreeVector &incidentVector)
+    double PatchAntenna::GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement)
     {
-    	return 1.0;
+    	// This is the aoi factor only.  It is not the dot product with the co-pol direction.
+    	double aoiFactor = (-1.0) * currentElement.GetNormalDirection().Dot(incidentKVector.Unit());
+    	return aoiFactor;
     }
 
 

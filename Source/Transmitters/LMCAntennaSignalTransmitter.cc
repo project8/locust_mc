@@ -116,17 +116,15 @@ namespace locust
 
     double AntennaSignalTransmitter::GetAOIFactor(Receiver* currentElement)
     {
-        double relativePatchPosX=currentElement->GetPosition().GetX() - fAntennaPosition.GetX();
+
+    	LMCThreeVector incidentKVector;
+
+    	double relativePatchPosX=currentElement->GetPosition().GetX() - fAntennaPosition.GetX();
         double relativePatchPosY=currentElement->GetPosition().GetY() - fAntennaPosition.GetY();
         double relativePatchPosZ=currentElement->GetPosition().GetZ() - fAntennaPosition.GetZ();
-        double elementAntennaDistance = (currentElement->GetPosition() - fAntennaPosition).Magnitude();
+     	incidentKVector.SetComponents(relativePatchPosX, relativePatchPosY, relativePatchPosZ);
 
-        double aoiFactor = (relativePatchPosX*currentElement->GetNormalDirection().GetX() +
-        		relativePatchPosY*currentElement->GetNormalDirection().GetY() +
-				relativePatchPosZ*currentElement->GetNormalDirection().GetZ()) /
-						elementAntennaDistance;
-
-    	return aoiFactor;
+    	return currentElement->GetPatternFactor(incidentKVector, *currentElement);
     }
 
     double* AntennaSignalTransmitter::GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)

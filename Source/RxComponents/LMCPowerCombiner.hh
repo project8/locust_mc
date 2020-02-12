@@ -32,6 +32,7 @@ namespace locust
         else if (feed == "voltage-divider") fpowerCombiner = 5;
         else if (feed == "s-matrix") fpowerCombiner = 6;
         else if (feed == "single-patch") fpowerCombiner = 7;
+        else if (feed == "slotted-waveguide") fpowerCombiner = 8;
         else fpowerCombiner = 0;  // default
 
  */

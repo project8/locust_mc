@@ -219,7 +219,6 @@ namespace locust
     }
 
 
-
     // fields incident on element.
     void ArraySignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int elementIndex, double zelement, double tEFieldCoPol)
     {
@@ -416,8 +415,9 @@ namespace locust
                 Receiver* modelElement = fPowerCombiner.ChooseElement();  // patch or slot selection
 
                 modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
-                modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.});
-                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
+                modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
+                modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
+                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
                 allRxChannels[channelIndex].AddReceiver(modelElement);
 
             }
