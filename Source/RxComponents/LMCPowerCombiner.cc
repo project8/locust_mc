@@ -233,7 +233,7 @@ namespace locust
 	    	// This is conceptually similar to the voltage divider in that energy
 	    	// conservation is enforced, but is different in that the taper is uniform.
 
-	    	fdampingFactors[z_index] = 1.0 / sqrt(fnSlots);
+	    	fdampingFactors[z_index] = sqrt(50./435.);
 		}
 
 		return true;

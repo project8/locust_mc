@@ -42,7 +42,7 @@ namespace locust
     	if (fabs(incidentNormal)>0.) tPhi = atan(incidentCrossPol/incidentNormal);
 
     	// dipole donut pinch from HFSS, normalized to 1.0 for normal incidence.
-    	double dipolePhiPinchFactor = pow(cos(tPhi),2.1);
+    	double dipolePhiPinchFactor = cos(tPhi);
 
     	return dipoleThetaFactor * dipolePhiPinchFactor;
     }
