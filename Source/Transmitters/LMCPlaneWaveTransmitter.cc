@@ -48,14 +48,6 @@ namespace locust
     }
 
 
-    double PlaneWaveTransmitter::GetAOIFactor(Receiver* currentElement)
-    {
-    	LMCThreeVector incidentKVector;
-    	incidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
-    	return currentElement->GetPatternFactor(incidentKVector, *currentElement);
-    }
-
-
     double PlaneWaveTransmitter::GetPWPhaseDelayAtPatch(int z_index, double elementSpacing, int nElementsPerStrip)
     {
 
@@ -68,15 +60,27 @@ namespace locust
     }
 
 
+    void PlaneWaveTransmitter::SetIncidentKVector(LMCThreeVector pointOfInterest)
+    {
+    	fIncidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
+    }
 
-    double* PlaneWaveTransmitter::GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
+
+    LMCThreeVector PlaneWaveTransmitter::GetIncidentKVector()
+    {
+    	return fIncidentKVector;
+    }
+
+
+    double* PlaneWaveTransmitter::GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
     {
 
     	double initialPhaseDelay = GetPWPhaseDelayAtPatch(zIndex, elementSpacing, nElementsPerStrip);
-		double fieldAmp = fAmplitude*GetAOIFactor(currentElement);
+		double fieldAmp = fAmplitude;
 
 		if ( (zIndex == 0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
+		SetIncidentKVector(pointOfInterest);
 
         double* fieldSolution = new double[2];
         fieldSolution[0] = fieldValue;

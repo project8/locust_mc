@@ -35,17 +35,19 @@ namespace locust
             virtual void TxSayHello();
 
 
-            virtual double* GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt) {};
+            virtual double* GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt) {};
+            virtual LMCThreeVector GetIncidentKVector() {};
 
             virtual double* SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex) {};
-            virtual double GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi) {};
-            virtual double GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi) {};
+//            virtual double GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi) {};
+//            virtual double GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi) {};
             virtual void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels) {};
 
 
             virtual bool IsKassiopeia() {return false;};
 
         private:
+
 
 
 };

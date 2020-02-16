@@ -41,34 +41,17 @@ namespace locust
 
 
 
-    double KassTransmitter::GetAOIFactor(LMCThreeVector IncidentKVector, double ElementPhi)
-    {
-        LMCThreeVector ElementNormalVector;
-        ElementNormalVector.SetComponents(cos(ElementPhi), sin(ElementPhi), 0.0);
-        double AOIFactor = fabs(IncidentKVector.Unit().Dot(ElementNormalVector));
-        //printf("cos aoi is %f\n", AOIFactor);
-        return AOIFactor;
-    }
-
-
     // EField cross pol with aoi dot product, at element.
-    double KassTransmitter::GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi)
+    double KassTransmitter::GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField)
     {
-        double AOIFactor = GetAOIFactor(IncidentKVector, ElementPhi);  // k dot elementnormal
-        LMCThreeVector ElementPolarizationVector = currentElement->GetPolarizationDirection();
-        double EFieldCoPol = IncidentElectricField.Dot(ElementPolarizationVector) * AOIFactor;
-
+        double EFieldCoPol = IncidentElectricField.Dot(currentElement->GetPolarizationDirection());
         return EFieldCoPol;
     }
 
 
-    double KassTransmitter::GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi)
+    double KassTransmitter::GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField)
     {
-        double AOIFactor = GetAOIFactor(IncidentKVector, ElementPhi);  // k dot elementnormal
-        LMCThreeVector ElementCrossPolarizationVector;
-        ElementCrossPolarizationVector.SetComponents(0.0, 0.0, 1.0);  // axial direction.
-        double EFieldCrossPol = IncidentElectricField.Dot(ElementCrossPolarizationVector) * AOIFactor;
-
+        double EFieldCrossPol = IncidentElectricField.Dot(currentElement->GetCrossPolarizationDirection());
         return EFieldCrossPol;
     }
 
@@ -89,6 +72,20 @@ namespace locust
 
     }
 
+    LMCThreeVector KassTransmitter::GetIncidentKVector()
+    {
+    	return fIncidentKVector;
+    }
+
+
+    void KassTransmitter::SetIncidentKVector(LMCThreeVector incidentKVector)
+    {
+    	fIncidentKVector.SetX(incidentKVector.GetX());
+    	fIncidentKVector.SetY(incidentKVector.GetY());
+    	fIncidentKVector.SetZ(incidentKVector.GetZ());
+    }
+
+
 
 	double* KassTransmitter::SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex)
     {
@@ -105,8 +102,8 @@ namespace locust
 	    double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
 	    double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
-	    double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi);
-	    double tEFieldCrossPol = GetEFieldCrossPol(currentElement, tRadiatedElectricField, tRadiatedElectricField.Cross(tRadiatedMagneticField), ElementPhi);
+	    double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField);
+	    SetIncidentKVector(tRadiatedElectricField.Cross(tRadiatedMagneticField));
 
         double* tSolution = new double[2];
         tSolution[0] = tEFieldCoPol;

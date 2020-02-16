@@ -45,16 +45,19 @@ namespace locust
         virtual bool IsKassiopeia();
 
     	double* SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex);
-        double GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi);
-        double GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double ElementPhi);
-        double GetAOIFactor(LMCThreeVector IncidentKVector, double ElementPhi);
+        double GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField);
+        double GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField);
         void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
+        virtual LMCThreeVector GetIncidentKVector();
 
 
 
     private:
 
+        void SetIncidentKVector(LMCThreeVector incidentKVector);
+
     	LienardWiechert fFieldSolver;
+        LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
 
 
     };

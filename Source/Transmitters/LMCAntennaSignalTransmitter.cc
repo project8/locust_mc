@@ -95,43 +95,48 @@ namespace locust
     }
 
 
-    double AntennaSignalTransmitter::GetPropagationDistance(Receiver* currentElement)
+    double AntennaSignalTransmitter::GetPropagationDistance(LMCThreeVector pointOfInterest)
     {
-        double relativePatchPosX=currentElement->GetPosition().GetX() - fAntennaPosition.GetX();
-        double relativePatchPosY=currentElement->GetPosition().GetY() - fAntennaPosition.GetY();
-        double relativePatchPosZ=currentElement->GetPosition().GetZ() - fAntennaPosition.GetZ();
+        double relativePatchPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
+        double relativePatchPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
+        double relativePatchPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
         double propagationDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
         return propagationDistance;
     }
 
 
-    double AntennaSignalTransmitter::GetPropagationPhaseChange(Receiver* currentElement)
+    double AntennaSignalTransmitter::GetPropagationPhaseChange(LMCThreeVector pointOfInterest)
     {
-        double relativePatchPosX=currentElement->GetPosition().GetX() - fAntennaPosition.GetX();
-        double relativePatchPosY=currentElement->GetPosition().GetY() - fAntennaPosition.GetY();
-        double relativePatchPosZ=currentElement->GetPosition().GetZ() - fAntennaPosition.GetZ();
-        double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*GetPropagationDistance(currentElement);
+        double relativePatchPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
+        double relativePatchPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
+        double relativePatchPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
+        double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*GetPropagationDistance(pointOfInterest);
     	return phaseChange;
     }
 
-    double AntennaSignalTransmitter::GetAOIFactor(Receiver* currentElement)
+
+    void AntennaSignalTransmitter::SetIncidentKVector(LMCThreeVector pointOfInterest)
     {
 
     	LMCThreeVector incidentKVector;
 
-    	double relativePatchPosX=currentElement->GetPosition().GetX() - fAntennaPosition.GetX();
-        double relativePatchPosY=currentElement->GetPosition().GetY() - fAntennaPosition.GetY();
-        double relativePatchPosZ=currentElement->GetPosition().GetZ() - fAntennaPosition.GetZ();
-     	incidentKVector.SetComponents(relativePatchPosX, relativePatchPosY, relativePatchPosZ);
+    	double relativeElementPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
+        double relativeElementPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
+        double relativeElementPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
+     	fIncidentKVector.SetComponents(relativeElementPosX, relativeElementPosY, relativeElementPosZ);
 
-    	return currentElement->GetPatternFactor(incidentKVector, *currentElement);
     }
 
-    double* AntennaSignalTransmitter::GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
+    LMCThreeVector AntennaSignalTransmitter::GetIncidentKVector()
+    {
+    	return fIncidentKVector;
+    }
+
+    double* AntennaSignalTransmitter::GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
     {
         double estimatedField=0.0;
         if ( ( zIndex == 0 ) && (channelIndex == 0) ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
-        double voltagePhase=fPhaseDelay + GetPropagationPhaseChange(currentElement);
+        double voltagePhase=fPhaseDelay + GetPropagationPhaseChange(pointOfInterest);
 
         if(fInputSignalType==1) //sinusoidal wave for dipole antenna
         {
@@ -156,9 +161,10 @@ namespace locust
             }
         }
 
-        estimatedField=fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * GetAOIFactor(currentElement);
+        estimatedField=fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]);
+        SetIncidentKVector(pointOfInterest);
         double* FieldSolution = new double[2];
-        FieldSolution[0] = estimatedField / GetPropagationDistance(currentElement); // field at Rx antenna.
+        FieldSolution[0] = estimatedField / GetPropagationDistance(pointOfInterest); // field at point
         FieldSolution[1] = 2. * LMCConst::Pi() * fInputFrequency; // rad/s
 
         return FieldSolution;

@@ -263,8 +263,6 @@ namespace locust
     }
 
 
-
-
     void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
@@ -291,12 +289,14 @@ namespace locust
                 double* tFieldSolution = new double[2];
                 if (!fTransmitter->IsKassiopeia())
                 {
-                	tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement, channelIndex, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                	tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement->GetPosition(), channelIndex, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                 }
                 else
                 {
                 	tFieldSolution = fTransmitter->SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
                 }
+
+                tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(), *currentElement);
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
