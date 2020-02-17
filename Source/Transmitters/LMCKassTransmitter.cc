@@ -39,38 +39,12 @@ namespace locust
     	return true;
     }
 
-
-
-    // EField cross pol with aoi dot product, at element.
-    double KassTransmitter::GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField)
+    void KassTransmitter::InitializeFieldPoint(LMCThreeVector fieldPoint)
     {
-        double EFieldCoPol = IncidentElectricField.Dot(currentElement->GetPolarizationDirection());
-        return EFieldCoPol;
+    	fFieldSolver.AddFieldPoint(fieldPoint);
     }
 
 
-    double KassTransmitter::GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField)
-    {
-        double EFieldCrossPol = IncidentElectricField.Dot(currentElement->GetCrossPolarizationDirection());
-        return EFieldCrossPol;
-    }
-
-    void KassTransmitter::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
-    {
-
-    	int nChannels = allRxChannels.size();
-    	int nReceivers = allRxChannels[0].size();
-
-        for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
-        {
-            for(int elementIndex = 0; elementIndex < nReceivers; ++elementIndex)
-            {
-            	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
-            	fFieldSolver.AddFieldPoint(currentElement->GetPosition());
-            }
-        }
-
-    }
 
     LMCThreeVector KassTransmitter::GetIncidentKVector()
     {
@@ -87,7 +61,7 @@ namespace locust
 
 
 
-	double* KassTransmitter::SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex)
+	double* KassTransmitter::SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex)
     {
 
         fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
@@ -97,12 +71,12 @@ namespace locust
         LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
         locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
 
-        LMCThreeVector tDirection = currentElement->GetPosition() - tCurrentParticle.GetPosition(true);
+        LMCThreeVector tDirection = pointOfInterest - tCurrentParticle.GetPosition(true);
 	    double tVelZ = tCurrentParticle.GetVelocity(true).Z();
 	    double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
 	    double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
 
-	    double tEFieldCoPol = GetEFieldCoPol(currentElement, tRadiatedElectricField);
+	    double tEFieldCoPol = tRadiatedElectricField.Dot(coPolDirection);
 	    SetIncidentKVector(tRadiatedElectricField.Cross(tRadiatedMagneticField));
 
         double* tSolution = new double[2];

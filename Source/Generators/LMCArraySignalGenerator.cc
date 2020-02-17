@@ -181,14 +181,24 @@ namespace locust
 
     static void* KassiopeiaInit(const std::string &aFile)
     {
-        //RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
         RunKassiopeia RunKassiopeia1;
         RunKassiopeia1.Run(aFile);
         RunKassiopeia1.~RunKassiopeia();
-        //delete RunKassiopeia1;
 
         return 0;
     }
+
+	void ArraySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
+	{
+		for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
+		{
+            for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
+            {
+            	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
+            }
+		}
+	}
+
 
 
 
@@ -293,7 +303,7 @@ namespace locust
                 }
                 else
                 {
-                	tFieldSolution = fTransmitter->SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
+                	tFieldSolution = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
                 }
 
                 tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(), *currentElement);
@@ -466,10 +476,13 @@ namespace locust
         	return true;
         }
 
+
+
         if (fTransmitter->IsKassiopeia())
         {
-            fTransmitter->InitializeFieldPoints(allRxChannels);
-        	std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
+
+        	InitializeFieldPoints(allRxChannels);
+            std::thread Kassiopeia(KassiopeiaInit, gxml_filename);  // spawn new thread
         	fRunInProgress = true;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )

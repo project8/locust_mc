@@ -23,12 +23,12 @@ namespace locust
      @class KassTransmitter
      @author P. L. Slocum Jan. 27 2020
 
-     @brief Class to generate tranmistter from plane wave
+     @brief Class to transmit Kassiopeia field solutions
 
      @details
      Operates in time space
 
-     Configuration name: "plane-wave"
+     Configuration name: "transmitter": "kassiopeia"
 
      Available configuration options:
 
@@ -44,10 +44,8 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
-    	double* SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex);
-        double GetEFieldCoPol(Receiver* currentElement, LMCThreeVector IncidentElectricField);
-        double GetEFieldCrossPol(Receiver* currentElement, LMCThreeVector IncidentElectricField);
-        void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
+    	double* SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex);
+        void InitializeFieldPoint(LMCThreeVector fieldPoint);
         virtual LMCThreeVector GetIncidentKVector();
 
 
