@@ -107,9 +107,6 @@ namespace locust
 
     double AntennaSignalTransmitter::GetPropagationPhaseChange(LMCThreeVector pointOfInterest)
     {
-        double relativePatchPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
-        double relativePatchPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
-        double relativePatchPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
         double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*GetPropagationDistance(pointOfInterest);
     	return phaseChange;
     }
