@@ -16,7 +16,6 @@
 #include <iostream>
 #include <fstream>
 
-#include "LMCGlobalsDeclaration.hh"
 #include "LMCDigitizer.hh"
 #include <chrono>
 
@@ -68,7 +67,7 @@ namespace locust
         		AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
         		if(!modelTransmitter->Configure(aParam))
         		{
-        			LERROR(lmclog,"Error Configuring antenna signal generator class");
+        			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
         		}
         		if(!modelTransmitter->InitializeTransmitter())
         		{
@@ -83,7 +82,7 @@ namespace locust
         		PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
         		if(!modelTransmitter->Configure(aParam))
         		{
-        			LERROR(lmclog,"Error Configuring planewave transmitter generator class");
+        			LERROR(lmclog,"Error Configuring planewave transmitter class");
         		}
 
         		fTransmitter = modelTransmitter;
@@ -95,7 +94,7 @@ namespace locust
         		KassTransmitter* modelTransmitter = new KassTransmitter;
         		if(!modelTransmitter->Configure(aParam))
         		{
-        			LERROR(lmclog,"Error Configuring kassiopeia transmitter generator class");
+        			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
         		}
 
         		fTransmitter = modelTransmitter;
@@ -182,14 +181,24 @@ namespace locust
 
     static void* KassiopeiaInit(const std::string &aFile)
     {
-        //RunKassiopeia *RunKassiopeia1 = new RunKassiopeia;
         RunKassiopeia RunKassiopeia1;
         RunKassiopeia1.Run(aFile);
         RunKassiopeia1.~RunKassiopeia();
-        //delete RunKassiopeia1;
 
         return 0;
     }
+
+	void ArraySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
+	{
+		for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
+		{
+            for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
+            {
+            	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
+            }
+		}
+	}
+
 
 
 
@@ -264,8 +273,6 @@ namespace locust
     }
 
 
-
-
     void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
@@ -292,12 +299,14 @@ namespace locust
                 double* tFieldSolution = new double[2];
                 if (!fTransmitter->IsKassiopeia())
                 {
-                	tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement, channelIndex, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                	tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement->GetPosition(), channelIndex, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                 }
                 else
                 {
-                	tFieldSolution = SolveKassFields(currentElement, ElementPhi, tReceiverTime, tTotalElementIndex);
+                	tFieldSolution = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
                 }
+
+                tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(), *currentElement);
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
@@ -317,30 +326,6 @@ namespace locust
 
     }
 
-
-    double* ArraySignalGenerator::SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex)
-    {
-        fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
-        fFieldSolver.SolveFieldSolutions();
-
-        LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
-        LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
-        locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
-
-        LMCThreeVector tDirection = currentElement->GetPosition() - tCurrentParticle.GetPosition(true);
-        double tVelZ = tCurrentParticle.GetVelocity(true).Z();
-        double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
-        double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
-
-	    double tEFieldCoPol = tRadiatedElectricField.Dot(currentElement->GetPolarizationDirection())*currentElement->GetPatternFactor(tRadiatedElectricField.Cross(tRadiatedMagneticField), *currentElement);
-
-        double* tSolution = new double[2];
-        tSolution[0] = tEFieldCoPol;
-        tSolution[1] = tDopplerFrequency;
-
-	    return tSolution;
-
-    }
 
     void ArraySignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned element)
     {
@@ -445,7 +430,6 @@ namespace locust
                 modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
                 allRxChannels[channelIndex].AddReceiver(modelElement);
 
-                fFieldSolver.AddFieldPoint(modelElement->GetPosition());
             }
         }
 
@@ -492,11 +476,14 @@ namespace locust
         	return true;
         }
 
+
+
         if (fTransmitter->IsKassiopeia())
         {
 
-        std::thread Kassiopeia(KassiopeiaInit, gxml_filename);     // spawn new thread
-        fRunInProgress = true;
+        	InitializeFieldPoints(allRxChannels);
+            std::thread Kassiopeia(KassiopeiaInit, gxml_filename);  // spawn new thread
+        	fRunInProgress = true;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {

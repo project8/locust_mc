@@ -8,8 +8,6 @@
 #ifndef LMCANTENNASIGNALTRANSMITTER_HH_
 #define LMCANTENNASIGNALTRANSMITTER_HH_
 
-#include "LMCPatchAntenna.hh"
-#include "LMCSlotAntenna.hh"
 #include "LMCTransmitter.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
@@ -53,14 +51,14 @@ namespace locust
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
 //        double GenerateSignal(Signal *,double acquisitionRate);
-        virtual double* GetEFieldCoPol(Receiver* currentElement, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt);
+        virtual double* GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt);
+        virtual LMCThreeVector GetIncidentKVector();
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
         
-        double GetPropagationPhaseChange(Receiver* currentElement);
-        double GetPropagationDistance(Receiver* currentElement);
-        double GetAOIFactor(Receiver* currentElement);
+        double GetPropagationPhaseChange(LMCThreeVector pointOfInterest);
+        double GetPropagationDistance(LMCThreeVector pointOfInterest);
 
 
         /// Get the positions of the antenna w.r.t the center of the detector
@@ -93,6 +91,7 @@ namespace locust
         int fAntennaType;
 
         LMCThreeVector fAntennaPosition; // Position of the antenna w.r.t to the center of the array
+        LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
         
         //Apply derivative of a given signal. This will be more complicated with implmentation of other field types
         //PTS: Move this to a core file sometime later
@@ -100,9 +99,12 @@ namespace locust
         
         //Get the value of the field at the origin for a given amplitude and phase.
         double GetFieldAtOrigin(double inputAmplitude,double voltagePhase);
-        
+
         void InitializeBuffers(unsigned);
         
+        void SetIncidentKVector(LMCThreeVector pointOfInterest);
+
+
         std::vector<std::deque<double>> delayedVoltageBuffer;
         
     };

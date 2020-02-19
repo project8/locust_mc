@@ -14,7 +14,6 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
-#include "LMCLienardWiechert.hh"
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 #include "LMCAntennaSignalTransmitter.hh"
@@ -84,8 +83,7 @@ namespace locust
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
 
-            double* SolveKassFields(Receiver* currentElement, double ElementPhi, double tReceiverTime, unsigned tTotalElementIndex);
-
+        	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
@@ -110,8 +108,6 @@ namespace locust
             TFReceiverHandler fTFReceiverHandler;
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
-            LienardWiechert fFieldSolver;
-            AntennaSignalTransmitter fAntennaSignalTransmitter;
 
     };
 

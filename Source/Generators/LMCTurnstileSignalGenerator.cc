@@ -383,7 +383,7 @@ namespace locust
                 {
                     Receiver *currentElement;
                     currentElement = allRxChannels[ch][element];
-                    double* FieldSolution = fAntennaSignalTransmitter.GetEFieldCoPol(currentElement, ch, element, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                    double* FieldSolution = fAntennaSignalTransmitter.GetEFieldCoPol(currentElement->GetPosition(), ch, element, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                     double relativePatchPosX=currentElement->GetPosition().GetX() - antennaPositionX;
                     double relativePatchPosY=currentElement->GetPosition().GetY() - antennaPositionY;
                     double relativePatchPosZ=currentElement->GetPosition().GetZ() - antennaPositionZ;

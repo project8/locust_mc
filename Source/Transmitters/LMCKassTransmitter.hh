@@ -13,6 +13,7 @@
 #include "param.hh"
 #include "LMCThreeVector.hh"
 #include "LMCLienardWiechert.hh"
+#include "LMCGlobalsDeclaration.hh"
 
 
 namespace locust
@@ -22,12 +23,12 @@ namespace locust
      @class KassTransmitter
      @author P. L. Slocum Jan. 27 2020
 
-     @brief Class to generate tranmistter from plane wave
+     @brief Class to transmit Kassiopeia field solutions
 
      @details
      Operates in time space
 
-     Configuration name: "plane-wave"
+     Configuration name: "transmitter": "kassiopeia"
 
      Available configuration options:
 
@@ -43,12 +44,18 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
-        virtual double* GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt);
-
+    	double* SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex);
+        void InitializeFieldPoint(LMCThreeVector fieldPoint);
+        virtual LMCThreeVector GetIncidentKVector();
 
 
 
     private:
+
+        void SetIncidentKVector(LMCThreeVector incidentKVector);
+
+    	LienardWiechert fFieldSolver;
+        LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
 
 
     };

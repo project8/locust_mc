@@ -31,7 +31,6 @@ namespace locust
 
     bool KassTransmitter::Configure( const scarab::param_node& aParam )
     {
-
         return true;
     }
 
@@ -40,11 +39,50 @@ namespace locust
     	return true;
     }
 
-
-
-    double* KassTransmitter::GetEFieldCoPol(Receiver* currentElement, int z_index, double elementSpacing, int nElementsPerStrip, double dt)
+    void KassTransmitter::InitializeFieldPoint(LMCThreeVector fieldPoint)
     {
+    	fFieldSolver.AddFieldPoint(fieldPoint);
+    }
+
+
+
+    LMCThreeVector KassTransmitter::GetIncidentKVector()
+    {
+    	return fIncidentKVector;
+    }
+
+
+    void KassTransmitter::SetIncidentKVector(LMCThreeVector incidentKVector)
+    {
+    	fIncidentKVector.SetX(incidentKVector.GetX());
+    	fIncidentKVector.SetY(incidentKVector.GetY());
+    	fIncidentKVector.SetZ(incidentKVector.GetZ());
+    }
+
+
+
+	double* KassTransmitter::SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex)
+    {
+
+        fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
+        fFieldSolver.SolveFieldSolutions();
+
+        LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
+        LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
+        locust::Particle tCurrentParticle = fFieldSolver.GetRetardedParticle();
+
+        LMCThreeVector tDirection = pointOfInterest - tCurrentParticle.GetPosition(true);
+	    double tVelZ = tCurrentParticle.GetVelocity(true).Z();
+	    double tCosTheta =  tVelZ * tDirection.Z() /  tDirection.Magnitude() / fabs(tVelZ);
+	    double tDopplerFrequency  = tCurrentParticle.GetCyclotronFrequency() / ( 1. - fabs(tVelZ) / LMCConst::C() * tCosTheta);
+
+	    double tEFieldCoPol = tRadiatedElectricField.Dot(coPolDirection);
+	    SetIncidentKVector(tRadiatedElectricField.Cross(tRadiatedMagneticField));
+
         double* tSolution = new double[2];
+        tSolution[0] = tEFieldCoPol;
+        tSolution[1] = tDopplerFrequency;
+
 	    return tSolution;
 
     }
