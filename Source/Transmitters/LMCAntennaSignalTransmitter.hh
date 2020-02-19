@@ -9,6 +9,8 @@
 #define LMCANTENNASIGNALTRANSMITTER_HH_
 
 #include "LMCTransmitter.hh"
+#include "LMCTransmitterHardware.hh"
+#include "LMCDipoleAntenna.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCFIRFileHandler.hh"
@@ -76,6 +78,7 @@ namespace locust
 
     private:
         TFTransmitterHandler fTransmitterHandler;
+        TransmitterHardware* fTransmitterHardware;
         
         /// Placeholder for now. Input signal type, 1 for dipole antenna, could be chaged later on.
         int fInputSignalType;

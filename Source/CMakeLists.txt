@@ -50,6 +50,8 @@ set( LOCUST_MC_HEADER_FILES
    	Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
+    Transmitters/LMCTransmitterHardware.hh
+    Transmitters/LMCDipoleAntenna.hh
     
     Transforms/LMCHilbertTransform.hh
     Transforms/LMCComplexFFT.hh    
@@ -91,6 +93,8 @@ set( LOCUST_MC_SOURCE_FILES
    	Transmitters/LMCAntennaSignalTransmitter.cc
     Transmitters/LMCPlaneWaveTransmitter.cc
    	Transmitters/LMCFieldBuffer.cc
+   	Transmitters/LMCTransmitterHardware.cc
+   	Transmitters/LMCDipoleAntenna.cc
     
     Transforms/LMCHilbertTransform.cc
     Transforms/LMCComplexFFT.cc    
@@ -108,7 +112,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
-	    Generators/LMCTurnstileSignalGenerator.hh
 	    Generators/LMCArraySignalGenerator.hh
 
 
@@ -133,7 +136,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
-	    Generators/LMCTurnstileSignalGenerator.cc
 	    Generators/LMCArraySignalGenerator.cc        
         
         Transmitters/LMCKassTransmitter.cc

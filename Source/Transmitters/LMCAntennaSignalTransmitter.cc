@@ -77,7 +77,12 @@ namespace locust
     
     bool AntennaSignalTransmitter::SetAntennaType( std::string transmitterAntennaType )
      {
-     	if (transmitterAntennaType == "antenna-signal-dipole") fAntennaType = 0; // default
+     	if (transmitterAntennaType == "antenna-signal-dipole")
+     		{
+     		fAntennaType = 0; // default
+    		DipoleAntenna* modelTransmitterHardware = new DipoleAntenna;
+    		fTransmitterHardware = modelTransmitterHardware;
+     		}
      	else if (transmitterAntennaType == "antenna-signal-turnstile") fAntennaType = 1;
      	else return false;
      	return true;
@@ -135,30 +140,40 @@ namespace locust
         if ( ( zIndex == 0 ) && (channelIndex == 0) ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
         double voltagePhase=fPhaseDelay - GetPropagationPhaseChange(pointOfInterest);
 
-        if(fInputSignalType==1) //sinusoidal wave for dipole antenna
+        for (unsigned nAntennas = 0; nAntennas < fTransmitterHardware->GetNAntennas(); nAntennas++)
         {
-            for( unsigned index = 0; index <fTransmitterHandler.GetFilterSize();index++)
-            {
-                double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
-                delayedVoltageBuffer[0].push_back(voltageValue);
-                delayedVoltageBuffer[0].pop_front();
 
-                voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolution();
-            }
-        }
+        	// phase shift between transmitting antennas if nAntennas > 1.
+        	voltagePhase += fTransmitterHardware->GetDrivePhaseDifference();
+
+        	if(fInputSignalType==1) //sinusoidal wave for dipole antenna
+        	{
+        		for( unsigned index = 0; index <fTransmitterHandler.GetFilterSize();index++)
+        		{
+        			double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
+        			delayedVoltageBuffer[0].push_back(voltageValue);
+        			delayedVoltageBuffer[0].pop_front();
+
+        			voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolution();
+        		}
+        	}
         
-        else// For now using sinusoidal as well
-        {
-            for( unsigned index = 0; index <fTransmitterHandler.GetFilterSize();index++)
-            {
-                double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
-                delayedVoltageBuffer[0].push_back(voltageValue);
-                delayedVoltageBuffer[0].pop_front();
-                voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolution();
-            }
-        }
+        	else// For now using sinusoidal as well
+        	{
+        		for( unsigned index = 0; index <fTransmitterHandler.GetFilterSize();index++)
+        		{
+        			double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
+        			delayedVoltageBuffer[0].push_back(voltageValue);
+        			delayedVoltageBuffer[0].pop_front();
+        			voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolution();
+        		}
+        	}
 
-        estimatedField=fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]);
+        	// find total field from all transmitting antennas in fTransmitterHardware object.
+        	estimatedField += fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * fTransmitterHardware->GetPatternFactor(pointOfInterest);
+
+        } // nAntennas
+
         SetIncidentKVector(pointOfInterest);
         double* FieldSolution = new double[2];
         FieldSolution[0] = estimatedField / GetPropagationDistance(pointOfInterest); // field at point

@@ -142,39 +142,12 @@ namespace locust
     }
 
 
-
-    void RunLengthCalculator::Visit( const PlaneWaveSignalGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-
-
-    void RunLengthCalculator::Visit( const AntennaSignalGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-
-
     void RunLengthCalculator::Visit( const TestSignalGenerator* )
     {
         // nothing to see here, move along, please
         return;
     }
 
-    void RunLengthCalculator::Visit( const DipoleSignalGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-    
-    void RunLengthCalculator::Visit( const TurnstileSignalGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-    
 
     bool RunLengthCalculator::CalculateRunLength()
     {
