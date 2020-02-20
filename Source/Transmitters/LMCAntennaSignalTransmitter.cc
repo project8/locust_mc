@@ -71,6 +71,10 @@ namespace locust
         {
             fAntennaType = SetAntennaType(aParam["transmitter-antenna-type"]().as_string());
         }
+        else
+        {
+            fAntennaType = SetAntennaType("antenna-signal-dipole");
+        }
 
         return true;
     }
@@ -80,8 +84,7 @@ namespace locust
      	if (transmitterAntennaType == "antenna-signal-dipole")
      		{
      		fAntennaType = 0; // default
-    		DipoleAntenna* modelTransmitterHardware = new DipoleAntenna;
-    		fTransmitterHardware = modelTransmitterHardware;
+    		fTransmitterHardware = new DipoleAntenna;
      		}
      	else if (transmitterAntennaType == "antenna-signal-turnstile") fAntennaType = 1;
      	else return false;
@@ -142,9 +145,8 @@ namespace locust
 
         for (unsigned nAntennas = 0; nAntennas < fTransmitterHardware->GetNAntennas(); nAntennas++)
         {
-
         	// phase shift between transmitting antennas if nAntennas > 1.
-        	voltagePhase += fTransmitterHardware->GetDrivePhaseDifference();
+        	voltagePhase += nAntennas * fTransmitterHardware->GetDrivePhaseDifference();
 
         	if(fInputSignalType==1) //sinusoidal wave for dipole antenna
         	{

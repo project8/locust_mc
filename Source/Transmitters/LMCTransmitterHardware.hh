@@ -8,6 +8,7 @@
 #ifndef LMCTRANSMITTERHARDWARE_HH_
 #define LMCTRANSMITTERHARDWARE_HH_
 
+#include "param.hh"
 #include "LMCThreeVector.hh"
 #include "LMCConst.hh"
 #include <vector>

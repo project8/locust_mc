@@ -16,7 +16,11 @@ namespace locust
  /*!
  @class DipoleAntenna
  @author P. Slocum
- @brief Derived class describing a dipole antenna transmitter.
+ @brief Derived class describing the orientation and angular dependence of a dipole antenna transmitter.
+ It is assumed that the dipole moment fMomentVector has been oriented such that the electric fields are
+ copolar with the receiving antenna elements.  For example, a magnetic dipole moment should typically be
+ aligned with the longitudinal axis of an array, and an electric dipole moment is aligned perpendicular
+ to an array.  If other orientations are selected, then the GetPatternFactor() will need to be recalculated.
  @details
  Available configuration options:
  No input parameters
@@ -28,6 +32,8 @@ namespace locust
             DipoleAntenna();
             virtual ~DipoleAntenna();
 
+            bool Configure( const scarab::param_node& aNode );
+
             virtual void TxHardwareSayHello();
 
             virtual double GetPatternFactor(LMCThreeVector pointOfInterest);
@@ -35,6 +41,7 @@ namespace locust
         private:
 
             LMCThreeVector fMomentVector;
+            bool fMagneticDipole;  // either magnetic or electric
 
 
     };
