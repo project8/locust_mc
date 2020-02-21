@@ -128,6 +128,9 @@ namespace locust
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
 
+            bool GetPitchScatteringOff() const;
+            void SetPitchScatteringOff( bool aPitchScatteringOff );
+
             bool GetShiftStartPitchToTrapCenter( ) const;
             void SetShiftStartPitchToTrapCenter(  bool aShiftStartPitch );
 
@@ -194,6 +197,7 @@ namespace locust
             int fRandomSeed;
             int fNEvents;
             bool fPitchCorrection;
+            bool fPitchScatteringOff;
             bool fShiftStartPitchToTrapCenter;
             double fStartZmax;
             double fPitchScatterReduction;

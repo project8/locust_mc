@@ -45,6 +45,7 @@ namespace locust
         fRandomSeed(0),
         fNEvents(1),
         fPitchCorrection( true ),
+        fPitchScatteringOff( false ),
         fShiftStartPitchToTrapCenter( false ),
         fStartZmax( 0. ),
         fPitchScatterReduction( 1. ),
@@ -127,11 +128,14 @@ namespace locust
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
 
-        if (aParam.has( "shift_start_pitch") )
-            SetShiftStartPitchToTrapCenter(  aParam.get_value< bool >( "shift_start_pitch", fShiftStartPitchToTrapCenter) );
+        if (aParam.has( "pitch-scattering-off") )
+            SetPitchScatteringOff(  aParam.get_value< bool >( "pitch-scattering-off", fPitchScatteringOff) );
 
-        if (aParam.has( "start_z_max") )
-            SetStartZmax(  aParam.get_value< double >( "start_z_max", fStartZmax) );
+        if (aParam.has( "shift-start-pitch") )
+            SetShiftStartPitchToTrapCenter(  aParam.get_value< bool >( "shift-start-pitch", fShiftStartPitchToTrapCenter) );
+
+        if (aParam.has( "start-z-max") )
+            SetStartZmax(  aParam.get_value< double >( "start-z-max", fStartZmax) );
 
         if( aParam.has( "pitch-scatter-reduction" ) )
             SetPitchScatterReduction( aParam.get_value< double >( "pitch-scatter-reduction", fPitchScatterReduction ) );
@@ -421,6 +425,18 @@ namespace locust
     void FakeTrackSignalGenerator::SetPitchCorrection( bool aPitchCorrection )
     {
         fPitchCorrection = aPitchCorrection;
+        return;
+    }
+
+    bool FakeTrackSignalGenerator::GetPitchScatteringOff() const
+    {
+        return fPitchScatteringOff;
+    }
+
+
+    void FakeTrackSignalGenerator::SetPitchScatteringOff( bool aPitchScatteringOff )
+    {
+        fPitchScatteringOff = aPitchScatteringOff;
         return;
     }
 
@@ -714,15 +730,19 @@ namespace locust
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
-            theta_scatter = GetThetaScatter(energy_loss, current_energy); // get scattering angle (NOT Pitch)
 
-            // Compute new pitch angle, given initial pitch angle, scattering angle. Account for how kinematics change with different axial position of scatter
-            if(fPitch != LMCConst::Pi() / 2.)
-                zScatter = fTrapLength / tan(fPitch) * sin( GetAxialFrequency() * fStartTime);
+            if (!fPitchScatteringOff)
+            {
+                theta_scatter = GetThetaScatter(energy_loss, current_energy); // get scattering angle (NOT Pitch)
 
-            double thetaTop = GetPitchAngleZ(fPitch, fBField, GetBField(zScatter));
-            double newThetaTop = GetScatteredPitchAngle( theta_scatter * fPitchScatterReduction, thetaTop, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
-            fPitch = GetPitchAngleZ(newThetaTop, GetBField(zScatter), fBField);
+                // Compute new pitch angle, given initial pitch angle, scattering angle. Account for how kinematics change with different axial position of scatter
+                if(fPitch != LMCConst::Pi() / 2.)
+                    zScatter = fTrapLength / tan(fPitch) * sin( GetAxialFrequency() * fStartTime);
+
+                double thetaTop = GetPitchAngleZ(fPitch, fBField, GetBField(zScatter));
+                double newThetaTop = GetScatteredPitchAngle( theta_scatter * fPitchScatterReduction, thetaTop, 2. * LMCConst::Pi() * dist(fRandomEngine) ); //Get pitch angle
+                fPitch = GetPitchAngleZ(newThetaTop, GetBField(zScatter), fBField);
+            }
 
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             fStartFrequency = rel_cyc(new_energy, fBField);
