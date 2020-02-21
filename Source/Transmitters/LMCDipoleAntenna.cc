@@ -59,7 +59,7 @@ namespace locust
     	printf("Dipole says hello\n"); getchar();
      }
 
-    double DipoleAntenna::GetPatternFactor(LMCThreeVector pointOfInterest)
+    double DipoleAntenna::GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber)
     {
     	double patternFactor = pointOfInterest.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
     	if (fMagneticDipole)
@@ -68,7 +68,7 @@ namespace locust
     	}
     	else
     	{
-    		return patternFactor*patternFactor;
+    		return patternFactor;
     	}
 
     }

@@ -11,6 +11,7 @@
 #include "LMCTransmitter.hh"
 #include "LMCTransmitterHardware.hh"
 #include "LMCDipoleAntenna.hh"
+#include "LMCTurnstileAntenna.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCFIRFileHandler.hh"

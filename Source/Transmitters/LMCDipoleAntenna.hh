@@ -20,7 +20,8 @@ namespace locust
  It is assumed that the dipole moment fMomentVector has been oriented such that the electric fields are
  copolar with the receiving antenna elements.  For example, a magnetic dipole moment should typically be
  aligned with the longitudinal axis of an array, and an electric dipole moment is aligned perpendicular
- to an array.  If other orientations are selected, then the GetPatternFactor() will need to be recalculated.
+ to an antenna strip and to the longitudinal axis.  If other orientations are selected, then the
+ GetPatternFactor() will need to be recalculated.
  @details
  Available configuration options:
  No input parameters
@@ -32,11 +33,11 @@ namespace locust
             DipoleAntenna();
             virtual ~DipoleAntenna();
 
-            bool Configure( const scarab::param_node& aNode );
+            virtual bool Configure( const scarab::param_node& aNode );
 
             virtual void TxHardwareSayHello();
 
-            virtual double GetPatternFactor(LMCThreeVector pointOfInterest);
+            virtual double GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber);
 
         private:
 

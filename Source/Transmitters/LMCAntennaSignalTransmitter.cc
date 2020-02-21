@@ -76,6 +76,12 @@ namespace locust
             fAntennaType = SetAntennaType("antenna-signal-dipole");
         }
 
+     	if(!fTransmitterHardware->Configure(aParam))
+	    {
+     		LERROR(lmclog,"Error configuring TransmitterHardware class");
+	    }
+
+
         return true;
     }
     
@@ -83,11 +89,16 @@ namespace locust
      {
      	if (transmitterAntennaType == "antenna-signal-dipole")
      		{
-     		fAntennaType = 0; // default
-    		fTransmitterHardware = new DipoleAntenna;
+     			fAntennaType = 0; // default
+     			fTransmitterHardware = new DipoleAntenna;
      		}
-     	else if (transmitterAntennaType == "antenna-signal-turnstile") fAntennaType = 1;
+     	else if (transmitterAntennaType == "antenna-signal-turnstile")
+     		{
+     			fAntennaType = 1;
+     			fTransmitterHardware = new TurnstileAntenna;
+     		}
      	else return false;
+
      	return true;
      }
 
@@ -143,10 +154,10 @@ namespace locust
         if ( ( zIndex == 0 ) && (channelIndex == 0) ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
         double voltagePhase=fPhaseDelay - GetPropagationPhaseChange(pointOfInterest);
 
-        for (unsigned nAntennas = 0; nAntennas < fTransmitterHardware->GetNAntennas(); nAntennas++)
+        for (unsigned iAntenna = 0; iAntenna < fTransmitterHardware->GetNAntennas(); iAntenna++)
         {
         	// phase shift between transmitting antennas if nAntennas > 1.
-        	voltagePhase += nAntennas * fTransmitterHardware->GetDrivePhaseDifference();
+        	voltagePhase += iAntenna * fTransmitterHardware->GetDrivePhaseDifference();
 
         	if(fInputSignalType==1) //sinusoidal wave for dipole antenna
         	{
@@ -172,7 +183,7 @@ namespace locust
         	}
 
         	// find total field from all transmitting antennas in fTransmitterHardware object.
-        	estimatedField += fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * fTransmitterHardware->GetPatternFactor(pointOfInterest);
+        	estimatedField += fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * fTransmitterHardware->GetPatternFactor(pointOfInterest, iAntenna);
 
         } // nAntennas
 

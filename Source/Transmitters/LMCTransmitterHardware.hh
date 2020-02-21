@@ -31,9 +31,11 @@ namespace locust
         public:
             TransmitterHardware();
             virtual ~TransmitterHardware();
+            virtual bool Configure( const scarab::param_node& aNode ) {};
+
             virtual void TxHardwareSayHello();
 
-            virtual double GetPatternFactor(LMCThreeVector pointOfInterest) {};
+            virtual double GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber) {};
 
             int GetNAntennas();
             void SetNAntennas(int aNumber);
