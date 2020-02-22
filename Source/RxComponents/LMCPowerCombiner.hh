@@ -6,6 +6,8 @@
 #include "param.hh"
 #include "LMCSignal.hh"
 #include "LMCConst.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCSlotAntenna.hh"
 #include <vector>
 
 
@@ -30,6 +32,7 @@ namespace locust
         else if (feed == "voltage-divider") fpowerCombiner = 5;
         else if (feed == "s-matrix") fpowerCombiner = 6;
         else if (feed == "single-patch") fpowerCombiner = 7;
+        else if (feed == "slotted-waveguide") fpowerCombiner = 8;
         else fpowerCombiner = 0;  // default
 
  */
@@ -43,9 +46,11 @@ namespace locust
             bool Configure( const scarab::param_node& aNode);
 
             bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-            bool SetVoltageDampingFactors(int aPatchesPerStrip);
-            bool SetSMatrixParameters(int aPatchesPerStrip);
+            bool SetVoltageDampingFactors(int anElementsPerStrip, double anElementSpacing);
+            bool SetSMatrixParameters(int anElementsPerStrip);
             void SetNPatchesPerStrip(int aPatchesPerStrip);
+            Receiver* ChooseElement();
+            void SetNSlots(int aNSlots);
             void SetJunctionLoss(double aJunctionLoss);
             void SetPatchLoss(double aPatchLoss);
             void SetAmplifierLoss(double aAmplifierLoss);
@@ -59,6 +64,7 @@ namespace locust
             double GetSeriesPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
             double GetCenterFedPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
             bool SetCenterFedDampingFactors();
+            bool SetSlottedWaveguideDampingFactors();
             bool SetSeriesFedDampingFactors();
             bool SetVoltageDividerDampingFactors();
             bool SetSmatrixDampingFactors();
@@ -70,6 +76,7 @@ namespace locust
             bool SetTransmissionCoefficients();
             int fpowerCombiner;
             int fnPatchesPerStrip;
+            int fnSlots;
             double fjunctionLoss;
             double fpatchLoss;
             double famplifierLoss;

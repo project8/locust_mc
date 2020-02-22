@@ -57,8 +57,8 @@ namespace locust
             double fLO_Frequency;  // typically defined by a parameter in json file.
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             double fArrayRadius;
-            int fNPatchesPerStrip;
-            double fPatchSpacing;
+            int fNElementsPerStrip;
+            double fElementSpacing;
             bool fCorporateFeed;
             bool fPileupMode; //simulate tracks in sequence or as piling up?
             int fPileupSeed; 

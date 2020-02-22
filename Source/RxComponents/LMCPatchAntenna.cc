@@ -73,6 +73,18 @@ namespace locust
     }
 
 
+    void PatchAntenna::RxSayHello()
+     {
+     	printf("patch says hello\n");
+     	getchar();
+     }
+
+    double PatchAntenna::GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement)
+    {
+    	// This is the aoi factor only.  It is not the dot product with the co-pol direction.
+    	double aoiFactor = (-1.0) * currentElement.GetNormalDirection().Dot(incidentKVector.Unit());
+    	return aoiFactor;
+    }
 
 
 
