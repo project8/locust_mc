@@ -55,6 +55,7 @@ set( LOCUST_MC_HEADER_FILES
     Transforms/LMCComplexFFT.hh    
 
     RxComponents/LMCPowerCombiner.hh
+    RxComponents/LMCPowerCombinerParent.hh
     RxComponents/LMCReceiver.hh
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCSlotAntenna.hh
@@ -96,6 +97,7 @@ set( LOCUST_MC_SOURCE_FILES
     Transforms/LMCComplexFFT.cc    
     
     RxComponents/LMCPowerCombiner.cc
+    RxComponents/LMCPowerCombinerParent.cc
     RxComponents/LMCReceiver.cc
     RxComponents/LMCPatchAntenna.cc
     RxComponents/LMCSlotAntenna.cc
