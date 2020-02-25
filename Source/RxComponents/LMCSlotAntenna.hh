@@ -27,6 +27,9 @@ namespace locust
             SlotAntenna();
             virtual ~SlotAntenna();
 
+            virtual void RxSayHello();
+            virtual double GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement);
+
 
     };
 

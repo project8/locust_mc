@@ -11,6 +11,7 @@ namespace locust
 {
     Receiver::Receiver():
 		copolarizationDirection(0,0,0),
+		crosspolarizationDirection(0,0,0),
 		normalDirection(0,0,0),
 		centerPosition(0,0,0)
 	{}
@@ -25,6 +26,17 @@ namespace locust
     void Receiver::SetPolarizationDirection(const LMCThreeVector &copolDirection)
     {
         copolarizationDirection = copolDirection;
+    }
+
+
+    LMCThreeVector Receiver::GetCrossPolarizationDirection()
+    {
+    	return crosspolarizationDirection;
+    }
+
+    void Receiver::SetCrossPolarizationDirection(const LMCThreeVector &crosspolDirection)
+    {
+        crosspolarizationDirection = crosspolDirection;
     }
 
 
@@ -47,6 +59,21 @@ namespace locust
     {
         centerPosition = newPosition;
     }
+
+
+    void Receiver::RxSayHello()
+     {
+     	printf("rx says hello\n");
+     	getchar();
+     }
+
+    double Receiver::GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement)
+    {
+    	return 1.0;
+    }
+
+
+
 
 
 } /* namespace locust */

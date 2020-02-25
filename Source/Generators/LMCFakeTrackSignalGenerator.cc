@@ -27,6 +27,7 @@ namespace locust
     FakeTrackSignalGenerator::FakeTrackSignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
+        fAlpha( 0.01 ),
         fSignalPower( 0. ),
         fStartFrequencyMax( 0. ),
         fStartFrequencyMin( 0. ),
@@ -70,6 +71,9 @@ namespace locust
 
     bool FakeTrackSignalGenerator::Configure( const scarab::param_node& aParam )
     {
+        if( aParam.has( "angle-alpha" ) )
+            SetAlpha( aParam.get_value< double >( "angle-alpha", fAlpha ) );
+
         if( aParam.has( "signal-power" ) )
             SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
 
@@ -185,6 +189,17 @@ namespace locust
     void FakeTrackSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetAlpha() const
+    {
+        return fAlpha;
+    }
+
+    void FakeTrackSignalGenerator::SetAlpha( double aAlpha )
+    {
+        fAlpha = aAlpha;
         return;
     }
 
@@ -592,14 +607,10 @@ namespace locust
 
     }
     
-    double FakeTrackSignalGenerator::GetThetaScatter(double eLoss, double T)
+    //use CDF to generate scattering angle
+    double FakeTrackSignalGenerator::GetThetaScatter(double u)
     {
-        double ka2Transfer = GetKa2(eLoss, T);
-        double eRatio = eLoss / T;
-        double cosTheta = 1. - eRatio /2.  - ka2Transfer  / (2.* (T / LMCConst::E_Rydberg()));
-        cosTheta /= sqrt(1. - eRatio);
-        return acos(cosTheta);
-
+        return atan(sqrt(pow(fAlpha,2.) / (1. + pow(fAlpha,2.))) * tan( LMCConst::Pi() / 2. * u));
     }
 
     void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset)
@@ -644,7 +655,7 @@ namespace locust
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
-            theta_scatter = GetThetaScatter(energy_loss, current_energy); // get scattering angle (NOT Pitch)
+            theta_scatter = GetThetaScatter(dist(fRandomEngine)); // get scattering angle (NOT Pitch)
 
             // Compute new pitch angle, given initial pitch angle, scattering angle. Account for how kinematics change with different axial position of scatter
             if(fPitch != LMCConst::Pi() / 2.)

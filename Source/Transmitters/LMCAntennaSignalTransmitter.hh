@@ -8,12 +8,13 @@
 #ifndef LMCANTENNASIGNALTRANSMITTER_HH_
 #define LMCANTENNASIGNALTRANSMITTER_HH_
 
-#include "LMCSignal.hh"
+#include "LMCTransmitter.hh"
 #include "LMCThreeVector.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 #include "LMCConst.hh"
+
 
 namespace locust
 {
@@ -31,14 +32,15 @@ namespace locust
      
      Available configuration options:
      - "input-signal-type": 1 -- Leaving an option open for generating different types of signals,
-     - "input-signal-frequency": 25.9281e9,
-     - "input-signal-amplitude": 1
+     - "transmitter-frequency": 0.0,
+     - "antenna-voltage-amplitude": 1
      - "antenna-x-position": double -- Location of the antenna in the x direction
      - "antenna-y-position": double -- Location of the antenna in the y direction
      - "antenna-z-position": double -- Location of the antenna in the z direction
+     - "transmitter-antenna-type":  string "antenna-signal-dipole" or "antenna-signal-turnstile"
      
      */
-    class AntennaSignalTransmitter
+    class AntennaSignalTransmitter : public Transmitter
     {
     public:
         
@@ -48,11 +50,17 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
-        double GenerateSignal(Signal *,double acquisitionRate);
+//        double GenerateSignal(Signal *,double acquisitionRate);
+        virtual double* GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt);
+        virtual LMCThreeVector GetIncidentKVector();
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
         
+        double GetPropagationPhaseChange(LMCThreeVector pointOfInterest);
+        double GetPropagationDistance(LMCThreeVector pointOfInterest);
+
+
         /// Get the positions of the antenna w.r.t the center of the detector
         LMCThreeVector GetAntennaPosition() const;
         
@@ -62,6 +70,10 @@ namespace locust
         /// Initialize the FIR filter and the field estimator
         bool InitializeTransmitter();
         
+        /// Select dipole or turnstile
+        bool SetAntennaType( std::string antennaType );
+
+
     private:
         TFTransmitterHandler fTransmitterHandler;
         
@@ -76,7 +88,10 @@ namespace locust
         double fAntennaPositionX;
         double fAntennaPositionY;
         double fAntennaPositionZ;
+        int fAntennaType;
+
         LMCThreeVector fAntennaPosition; // Position of the antenna w.r.t to the center of the array
+        LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
         
         //Apply derivative of a given signal. This will be more complicated with implmentation of other field types
         //PTS: Move this to a core file sometime later
@@ -84,9 +99,12 @@ namespace locust
         
         //Get the value of the field at the origin for a given amplitude and phase.
         double GetFieldAtOrigin(double inputAmplitude,double voltagePhase);
-        
+
         void InitializeBuffers(unsigned);
         
+        void SetIncidentKVector(LMCThreeVector pointOfInterest);
+
+
         std::vector<std::deque<double>> delayedVoltageBuffer;
         
     };

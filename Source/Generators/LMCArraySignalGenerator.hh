@@ -1,30 +1,32 @@
 /*
- * LMCPatchSignalGenerator.hh
+ * LMCArraySignalGenerator.hh
  *
  *  Created on: Feb 19, 2018
  *      Author: pslocum
  */
 
-#ifndef LMCPATCHSIGNALGENERATOR_HH_
-#define LMCPATCHSIGNALGENERATOR_HH_
+#ifndef LMCARRAYSIGNALGENERATOR_HH_
+#define LMCARRAYSIGNALGENERATOR_HH_
 
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
-#include "LMCPatchAntenna.hh"
 #include "LMCPowerCombiner.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
-#include "LMCLienardWiechert.hh"
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
+#include "LMCAntennaSignalTransmitter.hh"
+#include "LMCPlaneWaveTransmitter.hh"
+#include "LMCKassTransmitter.hh"
+#include <vector>
 
 
 namespace locust
 {
 
     /*!
-     @class PatchSignalGenerator
+     @class ArraySignalGenerator
      @author P. L. Slocum
 
      @brief Generate signal in free space(without wave guide) for phase III and detect with patch array.
@@ -32,7 +34,7 @@ namespace locust
      @details
      Operates in time space
 
-     Configuration name: "patch-signal"
+     Configuration name: "array-signal"
 
      Available configuration options:
      - "param-name": type -- Description
@@ -49,12 +51,13 @@ namespace locust
      	 	 becomes more important for large numbers of patches
 
     */
-    class PatchSignalGenerator : public Generator
+
+    class ArraySignalGenerator : public Generator
     {
         public:
 
-            PatchSignalGenerator( const std::string& aName = "patch-signal" );
-            virtual ~PatchSignalGenerator();
+            ArraySignalGenerator( const std::string& aName = "array-signal" );
+            virtual ~ArraySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
 
@@ -64,12 +67,13 @@ namespace locust
 
 
         private:
-            std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
+            std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
+            Transmitter* fTransmitter; // transmitter object
             double fLO_Frequency;
             double fArrayRadius;
-            int fNPatchesPerStrip;
+            int fNElementsPerStrip;
             double fZShiftArray;
-            double fPatchSpacing;
+            double fElementSpacing;
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
@@ -78,9 +82,8 @@ namespace locust
 
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
-            double GetAOIFactor(LMCThreeVector IncidentKVector, double PatchPhi);
-            double GetEFieldCoPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
-            double GetEFieldCrossPol(PatchAntenna* currentPatch, LMCThreeVector IncidentElectricField, LMCThreeVector IncidentKVector, double PatchPhi, double DopplerFrequency);
+
+        	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
@@ -95,20 +98,19 @@ namespace locust
             std::vector<std::deque<double>> EFrequencyBuffer;
             std::vector<std::deque<double>> LOPhaseBuffer;
             std::vector<std::deque<unsigned>> IndexBuffer;
-            std::vector<std::deque<double>> PatchFIRBuffer;
+            std::vector<std::deque<double>> ElementFIRBuffer;
 
 
             bool DoGenerate( Signal* aSignal );
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
-            bool InitializePatchArray();
+            bool InitializeElementArray();
             bool InitializePowerCombining();
             TFReceiverHandler fTFReceiverHandler;
             PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
-            LienardWiechert fFieldSolver;
 
     };
 
 } /* namespace locust */
 
-#endif /* LMCPATCHSIGNALGENERATOR_HH_ */
+#endif /* LMCARRAYSIGNALGENERATOR_HH_ */
