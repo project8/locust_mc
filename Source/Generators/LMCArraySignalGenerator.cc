@@ -426,7 +426,7 @@ namespace locust
         		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
         		{
         			zPosition =  fZShiftArray +
-        					subarrayIndex*nReceivers*elementSpacingZ - int(nSubarrays/2.) +
+        					( subarrayIndex-int(nSubarrays/2.) )*nReceivers*elementSpacingZ +
         					(receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
         			if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
