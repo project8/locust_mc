@@ -43,6 +43,11 @@ namespace locust
 
     bool TurnstileAntenna::Configure( const scarab::param_node& aParam )
     {
+	if( !TransmitterHardware::Configure(aParam))
+	{
+     	    LERROR(lmclog,"Error configuring TransmitterHardware class from TurnstileAntenna child class");
+	}
+
     	Initialize();
     	return true;
     }

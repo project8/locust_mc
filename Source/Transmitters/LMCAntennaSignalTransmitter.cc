@@ -18,11 +18,8 @@ namespace locust
     AntennaSignalTransmitter::AntennaSignalTransmitter() :
     fInputSignalType(1),
     fInputFrequency( 0.0 ),
-    fAntennaPositionX( 0.0 ),
-    fAntennaPositionY( 0.0 ),
-    fAntennaPositionZ( 0.0 ),
     fInputAmplitude(1.0),
-	fAntennaType(0)
+    fAntennaType(0)
     {
     }
     
@@ -42,24 +39,9 @@ namespace locust
             fInputSignalType = aParam["input-signal-type"]().as_int();
         }
         
-        if( aParam.has( "transmitter-frequency" ) )
+	if( aParam.has( "transmitter-frequency" ) )
         {
             fInputFrequency= aParam["transmitter-frequency"]().as_double();
-        }
-
-        if( aParam.has( "antenna-x-position" ) )
-        {
-            fAntennaPositionX= aParam["antenna-x-position"]().as_double();
-        }
-        
-        if( aParam.has( "antenna-y-position" ) )
-        {
-            fAntennaPositionY = aParam["antenna-y-position"]().as_double();
-        }
-        
-        if( aParam.has( "antenna-z-position" ) )
-        {
-            fAntennaPositionZ = aParam["antenna-z-position"]().as_double();
         }
         
         if( aParam.has( "antenna-voltage-amplitude" ) )
@@ -103,51 +85,6 @@ namespace locust
      }
 
 
-    LMCThreeVector AntennaSignalTransmitter::GetAntennaPosition() const
-    {
-        return fAntennaPosition;
-    }
-    
-    void AntennaSignalTransmitter::SetAntennaPosition(const LMCThreeVector &antennaPosition)
-    {
-        fAntennaPosition=antennaPosition;
-    }
-
-
-    double AntennaSignalTransmitter::GetPropagationDistance(LMCThreeVector pointOfInterest)
-    {
-        double relativePatchPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
-        double relativePatchPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
-        double relativePatchPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
-        double propagationDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
-        return propagationDistance;
-    }
-
-
-    double AntennaSignalTransmitter::GetPropagationPhaseChange(LMCThreeVector pointOfInterest)
-    {
-        double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*GetPropagationDistance(pointOfInterest);
-    	return phaseChange;
-    }
-
-
-    void AntennaSignalTransmitter::SetIncidentKVector(LMCThreeVector pointOfInterest)
-    {
-
-    	LMCThreeVector incidentKVector;
-
-    	double relativeElementPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
-        double relativeElementPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
-        double relativeElementPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
-     	fIncidentKVector.SetComponents(relativeElementPosX, relativeElementPosY, relativeElementPosZ);
-
-    }
-
-    LMCThreeVector AntennaSignalTransmitter::GetIncidentKVector()
-    {
-    	return fIncidentKVector;
-    }
-
     double* AntennaSignalTransmitter::GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
     {
         double estimatedField=0.0;
@@ -187,9 +124,9 @@ namespace locust
 
         } // nAntennas
 
-        SetIncidentKVector(pointOfInterest);
+        fTransmitterHardware->SetIncidentKVector(pointOfInterest);
         double* FieldSolution = new double[2];
-        FieldSolution[0] = estimatedField / GetPropagationDistance(pointOfInterest); // field at point
+        FieldSolution[0] = estimatedField / fTransmitterHardware->GetPropagationDistance(pointOfInterest); // field at point
         FieldSolution[1] = 2. * LMCConst::Pi() * fInputFrequency; // rad/s
 
         return FieldSolution;
@@ -197,8 +134,6 @@ namespace locust
     
     bool AntennaSignalTransmitter::InitializeTransmitter()
     {
-        fAntennaPosition.SetComponents(fAntennaPositionX,fAntennaPositionY,fAntennaPositionZ);
-        
         if(!fTransmitterHandler.ReadHFSSFile())
         {
 	    LERROR(lmclog,"Error reading HFSS file");
@@ -216,13 +151,18 @@ namespace locust
         return fInitialPhaseDelay;
     }
     
+    double AntennaSignalTransmitter::GetPropagationPhaseChange(LMCThreeVector pointOfInterest)
+    {
+        double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*
+		fTransmitterHardware->GetPropagationDistance(pointOfInterest);
+    	return phaseChange;
+    }
+
     void AntennaSignalTransmitter::InitializeBuffers(unsigned filterbuffersize)
     {
         FieldBuffer aFieldBuffer;
         delayedVoltageBuffer = aFieldBuffer.InitializeBuffer(1,1,filterbuffersize);
     }
-    
-    
     
     double AntennaSignalTransmitter::GetFieldAtOrigin(double inputAmplitude,double voltagePhase)
     {

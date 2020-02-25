@@ -13,12 +13,11 @@ using std::string;
 
 namespace locust
 {
-
-	LOGGER( lmclog, "DipoleAntenna" );
+    LOGGER( lmclog, "DipoleAntenna" );
 
     DipoleAntenna::DipoleAntenna():
     fMomentVector( 0., 0., 1.0 ),
-	fMagneticDipole( true )
+    fMagneticDipole( true )
     {
     }
 
@@ -28,6 +27,11 @@ namespace locust
 
     bool DipoleAntenna::Configure( const scarab::param_node& aParam )
     {
+
+	if( !TransmitterHardware::Configure(aParam))
+	{
+     	    LERROR(lmclog,"Error configuring TransmitterHardware class from DipoleAntenna child class");
+	}
 
         if( aParam.has( "dipoleantenna-momentX" ) )
         {
@@ -49,8 +53,6 @@ namespace locust
             fMagneticDipole = aParam["dipoleantenna-magnetic"]().as_bool();
         }
 
-
-
     	return true;
     }
 
@@ -61,15 +63,16 @@ namespace locust
 
     double DipoleAntenna::GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber)
     {
-    	double patternFactor = pointOfInterest.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
+    	double patternFactor=0.0; 
     	if (fMagneticDipole)
     	{
-    		return patternFactor;
+		patternFactor = pointOfInterest.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
     	}
     	else
     	{
-    		return patternFactor;
+		patternFactor = pointOfInterest.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
     	}
+    	return patternFactor;
 
     }
 
