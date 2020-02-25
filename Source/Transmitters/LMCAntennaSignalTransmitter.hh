@@ -50,7 +50,6 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
-//        double GenerateSignal(Signal *,double acquisitionRate);
         virtual double* GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt);
         
         /// Get initial phase delay
@@ -75,15 +74,13 @@ namespace locust
         double fInputAmplitude;// in V/m
         double fPhaseDelay=0.0; //Delay in the phase that changes for each time sample
         double fInitialPhaseDelay = 0.0;  //Initial delay in the phase from the the signal arriving from the back of the buffer as well as the delay from signal travel
-        double fArrayRadius=0.0; //Array radius to be used to obtain the phase delay from the tranmistter to the reciever patch
-        
         int fAntennaType;
  
         //Apply derivative of a given signal. This will be more complicated with implmentation of other field types
         //PTS: Move this to a core file sometime later
         double ApplyDerivative(double voltagePhase);
         
-        //Get the value of the field at the origin for a given amplitude and phase.
+        //Get the value of the field at the transmitter origin for a given amplitude and phase.
         double GetFieldAtOrigin(double inputAmplitude,double voltagePhase);
 
         void InitializeBuffers(unsigned);
