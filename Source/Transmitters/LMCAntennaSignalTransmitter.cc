@@ -124,7 +124,6 @@ namespace locust
 
         } // nAntennas
 
-        fTransmitterHardware->SetIncidentKVector(pointOfInterest);
         double* FieldSolution = new double[2];
         FieldSolution[0] = estimatedField / fTransmitterHardware->GetPropagationDistance(pointOfInterest); // field at point
         FieldSolution[1] = 2. * LMCConst::Pi() * fInputFrequency; // rad/s

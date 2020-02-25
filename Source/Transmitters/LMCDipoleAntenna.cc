@@ -64,13 +64,27 @@ namespace locust
     double DipoleAntenna::GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber)
     {
     	double patternFactor=0.0; 
+	LMCThreeVector incidentKVector=GetIncidentKVector(pointOfInterest);
     	if (fMagneticDipole)
     	{
-		patternFactor = pointOfInterest.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
+		//sin(theta) between the line joining the dipole to the POI and the moment
+		double patternFactor_phi = incidentKVector.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
+		//The Efield is in phi direction w.r.t the dipole. 
+		//To calculate the copol, the component of the phi in copol direction has to be taken
+		//This is done by  projecting the moment of the dipole in z direction of the array
+		//Fails miserably if the copol of the antenna/slots is not in the standard direction
+		patternFactor=patternFactor_phi*LMCThreeVector(0,0,1).Dot(fMomentVector.Unit());
     	}
-    	else
+    	else //If electric dipole
     	{
-		patternFactor = pointOfInterest.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
+		//sin(theta) between the line joining the dipole to the POI and the moment
+		//The actual factor is cos((π/2)cos(θ))/sin(θ), should be implemented later
+		double patternFactor_theta = incidentKVector.Unit().Cross(fMomentVector.Unit()).Magnitude(); // sin(theta)
+		//The Efield is in theta direction w.r.t the dipole. 
+		//To calculate the copol, the component of the phi in copol direction has to be taken
+		//This is done by  taking the sin of angle between the moment and the z direction
+		//Fails miserably if the copol of the antenna/slots is not in the standard direction
+		patternFactor=patternFactor_theta*LMCThreeVector(0,0,1).Cross(fMomentVector.Unit()).Magnitude();
     	}
     	return patternFactor;
 

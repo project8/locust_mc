@@ -54,22 +54,21 @@ namespace locust
 	    // Factor that describes the radiaiton pattern and depoends on the type of antenna 
             virtual double GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber) {};
 
-            LMCThreeVector GetIncidentKVector();
-
-            void SetIncidentKVector(LMCThreeVector pointOfInterest);
+	    // vector pointing from antenna to requested point of interest
+            LMCThreeVector GetIncidentKVector(LMCThreeVector pointOfInterest);
 
             virtual double GetDrivePhaseDifference() {};
 
-        private:
+        protected:
 
 	    // Number of antenna, currently set to 1, but could be implemented if needed
             int fNAntennas;
             double fDrivePhaseDifference;
+
             /// x,y,z positions, could possible be removed if fAntennaPosition is implemented properly
 	    double fAntennaPositionX;
             double fAntennaPositionY;
             double fAntennaPositionZ;
-            LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
 
 	    /// Vector descriving the position of the antenna
             LMCThreeVector fAntennaPosition; // Position of the antenna w.r.t to the center of the array

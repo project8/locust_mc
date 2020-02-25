@@ -38,7 +38,6 @@ namespace locust
         {
             fAntennaPositionZ = aParam["antenna-z-position"]().as_double();
         }
-	    std::cout << fAntennaPositionX <<"   --------------   " <<fAntennaPositionY <<" ----------- " <<fAntennaPositionZ  <<std::endl;
         fAntennaPosition.SetComponents(fAntennaPositionX,fAntennaPositionY,fAntennaPositionZ);
         return true;
     }
@@ -68,28 +67,21 @@ namespace locust
         return fAntennaPosition;
     }
     
-    double TransmitterHardware::GetPropagationDistance(LMCThreeVector pointOfInterest)
-    {
-        double relativePatchPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
-        double relativePatchPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
-        double relativePatchPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
-        double propagationDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
-        return propagationDistance;
-    }
-
-    void TransmitterHardware::SetIncidentKVector(LMCThreeVector pointOfInterest)
+    LMCThreeVector TransmitterHardware::GetIncidentKVector(LMCThreeVector pointOfInterest)
     {
     	LMCThreeVector incidentKVector;
 
     	double relativeElementPosX=pointOfInterest.GetX() - fAntennaPosition.GetX();
         double relativeElementPosY=pointOfInterest.GetY() - fAntennaPosition.GetY();
         double relativeElementPosZ=pointOfInterest.GetZ() - fAntennaPosition.GetZ();
-     	fIncidentKVector.SetComponents(relativeElementPosX, relativeElementPosY, relativeElementPosZ);
+     	incidentKVector.SetComponents(relativeElementPosX, relativeElementPosY, relativeElementPosZ);
+	return incidentKVector;
+    }
+    
+    double TransmitterHardware::GetPropagationDistance(LMCThreeVector pointOfInterest)
+    {
+	return GetIncidentKVector(pointOfInterest).Magnitude();
     }
 
-    LMCThreeVector TransmitterHardware::GetIncidentKVector()
-    {
-    	return fIncidentKVector;
-    }
 } /* namespace locust */
 
