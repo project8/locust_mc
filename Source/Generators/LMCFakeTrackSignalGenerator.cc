@@ -39,6 +39,7 @@ namespace locust
         fStartPitchMax( 90. ),
         fPitchMin( 0. ),
         fLO_frequency( 0. ),
+        fTrackLengthMin(0. ),
         fTrackLengthMean( 0. ),
         fNTracksMean( 0. ),
         fBField(1.0),
@@ -109,6 +110,9 @@ namespace locust
 
         if( aParam.has( "lo-frequency" ) )
             SetFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
+
+        if( aParam.has( "track-length-min" ) )
+            SetTrackLengthMin( aParam.get_value< double >( "track-length-min", fTrackLengthMin ) );
 
         if( aParam.has( "track-length-mean" ) )
             SetTrackLengthMean( aParam.get_value< double >( "track-length-mean", fTrackLengthMean ) );
@@ -303,6 +307,17 @@ namespace locust
     void FakeTrackSignalGenerator::SetSlopeStd( double aSlopeStd )
     {
         fSlopeStd = aSlopeStd;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetTrackLengthMin() const
+    {
+        return fTrackLengthMin;
+    }
+
+    void FakeTrackSignalGenerator::SetTrackLengthMin( double aTrackLengthMin )
+    {
+        fTrackLengthMin = aTrackLengthMin;
         return;
     }
 
@@ -753,6 +768,11 @@ namespace locust
 
         fSlope = slope_distribution(fRandomEngine);
         fTrackLength = tracklength_distribution(fRandomEngine);
+		if (fTrackLengthMin){ // if fTrackLengthMin is not 0., i.e if we have set a non-zero limit
+            while ( fTrackLength < fTrackLengthMin){
+                fTrackLength = tracklength_distribution(fRandomEngine);
+            }
+        }
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
         aTrack.Slope = fSlope;
         aTrack.TrackLength = fTrackLength;

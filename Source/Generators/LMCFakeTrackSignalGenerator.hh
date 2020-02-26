@@ -43,6 +43,7 @@ namespace locust
       - "start-frequency-max": double -- Upper bound for start frequency of signal (Hz); distribution: uniform.
       - "start-frequency-min": double -- Lower bound for start frequency of signal (Hz); distribution: uniform.
       - "track-length-mean": double -- Average of track length (s); distribution: exponential.
+      - "track-length-min": double -- Optional: Minimum track length to simulate; if not defined defaults to zero (s)
       - "start-vphase": double -- Starting voltage phase (V).
       - "slope-mean": double -- Mean value of Gaussian slope distribution (MHz/ms); distribution: gaussian.
       - "slope-std": double -- Standard deviation of Gaussian slope distribution (MHz/ms); distribution: gaussian.
@@ -88,6 +89,9 @@ namespace locust
 
             double GetPitchMin() const;
             void SetPitchMin( double aPitchMin );
+
+            double GetTrackLengthMin() const;
+            void SetTrackLengthMin( double aTrackLengthMin );
 
             double GetTrackLengthMean() const;
             void SetTrackLengthMean( double aTrackLengthMean );
@@ -192,6 +196,7 @@ namespace locust
             double fPitchMin;
             double fLO_frequency;
             double fTrackLengthMean;
+            double fTrackLengthMin;
             double fNTracksMean;
             double fBField;
             int fRandomSeed;
