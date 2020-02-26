@@ -412,7 +412,7 @@ namespace locust
         const double elementRadius = fArrayRadius;
         double zPosition;
         double theta;
-        const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
+        const double dThetaArray = 2. * LMCConst::Pi() / (nChannels/nSubarrays); //Divide the circle into nChannels
         const double dRotateVoltages = 0.;  // set to zero to not rotate element polarities.
 
         allRxChannels.resize(nChannels);
@@ -426,7 +426,7 @@ namespace locust
         		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
         		{
         			zPosition =  fZShiftArray +
-        					( subarrayIndex-int(nSubarrays/2.) )*nReceivers*elementSpacingZ +
+        					(subarrayIndex-int(nSubarrays/2.) )*nReceivers*elementSpacingZ +
         					(receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
         			if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
