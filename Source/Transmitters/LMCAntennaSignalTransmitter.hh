@@ -50,7 +50,7 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
-        virtual double* GetEFieldCoPol(int fieldPointIndex, double elementSpacing, int nElementsPerStrip, double dt);
+        virtual double* GetEFieldCoPol(int fieldPointIndex, double dt);
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
@@ -61,9 +61,6 @@ namespace locust
         /// Select dipole or turnstile
         bool SetAntennaType( std::string antennaType );
 	    
-	/// Phase change because of the distance from the transmitter to the point provided as argument
-        double GetPropagationPhaseChange(int fieldPointIndex);
-
     private:
         TFTransmitterHandler fTransmitterHandler;
         TransmitterHardware* fTransmitterHardware;
@@ -75,10 +72,12 @@ namespace locust
         double fPhaseDelay=0.0; //Delay in the phase that changes for each time sample
         double fInitialPhaseDelay = 0.0;  //Initial delay in the phase from the the signal arriving from the back of the buffer as well as the delay from signal travel
         int fAntennaType;
- 
+	    
 	//Add incidentKVector  
         void AddIncidentKVector(LMCThreeVector pointOfInterest);
         
+        void AddPropagationPhaseDelay(LMCThreeVector pointOfInterest);
+
 	//Apply derivative of a given signal. This will be more complicated with implmentation of other field types
         //PTS: Move this to a core file sometime later
         double ApplyDerivative(double voltagePhase);

@@ -85,13 +85,13 @@ namespace locust
      }
 
 
-    double* AntennaSignalTransmitter::GetEFieldCoPol(int fieldPointIndex, double elementSpacing, int nElementsPerStrip, double dt)
+    double* AntennaSignalTransmitter::GetEFieldCoPol(int fieldPointIndex, double dt)
     {
 	LMCThreeVector pointOfInterest=GetFieldPoint(fieldPointIndex);
         double estimatedField=0.0;
         //if ( ( zIndex == 0 ) && (channelIndex == 0) ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
         if (fieldPointIndex == 0) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
-        double voltagePhase=fPhaseDelay - GetPropagationPhaseChange(fieldPointIndex);
+        double voltagePhase=fPhaseDelay - GetPropagationPhaseDelay(fieldPointIndex);
 
         for (unsigned iAntenna = 0; iAntenna < fTransmitterHardware->GetNAntennas(); iAntenna++)
         {
@@ -152,17 +152,17 @@ namespace locust
 	LMCThreeVector incidentKVector=fTransmitterHardware->ExtractIncidentKVector(pointOfInterest); 
 	Transmitter::AddIncidentKVector(incidentKVector);
     }
-    
+ 
     double AntennaSignalTransmitter::GetInitialPhaseDelay()
     {
         return fInitialPhaseDelay;
     }
     
-    double AntennaSignalTransmitter::GetPropagationPhaseChange(int fieldPointIndex)
+    void AntennaSignalTransmitter::AddPropagationPhaseDelay(LMCThreeVector pointOfInterest)
     {
-        double phaseChange = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*
-		fTransmitterHardware->GetPropagationDistance(GetFieldPoint(fieldPointIndex));
-    	return phaseChange;
+        double phaseDelay = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*
+		fTransmitterHardware->GetPropagationDistance(pointOfInterest);
+	Transmitter::AddPropagationPhaseDelay(phaseDelay);
     }
 
     void AntennaSignalTransmitter::InitializeBuffers(unsigned filterbuffersize)

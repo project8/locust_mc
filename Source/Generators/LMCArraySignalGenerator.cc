@@ -299,7 +299,7 @@ namespace locust
                 double* tFieldSolution = new double[2];
                 if (!fTransmitter->IsKassiopeia())
                 {
-                	tFieldSolution = fTransmitter->GetEFieldCoPol(tTotalElementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                	tFieldSolution = fTransmitter->GetEFieldCoPol(tTotalElementIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                 }
                 else
                 {

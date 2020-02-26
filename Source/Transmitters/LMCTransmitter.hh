@@ -11,6 +11,8 @@
 #include "LMCThreeVector.hh"
 #include "param.hh"
 
+#include "logger.hh"
+
 #include <vector>
 
 namespace locust
@@ -34,7 +36,7 @@ namespace locust
             virtual void TxSayHello();
 
             virtual bool Configure( const scarab::param_node& ){};
-            virtual double* GetEFieldCoPol(int fieldPointIndex, double elementSpacing, int nElementsPerStrip, double dt) {};
+            virtual double* GetEFieldCoPol(int fieldPointIndex, double dt) {};
 
             virtual double* SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex) {};
             virtual void InitializeFieldPoint(LMCThreeVector fieldPoint);
@@ -43,17 +45,26 @@ namespace locust
 
             /// Initialize the FIR filter and the field estimator
             virtual bool InitializeTransmitter(){};
-	    virtual LMCThreeVector GetFieldPoint(int index);
+	    LMCThreeVector GetFieldPoint(int index);
 	    virtual LMCThreeVector GetIncidentKVector(int index);
+	    double GetPropagationPhaseDelay(int index);
+	    double GetNPoints();
+	    double GetMeanofFieldPoints(int axis);
+	    LMCThreeVector GetMeanofFieldPoints();
 
 	protected:
 
-    	   void AddIncidentKVector(LMCThreeVector fieldPoint);
-    	   void SetIncidentKVector(int index,LMCThreeVector incidentKVector);
+    	    virtual void AddIncidentKVector(LMCThreeVector fieldPoint);
+    	    void AddPropagationPhaseDelay(double phaseDelay);
+    	    virtual void AddPropagationPhaseDelay(LMCThreeVector fieldPoint);
+    	    void SetFieldPoint(int index,LMCThreeVector fieldPoint);
+    	    void SetIncidentKVector(int index,LMCThreeVector incidentKVector);
+	    void SetPropagationPhaseDelay(int index,double phaseDelay);
 
         private:
 	    std::vector< LMCThreeVector> fFieldPoints; 
 	    std::vector< LMCThreeVector> fIncidentKVectors;
+	    std::vector< double> fPropagationPhaseDelays;
 	    void AddFieldPoint(LMCThreeVector fieldPoint);
 };
 

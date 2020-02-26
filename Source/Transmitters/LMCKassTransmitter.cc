@@ -45,7 +45,7 @@ namespace locust
     	fFieldSolver.AddFieldPoint(fieldPoint);
     }
 
-	double* KassTransmitter::SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex)
+    double* KassTransmitter::SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex)
     {
 
         fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
