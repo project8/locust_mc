@@ -67,7 +67,7 @@ namespace locust
         return fAntennaPosition;
     }
     
-    LMCThreeVector TransmitterHardware::GetIncidentKVector(LMCThreeVector pointOfInterest)
+    LMCThreeVector TransmitterHardware::ExtractIncidentKVector(LMCThreeVector pointOfInterest)
     {
     	LMCThreeVector incidentKVector;
 
@@ -80,7 +80,7 @@ namespace locust
     
     double TransmitterHardware::GetPropagationDistance(LMCThreeVector pointOfInterest)
     {
-	return GetIncidentKVector(pointOfInterest).Magnitude();
+	return ExtractIncidentKVector(pointOfInterest).Magnitude();
     }
 
 } /* namespace locust */

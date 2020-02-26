@@ -39,9 +39,9 @@ namespace locust
 
         bool Configure( const scarab::param_node& aNode );
 
-        virtual double* GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt);
+        virtual double* GetEFieldCoPol(int fieldIndexPoint, double elementSpacing, int nElementsPerStrip, double dt);
 
-        double GetPWPhaseDelayAtPatch(int z_index, double elementSpacing, int nElementsPerStrip);
+        double GetPWPhaseDelayAtPatch(int fieldIndexPoint, double elementSpacing, int nElementsPerStrip);
         virtual LMCThreeVector GetIncidentKVector();
 
 
@@ -53,7 +53,7 @@ namespace locust
         double fRF_Frequency;  // typically defined by a parameter in json file.
         double fPhaseDelay=0.0; //Delay in the phase that changes for each time sample
         LMCThreeVector fIncidentKVector;  // vector pointing from plane wave to requested point of interest.
-        void SetIncidentKVector(LMCThreeVector pointOfInterest);
+        void AddIncidentKVector(LMCThreeVector pointOfInterest);
 
 
     };

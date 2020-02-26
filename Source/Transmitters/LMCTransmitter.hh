@@ -9,6 +9,9 @@
 #define LMCTRANSMITTER_HH_
 
 #include "LMCThreeVector.hh"
+#include "param.hh"
+
+#include <vector>
 
 namespace locust
 {
@@ -30,20 +33,28 @@ namespace locust
             virtual ~Transmitter();
             virtual void TxSayHello();
 
-
-            virtual double* GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt) {};
-            virtual LMCThreeVector GetIncidentKVector() {};
+            virtual bool Configure( const scarab::param_node& ){};
+            virtual double* GetEFieldCoPol(int fieldPointIndex, double elementSpacing, int nElementsPerStrip, double dt) {};
 
             virtual double* SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex) {};
-            virtual void InitializeFieldPoint(LMCThreeVector fieldPoint) {};
-
+            virtual void InitializeFieldPoint(LMCThreeVector fieldPoint);
 
             virtual bool IsKassiopeia() {return false;};
 
+            /// Initialize the FIR filter and the field estimator
+            virtual bool InitializeTransmitter(){};
+	    virtual LMCThreeVector GetFieldPoint(int index);
+	    virtual LMCThreeVector GetIncidentKVector(int index);
+
+	protected:
+
+    	   void AddIncidentKVector(LMCThreeVector fieldPoint);
+    	   void SetIncidentKVector(int index,LMCThreeVector incidentKVector);
+
         private:
-
-
-
+	    std::vector< LMCThreeVector> fFieldPoints; 
+	    std::vector< LMCThreeVector> fIncidentKVectors;
+	    void AddFieldPoint(LMCThreeVector fieldPoint);
 };
 
 

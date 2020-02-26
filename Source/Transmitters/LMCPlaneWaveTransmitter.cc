@@ -48,9 +48,9 @@ namespace locust
     }
 
 
-    double PlaneWaveTransmitter::GetPWPhaseDelayAtPatch(int z_index, double elementSpacing, int nElementsPerStrip)
+    double PlaneWaveTransmitter::GetPWPhaseDelayAtPatch(int fieldPointIndex, double elementSpacing, int nElementsPerStrip)
     {
-
+	int z_index = fieldPointIndex%nElementsPerStrip;
     	double stripLength = (nElementsPerStrip-1)*elementSpacing;
     	double distanceFromCenter = stripLength/2. - z_index*elementSpacing;
 
@@ -59,10 +59,11 @@ namespace locust
     	return phasedelay;
     }
 
-
-    void PlaneWaveTransmitter::SetIncidentKVector(LMCThreeVector pointOfInterest)
+    void PlaneWaveTransmitter::AddIncidentKVector(LMCThreeVector pointOfInterest)
     {
-    	fIncidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
+	LMCThreeVector incidentKVector(cos(fAOI), 0.0, sin(fAOI));
+	Transmitter::AddIncidentKVector(incidentKVector);
+    	//fIncidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
     }
 
 
@@ -71,16 +72,15 @@ namespace locust
     	return fIncidentKVector;
     }
 
-
-    double* PlaneWaveTransmitter::GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
+    double* PlaneWaveTransmitter::GetEFieldCoPol(int fieldPointIndex, double elementSpacing, int nElementsPerStrip, double dt)
     {
-
-    	double initialPhaseDelay = GetPWPhaseDelayAtPatch(zIndex, elementSpacing, nElementsPerStrip);
+    	double initialPhaseDelay = GetPWPhaseDelayAtPatch(fieldPointIndex, elementSpacing, nElementsPerStrip);
 		double fieldAmp = fAmplitude;
 
-		if ( (zIndex == 0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
+		if (fieldPointIndex) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
+		//if ( (zIndex == fieldPointIndex0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
-		SetIncidentKVector(pointOfInterest);
+		//AddIncidentKVector(pointOfInterest);
 
         double* fieldSolution = new double[2];
         fieldSolution[0] = fieldValue;

@@ -64,7 +64,7 @@ namespace locust
     double DipoleAntenna::GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber)
     {
     	double patternFactor=0.0; 
-	LMCThreeVector incidentKVector=GetIncidentKVector(pointOfInterest);
+	LMCThreeVector incidentKVector=ExtractIncidentKVector(pointOfInterest);
     	if (fMagneticDipole)
     	{
 		//sin(theta) between the line joining the dipole to the POI and the moment

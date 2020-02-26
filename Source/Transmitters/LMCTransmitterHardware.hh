@@ -55,7 +55,7 @@ namespace locust
             virtual double GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber) {};
 
 	    // vector pointing from antenna to requested point of interest
-            LMCThreeVector GetIncidentKVector(LMCThreeVector pointOfInterest);
+            LMCThreeVector ExtractIncidentKVector(LMCThreeVector pointOfInterest);
 
             virtual double GetDrivePhaseDifference() {};
 
