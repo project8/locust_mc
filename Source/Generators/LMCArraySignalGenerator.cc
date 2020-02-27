@@ -57,6 +57,30 @@ namespace locust
     bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
+    	if (aParam.has( "power-combining-feed" ))
+    	{
+    		printf("check 0\n"); getchar();
+//        	if(aParam["power-combiner-feed"]().as_string() == "voltage-divider")
+        	{
+        		VoltageDivider* modelCombiner = new VoltageDivider;
+            	fPowerCombinerParent = modelCombiner;
+        	}
+
+    		if(!fPowerCombinerParent->Configure(aParam))
+    		{
+    			LERROR(lmclog,"Error configuring power combiner class");
+    		}
+        	fPowerCombinerParent->SayHello();
+        	fPowerCombinerParent->Initialize();
+
+    	}
+        else
+        {
+    		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a power combiner.  Please choose a value for power-combiner-feed in the config file.");
+            exit(-1);
+        }
+
+
         if( aParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
@@ -118,11 +142,11 @@ namespace locust
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
 
-    	if(!fPowerCombiner.Configure(aParam))
+/*    	if(!fPowerCombiner.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
     	}
-
+*/
         if( aParam.has( "buffer-size" ) )
         {
         	fFieldBufferSize = aParam["buffer-size"]().as_int();
@@ -312,7 +336,8 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
- 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+// 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+ 	            fPowerCombinerParent->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;
@@ -447,12 +472,13 @@ namespace locust
             exit(-1);
         }
 
-
+/*
         if (!InitializePowerCombining() )
         {
         	LERROR(lmclog,"Error configuring Power Combining");
             exit(-1);
         }
+*/
 
         FILE *fp = fopen("incidentfields.txt", "w");
 

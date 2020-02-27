@@ -12,6 +12,8 @@
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
 #include "LMCPowerCombiner.hh"
+#include "LMCPowerCombinerParent.hh"
+#include "LMCVoltageDivider.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCFIRFileHandler.hh"
@@ -69,6 +71,7 @@ namespace locust
         private:
             std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
             Transmitter* fTransmitter; // transmitter object
+            PowerCombinerParent* fPowerCombinerParent;
             double fLO_Frequency;
             double fArrayRadius;
             int fNElementsPerStrip;

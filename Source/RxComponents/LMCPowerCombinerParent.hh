@@ -7,6 +7,11 @@
 
 #ifndef LMCPOWERCOMBINERPARENT_HH_
 #define LMCPOWERCOMBINERPARENT_HH_
+#include "param.hh"
+#include "LMCConst.hh"
+#include "LMCSignal.hh"
+#include <vector>
+
 
 namespace locust
 {
@@ -24,6 +29,39 @@ namespace locust
         public:
             PowerCombinerParent();
             virtual ~PowerCombinerParent();
+            int GetNElementsPerStrip();
+            void SetNElementsPerStrip( int aNumberOfElements );
+            bool Configure( const scarab::param_node& aNode );
+        	virtual bool SetVoltageDampingFactors() {};
+        	virtual bool SetSMatrixParameters() {};
+        	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	virtual void SayHello();
+        	virtual void Initialize() {};
+
+
+
+            double GetJunctionLoss();
+            void SetJunctionLoss( double aJunctionLoss );
+            double GetPatchLoss();
+            void SetPatchLoss( double aPatchLoss );
+            double GetAmplifierLoss();
+            void SetAmplifierLoss( double aAmplifierLoss );
+            double GetEndPatchLoss();
+            void SetEndPatchLoss( double aEndPatchLoss );
+            double GetJunctionResistance();
+            void SetJunctionResistance( double aJunctionResistance );
+            double GetDampingFactor( int z_index );
+            void SetDampingFactor (int z_index, double aDampingFactor );
+
+
+        private:
+            int fnElementsPerStrip;
+      	    std::vector<double> fdampingFactors;
+            double fjunctionLoss;
+            double fpatchLoss;
+            double famplifierLoss;
+            double fendPatchLoss;
+            double fjunctionResistance;
 
 };
 
