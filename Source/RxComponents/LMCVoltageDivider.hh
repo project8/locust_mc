@@ -9,6 +9,9 @@
 #define LMCVOLTAGEDIVIDER_HH_
 
 #include "LMCPowerCombinerParent.hh"
+#include "param.hh"
+#include "logger.hh"
+#include <iostream>
 
 namespace locust
 {
@@ -20,12 +23,15 @@ namespace locust
  Available configuration options:
  No input parameters
  */
+
+
     class VoltageDivider: public PowerCombinerParent
     {
 
         public:
             VoltageDivider();
             virtual ~VoltageDivider();
+            virtual bool Configure( const scarab::param_node& aNode );
 
 
             std::vector<double> GetResistances(double RJunction, double R0, double RGround, int NPAIRS);

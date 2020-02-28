@@ -24,15 +24,11 @@ namespace locust
 
     bool PowerCombinerParent::Configure( const scarab::param_node& aParam )
     {
-        printf("powercombinerparent almost configured\n"); getchar();
-
         if( aParam.has( "nelements-per-strip" ) )
         {
             fnElementsPerStrip = aParam["nelements-per-strip"]().as_int();
             fdampingFactors.resize( fnElementsPerStrip );
         }
-//        printf("powercombinerparent configured, size is %d\n", fdampingFactors.size()); getchar();
-
 
         return true;
 

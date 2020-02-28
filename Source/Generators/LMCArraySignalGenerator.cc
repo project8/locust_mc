@@ -60,18 +60,17 @@ namespace locust
     	if (aParam.has( "power-combining-feed" ))
     	{
     		printf("check 0\n"); getchar();
-//        	if(aParam["power-combiner-feed"]().as_string() == "voltage-divider")
+        	if(aParam["power-combining-feed"]().as_string() == "voltage-divider")
         	{
-        		VoltageDivider* modelCombiner = new VoltageDivider;
-            	fPowerCombinerParent = modelCombiner;
+        		fPowerCombinerParent = new VoltageDivider;
+        		fPowerCombinerParent->SayHello();
+        		if(!fPowerCombinerParent->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring power combiner class");
+        		}
+
         	}
 
-    		if(!fPowerCombinerParent->Configure(aParam))
-    		{
-    			LERROR(lmclog,"Error configuring power combiner class");
-    		}
-        	fPowerCombinerParent->SayHello();
-        	fPowerCombinerParent->Initialize();
 
     	}
         else

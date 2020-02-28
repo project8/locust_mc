@@ -6,10 +6,13 @@
  */
 
 #include "LMCVoltageDivider.hh"
+using std::string;
 
 
 namespace locust
 {
+
+	LOGGER( lmclog, "VoltageDivider" );
 
     VoltageDivider::VoltageDivider()
     {
@@ -18,6 +21,13 @@ namespace locust
     VoltageDivider::~VoltageDivider()
     {
     }
+
+    bool VoltageDivider::Configure( const scarab::param_node& aParam )
+    {
+    	Initialize();
+    	return true;
+    }
+
 
     void VoltageDivider::Initialize()
     {

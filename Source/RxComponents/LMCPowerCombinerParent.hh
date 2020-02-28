@@ -8,6 +8,7 @@
 #ifndef LMCPOWERCOMBINERPARENT_HH_
 #define LMCPOWERCOMBINERPARENT_HH_
 #include "param.hh"
+#include "LMCException.hh"
 #include "LMCConst.hh"
 #include "LMCSignal.hh"
 #include <vector>
@@ -31,7 +32,7 @@ namespace locust
             virtual ~PowerCombinerParent();
             int GetNElementsPerStrip();
             void SetNElementsPerStrip( int aNumberOfElements );
-            bool Configure( const scarab::param_node& aNode );
+            virtual bool Configure( const scarab::param_node& aNode );
         	virtual bool SetVoltageDampingFactors() {};
         	virtual bool SetSMatrixParameters() {};
         	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
