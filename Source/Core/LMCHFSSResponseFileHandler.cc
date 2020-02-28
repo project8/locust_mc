@@ -124,7 +124,7 @@ namespace locust
         fTFNBins=0;
         if(!ends_with(fHFSSFilename,".txt"))
         {
-            LERROR(lmclog,"The TF file should end in .txt");
+            LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<"doesn't end in .txt");
             return false;
         }
         double tfIndex;
@@ -133,6 +133,11 @@ namespace locust
         std::vector<std::complex<double>> tfArray;
         //        FILE *tfFile;
         std::fstream tfFile(fHFSSFilename.c_str(),std::ios::in);
+	if (tfFile.fail()) 
+	{
+            LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<" doesn't exist");
+            return false;
+	}
         //        tfFile=fopen(fHFSSFilename.c_str(),"r");
         //logic copied from /LMCPatchSignalGenerator.cc
         int totalcount=0;
