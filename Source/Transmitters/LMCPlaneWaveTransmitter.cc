@@ -47,40 +47,34 @@ namespace locust
         return true;
     }
 
-
-    double PlaneWaveTransmitter::GetPWPhaseDelayAtPatch(int z_index, double elementSpacing, int nElementsPerStrip)
+    void PlaneWaveTransmitter::AddPropagationPhaseDelay(LMCThreeVector pointOfInterest)
     {
-
+	//Assuming the element strip is always along Z
+	double meanZ = GetMeanofFieldPoints(2);
+	/*int z_index = fieldPointIndex%nElementsPerStrip;
     	double stripLength = (nElementsPerStrip-1)*elementSpacing;
-    	double distanceFromCenter = stripLength/2. - z_index*elementSpacing;
-
-    	double phasedelay = 2*LMCConst::Pi()*distanceFromCenter*sin(fAOI)*fRF_Frequency/LMCConst::C();
-
-    	return phasedelay;
+    	double distanceFromCenter = stripLength/2. - z_index*elementSpacing;*/
+    	double distanceFromCenter = meanZ - pointOfInterest.GetZ();
+    	double phaseDelay = 2*LMCConst::Pi()*distanceFromCenter*sin(fAOI)*fRF_Frequency/LMCConst::C();
+	Transmitter::AddPropagationPhaseDelay(phaseDelay);
     }
 
-
-    void PlaneWaveTransmitter::SetIncidentKVector(LMCThreeVector pointOfInterest)
+    void PlaneWaveTransmitter::AddIncidentKVector(LMCThreeVector pointOfInterest)
     {
-    	fIncidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
+	LMCThreeVector incidentKVector(cos(fAOI), 0.0, sin(fAOI));
+	Transmitter::AddIncidentKVector(incidentKVector);
+    	//fIncidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
     }
 
-
-    LMCThreeVector PlaneWaveTransmitter::GetIncidentKVector()
+    double* PlaneWaveTransmitter::GetEFieldCoPol(int fieldPointIndex, double dt)
     {
-    	return fIncidentKVector;
-    }
-
-
-    double* PlaneWaveTransmitter::GetEFieldCoPol(LMCThreeVector pointOfInterest, int channelIndex, int zIndex, double elementSpacing, int nElementsPerStrip, double dt)
-    {
-
-    	double initialPhaseDelay = GetPWPhaseDelayAtPatch(zIndex, elementSpacing, nElementsPerStrip);
+    	double initialPhaseDelay = GetPropagationPhaseDelay(fieldPointIndex); 
 		double fieldAmp = fAmplitude;
 
-		if ( (zIndex == 0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
+		if (fieldPointIndex==0) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
+		//if ( (zIndex == fieldPointIndex0) && (channelIndex == 0) ) fPhaseDelay += 2. * LMCConst::Pi() * fRF_Frequency * dt;
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
-		SetIncidentKVector(pointOfInterest);
+		//AddIncidentKVector(pointOfInterest);
 
         double* fieldSolution = new double[2];
         fieldSolution[0] = fieldValue;

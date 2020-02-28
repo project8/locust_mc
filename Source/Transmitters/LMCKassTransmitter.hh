@@ -46,16 +46,11 @@ namespace locust
 
     	double* SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex);
         void InitializeFieldPoint(LMCThreeVector fieldPoint);
-        virtual LMCThreeVector GetIncidentKVector();
-
-
 
     private:
 
-        void SetIncidentKVector(LMCThreeVector incidentKVector);
-
     	LienardWiechert fFieldSolver;
-        LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
+        //LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
 
 
     };

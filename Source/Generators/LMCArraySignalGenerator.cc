@@ -64,40 +64,43 @@ namespace locust
         	if(aParam["transmitter"]().as_string() == "antenna")
         	{
         		ntransmitters += 1;
-        		AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
-        		if(!modelTransmitter->Configure(aParam))
+        		//AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
+			fTransmitter = new AntennaSignalTransmitter;
+        		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
         		}
-        		if(!modelTransmitter->InitializeTransmitter())
+        		if(!fTransmitter->InitializeTransmitter())
         		{
         			exit(-1);
         		}
-        		fTransmitter = modelTransmitter;
+        		//fTransmitter = modelTransmitter;
         	}
 
         	if(aParam["transmitter"]().as_string() == "planewave")
         	{
         		ntransmitters += 1;
-        		PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
-        		if(!modelTransmitter->Configure(aParam))
+        		//PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
+			fTransmitter = new PlaneWaveTransmitter;
+        		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring planewave transmitter class");
         		}
 
-        		fTransmitter = modelTransmitter;
+        		//fTransmitter = modelTransmitter;
         	}
 
         	if(aParam["transmitter"]().as_string() == "kassiopeia")
         	{
         		ntransmitters += 1;
-        		KassTransmitter* modelTransmitter = new KassTransmitter;
-        		if(!modelTransmitter->Configure(aParam))
+        		//KassTransmitter* modelTransmitter = new KassTransmitter;
+			fTransmitter = new KassTransmitter;
+        		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
         		}
 
-        		fTransmitter = modelTransmitter;
+        		//fTransmitter = modelTransmitter;
         	}
 
         	if (ntransmitters != 1)
@@ -188,19 +191,16 @@ namespace locust
         return 0;
     }
 
-	void ArraySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
+    void ArraySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
+    {
+	for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
 	{
-		for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
-		{
             for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
             {
             	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
             }
-		}
 	}
-
-
-
+    }
 
     bool ArraySignalGenerator::WakeBeforeEvent()
     {
@@ -299,14 +299,14 @@ namespace locust
                 double* tFieldSolution = new double[2];
                 if (!fTransmitter->IsKassiopeia())
                 {
-                	tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement->GetPosition(), channelIndex, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                	tFieldSolution = fTransmitter->GetEFieldCoPol(tTotalElementIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                 }
                 else
                 {
                 	tFieldSolution = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
                 }
 
-                tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(), *currentElement);
+                tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
@@ -466,6 +466,7 @@ namespace locust
         double dtfilter = fTFReceiverHandler.GetFilterResolution();
         unsigned nfieldbufferbins = fFieldBufferSize;
         InitializeBuffers(nfilterbins, nfieldbufferbins);
+        InitializeFieldPoints(allRxChannels);
 
         if (!fTransmitter->IsKassiopeia())
         {
@@ -476,12 +477,9 @@ namespace locust
         	return true;
         }
 
-
-
         if (fTransmitter->IsKassiopeia())
         {
 
-        	InitializeFieldPoints(allRxChannels);
             std::thread Kassiopeia(KassiopeiaInit, gxml_filename);  // spawn new thread
         	fRunInProgress = true;
 
