@@ -417,8 +417,6 @@ namespace locust
 
         allRxChannels.resize(nChannels);
 
-        for (int subarrayIndex = 0; subarrayIndex < nSubarrays; ++subarrayIndex)
-        {
         	for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         	{
         		theta = channelIndex * dThetaArray;
@@ -426,7 +424,7 @@ namespace locust
         		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
         		{
         			zPosition =  fZShiftArray +
-        					(subarrayIndex-int(nSubarrays/2.) )*nReceivers*elementSpacingZ +
+        					(int(channelIndex/(nChannels/nSubarrays))-int(nSubarrays/2.) )*nReceivers*elementSpacingZ +
         					(receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
         			if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
@@ -444,7 +442,6 @@ namespace locust
 
         		}
         	}
-        }
 
         return true;
     }
