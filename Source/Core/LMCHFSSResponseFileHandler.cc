@@ -11,6 +11,8 @@
 
 #include "logger.hh"
 
+#include<unistd.h>
+
 namespace locust
 {
     LOGGER( lmclog, "HFSSResponseFileHandlerCore" );
@@ -131,14 +133,12 @@ namespace locust
         double tfRealValue;
         double tfImaginaryValue;
         std::vector<std::complex<double>> tfArray;
-        //        FILE *tfFile;
         std::fstream tfFile(fHFSSFilename.c_str(),std::ios::in);
 	if (tfFile.fail()) 
 	{
             LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<" doesn't exist");
             return false;
 	}
-        //        tfFile=fopen(fHFSSFilename.c_str(),"r");
         //logic copied from /LMCPatchSignalGenerator.cc
         int totalcount=0;
         
@@ -206,13 +206,19 @@ namespace locust
         fFIRNBins=0;
         if(!ends_with(fHFSSFilename,".txt"))
         {
-            LERROR(lmclog,"The FIR file should end in .txt");
+            LERROR(lmclog,"The FIR file " << fHFSSFilename.c_str() <<" doesn't end in .txt");
             return false;
         }
         double firIndex;
         double filterMagnitude;
         FILE *firFile;
         firFile=fopen(fHFSSFilename.c_str(),"r");
+
+	if(!access(fHFSSFilename.c_str(), F_OK ))
+	{
+            LERROR(lmclog,"The FIR file " << fHFSSFilename.c_str() <<" doesn't exist");
+            return false;
+	}
         //logic copied from /LMCPatchSignalGenerator.cc
         int count=0;
         
