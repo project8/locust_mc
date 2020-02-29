@@ -14,6 +14,8 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCPowerCombinerParent.hh"
 #include "LMCVoltageDivider.hh"
+#include "LMCSlottedWaveguide.hh"
+#include "LMCSinglePatch.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCFIRFileHandler.hh"

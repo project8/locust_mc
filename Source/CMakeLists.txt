@@ -60,6 +60,8 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCPowerCombinerParent.hh
     RxComponents/LMCVoltageDivider.hh
+    RxComponents/LMCSlottedWaveguide.hh
+    RxComponents/LMCSinglePatch.hh
     RxComponents/LMCReceiver.hh
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCSlotAntenna.hh
@@ -106,6 +108,8 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCPowerCombinerParent.cc
     RxComponents/LMCVoltageDivider.cc
+    RxComponents/LMCSlottedWaveguide.cc
+    RxComponents/LMCSinglePatch.cc
     RxComponents/LMCReceiver.cc
     RxComponents/LMCPatchAntenna.cc
     RxComponents/LMCSlotAntenna.cc

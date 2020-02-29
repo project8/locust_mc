@@ -1,7 +1,7 @@
 /*
  * LMCVoltageDivider.hh
  *
- *  Created on: Dec 19, 2019
+ *  Created on: Feb. 28, 2020
  *      Author: pslocum
  */
 
@@ -39,9 +39,7 @@ namespace locust
             double GetVoltageDividerWeight(double RJunction, double R0, double Rground, unsigned z_index);
             double GetParallelResistance(std::vector<double> R, int NRESISTORS, int resistorindex);
         	virtual bool SetVoltageDampingFactors();
-        	virtual bool SetSMatrixParameters();
             virtual void SayHello();
-            virtual void Initialize();
 
 
 

@@ -59,18 +59,25 @@ namespace locust
 
     	if (aParam.has( "power-combining-feed" ))
     	{
-    		printf("check 0\n"); getchar();
         	if(aParam["power-combining-feed"]().as_string() == "voltage-divider")
         	{
         		fPowerCombinerParent = new VoltageDivider;
-        		fPowerCombinerParent->SayHello();
         		if(!fPowerCombinerParent->Configure(aParam))
         		{
-        			LERROR(lmclog,"Error configuring power combiner class");
+        			LERROR(lmclog,"Error configuring voltage divider.");
         		}
 
         	}
 
+        	if(aParam["power-combining-feed"]().as_string() == "slotted-waveguide")
+        	{
+        		fPowerCombinerParent = new SlottedWaveguide;
+        		if(!fPowerCombinerParent->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring slotted waveguide.");
+        		}
+
+        	}
 
     	}
         else

@@ -24,15 +24,14 @@ namespace locust
 
     bool VoltageDivider::Configure( const scarab::param_node& aParam )
     {
-    	Initialize();
-    	return true;
-    }
 
+    	if( !PowerCombinerParent::Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring PowerCombiner class from VoltageDivider child class");
+    	}
 
-    void VoltageDivider::Initialize()
-    {
-    	SetSMatrixParameters();
     	SetVoltageDampingFactors();
+    	return true;
     }
 
     void VoltageDivider::SayHello()
@@ -46,8 +45,7 @@ namespace locust
 		int NPAIRS = fabs((double)z_index - (double)GetNElementsPerStrip()/2.);
 		if (z_index >= GetNElementsPerStrip()/2) NPAIRS += 1; // compensate for patches to the right of amp.
 		std::vector<double> D = GetPartialGains(RJunction, R0, RGround, NPAIRS);  // calculate new vector of gains.
-		//double dampingfactor = 0.6*0.66;  // patch loss * T-junction loss.
-		double dampingfactor = 0.425; // "active S-matrix" for the 2 patch case
+		double dampingfactor = GetPatchLoss() * GetAmplifierLoss();  // patch loss * T-junction loss.
 		return dampingfactor * D[NPAIRS-1];
 	}
 
@@ -100,27 +98,16 @@ namespace locust
 
 		for (unsigned z_index=0; z_index<GetNElementsPerStrip(); z_index++)
 		{
-			printf("check 444\n");
 			int NPAIRS = fabs(z_index - GetNElementsPerStrip()/2.);
 			if (z_index >= GetNElementsPerStrip()/2) NPAIRS += 1; // compensate for patches to the right of amp.
 			std::vector<double> D = GetPartialGains(GetJunctionResistance(), 1.0, 10.e6, NPAIRS);  // calculate new vector of gains.
 
 			double aFactor = GetPatchLoss()*GetAmplifierLoss() * D[NPAIRS-1];  // patch loss * T-junction loss
-			printf("elementsperstrip is %d\n", GetNElementsPerStrip());
 			SetDampingFactor(z_index, aFactor);
-
 		}
 
 		return true;
 
-	}
-
-	bool VoltageDivider::SetSMatrixParameters()
-	{
-		SetJunctionResistance( 0.3 );
-		SetPatchLoss( 0.6 );
-		SetAmplifierLoss( 0.66 );
-		return true;
 	}
 
 
