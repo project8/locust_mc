@@ -66,7 +66,6 @@ namespace locust
         		{
         			LERROR(lmclog,"Error configuring voltage divider.");
         		}
-
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "slotted-waveguide")
@@ -76,8 +75,58 @@ namespace locust
         		{
         			LERROR(lmclog,"Error configuring slotted waveguide.");
         		}
-
         	}
+
+        	if(aParam["power-combining-feed"]().as_string() == "single-patch")
+        	{
+        		fPowerCombinerParent = new SinglePatch;
+        		if(!fPowerCombinerParent->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring single patch.");
+        		}
+        	}
+
+        	if(aParam["power-combining-feed"]().as_string() == "corporate-feed")
+        	{
+        		fPowerCombinerParent = new CorporateFeed;
+        		if(!fPowerCombinerParent->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring corporate feed.");
+        		}
+        	}
+
+        	if(aParam["power-combining-feed"]().as_string() == "s-matrix")
+        	{
+        		fPowerCombinerParent = new SMatrix;
+        		if(!fPowerCombinerParent->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring s matrix.");
+        		}
+        	}
+
+
+        	if((aParam["power-combining-feed"]().as_string() == "unit-cell-one-quarter")||
+               (aParam["power-combining-feed"]().as_string() == "unit-cell-seven-eighths")||
+               (aParam["power-combining-feed"]().as_string() == "unit-cell-nine-sixteenths"))
+        	{
+        		fPowerCombinerParent = new UnitCell;
+        		if(!fPowerCombinerParent->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring unitcell.");
+        		}
+        	}
+
+
+        	if(aParam["power-combining-feed"]().as_string() == "series-feed")
+        	{
+        		fPowerCombinerParent = new SeriesFeed;
+        		if(!fPowerCombinerParent->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring series feed.");
+        		}
+        	}
+
+
 
     	}
         else

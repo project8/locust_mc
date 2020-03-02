@@ -17,7 +17,13 @@ namespace locust
 
     PowerCombinerParent::PowerCombinerParent():
 			fnElementsPerStrip( 2 ),
-			fdampingFactors( 0 )
+			fdampingFactors( 0 ),
+            fjunctionLoss( 1.0 ),
+            fpatchLoss( 0.6 ),
+            famplifierLoss( 0.66 ),
+            fendPatchLoss( 1.0 ),
+            fjunctionResistance( 0.3 )
+
     {}
     PowerCombinerParent::~PowerCombinerParent() {}
 
@@ -108,10 +114,7 @@ namespace locust
     }
     void PowerCombinerParent::SetDampingFactor (int z_index, double aDampingFactor )
     {
-    	printf("z is %d and factor is %g\n", z_index, aDampingFactor);
-    	printf("size is %d\n", fdampingFactors.size());
     	fdampingFactors[z_index] = aDampingFactor;
-    	printf("all set\n");
     }
 
 

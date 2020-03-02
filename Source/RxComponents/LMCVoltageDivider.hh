@@ -18,7 +18,7 @@ namespace locust
  /*!
  @class VoltageDivider
  @author P. Slocum
- @brief Derived class describing the slot antenna
+ @brief Derived class describing an energy-conserving voltage divider.
  @details
  Available configuration options:
  No input parameters
