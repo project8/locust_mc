@@ -35,7 +35,8 @@ namespace locust
         // Member variables
         std::string fHFSSFilename;
         std::vector<double> fFilter;
-        int fNBins;
+        int fTFNBins;
+        int fFIRNBins;
         double fResolution;
         int fNSkips;
         bool fHFSSFiletype;
@@ -48,7 +49,7 @@ namespace locust
     
     inline int HFSSResponseFileHandlerCore::GetFilterSize() const
     {
-        return fNBins;
+        return fFIRNBins;
     }
     
     inline double HFSSResponseFileHandlerCore::GetFilterResolution() const

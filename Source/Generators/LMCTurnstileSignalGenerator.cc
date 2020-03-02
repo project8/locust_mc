@@ -371,23 +371,25 @@ namespace locust
         double initialPhaseDelay=fAntennaSignalTransmitter.GetInitialPhaseDelay();
         for( unsigned index = 0; index < aSignal->TimeSize()*aSignal->DecimationFactor(); ++index )
         {
-            double fieldValue=fAntennaSignalTransmitter.GenerateSignal(aSignal,fAcquisitionRate);
+//            double fieldValue=fAntennaSignalTransmitter.GenerateSignal(aSignal,fAcquisitionRate);
+//            double fieldValue=fAntennaSignalTransmitter.GetEFieldAtPoint(currentElement->GetPosition().GetX(), currentElement->GetPosition().GetY(), currentElement->GetPosition().GetZ()).GetZ();
             double antennaPositionX=fAntennaSignalTransmitter.GetAntennaPosition().GetX();
             double antennaPositionY=fAntennaSignalTransmitter.GetAntennaPosition().GetY();
             double antennaPositionZ=fAntennaSignalTransmitter.GetAntennaPosition().GetZ();
             LO_phase += 2.*LMCConst::Pi()*fLO_frequency/aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
             for (unsigned ch = 0; ch < nchannels; ++ch)
             {
-                for (unsigned element = 0; element < nelements; ++element)
+                for (int element = 0; element < nelements; ++element)
                 {
                     Receiver *currentElement;
                     currentElement = allRxChannels[ch][element];
+                    double* FieldSolution = fAntennaSignalTransmitter.GetEFieldCoPol(currentElement->GetPosition(), ch, element, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                     double relativePatchPosX=currentElement->GetPosition().GetX() - antennaPositionX;
                     double relativePatchPosY=currentElement->GetPosition().GetY() - antennaPositionY;
                     double relativePatchPosZ=currentElement->GetPosition().GetZ() - antennaPositionZ;
                     double patchAntennaDistance = sqrt(relativePatchPosX*relativePatchPosX+relativePatchPosY*relativePatchPosY+relativePatchPosZ*relativePatchPosZ);
                     double field_phase=initialPhaseDelay+2.*LMCConst::Pi()*(patchAntennaDistance/LMCConst::C())*fRF_frequency;
-                    FillBuffers(aSignal, fieldValue, field_phase, LO_phase, index, ch, element);
+                    FillBuffers(aSignal, FieldSolution[0], field_phase, LO_phase, index, ch, element);
                     VoltageSample = GetVoltageFromField(ch, element, field_phase)*GetAOIFactor(currentElement->GetPosition()-fAntennaSignalTransmitter.GetAntennaPosition(),currentElement->GetPosition())/patchAntennaDistance;;
      	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageSample, LO_phase, element, IndexBuffer[ch*fNElementsPerStrip+element].front());
                     PopBuffers(ch, element);

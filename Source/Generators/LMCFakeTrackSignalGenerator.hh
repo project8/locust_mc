@@ -75,6 +75,9 @@ namespace locust
             double GetSignalPower() const;
             void SetSignalPower( double aPower );
 
+            double GetAlpha() const;
+            void SetAlpha( double aAlpha );
+
             double GetStartFrequencyMax() const;
             void SetStartFrequencyMax( double aFrequencyMax );
 
@@ -159,13 +162,14 @@ namespace locust
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
             double GetEnergyLoss(double u, bool hydrogenScatter);
             double GetKa2(double eLoss, double T);
-            double GetThetaScatter(double eLoss, double T);
+            double GetThetaScatter(double u);
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetPitchCorrectedFrequency(double frequency) const;
             double GetAxialFrequency();
             void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
 
+            double fAlpha;
             double fSlope;
             double fPitch;
             double fTrackLength;
