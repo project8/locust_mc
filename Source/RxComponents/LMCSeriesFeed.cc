@@ -30,6 +30,11 @@ namespace locust
     		LERROR(lmclog,"Error configuring PowerCombiner class from SeriesFeed subclass");
     	}
 
+		SetJunctionLoss(0.87);
+		SetPatchLoss(0.38);
+		SetAmplifierLoss(0.66);
+		SetEndPatchLoss(0.38);
+
     	SetVoltageDampingFactors();
     	return true;
     }
@@ -37,8 +42,13 @@ namespace locust
 
 	bool SeriesFeed::SetVoltageDampingFactors()
 	{
+		for (unsigned z_index=0; z_index<GetNElementsPerStrip(); z_index++)
+		{
+			int njunctions = z_index;
+			double aFactor = GetPatchLoss()*GetAmplifierLoss()*pow(GetJunctionLoss(), njunctions);
+			SetDampingFactor(z_index, aFactor);
+		}
 		return true;
-
 	}
 
 

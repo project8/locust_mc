@@ -15,7 +15,7 @@ namespace locust
 	LOGGER( lmclog, "SlottedWaveguide" );
 
     SlottedWaveguide::SlottedWaveguide():
-    		fImpedanceTransformation( 0.339 ) // sqrt(50./435.) if not included in HFSS TF.
+    		fImpedanceTransformation( 0.339 ) // sqrt(50./435.) unless already included in HFSS TF.
     {
     }
 
@@ -55,6 +55,11 @@ namespace locust
 
 	}
 
+    Receiver* SlottedWaveguide::ChooseElement()
+    {
+    	SlotAntenna* currentSlot = new SlotAntenna;
+    	return currentSlot;
+    }
 
 
 

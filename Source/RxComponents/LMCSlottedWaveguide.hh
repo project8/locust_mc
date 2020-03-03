@@ -34,9 +34,11 @@ namespace locust
             virtual bool Configure( const scarab::param_node& aNode );
 
         	virtual bool SetVoltageDampingFactors();
+            virtual Receiver* ChooseElement();
+
 
         private:
-        	double fImpedanceTransformation;  // != 1.0 only if not included in the HFSS TF.
+        	double fImpedanceTransformation;  // != 1.0 either in Locust or in HFSS, but not both.
 
 
 

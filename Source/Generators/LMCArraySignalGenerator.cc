@@ -200,11 +200,6 @@ namespace locust
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
 
-/*    	if(!fPowerCombiner.Configure(aParam))
-    	{
-    		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
-    	}
-*/
         if( aParam.has( "buffer-size" ) )
         {
         	fFieldBufferSize = aParam["buffer-size"]().as_int();
@@ -391,7 +386,6 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
-// 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
  	            fPowerCombinerParent->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
@@ -454,21 +448,6 @@ namespace locust
     }
 
 
-
-    bool ArraySignalGenerator::InitializePowerCombining()
-    {
-    	fPowerCombiner.SetSMatrixParameters(fNElementsPerStrip);
-    	if (!fPowerCombiner.SetVoltageDampingFactors(fNElementsPerStrip, fElementSpacing) )
-    	{
-    		return false;
-    	}
-    	else
-    	{
-    		return true;
-    	}
-    }
-
-
     bool ArraySignalGenerator::InitializeElementArray()
     {
 
@@ -497,12 +476,12 @@ namespace locust
             {
                 zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
-                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
+                if (fPowerCombinerParent->IsSinglePatch())
                 {
                 	zPosition = 0.;
                 }
 
-                Receiver* modelElement = fPowerCombiner.ChooseElement();  // patch or slot selection
+                Receiver* modelElement = fPowerCombinerParent->ChooseElement();  // patch or slot?
 
                 modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
                 modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
@@ -526,14 +505,6 @@ namespace locust
         	LERROR(lmclog,"Error configuring Element array");
             exit(-1);
         }
-
-/*
-        if (!InitializePowerCombining() )
-        {
-        	LERROR(lmclog,"Error configuring Power Combining");
-            exit(-1);
-        }
-*/
 
         FILE *fp = fopen("incidentfields.txt", "w");
 

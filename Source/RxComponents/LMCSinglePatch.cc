@@ -36,6 +36,11 @@ namespace locust
     }
 
 
+    bool SinglePatch::IsSinglePatch()
+    {
+    	return true;
+    }
+
 
 	bool SinglePatch::SetVoltageDampingFactors()
 	{

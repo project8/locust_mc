@@ -11,6 +11,8 @@
 #include "LMCException.hh"
 #include "LMCConst.hh"
 #include "LMCSignal.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCSlotAntenna.hh"
 #include <vector>
 
 
@@ -35,6 +37,8 @@ namespace locust
             virtual bool Configure( const scarab::param_node& aNode );
         	virtual bool SetVoltageDampingFactors() {};
         	virtual bool SetSMatrixParameters() {};
+        	virtual bool IsSinglePatch();
+            virtual Receiver* ChooseElement();
         	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
         	virtual void SayHello();
         	virtual void Initialize() {};

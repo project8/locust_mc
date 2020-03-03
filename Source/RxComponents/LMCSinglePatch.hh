@@ -34,6 +34,7 @@ namespace locust
             virtual bool Configure( const scarab::param_node& aNode );
 
         	virtual bool SetVoltageDampingFactors();
+        	virtual bool IsSinglePatch();
 
 
 

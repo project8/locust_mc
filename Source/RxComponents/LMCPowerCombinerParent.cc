@@ -46,6 +46,18 @@ namespace locust
     	printf("powercombiner says hello\n"); getchar();
     }
 
+    bool PowerCombinerParent::IsSinglePatch()
+    {
+    	return false;
+    }
+
+    Receiver* PowerCombinerParent::ChooseElement()
+    {
+    	PatchAntenna* currentPatch = new PatchAntenna;
+    	return currentPatch;
+    }
+
+
 
 	bool PowerCombinerParent::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
 	{
