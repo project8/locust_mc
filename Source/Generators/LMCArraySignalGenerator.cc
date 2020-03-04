@@ -355,11 +355,11 @@ namespace locust
     void ArraySignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
     	FieldBuffer aFieldBuffer;
-    	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-    	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-    	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-    	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-    	ElementFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
+    	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
+    	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
+    	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
+    	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
+    	ElementFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, filterbuffersize);
     }
 
 

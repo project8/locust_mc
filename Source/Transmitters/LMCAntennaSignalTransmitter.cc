@@ -168,7 +168,7 @@ namespace locust
     void AntennaSignalTransmitter::InitializeBuffers(unsigned filterbuffersize)
     {
         FieldBuffer aFieldBuffer;
-        delayedVoltageBuffer = aFieldBuffer.InitializeBuffer(1,1,filterbuffersize);
+        delayedVoltageBuffer = aFieldBuffer.InitializeBuffer(1,filterbuffersize);
     }
     
     double AntennaSignalTransmitter::GetFieldAtOrigin(double inputAmplitude,double voltagePhase)

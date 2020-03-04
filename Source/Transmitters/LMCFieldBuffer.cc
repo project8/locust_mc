@@ -19,7 +19,7 @@ namespace locust
     {
     }
 
-
+/*
     std::vector<std::deque<double>> FieldBuffer::InitializeBuffer(int nchannels, int npatches, int buffersize)
     {
     std::vector<std::deque<double>> buffer;
@@ -52,9 +52,36 @@ namespace locust
       }
     return buffer;
     }
+*/
 
 
+    std::vector<std::deque<unsigned>> FieldBuffer::InitializeUnsignedBuffer(int nPoints, int buffersize)
+    {
+      std::vector<std::deque<unsigned>> buffer;
+      buffer.resize(nPoints);
+      for (int i=0; i<nPoints; i++)
+      {
+        for (int k=0; k<buffersize; ++k)
+        {
+    	  buffer[i].push_back(0);
+        }
+      }
+    return buffer;
+    }
 
+  std::vector<std::deque<double>> FieldBuffer::InitializeBuffer(int nPoints, int buffersize)
+  {
+    std::vector<std::deque<double>> buffer;
+    buffer.resize(nPoints);
+    for (int i=0; i<nPoints; i++)
+    {
+      for (int k=0; k<buffersize; ++k)
+      {
+        buffer[i].push_back(0.0);
+      }
+    }
+    return buffer;
+  }
 
 
   std::vector<std::deque<double>> FieldBuffer::CleanupBuffer(std::vector<std::deque<double>> buffer)

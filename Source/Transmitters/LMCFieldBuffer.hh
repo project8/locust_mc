@@ -29,8 +29,10 @@ namespace locust
         public:
             FieldBuffer();
             virtual ~FieldBuffer();
-            std::vector<std::deque<double>> InitializeBuffer(int nchannels, int npatches, int buffersize);
-            std::vector<std::deque<unsigned>> InitializeUnsignedBuffer(int nchannels, int npatches, int buffersize);
+            //std::vector<std::deque<double>> InitializeBuffer(int nchannels, int npatches, int buffersize);
+	    std::vector<std::deque<double>> InitializeBuffer(int nPoints, int buffersize);
+            //std::vector<std::deque<unsigned>> InitializeUnsignedBuffer(int nchannels, int npatches, int buffersize);
+            std::vector<std::deque<unsigned>> InitializeUnsignedBuffer(int nPoints, int buffersize);
             std::vector<std::deque<double>> CleanupBuffer(std::vector<std::deque<double>> buffer);
             std::vector<std::deque<unsigned>> CleanupBuffer(std::vector<std::deque<unsigned>> buffer);
 
