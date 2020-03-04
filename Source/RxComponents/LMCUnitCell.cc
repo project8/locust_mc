@@ -25,10 +25,19 @@ namespace locust
     bool UnitCell::Configure( const scarab::param_node& aParam )
     {
 
-    	if( !PowerCombinerParent::Configure(aParam))
+    	if( !PowerCombiner::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring PowerCombiner class from UnitCell subclass");
+    		return false;
     	}
+
+
+    	if (GetNElementsPerStrip()%2 != 0)
+    	{
+    		LERROR(lmclog,"Center-fed power combining config expects even number of patches per strip.");
+    		return false;
+    	}
+
 
     	if(aParam["power-combining-feed"]().as_string() == "unit-cell-one-quarter")
     	{

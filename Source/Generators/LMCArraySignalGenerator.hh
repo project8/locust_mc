@@ -11,7 +11,7 @@
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include "LMCVoltageDivider.hh"
 #include "LMCSlottedWaveguide.hh"
 #include "LMCSinglePatch.hh"
@@ -111,7 +111,7 @@ namespace locust
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
             Transmitter* fTransmitter; // transmitter object
-            PowerCombinerParent* fPowerCombinerParent;
+            PowerCombiner* fPowerCombiner;
             TFReceiverHandler fTFReceiverHandler;
             HilbertTransform fHilbertTransform;
 

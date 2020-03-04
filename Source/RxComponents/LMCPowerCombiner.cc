@@ -5,18 +5,18 @@
  *      Author: pslocum
  */
 
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include <iostream>
 #include "logger.hh"
 
 namespace locust
 {
 
-	LOGGER( lmclog, "PowerCombinerParent" );
+	LOGGER( lmclog, "PowerCombiner" );
 
 
-    PowerCombinerParent::PowerCombinerParent():
-			fnElementsPerStrip( 2 ),
+    PowerCombiner::PowerCombiner():
+			fnElementsPerStrip( 0 ),
 			fdampingFactors( 0 ),
             fjunctionLoss( 1.0 ),
             fpatchLoss( 0.6 ),
@@ -25,14 +25,19 @@ namespace locust
             fjunctionResistance( 0.3 )
 
     {}
-    PowerCombinerParent::~PowerCombinerParent() {}
+    PowerCombiner::~PowerCombiner() {}
 
 
-    bool PowerCombinerParent::Configure( const scarab::param_node& aParam )
+    bool PowerCombiner::Configure( const scarab::param_node& aParam )
     {
         if( aParam.has( "nelements-per-strip" ) )
         {
             fnElementsPerStrip = aParam["nelements-per-strip"]().as_int();
+            if (fnElementsPerStrip < 1)
+            {
+        		LERROR(lmclog,"PowerCombiner expects >= 1 elements per strip.");
+            	return false;
+            }
             fdampingFactors.resize( fnElementsPerStrip );
         }
 
@@ -41,25 +46,25 @@ namespace locust
     }
 
 
-    void PowerCombinerParent::SayHello()
+    void PowerCombiner::SayHello()
     {
     	printf("powercombiner says hello\n"); getchar();
     }
 
-    bool PowerCombinerParent::IsSinglePatch()
+    bool PowerCombiner::IsSinglePatch()
     {
     	return false;
     }
 
-    Receiver* PowerCombinerParent::ChooseElement()
+    Receiver* PowerCombiner::ChooseElement()
     {
-    	PatchAntenna* currentPatch = new PatchAntenna;
-    	return currentPatch;
+    	PatchAntenna* aPatch = new PatchAntenna;
+    	return aPatch;
     }
 
 
 
-	bool PowerCombinerParent::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
+	bool PowerCombiner::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
 	{
 
 		VoltageFIRSample *= GetDampingFactor(z_index);
@@ -70,61 +75,61 @@ namespace locust
 	}
 
 
-    int PowerCombinerParent::GetNElementsPerStrip()
+    int PowerCombiner::GetNElementsPerStrip()
     {
     	return fnElementsPerStrip;
     }
 
-    void PowerCombinerParent::SetNElementsPerStrip( int aNumberOfElements )
+    void PowerCombiner::SetNElementsPerStrip( int aNumberOfElements )
     {
     	fnElementsPerStrip = aNumberOfElements;
     }
 
-    double PowerCombinerParent::GetJunctionLoss()
+    double PowerCombiner::GetJunctionLoss()
     {
     	return fjunctionLoss;
     }
-    void PowerCombinerParent::SetJunctionLoss( double aJunctionLoss )
+    void PowerCombiner::SetJunctionLoss( double aJunctionLoss )
     {
     	fjunctionLoss = aJunctionLoss;
     }
-    double PowerCombinerParent::GetPatchLoss()
+    double PowerCombiner::GetPatchLoss()
     {
     	return fpatchLoss;
     }
-    void PowerCombinerParent::SetPatchLoss( double aPatchLoss )
+    void PowerCombiner::SetPatchLoss( double aPatchLoss )
     {
     	fpatchLoss = aPatchLoss;
     }
-    double PowerCombinerParent::GetAmplifierLoss()
+    double PowerCombiner::GetAmplifierLoss()
     {
     	return famplifierLoss;
     }
-    void PowerCombinerParent::SetAmplifierLoss( double aAmplifierLoss )
+    void PowerCombiner::SetAmplifierLoss( double aAmplifierLoss )
     {
     	famplifierLoss = aAmplifierLoss;
     }
-    double PowerCombinerParent::GetEndPatchLoss()
+    double PowerCombiner::GetEndPatchLoss()
     {
     	return fendPatchLoss;
     }
-    void PowerCombinerParent::SetEndPatchLoss( double aEndPatchLoss )
+    void PowerCombiner::SetEndPatchLoss( double aEndPatchLoss )
     {
     	fendPatchLoss = aEndPatchLoss;
     }
-    double PowerCombinerParent::GetJunctionResistance()
+    double PowerCombiner::GetJunctionResistance()
     {
     	return fjunctionResistance;
     }
-    void PowerCombinerParent::SetJunctionResistance( double aJunctionResistance )
+    void PowerCombiner::SetJunctionResistance( double aJunctionResistance )
     {
     	fjunctionResistance = aJunctionResistance;
     }
-    double PowerCombinerParent::GetDampingFactor( int z_index )
+    double PowerCombiner::GetDampingFactor( int z_index )
     {
     	return fdampingFactors[z_index];
     }
-    void PowerCombinerParent::SetDampingFactor (int z_index, double aDampingFactor )
+    void PowerCombiner::SetDampingFactor (int z_index, double aDampingFactor )
     {
     	fdampingFactors[z_index] = aDampingFactor;
     }

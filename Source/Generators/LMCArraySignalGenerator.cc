@@ -59,19 +59,24 @@ namespace locust
 
     	if (aParam.has( "power-combining-feed" ))
     	{
+    		int npowercombiners = 0;
+
         	if(aParam["power-combining-feed"]().as_string() == "voltage-divider")
         	{
-        		fPowerCombinerParent = new VoltageDivider;
-        		if(!fPowerCombinerParent->Configure(aParam))
+        		npowercombiners += 1;
+        		fPowerCombiner = new VoltageDivider;
+        		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring voltage divider.");
+        			exit(-1);
         		}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "slotted-waveguide")
         	{
-        		fPowerCombinerParent = new SlottedWaveguide;
-        		if(!fPowerCombinerParent->Configure(aParam))
+        		npowercombiners += 1;
+        		fPowerCombiner = new SlottedWaveguide;
+        		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring slotted waveguide.");
         		}
@@ -79,28 +84,34 @@ namespace locust
 
         	if(aParam["power-combining-feed"]().as_string() == "single-patch")
         	{
-        		fPowerCombinerParent = new SinglePatch;
-        		if(!fPowerCombinerParent->Configure(aParam))
+        		npowercombiners += 1;
+        		fPowerCombiner = new SinglePatch;
+        		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring single patch.");
+        			exit(-1);
         		}
         	}
 
-        	if(aParam["power-combining-feed"]().as_string() == "corporate-feed")
+        	if(aParam["power-combining-feed"]().as_string() == "corporate")
         	{
-        		fPowerCombinerParent = new CorporateFeed;
-        		if(!fPowerCombinerParent->Configure(aParam))
+        		npowercombiners += 1;
+        		fPowerCombiner = new CorporateFeed;
+        		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring corporate feed.");
+        			exit(-1);
         		}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "s-matrix")
         	{
-        		fPowerCombinerParent = new SMatrix;
-        		if(!fPowerCombinerParent->Configure(aParam))
+        		npowercombiners += 1;
+        		fPowerCombiner = new SMatrix;
+        		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring s matrix.");
+        			exit(-1);
         		}
         	}
 
@@ -109,24 +120,32 @@ namespace locust
                (aParam["power-combining-feed"]().as_string() == "unit-cell-seven-eighths")||
                (aParam["power-combining-feed"]().as_string() == "unit-cell-nine-sixteenths"))
         	{
-        		fPowerCombinerParent = new UnitCell;
-        		if(!fPowerCombinerParent->Configure(aParam))
+        		npowercombiners += 1;
+        		fPowerCombiner = new UnitCell;
+        		if(!fPowerCombiner->Configure(aParam))
         		{
-        			LERROR(lmclog,"Error configuring unitcell.");
+        			LERROR(lmclog,"Error configuring unit cell.");
+        			exit(-1);
         		}
         	}
 
 
         	if(aParam["power-combining-feed"]().as_string() == "series-feed")
         	{
-        		fPowerCombinerParent = new SeriesFeed;
-        		if(!fPowerCombinerParent->Configure(aParam))
+        		npowercombiners += 1;
+        		fPowerCombiner = new SeriesFeed;
+        		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring series feed.");
         		}
         	}
 
 
+        	if (npowercombiners != 1)
+        	{
+        		LERROR(lmclog,"LMCArraySignalGenerator needs a single power combiner.  Please choose one value for power-combining-feed in the config file.");
+                exit(-1);
+        	}
 
     	}
         else
@@ -143,8 +162,7 @@ namespace locust
         	if(aParam["transmitter"]().as_string() == "antenna")
         	{
         		ntransmitters += 1;
-        		//AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
-			fTransmitter = new AntennaSignalTransmitter;
+        		fTransmitter = new AntennaSignalTransmitter;
         		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
@@ -153,33 +171,28 @@ namespace locust
         		{
         			exit(-1);
         		}
-        		//fTransmitter = modelTransmitter;
         	}
 
         	if(aParam["transmitter"]().as_string() == "planewave")
         	{
         		ntransmitters += 1;
-        		//PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
-			fTransmitter = new PlaneWaveTransmitter;
+        		fTransmitter = new PlaneWaveTransmitter;
         		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring planewave transmitter class");
         		}
 
-        		//fTransmitter = modelTransmitter;
         	}
 
         	if(aParam["transmitter"]().as_string() == "kassiopeia")
         	{
         		ntransmitters += 1;
-        		//KassTransmitter* modelTransmitter = new KassTransmitter;
-			fTransmitter = new KassTransmitter;
+        		fTransmitter = new KassTransmitter;
         		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
         		}
 
-        		//fTransmitter = modelTransmitter;
         	}
 
         	if (ntransmitters != 1)
@@ -386,7 +399,7 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
- 	            fPowerCombinerParent->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+ 	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;
@@ -476,12 +489,12 @@ namespace locust
             {
                 zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
-                if (fPowerCombinerParent->IsSinglePatch())
+                if (fPowerCombiner->IsSinglePatch())
                 {
                 	zPosition = 0.;
                 }
 
-                Receiver* modelElement = fPowerCombinerParent->ChooseElement();  // patch or slot?
+                Receiver* modelElement = fPowerCombiner->ChooseElement();  // patch or slot?
 
                 modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
                 modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});

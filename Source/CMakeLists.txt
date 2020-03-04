@@ -58,7 +58,6 @@ set( LOCUST_MC_HEADER_FILES
     Transforms/LMCComplexFFT.hh    
 
     RxComponents/LMCPowerCombiner.hh
-    RxComponents/LMCPowerCombinerParent.hh
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
     RxComponents/LMCSinglePatch.hh
@@ -110,7 +109,6 @@ set( LOCUST_MC_SOURCE_FILES
     Transforms/LMCComplexFFT.cc    
     
     RxComponents/LMCPowerCombiner.cc
-    RxComponents/LMCPowerCombinerParent.cc
     RxComponents/LMCVoltageDivider.cc
     RxComponents/LMCSlottedWaveguide.cc
     RxComponents/LMCSinglePatch.cc

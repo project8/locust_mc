@@ -8,7 +8,7 @@
 #ifndef LMCSMATRIX_HH_
 #define LMCSMATRIX_HH_
 
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
@@ -25,7 +25,7 @@ namespace locust
  */
 
 
-    class SMatrix: public PowerCombinerParent
+    class SMatrix: public PowerCombiner
     {
 
         public:

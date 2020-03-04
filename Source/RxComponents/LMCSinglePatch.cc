@@ -25,9 +25,14 @@ namespace locust
     bool SinglePatch::Configure( const scarab::param_node& aParam )
     {
 
-    	if( !PowerCombinerParent::Configure(aParam))
+    	if( !PowerCombiner::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring PowerCombiner class from SinglePatch subclass");
+    	}
+    	if (GetNElementsPerStrip() != 1 )
+    	{
+    		LERROR(lmclog,"single-patch power combining config expects one patch per strip.");
+    		return false;
     	}
 
     	SetAmplifierLoss(0.7071);  // there is a single impedance transformation to the amplifier.

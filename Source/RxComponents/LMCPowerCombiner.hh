@@ -1,12 +1,12 @@
 /*
- * LMCPowerCombinerParent.hh
+ * LMCPowerCombiner.hh
  *
  *  Created on: Feb 25, 2020
  *      Author: pslocum
  */
 
-#ifndef LMCPOWERCOMBINERPARENT_HH_
-#define LMCPOWERCOMBINERPARENT_HH_
+#ifndef LMCPOWERCOMBINER_HH_
+#define LMCPOWERCOMBINER_HH_
 #include "param.hh"
 #include "LMCException.hh"
 #include "LMCConst.hh"
@@ -19,19 +19,19 @@
 namespace locust
 {
  /*!
- @class LMCPowerCombinerParent
+ @class LMCPowerCombiner
  @author P. Slocum
  @brief Base class to characterize power combiners
  @details
  Available configuration options:
  No input parameters
  */
-    class PowerCombinerParent
+    class PowerCombiner
     {
 
         public:
-            PowerCombinerParent();
-            virtual ~PowerCombinerParent();
+            PowerCombiner();
+            virtual ~PowerCombiner();
             int GetNElementsPerStrip();
             void SetNElementsPerStrip( int aNumberOfElements );
             virtual bool Configure( const scarab::param_node& aNode );

@@ -8,7 +8,7 @@
 #ifndef LMCSINGLEPATCH_HH_
 #define LMCSINGLEPATCH_HH_
 
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
@@ -25,7 +25,7 @@ namespace locust
  */
 
 
-    class SinglePatch: public PowerCombinerParent
+    class SinglePatch: public PowerCombiner
     {
 
         public:

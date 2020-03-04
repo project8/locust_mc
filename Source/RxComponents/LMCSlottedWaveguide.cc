@@ -26,9 +26,10 @@ namespace locust
     bool SlottedWaveguide::Configure( const scarab::param_node& aParam )
     {
 
-    	if( !PowerCombinerParent::Configure(aParam))
+    	if( !PowerCombiner::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring PowerCombiner class from SlottedWaveguide subclass");
+    		return false;
     	}
 
         if( aParam.has( "impedance-transformation" ) )
@@ -49,7 +50,7 @@ namespace locust
 		{
 			double aFactor = fImpedanceTransformation;
 			//Adhoc scaling in case the slotted waveguide has fewer/more slots than 10
-			aFactor = aFactor/sqrt(GetNElementsPerStrip()/10);
+			aFactor = aFactor/sqrt(GetNElementsPerStrip()/10.);
 			SetDampingFactor(z_index, aFactor);
 		}
 
@@ -59,8 +60,8 @@ namespace locust
 
     Receiver* SlottedWaveguide::ChooseElement()
     {
-    	SlotAntenna* currentSlot = new SlotAntenna;
-    	return currentSlot;
+    	SlotAntenna* aSlot = new SlotAntenna;
+    	return aSlot;
     }
 
 

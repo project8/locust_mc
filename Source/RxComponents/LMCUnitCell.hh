@@ -8,7 +8,7 @@
 #ifndef LMCUNITCELL_HH_
 #define LMCUNITCELL_HH_
 
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
@@ -25,7 +25,7 @@ namespace locust
  */
 
 
-    class UnitCell: public PowerCombinerParent
+    class UnitCell: public PowerCombiner
     {
 
         public:

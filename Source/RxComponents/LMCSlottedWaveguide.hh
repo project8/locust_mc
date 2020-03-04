@@ -8,7 +8,7 @@
 #ifndef LMCSLOTTEDWAVEGUIDE_HH_
 #define LMCSLOTTEDWAVEGUIDE_HH_
 
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
@@ -25,7 +25,7 @@ namespace locust
  */
 
 
-    class SlottedWaveguide: public PowerCombinerParent
+    class SlottedWaveguide: public PowerCombiner
     {
 
         public:

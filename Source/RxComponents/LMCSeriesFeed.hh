@@ -8,7 +8,7 @@
 #ifndef LMCSERIESFEED_HH_
 #define LMCSERIESFEED_HH_
 
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
@@ -25,7 +25,7 @@ namespace locust
  */
 
 
-    class SeriesFeed: public PowerCombinerParent
+    class SeriesFeed: public PowerCombiner
     {
 
         public:

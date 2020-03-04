@@ -25,9 +25,10 @@ namespace locust
     bool SeriesFeed::Configure( const scarab::param_node& aParam )
     {
 
-    	if( !PowerCombinerParent::Configure(aParam))
+    	if( !PowerCombiner::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring PowerCombiner class from SeriesFeed subclass");
+    		return false;
     	}
 
 		SetJunctionLoss(0.87);

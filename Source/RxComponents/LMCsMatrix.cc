@@ -31,10 +31,18 @@ namespace locust
     bool SMatrix::Configure( const scarab::param_node& aParam )
     {
 
-    	if( !PowerCombinerParent::Configure(aParam))
+    	if( !PowerCombiner::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring PowerCombiner class from SMatrix subclass");
+    		return false;
     	}
+
+    	if (!((GetNElementsPerStrip() == 2)||(GetNElementsPerStrip() == 4)||(GetNElementsPerStrip() == 6)||(GetNElementsPerStrip() == 8)))
+    	{
+    		LERROR(lmclog,"S-matrix expects 2, 4, 6, or 8 patches per strip.");
+    		return false;
+    	}
+
 
     	SetVoltageDampingFactors();
     	return true;

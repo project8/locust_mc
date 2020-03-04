@@ -8,7 +8,7 @@
 #ifndef LMCVOLTAGEDIVIDER_HH_
 #define LMCVOLTAGEDIVIDER_HH_
 
-#include "LMCPowerCombinerParent.hh"
+#include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
@@ -25,7 +25,7 @@ namespace locust
  */
 
 
-    class VoltageDivider: public PowerCombinerParent
+    class VoltageDivider: public PowerCombiner
     {
 
         public:
