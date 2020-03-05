@@ -31,6 +31,7 @@ namespace locust
         fLO_Frequency( 0.),
         fArrayRadius( 0. ),
         fNElementsPerStrip( 0. ),
+		fNSubarrays( 1 ),
 		fZShiftArray( 0. ),
         fElementSpacing( 0. ),
         gxml_filename("blank.xml"),
@@ -151,6 +152,12 @@ namespace locust
         {
             fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
         }
+
+        if( aParam.has( "n-subarrays" ) )
+        {
+            fNSubarrays = aParam["n-subarrays"]().as_int();
+        }
+
         if( aParam.has( "element-spacing" ) )
         {
             fElementSpacing = aParam["element-spacing"]().as_double();
@@ -398,40 +405,43 @@ namespace locust
         }
 
         const unsigned nChannels = fNChannels;
+        const unsigned nSubarrays = fNSubarrays;
         const int nReceivers = fNElementsPerStrip;
 
         const double elementSpacingZ = fElementSpacing;
         const double elementRadius = fArrayRadius;
         double zPosition;
         double theta;
-        const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
+        const double dThetaArray = 2. * LMCConst::Pi() / (nChannels/nSubarrays); //Divide the circle into nChannels
         const double dRotateVoltages = 0.;  // set to zero to not rotate element polarities.
 
         allRxChannels.resize(nChannels);
 
-        for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
-        {
-            theta = channelIndex * dThetaArray;
+        	for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
+        	{
+        		theta = channelIndex * dThetaArray;
 
-            for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
-            {
-                zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
+        		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
+        		{
+        			zPosition =  fZShiftArray +
+        					(int(channelIndex/(nChannels/nSubarrays))-((nSubarrays -1.)/2.) )*nReceivers*elementSpacingZ +
+        					(receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
-                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
-                {
-                	zPosition = 0.;
-                }
+        			if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
+        			{
+        				zPosition = 0.;
+        			}
 
-                Receiver* modelElement = fPowerCombiner.ChooseElement();  // patch or slot selection
+        			Receiver* modelElement = fPowerCombiner.ChooseElement();  // patch or slot selection
 
-                modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
-                modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
-                modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
-                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
-                allRxChannels[channelIndex].AddReceiver(modelElement);
+        			modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
+        			modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
+        			modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
+        			modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
+        			allRxChannels[channelIndex].AddReceiver(modelElement);
 
-            }
-        }
+        		}
+        	}
 
         return true;
     }
