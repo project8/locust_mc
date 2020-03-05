@@ -78,6 +78,7 @@ namespace locust
             double fLO_Frequency;
             double fArrayRadius;
             int fNElementsPerStrip;
+            int fNSubarrays;
             double fZShiftArray;
             double fElementSpacing;
             std::string gxml_filename;
