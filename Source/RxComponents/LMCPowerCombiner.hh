@@ -1,11 +1,16 @@
+/*
+ * LMCPowerCombiner.hh
+ *
+ *  Created on: Feb 25, 2020
+ *      Author: pslocum
+ */
 
 #ifndef LMCPOWERCOMBINER_HH_
 #define LMCPOWERCOMBINER_HH_
-
-#include "LMCException.hh"
 #include "param.hh"
-#include "LMCSignal.hh"
+#include "LMCException.hh"
 #include "LMCConst.hh"
+#include "LMCSignal.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCSlotAntenna.hh"
 #include <vector>
@@ -14,96 +19,58 @@
 namespace locust
 {
  /*!
- @class PowerCombiner
+ @class LMCPowerCombiner
  @author P. Slocum
- @brief Class to describe the power combining in the patch array.
- S-matrix and voltage damping factors for the array are defined with functions
- SetSMatrixParameters(int aPatchesPerStrip) and
- SetVoltageDampingFactors(int aPatchesPerStrip) .
-
+ @brief Base class to characterize power combiners
  @details
  Available configuration options:
- "power-combining-feed" is an integer to select the appropriate power combining configuration.
-     	if (feed == "corporate") fpowerCombiner = 0;  // default
-    	else if (feed == "series") fpowerCombiner = 1;
-        else if (feed == "one-quarter") fpowerCombiner = 2;
-        else if (feed == "seven-eighths") fpowerCombiner = 3;
-        else if (feed == "nine-sixteenths") fpowerCombiner = 4;
-        else if (feed == "voltage-divider") fpowerCombiner = 5;
-        else if (feed == "s-matrix") fpowerCombiner = 6;
-        else if (feed == "single-patch") fpowerCombiner = 7;
-        else if (feed == "slotted-waveguide") fpowerCombiner = 8;
-        else fpowerCombiner = 0;  // default
-
+ No input parameters
  */
     class PowerCombiner
     {
 
         public:
             PowerCombiner();
-
             virtual ~PowerCombiner();
-            bool Configure( const scarab::param_node& aNode);
+            int GetNElementsPerStrip();
+            void SetNElementsPerStrip( int aNumberOfElements );
+            virtual bool Configure( const scarab::param_node& aNode );
+        	virtual bool SetVoltageDampingFactors() {};
+        	virtual bool SetSMatrixParameters() {};
+        	virtual bool IsSinglePatch();
+            virtual Receiver* ChooseElement();
+        	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	virtual void SayHello();
+        	virtual void Initialize() {};
 
-            bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-            bool SetVoltageDampingFactors(int anElementsPerStrip, double anElementSpacing);
-            bool SetSMatrixParameters(int anElementsPerStrip);
-            void SetNPatchesPerStrip(int aPatchesPerStrip);
-            Receiver* ChooseElement();
-            void SetNSlots(int aNSlots);
-            void SetJunctionLoss(double aJunctionLoss);
-            void SetPatchLoss(double aPatchLoss);
-            void SetAmplifierLoss(double aAmplifierLoss);
-            void SetEndPatchLoss(double aEndPatchLoss);
-            bool SetPowerCombiner( std::string feed );
-            int GetPowerCombiner();
 
+
+            double GetJunctionLoss();
+            void SetJunctionLoss( double aJunctionLoss );
+            double GetPatchLoss();
+            void SetPatchLoss( double aPatchLoss );
+            double GetAmplifierLoss();
+            void SetAmplifierLoss( double aAmplifierLoss );
+            double GetEndPatchLoss();
+            void SetEndPatchLoss( double aEndPatchLoss );
+            double GetJunctionResistance();
+            void SetJunctionResistance( double aJunctionResistance );
+            double GetDampingFactor( int z_index );
+            void SetDampingFactor (int z_index, double aDampingFactor );
 
 
         private:
-            double GetSeriesPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            double GetCenterFedPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            bool SetCenterFedDampingFactors();
-            bool SetSlottedWaveguideDampingFactors();
-            bool SetSeriesFedDampingFactors();
-            bool SetVoltageDividerDampingFactors();
-            bool SetSmatrixDampingFactors();
-            std::vector<double> GetResistances(double RJunction, double R0, double RGround, int NPAIRS);
-            std::vector<double> GetPartialGains(double RJunction, double R0, double RGround, int NPAIRS);
-            double GetVoltageDividerWeight(double RJunction, double R0, double Rground, unsigned z_index);
-            double GetParallelResistance(std::vector<double> R, int NRESISTORS, int resistorindex);
-            std::vector<double> GetSmatrixElements();
-            bool SetTransmissionCoefficients();
-            int fpowerCombiner;
-            int fnPatchesPerStrip;
-            int fnSlots;
+            int fnElementsPerStrip;
+      	    std::vector<double> fdampingFactors;
             double fjunctionLoss;
             double fpatchLoss;
             double famplifierLoss;
             double fendPatchLoss;
             double fjunctionResistance;
-      	    std::vector<double> fdampingFactors;
 
-      	    // Uniform taper S-matrices from HFSS:
-      /*
-      	    std::vector<double> fsMatrix2patch = {0.2, 0.64, 0.64};
-            std::vector<double> fsMatrix4patch = {0.09, 0.47, 0.47, 0.47, 0.47};
-            std::vector<double> fsMatrix6patch = {0.03, 0.38, 0.38, 0.38, 0.38, 0.38, 0.38};
-      */
-            // end Uniform taper S-matrices.
-
-            // 7/8 power combiner S-matrices (traveling wave configuration) from HFSS:
-            std::vector<double> fsMatrix2patch = {0.12, 0.43, 0.43};
-            std::vector<double> fsMatrix4patch = {0.12, 0.3, 0.43, 0.43, 0.3};
-            std::vector<double> fsMatrix6patch = {0.12, 0.24, 0.3, 0.43, 0.43, 0.3, 0.24};
-            std::vector<double> fsMatrix8patch = {0.12, 0.17, 0.24, 0.3, 0.43, 0.43, 0.3, 0.24, 0.17};
-            // end 7/8 combiner S-matrices.
-
-            std::vector<double> ftransmissionCoefficients;
-    };
+};
 
 
 } /* namespace locust */
 
-#endif /* LMCPOWERCOMBINER_HH_ */
-
+#endif
