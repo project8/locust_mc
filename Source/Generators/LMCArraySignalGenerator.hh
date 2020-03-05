@@ -14,6 +14,13 @@
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
 #include "LMCPowerCombiner.hh"
+#include "LMCVoltageDivider.hh"
+#include "LMCSlottedWaveguide.hh"
+#include "LMCSinglePatch.hh"
+#include "LMCCorporateFeed.hh"
+#include "LMCsMatrix.hh"
+#include "LMCUnitCell.hh"
+#include "LMCSeriesFeed.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCFIRFileHandler.hh"
@@ -71,11 +78,11 @@ namespace locust
 
         private:
             std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
-            Transmitter* fTransmitter; // transmitter object
             double fLO_Frequency;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             double fArrayRadius;
             int fNElementsPerStrip;
+            int fNSubarrays;
             double fZShiftArray;
             double fElementSpacing;
             std::string gxml_filename;
@@ -109,9 +116,9 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
-            bool InitializePowerCombining();
+            Transmitter* fTransmitter; // transmitter object
+            PowerCombiner* fPowerCombiner;
             TFReceiverHandler fTFReceiverHandler;
-            PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
 
             kl_interface_ptr_t fInterface;

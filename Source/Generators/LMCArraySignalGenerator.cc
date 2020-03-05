@@ -26,6 +26,7 @@ namespace locust
         fLO_Frequency( 0.),
         fArrayRadius( 0. ),
         fNElementsPerStrip( 0. ),
+		fNSubarrays( 1 ),
 		fZShiftArray( 0. ),
         fElementSpacing( 0. ),
         gxml_filename("blank.xml"),
@@ -55,6 +56,104 @@ namespace locust
     bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
+    	if (aParam.has( "power-combining-feed" ))
+    	{
+    		int npowercombiners = 0;
+
+        	if(aParam["power-combining-feed"]().as_string() == "voltage-divider")
+        	{
+        		npowercombiners += 1;
+        		fPowerCombiner = new VoltageDivider;
+        		if(!fPowerCombiner->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring voltage divider.");
+        			exit(-1);
+        		}
+        	}
+
+        	if(aParam["power-combining-feed"]().as_string() == "slotted-waveguide")
+        	{
+        		npowercombiners += 1;
+        		fPowerCombiner = new SlottedWaveguide;
+        		if(!fPowerCombiner->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring slotted waveguide.");
+        		}
+        	}
+
+        	if(aParam["power-combining-feed"]().as_string() == "single-patch")
+        	{
+        		npowercombiners += 1;
+        		fPowerCombiner = new SinglePatch;
+        		if(!fPowerCombiner->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring single patch.");
+        			exit(-1);
+        		}
+        	}
+
+        	if(aParam["power-combining-feed"]().as_string() == "corporate")
+        	{
+        		npowercombiners += 1;
+        		fPowerCombiner = new CorporateFeed;
+        		if(!fPowerCombiner->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring corporate feed.");
+        			exit(-1);
+        		}
+        	}
+
+        	if(aParam["power-combining-feed"]().as_string() == "s-matrix")
+        	{
+        		npowercombiners += 1;
+        		fPowerCombiner = new SMatrix;
+        		if(!fPowerCombiner->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring s matrix.");
+        			exit(-1);
+        		}
+        	}
+
+
+        	if((aParam["power-combining-feed"]().as_string() == "unit-cell-one-quarter")||
+               (aParam["power-combining-feed"]().as_string() == "unit-cell-seven-eighths")||
+               (aParam["power-combining-feed"]().as_string() == "unit-cell-nine-sixteenths"))
+        	{
+        		npowercombiners += 1;
+        		fPowerCombiner = new UnitCell;
+        		if(!fPowerCombiner->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring unit cell.");
+        			exit(-1);
+        		}
+        	}
+
+
+        	if(aParam["power-combining-feed"]().as_string() == "series-feed")
+        	{
+        		npowercombiners += 1;
+        		fPowerCombiner = new SeriesFeed;
+        		if(!fPowerCombiner->Configure(aParam))
+        		{
+        			LERROR(lmclog,"Error configuring series feed.");
+        		}
+        	}
+
+
+        	if (npowercombiners != 1)
+        	{
+        		LERROR(lmclog,"LMCArraySignalGenerator needs a single power combiner.  Please choose one value for power-combining-feed in the config file.");
+                exit(-1);
+        	}
+
+    	}
+        else
+        {
+    		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a power combiner.  Please choose a value for power-combiner-feed in the config file.");
+            exit(-1);
+        }
+
+
         if( aParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
@@ -62,40 +161,37 @@ namespace locust
         	if(aParam["transmitter"]().as_string() == "antenna")
         	{
         		ntransmitters += 1;
-        		AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
-        		if(!modelTransmitter->Configure(aParam))
+        		fTransmitter = new AntennaSignalTransmitter;
+        		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
         		}
-        		if(!modelTransmitter->InitializeTransmitter())
+        		if(!fTransmitter->InitializeTransmitter())
         		{
         			exit(-1);
         		}
-        		fTransmitter = modelTransmitter;
         	}
 
         	if(aParam["transmitter"]().as_string() == "planewave")
         	{
         		ntransmitters += 1;
-        		PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
-        		if(!modelTransmitter->Configure(aParam))
+        		fTransmitter = new PlaneWaveTransmitter;
+        		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring planewave transmitter class");
         		}
 
-        		fTransmitter = modelTransmitter;
         	}
 
         	if(aParam["transmitter"]().as_string() == "kassiopeia")
         	{
         		ntransmitters += 1;
-        		KassTransmitter* modelTransmitter = new KassTransmitter;
-        		if(!modelTransmitter->Configure(aParam))
+        		fTransmitter = new KassTransmitter;
+        		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
         		}
 
-        		fTransmitter = modelTransmitter;
         	}
 
         	if (ntransmitters != 1)
@@ -114,11 +210,6 @@ namespace locust
     	if(!fTFReceiverHandler.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
-    	}
-
-    	if(!fPowerCombiner.Configure(aParam))
-    	{
-    		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
     	}
 
         if( aParam.has( "buffer-size" ) )
@@ -146,6 +237,12 @@ namespace locust
         {
             fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
         }
+
+        if( aParam.has( "n-subarrays" ) )
+        {
+            fNSubarrays = aParam["n-subarrays"]().as_int();
+        }
+
         if( aParam.has( "element-spacing" ) )
         {
             fElementSpacing = aParam["element-spacing"]().as_double();
@@ -185,19 +282,16 @@ namespace locust
         return;
     }
 
-	void ArraySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
+    void ArraySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
+    {
+	for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
 	{
-		for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
-		{
             for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
             {
             	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
             }
-		}
 	}
-
-
-
+    }
 
     bool ArraySignalGenerator::WakeBeforeEvent()
     {
@@ -297,20 +391,20 @@ namespace locust
                 double* tFieldSolution = new double[2];
                 if (!fTransmitter->IsKassiopeia())
                 {
-                	tFieldSolution = fTransmitter->GetEFieldCoPol(currentElement->GetPosition(), channelIndex, elementIndex, fElementSpacing, fNElementsPerStrip, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                	tFieldSolution = fTransmitter->GetEFieldCoPol(tTotalElementIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
                 }
                 else
                 {
                 	tFieldSolution = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
                 }
 
-                tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(), *currentElement);
+                tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
- 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+ 	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;
@@ -372,21 +466,6 @@ namespace locust
     }
 
 
-
-    bool ArraySignalGenerator::InitializePowerCombining()
-    {
-    	fPowerCombiner.SetSMatrixParameters(fNElementsPerStrip);
-    	if (!fPowerCombiner.SetVoltageDampingFactors(fNElementsPerStrip, fElementSpacing) )
-    	{
-    		return false;
-    	}
-    	else
-    	{
-    		return true;
-    	}
-    }
-
-
     bool ArraySignalGenerator::InitializeElementArray()
     {
 
@@ -396,40 +475,43 @@ namespace locust
         }
 
         const unsigned nChannels = fNChannels;
+        const unsigned nSubarrays = fNSubarrays;
         const int nReceivers = fNElementsPerStrip;
 
         const double elementSpacingZ = fElementSpacing;
         const double elementRadius = fArrayRadius;
         double zPosition;
         double theta;
-        const double dThetaArray = 2. * LMCConst::Pi() / nChannels; //Divide the circle into nChannels
+        const double dThetaArray = 2. * LMCConst::Pi() / (nChannels/nSubarrays); //Divide the circle into nChannels
         const double dRotateVoltages = 0.;  // set to zero to not rotate element polarities.
 
         allRxChannels.resize(nChannels);
 
-        for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
-        {
-            theta = channelIndex * dThetaArray;
+        	for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
+        	{
+        		theta = channelIndex * dThetaArray;
 
-            for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
-            {
-                zPosition =  fZShiftArray + (receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
+        		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
+        		{
+        			zPosition =  fZShiftArray +
+        					(int(channelIndex/(nChannels/nSubarrays))-((nSubarrays -1.)/2.) )*nReceivers*elementSpacingZ +
+        					(receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
 
-                if (fPowerCombiner.GetPowerCombiner() == 7)  // single patch
-                {
-                	zPosition = 0.;
-                }
+        			if (fPowerCombiner->IsSinglePatch())
+        			{
+        				zPosition = 0.;
+        			}
 
-                Receiver* modelElement = fPowerCombiner.ChooseElement();  // patch or slot selection
+        			Receiver* modelElement = fPowerCombiner->ChooseElement();  // patch or slot?
 
-                modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
-                modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
-                modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
-                modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
-                allRxChannels[channelIndex].AddReceiver(modelElement);
+        			modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
+        			modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
+        			modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
+        			modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
+        			allRxChannels[channelIndex].AddReceiver(modelElement);
 
-            }
-        }
+        		}
+        	}
 
         return true;
     }
@@ -445,19 +527,19 @@ namespace locust
             exit(-1);
         }
 
+        FILE *fp = fopen("incidentfields.txt", "w");
 
-        if (!InitializePowerCombining() )
-        {
-        	LERROR(lmclog,"Error configuring Power Combining");
-            exit(-1);
-        }
+
+        //n samples for event spacing in Kass.
+        int PreEventCounter = 0;
+        fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         int nfilterbins = fTFReceiverHandler.GetFilterSize();
         double dtfilter = fTFReceiverHandler.GetFilterResolution();
         unsigned nfieldbufferbins = fFieldBufferSize;
         InitializeBuffers(nfilterbins, nfieldbufferbins);
-        FILE *fp = fopen("incidentfields.txt", "w");
-        int PreEventCounter = 0;
+
+        InitializeFieldPoints(allRxChannels);
 
         if (!fTransmitter->IsKassiopeia())
         {
@@ -469,14 +551,12 @@ namespace locust
         }
 
 
-
-
         if (fTransmitter->IsKassiopeia())
         {
 
-    	InitializeFieldPoints(allRxChannels);
-        std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
-        fInterface->fRunInProgress = true;
+        	std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
+        	fInterface->fRunInProgress = true;
+
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
