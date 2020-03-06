@@ -115,8 +115,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
 	Generators/LMCFreeSpaceGenerator.hh
-	    Generators/LMCArraySignalGenerator.hh
-
+	Generators/LMCFieldParameterGenerator.hh
+	Generators/LMCArraySignalGenerator.hh
 
         Transmitters/LMCKassTransmitter.hh
 
@@ -140,7 +140,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
 	Generators/LMCFreeSpaceGenerator.cc
-	    Generators/LMCArraySignalGenerator.cc        
+	Generators/LMCFieldParameterGenerator.cc
+	Generators/LMCArraySignalGenerator.cc        
         
         Transmitters/LMCKassTransmitter.cc
         

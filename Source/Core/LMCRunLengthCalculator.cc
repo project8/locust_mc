@@ -105,6 +105,12 @@ namespace locust
         return;
     }
 
+    void RunLengthCalculator::Visit( const FieldParameterGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
     void RunLengthCalculator::Visit( const LowPassFilterFFTGenerator* )
     {
         // nothing to see here, move along, please

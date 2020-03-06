@@ -36,17 +36,19 @@ namespace locust
         fNFilterBins(50),
         fdtFilter( 50 ),
 	fSwapFrequency( 1000 )
-
     {
+	std::cout<< "FreeSpaceGenerator::FreeSpaceGenerator "<<std::endl;
         fRequiredSignalState = Signal::kTime;
     }
 
     FreeSpaceGenerator::~FreeSpaceGenerator()
     {
+	std::cout<< "FreeSpaceGenerator::~FreeSpaceGenerator "<<std::endl;
     }
 
     bool FreeSpaceGenerator::Configure( const scarab::param_node& aParam )
     {
+	std::cout<< "FreeSpaceGenerator::Configure"<<std::endl;
         if( aParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
@@ -119,6 +121,7 @@ namespace locust
 
     void FreeSpaceGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
+	std::cout<< "FreeSpaceGenerator::Accept"<<std::endl;
         aVisitor->Visit( this );
         return;
     }
@@ -126,6 +129,7 @@ namespace locust
 
     static void* KassiopeiaInit(const std::string &aFile)
     {
+	std::cout<< "FreeSpaceGenerator::KassiopeiaInit"<<std::endl;
         RunKassiopeia RunKassiopeia1;
         RunKassiopeia1.Run(aFile);
         RunKassiopeia1.~RunKassiopeia();
@@ -135,6 +139,7 @@ namespace locust
 
     void FreeSpaceGenerator::InitializeFieldPoints()
     {
+	std::cout<< "FreeSpaceGenerator::InitializeFieldPoints"<<std::endl;
 	fNPoints=50;
 	for(int pointIndex = 0; pointIndex< fNPoints; ++pointIndex)
 	{
@@ -146,12 +151,14 @@ namespace locust
 
     bool FreeSpaceGenerator::WakeBeforeEvent()
     {
+	std::cout<< "FreeSpaceGenerator::WakeBeforeEvent"<<std::endl;
         fPreEventCondition.notify_one();
         return true;
     }
 
     bool FreeSpaceGenerator::ReceivedKassReady()
     {
+	std::cout<< "FreeSpaceGenerator::ReceivedKassReady"<<std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         printf("LMC about to wait ..\n");
 
@@ -173,6 +180,7 @@ namespace locust
     // fields incident on element.
     void FreeSpaceGenerator::RecordIncidentFields(FILE *fp,  double t_old, LMCThreeVector pointOfInterest, double tEFieldCoPol)
     {
+	std::cout<< "FreeSpaceGenerator::RecordIncidentFields"<<std::endl;
     	if (t_old > 0.5e-9)
          	{
          	fprintf(fp, "%d %g %g\n", pointOfInterest.GetX(), pointOfInterest.GetY(),pointOfInterest.GetZ(),tEFieldCoPol);
@@ -182,6 +190,7 @@ namespace locust
 
     void FreeSpaceGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
+	std::cout<< "FreeSpaceGenerator::DriveAntenna"<<std::endl;
         const int signalSize = aSignal->TimeSize();
         unsigned pointIndex = 0;
         unsigned sampleIndex = 0;
@@ -243,6 +252,7 @@ namespace locust
 
     bool FreeSpaceGenerator::DoGenerate( Signal* aSignal )
     {
+	std::cout<< "FreeSpaceGenerator::DriveAntenna"<<std::endl;
         FILE *fp = fopen("incidentfields.txt", "w");
 
         //n samples for event spacing in Kass.

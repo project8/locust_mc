@@ -46,7 +46,7 @@ namespace locust
             FreeSpaceGenerator( const std::string& aName = "free-space" );
             virtual ~FreeSpaceGenerator();
 
-            bool Configure( const scarab::param_node& aNode );
+            virtual bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               

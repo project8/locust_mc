@@ -20,8 +20,9 @@ namespace locust
     class Digitizer;
     class KassSignalGenerator;
     class FreeFieldSignalGenerator;
-    class ArraySignalGenerator;
     class FreeSpaceGenerator;
+    class FieldParameterGenerator;
+    class ArraySignalGenerator;
     class LocalOscillatorGenerator;
     class DecimateSignalGenerator;
 
@@ -37,6 +38,7 @@ namespace locust
             virtual void Visit( const FreeFieldSignalGenerator* ) = 0;
             virtual void Visit( const ArraySignalGenerator* ) = 0;
 	    virtual void Visit( const FreeSpaceGenerator* ) = 0;
+	    virtual void Visit( const FieldParameterGenerator* ) = 0;
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
             virtual void Visit( const FakeTrackSignalGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;
