@@ -14,9 +14,13 @@
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCEvent.hh"
+#include "LMCDistributionInterface.hh"
+//#include "../Distributions/LMCDistributionInterface.hh"
+
 #include <random>
 #include <vector>
 #include <boost/math/interpolators/barycentric_rational.hpp>
+
 
 namespace scarab
 {
@@ -98,12 +102,6 @@ namespace locust
             double GetStartVPhase() const;
             void SetStartVPhase( double aPhase );
 
-            double GetSlopeMean() const;
-            void SetSlopeMean( double aSlopeMean );
-
-            double GetSlopeStd() const;
-            void SetSlopeStd( double aSlopeStd );
-
             double GetStartTimeMax() const;
             void SetStartTimeMax( double aTimeMax );
 
@@ -172,8 +170,7 @@ namespace locust
             double fStartFrequencyMax;
             double fStartFrequencyMin;
             double fStartVPhase;
-            double fSlopeMean;
-            double fSlopeStd;
+            std::shared_ptr< BaseDistribution> fSlopeDistribution;
             double fStartTimeMax;
             double fStartTimeMin;
             double fStartPitchMin;
@@ -193,6 +190,7 @@ namespace locust
             boost::math::barycentric_rational<double> fKrInterpolant;
             const double fTrapLength;
 
+            DistributionInterface fDistributionInterface;
 
     };
 

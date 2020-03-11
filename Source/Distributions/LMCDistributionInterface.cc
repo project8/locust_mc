@@ -18,7 +18,7 @@ namespace locust
 
     }
     //add second optional argument for type
-    std::shared_ptr< BaseDistribution> DistributionInterface::GetDistribution(const std::string &dist_name)
+    std::shared_ptr< BaseDistribution> DistributionInterface::get_dist(const std::string &dist_name)
     {
         ////put in case check
         if(dist_name == "uniform")

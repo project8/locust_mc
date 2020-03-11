@@ -38,8 +38,8 @@ set( LOCUST_MC_HEADER_FILES
 	Core/LMCTFFileHandler.hh	
 
     Distributions/LMCBaseDistribution.hh
-    Distributions/LMCDistributionInterface.hh
     Distributions/LMCUniformDistribution.hh
+    Distributions/LMCDistributionInterface.hh
 	    
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -92,8 +92,8 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCTFFileHandler.cc
 
     Distributions/LMCBaseDistribution.cc
-    Distributions/LMCDistributionInterface.cc
     Distributions/LMCUniformDistribution.cc
+    Distributions/LMCDistributionInterface.cc
     	
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc

@@ -31,7 +31,7 @@ namespace locust
         public:
             DistributionInterface();
             virtual ~DistributionInterface();
-            std::shared_ptr< BaseDistribution> GetDistribution(const std::string &dist_name);
+            std::shared_ptr< BaseDistribution> get_dist(const std::string &dist_name);
 
         private:
             std::list<std::shared_ptr< BaseDistribution >> fDistributionList;

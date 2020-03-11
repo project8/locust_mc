@@ -32,8 +32,6 @@ namespace locust
         fStartFrequencyMax( 0. ),
         fStartFrequencyMin( 0. ),
         fStartVPhase( 0. ),
-        fSlopeMean( 0. ),
-        fSlopeStd( 0. ),
         fStartTimeMin( 0. ),
         fStartTimeMax( 0. ),
         fStartPitchMin( 89.9 ),
@@ -95,11 +93,10 @@ namespace locust
         if( aParam.has( "min-pitch" ) )
             SetPitchMin( aParam.get_value< double >( "min-pitch", fPitchMin ) );
 
-        if( aParam.has( "slope-mean" ) )
-            SetSlopeMean( aParam.get_value< double >( "slope-mean", fSlopeMean ) );
-
-        if( aParam.has( "slope-std" ) )
-            SetSlopeStd( aParam.get_value< double >( "slope-std", fSlopeStd ) );
+        //this is going to have to be changed
+        //eg instead of hardcoded gaussian, it should pass whatever param_node/ array obj
+        if( aParam.has( "slope" ) )
+            fSlopeDistribution = fDistributionInterface.get_dist("gaussian");
 
         if( aParam.has( "start-time-max" ) )
             SetStartTimeMax( aParam.get_value< double >( "start-time-max", fStartTimeMax ) );
@@ -277,28 +274,6 @@ namespace locust
     void FakeTrackSignalGenerator::SetStartVPhase( double aPhase )
     {
         fStartVPhase = aPhase;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetSlopeMean() const
-    {
-        return fSlopeMean;
-    }
-
-    void FakeTrackSignalGenerator::SetSlopeMean( double aSlopeMean )
-    {
-        fSlopeMean = aSlopeMean;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetSlopeStd() const
-    {
-        return fSlopeStd;
-    }
-
-    void FakeTrackSignalGenerator::SetSlopeStd( double aSlopeStd )
-    {
-        fSlopeStd = aSlopeStd;
         return;
     }
 
@@ -625,7 +600,6 @@ namespace locust
         double theta_scatter;
         const double deg_to_rad = LMCConst::Pi() / 180.;
 
-        std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
         std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
@@ -672,7 +646,7 @@ namespace locust
             aTrack.StartFrequency = fStartFrequency;
         }
 
-        fSlope = slope_distribution(fRandomEngine);
+        fSlope = fSlopeDistribution->Generate();
         fTrackLength = tracklength_distribution(fRandomEngine);
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
         aTrack.Slope = fSlope;
