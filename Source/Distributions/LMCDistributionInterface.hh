@@ -1,0 +1,43 @@
+/*
+ * LMCDistributionInterface.hh
+ *
+ *  Created on: Mar 10, 2020
+ *      Author: nbuzinsky
+ */
+
+#ifndef LMCDISTRIBUTIONINTERFACE_HH_
+#define LMCDISTRIBUTIONINTERFACE_HH_
+
+#include "LMCBaseDistribution.hh"
+#include "LMCUniformDistribution.hh"
+//#include "LMCGaussianDistribution.hh"
+//
+#include <list>
+#include <string>
+
+namespace locust
+{
+ /*!
+ @class DistributionInterface
+ @author N. Buzinsky
+ @brief Public interface for parsing/ calling LMCDistributions for random number generation
+ @details
+ Available configuration options:
+ No input parameters
+ */
+    class DistributionInterface
+    {
+
+        public:
+            DistributionInterface();
+            virtual ~DistributionInterface();
+            std::shared_ptr< BaseDistribution> GetDistribution(const std::string &dist_name);
+
+        private:
+            std::list<std::shared_ptr< BaseDistribution >> fDistributionList;
+};
+
+
+} /* namespace locust */
+
+#endif /* LMCBASEDISTRBUTION_HH_ */
