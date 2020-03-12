@@ -15,6 +15,7 @@
 #include <math.h>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 using std::string;
 
@@ -93,10 +94,8 @@ namespace locust
         if( aParam.has( "min-pitch" ) )
             SetPitchMin( aParam.get_value< double >( "min-pitch", fPitchMin ) );
 
-        //this is going to have to be changed
-        //eg instead of hardcoded gaussian, it should pass whatever param_node/ array obj
         if( aParam.has( "slope" ) )
-            fSlopeDistribution = fDistributionInterface.get_dist("gaussian");
+            fSlopeDistribution = fDistributionInterface.get_dist(aParam["slope"].as_node());
 
         if( aParam.has( "start-time-max" ) )
             SetStartTimeMax( aParam.get_value< double >( "start-time-max", fStartTimeMax ) );

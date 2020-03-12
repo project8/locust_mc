@@ -26,6 +26,7 @@ namespace locust
 
         public:
             //virtual T Generate() = 0;
+            UniformDistribution(const scarab::param_node &aParam);
             double Generate();
 
         private:

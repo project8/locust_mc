@@ -8,6 +8,8 @@
 #ifndef LMCBASEDISTRIBUTION_HH_
 #define LMCBASEDISTRIBUTION_HH_
 
+#include "param_node.hh"
+
 #include <random>
 
 namespace locust
@@ -27,8 +29,9 @@ namespace locust
         public:
             BaseDistribution();
             virtual ~BaseDistribution();
-            //virtual T Base() = 0;
+
             virtual double Generate() = 0;
+
             std::default_random_engine generator;
 
         private:

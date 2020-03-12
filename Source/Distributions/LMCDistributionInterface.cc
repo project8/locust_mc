@@ -15,21 +15,22 @@ namespace locust
 
     DistributionInterface::~DistributionInterface()
     {
-
     }
-    //add second optional argument for type
-    std::shared_ptr< BaseDistribution> DistributionInterface::get_dist(const std::string &dist_name)
+
+    std::shared_ptr< BaseDistribution> DistributionInterface::get_dist(const scarab::param_node &aParam)
     {
-        ////put in case check
-        if(dist_name == "uniform")
-        {
-            fDistributionList.push_back( std::make_shared< UniformDistribution >() );
-        }
+        std::string dist_name;
+        if(aParam.has("name"))
+            dist_name = aParam.get_value< std::string >( "name", dist_name );
         //else
         //{
         //    LMCERROR(lmcdist,"Distribution " << dist_name << " not found in list of possibilities! Enter a valid distribution name!");
         //}
 
+        if(dist_name == "uniform")
+        {
+            fDistributionList.push_back( std::make_shared< UniformDistribution >(aParam) );
+        }
         return fDistributionList.back();  
     }
 
