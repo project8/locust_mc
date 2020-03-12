@@ -39,6 +39,7 @@ set( LOCUST_MC_HEADER_FILES
 
     Distributions/LMCBaseDistribution.hh
     Distributions/LMCUniformDistribution.hh
+    Distributions/LMCGaussianDistribution.hh
     Distributions/LMCDistributionInterface.hh
 	    
     Generators/LMCDigitizer.hh
@@ -93,6 +94,7 @@ set( LOCUST_MC_SOURCE_FILES
 
     Distributions/LMCBaseDistribution.cc
     Distributions/LMCUniformDistribution.cc
+    Distributions/LMCGaussianDistribution.cc
     Distributions/LMCDistributionInterface.cc
     	
     Generators/LMCDigitizer.cc

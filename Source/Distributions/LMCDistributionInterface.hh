@@ -9,9 +9,11 @@
 #define LMCDISTRIBUTIONINTERFACE_HH_
 
 #include "LMCBaseDistribution.hh"
+
+#include "LMCGaussianDistribution.hh"
 #include "LMCUniformDistribution.hh"
+
 #include "param_node.hh"
-//#include "LMCGaussianDistribution.hh"
 
 #include <list>
 #include <string>
