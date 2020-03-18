@@ -33,7 +33,7 @@ namespace locust
         if(aParam.has("emitted-peak"))
             fEmittedPeak = aParam.get_value< std::string >( "emitted-peak", fEmittedPeak );
 
-        //create rng instances
+        //create random number generator instances
         const double kr_line_width = 2.83; // eV
         fXArray = linspace(-1000,1000,fNPointsSELA);
 
@@ -42,11 +42,17 @@ namespace locust
         fGeometric = std::geometric_distribution<int>(1. - fScatterProbability );
         fUniform = std::uniform_real_distribution<double>(0,1);
 
-        fShakeSpectrum = shake_spectrum();
 
+        fShakeSpectrum = shake_spectrum();
+        create_cdf(fShakeInterpolator, fShakeSpectrum, fXArray);
+
+        for(unsigned i=0; i < fGases.size(); ++i)
+            fEnergyLossSpectra[i] = energy_loss_spectra(fGases[i]);
+            create_cdf(fEnergyLossInterpolator[i], fEnergyLossSpectra[i], fXArray);
 
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // The shakeup/shakeoff spectrum for the 17.8 keV line of Kr83m based on Hamish Vadantha paper
     // Overleaf link for the paper https://www.overleaf.com/project/5d56e015162d244b1c283c57
     // Read parameters for shake up shake off spectrum from an excel spread sheet.
@@ -117,7 +123,8 @@ namespace locust
         //x_array = flip_array(x_array);
         return full_shake_spectrum(fXArray, 0, 24);
     }
-    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //energy loss code
 
     // A sub function for the scatter function. Found in 
@@ -137,7 +144,6 @@ namespace locust
         return A2*pow(omeg2, 2.)/(pow(omeg2, 2.) + 4. * pow(energy_loss_array-eps2, 2.) );
     }
 
-    //should keep eLoss > 0 fix
     double KrComplexLineDistribution::EnergyLossSpectrum(double eLoss, double oscillator_strength)
     {
         double T = rel_energy(fStartFrequencyMax, fBField);
@@ -146,19 +152,23 @@ namespace locust
 
     ////////////////////////////////////////////////////////////////////////////////////
 
-        //std::sort(readData.begin(), readData.end(), [](const std::pair<double,double> & a, const std::pair<double, double> & b) -> bool { return a.first < b.first; });
 
-    std::vector<std::vector<std::string> > KrComplexLineDistribution::read_file(std::string filename, std::string delimiter)
+    std::vector<std::vector<std::double> > KrComplexLineDistribution::read_file(std::string filename, std::string delimiter)
     {
         std::ifstream file(filename);
-        std::vector<std::vector<std::string> > dataList;
+        std::vector<std::vector<double> > dataList;
         std::string line = "";
         // Iterate through each line and split the content using delimeter
         while (getline(file, line))
         {
             if(line.empty() || line[0] == std::string("#")) continue;
-            std::vector<std::string> vec;
-            boost::algorithm::split(vec, line, boost::is_any_of(delimeter));
+            std::vector<std::string> string_vec;
+            boost::algorithm::split(string_vec, line, boost::is_any_of(delimeter));
+
+            //change types
+            std::vector<double> double_vec(string_vec.size());
+            transform(string_vec.begin(), string_vec.end(), double_vec.begin(),
+                    [](string const& val) {return stod(val);});
             dataList.push_back(vec);
         }
 
@@ -166,6 +176,12 @@ namespace locust
         return dataList;
     }
 
+    std::valarray<double> KrComplexLineDistribution::energy_loss_spectra(const std::string &gas_species)
+    {
+        std::vector<std::vector<std::double> > read_data  = read_file(filename, "\t");
+        std::sort(read_data.begin(), read_data.end(), [](const std::vector<double> & a, const std::vector<double> & b) -> bool { return a[0] < b[0]; });
+
+    }
 
     double KrComplexLineDistribution::generate_from_cdf(double u, boost::math::barycentric_rational<double> &aCDF )
     {
@@ -203,7 +219,8 @@ namespace locust
 
     double KrComplexLineDistribution::generate_shake()
     {
-         //return fLorentizian(fGenerator);
+        double u = fUniform(fGenerator);
+        return generate_from_cdf(u,fShakeInterpolator);
     }
 
     std::string KrComplexLineDistribution::generate_gas_species()

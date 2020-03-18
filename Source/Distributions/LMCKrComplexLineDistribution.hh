@@ -52,6 +52,36 @@ namespace locust
             std::cauchy_distribution<double> fLorentzian;
 
             std::vector<std::normal_distribution<double>> fGeometric;
+
+            constexpr double nprime(const double &E_b, const double &W);
+            constexpr double C1s(const double &E_b);
+            double P_1s_nprime(const double &E_b, const double &W);
+            double I(const unsigned &i, const double &E);
+            double spectrum1(const unsigned &i, const double &E);
+            std::valarray<double> full_shake_spectrum(const double &E, const unsigned &start_number_of_i, const unsigned &end_number_of_i);
+            std::valarray<double> shake_spectrum();
+            std::valarray<double> aseev_func_tail(std::valarray<double> energy_loss_array, std::string gas_type);
+            double EnergyLossSpectrum(double eLoss, double oscillator_strength);
+            std::vector<std::vector<std::double> > read_file(std::string filename, std::string delimiter);
+            std::valarray<double> energy_loss_spectra(const std::string &gas_species);
+            double generate_from_cdf(double u, boost::math::barycentric_rational<double> &aCDF );
+            void create_cdf(boost::math::barycentric_rational<double> &interpolant, std::vector<double> f, std::vector<double> x);
+
+            template <typename T>
+            T<double> trapezoidal_rule(T<double> f, T<double> x);
+
+            double generate_shake();
+            std::string generate_gas_species();
+            double generate_energy_loss(std::string gas_species);
+            int generate_nscatters(std::string &gas_species);
+
+            template <typename T>
+            std::vector<T> linspace(T a, T b, unsigned N);
+
+            constexpr double gaussian_FWHM_to_sigma(const double &fwhm);
+
+
+
 };
 
 
