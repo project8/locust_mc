@@ -32,7 +32,7 @@ namespace locust
 
             virtual double Generate() = 0;
 
-            std::default_random_engine generator;
+            std::default_random_engine fRNEngine;
 
         private:
 };

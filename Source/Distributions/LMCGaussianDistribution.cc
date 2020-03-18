@@ -26,7 +26,7 @@ namespace locust
 
     double GaussianDistribution::Generate()
     {
-        return distribution(generator);
+        return distribution(fRNEngine);
     }
 
 } /* namespace locust */
