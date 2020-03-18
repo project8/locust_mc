@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "LMCDigitizer.hh"
 #include <chrono>
 
 
@@ -145,7 +146,7 @@ namespace locust
 	{
 	    LMCThreeVector point(0.0,0.0,0.0);
             fTransmitter->InitializeFieldPoint(point);
-	    fAllFieldCopol[pointIndex].SetComponents(0.0,0.0,0.0);
+	    fAllFieldCopol[pointIndex]=point;
 	}
     }
 
@@ -272,7 +273,7 @@ namespace locust
         	return true;
         }
 
-        if (fTransmitter->IsKassiopeia())
+        else if (fTransmitter->IsKassiopeia())
         {
 
             std::thread Kassiopeia(KassiopeiaInit, gxml_filename);  // spawn new thread
