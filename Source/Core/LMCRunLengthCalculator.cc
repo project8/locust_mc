@@ -99,7 +99,7 @@ namespace locust
         return;
     }
 
-    void RunLengthCalculator::Visit( const FreeSpaceGenerator* )
+    void RunLengthCalculator::Visit( const TransmitterInterfaceGenerator* )
     {
         // nothing to see here, move along, please
         return;
