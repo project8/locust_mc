@@ -1,11 +1,11 @@
 /*
- * LMCFreeSpaceGenerator.cc
+ * LMCTransmitterInterfaceGenerator.cc
  *
  *  Created on: Feb 19, 2018
  *      Author: pslocum
  */
 
-#include "LMCFreeSpaceGenerator.hh"
+#include "LMCTransmitterInterfaceGenerator.hh"
 #include "LMCEventHold.hh"
 #include "LMCRunKassiopeia.hh"
 
@@ -22,11 +22,11 @@
 
 namespace locust
 {
-    LOGGER( lmclog, "FreeSpaceGenerator" );
+    LOGGER( lmclog, "TransmitterInterfaceGenerator" );
 
-    MT_REGISTER_GENERATOR(FreeSpaceGenerator, "free-space");
+    MT_REGISTER_GENERATOR(TransmitterInterfaceGenerator, "transmitter-interface");
 
-    FreeSpaceGenerator::FreeSpaceGenerator( const std::string& aName ) :
+    TransmitterInterfaceGenerator::TransmitterInterfaceGenerator( const std::string& aName ) :
         Generator( aName ),
         gxml_filename("blank.xml"),
 	fTextFileWriting( 0 ),
@@ -38,18 +38,18 @@ namespace locust
         fdtFilter( 50 ),
 	fSwapFrequency( 1000 )
     {
-	std::cout<< "FreeSpaceGenerator::FreeSpaceGenerator "<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::TransmitterInterfaceGenerator "<<std::endl;
         fRequiredSignalState = Signal::kTime;
     }
 
-    FreeSpaceGenerator::~FreeSpaceGenerator()
+    TransmitterInterfaceGenerator::~TransmitterInterfaceGenerator()
     {
-	std::cout<< "FreeSpaceGenerator::~FreeSpaceGenerator "<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::~TransmitterInterfaceGenerator "<<std::endl;
     }
 
-    bool FreeSpaceGenerator::Configure( const scarab::param_node& aParam )
+    bool TransmitterInterfaceGenerator::Configure( const scarab::param_node& aParam )
     {
-	std::cout<< "FreeSpaceGenerator::Configure"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::Configure"<<std::endl;
         if( aParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
@@ -120,9 +120,9 @@ namespace locust
         return true;
     }
 
-    void FreeSpaceGenerator::Accept( GeneratorVisitor* aVisitor ) const
+    void TransmitterInterfaceGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
-	std::cout<< "FreeSpaceGenerator::Accept"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::Accept"<<std::endl;
         aVisitor->Visit( this );
         return;
     }
@@ -130,7 +130,7 @@ namespace locust
 
     static void* KassiopeiaInit(const std::string &aFile)
     {
-	std::cout<< "FreeSpaceGenerator::KassiopeiaInit"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::KassiopeiaInit"<<std::endl;
         RunKassiopeia RunKassiopeia1;
         RunKassiopeia1.Run(aFile);
         RunKassiopeia1.~RunKassiopeia();
@@ -138,9 +138,9 @@ namespace locust
         return 0;
     }
 
-    void FreeSpaceGenerator::InitializeFieldPoints()
+    void TransmitterInterfaceGenerator::InitializeFieldPoints()
     {
-	std::cout<< "FreeSpaceGenerator::InitializeFieldPoints"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::InitializeFieldPoints"<<std::endl;
 	fNPoints=50;
 	for(int pointIndex = 0; pointIndex< fNPoints; ++pointIndex)
 	{
@@ -150,16 +150,16 @@ namespace locust
 	}
     }
 
-    bool FreeSpaceGenerator::WakeBeforeEvent()
+    bool TransmitterInterfaceGenerator::WakeBeforeEvent()
     {
-	std::cout<< "FreeSpaceGenerator::WakeBeforeEvent"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::WakeBeforeEvent"<<std::endl;
         fPreEventCondition.notify_one();
         return true;
     }
 
-    bool FreeSpaceGenerator::ReceivedKassReady()
+    bool TransmitterInterfaceGenerator::ReceivedKassReady()
     {
-	std::cout<< "FreeSpaceGenerator::ReceivedKassReady"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::ReceivedKassReady"<<std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         printf("LMC about to wait ..\n");
 
@@ -179,9 +179,9 @@ namespace locust
     }
 
     // fields incident on element.
-    void FreeSpaceGenerator::RecordIncidentFields(FILE *fp,  double t_old, LMCThreeVector pointOfInterest, double tEFieldCoPol)
+    void TransmitterInterfaceGenerator::RecordIncidentFields(FILE *fp,  double t_old, LMCThreeVector pointOfInterest, double tEFieldCoPol)
     {
-	std::cout<< "FreeSpaceGenerator::RecordIncidentFields"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::RecordIncidentFields"<<std::endl;
     	if (t_old > 0.5e-9)
          	{
          	fprintf(fp, "%d %g %g\n", pointOfInterest.GetX(), pointOfInterest.GetY(),pointOfInterest.GetZ(),tEFieldCoPol);
@@ -189,9 +189,9 @@ namespace locust
 	std::cout<< pointOfInterest.GetX() << " : "<< pointOfInterest.GetY() << " : "<< pointOfInterest.GetZ()<< " : "<< tEFieldCoPol<<std::endl;
     }
 
-    void FreeSpaceGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
+    void TransmitterInterfaceGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
-	std::cout<< "FreeSpaceGenerator::DriveAntenna"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::DriveAntenna"<<std::endl;
         const int signalSize = aSignal->TimeSize();
         unsigned pointIndex = 0;
         unsigned sampleIndex = 0;
@@ -221,21 +221,21 @@ namespace locust
         if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
     }
 
-    void FreeSpaceGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue,unsigned pointIndex, unsigned timeIndex)
+    void TransmitterInterfaceGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue,unsigned pointIndex, unsigned timeIndex)
     {
     	EFieldBuffer[pointIndex].push_back(EFieldValue);
     	EFrequencyBuffer[pointIndex].push_back(DopplerFrequency/2./LMCConst::Pi());
     	IndexBuffer[pointIndex].push_back(pointIndex*aSignal->TimeSize()*aSignal->DecimationFactor() + timeIndex);
     }
 
-    void FreeSpaceGenerator::PopBuffers(unsigned pointIndex)
+    void TransmitterInterfaceGenerator::PopBuffers(unsigned pointIndex)
     {
     	EFieldBuffer[pointIndex].pop_front();
     	EFrequencyBuffer[pointIndex].pop_front();
     	IndexBuffer[pointIndex].pop_front();
     }
 
-    void FreeSpaceGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
+    void TransmitterInterfaceGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
     	FieldBuffer aFieldBuffer;
     	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNPoints, fieldbuffersize);
@@ -243,7 +243,7 @@ namespace locust
     	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNPoints, fieldbuffersize);
     }
 
-    void FreeSpaceGenerator::CleanupBuffers()
+    void TransmitterInterfaceGenerator::CleanupBuffers()
     {
     	FieldBuffer aFieldBuffer;
     	EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
@@ -251,9 +251,9 @@ namespace locust
     	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
     }
 
-    bool FreeSpaceGenerator::DoGenerate( Signal* aSignal )
+    bool TransmitterInterfaceGenerator::DoGenerate( Signal* aSignal )
     {
-	std::cout<< "FreeSpaceGenerator::DriveAntenna"<<std::endl;
+	std::cout<< "TransmitterInterfaceGenerator::DriveAntenna"<<std::endl;
         FILE *fp = fopen("incidentfields.txt", "w");
 
         //n samples for event spacing in Kass.

@@ -8,7 +8,7 @@
 #ifndef LMCFIELDPARAMETERGENERATOR_HH_
 #define LMCFIELDPARAMETERGENERATOR_HH_
 
-#include "LMCFreeSpaceGenerator.hh"
+#include "LMCTransmitterInterfaceGenerator.hh"
 
 namespace locust
 {
@@ -28,7 +28,7 @@ namespace locust
 
     */
 
-    class FieldParameterGenerator : public FreeSpaceGenerator 
+    class FieldParameterGenerator : public TransmitterInterfaceGenerator 
     {
         public:
 

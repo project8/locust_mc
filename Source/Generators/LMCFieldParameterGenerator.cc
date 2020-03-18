@@ -14,7 +14,7 @@ namespace locust
     MT_REGISTER_GENERATOR(FieldParameterGenerator, "field-parameter");
 
     FieldParameterGenerator::FieldParameterGenerator( const std::string& aName ):
-        FreeSpaceGenerator( aName )
+        TransmitterInterfaceGenerator( aName )
     {
     }
 
@@ -24,7 +24,7 @@ namespace locust
 
     bool FieldParameterGenerator::Configure( const scarab::param_node& aParam )
     {
-	    FreeSpaceGenerator::Configure(aParam);
+	    TransmitterInterfaceGenerator::Configure(aParam);
     }
 } /* namespace locust */
 

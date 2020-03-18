@@ -1,12 +1,12 @@
 /*
- * LMCFreeSpaceGenerator.hh
+ * LMCTransmitterInterfaceGenerator.hh
  *
  *  Created on: March 03, 2020
  *      Author: P. T. Surukuchi
  */
 
-#ifndef LMCFREESPACEGENERATOR_HH_
-#define LMCFREESPACEGENERATOR_HH_
+#ifndef LMCTRANSMITTERINTERFACEGENERATOR_HH_
+#define LMCTRANSMITTERINTERFACEGENERATOR_HH_
 
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
@@ -21,15 +21,15 @@ namespace locust
 {
 
     /*!
-     @class FreeSpaceGenerator
+     @class TransmitterInterfaceGenerator
      @author P. T. Surukuchi
 
-     @brief Generate signal in free space(without wave guide) 
+     @brief Generate signal with an emnforced transmitter 
 
      @details
      Operates in time space
 
-     Configuration name: "free-space"
+     Configuration name: "transmitter-interface"
 
      Available configuration options:
      - "xml-filename" : std::string -- the name of the xml locust config file.
@@ -39,12 +39,12 @@ namespace locust
      	 	 becomes more important for large numbers of patches
     */
 
-    class FreeSpaceGenerator : public Generator
+    class TransmitterInterfaceGenerator : public Generator
     {
         public:
 
-            FreeSpaceGenerator( const std::string& aName = "free-space" );
-            virtual ~FreeSpaceGenerator();
+            TransmitterInterfaceGenerator( const std::string& aName = "transmitter-interface" );
+            virtual ~TransmitterInterfaceGenerator();
 
             virtual bool Configure( const scarab::param_node& aNode );
 
@@ -82,4 +82,4 @@ namespace locust
 
 } /* namespace locust */
 
-#endif /* LMCFREESPACEGENERATOR_HH_ */
+#endif /* LMCTRANSMITTERINTERFACEGENERATOR_HH_ */
