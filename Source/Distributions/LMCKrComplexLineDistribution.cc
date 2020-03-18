@@ -49,7 +49,6 @@ namespace locust
         for(unsigned i=0; i < fGases.size(); ++i)
             fGeometric[i] = std::geometric_distribution<int>(1. - fScatterProbability[i] );
 
-
         fShakeSpectrum = shake_spectrum();
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
 
@@ -59,6 +58,22 @@ namespace locust
             //fix me (use correct (custom grid))
             create_cdf(fEnergyLossInterpolator[i], to_vector(fEnergyLossSpectra[i]), to_vector(fXArray));
         }
+
+
+        for(unsigned i=0; i < fGases.size(); ++i)
+            fGasIndex.insert( std::pair<std::string, unsigned>(fGases[i], i) );
+
+
+    }
+
+
+    void KrComplexLineDistribution::read_shake_data()
+    {
+        std::string filename = "KrShakeParameters214.txt";
+        std::vector<std::vector<double> > read_data = read_file(filename, "," );
+
+        //assign variables from these parameters
+        //fGammaWidth
 
     }
 
@@ -83,9 +98,7 @@ namespace locust
     std::valarray<double> KrComplexLineDistribution::P_1s_nprime(const double &E_b, const std::valarray<double> &W)
     {
         std::valarray<double> n_prime = nprime(E_b, W);
-        std::valarray<double> P_1s_nprime = 1; //fix
-        P_1s_nprime *= C1s(E_b);
-        P_1s_nprime /= (1. - exp(-2. * LMCConst::Pi() * n_prime ));
+        std::valarray<double> P_1s_nprime = C1s(E_b) / (1. - exp(-2. * LMCConst::Pi() * n_prime ));
         P_1s_nprime *= pow(n_prime,8);
         P_1s_nprime *= pow( pow(n_prime, 2) + 1., -4);
         P_1s_nprime *= exp(-4. * n_prime * atan(1. / n_prime));
@@ -96,8 +109,8 @@ namespace locust
     // shake up spectrum for the ith state
     std::valarray<double> KrComplexLineDistribution::I(const unsigned &i, const std::valarray<double> &E)
     {
-        double numerator = A_Intensity[i]*Gamma_Width[i];
-        double denominator = 2 * LMCConst::Pi() *( pow(Gamma_Width[i], 2.) /4. + pow(Ecore - B_Binding[i] - E,2. ));
+        double numerator = fAIntensity[i]*fGammaWidth[i];
+        std::valarray<double> denominator = 2 * LMCConst::Pi() *( pow(fGammaWidth[i], 2.) /4. + pow(fECore - fBBinding[i] - E,2. ));
         return numerator/denominator;
     }
 
@@ -106,14 +119,15 @@ namespace locust
     std::valarray<double> KrComplexLineDistribution::spectrum1(const unsigned &i, const std::valarray<double> &E)
     {
         std::valarray<double> spectrum;
-        if (E_b_Scale[i] == 0 )
+        if (fEbScale[i] == 0 )
         {
             spectrum = I(i, E);
         }
         else
         {
-            double factor = atan(2. * (Ecore - E - B_Binding[i] + epsilon_shake_spectrum)/Gamma_Width[i]) / LMCConst::Pi() + 0.5;
-            spectrum = A_Intensity[i] * factor * P_1s_nprime(E_b_Scale[i], Ecore-E-B_Binding[i] + epsilon_shake_spectrum);
+            const double epsilon_shake_spectrum = 1e-4;
+            std::valarray<double> factor = atan(2. * (fECore - E - fBBinding[i] + epsilon_shake_spectrum)/fGammaWidth[i]) / LMCConst::Pi() + 0.5;
+            spectrum = fAIntensity[i] * factor * P_1s_nprime(fEbScale[i], fECore-E-fBBinding[i] + epsilon_shake_spectrum);
         }
         return spectrum;
     }
@@ -188,6 +202,7 @@ namespace locust
 
     std::valarray<double> KrComplexLineDistribution::energy_loss_spectra(const std::string &gas_species)
     {
+        std::string filename = gas_species + "OscillatorStrength.txt";
         std::vector<std::vector<double> > read_data  = read_file(filename, "\t");
         std::sort(read_data.begin(), read_data.end(), [](const std::vector<double> & a, const std::vector<double> & b) -> bool { return a[0] < b[0]; });
 
@@ -237,17 +252,17 @@ namespace locust
         return fGases[int(gas_choice)];
     }
 
-    double generate_energy_loss(std::string gas_species)
+    double KrComplexLineDistribution::generate_energy_loss(std::string gas_species)
     {
         double u = fUniform(fRNEngine);
-        unsigned gas_index = gas_index[gas_species];
+        unsigned gas_index = fGasIndex[gas_species];
         
         return generate_from_cdf(u, fEnergyLossInterpolator[gas_index]);
     }
 
     int KrComplexLineDistribution::generate_nscatters(std::string &gas_species)
     {
-        return fGeometric[species_index[gas_species]](fRNEngine);
+        return fGeometric[fGasIndex[gas_species]](fRNEngine);
     }
 
     double KrComplexLineDistribution::Generate()
@@ -256,7 +271,7 @@ namespace locust
         double generated_energy;
 
         if(fEmittedPeak == "lorentzian")
-            generated_energy = fLorentizian(fRNEngine);
+            generated_energy = fLorentzian(fRNEngine);
         if(fEmittedPeak == "shake")
             generated_energy = generate_shake();
         
@@ -282,7 +297,12 @@ namespace locust
     {
         double h = (b - a) / static_cast<double>(N-1);
         std::valarray<double> v(N);
-        for (unsigned i = 0, T val = a; i < N; ++i, val += h) v[i] = val;
+        double val = a;
+        for (unsigned i = 0; i < N; ++i)
+        { 
+            v[i] = val;
+            val+=h;
+        }
         return v;
     }
 

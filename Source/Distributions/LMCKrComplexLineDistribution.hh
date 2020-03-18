@@ -11,6 +11,7 @@
 #include "LMCBaseDistribution.hh"
 #include <boost/math/interpolators/barycentric_rational.hpp>
 
+#include <map>
 #include <valarray>
 #include <vector>
 
@@ -45,6 +46,16 @@ namespace locust
             
             std::string fEmittedPeak;
 
+
+            std::vector<double> fAIntensity;
+            std::vector<double> fBBinding;
+            std::vector<double> fGammaWidth;
+            std::vector<double> fEbScale;
+
+            double fECore;
+
+            std::map<std::string, unsigned> fGasIndex;
+
             std::valarray<double> fXArray;
             std::valarray<double> fShakeSpectrum;
             std::vector<std::valarray<double> > fEnergyLossSpectra;
@@ -56,6 +67,7 @@ namespace locust
 
             std::vector<std::geometric_distribution<int>> fGeometric;
 
+            void read_shake_data();
             std::valarray<double> nprime(const double &E_b, const std::valarray<double> &W);
             double C1s(const double &E_b);
             std::valarray<double> P_1s_nprime(const double &E_b, const std::valarray<double> &W);
