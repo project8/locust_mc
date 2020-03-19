@@ -77,6 +77,7 @@ namespace locust
             std::valarray<double> shake_spectrum();
             std::valarray<double> aseev_func_tail(std::valarray<double> energy_loss_array, std::string gas_type);
             double EnergyLossSpectrum(double eLoss, double oscillator_strength);
+    std::vector<std::vector<double>> transpose_vector(const std::vector<std::vector<double>> aVector);
             std::vector<std::vector<double> > read_file(std::string filename, std::string delimiter);
             std::valarray<double> energy_loss_spectra(const std::string &gas_species);
             double generate_from_cdf(double u, boost::math::barycentric_rational<double> &aCDF );

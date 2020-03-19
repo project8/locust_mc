@@ -63,21 +63,35 @@ namespace locust
         fUniform = std::uniform_real_distribution<double>(0,1);
 
         for(unsigned i=0; i < fGases.size(); ++i)
-            fGeometric[i] = std::geometric_distribution<int>(1. - fScatterProbability[i] );
+            fGeometric.push_back(std::geometric_distribution<int>(1. - fScatterProbability[i]));
 
+        read_shake_data();
         fShakeSpectrum = shake_spectrum();
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
+        std::cout<<"0"<<std::endl;
 
         for(unsigned i=0; i < fGases.size(); ++i)
         {
             fEnergyLossSpectra[i] = energy_loss_spectra(fGases[i]);
+            std::cout<<"1"<<std::endl;
             //fix me (use correct (custom grid))
             create_cdf(fEnergyLossInterpolator[i], to_vector(fEnergyLossSpectra[i]), to_vector(fXArray));
+            std::cout<<"2"<<std::endl;
         }
+    }
 
+    std::vector<std::vector<double>> KrComplexLineDistribution::transpose_vector(const std::vector<std::vector<double>> aVector)
+    {
+        std::vector<std::vector<double>> aArrays;
+        for(unsigned i=0; i<aVector[0].size(); ++i)
+        {
+            std::vector<double> v;
+            for(unsigned j=0; j<aVector.size(); ++j)
+                v.push_back(aVector[j][i]);
 
-
-
+            aArrays.push_back(v);
+        }
+        return aArrays;
     }
 
 
@@ -85,10 +99,13 @@ namespace locust
     {
         std::string filename = "KrShakeParameters214.txt";
         std::vector<std::vector<double> > read_data = read_file(filename, "," );
+        read_data = transpose_vector(read_data);
 
-        //assign variables from these parameters fix
-        //fGammaWidth
-
+        //assign variables from shakeoff data file
+        fAIntensity = read_data[1];
+        fBBinding = read_data[2];
+        fEbScale = read_data[3];
+        fGammaWidth = read_data[4];
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +166,7 @@ namespace locust
     // adding up shake spectrum for all the states
     std::valarray<double> KrComplexLineDistribution::full_shake_spectrum(const std::valarray<double> &E, const unsigned &start_number_of_i, const unsigned &end_number_of_i)
     {
-        std::valarray<double> full_spectrum;
+        std::valarray<double> full_spectrum(double(0), E.size());
         for( unsigned i = start_number_of_i; i < end_number_of_i; ++i)
             full_spectrum += spectrum1(i, E);
         return full_spectrum;
