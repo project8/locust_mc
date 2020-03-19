@@ -17,19 +17,16 @@
 namespace locust
 {
 
-    //ReadFile((dataDir / "KrOscillatorStrength.txt").string(), krData);
-
     //pass gas parameters as arrays?
     KrComplexLineDistribution::KrComplexLineDistribution(const scarab::param_node &aParam) :
         fFWHM( 5. ),
         fLinePosition( 17826. ),
-        fAmplitude(),
-        fScatterProbability(),
+        fAmplitude{1,0},
+        fScatterProbability{0.5,0.5},
         fNPointsSELA(10000),
         fGases{"H2","Kr"},
         fEmittedPeak("shake"),
-        fShakeInterpolator({0},{0},1)
-        //fKrInterpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
+        fShakeInterpolator(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0)
     {
         if(aParam.has("fwhm"))
             fFWHM = aParam.get_value< double >( "fwhm", fFWHM );
@@ -37,6 +34,25 @@ namespace locust
             fLinePosition = aParam.get_value< double >( "line-position", fLinePosition );
         if(aParam.has("emitted-peak"))
             fEmittedPeak = aParam.get_value< std::string >( "emitted-peak", fEmittedPeak );
+
+        for(unsigned i=0; i < fGases.size(); ++i)
+            fGasIndex.insert( std::pair<std::string, unsigned>(fGases[i], i) );
+
+        if(aParam.has("amplitude"))
+        {
+            scarab::param_node aAmplitudeNode = aParam["amplitude"].as_node();
+            for(unsigned i=0;i<fGases.size();++i)
+                if(aAmplitudeNode.has(fGases[i]))
+                    fAmplitude[fGasIndex[fGases[i]]] = aAmplitudeNode.get_value<double >( fGases[i], fAmplitude[i]) ;
+        }
+
+        if(aParam.has("scatter-probability"))
+        {
+            scarab::param_node aScatterNode = aParam["scatter-probability"].as_node();
+            for(unsigned i=0;i<fGases.size();++i)
+                if(aScatterNode.has(fGases[i]))
+                    fScatterProbability[fGasIndex[fGases[i]]] = aScatterNode.get_value<double >( fGases[i], fScatterProbability[i]) ;
+        }
 
         //create random number generator instances
         const double kr_line_width = 2.83; // eV
@@ -60,8 +76,6 @@ namespace locust
         }
 
 
-        for(unsigned i=0; i < fGases.size(); ++i)
-            fGasIndex.insert( std::pair<std::string, unsigned>(fGases[i], i) );
 
 
     }
@@ -72,7 +86,7 @@ namespace locust
         std::string filename = "KrShakeParameters214.txt";
         std::vector<std::vector<double> > read_data = read_file(filename, "," );
 
-        //assign variables from these parameters
+        //assign variables from these parameters fix
         //fGammaWidth
 
     }
@@ -200,12 +214,12 @@ namespace locust
         return dataList;
     }
 
+    //fix me (convert v<v<d>> to valarray)
     std::valarray<double> KrComplexLineDistribution::energy_loss_spectra(const std::string &gas_species)
     {
         std::string filename = gas_species + "OscillatorStrength.txt";
         std::vector<std::vector<double> > read_data  = read_file(filename, "\t");
         std::sort(read_data.begin(), read_data.end(), [](const std::vector<double> & a, const std::vector<double> & b) -> bool { return a[0] < b[0]; });
-
     }
 
 
@@ -241,7 +255,7 @@ namespace locust
 
     double KrComplexLineDistribution::generate_shake()
     {
-        double u = fUniform(fRNEngine); //fix (why???)
+        double u = fUniform(fRNEngine);
         return generate_from_cdf(u,fShakeInterpolator);
     }
 

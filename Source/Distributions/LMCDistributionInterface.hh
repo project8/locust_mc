@@ -12,6 +12,7 @@
 
 #include "LMCGaussianDistribution.hh"
 #include "LMCUniformDistribution.hh"
+#include "LMCKrComplexLineDistribution.hh"
 
 #include "param_node.hh"
 
