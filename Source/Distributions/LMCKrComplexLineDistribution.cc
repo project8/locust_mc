@@ -68,17 +68,15 @@ namespace locust
         read_shake_data();
         fShakeSpectrum = shake_spectrum();
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
-        std::cout<<"0"<<std::endl;
 
         for(unsigned i=0; i < fGases.size(); ++i)
         {
-            fEnergyLossSpectra[i] = energy_loss_spectra(fGases[i]);
-            std::cout<<"1"<<std::endl;
-            //fix me (use correct (custom grid))
-            create_cdf(fEnergyLossInterpolator[i], to_vector(fEnergyLossSpectra[i]), to_vector(fXArray));
-            std::cout<<"2"<<std::endl;
+            std::vector<std::vector<double> > scattering_data = energy_loss_spectra(fGases[i]);
+            fEnergyLossInterpolator.push_back(boost::math::barycentric_rational<double>(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0));
+            create_cdf(fEnergyLossInterpolator[i], scattering_data[1], scattering_data[0]);
         }
     }
+    //oscillator_strength = A * pow(w,2.) / (pow(w,2.) + 4. * pow(e - eBack, 2.));
 
     std::vector<std::vector<double>> KrComplexLineDistribution::transpose_vector(const std::vector<std::vector<double>> aVector)
     {
@@ -185,7 +183,7 @@ namespace locust
     // A sub function for the scatter function. Found in 
     // "Energy loss of 18 keV electrons in gaseous T and quench condensed D films" 
     // by V.N. Aseev et al. 2000
-    std::valarray<double> KrComplexLineDistribution::aseev_func_tail(std::valarray<double> energy_loss_array, std::string gas_type)
+    double KrComplexLineDistribution::aseev_func_tail(const double &energy_loss, const std::string & gas_type)
     {
         double A2, omeg2, eps2;
         if(gas_type == "H2")
@@ -196,13 +194,27 @@ namespace locust
         {
             A2 = 0.4019; omeg2 = 22.31; eps2 = 16.725;
         }
-        return A2*pow(omeg2, 2.)/(pow(omeg2, 2.) + 4. * pow(energy_loss_array-eps2, 2.) );
+        return A2*pow(omeg2, 2.)/(pow(omeg2, 2.) + 4. * pow(energy_loss-eps2, 2.) );
     }
 
-    double KrComplexLineDistribution::EnergyLossSpectrum(double eLoss, double oscillator_strength)
+    std::vector<double> KrComplexLineDistribution::EnergyLossSpectrum(std::vector<std::vector<double>> aData)
     {
         const double T = fLinePosition; //approximate proxy instead of event by event
-        return (eLoss > 0 ) ?  ((LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * eLoss / pow(LMCConst::E_Rydberg(), 3.) )) : 0; // Produces energy loss spectrum
+        std::vector<double> aSpectrum;
+        for(unsigned i=0; i<aData[0].size();++i)
+        {
+            double eLoss = aData[0][i];
+            if(eLoss>0)
+            {
+                double oscillator_strength = aData[1][i];
+                aSpectrum.push_back((LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * eLoss / pow(LMCConst::E_Rydberg(), 3.) )); // Produces energy loss spectrum
+            }
+            else
+            {
+                aSpectrum.push_back(0);
+            }
+        }
+        return aSpectrum;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -231,12 +243,33 @@ namespace locust
         return dataList;
     }
 
-    //fix me (convert v<v<d>> to valarray)
-    std::valarray<double> KrComplexLineDistribution::energy_loss_spectra(const std::string &gas_species)
+    std::vector<std::vector<double>> KrComplexLineDistribution::energy_loss_spectra(const std::string &gas_species)
     {
         std::string filename = gas_species + "OscillatorStrength.txt";
         std::vector<std::vector<double> > read_data  = read_file(filename, "\t");
+
         std::sort(read_data.begin(), read_data.end(), [](const std::vector<double> & a, const std::vector<double> & b) -> bool { return a[0] < b[0]; });
+        read_data = transpose_vector(read_data);
+
+        extrapolate_oscillator_strength(read_data, gas_species );
+        read_data[1] = EnergyLossSpectrum(read_data);
+        return read_data;
+
+    }
+
+
+    void KrComplexLineDistribution::extrapolate_oscillator_strength(std::vector<std::vector<double>> &aOscillatorStrength, const std::string &gas_species)
+    {
+        double max_energy = aOscillatorStrength[0].back();
+        const double dE = 1;
+        while( max_energy < 1000)
+        {
+            max_energy  += dE;
+            aOscillatorStrength[0].push_back(max_energy);
+            aOscillatorStrength[1].push_back(aseev_func_tail(max_energy, gas_species));
+        }
+        return;
+
     }
 
 

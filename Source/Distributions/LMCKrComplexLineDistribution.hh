@@ -75,11 +75,11 @@ namespace locust
             std::valarray<double> spectrum1(const unsigned &i, const std::valarray<double> &E);
             std::valarray<double> full_shake_spectrum(const std::valarray<double> &E, const unsigned &start_number_of_i, const unsigned &end_number_of_i);
             std::valarray<double> shake_spectrum();
-            std::valarray<double> aseev_func_tail(std::valarray<double> energy_loss_array, std::string gas_type);
-            double EnergyLossSpectrum(double eLoss, double oscillator_strength);
+            double aseev_func_tail(const double &energy_loss, const std::string &gas_type);
+            std::vector<double> EnergyLossSpectrum(std::vector<std::vector<double>> aData);
     std::vector<std::vector<double>> transpose_vector(const std::vector<std::vector<double>> aVector);
             std::vector<std::vector<double> > read_file(std::string filename, std::string delimiter);
-            std::valarray<double> energy_loss_spectra(const std::string &gas_species);
+            std::vector<std::vector<double>> energy_loss_spectra(const std::string &gas_species);
             double generate_from_cdf(double u, boost::math::barycentric_rational<double> &aCDF );
             void create_cdf(boost::math::barycentric_rational<double> &interpolant, std::vector<double> f, std::vector<double> x);
 
@@ -93,6 +93,7 @@ namespace locust
             std::valarray<double> linspace(double a, double b, unsigned N);
             double gaussian_FWHM_to_sigma(const double &fwhm);
             std::vector<double> to_vector(const std::valarray<double> a);
+            void extrapolate_oscillator_strength(std::vector<std::vector<double>> &aOscillatorStrength, const std::string &gas_species);
 
 
 
