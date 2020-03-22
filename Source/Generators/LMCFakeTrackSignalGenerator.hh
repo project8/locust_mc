@@ -11,8 +11,9 @@
 #include "TFile.h"  // order of includes matters.
 #include "TTree.h"  // include these first.
 
+#include "LMCRootTreeWriter.hh"
+
 #include "LMCGenerator.hh"
-#include "LMCRunLengthCalculator.hh"
 #include "LMCEvent.hh"
 #include <random>
 #include <vector>
@@ -25,7 +26,6 @@ namespace scarab
 
 namespace locust
 {
-    class Digitizer;
 
     /*!
       @class FakeTrackSignalGenerator

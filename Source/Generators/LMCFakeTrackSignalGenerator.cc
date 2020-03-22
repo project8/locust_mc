@@ -706,7 +706,8 @@ namespace locust
     }
 
 
-    void WriteRootFile(Event* anEvent, TFile* hfile)
+//    void WriteRootFile(Event* anEvent, TFile* hfile)
+    void WriteRootFile(Event* anEvent)
     {
     	char buffer[100];
         int n=sprintf(buffer, "Event_%d", anEvent->fEventID);
@@ -731,7 +732,10 @@ namespace locust
 
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-        TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
+
+
+    	RootTreeWriter *aRootTreeWriter = aRootTreeWriter->getInstance();
+        aRootTreeWriter->OpenFile(fRoot_filename);
 
         const unsigned nChannels = fNChannels;
         const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
@@ -786,11 +790,12 @@ namespace locust
                 }
 
             } //track loop
-            WriteRootFile(anEvent, hfile);
+
+            aRootTreeWriter->WriteRootFile(anEvent);
             delete anEvent;
         } //event loop
 
-        hfile->Close();
+        aRootTreeWriter->CloseFile();
         return true;
     }
 

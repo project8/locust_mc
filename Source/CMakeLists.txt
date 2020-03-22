@@ -69,7 +69,7 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCSlotAntenna.hh
     RxComponents/LMCChannel.hh
-    
+
 )
 
 
@@ -119,7 +119,7 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCReceiver.cc
     RxComponents/LMCPatchAntenna.cc
     RxComponents/LMCSlotAntenna.cc
-    RxComponents/LMCChannel.cc
+    RxComponents/LMCChannel.cc    
 
 )
 
@@ -177,14 +177,18 @@ if (locust_mc_BUILD_WITH_ROOT)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
         Core/LMCEvent.hh
         Core/LMCTrack.hh
-        Generators/LMCFakeTrackSignalGenerator.hh
+        Generators/LMCFakeTrackSignalGenerator.hh    
+	    IO/LMCFileWriter.hh
+    	IO/LMCRootTreeWriter.hh
        )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Core/LMCEvent.cc
         Core/LMCTrack.cc
-        Generators/LMCFakeTrackSignalGenerator.cc
-       )
+        Generators/LMCFakeTrackSignalGenerator.cc   
+	    IO/LMCFileWriter.cc
+    	IO/LMCRootTreeWriter.cc
+        )
 
 
     if (CMAKE_COMPILER_IS_GNUCXX)
