@@ -93,18 +93,14 @@ namespace locust
         private:
             void Visit( const KassSignalGenerator* );
             void Visit( const FreeFieldSignalGenerator* );
-            void Visit( const PatchSignalGenerator* );
+            void Visit( const ArraySignalGenerator* );
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const FakeTrackSignalGenerator* );
-            void Visit( const PlaneWaveSignalGenerator* );
-            void Visit( const AntennaSignalGenerator* );
             void Visit( const TestSignalGenerator* );
             void Visit( const LowPassFilterFFTGenerator* );
             void Visit( const HighPassFilterFFTGenerator* );
             void Visit( const LocalOscillatorGenerator* );
             void Visit( const DecimateSignalGenerator* );
-            void Visit( const DipoleSignalGenerator* );
-            void Visit( const TurnstileSignalGenerator* );
             void Visit( const Digitizer* );
 
             RunLengthState fState;

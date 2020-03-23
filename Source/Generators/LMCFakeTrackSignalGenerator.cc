@@ -27,6 +27,7 @@ namespace locust
     FakeTrackSignalGenerator::FakeTrackSignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
+        fAlpha( 0.01 ),
         fSignalPower( 0. ),
         fStartFrequencyMax( 0. ),
         fStartFrequencyMin( 0. ),
@@ -46,7 +47,7 @@ namespace locust
         fPitchCorrection( true ),
         fRandomEngine(0),
         fHydrogenFraction(1),
-        fTrapLength(0.00502920),  //Phase II trap radius
+        fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
         fH2Interpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
         fKrInterpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
         fRoot_filename("LocustEvent.root"),
@@ -69,6 +70,9 @@ namespace locust
 
     bool FakeTrackSignalGenerator::Configure( const scarab::param_node& aParam )
     {
+        if( aParam.has( "angle-alpha" ) )
+            SetAlpha( aParam.get_value< double >( "angle-alpha", fAlpha ) );
+
         if( aParam.has( "signal-power" ) )
             SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
 
@@ -165,7 +169,8 @@ namespace locust
         }
 
         std::vector<std::pair<double, double> > h2Data, krData;
-        scarab::path dataDir( TOSTRING(PB_DATA_INSTALL_DIR) );
+        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+        LDEBUG( lmclog, "Data directory: " << dataDir );
         ReadFile((dataDir / "H2OscillatorStrength.txt").string(), h2Data);
         ReadFile((dataDir / "KrOscillatorStrength.txt").string(), krData);
         ExtrapolateData(h2Data, std::array<double, 3>{0.195, 14.13, 10.60});
@@ -180,6 +185,17 @@ namespace locust
     void FakeTrackSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetAlpha() const
+    {
+        return fAlpha;
+    }
+
+    void FakeTrackSignalGenerator::SetAlpha( double aAlpha )
+    {
+        fAlpha = aAlpha;
         return;
     }
 
@@ -576,14 +592,10 @@ namespace locust
 
     }
     
-    double FakeTrackSignalGenerator::GetThetaScatter(double eLoss, double T)
+    //use CDF to generate scattering angle
+    double FakeTrackSignalGenerator::GetThetaScatter(double u)
     {
-        double ka2Transfer = GetKa2(eLoss, T);
-        double eRatio = eLoss / T;
-        double cosTheta = 1. - eRatio /2.  - ka2Transfer  / (2.* (T / LMCConst::E_Rydberg()));
-        cosTheta /= sqrt(1. - eRatio);
-        return acos(cosTheta);
-
+        return atan(sqrt(pow(fAlpha,2.) / (1. + pow(fAlpha,2.))) * tan( LMCConst::Pi() / 2. * u));
     }
 
     void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset)
@@ -628,7 +640,7 @@ namespace locust
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
-            theta_scatter = GetThetaScatter(energy_loss, current_energy); // get scattering angle (NOT Pitch)
+            theta_scatter = GetThetaScatter(dist(fRandomEngine)); // get scattering angle (NOT Pitch)
 
             // Compute new pitch angle, given initial pitch angle, scattering angle. Account for how kinematics change with different axial position of scatter
             if(fPitch != LMCConst::Pi() / 2.)
@@ -651,7 +663,6 @@ namespace locust
         aTrack.Slope = fSlope;
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
-        aTrack.LOFrequency = fLO_frequency;
         aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFrequency, fPitch),2.);
         aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
@@ -674,7 +685,6 @@ namespace locust
         fNTracks = ntracks_distribution(fRandomEngine)+1;
 
         anEvent->fEventID = eventID;
-        anEvent->fLOFrequency = fLO_frequency;
         anEvent->fRandomSeed = random_seed_val;
     }
 
@@ -734,7 +744,6 @@ namespace locust
 
                     for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
-                        LO_phase += 2.*LMCConst::Pi()*fLO_frequency * tLocustStep;
                         fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
                         voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fCurrentFrequency) * tLocustStep;
                         signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch);

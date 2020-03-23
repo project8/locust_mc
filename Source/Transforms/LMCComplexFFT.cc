@@ -197,6 +197,21 @@ namespace locust
         return true;
     }
     
+
+    bool ComplexFFT::RawReverseFFT(int size, fftw_complex* in, fftw_complex* out)
+    {
+        if(!IsInitialized) return false;
+
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
+
+        fReversePlan = fftw_plan_dft_1d(size, fInputArray, fOutputArray, FFTW_BACKWARD, fTransform);
+        fftw_execute_dft(fReversePlan, in, out);
+
+        return true;
+    }
+
+
     bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double freqResolution)
     {
         fSize=size;	
@@ -240,14 +255,14 @@ namespace locust
 	}
 	std::ofstream myfile;
 	myfile.open ("example.txt");
-        for (int i = 0; i < fSize; ++i)
+        for (int i = 0; i < 2*fSize+fNShiftBins; ++i)
 	{
-	   out[i][0]=fOutputArray[i][0]/std::sqrt(fSize)/2.0;
+	   out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
-        for (int i = 0; i < fTotalWindowSize; ++i){
+        for (int i = 0; i < fSize+2*fNShiftBins; ++i){
 	   myfile<<i;
 	   myfile<<",";
-	   myfile<<fOutputArray[i][0]/std::sqrt(fSize)/2.0;
+	   myfile<<fOutputArray[i][0]*2/fTotalWindowSize;
 	   myfile<<"\n";
 	}
 	myfile.close();
@@ -262,5 +277,10 @@ namespace locust
     double ComplexFFT::GetFreqResolution()
     {
         return fFreqResolution;
+    }
+
+    int ComplexFFT::GetShiftNBins()
+    {
+	return fNShiftBins;
     }
 } /* namespace locust */

@@ -51,8 +51,8 @@ namespace locust
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
 
             double fArrayRadius;
-            int fNPatchesPerStrip;
-            double fPatchSpacing;
+            int fNElementsPerStrip;
+            double fElementSpacing;
             bool fCorporateFeed;
             bool fPileupMode; //simulate tracks in sequence or as piling up?
             int fPileupSeed; 

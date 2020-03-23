@@ -1,27 +1,29 @@
+/*
+ * LMCPowerCombiner.hh
+ *
+ *  Created on: Feb 25, 2020
+ *      Author: pslocum
+ */
 
 #ifndef LMCPOWERCOMBINER_HH_
 #define LMCPOWERCOMBINER_HH_
-
-#include "LMCException.hh"
 #include "param.hh"
-#include "LMCSignal.hh"
+#include "LMCException.hh"
 #include "LMCConst.hh"
+#include "LMCSignal.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCSlotAntenna.hh"
 #include <vector>
 
 
 namespace locust
 {
  /*!
- @class PowerCombiner
+ @class LMCPowerCombiner
  @author P. Slocum
- @brief Class to describe the power combining in the patch array.
- S-matrix and voltage damping factors for the array are defined with functions
- SetSMatrixParameters(int aPatchesPerStrip) and
- SetVoltageDampingFactors(int aPatchesPerStrip) .
-
+ @brief Base class to characterize power combiners
  @details
  Available configuration options:
- "power-combining-feed" is an integer to select the appropriate power combining configuration.
  No input parameters
  */
     class PowerCombiner
@@ -29,56 +31,46 @@ namespace locust
 
         public:
             PowerCombiner();
-
             virtual ~PowerCombiner();
-            bool Configure( const scarab::param_node& aNode);
+            int GetNElementsPerStrip();
+            void SetNElementsPerStrip( int aNumberOfElements );
+            virtual bool Configure( const scarab::param_node& aNode );
+        	virtual bool SetVoltageDampingFactors() {};
+        	virtual bool SetSMatrixParameters() {};
+        	virtual bool IsSinglePatch();
+            virtual Receiver* ChooseElement();
+        	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	virtual void SayHello();
+        	virtual void Initialize() {};
 
-            bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, unsigned z_index, unsigned sampleIndex);
-            bool SetVoltageDampingFactors(int aPatchesPerStrip);
-            bool SetSMatrixParameters(int aPatchesPerStrip);
-            void SetNPatchesPerStrip(int aPatchesPerStrip);
-            void SetJunctionLoss(double aJunctionLoss);
-            void SetPatchLoss(double aPatchLoss);
-            void SetAmplifierLoss(double aAmplifierLoss);
-            void SetEndPatchLoss(double aEndPatchLoss);
-            bool SetPowerCombiner( std::string feed );
-            int GetPowerCombiner();
 
+
+            double GetJunctionLoss();
+            void SetJunctionLoss( double aJunctionLoss );
+            double GetPatchLoss();
+            void SetPatchLoss( double aPatchLoss );
+            double GetAmplifierLoss();
+            void SetAmplifierLoss( double aAmplifierLoss );
+            double GetEndPatchLoss();
+            void SetEndPatchLoss( double aEndPatchLoss );
+            double GetJunctionResistance();
+            void SetJunctionResistance( double aJunctionResistance );
+            double GetDampingFactor( int z_index );
+            void SetDampingFactor (int z_index, double aDampingFactor );
 
 
         private:
-            double GetSeriesPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            double GetCenterFedPhaseDelay(unsigned z_index, double DopplerFrequency, double PatchSpacing);
-            bool SetCenterFedDampingFactors();
-            bool SetSeriesFedDampingFactors();
-            bool SetVoltageDividerDampingFactors();
-            bool SetSmatrixDampingFactors();
-            std::vector<double> GetResistances(double RJunction, double R0, double RGround, int NPAIRS);
-            std::vector<double> GetPartialGains(double RJunction, double R0, double RGround, int NPAIRS);
-            double GetVoltageDividerWeight(double RJunction, double R0, double Rground, unsigned z_index);
-            double GetParallelResistance(std::vector<double> R, int NRESISTORS, int resistorindex);
-            std::vector<double> GetSmatrixElements();
-            bool SetTransmissionCoefficients();
-            int fpowerCombiner;
-            int fnPatchesPerStrip;
+            int fnElementsPerStrip;
+      	    std::vector<double> fdampingFactors;
             double fjunctionLoss;
             double fpatchLoss;
             double famplifierLoss;
             double fendPatchLoss;
             double fjunctionResistance;
-      	    std::vector<double> fdampingFactors;
 
-      	    // Uniform taper S-matrices from HFSS:
-      	    std::vector<double> fsMatrix2patch = {0.2, 0.64, 0.64};
-            std::vector<double> fsMatrix4patch = {0.09, 0.47, 0.47, 0.47, 0.47};
-            std::vector<double> fsMatrix6patch = {0.03, 0.38, 0.38, 0.38, 0.38, 0.38, 0.38};
-            // end Uniform taper S-matrices.
-
-            std::vector<double> ftransmissionCoefficients;
-    };
+};
 
 
 } /* namespace locust */
 
-#endif /* LMCPOWERCOMBINER_HH_ */
-
+#endif

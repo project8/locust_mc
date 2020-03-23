@@ -9,6 +9,7 @@
 #define LMCRECEIVER_HH_
 
 #include "LMCThreeVector.hh"
+#include "LMCConst.hh"
 
 namespace locust
 {
@@ -25,10 +26,30 @@ namespace locust
 
         public:
             Receiver();
+            Receiver(double testvar);
             virtual ~Receiver();
 
-            virtual double GetVoltage() = 0;
-            virtual double GetAnalogTimeDelay() = 0;
+            virtual double GetVoltage() {};
+            virtual double GetAnalogTimeDelay() {};
+            virtual LMCThreeVector GetPolarizationDirection();
+            virtual void SetPolarizationDirection(const LMCThreeVector &copolDirection);
+            virtual LMCThreeVector GetCrossPolarizationDirection();
+            virtual void SetCrossPolarizationDirection(const LMCThreeVector &copolDirection);
+            virtual LMCThreeVector GetNormalDirection();
+            virtual void SetNormalDirection(const LMCThreeVector &normDirection);
+            virtual LMCThreeVector GetPosition();
+            virtual void SetCenterPosition(const LMCThreeVector &newPosition);
+            virtual void RxSayHello();
+            virtual double GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement);
+
+
+        private:
+            LMCThreeVector copolarizationDirection;
+            LMCThreeVector crosspolarizationDirection;
+            LMCThreeVector normalDirection;
+            LMCThreeVector centerPosition;
+
+
 };
 
 
