@@ -8,9 +8,6 @@
 #ifndef LMCFAKETRACKSIGNALGENERATOR_HH_
 #define LMCFAKETRACKSIGNALGENERATOR_HH_
 
-#include "TFile.h"  // order of includes matters.
-#include "TTree.h"  // include these first.
-
 #include "LMCRootTreeWriter.hh"
 
 #include "LMCGenerator.hh"
