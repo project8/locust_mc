@@ -38,8 +38,9 @@ set( LOCUST_MC_HEADER_FILES
 	Core/LMCTFFileHandler.hh	
 
     Distributions/LMCBaseDistribution.hh
-    Distributions/LMCUniformDistribution.hh
+    Distributions/LMCExponentialDistribution.hh
     Distributions/LMCGaussianDistribution.hh
+    Distributions/LMCUniformDistribution.hh
     Distributions/LMCKrComplexLineDistribution.hh
     Distributions/LMCDistributionInterface.hh
 	    
@@ -94,8 +95,9 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCTFFileHandler.cc
 
     Distributions/LMCBaseDistribution.cc
-    Distributions/LMCUniformDistribution.cc
+    Distributions/LMCExponentialDistribution.cc
     Distributions/LMCGaussianDistribution.cc
+    Distributions/LMCUniformDistribution.cc
     Distributions/LMCKrComplexLineDistribution.cc
     Distributions/LMCDistributionInterface.cc
     	

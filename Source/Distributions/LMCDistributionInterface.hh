@@ -10,6 +10,7 @@
 
 #include "LMCBaseDistribution.hh"
 
+#include "LMCExponentialDistribution.hh"
 #include "LMCGaussianDistribution.hh"
 #include "LMCUniformDistribution.hh"
 #include "LMCKrComplexLineDistribution.hh"

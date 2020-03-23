@@ -30,9 +30,9 @@ namespace locust
             double Generate();
 
         private:
-            std::uniform_real_distribution<double> distribution;
-            double min_value;
-            double max_value;
+            std::uniform_real_distribution<double> fDistribution;
+            double fMinValue;
+            double fMaxValue;
 };
 
 

@@ -29,9 +29,9 @@ namespace locust
             double Generate();
 
         private:
-            std::normal_distribution<double> distribution;
-            double mean;
-            double std_dev;
+            std::normal_distribution<double> fDistribution;
+            double fMean;
+            double fStdDev;
 };
 
 

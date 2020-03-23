@@ -12,21 +12,21 @@ namespace locust
 {
 
     UniformDistribution::UniformDistribution(const scarab::param_node &aParam) :
-        min_value( 0. ),
-        max_value( 1. )
+        fMinValue( 0. ),
+        fMaxValue( 1. )
     {
         if(aParam.has("min-value"))
-            min_value = aParam.get_value< double >( "min-value", min_value );
+            fMinValue = aParam.get_value< double >( "min-value", fMinValue );
 
         if(aParam.has("max-value"))
-            max_value = aParam.get_value< double >( "max-value", min_value );
+            fMaxValue = aParam.get_value< double >( "max-value", fMaxValue );
 
-        distribution = std::uniform_real_distribution<double>(min_value, max_value);
+        fDistribution = std::uniform_real_distribution<double>(fMinValue, fMaxValue);
     }
 
     double UniformDistribution::Generate()
     {
-        return distribution(fRNEngine);
+        return fDistribution(fRNEngine);
     }
 
 } /* namespace locust */

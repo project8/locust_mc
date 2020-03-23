@@ -12,21 +12,21 @@ namespace locust
 {
 
     GaussianDistribution::GaussianDistribution(const scarab::param_node &aParam) :
-        mean( 0. ),
-        std_dev( 1. )
+        fMean( 0. ),
+        fStdDev( 1. )
     {
         if(aParam.has("mean"))
-            mean = aParam.get_value< double >( "mean", mean );
+            fMean = aParam.get_value< double >( "mean", fMean );
 
         if(aParam.has("std-dev"))
-            std_dev = aParam.get_value< double >( "std-dev", std_dev );
+            fStdDev = aParam.get_value< double >( "std-dev", fStdDev );
 
-        distribution = std::normal_distribution<double>(mean, std_dev);
+        fDistribution = std::normal_distribution<double>(fMean, fStdDev);
     }
 
     double GaussianDistribution::Generate()
     {
-        return distribution(fRNEngine);
+        return fDistribution(fRNEngine);
     }
 
 } /* namespace locust */

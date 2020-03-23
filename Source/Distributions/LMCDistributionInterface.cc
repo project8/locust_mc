@@ -27,7 +27,10 @@ namespace locust
         //    LMCERROR(lmcdist,"Distribution " << dist_name << " not found in list of possibilities! Enter a valid distribution name!");
         //}
 
-        if(dist_name == "gaussian")
+        if(dist_name == "exponential")
+            fDistributionList.push_back( std::make_shared< ExponentialDistribution >(aParam) );
+
+        else if(dist_name == "gaussian")
             fDistributionList.push_back( std::make_shared< GaussianDistribution >(aParam) );
 
         else if(dist_name == "uniform")
