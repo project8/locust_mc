@@ -36,20 +36,18 @@ namespace locust
         fFieldBufferSize( 50 ),
         fNFilterBins(50),
         fdtFilter( 50 ),
-	fSwapFrequency( 1000 )
+	fSwapFrequency( 1000 ),
+	fNPoints(50)
     {
-	std::cout<< "TransmitterInterfaceGenerator::TransmitterInterfaceGenerator "<<std::endl;
         fRequiredSignalState = Signal::kTime;
     }
 
     TransmitterInterfaceGenerator::~TransmitterInterfaceGenerator()
     {
-	std::cout<< "TransmitterInterfaceGenerator::~TransmitterInterfaceGenerator "<<std::endl;
     }
 
     bool TransmitterInterfaceGenerator::Configure( const scarab::param_node& aParam )
     {
-	std::cout<< "TransmitterInterfaceGenerator::Configure"<<std::endl;
         if( aParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
@@ -122,7 +120,6 @@ namespace locust
 
     void TransmitterInterfaceGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
-	std::cout<< "TransmitterInterfaceGenerator::Accept"<<std::endl;
         aVisitor->Visit( this );
         return;
     }
@@ -130,7 +127,6 @@ namespace locust
 
     static void* KassiopeiaInit(const std::string &aFile)
     {
-	std::cout<< "TransmitterInterfaceGenerator::KassiopeiaInit"<<std::endl;
         RunKassiopeia RunKassiopeia1;
         RunKassiopeia1.Run(aFile);
         RunKassiopeia1.~RunKassiopeia();
@@ -140,26 +136,23 @@ namespace locust
 
     void TransmitterInterfaceGenerator::InitializeFieldPoints()
     {
-	std::cout<< "TransmitterInterfaceGenerator::InitializeFieldPoints"<<std::endl;
 	fNPoints=50;
 	for(int pointIndex = 0; pointIndex< fNPoints; ++pointIndex)
 	{
 	    LMCThreeVector point(0.0,0.0,0.0);
             fTransmitter->InitializeFieldPoint(point);
-	    fAllFieldCopol[pointIndex]=point;
+	    fAllFieldCopol.push_back(point);
 	}
     }
 
     bool TransmitterInterfaceGenerator::WakeBeforeEvent()
     {
-	std::cout<< "TransmitterInterfaceGenerator::WakeBeforeEvent"<<std::endl;
         fPreEventCondition.notify_one();
         return true;
     }
 
     bool TransmitterInterfaceGenerator::ReceivedKassReady()
     {
-	std::cout<< "TransmitterInterfaceGenerator::ReceivedKassReady"<<std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         printf("LMC about to wait ..\n");
 
@@ -179,19 +172,16 @@ namespace locust
     }
 
     // fields incident on element.
-    void TransmitterInterfaceGenerator::RecordIncidentFields(FILE *fp,  double t_old, LMCThreeVector pointOfInterest, double tEFieldCoPol)
+    void TransmitterInterfaceGenerator::RecordIncidentFields(FILE *fp,  double t_old,LMCThreeVector pointOfInterest, double tEFieldCoPol)
     {
-	std::cout<< "TransmitterInterfaceGenerator::RecordIncidentFields"<<std::endl;
     	if (t_old > 0.5e-9)
          	{
          	fprintf(fp, "%d %g %g\n", pointOfInterest.GetX(), pointOfInterest.GetY(),pointOfInterest.GetZ(),tEFieldCoPol);
          	}
-	std::cout<< pointOfInterest.GetX() << " : "<< pointOfInterest.GetY() << " : "<< pointOfInterest.GetZ()<< " : "<< tEFieldCoPol<<std::endl;
     }
 
     void TransmitterInterfaceGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
-	std::cout<< "TransmitterInterfaceGenerator::DriveAntenna"<<std::endl;
         const int signalSize = aSignal->TimeSize();
         unsigned pointIndex = 0;
         unsigned sampleIndex = 0;
@@ -209,10 +199,10 @@ namespace locust
                 }
                 else
                 {
-                	tFieldSolution = fTransmitter->SolveKassFields(fAllFieldPoints[pointIndex],fAllFieldCopol[pointIndex],t_old,pointIndex);
+                	tFieldSolution = fTransmitter->SolveKassFields(fAllFieldCopol[pointIndex],fAllFieldCopol[pointIndex],t_old,pointIndex);
                 }
                 if (fTextFileWriting==1) {}
-		RecordIncidentFields(fp, t_old,fAllFieldPoints[pointIndex], tFieldSolution[1]);
+		RecordIncidentFields(fp, t_old,fAllFieldCopol.at(pointIndex), tFieldSolution[1]);
  	        FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0],pointIndex,index);
                 PopBuffers(pointIndex);
         } // channels loop
@@ -253,7 +243,6 @@ namespace locust
 
     bool TransmitterInterfaceGenerator::DoGenerate( Signal* aSignal )
     {
-	std::cout<< "TransmitterInterfaceGenerator::DriveAntenna"<<std::endl;
         FILE *fp = fopen("incidentfields.txt", "w");
 
         //n samples for event spacing in Kass.

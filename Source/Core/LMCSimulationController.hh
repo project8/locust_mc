@@ -34,6 +34,7 @@ namespace locust
 
      Available configuration options:
      - "rng-seed": int -- sets the RNG seed
+     - "skip-eggwriter": bool -- skip using egg writer 
      - All configuration options in RunLengthCalculator
      - All configuration options in EggWriter
 
@@ -66,8 +67,7 @@ namespace locust
 
             EggWriter fEggWriter;
 
-
-
+	    bool fSkipEggWriter; 
 
     };
 

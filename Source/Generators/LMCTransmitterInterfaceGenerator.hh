@@ -64,7 +64,7 @@ namespace locust
             bool ReceivedKassReady();
 
 	    void InitializeFieldPoints();
-            void RecordIncidentFields(FILE *fp, double t_old,LMCThreeVector point, double tEFieldCoPol);
+            void RecordIncidentFields(FILE *fp, double t_old,LMCThreeVector pointOfInterest, double tEFieldCoPol);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned pointIndex);

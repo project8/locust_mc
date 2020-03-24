@@ -20,7 +20,8 @@ namespace locust
             fFirstGenerator( NULL ),
             fRunLengthCalc(),
 
-            fEggWriter()
+            fEggWriter(),
+	    fSkipEggWriter(false)
     {
         SetRNGSeed();
     }
@@ -36,14 +37,16 @@ namespace locust
             SetRNGSeed( aNode["rng-seed"]().as_int() );
         }
 
-
+	if( aNode.has("skip-eggwriter"))
+	{
+	    fSkipEggWriter=aNode["skip-eggwriter"]().as_bool();
+	}
         // configure the run-length calculator
         if( ! fRunLengthCalc.Configure( aNode ) )
         {
             LERROR( lmclog, "Error configuring the run length calculator" );
             return false;
         }
-
 
         // configure the egg writer
         if( ! fEggWriter.Configure( aNode ) )
@@ -94,14 +97,15 @@ namespace locust
             return false;
         }
 
-
-        // prepare the egg file (writes header, allocates record memory, etc)
-        if( ! fEggWriter.PrepareEgg( &fRunLengthCalc, FindDigitizer() ) )
-        {
-            LERROR( lmclog, "Error preparing the egg file" );
-            return false;
-        }
-
+	if(! fSkipEggWriter)
+	{
+            // prepare the egg file (writes header, allocates record memory, etc)
+            if( ! fEggWriter.PrepareEgg( &fRunLengthCalc, FindDigitizer() ) )
+            {
+                LERROR( lmclog, "Error preparing the egg file" );
+                return false;
+            }
+	}
         return true;
     }
 
@@ -133,6 +137,7 @@ namespace locust
 
             if( simulatedSignal->GetDigitalIsSigned() )
             {
+	        if(fSkipEggWriter) continue;
                 for( unsigned index = 0; index < 20; ++index )
                 {
                 	for (unsigned ch = 0; ch < nchannels; ++ch)
@@ -144,6 +149,7 @@ namespace locust
             }
             else
             {
+	        if(fSkipEggWriter) continue;
                 for( unsigned index = 0; index < 20; ++index )
                 {
                 	for (unsigned ch = 0; ch < nchannels; ++ch)
@@ -155,12 +161,15 @@ namespace locust
             }
 
 
-            if( ! fEggWriter.WriteRecord( simulatedSignal, isNewAcquisition ) )
-            {
-                LERROR( lmclog, "Something went wrong while writing record " << record );
-                delete simulatedSignal;
-                return false;
-            }
+	    if(! fSkipEggWriter)
+	    {
+                if( ! fEggWriter.WriteRecord( simulatedSignal, isNewAcquisition ) )
+                {
+                    LERROR( lmclog, "Something went wrong while writing record " << record );
+                    delete simulatedSignal;
+                    return false;
+                }
+	    }
             isNewAcquisition = false;
 
             // temporarily, immediately cleanup
@@ -175,10 +184,13 @@ namespace locust
     {
         LINFO( lmclog, "Finalizing the run" );
 
-        if(! fEggWriter.FinalizeEgg() )
-        {
-            LERROR( lmclog, "Error while finalizing the egg file" );
-            return false;
+	if(! fSkipEggWriter)
+	{
+            if(! fEggWriter.FinalizeEgg() )
+            {
+                LERROR( lmclog, "Error while finalizing the egg file" );
+                return false;
+            }
         }
 
         return true;
