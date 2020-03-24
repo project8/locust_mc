@@ -135,34 +135,31 @@ namespace locust
                 return false;
             }
 
-            if( simulatedSignal->GetDigitalIsSigned() )
-            {
-	        if(fSkipEggWriter) continue;
-                for( unsigned index = 0; index < 20; ++index )
+	    if(!fSkipEggWriter)
+	    { 
+                if( simulatedSignal->GetDigitalIsSigned() )
                 {
-                	for (unsigned ch = 0; ch < nchannels; ++ch)
+                    for( unsigned index = 0; index < 20; ++index )
                     {
-                    LWARN( lmclog, "channel " << ch << ": " << index << ": I  " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2] );
-                    LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2+1] );
+			for (unsigned ch = 0; ch < nchannels; ++ch)
+                        {
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": I  " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2] );
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalS()[2*ch*recordSize + index*2+1] );
+                        }
                     }
                 }
-            }
-            else
-            {
-	        if(fSkipEggWriter) continue;
-                for( unsigned index = 0; index < 20; ++index )
+                else
                 {
-                	for (unsigned ch = 0; ch < nchannels; ++ch)
+                    for( unsigned index = 0; index < 20; ++index )
                     {
-                    LWARN( lmclog, "channel " << ch << ": " << index << ": I " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2] );
-                    LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2+1] );
+                	for (unsigned ch = 0; ch < nchannels; ++ch)
+                        {
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": I " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][0] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2] );
+                        LWARN( lmclog, "channel " << ch << ": " << index << ": Q " << simulatedSignal->SignalTimeComplex()[ch*recordSize + index][1] << "  " << (int)simulatedSignal->SignalDigitalUS()[2*ch*recordSize + index*2+1] );
+                        }
                     }
                 }
-            }
 
-
-	    if(! fSkipEggWriter)
-	    {
                 if( ! fEggWriter.WriteRecord( simulatedSignal, isNewAcquisition ) )
                 {
                     LERROR( lmclog, "Something went wrong while writing record " << record );
