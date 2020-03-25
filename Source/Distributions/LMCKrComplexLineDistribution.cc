@@ -59,7 +59,7 @@ namespace locust
         fXArray = linspace(-1000,1000,fNPointsSELA);
 
         fNormal = std::normal_distribution<double>(0, gaussian_FWHM_to_sigma(fFWHM));
-        fLorentzian = std::cauchy_distribution<double>(fLinePosition, kr_line_width / 2. ); //pos, hwhm
+        fLorentzian = std::cauchy_distribution<double>(0, kr_line_width / 2. ); //pos, hwhm
         fUniform = std::uniform_real_distribution<double>(0,1);
 
         for(unsigned i=0; i < fGases.size(); ++i)
@@ -69,14 +69,15 @@ namespace locust
         fShakeSpectrum = shake_spectrum();
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
 
-        for(unsigned i=0; i < fGases.size(); ++i)
+        //for(unsigned i=0; i < fGases.size(); ++i)
+        for(unsigned i=0; i < 2; ++i)
         {
             std::vector<std::vector<double> > scattering_data = energy_loss_spectra(fGases[i]);
             fEnergyLossInterpolator.push_back(boost::math::barycentric_rational<double>(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0));
             create_cdf(fEnergyLossInterpolator[i], scattering_data[1], scattering_data[0]);
+
         }
     }
-    //oscillator_strength = A * pow(w,2.) / (pow(w,2.) + 4. * pow(e - eBack, 2.));
 
     std::vector<std::vector<double>> KrComplexLineDistribution::transpose_vector(const std::vector<std::vector<double>> aVector)
     {
@@ -96,6 +97,7 @@ namespace locust
     void KrComplexLineDistribution::read_shake_data()
     {
         std::string filename = "KrShakeParameters214.txt";
+
         std::vector<std::vector<double> > read_data = read_file(filename, "," );
         read_data = transpose_vector(read_data);
 
@@ -249,9 +251,15 @@ namespace locust
         std::vector<std::vector<double> > read_data  = read_file(filename, "\t");
 
         std::sort(read_data.begin(), read_data.end(), [](const std::vector<double> & a, const std::vector<double> & b) -> bool { return a[0] < b[0]; });
+
+        //remove duplicates
+        auto equal_lambda = [](const std::vector<double> &a, const std::vector<double> & b) { return a[0] == b[0];};
+        read_data.erase( std::unique( read_data.begin(), read_data.end(), equal_lambda ), read_data.end() );
+
         read_data = transpose_vector(read_data);
 
         extrapolate_oscillator_strength(read_data, gas_species );
+
         read_data[1] = EnergyLossSpectrum(read_data);
         return read_data;
 
@@ -294,8 +302,9 @@ namespace locust
             cdf[i] = cdf[i-1] + (f[i-1] + f[i]) * (x[i] - x[i-1]) / 2.;
 
         double norm = cdf.back();
-
         std::transform(cdf.begin(), cdf.end(), cdf.begin(), [norm](double& c){return c/norm;});
+
+
         return cdf;
     }
     
@@ -312,7 +321,7 @@ namespace locust
     std::string KrComplexLineDistribution::generate_gas_species()
     {
         double u = fUniform(fRNEngine);
-        bool gas_choice = u < (fAmplitude[0] / (fAmplitude[0] + fAmplitude[1]));
+        bool gas_choice = u > (fAmplitude[0] / (fAmplitude[0] + fAmplitude[1]));
         return fGases[int(gas_choice)];
     }
 
@@ -332,26 +341,27 @@ namespace locust
     double KrComplexLineDistribution::Generate()
     {
         //initialize energy from lineshape (lorentzian/ shake)
-        double generated_energy;
+        //double generated_energy = fLinePosition;
+        double generated_energy = 0;
 
-        if(fEmittedPeak == "lorentzian")
-            generated_energy = fLorentzian(fRNEngine);
-        if(fEmittedPeak == "shake")
-            generated_energy = generate_shake();
-        
+        //if(fEmittedPeak == "lorentzian")
+        //    generated_energy += fLorentzian(fRNEngine);
+        //if(fEmittedPeak == "shake")
+        //    generated_energy += generate_shake();
         
         //choose gas species
         std::string gas_species = generate_gas_species();
         
         //generate number of scatters
-        int nScatters = generate_nscatters(gas_species);
+        //int nScatters = generate_nscatters(gas_species);
+        int nScatters = 1;
 
         //calculate n missed tracks on energy loss
         for(int i=0; i < nScatters; ++i)
             generated_energy -= generate_energy_loss(gas_species);
         
         //include gaussian smearing from finite detector resolution
-        generated_energy += fNormal(fRNEngine);
+        //generated_energy += fNormal(fRNEngine);
 
         return generated_energy;
 

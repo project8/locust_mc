@@ -30,8 +30,6 @@ namespace locust
         fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
         fAlpha( 0.01 ),
         fSignalPower( 0. ),
-        fStartFrequencyMax( 0. ),
-        fStartFrequencyMin( 0. ),
         fStartVPhase( 0. ),
         fStartTimeMin( 0. ),
         fStartTimeMax( 0. ),
@@ -76,11 +74,8 @@ namespace locust
         if( aParam.has( "signal-power" ) )
             SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
 
-        if( aParam.has( "start-frequency-max" ) )
-            SetStartFrequencyMax( aParam.get_value< double >( "start-frequency-max", fStartFrequencyMax ) );
-
-        if( aParam.has( "start-frequency-min" ) )
-            SetStartFrequencyMin( aParam.get_value< double >( "start-frequency-min", fStartFrequencyMin ) );
+        if( aParam.has( "start-frequency" ) )
+            fStartFrequencyDistribution = fDistributionInterface.get_dist(aParam["start-frequency"].as_node());
 
         if( aParam.has( "start-vphase" ) )
             SetStartVPhase( aParam.get_value< double >( "start-vphase", fStartVPhase ) );
@@ -178,6 +173,13 @@ namespace locust
         SetInterpolator(fH2Interpolant,h2Data);
         SetInterpolator(fKrInterpolant,krData);
 
+        //std::ofstream myfile;
+        //myfile.open ("example.txt");
+        //for(int i=0;i<50000;++i)
+        //    myfile<<fSlopeDistribution->Generate()<<std::endl;
+        //myfile.close();
+
+
         return true;
     }
 
@@ -207,28 +209,6 @@ namespace locust
     void FakeTrackSignalGenerator::SetSignalPower( double aPower )
     {
         fSignalPower = aPower;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetStartFrequencyMax() const
-    {
-        return fStartFrequencyMax;
-    }
-
-    void FakeTrackSignalGenerator::SetStartFrequencyMax( double aFrequencyMax )
-    {
-        fStartFrequencyMax = aFrequencyMax;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetStartFrequencyMin() const
-    {
-        return fStartFrequencyMin;
-    }
-
-    void FakeTrackSignalGenerator::SetStartFrequencyMin( double aFrequencyMin )
-    {
-        fStartFrequencyMin = aFrequencyMin;
         return;
     }
 
@@ -441,7 +421,7 @@ namespace locust
 
     double FakeTrackSignalGenerator::EnergyLossSpectrum(double eLoss, double oscillator_strength)
     {
-        double T = rel_energy(fStartFrequencyMax, fBField);
+        double T = rel_energy(fStartFrequencyDistribution->Generate(), fBField);
         return (LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * eLoss / pow(LMCConst::E_Rydberg(), 3.) ); // Produces energy loss spectrum (N. Buzinsky report Eqn XXX) 
         // NOTE: because this formula depends only on log T, I do NOT update with each change in kinetic energy (ie. from radiative losses). Including these changes may be better
 
@@ -599,7 +579,6 @@ namespace locust
         double theta_scatter;
         const double deg_to_rad = LMCConst::Pi() / 180.;
 
-        std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
         std::uniform_real_distribution<double> startpitch_distribution(cos(fStartPitchMin * deg_to_rad),cos(fStartPitchMax * deg_to_rad));
@@ -615,7 +594,7 @@ namespace locust
             {
                 fStartTime = aTimeOffset;
             }
-            fStartFrequency = startfreq_distribution(fRandomEngine);
+            fStartFrequency = fStartFrequencyDistribution->Generate();
             fPitch = acos(startpitch_distribution(fRandomEngine));
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;

@@ -43,12 +43,8 @@ namespace locust
 
       Available configuration options:
       - "signal-power": double -- PSD of signal (at 90 degrees) (W/Hz).
-      - "start-frequency-max": double -- Upper bound for start frequency of signal (Hz); distribution: uniform.
-      - "start-frequency-min": double -- Lower bound for start frequency of signal (Hz); distribution: uniform.
       - "track-length-mean": double -- Average of track length (s); distribution: exponential.
       - "start-vphase": double -- Starting voltage phase (V).
-      - "slope-mean": double -- Mean value of Gaussian slope distribution (MHz/ms); distribution: gaussian.
-      - "slope-std": double -- Standard deviation of Gaussian slope distribution (MHz/ms); distribution: gaussian.
       - "lo-frequency": double -- Frequency of local oscillator (Hz).
       - "start-time-max": double -- Upper bound for track start time (s); distribution: uniform.
       - "start-time-min": double -- Lower bound for track start time (s); distribution: uniform.
@@ -79,12 +75,6 @@ namespace locust
 
             double GetAlpha() const;
             void SetAlpha( double aAlpha );
-
-            double GetStartFrequencyMax() const;
-            void SetStartFrequencyMax( double aFrequencyMax );
-
-            double GetStartFrequencyMin() const;
-            void SetStartFrequencyMin( double aFrequencyMin );
 
             double GetStartPitchMax() const;
             void SetStartPitchMax( double aPitchMax );
@@ -166,9 +156,8 @@ namespace locust
             bool (FakeTrackSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             double fSignalPower;
-            double fStartFrequencyMax;
-            double fStartFrequencyMin;
             double fStartVPhase;
+            std::shared_ptr< BaseDistribution> fStartFrequencyDistribution;
             std::shared_ptr< BaseDistribution> fSlopeDistribution;
             double fStartTimeMax;
             double fStartTimeMin;

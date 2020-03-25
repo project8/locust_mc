@@ -46,7 +46,6 @@ namespace locust
             
             std::string fEmittedPeak;
 
-
             std::vector<double> fAIntensity;
             std::vector<double> fBBinding;
             std::vector<double> fGammaWidth;
