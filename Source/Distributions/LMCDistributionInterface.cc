@@ -39,6 +39,9 @@ namespace locust
         else if(dist_name == "lorentzian" || dist_name == "cauchy")
             fDistributionList.push_back( std::make_shared< LorentzianDistribution >(aParam) );
 
+        else if(dist_name == "rudd")
+            fDistributionList.push_back( std::make_shared< RuddDistribution >(aParam) );
+
         else if(dist_name == "uniform")
             fDistributionList.push_back( std::make_shared< UniformDistribution >(aParam) );
 
