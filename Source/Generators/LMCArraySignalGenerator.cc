@@ -27,25 +27,15 @@ namespace locust
     MT_REGISTER_GENERATOR(ArraySignalGenerator, "array-signal");
 
     ArraySignalGenerator::ArraySignalGenerator( const std::string& aName ) :
-        Generator( aName ),
+	TransmitterInterfaceGenerator(aName),
         fLO_Frequency( 0.),
+        fphiLO(0.),
         fArrayRadius( 0. ),
         fNElementsPerStrip( 0. ),
-		fZShiftArray( 0. ),
+	fZShiftArray( 0. ),
         fElementSpacing( 0. ),
-        gxml_filename("blank.xml"),
-		fTextFileWriting( 0 ),
-        fphiLO(0.),
-        EFieldBuffer( 1 ),
-        EPhaseBuffer( 1 ),
-        EAmplitudeBuffer( 1 ),
-        EFrequencyBuffer( 1 ),
         LOPhaseBuffer( 1 ),
-        IndexBuffer( 1 ),
-        ElementFIRBuffer( 1 ),
-        fFieldBufferSize( 50 ),
-		fSwapFrequency( 1000 )
-
+        ElementFIRBuffer( 1 )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -57,65 +47,7 @@ namespace locust
     bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
-        if( aParam.has( "transmitter" ))
-        {
-        	int ntransmitters = 0;
-
-        	if(aParam["transmitter"]().as_string() == "antenna")
-        	{
-        		ntransmitters += 1;
-        		//AntennaSignalTransmitter* modelTransmitter = new AntennaSignalTransmitter;
-			fTransmitter = new AntennaSignalTransmitter;
-        		if(!fTransmitter->Configure(aParam))
-        		{
-        			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
-        		}
-        		if(!fTransmitter->InitializeTransmitter())
-        		{
-        			exit(-1);
-        		}
-        		//fTransmitter = modelTransmitter;
-        	}
-
-        	if(aParam["transmitter"]().as_string() == "planewave")
-        	{
-        		ntransmitters += 1;
-        		//PlaneWaveTransmitter* modelTransmitter = new PlaneWaveTransmitter;
-			fTransmitter = new PlaneWaveTransmitter;
-        		if(!fTransmitter->Configure(aParam))
-        		{
-        			LERROR(lmclog,"Error Configuring planewave transmitter class");
-        		}
-
-        		//fTransmitter = modelTransmitter;
-        	}
-
-        	if(aParam["transmitter"]().as_string() == "kassiopeia")
-        	{
-        		ntransmitters += 1;
-        		//KassTransmitter* modelTransmitter = new KassTransmitter;
-			fTransmitter = new KassTransmitter;
-        		if(!fTransmitter->Configure(aParam))
-        		{
-        			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
-        		}
-
-        		//fTransmitter = modelTransmitter;
-        	}
-
-        	if (ntransmitters != 1)
-        	{
-        		LERROR(lmclog,"LMCArraySignalGenerator needs a single transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
-                exit(-1);
-        	}
-        }
-        else
-        {
-    		LERROR(lmclog,"LMCArraySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
-            exit(-1);
-        }
-
-
+	TransmitterInterfaceGenerator::Configure(aParam);
     	if(!fTFReceiverHandler.Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
@@ -125,12 +57,6 @@ namespace locust
     	{
     		LERROR(lmclog,"Error configuring receiver PowerCombiner class");
     	}
-
-        if( aParam.has( "buffer-size" ) )
-        {
-        	fFieldBufferSize = aParam["buffer-size"]().as_int();
-        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
-        }
 
     	if(!fHilbertTransform.Configure(aParam))
     	{
@@ -159,28 +85,8 @@ namespace locust
         {
             fZShiftArray = aParam["zshift-array"]().as_double();
         }
-        if( aParam.has( "swap-frequency" ) )
-        {
-            fSwapFrequency = aParam["swap-frequency"]().as_int();
-        }
-        if( aParam.has( "xml-filename" ) )
-        {
-            gxml_filename = aParam["xml-filename"]().as_string();
-        }
-        if( aParam.has( "text-filewriting" ) )
-        {
-            fTextFileWriting = aParam["text-filewriting"]().as_bool();
-        }
-
         return true;
     }
-
-    void ArraySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
-    {
-        aVisitor->Visit( this );
-        return;
-    }
-
 
     static void* KassiopeiaInit(const std::string &aFile)
     {
@@ -197,52 +103,20 @@ namespace locust
 	{
             for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
             {
-            	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
+		InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
             }
 	}
     }
 
-    bool ArraySignalGenerator::WakeBeforeEvent()
-    {
-        fPreEventCondition.notify_one();
-        return true;
-    }
-
-    bool ArraySignalGenerator::ReceivedKassReady()
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        printf("LMC about to wait ..\n");
-
-        if( !fKassEventReady)
-        {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
-        }
-
-        if (fFalseStartKassiopeia)  // workaround for some Macs
-        {
-            std::unique_lock< std::mutex >tLock( fKassReadyMutex );
-            fKassReadyCondition.wait( tLock );
-        }
-
-        return true;
-    }
-
-
-    // fields incident on element.
     void ArraySignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int elementIndex, double zelement, double tEFieldCoPol)
     {
-    	if (t_old > 0.5e-9)
-         	{
-         	fprintf(fp, "%d %g %g\n", elementIndex, zelement, tEFieldCoPol);
-         	}
+	if (t_old > 0.5e-9){
+	    fprintf(fp, "%d %g %g\n", elementIndex, zelement, tEFieldCoPol);
+	}
     }
-
-
 
     double ArraySignalGenerator::GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned element)
     {
-
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
     	double HilbertMag = 0.;
     	double HilbertPhase = 0.;
@@ -256,14 +130,12 @@ namespace locust
     		HilbertMag = HilbertMagPhaseMean[0];
     		HilbertPhase = HilbertMagPhaseMean[1];
     		delete[] HilbertMagPhaseMean;
-
     		for (int i=0; i < nfilterbins; i++)  // populate filter with field.
     		{
     			HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
     			ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(HilbertMag*cos(HilbertPhase));
     			ElementFIRBuffer[channel*fNElementsPerStrip+element].pop_front();
     		}
-
     		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
 
     		return convolution;
@@ -271,7 +143,6 @@ namespace locust
     	else return 0.;
 
     }
-
 
     void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
@@ -281,7 +152,6 @@ namespace locust
         const unsigned nChannels = fNChannels;
         const int nReceivers = fNElementsPerStrip;
 
-
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         double tReceiverTime = t_old;
@@ -290,7 +160,6 @@ namespace locust
 
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         {
-            double ElementPhi = (double)channelIndex*360./nChannels*LMCConst::Pi()/180.; // radians.
             for(int elementIndex = 0; elementIndex < nReceivers; ++elementIndex)
             {
             	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
@@ -310,9 +179,9 @@ namespace locust
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
- 	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
- 	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
- 	            fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+ 	        FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
+ 	        double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
+ 	        fPowerCombiner.AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;
@@ -326,54 +195,38 @@ namespace locust
 
     }
 
-
     void ArraySignalGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned element)
     {
-    	EFieldBuffer[channel*fNElementsPerStrip+element].push_back(EFieldValue);
-    	EFrequencyBuffer[channel*fNElementsPerStrip+element].push_back(DopplerFrequency/2./LMCConst::Pi());
+	TransmitterInterfaceGenerator::FillBuffers(aSignal,DopplerFrequency,EFieldValue,channel*fNElementsPerStrip+element,index);
     	LOPhaseBuffer[channel*fNElementsPerStrip+element].push_back(LOPhase);
     	IndexBuffer[channel*fNElementsPerStrip+element].push_back(channel*aSignal->TimeSize()*aSignal->DecimationFactor() + index);
     }
 
-
-
-
-
     void ArraySignalGenerator::PopBuffers(unsigned channel, unsigned element)
     {
-
-    	EFieldBuffer[channel*fNElementsPerStrip+element].pop_front();
-    	EFrequencyBuffer[channel*fNElementsPerStrip+element].pop_front();
+	TransmitterInterfaceGenerator::PopBuffers(channel*fNElementsPerStrip+element);
     	LOPhaseBuffer[channel*fNElementsPerStrip+element].pop_front();
     	IndexBuffer[channel*fNElementsPerStrip+element].pop_front();
 
     }
 
-
-
-
     void ArraySignalGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
-    	FieldBuffer aFieldBuffer;
-    	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
-    	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
-    	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
-    	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
-    	ElementFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, filterbuffersize);
+	SetNPoints(fNChannels*fNElementsPerStrip);
+	TransmitterInterfaceGenerator::InitializeBuffers(filterbuffersize,fieldbuffersize);
+    	LOPhaseBuffer = fFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
+    	IndexBuffer = fFieldBuffer.InitializeUnsignedBuffer(fNChannels*fNElementsPerStrip, fieldbuffersize);
+    	ElementFIRBuffer = fFieldBuffer.InitializeBuffer(fNChannels*fNElementsPerStrip, filterbuffersize);
     }
 
 
     void ArraySignalGenerator::CleanupBuffers()
     {
-    	FieldBuffer aFieldBuffer;
-    	EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-    	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
-    	LOPhaseBuffer = aFieldBuffer.CleanupBuffer(LOPhaseBuffer);
-    	ElementFIRBuffer = aFieldBuffer.CleanupBuffer(ElementFIRBuffer);
-    	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
+	TransmitterInterfaceGenerator::CleanupBuffers();
+    	LOPhaseBuffer = fFieldBuffer.CleanupBuffer(LOPhaseBuffer);
+    	ElementFIRBuffer = fFieldBuffer.CleanupBuffer(ElementFIRBuffer);
+    	IndexBuffer = fFieldBuffer.CleanupBuffer(IndexBuffer);
     }
-
-
 
     bool ArraySignalGenerator::InitializePowerCombining()
     {
@@ -435,7 +288,6 @@ namespace locust
 
         return true;
     }
-
 
 
     bool ArraySignalGenerator::DoGenerate( Signal* aSignal )

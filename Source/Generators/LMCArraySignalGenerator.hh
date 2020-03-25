@@ -8,6 +8,8 @@
 #ifndef LMCARRAYSIGNALGENERATOR_HH_
 #define LMCARRAYSIGNALGENERATOR_HH_
 
+#include "LMCTransmitterInterfaceGenerator.hh"
+
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
@@ -52,7 +54,7 @@ namespace locust
 
     */
 
-    class ArraySignalGenerator : public Generator
+    class ArraySignalGenerator : public TransmitterInterfaceGenerator
     {
         public:
 
@@ -61,29 +63,16 @@ namespace locust
 
             bool Configure( const scarab::param_node& aNode );
 
-            void Accept( GeneratorVisitor* aVisitor ) const;
-              
-
-
-
         private:
             std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
-            Transmitter* fTransmitter; // transmitter object
             double fLO_Frequency;
             double fArrayRadius;
             int fNElementsPerStrip;
             double fZShiftArray;
             double fElementSpacing;
-            std::string gxml_filename;
-            bool fTextFileWriting;
-            unsigned fFieldBufferSize;
-            int fSwapFrequency;
             double fphiLO; // voltage phase of LO in radians;
 
-            bool WakeBeforeEvent();
-            bool ReceivedKassReady();
-
-        	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
+            void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
@@ -92,13 +81,9 @@ namespace locust
             void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch);
 
 
-            std::vector<std::deque<double>> EFieldBuffer;
-            std::vector<std::deque<double>> EPhaseBuffer;
-            std::vector<std::deque<double>> EAmplitudeBuffer;
-            std::vector<std::deque<double>> EFrequencyBuffer;
             std::vector<std::deque<double>> LOPhaseBuffer;
-            std::vector<std::deque<unsigned>> IndexBuffer;
             std::vector<std::deque<double>> ElementFIRBuffer;
+            std::vector<std::deque<unsigned>> IndexBuffer;
 
 
             bool DoGenerate( Signal* aSignal );

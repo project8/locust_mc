@@ -32,9 +32,7 @@ namespace locust
 	fTextFileWriting( 0 ),
         EFieldBuffer( 1 ),
         EFrequencyBuffer( 1 ),
-        IndexBuffer( 1 ),
         fFieldBufferSize( 50 ),
-        fNFilterBins(50),
         fdtFilter( 50 ),
 	fSwapFrequency( 1000 ),
 	fNPoints(50)
@@ -124,25 +122,10 @@ namespace locust
         return;
     }
 
-
-    static void* KassiopeiaInit(const std::string &aFile)
+    void TransmitterInterfaceGenerator::InitializeFieldPoint(LMCThreeVector pointOfInterest)
     {
-        RunKassiopeia RunKassiopeia1;
-        RunKassiopeia1.Run(aFile);
-        RunKassiopeia1.~RunKassiopeia();
-
-        return 0;
-    }
-
-    void TransmitterInterfaceGenerator::InitializeFieldPoints()
-    {
-	fNPoints=50;
-	for(int pointIndex = 0; pointIndex< fNPoints; ++pointIndex)
-	{
-	    LMCThreeVector point(0.0,0.0,0.0);
-            fTransmitter->InitializeFieldPoint(point);
-	    fAllFieldCopol.push_back(point);
-	}
+            fTransmitter->InitializeFieldPoint(pointOfInterest);
+	    fAllFieldCopol.push_back(pointOfInterest);
     }
 
     bool TransmitterInterfaceGenerator::WakeBeforeEvent()
@@ -180,143 +163,28 @@ namespace locust
          	}
     }
 
-    void TransmitterInterfaceGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
-    {
-        const int signalSize = aSignal->TimeSize();
-        unsigned pointIndex = 0;
-        unsigned sampleIndex = 0;
-
-        unsigned tTotalElementIndex = 0;
-
-        for(int pointIndex = 0; pointIndex < fNPoints; ++pointIndex)
-        {
-                sampleIndex = pointIndex*aSignal->DecimationFactor() + index;  // which point and which sample
-
-                double* tFieldSolution = new double[2];
-                if (!fTransmitter->IsKassiopeia())
-                {
-                	tFieldSolution = fTransmitter->GetEFieldCoPol(pointIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
-                }
-                else
-                {
-                	tFieldSolution = fTransmitter->SolveKassFields(fAllFieldCopol[pointIndex],fAllFieldCopol[pointIndex],t_old,pointIndex);
-                }
-                if (fTextFileWriting==1) {}
-		RecordIncidentFields(fp, t_old,fAllFieldCopol.at(pointIndex), tFieldSolution[1]);
- 	        FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0],pointIndex,index);
-                PopBuffers(pointIndex);
-        } // channels loop
-
-        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
-    }
-
     void TransmitterInterfaceGenerator::FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue,unsigned pointIndex, unsigned timeIndex)
     {
     	EFieldBuffer[pointIndex].push_back(EFieldValue);
     	EFrequencyBuffer[pointIndex].push_back(DopplerFrequency/2./LMCConst::Pi());
-    	IndexBuffer[pointIndex].push_back(pointIndex*aSignal->TimeSize()*aSignal->DecimationFactor() + timeIndex);
     }
 
     void TransmitterInterfaceGenerator::PopBuffers(unsigned pointIndex)
     {
     	EFieldBuffer[pointIndex].pop_front();
     	EFrequencyBuffer[pointIndex].pop_front();
-    	IndexBuffer[pointIndex].pop_front();
     }
 
     void TransmitterInterfaceGenerator::InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
     {
-    	FieldBuffer aFieldBuffer;
-    	EFieldBuffer = aFieldBuffer.InitializeBuffer(fNPoints, fieldbuffersize);
-    	EFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNPoints, fieldbuffersize);
-    	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNPoints, fieldbuffersize);
+    	EFieldBuffer = fFieldBuffer.InitializeBuffer(fNPoints, fieldbuffersize);
+    	EFrequencyBuffer = fFieldBuffer.InitializeBuffer(fNPoints, fieldbuffersize);
     }
 
     void TransmitterInterfaceGenerator::CleanupBuffers()
     {
-    	FieldBuffer aFieldBuffer;
-    	EFieldBuffer = aFieldBuffer.CleanupBuffer(EFieldBuffer);
-    	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
-    	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
-    }
-
-    bool TransmitterInterfaceGenerator::DoGenerate( Signal* aSignal )
-    {
-        FILE *fp = fopen("incidentfields.txt", "w");
-
-        //n samples for event spacing in Kass.
-        int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
-        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-
-        InitializeBuffers(fNFilterBins, fFieldBufferSize);
-        InitializeFieldPoints();
-
-        if (!fTransmitter->IsKassiopeia())
-        {
-        	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-        	{
-        		DriveAntenna(fp, PreEventCounter, index, aSignal, fNFilterBins,fdtFilter);
-        	}  // for loop
-        	return true;
-        }
-
-        else if (fTransmitter->IsKassiopeia())
-        {
-
-            std::thread Kassiopeia(KassiopeiaInit, gxml_filename);  // spawn new thread
-        	fRunInProgress = true;
-
-        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-        {
-            if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
-            {
-                if (ReceivedKassReady()) fPreEventInProgress = true;
-            }
-
-            if (fPreEventInProgress)
-            {
-                PreEventCounter += 1;
-                //printf("preeventcounter is %d\n", PreEventCounter);
-                if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
-                {
-                    fPreEventInProgress = false;  // reset.
-                    fEventInProgress = true;
-                    //printf("LMC about to wakebeforeevent\n");
-                    WakeBeforeEvent();  // trigger Kass event.
-                }
-            }
-
-            if (fEventInProgress)  // fEventInProgress
-                if (fEventInProgress)  // check again.
-                {
-                    //printf("waiting for digitizer trigger ... index is %d\n", index);
-                    std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
-                    tLock.lock();
-                    fDigitizerCondition.wait( tLock );
-                    if (fEventInProgress)
-                    {
-                        //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(fp, PreEventCounter, index, aSignal, fNFilterBins,fdtFilter);
-                        PreEventCounter = 0; // reset
-                    }
-                    tLock.unlock();
-                }
-
-        }  // for loop
-
-        printf("finished signal loop\n");
-
-        fclose(fp);
-        fRunInProgress = false;  // tell Kassiopeia to finish.
-        fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-        WakeBeforeEvent();
-        Kassiopeia.join();
-
-        return true;
-        }
-
+    	EFieldBuffer = fFieldBuffer.CleanupBuffer(EFieldBuffer);
+    	EFrequencyBuffer = fFieldBuffer.CleanupBuffer(EFrequencyBuffer);
     }
 
 } /* namespace locust */

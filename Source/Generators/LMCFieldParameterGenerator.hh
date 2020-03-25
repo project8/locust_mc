@@ -10,6 +10,16 @@
 
 #include "LMCTransmitterInterfaceGenerator.hh"
 
+#include "LMCEventHold.hh"
+#include "LMCRunKassiopeia.hh"
+
+#include "logger.hh"
+#include <thread>
+#include <algorithm>
+
+#include <iostream>
+#include <fstream>
+
 namespace locust
 {
 
@@ -36,6 +46,11 @@ namespace locust
             virtual ~FieldParameterGenerator();
 
             bool Configure( const scarab::param_node& aNode );
+
+	private:
+            bool DoGenerate(Signal* aSignal);
+    	    void InitializeFieldPoints();
+            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
     };
 
 } /* namespace locust */

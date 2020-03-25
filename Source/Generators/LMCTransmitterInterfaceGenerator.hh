@@ -54,30 +54,44 @@ namespace locust
             Transmitter* fTransmitter; // transmitter object
             std::string gxml_filename;
             bool fTextFileWriting;
-	    unsigned fNPoints;
             unsigned fFieldBufferSize;
+            int fSwapFrequency;
 	    unsigned fNFilterBins;
 	    double fdtFilter;
-            int fSwapFrequency;
 
             bool WakeBeforeEvent();
             bool ReceivedKassReady();
 
-	    void InitializeFieldPoints();
             void RecordIncidentFields(FILE *fp, double t_old,LMCThreeVector pointOfInterest, double tEFieldCoPol);
+	    
+	    void InitializeFieldPoint(LMCThreeVector pointOfInterest);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned pointIndex);
             void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, unsigned index, unsigned timeIndex);
 
+    	    FieldBuffer fFieldBuffer;
+	   
             std::vector<LMCThreeVector> fAllFieldPoints;
             std::vector<LMCThreeVector> fAllFieldCopol;
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EFrequencyBuffer;
-            std::vector<std::deque<unsigned>> IndexBuffer;
 
-            bool DoGenerate( Signal* aSignal );
-            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
+            virtual bool DoGenerate( Signal* aSignal ){}
+            virtual void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter){}
+
+	    inline void SetNPoints(int nPoints)
+	    {
+		fNPoints=nPoints;
+	    }
+
+	    inline int GetNPoints()
+	    {
+		return fNPoints;
+	    }
+	private: 
+	    unsigned fNPoints;
+
     };
 
 } /* namespace locust */
