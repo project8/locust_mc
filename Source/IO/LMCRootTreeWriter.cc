@@ -15,6 +15,12 @@ namespace locust
 {
     LOGGER( lmclog, "RootTreeWriter" );
 
+
+    RootTreeWriter::RootTreeWriter():
+	fFile ( 0 )
+    {
+    }
+
     RootTreeWriter::~RootTreeWriter()
     {
     }
@@ -22,22 +28,23 @@ namespace locust
     bool RootTreeWriter::Configure( const scarab::param_node& aParam )
     {
 
-    	if( !FileWriter::Configure(aParam))
+/*    	if( !FileWriter::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring FileWriter class from RootTreeWriter child class");
     	}
-
+*/
     	return true;
     }
 
     double RootTreeWriter::GetTestVar()
     {
-    	return fTestVar;
+    	return 0.;
+//    	return fTestVar;
     }
 
     void RootTreeWriter::SetTestVar(double aValue)
     {
-    	fTestVar = aValue;
+//    	fTestVar = aValue;
     }
 
     void RootTreeWriter::OpenFile(string aFileName)
@@ -74,8 +81,9 @@ namespace locust
         delete aTree;
     }
 
+
     //Initialize pointer to zero so that it can be initialized in first call to getInstance
-    RootTreeWriter *RootTreeWriter::instance = 0;
+//    RootTreeWriter *RootTreeWriter::instance = 0;
 
 
 } /* namespace locust */

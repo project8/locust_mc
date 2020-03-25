@@ -9,14 +9,14 @@
 
 namespace locust
 {
-    FileWriter::FileWriter() {}
+	FileWriter::FileWriter() {}
     FileWriter::~FileWriter() {}
 
-    bool FileWriter::Configure( const scarab::param_node& aParam )
+/*    bool FileWriter::Configure( const scarab::param_node& aParam )
      {
           return true;
      }
-
+*/
 
 
 } /* namespace locust */

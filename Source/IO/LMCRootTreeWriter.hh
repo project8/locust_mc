@@ -26,26 +26,12 @@ namespace locust
  Available configuration options:
  No input parameters
  */
-    class RootTreeWriter: public FileWriter
+//    class RootTreeWriter: public FileWriter
+    class RootTreeWriter : FileWriter
     {
-        static RootTreeWriter *instance;
-        int data;
-        RootTreeWriter() :
-        	fTestVar( 0. ),
-			fFile ( 0 )
-        {
-        	data = 0;
-        }
+	public:
 
-    	public:
-
-        static RootTreeWriter *getInstance()
-        {
-           if (!instance)
-           instance = new RootTreeWriter;
-           return instance;
-        }
-
+        RootTreeWriter();
         virtual ~RootTreeWriter();
 
         virtual bool Configure( const scarab::param_node& aNode );
@@ -60,7 +46,7 @@ namespace locust
         void CloseFile();
 
         private:
-        double fTestVar;
+//        double fTestVar;
         TFile* fFile;
 
 

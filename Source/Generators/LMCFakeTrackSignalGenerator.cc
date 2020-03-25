@@ -706,35 +706,11 @@ namespace locust
     }
 
 
-//    void WriteRootFile(Event* anEvent, TFile* hfile)
-    void WriteRootFile(Event* anEvent)
-    {
-    	char buffer[100];
-        int n=sprintf(buffer, "Event_%d", anEvent->fEventID);
-    	char* treename = buffer;
-
-        TTree *aTree = new TTree(treename,"Locust Tree");
-        aTree->Branch("EventID", &anEvent->fEventID, "EventID/I");
-        aTree->Branch("ntracks", &anEvent->fNTracks, "ntracks/I");
-        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
-        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->fStartTimes);
-        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->fEndTimes);
-        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->fTrackLengths);
-        aTree->Branch("Slopes", "std::vector<double>", &anEvent->fSlopes);
-        aTree->Branch("LOFrequency", &anEvent->fLOFrequency, "LOFrequency/D");
-        aTree->Branch("RandomSeed", &anEvent->fRandomSeed, "RandomSeed/I");
-        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->fTrackPowers);
-        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->fPitchAngles);
-        aTree->Fill();
-        aTree->Write();
-        delete aTree;
-    }
-
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
 
-    	RootTreeWriter *aRootTreeWriter = aRootTreeWriter->getInstance();
+    	RootTreeWriter *aRootTreeWriter = new RootTreeWriter();
         aRootTreeWriter->OpenFile(fRoot_filename);
 
         const unsigned nChannels = fNChannels;
