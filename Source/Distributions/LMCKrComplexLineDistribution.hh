@@ -9,7 +9,8 @@
 #define LMCKRCOMPLEXLINEDISTRIBUTION_HH_
 
 #include "LMCBaseDistribution.hh"
-#include <boost/math/interpolators/barycentric_rational.hpp>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
 
 #include <map>
 #include <valarray>
@@ -31,6 +32,7 @@ namespace locust
 
         public:
             KrComplexLineDistribution(const scarab::param_node &aParam);
+            ~KrComplexLineDistribution();
             double Generate();
 
         private:
@@ -41,8 +43,11 @@ namespace locust
             unsigned fNPointsSELA;
             std::vector<std::string> fGases;
 
-            std::vector<boost::math::barycentric_rational<double> > fEnergyLossInterpolator;
-            boost::math::barycentric_rational<double> fShakeInterpolator;
+            std::vector<gsl_spline*> fEnergyLossInterpolator;
+            std::vector<gsl_interp_accel*> fEnergyLossAccelerator;
+
+            gsl_spline *fShakeInterpolator;
+            gsl_interp_accel *fShakeAccelerator;
             
             std::string fEmittedPeak;
 
@@ -79,8 +84,8 @@ namespace locust
     std::vector<std::vector<double>> transpose_vector(const std::vector<std::vector<double>> aVector);
             std::vector<std::vector<double> > read_file(std::string filename, std::string delimiter);
             std::vector<std::vector<double>> energy_loss_spectra(const std::string &gas_species);
-            double generate_from_cdf(double u, boost::math::barycentric_rational<double> &aCDF );
-            void create_cdf(boost::math::barycentric_rational<double> &interpolant, std::vector<double> f, std::vector<double> x);
+            double generate_from_cdf(double u, gsl_spline*& aCDFSpline, gsl_interp_accel*& aAccelerator );
+            void create_cdf(gsl_spline*& interpolant, std::vector<double> f, std::vector<double> x);
 
             std::vector<double> trapezoidal_rule(std::vector<double> f, std::vector<double> x);
 
