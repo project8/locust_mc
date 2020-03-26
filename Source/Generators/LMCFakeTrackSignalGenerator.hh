@@ -16,9 +16,11 @@
 #include "LMCEvent.hh"
 #include "LMCDistributionInterface.hh"
 
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
+
 #include <random>
 #include <vector>
-#include <boost/math/interpolators/barycentric_rational.hpp>
 
 
 namespace scarab
@@ -126,7 +128,7 @@ namespace locust
             void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
             double EnergyLossSpectrum(double eLoss, double oscillator_strength);
             double GetScatteredPitchAngle(double thetaScatter, double pitchAngle, double phi);
-            void SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data);
+            void SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data);
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
             double GetEnergyLoss(double u, bool hydrogenScatter);
             double GetKa2(double eLoss, double T);
@@ -174,8 +176,8 @@ namespace locust
             double fHydrogenFraction;
             std::string fRoot_filename;
             std::default_random_engine fRandomEngine;
-            boost::math::barycentric_rational<double> fH2Interpolant;
-            boost::math::barycentric_rational<double> fKrInterpolant;
+            std::vector<gsl_spline*> fInterpolators;
+            std::vector<gsl_interp_accel*> fAccelerators;
             const double fTrapLength;
 
             DistributionInterface fDistributionInterface;

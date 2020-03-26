@@ -46,8 +46,6 @@ namespace locust
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
-        fH2Interpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
-        fKrInterpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
         fRoot_filename("LocustEvent.root"),
         fSlope( 0. ),
         fPitch( 0. ),
@@ -63,8 +61,12 @@ namespace locust
 
     FakeTrackSignalGenerator::~FakeTrackSignalGenerator()
     {
+        for(unsigned i=0;i<fInterpolators.size(); ++i)
+        {
+            gsl_spline_free(fInterpolators[i]);
+            gsl_interp_accel_free(fAccelerators[i]);
+        }
     }
-
 
     bool FakeTrackSignalGenerator::Configure( const scarab::param_node& aParam )
     {
@@ -170,12 +172,13 @@ namespace locust
         ReadFile((dataDir / "KrOscillatorStrength.txt").string(), krData);
         ExtrapolateData(h2Data, std::array<double, 3>{0.195, 14.13, 10.60});
         ExtrapolateData(krData, std::array<double, 3>{0.4019, 22.31, 16.725});
-        SetInterpolator(fH2Interpolant,h2Data);
-        SetInterpolator(fKrInterpolant,krData);
+        fInterpolators = std::vector<gsl_spline*>(2);
+        fAccelerators = std::vector<gsl_interp_accel*>(2);
+        SetInterpolator(fInterpolators[0],h2Data);
+        SetInterpolator(fInterpolators[1],krData);
 
         return true;
     }
-
 
     void FakeTrackSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
@@ -404,11 +407,15 @@ namespace locust
             std::stringstream ss(line);
             ss >> bufferE;
             ss >> bufferOsc;
-            readData.push_back(std::make_pair(bufferE, bufferOsc));
+            readData.push_back(std::make_pair(bufferE, fabs(bufferOsc)));
         }
 
         //sort data by energy
         std::sort(readData.begin(), readData.end(), [](const std::pair<double,double> & a, const std::pair<double, double> & b) -> bool { return a.first < b.first; });
+
+        //remove duplicates
+        auto equal_lambda = [](const std::pair<double, double> &a, const std::pair<double, double> & b) { return a.first == b.first;};
+        readData.erase( std::unique( readData.begin(), readData.end(), equal_lambda ), readData.end() );
         data = readData;
     }
 
@@ -442,7 +449,7 @@ namespace locust
         return asin(sinTheta_f);
     }
 
-    void FakeTrackSignalGenerator::SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data)
+    void FakeTrackSignalGenerator::SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data)
     {
         // Reads in oscillator strength data, fills boost interpolator with corresponding inverse CDF for subsequent inversion sampling
         std::vector<double> energies, oscillator_strengths, energy_loss;
@@ -467,7 +474,8 @@ namespace locust
         double cdf_end = cdf.back();
         std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](double& c){return c/cdf_end;});
 
-        interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size(), 0); //linear interpolation: don't change, doesnt converge
+        interpolant = gsl_spline_alloc(gsl_interp_cspline, cdf.size());
+        gsl_spline_init(interpolant, cdf.data(), energies.data(), energies.size());
     }
 
     //extrapolate oscillator strength to +1000 eV energy loss using Aseev energy loss formula
@@ -524,16 +532,10 @@ namespace locust
     double FakeTrackSignalGenerator::GetEnergyLoss(double u, bool hydrogenScatter)
     {
         //uses interpolated cdf to return random energy
-        boost::math::barycentric_rational<double> *interpolant;
-        if(hydrogenScatter)
-        {
-            interpolant = &fH2Interpolant;
-        }
-        else
-        {
-            interpolant = &fKrInterpolant;
-        }
-        return (*interpolant)(u);
+        bool krScatter = !hydrogenScatter;
+        int gas_index = int(krScatter);
+
+        return gsl_spline_eval(fInterpolators[gas_index], u, fAccelerators[gas_index]);
     }
 
     double FakeTrackSignalGenerator::GetAxialFrequency() //angular frequency of axial motion Ali et al. (54) (harmonic trap)
