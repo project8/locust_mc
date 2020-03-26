@@ -147,8 +147,10 @@ namespace locust
     {
         std::valarray<double> n_prime = nprime(E_b, W);
         std::valarray<double> P_1s_nprime = C1s(E_b) / (1. - exp(-2. * LMCConst::Pi() * n_prime ));
-        P_1s_nprime *= pow(n_prime,8);
-        P_1s_nprime *= pow( pow(n_prime, 2) + 1., -4);
+        std::valarray<double> ones(1., P_1s_nprime.size());
+
+        P_1s_nprime *= pow(n_prime,8*ones);
+        P_1s_nprime *= pow( pow(n_prime, 2*ones) + 1., -4*ones);
         P_1s_nprime *= exp(-4. * n_prime * atan(1. / n_prime));
         return P_1s_nprime;
     }
@@ -158,7 +160,8 @@ namespace locust
     std::valarray<double> KrComplexLineDistribution::I(const unsigned &i, const std::valarray<double> &E)
     {
         double numerator = fAIntensity[i]*fGammaWidth[i];
-        std::valarray<double> denominator = 2 * LMCConst::Pi() *( pow(fGammaWidth[i], 2.) /4. + pow(fECore - fBBinding[i] - E,2. ));
+        std::valarray<double> ones(1., E.size());
+        std::valarray<double> denominator = 2 * LMCConst::Pi() *( pow(fGammaWidth[i], 2.*ones) /4. + pow(fECore - fBBinding[i] - E,2.*ones ));
         return numerator/denominator;
     }
 
