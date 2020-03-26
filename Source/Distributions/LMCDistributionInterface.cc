@@ -13,10 +13,17 @@ namespace locust
         fSeed(0)
     {
         fRNEngine = std::make_shared<std::default_random_engine>();
+        fRNEngine->seed(fSeed);
     }
 
     DistributionInterface::~DistributionInterface()
     {
+    }
+
+    void DistributionInterface::SetSeed(const unsigned &aSeed)
+    {
+        fSeed = aSeed;
+        fRNEngine->seed(fSeed);
     }
 
     std::shared_ptr< BaseDistribution> DistributionInterface::get_dist(const scarab::param_node &aParam)
