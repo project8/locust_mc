@@ -23,6 +23,13 @@ namespace locust
         fDistribution = std::cauchy_distribution<double>(fMean, fFWHM / 2.);
     }
 
+    LorentzianDistribution::LorentzianDistribution(const double &aMean, const double &aFWHM) :
+        fMean(aMean),
+        fFWHM(aFWHM),
+        fDistribution(aMean, aFWHM / 2.)
+    {
+    }
+
     double LorentzianDistribution::Generate()
     {
         return fDistribution(*fRNEngine);

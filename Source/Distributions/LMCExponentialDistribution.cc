@@ -19,6 +19,12 @@ namespace locust
         fDistribution = std::exponential_distribution<double>(fLambda);
     }
 
+    ExponentialDistribution::ExponentialDistribution(const double &aLambda) :
+        fLambda( aLambda ),
+        fDistribution( aLambda )
+    {
+    }
+
     double ExponentialDistribution::Generate()
     {
         return fDistribution(*fRNEngine);

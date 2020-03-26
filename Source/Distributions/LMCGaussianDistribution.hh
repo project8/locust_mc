@@ -26,6 +26,7 @@ namespace locust
 
         public:
             GaussianDistribution(const scarab::param_node &aParam);
+            GaussianDistribution(const double &aMean, const double &aStdDev);
             double Generate();
 
         private:

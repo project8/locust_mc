@@ -23,6 +23,13 @@ namespace locust
         fDistribution = std::normal_distribution<double>(fMean, fStdDev);
     }
 
+    GaussianDistribution::GaussianDistribution(const double &aMean, const double &aStdDev) :
+        fMean(aMean),
+        fStdDev(aStdDev),
+        fDistribution(fMean, fStdDev)
+    {
+    }
+
     double GaussianDistribution::Generate()
     {
         return fDistribution(*fRNEngine);

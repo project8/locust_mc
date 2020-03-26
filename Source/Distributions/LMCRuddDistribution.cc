@@ -20,6 +20,12 @@ namespace locust
         fDistribution = std::uniform_real_distribution<double>(0., 1.);
     }
 
+    RuddDistribution::RuddDistribution(const double &aAlpha) :
+        fAlpha(aAlpha),
+        fDistribution(0., 1.)
+    {
+    }
+
     double RuddDistribution::Generate()
     {
         double u = fDistribution(*fRNEngine);

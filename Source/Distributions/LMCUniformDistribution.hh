@@ -26,6 +26,7 @@ namespace locust
 
         public:
             UniformDistribution(const scarab::param_node &aParam);
+            UniformDistribution(const double &aMinValue, const double &aMaxValue);
             double Generate();
 
         private:

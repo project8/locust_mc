@@ -26,6 +26,8 @@ namespace locust
 
         public:
             ExponentialDistribution(const scarab::param_node &aParam);
+            ExponentialDistribution(const double &aLambda);
+
             double Generate();
 
         private:

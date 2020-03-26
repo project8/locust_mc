@@ -17,6 +17,11 @@ namespace locust
             fValue = aParam.get_value< double >( "value", fValue );
     }
 
+    DiracDistribution::DiracDistribution(const double &aValue) :
+        fValue(aValue)
+    {
+    }
+
     double DiracDistribution::Generate()
     {
         return fValue;

@@ -23,6 +23,13 @@ namespace locust
         fDistribution = std::uniform_real_distribution<double>(fMinValue, fMaxValue);
     }
 
+    UniformDistribution::UniformDistribution(const double &aMinValue, const double &aMaxValue) :
+        fMinValue(aMinValue),
+        fMaxValue(aMaxValue),
+        fDistribution(aMinValue, aMaxValue)
+    {
+    }
+
     double UniformDistribution::Generate()
     {
         return fDistribution(*fRNEngine);

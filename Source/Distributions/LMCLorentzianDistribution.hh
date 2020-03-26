@@ -26,6 +26,7 @@ namespace locust
 
         public:
             LorentzianDistribution(const scarab::param_node &aParam);
+            LorentzianDistribution(const double &aMean, const double &aFWHM);
             double Generate();
 
         private:

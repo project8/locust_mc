@@ -25,6 +25,7 @@ namespace locust
     {
 
         public:
+            DiracDistribution(const double &aValue);
             DiracDistribution(const scarab::param_node &aParam);
             double Generate();
 

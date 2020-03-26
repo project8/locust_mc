@@ -26,6 +26,7 @@ namespace locust
 
         public:
             RuddDistribution(const scarab::param_node &aParam);
+            RuddDistribution(const double &aAlpha);
             double Generate();
 
         private:
