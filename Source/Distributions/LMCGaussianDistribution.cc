@@ -6,7 +6,6 @@
  */
 
 #include "LMCGaussianDistribution.hh"
-#include <iostream>
 
 namespace locust
 {

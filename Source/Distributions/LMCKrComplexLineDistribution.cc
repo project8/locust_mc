@@ -17,7 +17,6 @@
 namespace locust
 {
 
-    //pass gas parameters as arrays?
     KrComplexLineDistribution::KrComplexLineDistribution(const scarab::param_node &aParam) :
         fFWHM( 5. ),
         fLinePosition( 17826. ),
@@ -69,11 +68,12 @@ namespace locust
 
         fDataDir =  TOSTRING(PB_DATA_INSTALL_DIR);
 
+        //initialize shakeon/ shakeoff data
         read_shake_data();
         fShakeSpectrum = shake_spectrum();
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
 
-
+        //initialize energy loss scattering data
         fEnergyLossInterpolator = std::vector<gsl_spline*>(fGases.size());
         fEnergyLossAccelerator = std::vector<gsl_interp_accel*>(fGases.size());
 
@@ -87,7 +87,7 @@ namespace locust
 
     KrComplexLineDistribution::~KrComplexLineDistribution()
     {
-        for(unsigned i = 0;i<fGases.size(); ++i)
+        for(unsigned i=0;i<fGases.size(); ++i)
         {
             gsl_spline_free(fEnergyLossInterpolator[i]);
             gsl_interp_accel_free(fEnergyLossAccelerator[i]);
@@ -96,21 +96,6 @@ namespace locust
         gsl_spline_free(fShakeInterpolator);
         gsl_interp_accel_free(fShakeAccelerator);
     }
-
-    std::vector<std::vector<double>> KrComplexLineDistribution::transpose_vector(const std::vector<std::vector<double>> aVector)
-    {
-        std::vector<std::vector<double>> aArrays;
-        for(unsigned i=0; i<aVector[0].size(); ++i)
-        {
-            std::vector<double> v;
-            for(unsigned j=0; j<aVector.size(); ++j)
-                v.push_back(aVector[j][i]);
-
-            aArrays.push_back(v);
-        }
-        return aArrays;
-    }
-
 
     void KrComplexLineDistribution::read_shake_data()
     {
@@ -195,7 +180,6 @@ namespace locust
     // shake spectrum by adding up shake spectrum for all the states up to i=24
     std::valarray<double> KrComplexLineDistribution::shake_spectrum()
     {
-        //x_array = flip_array(x_array);
         return full_shake_spectrum(fXArray, 0, 24);
     }
 
@@ -329,8 +313,7 @@ namespace locust
         return cdf;
     }
     
-
-    ////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     double KrComplexLineDistribution::generate_shake()
@@ -377,9 +360,7 @@ namespace locust
 
         //calculate n missed tracks on energy loss
         for(int i=0; i < nScatters; ++i)
-        {
             generated_energy -= generate_energy_loss(gas_species);
-        }
 
         //include gaussian smearing from finite detector resolution
         generated_energy += fNormal(*fRNEngine);
@@ -387,6 +368,24 @@ namespace locust
         return generated_energy;
 
     }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    std::vector<std::vector<double>> KrComplexLineDistribution::transpose_vector(const std::vector<std::vector<double>> aVector)
+    {
+        std::vector<std::vector<double>> aArrays;
+        for(unsigned i=0; i<aVector[0].size(); ++i)
+        {
+            std::vector<double> v;
+            for(unsigned j=0; j<aVector.size(); ++j)
+                v.push_back(aVector[j][i]);
+
+            aArrays.push_back(v);
+        }
+        return aArrays;
+    }
+
+
 
     std::valarray<double> KrComplexLineDistribution::linspace(double a, double b, unsigned N)
     {
@@ -415,6 +414,6 @@ namespace locust
     }
 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 } /* namespace locust */

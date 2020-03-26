@@ -24,7 +24,6 @@ namespace locust
     {
         double u = fDistribution(*fRNEngine);
         return atan(sqrt(pow(fAlpha,2.) / (1. + pow(fAlpha,2.))) * tan( LMCConst::Pi() / 2. * u));
-        
     }
 
 } /* namespace locust */

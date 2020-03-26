@@ -25,7 +25,6 @@ namespace locust
     {
 
         public:
-            //virtual T Generate() = 0;
             DiracDistribution(const scarab::param_node &aParam);
             double Generate();
 

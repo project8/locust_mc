@@ -6,7 +6,6 @@
  */
 
 #include "LMCUniformDistribution.hh"
-#include <iostream>
 
 namespace locust
 {

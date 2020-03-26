@@ -6,7 +6,6 @@
  */
 
 #include "LMCDiracDistribution.hh"
-#include <iostream>
 
 namespace locust
 {

@@ -37,4 +37,4 @@ namespace locust
 
 } /* namespace locust */
 
-#endif /* LMCUNIFORMDISTRBUTION_HH_ */
+#endif /* LMCGAUSSIANDISTRBUTION_HH_ */

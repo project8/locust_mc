@@ -25,7 +25,6 @@ namespace locust
     {
 
         public:
-            //virtual T Generate() = 0;
             LorentzianDistribution(const scarab::param_node &aParam);
             double Generate();
 

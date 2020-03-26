@@ -1,12 +1,11 @@
 /*
- * LMCExponentialmDistribution.cc
+ * LMCExponentialDistribution.cc
  *
  *  Created on: Mar 23, 2020
  *      Author: nbuzinsky
  */
 
 #include "LMCExponentialDistribution.hh"
-#include <iostream>
 
 namespace locust
 {

@@ -41,4 +41,4 @@ namespace locust
 
 } /* namespace locust */
 
-#endif /* LMCBASEDISTRBUTION_HH_ */
+#endif /* LMCBASEDDISTRBUTION_HH_ */

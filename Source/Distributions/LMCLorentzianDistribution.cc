@@ -6,7 +6,6 @@
  */
 
 #include "LMCLorentzianDistribution.hh"
-#include <iostream>
 
 namespace locust
 {

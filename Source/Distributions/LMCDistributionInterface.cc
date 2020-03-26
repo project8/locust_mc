@@ -57,6 +57,7 @@ namespace locust
         else if(dist_name == "kr-complex-line")
             fDistributionList.push_back( std::make_shared< KrComplexLineDistribution >(aParam) );
 
+
         //else error
 
         fDistributionList.back()->SetRandomEngine(fRNEngine);
