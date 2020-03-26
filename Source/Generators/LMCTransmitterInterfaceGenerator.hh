@@ -46,7 +46,7 @@ namespace locust
             TransmitterInterfaceGenerator( const std::string& aName = "transmitter-interface" );
             virtual ~TransmitterInterfaceGenerator();
 
-            virtual bool Configure( const scarab::param_node& aNode );
+            bool Configure( const scarab::param_node& aNode );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               

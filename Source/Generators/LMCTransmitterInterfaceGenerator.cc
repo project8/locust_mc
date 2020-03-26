@@ -46,11 +46,14 @@ namespace locust
 
     bool TransmitterInterfaceGenerator::Configure( const scarab::param_node& aParam )
     {
+			std::cout<<"TransmitterInterfaceGenerator"<<std::endl;
         if( aParam.has( "transmitter" ))
         {
+			std::cout<<"transmitter"<<std::endl;
         	int ntransmitters = 0;
         	if(aParam["transmitter"]().as_string() == "antenna")
         	{
+			std::cout<<"transmitter in aparam"<<std::endl;
         		ntransmitters += 1;
 			fTransmitter = new AntennaSignalTransmitter;
         		if(!fTransmitter->Configure(aParam))
@@ -119,6 +122,7 @@ namespace locust
     void TransmitterInterfaceGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
+	std::cout<<"TransmitterInterfaceGenerator::Accept"<<std::endl;
         return;
     }
 

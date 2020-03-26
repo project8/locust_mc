@@ -14,6 +14,13 @@
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
 #include "LMCPowerCombiner.hh"
+#include "LMCVoltageDivider.hh"
+#include "LMCSlottedWaveguide.hh"
+#include "LMCSinglePatch.hh"
+#include "LMCCorporateFeed.hh"
+#include "LMCsMatrix.hh"
+#include "LMCUnitCell.hh"
+#include "LMCSeriesFeed.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCFIRFileHandler.hh"
@@ -68,6 +75,7 @@ namespace locust
             double fLO_Frequency;
             double fArrayRadius;
             int fNElementsPerStrip;
+            int fNSubarrays;
             double fZShiftArray;
             double fElementSpacing;
             double fphiLO; // voltage phase of LO in radians;
@@ -89,9 +97,9 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
-            bool InitializePowerCombining();
+            Transmitter* fTransmitter; // transmitter object
+            PowerCombiner* fPowerCombiner;
             TFReceiverHandler fTFReceiverHandler;
-            PowerCombiner fPowerCombiner;
             HilbertTransform fHilbertTransform;
 
     };
