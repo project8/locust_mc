@@ -21,7 +21,7 @@ namespace locust
         fFWHM( 5. ),
         fLinePosition( 17826. ),
         fAmplitude{1,0},
-        fScatterProbability{0.5,0.5},
+        fScatterProbability{0.,0.},
         fNPointsSELA(10000),
         fGases{"H2","Kr"},
         fEmittedPeak("shake")
