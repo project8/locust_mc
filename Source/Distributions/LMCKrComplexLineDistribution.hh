@@ -9,6 +9,8 @@
 #define LMCKRCOMPLEXLINEDISTRIBUTION_HH_
 
 #include "LMCBaseDistribution.hh"
+#include "path.hh"
+#include "macros.hh"
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
 
@@ -50,6 +52,7 @@ namespace locust
             gsl_interp_accel *fShakeAccelerator;
             
             std::string fEmittedPeak;
+            std::string fDataDir;
 
             std::vector<double> fAIntensity;
             std::vector<double> fBBinding;

@@ -66,9 +66,11 @@ namespace locust
             fGeometric.push_back(std::geometric_distribution<int>(1. - fScatterProbability[i]));
 
         fShakeAccelerator = gsl_interp_accel_alloc();
+
+        fDataDir =  TOSTRING(PB_DATA_INSTALL_DIR);
+
         read_shake_data();
         fShakeSpectrum = shake_spectrum();
-
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
 
 
@@ -112,8 +114,7 @@ namespace locust
 
     void KrComplexLineDistribution::read_shake_data()
     {
-        std::string filename = "KrShakeParameters214.txt";
-
+        std::string filename = fDataDir+"/KrShakeParameters214.txt";
         std::vector<std::vector<double> > read_data = read_file(filename, "," );
         read_data = transpose_vector(read_data);
 
@@ -263,7 +264,7 @@ namespace locust
 
     std::vector<std::vector<double>> KrComplexLineDistribution::energy_loss_spectra(const std::string &gas_species)
     {
-        std::string filename = gas_species + "OscillatorStrength.txt";
+        std::string filename = fDataDir + "/" + gas_species + "OscillatorStrength.txt";
         std::vector<std::vector<double> > read_data  = read_file(filename, "\t");
 
         std::sort(read_data.begin(), read_data.end(), [](const std::vector<double> & a, const std::vector<double> & b) -> bool { return a[0] < b[0]; });
