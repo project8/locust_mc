@@ -28,7 +28,6 @@ namespace locust
     FakeTrackSignalGenerator::FakeTrackSignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
-        fAlpha( 0.01 ),
         fSignalPower( 0. ),
         fStartVPhase( 0. ),
         fStartTimeMin( 0. ),
@@ -70,14 +69,24 @@ namespace locust
 
     bool FakeTrackSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "angle-alpha" ) )
-            SetAlpha( aParam.get_value< double >( "angle-alpha", fAlpha ) );
+        if( aParam.has( "scattering-angle" ) )
+            fScatteringAngleDistribution = fDistributionInterface.get_dist(aParam["scattering-angle"].as_node());
+
+        if( aParam.has( "start-frequency" ) )
+        {
+            fStartFrequencyDistribution = fDistributionInterface.get_dist(aParam["start-frequency"].as_node());
+            fUseFrequencyDistribution = true;
+        }
+        if( aParam.has( "start-energy" ) )
+        {
+            fStartEnergyDistribution = fDistributionInterface.get_dist(aParam["start-energy"].as_node());
+            fUseFrequencyDistribution = false;
+        }
+        if( aParam.has( "slope" ) )
+            fSlopeDistribution = fDistributionInterface.get_dist(aParam["slope"].as_node());
 
         if( aParam.has( "signal-power" ) )
             SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
-
-        if( aParam.has( "start-frequency" ) )
-            fStartFrequencyDistribution = fDistributionInterface.get_dist(aParam["start-frequency"].as_node());
 
         if( aParam.has( "start-vphase" ) )
             SetStartVPhase( aParam.get_value< double >( "start-vphase", fStartVPhase ) );
@@ -90,9 +99,6 @@ namespace locust
 
         if( aParam.has( "min-pitch" ) )
             SetPitchMin( aParam.get_value< double >( "min-pitch", fPitchMin ) );
-
-        if( aParam.has( "slope" ) )
-            fSlopeDistribution = fDistributionInterface.get_dist(aParam["slope"].as_node());
 
         if( aParam.has( "start-time-max" ) )
             SetStartTimeMax( aParam.get_value< double >( "start-time-max", fStartTimeMax ) );
@@ -145,6 +151,8 @@ namespace locust
         if(!fNTracksMean && !fPitchMin)
             LERROR( lmclog, "No condition set for NTracks per event! Set one of pitch-min or ntracks-mean");
 
+        if( aParam.has( "start-frequency" ) && aParam.has("start-energy") )
+            LERROR( lmclog, "User specified both start frequency and start energy distribution! Please specify only one!");
 
         if( aParam.has( "domain" ) )
         {
@@ -183,17 +191,6 @@ namespace locust
     void FakeTrackSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetAlpha() const
-    {
-        return fAlpha;
-    }
-
-    void FakeTrackSignalGenerator::SetAlpha( double aAlpha )
-    {
-        fAlpha = aAlpha;
         return;
     }
 
@@ -556,12 +553,6 @@ namespace locust
 
     }
     
-    //use CDF to generate scattering angle
-    double FakeTrackSignalGenerator::GetThetaScatter(double u)
-    {
-        return atan(sqrt(pow(fAlpha,2.) / (1. + pow(fAlpha,2.))) * tan( LMCConst::Pi() / 2. * u));
-    }
-
     void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset)
     {
         double current_energy = 0.;
@@ -589,7 +580,16 @@ namespace locust
             {
                 fStartTime = aTimeOffset;
             }
-            fStartFrequency = rel_energy(fStartFrequencyDistribution->Generate(), fBField);
+
+            if(fUseFrequencyDistribution)
+            {
+                fStartFrequency = fStartFrequencyDistribution->Generate();
+            }
+            else
+            {
+                fStartFrequency = rel_energy(fStartEnergyDistribution->Generate(), fBField);
+            }
+
             fPitch = acos(startpitch_distribution(fRandomEngine));
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
@@ -602,7 +602,7 @@ namespace locust
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
-            theta_scatter = GetThetaScatter(dist(fRandomEngine)); // get scattering angle (NOT Pitch)
+            theta_scatter = fScatteringAngleDistribution->Generate(); // get scattering angle (NOT Pitch)
 
             // Compute new pitch angle, given initial pitch angle, scattering angle. Account for how kinematics change with different axial position of scatter
             if(fPitch != LMCConst::Pi() / 2.)
