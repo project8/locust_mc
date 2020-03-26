@@ -40,9 +40,11 @@ namespace locust
             DistributionInterface();
             virtual ~DistributionInterface();
             std::shared_ptr< BaseDistribution> get_dist(const scarab::param_node &aParam);
+            std::shared_ptr<std::default_random_engine> fRNEngine;
 
         private:
             std::list<std::shared_ptr< BaseDistribution >> fDistributionList;
+            unsigned fSeed;
 };
 
 

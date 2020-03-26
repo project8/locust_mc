@@ -22,7 +22,7 @@ namespace locust
 
     double ExponentialDistribution::Generate()
     {
-        return fDistribution(fRNEngine);
+        return fDistribution(*fRNEngine);
     }
 
 } /* namespace locust */

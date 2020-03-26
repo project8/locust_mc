@@ -18,4 +18,10 @@ namespace locust
 
     }
 
+    void BaseDistribution::SetRandomEngine(const std::shared_ptr<std::default_random_engine> &aEngine)
+    {
+        fRNEngine = aEngine;
+
+    }
+
 } /* namespace locust */

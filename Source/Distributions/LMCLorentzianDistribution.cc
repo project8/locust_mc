@@ -26,7 +26,7 @@ namespace locust
 
     double LorentzianDistribution::Generate()
     {
-        return fDistribution(fRNEngine);
+        return fDistribution(*fRNEngine);
     }
 
 } /* namespace locust */

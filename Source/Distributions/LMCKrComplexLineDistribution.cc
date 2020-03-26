@@ -331,20 +331,20 @@ namespace locust
 
     double KrComplexLineDistribution::generate_shake()
     {
-        double u = fUniform(fRNEngine);
+        double u = fUniform(*fRNEngine);
         return generate_from_cdf(u,fShakeInterpolator, fShakeAccelerator);
     }
 
     std::string KrComplexLineDistribution::generate_gas_species()
     {
-        double u = fUniform(fRNEngine);
+        double u = fUniform(*fRNEngine);
         bool gas_choice = u > (fAmplitude[0] / (fAmplitude[0] + fAmplitude[1]));
         return fGases[int(gas_choice)];
     }
 
     double KrComplexLineDistribution::generate_energy_loss(std::string gas_species)
     {
-        double u = fUniform(fRNEngine);
+        double u = fUniform(*fRNEngine);
         unsigned gas_index = fGasIndex[gas_species];
         
         return generate_from_cdf(u, fEnergyLossInterpolator[gas_index], fEnergyLossAccelerator[gas_index]);
@@ -352,7 +352,7 @@ namespace locust
 
     int KrComplexLineDistribution::generate_nscatters(std::string &gas_species)
     {
-        return fGeometric[fGasIndex[gas_species]](fRNEngine);
+        return fGeometric[fGasIndex[gas_species]](*fRNEngine);
     }
 
     double KrComplexLineDistribution::Generate()
@@ -361,7 +361,7 @@ namespace locust
         double generated_energy = fLinePosition;
 
         if(fEmittedPeak == "lorentzian")
-            generated_energy += fLorentzian(fRNEngine);
+            generated_energy += fLorentzian(*fRNEngine);
         if(fEmittedPeak == "shake")
             generated_energy += generate_shake();
         
@@ -378,7 +378,7 @@ namespace locust
         }
 
         //include gaussian smearing from finite detector resolution
-        generated_energy += fNormal(fRNEngine);
+        generated_energy += fNormal(*fRNEngine);
 
         return generated_energy;
 

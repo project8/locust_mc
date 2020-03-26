@@ -31,8 +31,9 @@ namespace locust
             virtual ~BaseDistribution();
 
             virtual double Generate() = 0;
+            void SetRandomEngine(const std::shared_ptr<std::default_random_engine> &aEngine);
 
-            std::default_random_engine fRNEngine;
+            std::shared_ptr<std::default_random_engine> fRNEngine;
 
         private:
 };

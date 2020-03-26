@@ -9,8 +9,10 @@
 
 namespace locust
 {
-    DistributionInterface::DistributionInterface()
+    DistributionInterface::DistributionInterface() :
+        fSeed(0)
     {
+        fRNEngine = std::make_shared<std::default_random_engine>();
     }
 
     DistributionInterface::~DistributionInterface()
@@ -49,6 +51,8 @@ namespace locust
             fDistributionList.push_back( std::make_shared< KrComplexLineDistribution >(aParam) );
 
         //else error
+
+        fDistributionList.back()->SetRandomEngine(fRNEngine);
 
         return fDistributionList.back();  
     }
