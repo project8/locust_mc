@@ -176,6 +176,7 @@ namespace locust
             std::vector<gsl_spline*> fInterpolators;
             std::vector<gsl_interp_accel*> fAccelerators;
             const double fTrapLength;
+            bool fUseEnergyDistribution;
             bool fUseFrequencyDistribution;
 
             DistributionInterface fDistributionInterface;

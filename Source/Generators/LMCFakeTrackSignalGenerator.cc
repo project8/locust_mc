@@ -53,6 +53,8 @@ namespace locust
         fEndTime( 0. ),
         fStartFrequency( 0. ),
         fCurrentFrequency( 0. ),
+        fUseEnergyDistribution(false),
+        fUseFrequencyDistribution(false),
         fNTracks(0)
     {
         fRequiredSignalState = Signal::kTime;
@@ -70,7 +72,16 @@ namespace locust
     bool FakeTrackSignalGenerator::Configure( const scarab::param_node& aParam )
     {
         if( aParam.has( "scattering-angle" ) )
+        {
             fScatteringAngleDistribution = fDistributionInterface.get_dist(aParam["scattering-angle"].as_node());
+        }
+        else
+        {
+            LWARN( lmclog, "Using default distribution: Scattering Angle = 0 ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            fScatteringAngleDistribution = fDistributionInterface.get_dist(default_setting);
+        }
 
         if( aParam.has( "start-frequency" ) )
         {
@@ -80,10 +91,20 @@ namespace locust
         if( aParam.has( "start-energy" ) )
         {
             fStartEnergyDistribution = fDistributionInterface.get_dist(aParam["start-energy"].as_node());
-            fUseFrequencyDistribution = false;
+            fUseEnergyDistribution = true;
         }
+
         if( aParam.has( "slope" ) )
+        {
             fSlopeDistribution = fDistributionInterface.get_dist(aParam["slope"].as_node());
+        }
+        else
+        {
+            LWARN( lmclog, "Using default distribution: Slope = 0 ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            fSlopeDistribution = fDistributionInterface.get_dist(default_setting);
+        }
 
         if( aParam.has( "signal-power" ) )
             SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
@@ -151,8 +172,18 @@ namespace locust
         if(!fNTracksMean && !fPitchMin)
             LERROR( lmclog, "No condition set for NTracks per event! Set one of pitch-min or ntracks-mean");
 
-        if( aParam.has( "start-frequency" ) && aParam.has("start-energy") )
+        if( fUseFrequencyDistribution && fUseEnergyDistribution)
             LERROR( lmclog, "User specified both start frequency and start energy distribution! Please specify only one!");
+
+        if( ! (fUseFrequencyDistribution || fUseEnergyDistribution))
+        {
+            LWARN( lmclog, "Using default distribution: Frequency = fLO + 50 MHz ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            default_setting.add("value",fLO_frequency + 50e6);
+            fStartFrequencyDistribution = fDistributionInterface.get_dist(default_setting);
+            fUseFrequencyDistribution = true;
+        }
 
         if( aParam.has( "domain" ) )
         {
