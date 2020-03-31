@@ -9,6 +9,7 @@
 
 namespace locust
 {
+    LOGGER( lmclog, "LMCGaussianDistribution" );
 
     GaussianDistribution::GaussianDistribution(const scarab::param_node &aParam) :
         fMean( 0. ),
@@ -21,12 +22,13 @@ namespace locust
             fStdDev = aParam.get_value< double >( "std-dev", fStdDev );
 
         fDistribution = std::normal_distribution<double>(fMean, fStdDev);
+        LDEBUG( lmclog, "Created gaussian distribution. mean: " <<fMean<<" std-dev: "<<fStdDev);
     }
 
     GaussianDistribution::GaussianDistribution(const double &aMean, const double &aStdDev) :
         fMean(aMean),
         fStdDev(aStdDev),
-        fDistribution(fMean, fStdDev)
+        fDistribution(aMean, aStdDev)
     {
     }
 

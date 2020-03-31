@@ -9,6 +9,8 @@
 
 namespace locust
 {
+    LOGGER( lmclog, "LMCDistributionInterface" );
+
     DistributionInterface::DistributionInterface() :
         fSeed(0)
     {
@@ -30,11 +32,13 @@ namespace locust
     {
         std::string dist_name;
         if(aParam.has("name"))
+        {
             dist_name = aParam.get_value< std::string >( "name", dist_name );
-        //else
-        //{
-        //    LMCERROR(lmcdist,"Distribution " << dist_name << " not found in list of possibilities! Enter a valid distribution name!");
-        //}
+        }
+        else
+        {
+            LERROR(lmclog,"Distribution name undefined!");
+        }
 
         if(dist_name == "dirac" || dist_name == "fixed" )
             fDistributionList.push_back( std::make_shared< DiracDistribution >(aParam) );
@@ -57,8 +61,10 @@ namespace locust
         else if(dist_name == "kr-complex-line")
             fDistributionList.push_back( std::make_shared< KrComplexLineDistribution >(aParam) );
 
-
-        //else error
+        else
+        {
+            LERROR(lmclog,"Distribution " << dist_name << " not found in list of possibilities! Enter a valid distribution name!");
+        }
 
         fDistributionList.back()->SetRandomEngine(fRNEngine);
 

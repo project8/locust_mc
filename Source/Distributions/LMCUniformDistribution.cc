@@ -9,6 +9,7 @@
 
 namespace locust
 {
+    LOGGER( lmclog, "LMCUniformDistribution" );
 
     UniformDistribution::UniformDistribution(const scarab::param_node &aParam) :
         fMinValue( 0. ),
@@ -21,6 +22,7 @@ namespace locust
             fMaxValue = aParam.get_value< double >( "max-value", fMaxValue );
 
         fDistribution = std::uniform_real_distribution<double>(fMinValue, fMaxValue);
+        LDEBUG( lmclog, "Created uniform distribution. min-value: " <<fMinValue<<" max-value: "<<fMaxValue);
     }
 
     UniformDistribution::UniformDistribution(const double &aMinValue, const double &aMaxValue) :

@@ -16,6 +16,7 @@
 
 namespace locust
 {
+    LOGGER( lmclog, "LMCKrComplexLineDistribution" );
 
     KrComplexLineDistribution::KrComplexLineDistribution(const scarab::param_node &aParam) :
         fFWHM( 5. ),
@@ -83,6 +84,15 @@ namespace locust
             create_cdf(fEnergyLossInterpolator[i], scattering_data[1], scattering_data[0]);
 
         }
+
+        std::string amp_log_string, scatter_log_string;
+        for(unsigned i=0;i<fGases.size();++i)
+        {
+            amp_log_string += std::to_string(fAmplitude[i]) + "  ";
+            scatter_log_string += std::to_string(fScatterProbability[i]) + "  ";
+        }
+        LDEBUG( lmclog, "Created kr-complex-line distribution. fwhm: " <<fFWHM<<" line-position: "<<fLinePosition<<" emitted-peak: "<<fEmittedPeak);
+        LDEBUG( lmclog, "amplitudes: {" <<amp_log_string<<"} scatter-probabilities: {"<<scatter_log_string<<"}");
     }
 
     KrComplexLineDistribution::~KrComplexLineDistribution()

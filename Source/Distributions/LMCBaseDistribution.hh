@@ -8,6 +8,7 @@
 #ifndef LMCBASEDISTRIBUTION_HH_
 #define LMCBASEDISTRIBUTION_HH_
 
+#include "logger.hh"
 #include "param_node.hh"
 
 #include <random>

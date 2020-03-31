@@ -9,6 +9,7 @@
 
 namespace locust
 {
+    LOGGER( lmclog, "LMCLorentzianDistribution" );
 
     LorentzianDistribution::LorentzianDistribution(const scarab::param_node &aParam) :
         fMean( 0. ),
@@ -21,6 +22,7 @@ namespace locust
             fFWHM = aParam.get_value< double >( "fwhm", fFWHM );
 
         fDistribution = std::cauchy_distribution<double>(fMean, fFWHM / 2.);
+        LDEBUG( lmclog, "Created lorentzian distribution. mean: " <<fMean<<" fwhm: "<<fFWHM);
     }
 
     LorentzianDistribution::LorentzianDistribution(const double &aMean, const double &aFWHM) :

@@ -10,6 +10,7 @@
 
 namespace locust
 {
+    LOGGER( lmclog, "LMCRuddDistribution" );
 
     RuddDistribution::RuddDistribution(const scarab::param_node &aParam) :
         fAlpha( 0.01 )
@@ -18,6 +19,7 @@ namespace locust
             fAlpha = aParam.get_value< double >( "alpha", fAlpha );
 
         fDistribution = std::uniform_real_distribution<double>(0., 1.);
+        LDEBUG( lmclog, "Created rudd distribution. alpha: " <<fAlpha);
     }
 
     RuddDistribution::RuddDistribution(const double &aAlpha) :
