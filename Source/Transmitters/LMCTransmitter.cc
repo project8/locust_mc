@@ -11,7 +11,10 @@
 namespace locust
 {
     LOGGER( lmclog, "Transmitter" );
-    Transmitter::Transmitter() {}
+    Transmitter::Transmitter():
+       fInitialPhaseDelay(0.0)
+	{
+	}
     Transmitter::~Transmitter() {}
 
 
@@ -26,6 +29,11 @@ namespace locust
 	    fFieldPoints.push_back(fieldPoint);
     }
 
+    double Transmitter::GetInitialPhaseDelay()
+    {
+        return fInitialPhaseDelay;
+    }
+    
     void Transmitter::AddIncidentKVector(LMCThreeVector incidentKVector)
     {
 	    fIncidentKVectors.push_back(incidentKVector);

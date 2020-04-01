@@ -97,7 +97,6 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
-            Transmitter* fTransmitter; // transmitter object
             PowerCombiner* fPowerCombiner;
             TFReceiverHandler fTFReceiverHandler;
             HilbertTransform fHilbertTransform;

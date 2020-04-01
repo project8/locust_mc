@@ -42,6 +42,8 @@ namespace locust
             virtual void InitializeFieldPoint(LMCThreeVector fieldPoint);
 
             virtual bool IsKassiopeia() {return false;};
+            /// Get initial phase delay
+            double GetInitialPhaseDelay();
 
             /// Initialize the FIR filter and the field estimator
             virtual bool InitializeTransmitter(){};
@@ -60,6 +62,8 @@ namespace locust
     	    void SetFieldPoint(int index,LMCThreeVector fieldPoint);
     	    void SetIncidentKVector(int index,LMCThreeVector incidentKVector);
 	    void SetPropagationPhaseDelay(int index,double phaseDelay);
+	    double fInitialPhaseDelay = 0.0;  //Initial delay in the phase from the the signal arriving from the back of the buffer as well as the delay from signal travel
+        
 
         private:
 	    std::vector< LMCThreeVector> fFieldPoints; 

@@ -52,9 +52,6 @@ namespace locust
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
         virtual double* GetEFieldCoPol(int fieldPointIndex, double dt);
         
-        /// Get initial phase delay
-        double GetInitialPhaseDelay();
-        
         /// Initialize the FIR filter and the field estimator
         bool InitializeTransmitter();
         
@@ -70,7 +67,6 @@ namespace locust
         double fInputFrequency;// in GHz
         double fInputAmplitude;// in V/m
         double fPhaseDelay=0.0; //Delay in the phase that changes for each time sample
-        double fInitialPhaseDelay = 0.0;  //Initial delay in the phase from the the signal arriving from the back of the buffer as well as the delay from signal travel
         int fAntennaType;
 	    
 	//Add incidentKVector  

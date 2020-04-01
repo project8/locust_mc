@@ -46,16 +46,13 @@ namespace locust
 
     bool TransmitterInterfaceGenerator::Configure( const scarab::param_node& aParam )
     {
-			std::cout<<"TransmitterInterfaceGenerator"<<std::endl;
         if( aParam.has( "transmitter" ))
         {
-			std::cout<<"transmitter"<<std::endl;
         	int ntransmitters = 0;
         	if(aParam["transmitter"]().as_string() == "antenna")
         	{
-			std::cout<<"transmitter in aparam"<<std::endl;
         		ntransmitters += 1;
-			fTransmitter = new AntennaSignalTransmitter;
+			fTransmitter = std::make_shared<AntennaSignalTransmitter>();
         		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
@@ -69,7 +66,7 @@ namespace locust
         	if(aParam["transmitter"]().as_string() == "planewave")
         	{
         		ntransmitters += 1;
-			fTransmitter = new PlaneWaveTransmitter;
+			fTransmitter = std::make_shared<PlaneWaveTransmitter>();
         		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring planewave transmitter class");
@@ -79,7 +76,7 @@ namespace locust
         	if(aParam["transmitter"]().as_string() == "kassiopeia")
         	{
         		ntransmitters += 1;
-			fTransmitter = new KassTransmitter;
+			fTransmitter = std::make_shared<KassTransmitter>();
         		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
@@ -122,7 +119,6 @@ namespace locust
     void TransmitterInterfaceGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
-	std::cout<<"TransmitterInterfaceGenerator::Accept"<<std::endl;
         return;
     }
 

@@ -47,7 +47,6 @@ namespace locust
 
     bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
     {
-	std::cout<< " ----------------------power-combining-feed" <<std::endl;
 	TransmitterInterfaceGenerator::Configure(aParam);
     	if (aParam.has( "power-combining-feed" ))
     	{
@@ -203,7 +202,6 @@ namespace locust
             for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
             {
 		InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
-		std::cout<<allRxChannels[channelIndex][elementIndex]->GetPosition()<<std::endl;
             }
 	}
     }

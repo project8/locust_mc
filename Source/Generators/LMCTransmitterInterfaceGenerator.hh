@@ -51,7 +51,7 @@ namespace locust
             void Accept( GeneratorVisitor* aVisitor ) const;
               
         protected:
-            Transmitter* fTransmitter; // transmitter object
+	    std::shared_ptr<Transmitter> fTransmitter; // transmitter object
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;

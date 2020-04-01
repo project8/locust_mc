@@ -153,11 +153,6 @@ namespace locust
 	Transmitter::AddIncidentKVector(incidentKVector);
     }
  
-    double AntennaSignalTransmitter::GetInitialPhaseDelay()
-    {
-        return fInitialPhaseDelay;
-    }
-    
     void AntennaSignalTransmitter::AddPropagationPhaseDelay(LMCThreeVector pointOfInterest)
     {
         double phaseDelay = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*
