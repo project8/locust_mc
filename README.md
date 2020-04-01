@@ -46,7 +46,7 @@ Installation
  - CMake (www.cmake.org) version 2.8 or higher
  - FFTW3 (3.3 or newer)
  - G++ version 4.5 or higher (if compiling with GCC)
- - GSL (www.gnu.org/software/gsl)
+ - GSL (www.gnu.org/software/gsl) version 2.0 or higher
  - HDF5 (required by Monarch3 and for outputing to HDF5 files)
  - ROOT (www.cern.ch/root) version 5.24 or higher (6.x should work too)
 
