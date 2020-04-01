@@ -169,6 +169,8 @@ namespace locust
             fRandomEngine.seed(rd());
         }
 
+        fDistributionInterface.SetSeed(fRandomSeed);
+
         if(!fNTracksMean && !fPitchMin)
             LERROR( lmclog, "No condition set for NTracks per event! Set one of pitch-min or ntracks-mean");
 
