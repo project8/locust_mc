@@ -620,7 +620,7 @@ namespace locust
             }
             else
             {
-                fStartFrequency = rel_energy(fStartEnergyDistribution->Generate(), fBField);
+                fStartFrequency = rel_cyc(fStartEnergyDistribution->Generate(), fBField);
             }
 
             fPitch = acos(startpitch_distribution(fRandomEngine));
