@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 1.15.10)
+project( locust_mc VERSION 1.15.11)
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
@@ -41,6 +41,7 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/RxComponents/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Distributions/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
 )
 
@@ -123,6 +124,13 @@ endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 #######################
 # locust dependencies #
 #######################
+
+find_package(GSL REQUIRED)
+if (GSL_FOUND)
+    pbuilder_add_ext_libraries( ${GSL_LIBRARIES} )
+else (GSL_FOUND)
+    message(FATAL "GSL not found")
+endif (GSL_FOUND)
 
 # FFTW
 find_package(FFTW REQUIRED)

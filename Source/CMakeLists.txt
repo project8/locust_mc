@@ -36,6 +36,16 @@ set( LOCUST_MC_HEADER_FILES
 	Core/LMCHFSSResponseFileHandler.hh
 	Core/LMCFIRFileHandler.hh
 	Core/LMCTFFileHandler.hh	
+
+    Distributions/LMCBaseDistribution.hh
+    Distributions/LMCDiracDistribution.hh
+    Distributions/LMCExponentialDistribution.hh
+    Distributions/LMCGaussianDistribution.hh
+    Distributions/LMCLorentzianDistribution.hh
+    Distributions/LMCRuddDistribution.hh
+    Distributions/LMCUniformDistribution.hh
+    Distributions/LMCKrComplexLineDistribution.hh
+    Distributions/LMCDistributionInterface.hh
 	    
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -50,11 +60,21 @@ set( LOCUST_MC_HEADER_FILES
    	Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
+    Transmitters/LMCTransmitterHardware.hh
+    Transmitters/LMCDipoleAntenna.hh
+    Transmitters/LMCTurnstileAntenna.hh
     
     Transforms/LMCHilbertTransform.hh
     Transforms/LMCComplexFFT.hh    
 
     RxComponents/LMCPowerCombiner.hh
+    RxComponents/LMCVoltageDivider.hh
+    RxComponents/LMCSlottedWaveguide.hh
+    RxComponents/LMCSinglePatch.hh
+    RxComponents/LMCCorporateFeed.hh
+    RxComponents/LMCsMatrix.hh
+    RxComponents/LMCUnitCell.hh
+    RxComponents/LMCSeriesFeed.hh
     RxComponents/LMCReceiver.hh
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCSlotAntenna.hh
@@ -76,6 +96,16 @@ set( LOCUST_MC_SOURCE_FILES
 	Core/LMCHFSSResponseFileHandler.cc
     Core/LMCFIRFileHandler.cc
     Core/LMCTFFileHandler.cc
+
+    Distributions/LMCBaseDistribution.cc
+    Distributions/LMCDiracDistribution.cc
+    Distributions/LMCExponentialDistribution.cc
+    Distributions/LMCGaussianDistribution.cc
+    Distributions/LMCLorentzianDistribution.cc
+    Distributions/LMCRuddDistribution.cc
+    Distributions/LMCUniformDistribution.cc
+    Distributions/LMCKrComplexLineDistribution.cc
+    Distributions/LMCDistributionInterface.cc
     	
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc
@@ -91,11 +121,21 @@ set( LOCUST_MC_SOURCE_FILES
    	Transmitters/LMCAntennaSignalTransmitter.cc
     Transmitters/LMCPlaneWaveTransmitter.cc
    	Transmitters/LMCFieldBuffer.cc
+   	Transmitters/LMCTransmitterHardware.cc
+   	Transmitters/LMCDipoleAntenna.cc
+   	Transmitters/LMCTurnstileAntenna.cc
     
     Transforms/LMCHilbertTransform.cc
     Transforms/LMCComplexFFT.cc    
     
     RxComponents/LMCPowerCombiner.cc
+    RxComponents/LMCVoltageDivider.cc
+    RxComponents/LMCSlottedWaveguide.cc
+    RxComponents/LMCSinglePatch.cc
+    RxComponents/LMCCorporateFeed.cc
+    RxComponents/LMCsMatrix.cc
+    RxComponents/LMCUnitCell.cc
+    RxComponents/LMCSeriesFeed.cc
     RxComponents/LMCReceiver.cc
     RxComponents/LMCPatchAntenna.cc
     RxComponents/LMCSlotAntenna.cc
@@ -108,7 +148,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
-	    Generators/LMCTurnstileSignalGenerator.hh
 	    Generators/LMCArraySignalGenerator.hh
 
 
@@ -133,7 +172,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
-	    Generators/LMCTurnstileSignalGenerator.cc
 	    Generators/LMCArraySignalGenerator.cc        
         
         Transmitters/LMCKassTransmitter.cc
