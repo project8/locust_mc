@@ -65,6 +65,7 @@ namespace locust
         for(unsigned i=0; i < fGases.size(); ++i)
             fGeometric.push_back(std::geometric_distribution<int>(1. - fScatterProbability[i]));
 
+
         fShakeAccelerator = gsl_interp_accel_alloc();
 
         fDataDir =  TOSTRING(PB_DATA_INSTALL_DIR);
@@ -82,7 +83,6 @@ namespace locust
         {
             std::vector<std::vector<double> > scattering_data = energy_loss_spectra(fGases[i]);
             create_cdf(fEnergyLossInterpolator[i], scattering_data[1], scattering_data[0]);
-
         }
 
         std::string amp_log_string, scatter_log_string;
@@ -304,8 +304,18 @@ namespace locust
     // Reads in probability density, fills boost interpolator with corresponding inverse CDF for subsequent inversion sampling
     void KrComplexLineDistribution::create_cdf(gsl_spline*& interpolant, std::vector<double> f, std::vector<double> x)
     {
-        std::vector<double> cdf = trapezoidal_rule(f,x);
+        //ensure pdf is strictly increasing
+        for(auto it=f.begin();it<f.end();++it)
+        {
+            if(*it <= 0)
+            {
+                unsigned ind = it - f.begin();
+                f.erase(f.begin() + ind);
+                x.erase(x.begin() + ind);
+            }
+        }
 
+        std::vector<double> cdf = trapezoidal_rule(f,x);
         interpolant = gsl_spline_alloc(gsl_interp_cspline, cdf.size());
         gsl_spline_init(interpolant, cdf.data(), x.data(), x.size());
     }
