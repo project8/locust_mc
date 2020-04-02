@@ -23,7 +23,6 @@ namespace locust
 
     bool TransmitterHardware::Configure( const scarab::param_node& aParam )
     {
-
         if( aParam.has( "antenna-x-position" ) )
         {
             fAntennaPositionX= aParam["antenna-x-position"]().as_double();

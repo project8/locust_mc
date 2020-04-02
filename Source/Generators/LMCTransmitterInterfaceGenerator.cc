@@ -35,7 +35,7 @@ namespace locust
         fFieldBufferSize( 50 ),
         fdtFilter( 50 ),
 	fSwapFrequency( 1000 ),
-	fNPoints(50)
+	fNPoints(0)
     {
         fRequiredSignalState = Signal::kTime;
     }

@@ -24,19 +24,29 @@ namespace locust
 {
 
     /*!
-     @class FieldParameterGenerator
-     @author P. T. Surukuchi
+      @class FieldParameterGenerator
+      @author P. T. Surukuchi
 
-     @brief Generate signal in free space(without wave guide) for phase III and estimate field parameters (Poynting vector etc) 
+      @brief Generate signal in free space(without wave guide) for phase III and estimate field parameters (Poynting vector etc) 
 
-     @details
-     Operates in time space
+      @details
+      Operates in time space
+      Currently two possible ways to define the field points
+      1. Use a text file 
+      2. Predefined 
 
-     Configuration name: "field-parameter"
+      When using predefined points, the options currently are:
+      1. A sphere(1) centered at the origin
+      2. A cylinder(2) centered at the origin
 
-     Available configuration options:
+      Configuration name: "field-parameter"
+      - "use-text-file": bool -- Flag to check if a text file will be input to define the field points
+      - "predefined-geometry": string -- Integer value for defining the predefined geometry to be used to generate field points
+      - "file-name": string -- input textfile with the points in space in cartesian coordinate system where the field points need to be defined 
 
-    */
+      Available configuration options:
+
+*/
 
     class FieldParameterGenerator : public TransmitterInterfaceGenerator 
     {
@@ -47,9 +57,16 @@ namespace locust
 
             bool Configure( const scarab::param_node& aNode );
 
-	private:
+        private:
+            bool fUseTextFile;
+            int fPredefinedGeometry;
+            std::string fTextFileName;
+            std::vector<LMCThreeVector> fFieldPoints;
+
+            bool ends_with(const std::string &str, const std::string &suffix);
             bool DoGenerate(Signal* aSignal);
-    	    void InitializeFieldPoints();
+            void InitializeFieldPoints();
+            double GenerateFieldPoints();
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
     };
 

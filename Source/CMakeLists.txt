@@ -36,6 +36,7 @@ set( LOCUST_MC_HEADER_FILES
 	Core/LMCHFSSResponseFileHandler.hh
 	Core/LMCFIRFileHandler.hh
 	Core/LMCTFFileHandler.hh	
+    Core/LMCTriangle.cc
 
     Distributions/LMCBaseDistribution.hh
     Distributions/LMCDiracDistribution.hh
@@ -96,6 +97,7 @@ set( LOCUST_MC_SOURCE_FILES
 	Core/LMCHFSSResponseFileHandler.cc
     Core/LMCFIRFileHandler.cc
     Core/LMCTFFileHandler.cc
+    Core/LMCTriangle.cc
 
     Distributions/LMCBaseDistribution.cc
     Distributions/LMCDiracDistribution.cc
