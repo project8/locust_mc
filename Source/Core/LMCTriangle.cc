@@ -5,6 +5,14 @@ namespace locust
     const LMCTriangle gZeroTriangle(LMCThreeVector::sInvalid,LMCThreeVector::sInvalid,LMCThreeVector::sInvalid);
     const LMCTriangle gInvalidTriangle(LMCThreeVector::sZero,LMCThreeVector::sZero,LMCThreeVector::sZero);
 
+    LMCTriangle::LMCTriangle()
+    {
+        for (int i=0; i<3; ++i)
+        {
+            fVertices[i]=LMCThreeVector();
+        }
+    }
+
     LMCTriangle::LMCTriangle(const LMCTriangle& aTriangle)
     {
         for (int i=0; i<3; ++i)
@@ -55,7 +63,7 @@ namespace locust
 
     bool LMCTriangle::operator!=(const LMCTriangle& aTriangle) const
     {
-        return ((aTriangle.GetVertex(0)!=fVertices.at(0)) && (aTriangle.GetVertex(1)!=fVertices.at(1)) && (aTriangle.GetVertex(2)!=fVertices.at(2)));
+        return ((aTriangle.GetVertex(0)!=fVertices.at(0)) || (aTriangle.GetVertex(1)!=fVertices.at(1)) || (aTriangle.GetVertex(2)!=fVertices.at(2)));
     }
 
     LMCTriangle& LMCTriangle::operator+=(const LMCTriangle& aTriangle) 
