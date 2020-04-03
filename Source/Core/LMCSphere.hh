@@ -45,6 +45,7 @@ namespace locust
         protected:
             std::vector<LMCTriangle> fTriangles;
             int nIterations=0;
+            void GenerateIcosahedron(radius);
             bool ConstructSphere() override;
     };
 }
