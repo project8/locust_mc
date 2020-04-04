@@ -4,6 +4,7 @@
 #include "LMCThreeVector.hh"
 
 #include <array>
+#include <vector>
 
 namespace locust
 {
@@ -33,19 +34,28 @@ namespace locust
 
             // Setters for vertices
             LMCTriangle& SetVertex(int vertexIndex,const LMCThreeVector& vertex);
+            LMCTriangle& SetMagnitude(double magnitude);
 
             // Getter for vertices
             const LMCThreeVector& GetVertex(int vertexIndex) const;
             const std::array<LMCThreeVector,3>& GetVertices(int vertexIndex) const;
 
             // Other getters 
-            const LMCThreeVector GetMidPoint01() const;
-            const LMCThreeVector GetMidPoint02() const;
-            const LMCThreeVector GetMidPoint12() const;
-            const void GetMidPoints(LMCThreeVector& midPoint01,LMCThreeVector& midPoint02,LMCThreeVector& midPoint12) const;
+            LMCThreeVector GetCenter() const;
+            LMCThreeVector GetSide01() const;
+            LMCThreeVector GetSide02() const;
+            LMCThreeVector GetSide12() const;
+            void GetSides(LMCThreeVector& side01,LMCThreeVector& side02,LMCThreeVector& side12) const;
+            LMCThreeVector GetSideMidPoint01() const;
+            LMCThreeVector GetSideMidPoint02() const;
+            LMCThreeVector GetSideMidPoint12() const;
+            void GetSideMidPoints(LMCThreeVector& midPoint01,LMCThreeVector& midPoint02,LMCThreeVector& midPoint12) const;
 
             double GetArea() const; 
             const LMCThreeVector GetNormal() const; 
+            
+            bool Quadrasect(std::vector<LMCTriangle>& dividedTriangles) const;
+            bool IsEquilateralTriangle() const;
 
         private:
             std::array<LMCThreeVector,3> fVertices;

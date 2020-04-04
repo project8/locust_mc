@@ -19,8 +19,8 @@ namespace locust
             virtual bool operator==(const LMCSphere& aSphere) const;
             virtual bool operator!=(const LMCSphere& aSphere) const;
 
-            const LMCThreeVector GetCenter() const; 
-            double GetRadius() const; 
+            virtual const LMCThreeVector GetCenter() const; 
+            virtual double GetRadius() const; 
             double GetSurfaceArea() const; 
             double GetVolume() const; 
             
@@ -31,22 +31,36 @@ namespace locust
             double fRadius;
             LMCThreeVector fCenter;
             virtual bool ConstructSphere()=0;
-            void SetRadius(double radius);
-            void SetCenter(const LMCThreeVector& aPoint);
+            virtual void SetRadius(double radius);
+            virtual void SetCenter(const LMCThreeVector& aPoint);
     };
 
-    class LMCIcosphere:public LMCSphere 
+    class LMCIcoSphere:public LMCSphere 
     {
         public:
-            LMCIcosphere();
-            LMCIcosphere(const LMCIcosphere& anIcosphere);
-            ~LMCIcosphere(){}
+            LMCIcoSphere();
+            LMCIcoSphere(double radius);
+            LMCIcoSphere(double radius, LMCThreeVector center);
+            LMCIcoSphere(double radius, LMCThreeVector center, unsigned minFaces);
+            LMCIcoSphere(const LMCIcoSphere& anIcosphere);
+            ~LMCIcoSphere(){}
+            
+            unsigned GetNFaces() const;
+            void SetRadius(double radius) override;
+            void SetCenter(const LMCThreeVector& aPoint) override;
+            void SetMinFaces(unsigned minFaces);
+            
+            const std::vector<LMCTriangle>& GetFaces() const;
+            bool GetFaceCenters(std::vector<LMCThreeVector>& faceCenters) const;
 
         protected:
-            std::vector<LMCTriangle> fTriangles;
-            int nIterations=0;
-            void GenerateIcosahedron(radius);
+            unsigned fMinimumFaces;
+            std::vector<LMCTriangle> fTriangleFaces;
+            bool AmendToRadius(std::vector<LMCTriangle>&triangles);
+            bool DivideTriangleFaces();
+            void GenerateIcosahedron();
             bool ConstructSphere() override;
+            const unsigned fMaxFaces=1000;
     };
 }
 

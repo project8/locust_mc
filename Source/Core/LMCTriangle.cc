@@ -84,6 +84,17 @@ namespace locust
         return *this;
     }
 
+    LMCTriangle& LMCTriangle::SetMagnitude(double magnitude)
+    {
+        for (int i=0; i<3; ++i)
+        {
+            std::cout<<"Before operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
+            fVertices.at(i).SetMagnitude(magnitude);
+            std::cout<<"After operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
+        }
+        return *this;
+    }
+
     LMCTriangle& LMCTriangle::SetVertex(int vertexIndex,const LMCThreeVector& vertex)
     {
         fVertices[vertexIndex]=vertex;
@@ -100,44 +111,86 @@ namespace locust
         return fVertices;
     }
 
-    const LMCThreeVector LMCTriangle::GetMidPoint01() const
+    LMCThreeVector LMCTriangle::GetSide01() const 
+    {
+        return fVertices.at(0)-fVertices.at(1);
+    }
+
+    LMCThreeVector LMCTriangle::GetSide02() const 
+    {
+        return fVertices.at(0)-fVertices.at(2);
+    }
+
+    LMCThreeVector LMCTriangle::GetSide12() const 
+    {
+        return fVertices.at(1)-fVertices.at(2);
+    }
+
+    void LMCTriangle::GetSides(LMCThreeVector& side01,LMCThreeVector& side02,LMCThreeVector& side12) const 
+    {
+        side01=GetSide01();
+        side02=GetSide02();
+        side12=GetSide12();
+    }
+
+    LMCThreeVector LMCTriangle::GetCenter() const
+    {
+        LMCThreeVector center((fVertices.at(0)+fVertices.at(1)+fVertices.at(2))/3.0);
+        return center;
+    }
+
+    LMCThreeVector LMCTriangle::GetSideMidPoint01() const
     {
         LMCThreeVector point((fVertices.at(0)+fVertices.at(1))/2.0);
         return point;
     }
 
-    const LMCThreeVector LMCTriangle::GetMidPoint02() const
+    LMCThreeVector LMCTriangle::GetSideMidPoint02() const
     {
         LMCThreeVector point((fVertices.at(0)+fVertices.at(2))/2.0);
         return point;
     }
 
-    const LMCThreeVector LMCTriangle::GetMidPoint12() const
+    LMCThreeVector LMCTriangle::GetSideMidPoint12() const
     {
         LMCThreeVector point((fVertices.at(1)+fVertices.at(2))/2.0);
         return point;
     }
 
-    const void LMCTriangle::GetMidPoints(LMCThreeVector& midPoint01,LMCThreeVector& midPoint02,LMCThreeVector& midPoint12) const
+    void LMCTriangle::GetSideMidPoints(LMCThreeVector& midPoint01,LMCThreeVector& midPoint02,LMCThreeVector& midPoint12) const
     {
-        midPoint01=GetMidPoint01();
-        midPoint02=GetMidPoint02();
-        midPoint12=GetMidPoint12();
+        midPoint01=GetSideMidPoint01();
+        midPoint02=GetSideMidPoint02();
+        midPoint12=GetSideMidPoint12();
         return;
     }
 
     double LMCTriangle::GetArea() const
     {
-        LMCThreeVector line01=fVertices.at(0)-fVertices.at(1);
-        LMCThreeVector line02=fVertices.at(0)-fVertices.at(2);
-        return (line01.Cross(line02)).Magnitude()/2.0;
+        LMCThreeVector side01=GetSide01();
+        LMCThreeVector side02=GetSide02();
+        return (side01.Cross(side02)).Magnitude()/2.0;
     }
 
     const LMCThreeVector LMCTriangle::GetNormal() const
     {
-        LMCThreeVector line01=fVertices.at(0)-fVertices.at(1);
-        LMCThreeVector line02=fVertices.at(0)-fVertices.at(2);
+        LMCThreeVector side01=GetSide01();
+        LMCThreeVector side02=GetSide02();
         // need to conform the direction, there are two possibilities
-        return (line01.Cross(line02)).Unit();
+        return (side01.Cross(side02)).Unit();
+    }
+
+    bool LMCTriangle::Quadrasect(std::vector<LMCTriangle>& dividedTriangles) const
+    {
+        dividedTriangles.push_back(LMCTriangle(fVertices.at(0),GetSideMidPoint01(),GetSideMidPoint02()));
+        dividedTriangles.push_back(LMCTriangle(GetSideMidPoint01(),fVertices.at(1),GetSideMidPoint12()));
+        dividedTriangles.push_back(LMCTriangle(GetSideMidPoint02(),GetSideMidPoint12(),fVertices.at(2)));
+        dividedTriangles.push_back(LMCTriangle(GetSideMidPoint01(),GetSideMidPoint01(),GetSideMidPoint02()));
+        return true;
+    }
+
+    bool LMCTriangle::IsEquilateralTriangle() const
+    {
+        return (GetSide01().Magnitude()==GetSide02().Magnitude() && GetSide01().Magnitude()==GetSide12().Magnitude()); 
     }
 }

@@ -6,6 +6,7 @@
  */
 
 #include "LMCFieldParameterGenerator.hh"
+#include "LMCSphere.hh"
 
 namespace locust
 {
@@ -118,8 +119,15 @@ namespace locust
         }
         else 
         {
-            fFieldPoints.push_back(LMCThreeVector(1.0,0.0,0.0));
-            fFieldPoints.push_back(LMCThreeVector(0.0,1.0,0.0));
+            if(fPredefinedGeometry==0)
+            {
+                LMCIcoSphere sphere(2.0,LMCThreeVector(),100);
+                sphere.GetFaceCenters(fFieldPoints); 
+            }
+            else if(fPredefinedGeometry==1)
+            {
+
+            }
             fFieldPoints.push_back(LMCThreeVector(0.0,0.0,1.0));
         }
         SetNPoints(fFieldPoints.size());
