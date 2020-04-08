@@ -1,4 +1,6 @@
 #include "LMCSphere.hh"
+#include <iostream>
+#include <fstream>
 
 namespace locust
 {
@@ -161,7 +163,7 @@ namespace locust
 
         sphereVertices.push_back(LMCThreeVector(0,-s,t));
         sphereVertices.push_back(LMCThreeVector(0,s,t));
-        sphereVertices.push_back(LMCThreeVector(0,-s,t));
+        sphereVertices.push_back(LMCThreeVector(0,-s,-t));
         sphereVertices.push_back(LMCThreeVector(0,s,-t));
 
         sphereVertices.push_back(LMCThreeVector(t,0,-s));
@@ -182,26 +184,25 @@ namespace locust
         fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(0),sphereVertices.at(7),sphereVertices.at(10)));
         fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(0),sphereVertices.at(10),sphereVertices.at(11)));
 
-        // Add triangles that share a side with the previous ones 
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(1),sphereVertices.at(5),sphereVertices.at(9)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(5),sphereVertices.at(11),sphereVertices.at(4)));
+        // Add triangles that share a side or vertex with the previous ones 
         fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(11),sphereVertices.at(10),sphereVertices.at(2)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(10),sphereVertices.at(7),sphereVertices.at(6)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(2),sphereVertices.at(4),sphereVertices.at(11)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(5),sphereVertices.at(11),sphereVertices.at(4)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(4),sphereVertices.at(9),sphereVertices.at(5)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(1),sphereVertices.at(5),sphereVertices.at(9)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(9),sphereVertices.at(8),sphereVertices.at(1)));
         fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(7),sphereVertices.at(1),sphereVertices.at(8)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(6),sphereVertices.at(2),sphereVertices.at(10)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(10),sphereVertices.at(7),sphereVertices.at(6)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(8),sphereVertices.at(6),sphereVertices.at(7)));
 
         //All triangles having vertix 3 common 
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(9),sphereVertices.at(4)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(4),sphereVertices.at(2)));
         fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(2),sphereVertices.at(6)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(6),sphereVertices.at(8)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(4),sphereVertices.at(2)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(9),sphereVertices.at(4)));
         fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(8),sphereVertices.at(9)));
+        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(3),sphereVertices.at(6),sphereVertices.at(8)));
 
-        //The rest of triangles
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(4),sphereVertices.at(9),sphereVertices.at(5)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(2),sphereVertices.at(4),sphereVertices.at(11)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(6),sphereVertices.at(2),sphereVertices.at(10)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(8),sphereVertices.at(6),sphereVertices.at(7)));
-        fTriangleFaces.push_back(LMCTriangle(sphereVertices.at(9),sphereVertices.at(8),sphereVertices.at(1)));
     }
 
     bool LMCIcoSphere::AmendToRadius(std::vector<LMCTriangle>&triangles)
@@ -213,34 +214,94 @@ namespace locust
         return true;
     }
 
+     int GetVertexIndex(LMCThreeVector& point) const
+     {
+
+     }
+/*Logic in DivideTriangleFaces:
+    For each triangle:
+        For each set of two points
+            Find the midpoint
+            If the midpoint exists in SphereVertices
+                Get the index and add it to the triangle 
+            If doesn't exist, add it to SphereVertices and use the index to add to the triangle
+*/
     bool LMCIcoSphere::DivideTriangleFaces()
     {
         unsigned nInitialTriangles=fTriangleFaces.size();
         if(nInitialTriangles>fMinimumFaces) return true;
-        std::cout<<"Initial triangle count is "<<nInitialTriangles<<std::endl;
         std::vector<LMCTriangle> tempTriangleFaces;
         for(unsigned i=0;i<nInitialTriangles;++i)
         {
             std::vector<LMCTriangle> dividedTriangles;
+            /*
             if(! fTriangleFaces.at(i).Quadrasect(dividedTriangles)) return false;
+            AmendToRadius(dividedTriangles);
+            tempTriangleFaces.insert(tempTriangleFaces.end(),dividedTriangles.begin(),dividedTriangles.end());
+            if(tempTriangleFaces.size()>=fMaxFaces) return false;
+            */
+            point01=fTriangleFaces.at(i).GetSideMidPoint01();
+            point02=fTriangleFaces.at(i).GetSideMidPoint02();
+            point03=fTriangleFaces.at(i).GetSideMidPoint12();
+            int index01=GetVertexIndex(point01);
+            int index02=GetVertexIndex(point02);
+            int index02=GetVertexIndex(point12);
+            dividedTriangles.push_back(fTriangleFaces.at(i).GetVertex(0),sphereVertices.at(index01),sphereVertices.at(index02));
+            dividedTriangles.push_back(sphereVertices.at(index01),fTriangleFaces.at(i).GetVertex(1),sphereVertices.at(index12));
+            dividedTriangles.push_back(sphereVertices.at(index02),sphereVertices.at(index12),fTriangleFaces.at(i).GetVertex(2));
+            dividedTriangles.push_back(sphereVertices.at(index01),sphereVertices.at(index12),sphereVertices.at(index02));
             AmendToRadius(dividedTriangles);
             tempTriangleFaces.insert(tempTriangleFaces.end(),dividedTriangles.begin(),dividedTriangles.end());
             if(tempTriangleFaces.size()>=fMaxFaces) return false;
         }
         fTriangleFaces.erase(fTriangleFaces.begin(),fTriangleFaces.end());
         fTriangleFaces=tempTriangleFaces;
-        std::cout<<"*************fTriangleFaces.size() = "<<fTriangleFaces.size()<<std::endl;
         DivideTriangleFaces();
         return true;
     }
 
-    //bool LMCIcoSphere::MoveCenter();
+    bool LMCIcoSphere::WriteVertices() const 
+    {
+        std::ofstream myfile;
+        myfile.open("SphereVertices.txt");
+        myfile<<"# Vertices of the spheres \n";
+        myfile<<"# Each row has three sets of three numbers for the vertices of the faces of the triangles \n";
+        for(unsigned i=0;i<fTriangleFaces.size();++i)
+        {
+            for(unsigned k=0;k<3;++k)
+            {
+                LMCThreeVector vertex=fTriangleFaces.at(i).GetVertex(k);
+                myfile<<vertex.X()<< ","<<vertex.Y()<<","<<vertex.Z()<<"\t";
+            }
+            myfile<<"\n";
+        }
+        myfile.close();
+        return true;
+    }
+
+    bool LMCIcoSphere::WriteFaceCenters() const 
+    {
+        std::ofstream myfile;
+        myfile.open("SphereFaceCenters.txt");
+        myfile<<"# Face centers of triangles forming the spheres\n";
+        myfile<<"# Each row has three numbers for the centers of rhe faces of the triangles \n";
+        for(unsigned i=0;i<fTriangleFaces.size();++i)
+        {
+            LMCThreeVector faceCenter=fTriangleFaces.at(i).GetCenter();
+            myfile<<faceCenter.X()<< ","<<faceCenter.Y()<<","<<faceCenter.Z()<<"\n";
+        }
+        myfile.close();
+        return true;
+    }
+
     //Logic used from: (similar construction alos used in Eigen )
     //http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
     bool LMCIcoSphere::ConstructSphere() 
     {
         GenerateIcosahedron();
         DivideTriangleFaces();
+        WriteVertices();
+        WriteFaceCenters();
         //MoveCenter();
         std::cout<< " --------------------------------CENTER NOT SET YET --------------------------------"<<std::endl; 
         return true;

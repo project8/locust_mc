@@ -56,11 +56,15 @@ namespace locust
         protected:
             unsigned fMinimumFaces;
             std::vector<LMCTriangle> fTriangleFaces;
-            bool AmendToRadius(std::vector<LMCTriangle>&triangles);
+            std::vector<fTriangleFaces;
+            bool AmendToRadius(std::vector<LMCTriangle>& triangles);
+            int GetVertexIndex(LMCThreeVector& point) const;
             bool DivideTriangleFaces();
             void GenerateIcosahedron();
+            bool WriteVertices() const; 
+            bool WriteFaceCenters() const; 
             bool ConstructSphere() override;
-            const unsigned fMaxFaces=1000;
+            const unsigned fMaxFaces=10000;
     };
 }
 

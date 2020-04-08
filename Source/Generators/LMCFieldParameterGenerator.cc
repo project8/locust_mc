@@ -121,7 +121,7 @@ namespace locust
         {
             if(fPredefinedGeometry==0)
             {
-                LMCIcoSphere sphere(2.0,LMCThreeVector(),100);
+                LMCIcoSphere sphere(2.0,LMCThreeVector(),1000);
                 sphere.GetFaceCenters(fFieldPoints); 
             }
             else if(fPredefinedGeometry==1)
@@ -132,6 +132,7 @@ namespace locust
         }
         SetNPoints(fFieldPoints.size());
         LDEBUG(lmclog,"FieldParameterGenerator built with "<<GetNPoints()<< " points");
+        exit(0);
         return GetNPoints();
     }
 

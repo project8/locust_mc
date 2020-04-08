@@ -88,9 +88,10 @@ namespace locust
     {
         for (int i=0; i<3; ++i)
         {
-            std::cout<<"Before operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
+            //std::cout<<"Before operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
             fVertices.at(i).SetMagnitude(magnitude);
-            std::cout<<"After operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
+            //std::cout<<"After operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
+            //std::cout<<"-- "<<std::endl;
         }
         return *this;
     }
@@ -182,10 +183,11 @@ namespace locust
 
     bool LMCTriangle::Quadrasect(std::vector<LMCTriangle>& dividedTriangles) const
     {
+        dividedTriangles.clear();
         dividedTriangles.push_back(LMCTriangle(fVertices.at(0),GetSideMidPoint01(),GetSideMidPoint02()));
         dividedTriangles.push_back(LMCTriangle(GetSideMidPoint01(),fVertices.at(1),GetSideMidPoint12()));
         dividedTriangles.push_back(LMCTriangle(GetSideMidPoint02(),GetSideMidPoint12(),fVertices.at(2)));
-        dividedTriangles.push_back(LMCTriangle(GetSideMidPoint01(),GetSideMidPoint01(),GetSideMidPoint02()));
+        dividedTriangles.push_back(LMCTriangle(GetSideMidPoint01(),GetSideMidPoint12(),GetSideMidPoint02()));
         return true;
     }
 
