@@ -35,7 +35,7 @@ namespace locust
             // Setters for vertices
             LMCTriangle& SetVertex(int vertexIndex,const LMCThreeVector& vertex);
             LMCTriangle& SetMagnitude(double magnitude);
-
+            LMCTriangle& Move(const LMCThreeVector& displacementVector);
             // Getter for vertices
             const LMCThreeVector& GetVertex(int vertexIndex) const;
             const std::array<LMCThreeVector,3>& GetVertices(int vertexIndex) const;
@@ -50,6 +50,9 @@ namespace locust
             LMCThreeVector GetSideMidPoint02() const;
             LMCThreeVector GetSideMidPoint12() const;
             void GetSideMidPoints(LMCThreeVector& midPoint01,LMCThreeVector& midPoint02,LMCThreeVector& midPoint12) const;
+            double GetLength01() const;
+            double GetLength02() const;
+            double GetLength12() const;
 
             double GetArea() const; 
             const LMCThreeVector GetNormal() const; 

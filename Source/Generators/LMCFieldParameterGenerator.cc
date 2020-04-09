@@ -18,6 +18,8 @@ namespace locust
         TransmitterInterfaceGenerator( aName ),
         fUseTextFile(false),
         fPredefinedGeometry(0),
+        fRadius(0.0),
+        fLength(0.0),
         fTextFileName("blank.txt")
     {
     }
@@ -60,8 +62,19 @@ namespace locust
             if(aParam.has("predefined-geometry"))
             {
                 aPredefinedGeometry=aParam["predefined-geometry"]().as_string();
+                if(aParam.has("radius"))
+                {
+                    fRadius=aParam["radius"]().as_double();
+                }
                 if(aPredefinedGeometry.compare("sphere")==0) fPredefinedGeometry=0;
-                else if(aPredefinedGeometry.compare("cylinder")==0) fPredefinedGeometry=1;
+                else if(aPredefinedGeometry.compare("cylinder")==0) 
+                {
+                    fPredefinedGeometry=1;
+                    if(aParam.has("length"))
+                    {
+                        fLength=aParam["length"]().as_double();
+                    }
+                }
                 else
                 {
                     LERROR(lmclog,"The geometry type for "<< aPredefinedGeometry<< " is not currenlty defined in FieldParameterGenerator");
@@ -121,18 +134,16 @@ namespace locust
         {
             if(fPredefinedGeometry==0)
             {
-                LMCIcoSphere sphere(2.0,LMCThreeVector(),1000);
-                sphere.GetFaceCenters(fFieldPoints); 
+                LMCIcoSphere sphere(fRunInProgress,LMCThreeVector(),1000);
+                sphere.GetVertices(fFieldPoints); 
             }
             else if(fPredefinedGeometry==1)
             {
-
+                LERROR(lmclog,"FieldParameterGenerator doesn't have cylinder implementation yet");
             }
-            fFieldPoints.push_back(LMCThreeVector(0.0,0.0,1.0));
         }
         SetNPoints(fFieldPoints.size());
         LDEBUG(lmclog,"FieldParameterGenerator built with "<<GetNPoints()<< " points");
-        exit(0);
         return GetNPoints();
     }
 

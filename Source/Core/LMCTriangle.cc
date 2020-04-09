@@ -90,7 +90,8 @@ namespace locust
         {
             //std::cout<<"Before operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
             fVertices.at(i).SetMagnitude(magnitude);
-            //std::cout<<"After operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
+            //if(fVertices.at(i).Magnitude()<magnitude*0.98)
+                std::cout<<"After operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
             //std::cout<<"-- "<<std::endl;
         }
         return *this;
@@ -99,6 +100,15 @@ namespace locust
     LMCTriangle& LMCTriangle::SetVertex(int vertexIndex,const LMCThreeVector& vertex)
     {
         fVertices[vertexIndex]=vertex;
+        return *this;
+    }
+    
+    LMCTriangle& LMCTriangle::Move(const LMCThreeVector& displacementVector)
+    {
+        for (int i=0; i<3; ++i)
+        {
+            fVertices[i]+=displacementVector;
+        }
         return *this;
     }
 
@@ -165,6 +175,21 @@ namespace locust
         midPoint12=GetSideMidPoint12();
         return;
     }
+    
+    double LMCTriangle::GetLength01() const
+    {
+        return (GetSide01().Magnitude());
+    }
+
+    double LMCTriangle::GetLength02() const
+    {
+        return (GetSide02().Magnitude());
+    }
+
+    double LMCTriangle::GetLength12() const
+    {
+        return (GetSide12().Magnitude());
+    }
 
     double LMCTriangle::GetArea() const
     {
@@ -193,6 +218,6 @@ namespace locust
 
     bool LMCTriangle::IsEquilateralTriangle() const
     {
-        return (GetSide01().Magnitude()==GetSide02().Magnitude() && GetSide01().Magnitude()==GetSide12().Magnitude()); 
+        return (GetLength01()==GetLength02() && GetLength02()==GetLength12());
     }
 }
