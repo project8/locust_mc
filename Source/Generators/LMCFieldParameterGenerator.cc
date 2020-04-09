@@ -20,6 +20,7 @@ namespace locust
         fPredefinedGeometry(0),
         fRadius(1.0),
         fLength(0.0),
+        fMinFieldPoints(0),
         fTextFileName("blank.txt")
     {
     }
@@ -68,6 +69,10 @@ namespace locust
                     if(aParamFieldPoints.has("radius"))
                     {
                         fRadius=aParamFieldPoints["radius"]().as_double();
+                    }
+                    if(aParamFieldPoints.has("minimum-field-points"))
+                    {
+                        fMinFieldPoints=aParamFieldPoints["minimum-field-points"]().as_double();
                     }
                     if(aPredefinedGeometry.compare("sphere")==0) fPredefinedGeometry=0;
                     else if(aPredefinedGeometry.compare("cylinder")==0) 
@@ -143,7 +148,7 @@ namespace locust
         {
             if(fPredefinedGeometry==0)
             {
-                LMCIcoSphere sphere(fRadius,LMCThreeVector(),1000);
+                LMCIcoSphere sphere(fRadius,LMCThreeVector(),fMinFieldPoints);
                 sphere.GetVertices(fFieldPoints); 
             }
             else if(fPredefinedGeometry==1)
@@ -163,6 +168,7 @@ namespace locust
         {
             InitializeFieldPoint(fFieldPoints.at(pointIndex));
         }
+        exit(-1);
     }
 
     static void* KassiopeiaInit(const std::string &aFile)
@@ -198,6 +204,7 @@ namespace locust
             if (fTextFileWriting==1) {}
             RecordIncidentFields(fp, t_old,fAllFieldCopol.at(pointIndex), tFieldSolution[1]);
             FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0],pointIndex,index);
+            std::cout<<tFieldSolution[1]<<"  "<< tFieldSolution[0]<< "  "<<pointIndex<< " "<< index<<std::endl;
             PopBuffers(pointIndex);
         } // channels loop
 

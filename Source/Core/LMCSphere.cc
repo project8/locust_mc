@@ -1,9 +1,11 @@
 #include "LMCSphere.hh"
+#include "logger.hh"
 #include <iostream>
 #include <fstream>
 
 namespace locust
 {
+    LOGGER( lmclog, "LMCSphere" );
     LMCSphere::LMCSphere()
     {
         fRadius=0.0;
@@ -35,7 +37,7 @@ namespace locust
 
     void LMCSphere::SetRadius(double radius)
     {
-        fRadius=abs(radius);
+        fRadius=fabs(radius);
     }
 
     void LMCSphere::SetCenter(const LMCThreeVector& aPoint)
@@ -83,14 +85,14 @@ namespace locust
 
     LMCIcoSphere::LMCIcoSphere(double radius)
     {
-        fRadius=abs(radius);
+        fRadius=fabs(radius);
         fCenter=LMCThreeVector();
         fMinimumVertices=0.0;
     }
 
     LMCIcoSphere::LMCIcoSphere(double radius, LMCThreeVector center)
     {
-        fRadius=abs(radius);
+        fRadius=fabs(radius);
         fCenter=center;
         fMinimumVertices=0.0;
         ConstructSphere();
@@ -98,7 +100,7 @@ namespace locust
 
     LMCIcoSphere::LMCIcoSphere(double radius, LMCThreeVector center, unsigned minVertices)
     {
-        fRadius=abs(radius);
+        fRadius=fabs(radius);
         fCenter=center;
         fMinimumVertices=minVertices;
         ConstructSphere();
@@ -113,7 +115,7 @@ namespace locust
 
     void LMCIcoSphere::SetRadius(double radius)
     {
-        fRadius=abs(radius);
+        fRadius=fabs(radius);
         ConstructSphere();
     }
 
@@ -316,6 +318,11 @@ namespace locust
     //http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
     bool LMCIcoSphere::ConstructSphere() 
     {
+        if(fRadius==0) 
+        {
+            LERROR(lmclog,"Radius of sphere can't be 0");
+            exit(-1);
+        }
         GenerateIcosahedron();
         DivideTriangleFaces();
         DisplaceCenter();

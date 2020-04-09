@@ -62,6 +62,7 @@ namespace locust
             int fPredefinedGeometry;
             double fRadius;
             double fLength;
+            double fMinFieldPoints;
             std::string fTextFileName;
             std::vector<LMCThreeVector> fFieldPoints;
 
