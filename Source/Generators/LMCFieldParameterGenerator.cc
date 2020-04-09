@@ -18,7 +18,7 @@ namespace locust
         TransmitterInterfaceGenerator( aName ),
         fUseTextFile(false),
         fPredefinedGeometry(0),
-        fRadius(0.0),
+        fRadius(1.0),
         fLength(0.0),
         fTextFileName("blank.txt")
     {
@@ -38,50 +38,59 @@ namespace locust
     bool FieldParameterGenerator::Configure( const scarab::param_node& aParam )
     {
         TransmitterInterfaceGenerator::Configure(aParam);
-        if(aParam.has("use-text-file"))
+        if(aParam.has("field-point-inputs"))
         {
-            fUseTextFile=aParam["use-text-file"]().as_bool();
-            fTextFileName=aParam["file-name"]().as_string();
-        }
-        if(fUseTextFile)
-        {
-            fUseTextFile=true;
-            if(aParam.has("file-name"))
+            const scarab::param_node& aParamFieldPoints=aParam["field-point-inputs"].as_node();
+            if(aParamFieldPoints.has("use-text-file"))
             {
-                LDEBUG(lmclog,"Using the text file "<<fTextFileName<< " for defining field points in the FieldParameterGenerator");
+                fUseTextFile=aParamFieldPoints["use-text-file"]().as_bool();
+                fTextFileName=aParamFieldPoints["file-name"]().as_string();
+            }
+            if(fUseTextFile)
+            {
+                fUseTextFile=true;
+                if(aParamFieldPoints.has("file-name"))
+                {
+                    LDEBUG(lmclog,"Using the text file "<<fTextFileName<< " for defining field points in the FieldParameterGenerator");
+                }
+                else
+                {
+                    LERROR(lmclog,"A filename with the config option 'file-name' has to be input through the config file to define field points");
+                    exit(-1);
+                }
             }
             else
             {
-                LERROR(lmclog,"A filename with the config option 'file-name' has to be input through the config file to define field points");
-                exit(-1);
+                std::string aPredefinedGeometry="sphere";
+                if(aParamFieldPoints.has("predefined-geometry"))
+                {
+                    aPredefinedGeometry=aParamFieldPoints["predefined-geometry"]().as_string();
+                    if(aParamFieldPoints.has("radius"))
+                    {
+                        fRadius=aParamFieldPoints["radius"]().as_double();
+                    }
+                    if(aPredefinedGeometry.compare("sphere")==0) fPredefinedGeometry=0;
+                    else if(aPredefinedGeometry.compare("cylinder")==0) 
+                    {
+                        fPredefinedGeometry=1;
+                        if(aParamFieldPoints.has("length"))
+                        {
+                            fLength=aParamFieldPoints["length"]().as_double();
+                        }
+                    }
+                    else
+                    {
+                        LERROR(lmclog,"The geometry type for "<< aPredefinedGeometry<< " is not currenlty defined in FieldParameterGenerator");
+                        exit(-1);
+                    }
+                }
+                LDEBUG(lmclog,"Using a predefined geometry of "<<aPredefinedGeometry.c_str()<< " for defining field points in the FieldParameterGenerator");
             }
         }
         else
         {
-            std::string aPredefinedGeometry="sphere";
-            if(aParam.has("predefined-geometry"))
-            {
-                aPredefinedGeometry=aParam["predefined-geometry"]().as_string();
-                if(aParam.has("radius"))
-                {
-                    fRadius=aParam["radius"]().as_double();
-                }
-                if(aPredefinedGeometry.compare("sphere")==0) fPredefinedGeometry=0;
-                else if(aPredefinedGeometry.compare("cylinder")==0) 
-                {
-                    fPredefinedGeometry=1;
-                    if(aParam.has("length"))
-                    {
-                        fLength=aParam["length"]().as_double();
-                    }
-                }
-                else
-                {
-                    LERROR(lmclog,"The geometry type for "<< aPredefinedGeometry<< " is not currenlty defined in FieldParameterGenerator");
-                    exit(-1);
-                }
-            }
-            LDEBUG(lmclog,"Using a predefined geometry of "<<aPredefinedGeometry.c_str()<< " for defining field points in the FieldParameterGenerator");
+            fPredefinedGeometry=0;
+            LWARN(lmclog,"Using a predefined spherical geometry of radius 1 for defining field points in the FieldParameterGenerator");
         }
         InitializeFieldPoints();
         return true;
@@ -102,8 +111,8 @@ namespace locust
             std::fstream textFile(fTextFileName.c_str(),std::ios::in);
             if (textFile.fail())
             {
-                 LERROR(lmclog,"The file " <<fTextFileName.c_str() <<" doesn't exist");
-                 exit(-1);
+                LERROR(lmclog,"The file " <<fTextFileName.c_str() <<" doesn't exist");
+                exit(-1);
             }
             while(!textFile.eof())
             {
@@ -134,7 +143,7 @@ namespace locust
         {
             if(fPredefinedGeometry==0)
             {
-                LMCIcoSphere sphere(fRunInProgress,LMCThreeVector(),1000);
+                LMCIcoSphere sphere(fRadius,LMCThreeVector(),1000);
                 sphere.GetVertices(fFieldPoints); 
             }
             else if(fPredefinedGeometry==1)
@@ -152,8 +161,7 @@ namespace locust
         GenerateFieldPoints();
         for(int pointIndex = 0; pointIndex< GetNPoints(); ++pointIndex)
         {
-            LMCThreeVector point(0.0,0.0,0.0);
-            InitializeFieldPoint(point);
+            InitializeFieldPoint(fFieldPoints.at(pointIndex));
         }
     }
 
