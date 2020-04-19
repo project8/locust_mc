@@ -34,15 +34,17 @@ namespace locust
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
 
-        printf("Kass is waiting for event trigger.\n");
+        printf("Kass is waiting for event trigger, testvar is %f\n", fInterface->fTestvar);
 
         fInterface->fKassEventReady = true;
+        printf("fKassEventReady is %d\n", fInterface->fKassEventReady);
+
         fInterface->fFalseStartKassiopeia = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
         if(( fInterface->fWaitBeforeEvent ) && (fInterface->fRunInProgress))
         {
             fInterface->fKassReadyCondition.notify_one();
-            std::cout << "going to wait on the pre-event condition now" << std::endl;
+            std::cout << "going to wait on the pre-event condition now \n" << std::endl;
             std::unique_lock< std::mutex >tLock( fInterface->fMutex );
             fInterface->fPreEventCondition.wait( tLock );
             fInterface->fKassEventReady = false;

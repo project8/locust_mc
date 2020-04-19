@@ -267,23 +267,20 @@ namespace locust
     bool KassSignalGenerator::DoGenerate( Signal* aSignal )
     {
         int PreEventCounter = 0;
-        fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         FILE *fp = fopen(gpitchangle_filename.c_str(), "w");
+        fInterface->fTestvar = 605.;
 
-
-
+        fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         std::thread tKassiopeia (&KassSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
-        fInterface->fRunInProgress = true;
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
             if ((!fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (!fInterface->fPreEventInProgress))
             {
             	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-            	fInterface->fPreEventInProgress = true;
-            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
-
+//            	fInterface->fPreEventInProgress = true;
+//            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
             }
 
             if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))

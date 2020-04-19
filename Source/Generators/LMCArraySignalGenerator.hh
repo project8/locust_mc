@@ -8,8 +8,6 @@
 #ifndef LMCARRAYSIGNALGENERATOR_HH_
 #define LMCARRAYSIGNALGENERATOR_HH_
 
-#include "LMCKassLocustInterface.hh"
-
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
@@ -28,6 +26,9 @@
 #include "LMCAntennaSignalTransmitter.hh"
 #include "LMCPlaneWaveTransmitter.hh"
 #include "LMCKassTransmitter.hh"
+#include "LMCKassLocustInterface.hh"
+
+
 #include <vector>
 
 
@@ -92,7 +93,7 @@ namespace locust
             double fphiLO; // voltage phase of LO in radians;
 
             void KassiopeiaInit(const std::string &aFile);
-            bool WakeBeforeEvent();
+            void WakeBeforeEvent();
             bool ReceivedKassReady();
 
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);

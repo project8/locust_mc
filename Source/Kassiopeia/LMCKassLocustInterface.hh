@@ -55,6 +55,7 @@ namespace locust
         int fProject8Phase; // 1, 2, or 3, defined with the step modifier instance in the xml file.
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
+        double fTestvar;
 
     };
 

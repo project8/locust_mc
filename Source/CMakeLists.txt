@@ -13,6 +13,16 @@ set( LOCUST_MC_HEADER_FILES
 	Core/LMCHFSSResponseFileHandler.hh
 	Core/LMCFIRFileHandler.hh
 	Core/LMCTFFileHandler.hh	
+
+    Distributions/LMCBaseDistribution.hh
+    Distributions/LMCDiracDistribution.hh
+    Distributions/LMCExponentialDistribution.hh
+    Distributions/LMCGaussianDistribution.hh
+    Distributions/LMCLorentzianDistribution.hh
+    Distributions/LMCRuddDistribution.hh
+    Distributions/LMCUniformDistribution.hh
+    Distributions/LMCKrComplexLineDistribution.hh
+    Distributions/LMCDistributionInterface.hh
 	    
     Generators/LMCDigitizer.hh
     Generators/LMCGaussianNoiseGenerator.hh
@@ -63,6 +73,16 @@ set( LOCUST_MC_SOURCE_FILES
 	Core/LMCHFSSResponseFileHandler.cc
     Core/LMCFIRFileHandler.cc
     Core/LMCTFFileHandler.cc
+
+    Distributions/LMCBaseDistribution.cc
+    Distributions/LMCDiracDistribution.cc
+    Distributions/LMCExponentialDistribution.cc
+    Distributions/LMCGaussianDistribution.cc
+    Distributions/LMCLorentzianDistribution.cc
+    Distributions/LMCRuddDistribution.cc
+    Distributions/LMCUniformDistribution.cc
+    Distributions/LMCKrComplexLineDistribution.cc
+    Distributions/LMCDistributionInterface.cc
     	
     Generators/LMCDigitizer.cc
     Generators/LMCGaussianNoiseGenerator.cc

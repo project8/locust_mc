@@ -20,7 +20,7 @@ namespace locust
             fWaitAfterEvent( true ),
             fKassEventReady( false ),
             fEventInProgress( false ),
-            fRunInProgress( false ),
+            fRunInProgress( true ),
             fPreEventInProgress( false ),
             fFalseStartKassiopeia( true ),
             fDoneWithSignalGeneration( false ),
@@ -33,7 +33,8 @@ namespace locust
             fKassReadyCondition(),
             fProject8Phase( 0 ),
             fCENTER_TO_SHORT( 0. ),
-            fCENTER_TO_ANTENNA( 0. )
+            fCENTER_TO_ANTENNA( 0. ),
+			fTestvar( 5. )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :
