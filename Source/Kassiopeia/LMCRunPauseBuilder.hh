@@ -25,7 +25,6 @@ inline bool locust::RunPauseBuilder::AddAttribute(KContainer *aContainer)
     if( aContainer->GetName() == "name" )
     {
         aContainer->CopyTo( fObject, &KNamed::SetName );
-        std::cout << "setting the name of the run pause" << std::endl;
         return true;
     }
     return false;

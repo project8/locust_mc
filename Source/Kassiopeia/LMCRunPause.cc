@@ -47,8 +47,6 @@ namespace locust
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun &)
     {
 
-    	fInterface->fRunInProgress = false;  // let Locust know the run is finished.
-
         return true;
     }
 

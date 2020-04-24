@@ -33,7 +33,7 @@
 
 <external_define name="simulation" value="1"/>
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="0.5"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
+<external_define name="bathtub" value="5.0"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
  to apparent slow performance with 0.0 value -->
 
 <external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
@@ -55,13 +55,13 @@
 <external_define name="seed" value="112377"/>
 
 <external_define name="output_path" value="./"/> 
-<external_define name="file" value="Phase1Seed[seed]Output"/>
+<external_define name="file" value="Phase3Seed[seed]Output"/>
 
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
 
 
 <geometry>
-    <include name="[config_path]/Project8Phase1Geometry.xml"/>
+    <include name="[config_path]/Project8Phase3Geometry.xml"/>
 </geometry>
     
     <!-- solenoid turns -->
@@ -222,7 +222,7 @@
 
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="30427."/>
+            <energy_fix value="18600."/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
             <x_uniform value_min="0." value_max="0.0"/>
@@ -425,15 +425,12 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="5.0e-6"/>
+    <ksterm_max_time name="term_max_time" time="1.0e-6"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
-    <ksterm_min_energy name="term_min_energy" energy="25000."/>
+    <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
     <ksterm_max_z name="term_max_z" z=".07"/>
-    <ksterm_death name="term_upstream_endcap_death"/>
-    <ksterm_death name="term_downstream_endcap_death"/>
-    <ksterm_death name="term_waveguide_jacket_death"/>
 
     
     <!-- modifiers -->
@@ -516,10 +513,6 @@
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
 
 
-        <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
-            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
-        </geo_surface>
-
 
         <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_energy"/> -->
@@ -551,7 +544,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="1"
+        events="3"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"

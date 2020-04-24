@@ -553,7 +553,6 @@ namespace locust
         if (fTransmitter->IsKassiopeia())
         {
         	bool fTruth = false;
-        	fInterface->fTestvar = 104.;
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         	std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
@@ -604,6 +603,7 @@ namespace locust
 
         }  // fTransmitter->IsKassiopeia()
 
+        return true;
 
     }
 

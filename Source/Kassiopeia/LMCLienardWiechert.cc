@@ -20,10 +20,9 @@ namespace locust
             fAntennaPositions(),
             fCurrentParticle(),
             fHasCachedSolution(),
-			fInterface( new KassLocustInterface() )
+            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
 
     {
-    	KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
     LienardWiechert::~LienardWiechert()

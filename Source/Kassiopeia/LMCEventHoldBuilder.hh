@@ -25,7 +25,6 @@ inline bool locust::EventHoldBuilder::AddAttribute(KContainer *aContainer)
     if( aContainer->GetName() == "name" )
     {
         aContainer->CopyTo( fObject, &KNamed::SetName );
-        std::cout << "setting the name of the event hold" << std::endl;
         return true;
     }
     return false;
