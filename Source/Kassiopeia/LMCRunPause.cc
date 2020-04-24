@@ -41,12 +41,13 @@ namespace locust
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
+    	fInterface->fKassEventReady = true;
         return true;
     }
 
-    bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun &)
+    bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
-
+        fInterface->fRunInProgress = true;  // no interrupt has happened in KSRoot.
         return true;
     }
 
