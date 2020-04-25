@@ -87,7 +87,7 @@ namespace locust
 
     void KassSignalGenerator::WakeBeforeEvent()
     {
-
+    	fInterface->fRunInProgress = false;
         fInterface->fPreEventCondition.notify_one();
         return;
     }
@@ -95,23 +95,32 @@ namespace locust
 
     bool KassSignalGenerator::ReceivedKassReady()
     {
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        printf("LMC about to wait ..\n ");
 
-        if((fInterface->fRunInProgress)&&( ! fInterface->fKassEventReady))
+        printf("LMC about to wait fKassEventReady is %d, fRunInProgress is %d\n ", fInterface->fKassEventReady, fInterface->fRunInProgress);
+
+        if((fInterface->fRunInProgress)&&(!fInterface->fKassEventReady))
         {
             std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
             fInterface->fKassReadyCondition.wait( tLock );
+            return true;
         }
-
-        if (fInterface->fFalseStartKassiopeia)  // workaround for some Macs
+        else if (!fInterface->fRunInProgress)
         {
-            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
-            fInterface->fKassReadyCondition.wait( tLock );
-
+        	return false;
+        }
+        else if (fInterface->fKassEventReady)
+        {
+        	return true;
+        }
+        else
+        {
+            printf("I am stuck.\n"); getchar();
+            return true;
         }
 
-        return true;
+
     }
 
     void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
@@ -269,18 +278,23 @@ namespace locust
         int PreEventCounter = 0;
 
         FILE *fp = fopen(gpitchangle_filename.c_str(), "w");
-        fInterface->fTestvar = 605.;
 
         fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         std::thread tKassiopeia (&KassSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
-            if ((!fInterface->fEventInProgress) && (fInterface->fRunInProgress) && (!fInterface->fPreEventInProgress))
+            if ((!fInterface->fEventInProgress) /*&& (fInterface->fRunInProgress)*/ && (!fInterface->fPreEventInProgress))
             {
             	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-//            	fInterface->fPreEventInProgress = true;
-//            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+            	else
+            	{
+            		printf("breaking\n");
+            		break;
+            	}
+
+            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+
             }
 
             if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
@@ -296,7 +310,7 @@ namespace locust
                 }
             }
 
-            if (fInterface->fEventInProgress)  // fEventInProgress
+            if ((fInterface->fEventInProgress)&&(!fInterface->fKassEventReady))  // fEventInProgress
             {
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                     tLock.lock();
@@ -310,14 +324,12 @@ namespace locust
             }
         }  // for loop
 
-        fInterface->fRunInProgress = false;  // tell Kassiopeia to finish.
-        fInterface->fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
+
+        fInterface->fDoneWithSignalGeneration = true;
         fclose(fp);
         printf("finished signal loop.\n");
-        WakeBeforeEvent();  // trigger one last Kass event if we are locked up.
+        WakeBeforeEvent();
         tKassiopeia.join();  // finish thread
-
-
 
         return true;
     }

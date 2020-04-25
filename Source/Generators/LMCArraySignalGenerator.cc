@@ -578,7 +578,6 @@ namespace locust
                 		break;
                 	}
 
-//                	fInterface->fPreEventInProgress = true;
                 	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
 
                 }
@@ -611,12 +610,12 @@ namespace locust
             }  // for loop
 
 
-        fInterface->fRunInProgress = false;  // tell Kassiopeia to finish.
-        fInterface->fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-        fclose(fp);
-        printf("finished signal loop.\n");
-        WakeBeforeEvent();  // trigger one last Kass event if we are locked up.
-        tKassiopeia.join();  // finish thread
+            fInterface->fDoneWithSignalGeneration = true;
+            fclose(fp);
+            printf("finished signal loop.\n");
+            WakeBeforeEvent();
+            tKassiopeia.join();  // finish thread
+
 
         }  // fTransmitter->IsKassiopeia()
 

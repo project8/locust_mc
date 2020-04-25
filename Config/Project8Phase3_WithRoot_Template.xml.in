@@ -544,7 +544,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="3"
+        events="1"
         magnetic_field="field_electromagnet"
         magnetic_field="field_magnetic_main"
         space="space_world"

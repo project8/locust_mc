@@ -39,12 +39,11 @@ namespace locust
 //        fInterface->fKassEventReady = true;
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
-        if(( fInterface->fWaitBeforeEvent ) /*&& (fInterface->fRunInProgress)*/)
+        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration))
         {
             fInterface->fKassReadyCondition.notify_one();
             std::unique_lock< std::mutex >tLock( fInterface->fMutex );
             fInterface->fPreEventCondition.wait( tLock );
-//            fInterface->fRunInProgress = false;  // assume this is the last event.
             fInterface->fKassEventReady = false;
             fInterface->fTOld = 0.;  // reset time on event clock
             printf("Kass got the event trigger\n");

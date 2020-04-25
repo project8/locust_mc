@@ -41,13 +41,20 @@ namespace locust
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
+    	// Specifying this here because it comes before the interrupt in KSRoot.
     	fInterface->fKassEventReady = true;
         return true;
     }
+//.
+//.
+// Between these two functions there will be an nevents interrupt in KSRoot.
+//.
+//.
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
-        fInterface->fRunInProgress = true;  // no interrupt has happened in KSRoot.
+    	//  No interrupt has happened yet in KSRoot.  Run still in progress.
+        fInterface->fRunInProgress = true;
         return true;
     }
 
