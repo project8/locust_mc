@@ -1,0 +1,47 @@
+{
+    "generators":
+    [          
+       "kass-signal",
+       "lpf-fft",
+       "decimate-signal", 
+       "digitizer"
+    ],
+    
+    "lpf-fft":
+    {
+  
+    },
+
+    "decimate-signal":
+    {
+
+    },
+
+    "kass-signal":
+    {
+        "lo-frequency": 25.3106e9,
+        "pitchangle-filename": "${CMAKE_INSTALL_PREFIX}/bin/pitchangles.txt",
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/Project8Phase1_WithRoot_Template.xml"
+    },
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 819200
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor": 2.0e-22,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 4.0e-8,
+    "v-offset": -2.0e-8
+    }
+
+}
+
