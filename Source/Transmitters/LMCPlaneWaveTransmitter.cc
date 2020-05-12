@@ -50,11 +50,17 @@ namespace locust
     void PlaneWaveTransmitter::AddPropagationPhaseDelay(LMCThreeVector pointOfInterest)
     {
 	//Assuming the element strip is always along Z
-	double meanZ = GetMeanofFieldPoints(2);
+      
+	/*double meanZ = GetMeanofFieldPoints(2);
+	  double distanceFromCenter = meanZ - pointOfInterest.GetZ();*/
+      
 	/*int z_index = fieldPointIndex%nElementsPerStrip;
     	double stripLength = (nElementsPerStrip-1)*elementSpacing;
     	double distanceFromCenter = stripLength/2. - z_index*elementSpacing;*/
-    	double distanceFromCenter = meanZ - pointOfInterest.GetZ();
+
+      double endOfStrip = GetFieldPoint(0).GetZ();
+      double distanceFromCenter = pointOfInterest.GetZ() - endOfStrip;
+    
     	double phaseDelay = 2*LMCConst::Pi()*distanceFromCenter*sin(fAOI)*fRF_Frequency/LMCConst::C();
 	Transmitter::AddPropagationPhaseDelay(phaseDelay);
     }
