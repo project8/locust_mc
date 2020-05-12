@@ -225,30 +225,16 @@ namespace locust
         return fSphereVertices.size()-1;
     }
 
-    /*Logic in DivideTriangleFaces:
-      For each triangle:
-      For each set of two points
-      Find the midpoint
-      If the midpoint exists in SphereVertices
-      Get the index and add it to the triangle 
-      If doesn't exist, add it to SphereVertices and use the index to add to the triangle
-      */
     bool LMCIcoSphere::DivideTriangleFaces()
     {
         unsigned nInitialTriangles=fTriangleFaces.size();
         if(fSphereVertices.size()>fMinimumVertices) return true;
         std::vector<LMCTriangle> tempTriangleFaces;
-        //adhoc value to make sure there are no 
+        //adhoc value to make sure there is no repitition in the points
         double lengthThreshold=fTriangleFaces.at(0).GetLength01()/100.0;
         for(unsigned i=0;i<nInitialTriangles;++i)
         {
             std::vector<LMCTriangle> dividedTriangles;
-            /*
-               if(! fTriangleFaces.at(i).Quadrasect(dividedTriangles)) return false;
-               AmendToRadius(dividedTriangles);
-               tempTriangleFaces.insert(tempTriangleFaces.end(),dividedTriangles.begin(),dividedTriangles.end());
-               if(tempTriangleFaces.size()>=fMaxFaces) return false;
-               */
             LMCThreeVector point01=fTriangleFaces.at(i).GetSideMidPoint01();
             LMCThreeVector point02=fTriangleFaces.at(i).GetSideMidPoint02();
             LMCThreeVector point12=fTriangleFaces.at(i).GetSideMidPoint12();
@@ -259,7 +245,6 @@ namespace locust
             dividedTriangles.push_back(LMCTriangle(fSphereVertices.at(index01),fTriangleFaces.at(i).GetVertex(1),fSphereVertices.at(index12)));
             dividedTriangles.push_back(LMCTriangle(fSphereVertices.at(index02),fSphereVertices.at(index12),fTriangleFaces.at(i).GetVertex(2)));
             dividedTriangles.push_back(LMCTriangle(fSphereVertices.at(index01),fSphereVertices.at(index12),fSphereVertices.at(index02)));
-    //        AmendToRadius(dividedTriangles);
             tempTriangleFaces.insert(tempTriangleFaces.end(),dividedTriangles.begin(),dividedTriangles.end());
             if(fSphereVertices.size()>=fMaximumVertices) return false;
         }

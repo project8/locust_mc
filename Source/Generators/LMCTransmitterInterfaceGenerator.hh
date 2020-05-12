@@ -73,7 +73,7 @@ namespace locust
     	    FieldBuffer fFieldBuffer;
 	   
             std::vector<LMCThreeVector> fAllFieldPoints;
-            std::vector<LMCThreeVector> fAllFieldCopol;
+            std::vector<LMCThreeVector> fAllFieldPointsCopol;
             std::vector<std::deque<double>> EFieldBuffer;
             std::vector<std::deque<double>> EFrequencyBuffer;
 

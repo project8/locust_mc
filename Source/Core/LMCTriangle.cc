@@ -88,11 +88,7 @@ namespace locust
     {
         for (int i=0; i<3; ++i)
         {
-            //std::cout<<"Before operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
             fVertices.at(i).SetMagnitude(magnitude);
-            //if(fVertices.at(i).Magnitude()<magnitude*0.98)
-                std::cout<<"After operator* "<<fVertices.at(i).Magnitude()<< " "<<fVertices.at(i).X()<< " "<<fVertices.at(i).Y()<<" "<<fVertices.at(i).Z() <<std::endl;
-            //std::cout<<"-- "<<std::endl;
         }
         return *this;
     }

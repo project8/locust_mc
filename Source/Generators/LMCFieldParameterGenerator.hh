@@ -65,6 +65,7 @@ namespace locust
             double fMinFieldPoints;
             std::string fTextFileName;
             std::vector<LMCThreeVector> fFieldPoints;
+            std::vector<std::vector<double>> fTotalField;
 
             bool ends_with(const std::string &str, const std::string &suffix);
             bool DoGenerate(Signal* aSignal);

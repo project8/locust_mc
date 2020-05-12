@@ -125,7 +125,6 @@ namespace locust
         	estimatedField += fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * fTransmitterHardware->GetPatternFactor(pointOfInterest, iAntenna);
 
         } // nAntennas
-        std::cout<<pointOfInterest.X()<< "   "<<pointOfInterest.Y()<< "  "<<pointOfInterest.Z()<<"   " <<estimatedField << "   "<< fTransmitterHardware->GetPropagationDistance(pointOfInterest)<<std::endl;
         double* FieldSolution = new double[2];
         FieldSolution[0] = estimatedField / fTransmitterHardware->GetPropagationDistance(pointOfInterest); // field at point
         FieldSolution[1] = 2. * LMCConst::Pi() * fInputFrequency; // rad/s

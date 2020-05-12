@@ -124,8 +124,8 @@ namespace locust
 
     void TransmitterInterfaceGenerator::InitializeFieldPoint(LMCThreeVector pointOfInterest)
     {
-            fTransmitter->InitializeFieldPoint(pointOfInterest);
-	    fAllFieldCopol.push_back(pointOfInterest);
+        fTransmitter->InitializeFieldPoint(pointOfInterest);
+	    fAllFieldPointsCopol.push_back(pointOfInterest);
     }
 
     bool TransmitterInterfaceGenerator::WakeBeforeEvent()

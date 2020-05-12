@@ -168,7 +168,6 @@ namespace locust
         {
             InitializeFieldPoint(fFieldPoints.at(pointIndex));
         }
-        exit(-1);
     }
 
     static void* KassiopeiaInit(const std::string &aFile)
@@ -188,6 +187,7 @@ namespace locust
 
         unsigned tTotalElementIndex = 0;
 
+        std::vector<double> fieldsVector;
         for(int pointIndex = 0; pointIndex < GetNPoints(); ++pointIndex)
         {
             sampleIndex = pointIndex*aSignal->DecimationFactor() + index;  // which point and which sample
@@ -199,15 +199,15 @@ namespace locust
             }
             else
             {
-                tFieldSolution = fTransmitter->SolveKassFields(fAllFieldCopol[pointIndex],fAllFieldCopol[pointIndex],t_old,pointIndex);
+                tFieldSolution = fTransmitter->SolveKassFields(fAllFieldPointsCopol[pointIndex],fAllFieldPointsCopol[pointIndex],t_old,pointIndex);
             }
             if (fTextFileWriting==1) {}
-            RecordIncidentFields(fp, t_old,fAllFieldCopol.at(pointIndex), tFieldSolution[1]);
             FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0],pointIndex,index);
-            std::cout<<tFieldSolution[1]<<"  "<< tFieldSolution[0]<< "  "<<pointIndex<< " "<< index<<std::endl;
+            fieldsVector.push_back(tFieldSolution[0]);
+            if(pointIndex==100)cout<< tFieldSolution[0]<<std::endl;
             PopBuffers(pointIndex);
         } // channels loop
-
+        fTotalField.push_back(fieldsVector);
         t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
     }
@@ -229,9 +229,7 @@ namespace locust
             {
                 DriveAntenna(fp, PreEventCounter, index, aSignal, fNFilterBins,fdtFilter);
             }  // for loop
-            return true;
         }
-
         else if (fTransmitter->IsKassiopeia())
         {
 
@@ -284,10 +282,28 @@ namespace locust
             WakeBeforeEvent();
             Kassiopeia.join();
 
-            return true;
-        }
+        }//end of kass loop
 
-    }
+        std::ofstream myfile;
+        myfile.open("Fields.txt");
+//        myfile<<"# Fields at the vertices of the spheres \n";
+//        myfile<<"# Each row has four numbers, three for the fFieldPoints.at(i).X,Y,Z) and the forth for the Electric field in copol direction\n";
+        int timeSlice=0;
+        for(auto&& fieldsVector:fTotalField)
+        {
+            if(fieldsVector.size()!=fFieldPoints.size())
+            {
+                LERROR(lmclog,"The number of field points is not the same as the number of points in fields vector");
+                exit(-1);
+            }
+            for(int i=0;i<fieldsVector.size();i++)
+            {
+                myfile<<timeSlice<<","<<fFieldPoints.at(i).X()<< ","<<fFieldPoints.at(i).Y()<<","<<fFieldPoints.at(i).Z()<<","<<fieldsVector.at(i)<<"\n";
+            }
+            timeSlice++;
+        }
+        return true;
+    }//End of DoGenerate
 
 } /* namespace locust */
 
