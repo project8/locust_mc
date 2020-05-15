@@ -26,7 +26,7 @@
 	"AOI": 0.0,
 	"antenna-x-position": -0.025,
 	"antenna-y-position": 0.0,
-        "tf-transmitter-filename": "/home/penny/locust_mc/Data/TransferFunctions/CoupledeDipoleTF.txt",
+        "tf-transmitter-filename": "${CMAKE_INSTALL_PREFIX}/data/CoupledeDipoleTF.txt",
         "planewave-amplitude": 1.0e-8,
 	"tf-transmitter-bin-width": 0.01e9,
         "lo-frequency": 25.8781e9,
@@ -36,7 +36,7 @@
 	"n-subarrays": 1,
         "element-spacing": 0.007753,
         "power-combining-feed": "slotted-waveguide",
-        "tf-receiver-filename": "/home/penny/locust_mc/Data/TransferFunctions/SlotTFLocust.txt",
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/SlotTFLocust.txt",
         "tf-receiver-bin-width": 0.01e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/Project8Phase3_WithRoot_Template.xml"
     },

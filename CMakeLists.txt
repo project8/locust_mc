@@ -153,6 +153,7 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     set (LOCUST_MC_LINK_DIRECTORIES
         ${LOCUST_MC_LINK_DIRECTORIES}
         ${LIB_INSTALL_DIR}
+        ${LIB_INSTALL_DIR}64
     )
 
     pbuilder_add_ext_libraries(
@@ -161,6 +162,7 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
         ${KEMField_LIBRARIES}
         ${Kassiopeia_LIBRARIES}
     )
+
 endif( locust_mc_BUILD_WITH_KASSIOPEIA )
 
 include_directories( ${LOCUST_MC_INCLUDE_DIRECTORIES} )
