@@ -303,6 +303,7 @@ namespace locust
     bool ArraySignalGenerator::ReceivedKassReady()
     {
 
+    	std::this_thread::sleep_for(std::chrono::milliseconds(100));
         printf("LMC about to wait: fKassEventReady is %d, fRunInProgress is %d\n ", fInterface->fKassEventReady, fInterface->fRunInProgress);
 
         if((fInterface->fRunInProgress)&&(!fInterface->fKassEventReady))

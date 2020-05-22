@@ -29,7 +29,7 @@ namespace locust
 			fPhi_t1(0.),
 			fPhi_t2(0.),
 			fPhiLO_t(0.),
-			fNPreEventSamples( 1500000 ),
+			fNPreEventSamples( 15 ),
 			fEventStartTime(-99.),
 			fEventToFile(0),
 			fInterface( new KassLocustInterface() )
@@ -95,6 +95,7 @@ namespace locust
 
     bool KassSignalGenerator::ReceivedKassReady()
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
         printf("LMC about to wait fKassEventReady is %d, fRunInProgress is %d\n ", fInterface->fKassEventReady, fInterface->fRunInProgress);
 
