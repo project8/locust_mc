@@ -1,5 +1,24 @@
 
 
+    <!-- fss coils -->
+
+    <tag name="magnet_tag" name="fss_coil_tag">
+      <cylinder_tube_space
+	 name="fss_coil_space"
+	 z1="-.17145"
+	 z2=".17145"
+	 longitudinal_mesh_count="10"
+	 longitudinal_mesh_power="1."
+	 r1="0.02286"
+	 r2="0.02557"
+	 radial_mesh_count="30"
+	 radial_mesh_power="1."
+	 axial_mesh_count="128"
+	 />
+      </tag>
+
+
+
     <!-- pinch coils -->
 
     <tag name="magnet_tag" name="upstream_pinch_coil_tag">
@@ -121,6 +140,10 @@
 
     <space name="project8_assembly">
 
+      <space name="fss_coil" node="fss_coil_space">
+    	<transformation rotation_euler="0. 0. 0."/>
+	<transformation displacement="{0.} {0.} {0.0}"/>
+      </space>
       <space name="upstream_pinch_coil" node="upstream_pinch_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
 	<transformation displacement="{0.} {0.} {0.0221742}"/>

@@ -20,9 +20,9 @@
 
     "kass-signal":
     {
-        "lo-frequency": 25.3106e9,
+        "lo-frequency": 26.0158e9,
         "pitchangle-filename": "${CMAKE_INSTALL_PREFIX}/bin/pitchangles.txt",
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/Project8Phase1_WithRoot_Template.xml"
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/Project8Phase2_WithRoot_Template.xml"
     },
 
     "simulation":
