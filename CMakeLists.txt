@@ -156,6 +156,16 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
         ${LIB_INSTALL_DIR}64
     )
 
+    # We need to have the LocustMC library depend on the Kassiopeia libraries, and to the KassiopeiaExt target
+    # To do this we create an imported library for each Kassiopeia library
+    # We then add a dependency of KassiopeiaExt to each imported library target
+    # LocustMC library will link to those imported libraries, and therefore depend on KassiopeiaExt
+    set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
+    foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
+        add_library( ${LIBRARY} SHARED IMPORTED )
+        add_dependencies( ${LIBRARY} KassiopeiaExt )
+    endforeach()
+
     pbuilder_add_ext_libraries(
         ${Kommon_LIBRARIES}
         ${KGeoBag_LIBRARIES}
