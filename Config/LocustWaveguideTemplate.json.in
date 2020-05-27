@@ -1,0 +1,48 @@
+{
+    "generators":
+    [          
+       "waveguide-signal",
+       "lpf-fft",
+       "decimate-signal", 
+       "gaussian-noise",
+       "digitizer"
+    ],
+    
+    "lpf-fft":
+    {
+  
+    },
+
+    "decimate-signal":
+    {
+
+    },
+
+    "waveguide-signal":
+    {
+        "lo-frequency": 25.3106e9,
+        "pitchangle-filename": "${CMAKE_INSTALL_PREFIX}/bin/pitchangles.txt",
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/Waveguide_WithRoot_Template.xml"
+    },
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 819200
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor-psd": 2.0e-22,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 4.0e-5,
+    "v-offset": -2.0e-5
+    }
+
+}
+

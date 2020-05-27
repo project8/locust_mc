@@ -44,7 +44,7 @@ namespace locust
 
         std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
         std::mutex fKassReadyMutex;
-        std::mutex fMutexDigitizer;  // pls:  not completely sure we need an extra mutex, but it may help clarify.
+        std::mutex fMutexDigitizer;
 
         std::condition_variable fPreEventCondition;
         std::condition_variable fPostEventCondition;

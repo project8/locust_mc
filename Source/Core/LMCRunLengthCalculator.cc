@@ -98,6 +98,12 @@ namespace locust
         // nothing to see here, move along, please
         return;
     }
+    void RunLengthCalculator::Visit( const WaveguideSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
+
 
     void RunLengthCalculator::Visit( const LowPassFilterFFTGenerator* )
     {
