@@ -38,6 +38,11 @@ namespace locust
             fInterface->fCENTER_TO_SHORT = 0.075; // m
             fInterface->fCENTER_TO_ANTENNA = 0.075; // m
         }
+        else
+        {
+        	fInterface->fCENTER_TO_SHORT = 0.05; // m
+        	fInterface->fCENTER_TO_ANTENNA = 0.05; // m
+        }
     }
 
 

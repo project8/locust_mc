@@ -94,6 +94,7 @@ namespace locust
             void Visit( const KassSignalGenerator* );
             void Visit( const FreeFieldSignalGenerator* );
             void Visit( const ArraySignalGenerator* );
+            void Visit( const WaveguideSignalGenerator* );
             void Visit( const GaussianNoiseGenerator* );
             void Visit( const FakeTrackSignalGenerator* );
             void Visit( const TestSignalGenerator* );
