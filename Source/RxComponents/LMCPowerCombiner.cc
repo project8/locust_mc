@@ -31,6 +31,12 @@ namespace locust
 
     bool PowerCombiner::Configure( const scarab::param_node& aParam )
     {
+
+    	if ( aParam.has( "voltage-check" ) )
+    	{
+    		fvoltageCheck = aParam["voltage-check"]().as_bool();
+    	}
+
         if( aParam.has( "nelements-per-strip" ) )
         {
             fnElementsPerStrip = aParam["nelements-per-strip"]().as_int();
@@ -71,8 +77,8 @@ namespace locust
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
 
-		if (sampleIndex%100 < 1)
-    		LDEBUG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+		if ( (sampleIndex%100 < 1) && (fvoltageCheck==true) )
+			LDEBUG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 
 		return true;
 	}
