@@ -67,6 +67,7 @@ namespace locust
             double famplifierLoss;
             double fendPatchLoss;
             double fjunctionResistance;
+            bool fvoltageCheck;
 
 };
 
