@@ -21,7 +21,6 @@ namespace locust
     class KassSignalGenerator;
     class FreeFieldSignalGenerator;
     class ArraySignalGenerator;
-    class WaveguideSignalGenerator;
     class LocalOscillatorGenerator;
     class DecimateSignalGenerator;
 
@@ -36,7 +35,6 @@ namespace locust
             virtual void Visit( const KassSignalGenerator* ) = 0;
             virtual void Visit( const FreeFieldSignalGenerator* ) = 0;
             virtual void Visit( const ArraySignalGenerator* ) = 0;
-            virtual void Visit( const WaveguideSignalGenerator* ) = 0;
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
             virtual void Visit( const FakeTrackSignalGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;

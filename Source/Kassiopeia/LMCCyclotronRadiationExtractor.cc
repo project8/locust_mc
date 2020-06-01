@@ -28,21 +28,6 @@ namespace locust
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
         fInterface->fProject8Phase = P8Phase;
-        if (P8Phase==1)
-        {
-            fInterface->fCENTER_TO_SHORT = 0.0488; // m, 0.047 is tuned.
-            fInterface->fCENTER_TO_ANTENNA = 0.045; // m
-        }
-        if (P8Phase==2)
-        {
-            fInterface->fCENTER_TO_SHORT = 0.075; // m
-            fInterface->fCENTER_TO_ANTENNA = 0.075; // m
-        }
-        else
-        {
-        	fInterface->fCENTER_TO_SHORT = 0.05; // m
-        	fInterface->fCENTER_TO_ANTENNA = 0.05; // m
-        }
     }
 
 

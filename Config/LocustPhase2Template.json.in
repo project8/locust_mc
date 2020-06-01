@@ -21,6 +21,8 @@
     "kass-signal":
     {
         "lo-frequency": 26.0158e9,
+	"center-to-short": 0.075,
+        "center-to-antenna": 0.075,
         "pitchangle-filename": "${CMAKE_INSTALL_PREFIX}/bin/pitchangles.txt",
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/Project8Phase2_WithRoot_Template.xml"
     },
