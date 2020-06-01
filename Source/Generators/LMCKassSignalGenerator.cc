@@ -66,6 +66,17 @@ namespace locust
             fTruth = aParam["truth"]().as_bool();
         }
 
+    	if( aParam.has( "center-to-short" ) )
+    	{
+    		fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
+    	}
+
+    	if( aParam.has( "center-to-antenna" ) )
+    	{
+    		fInterface->fCENTER_TO_ANTENNA = aParam["center-to-antenna"]().as_double();
+    	}
+
+
         return true;
     }
 

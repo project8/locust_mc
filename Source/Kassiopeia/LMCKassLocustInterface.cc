@@ -6,11 +6,12 @@
  */
 
 #include "LMCKassLocustInterface.hh"
-
 #include <exception>
+
 
 namespace locust
 {
+
 
     KassLocustInterface::KassLocustInterface() :
             fTOld( -99. ),
@@ -32,9 +33,8 @@ namespace locust
             fDigitizerCondition(),
             fKassReadyCondition(),
             fProject8Phase( 0 ),
-            fCENTER_TO_SHORT( 0. ),
-            fCENTER_TO_ANTENNA( 0. ),
-			fTestvar( 5. )
+            fCENTER_TO_SHORT( 0.05 ),
+            fCENTER_TO_ANTENNA( 0.05 )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :
