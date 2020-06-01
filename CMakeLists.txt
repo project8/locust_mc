@@ -52,10 +52,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
-    execute_process( 
-        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    )
+    #execute_process( 
+    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    #)
 
     # Second we use the ExternalProject module to build and install Kassiopeia.
     # This takes place during the build phase of Locust.
@@ -75,6 +75,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
     # Finally we use find_package() to learn about the Kassiopeia build targets.
     find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
+    message( STATUS "@@@@@ Kommon_FOUND: ${Kommon_FOUND}" )
+    message( STATUS "@@@@@ Kommon_LIBRARIES: ${Kommon_LIBRARIES}" )
+    message( STATUS "@@@@@ Kommon_INCLUDE_DIRS: ${Kommon_INCLUDE_DIRS}" )
     find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
     find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
     find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
@@ -141,6 +144,10 @@ include_directories (${ROOT_INCLUDE_DIR})
 if( locust_mc_BUILD_WITH_KASSIOPEIA )
     # Here we add the include directories, link directories, and libraries that will be used by Kassiopeia to Locust's build configuration.
     
+    message( STATUS "##### Kommon_FOUND: ${Kommon_FOUND}" )
+    message( STATUS "##### Kommon_LIBRARIES: ${Kommon_LIBRARIES}" )
+    message( STATUS "##### Kommon_INCLUDE_DIRS: ${Kommon_INCLUDE_DIRS}" )
+
     set (LOCUST_MC_INCLUDE_DIRECTORIES
         ${LOCUST_MC_INCLUDE_DIRECTORIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
