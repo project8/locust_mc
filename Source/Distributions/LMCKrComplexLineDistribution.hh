@@ -41,7 +41,7 @@ namespace locust
             double fFWHM;
             double fLinePosition;
             std::vector<double> fAmplitude;
-            std::vector<double> fScatterProbability;
+            double fScatterProbability;
             std::string fEmittedPeak;
 
             unsigned fNPointsSELA;
@@ -70,7 +70,7 @@ namespace locust
             std::normal_distribution<double> fNormal;
             std::cauchy_distribution<double> fLorentzian;
 
-            std::vector<std::geometric_distribution<int>> fGeometric;
+            std::geometric_distribution<int> fGeometric;
 
             void read_shake_data();
             std::valarray<double> nprime(const double &E_b, const std::valarray<double> &W);
@@ -93,7 +93,7 @@ namespace locust
             double generate_shake();
             std::string generate_gas_species();
             double generate_energy_loss(std::string gas_species);
-            int generate_nscatters(std::string &gas_species);
+            int generate_nscatters();
 
             std::vector<std::vector<double>> transpose_vector(const std::vector<std::vector<double>> aVector);
             std::valarray<double> linspace(double a, double b, unsigned N);
