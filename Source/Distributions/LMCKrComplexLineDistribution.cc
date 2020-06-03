@@ -360,8 +360,13 @@ namespace locust
 
         if(fEmittedPeak == "lorentzian")
             generated_energy += fLorentzian(*fRNEngine);
-        if(fEmittedPeak == "shake")
+        else if(fEmittedPeak == "shake")
             generated_energy += generate_shake();
+        else if(fEmittedPeak == "dirac" || fEmittedPeak == "fixed") //just to be explicit
+            generated_energy += 0;
+
+        //choose gas species
+        std::string gas_species = generate_gas_species();
         
         //generate number of scatters
         int nScatters = generate_nscatters();
