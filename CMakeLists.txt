@@ -143,10 +143,6 @@ include_directories (${ROOT_INCLUDE_DIR})
 
 if( locust_mc_BUILD_WITH_KASSIOPEIA )
     # Here we add the include directories, link directories, and libraries that will be used by Kassiopeia to Locust's build configuration.
-    
-    message( STATUS "##### Kommon_FOUND: ${Kommon_FOUND}" )
-    message( STATUS "##### Kommon_LIBRARIES: ${Kommon_LIBRARIES}" )
-    message( STATUS "##### Kommon_INCLUDE_DIRS: ${Kommon_INCLUDE_DIRS}" )
 
     set (LOCUST_MC_INCLUDE_DIRECTORIES
         ${LOCUST_MC_INCLUDE_DIRECTORIES}
@@ -163,15 +159,46 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
         ${LIB_INSTALL_DIR}64
     )
 
+    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
+    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
+    message( STATUS "##### Kommon_FOUND: ${Kommon_FOUND}" )
+    message( STATUS "##### Kommon_LIBRARIES: ${Kommon_LIBRARIES}" )
+    message( STATUS "##### Kommon_INCLUDE_DIRS: ${Kommon_INCLUDE_DIRS}" )
+    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
+    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
+
+
+    
     # We need to have the LocustMC library depend on the Kassiopeia libraries, and to the KassiopeiaExt target
     # To do this we create an imported library for each Kassiopeia library
     # We then add a dependency of KassiopeiaExt to each imported library target
     # LocustMC library will link to those imported libraries, and therefore depend on KassiopeiaExt
-    set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
-    foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-        add_library( ${LIBRARY} SHARED IMPORTED )
-        add_dependencies( ${LIBRARY} KassiopeiaExt )
-    endforeach()
+
+
+    add_library( Kommon_LIBRARIES SHARED IMPORTED)
+    add_library( KGeoBag_LIBRARIES SHARED IMPORTED)
+    add_library( KEMField_LIBRARIES SHARED IMPORTED)
+    add_library( Kassiopeia_LIBRARIES SHARED IMPORTED)
+    SET_TARGET_PROPERTIES(Kommon_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
+    SET_TARGET_PROPERTIES(KGeoBag_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
+    SET_TARGET_PROPERTIES(KEMField_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
+    SET_TARGET_PROPERTIES(Kassiopeia_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
+    GET_TARGET_PROPERTY(VAR Kommon_LIBRARIES IMPORTED_LOCATION) 
+    message( STATUS "target location is ${VAR}" )
+    add_dependencies( Kommon_LIBRARIES KassiopeiaExt )
+    add_dependencies( KGeoBag_LIBRARIES KassiopeiaExt )
+    add_dependencies( KEMField_LIBRARIES KassiopeiaExt )
+    add_dependencies( Kassiopeia_LIBRARIES KassiopeiaExt )
+
+#    set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
+#    foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
+#        add_library( ${LIBRARY} SHARED IMPORTED )
+#        add_dependencies( ${LIBRARY} KassiopeiaExt )
+#    endforeach()
+  
+    
+    
+            
 
     pbuilder_add_ext_libraries(
         ${Kommon_LIBRARIES}
