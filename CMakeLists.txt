@@ -175,31 +175,14 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     # LocustMC library will link to those imported libraries, and therefore depend on KassiopeiaExt
 
 
-    add_library( Kommon_LIBRARIES SHARED IMPORTED)
-    add_library( KGeoBag_LIBRARIES SHARED IMPORTED)
-    add_library( KEMField_LIBRARIES SHARED IMPORTED)
-    add_library( Kassiopeia_LIBRARIES SHARED IMPORTED)
-    SET_TARGET_PROPERTIES(Kommon_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
-    SET_TARGET_PROPERTIES(KGeoBag_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
-    SET_TARGET_PROPERTIES(KEMField_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
-    SET_TARGET_PROPERTIES(Kassiopeia_LIBRARIES PROPERTIES IMPORTED_LOCATION "${PROJECT_BINARY_DIR}/lib64" )
-    GET_TARGET_PROPERTY(VAR Kommon_LIBRARIES IMPORTED_LOCATION) 
-    message( STATUS "target location is ${VAR}" )
-    add_dependencies( Kommon_LIBRARIES KassiopeiaExt )
-    add_dependencies( KGeoBag_LIBRARIES KassiopeiaExt )
-    add_dependencies( KEMField_LIBRARIES KassiopeiaExt )
-    add_dependencies( Kassiopeia_LIBRARIES KassiopeiaExt )
-
-#    set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
-#    foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-#        add_library( ${LIBRARY} SHARED IMPORTED )
-#        add_dependencies( ${LIBRARY} KassiopeiaExt )
-#    endforeach()
-  
-    
-    
-            
-
+    set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
+    foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
+        add_library( ${LIBRARY} SHARED IMPORTED )
+        SET_TARGET_PROPERTIES(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${CMAKE_INSTALL_PREFIX}/lib64/lib${LIBRARY}.so" )         
+        add_dependencies( ${LIBRARY} KassiopeiaExt )
+    endforeach()
+      
+              
     pbuilder_add_ext_libraries(
         ${Kommon_LIBRARIES}
         ${KGeoBag_LIBRARIES}

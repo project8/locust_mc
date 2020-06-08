@@ -15,6 +15,7 @@ RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
     echo 'ln -sfT $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX/../current' >> setup.sh &&\
     echo 'export PATH=$LOCUST_BUILD_PREFIX/bin:$PATH' >> setup.sh &&\
     echo 'export LD_LIBRARY_PATH=$LOCUST_BUILD_PREFIX/lib:$LD_LIBRARY_PATH' >> setup.sh &&\
+    echo 'export LD_LIBRARY_PATH=$LOCUST_BUILD_PREFIX/lib64:$LD_LIBRARY_PATH' >> setup.sh &&\
     /bin/true
 
 ########################
