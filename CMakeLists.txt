@@ -155,30 +155,26 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
 
     set (LOCUST_MC_LINK_DIRECTORIES
         ${LOCUST_MC_LINK_DIRECTORIES}
-        ${LIB_INSTALL_DIR}
-        ${LIB_INSTALL_DIR}64
+        ${LIB_INSTALL_DIR}        
     )
 
-    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
-    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
-    message( STATUS "##### Kommon_FOUND: ${Kommon_FOUND}" )
-    message( STATUS "##### Kommon_LIBRARIES: ${Kommon_LIBRARIES}" )
-    message( STATUS "##### Kommon_INCLUDE_DIRS: ${Kommon_INCLUDE_DIRS}" )
-    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
-    message( STATUS "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" )    
 
-
+	get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+	if ("${LIB64}" STREQUAL "TRUE")
+    	set(LIBSUFFIX "64")
+	else()
+    	set(LIBSUFFIX "")
+	endif()
     
     # We need to have the LocustMC library depend on the Kassiopeia libraries, and to the KassiopeiaExt target
     # To do this we create an imported library for each Kassiopeia library
     # We then add a dependency of KassiopeiaExt to each imported library target
     # LocustMC library will link to those imported libraries, and therefore depend on KassiopeiaExt
 
-
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
         add_library( ${LIBRARY} SHARED IMPORTED )
-        SET_TARGET_PROPERTIES(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${CMAKE_INSTALL_PREFIX}/lib64/lib${LIBRARY}.so" )         
+        SET_TARGET_PROPERTIES(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}${LIBSUFFIX}/lib${LIBRARY}.so" )
         add_dependencies( ${LIBRARY} KassiopeiaExt )
     endforeach()
       
