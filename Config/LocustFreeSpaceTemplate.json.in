@@ -1,0 +1,60 @@
+{
+    "generators":
+    [          
+       "array-signal",
+       "lpf-fft",
+       "decimate-signal",
+       "digitizer"
+    ],
+
+    "lpf-fft":
+    {
+	
+    },
+
+    "decimate-signal":
+    {
+
+    },
+
+
+
+  "array-signal":
+    {
+        "transmitter": "kassiopeia",
+        "voltage-check": false,
+	"event-spacing-samples": 15000,
+        "lo-frequency": 25.8781e9,
+        "array-radius": 0.05,
+        "nelements-per-strip": 6,
+        "zshift-array": 0.0,
+        "element-spacing": 0.007753,
+        "power-combining-feed": "voltage-divider",
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/PatchTFLocust.txt",
+        "tf-receiver-bin-width": 0.01e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_FreeSpace_Template.xml"
+    },
+
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 300000,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+    	"v-range":  15.0e-8,
+    	"v-offset": -7.5e-8
+    }
+
+}
+

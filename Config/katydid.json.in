@@ -32,6 +32,11 @@
             },
             
             {
+				"signal": "egg1:ts",            
+				"slot":  "writer:ts-fftw"
+            },
+            
+            {
                 "signal": "to-ps1:psd",
                 "slot": "writer:psd"
             },
@@ -45,6 +50,7 @@
                 "signal": "to-ps1:psd",
                 "slot": "waterfall-writer:psd"
             },
+            
             {
                 "signal": "egg1:egg-done",
                 "slot": "waterfall-writer:write-file"

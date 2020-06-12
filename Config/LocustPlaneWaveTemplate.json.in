@@ -1,0 +1,59 @@
+{
+    "generators":
+    [          
+       "array-signal",
+       "lpf-fft",
+       "decimate-signal",
+       "digitizer"
+    ],
+
+    "lpf-fft":
+    {
+	
+    },
+
+    "decimate-signal":
+    {
+
+    },
+
+
+
+  "array-signal":
+    {
+        "transmitter": "planewave",
+        "transmitter-frequency": 25.9281e9,
+	"planewave-amplitude": 1.0e-8,
+        "AOI": 0.0,
+        "voltage-check": false,
+        "lo-frequency": 25.8781e9,
+        "nelements-per-strip": 6,
+        "element-spacing": 0.007753,
+        "power-combining-feed": "voltage-divider",
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/PatchTFLocust.txt",
+        "tf-receiver-bin-width": 0.01e9
+    },
+
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 8192,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+    	"v-range":  2.0e-10,
+    	"v-offset": -1.0e-10
+    }
+
+}
+

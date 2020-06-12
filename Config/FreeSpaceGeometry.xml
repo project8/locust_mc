@@ -58,8 +58,8 @@
 	 z2=".0038"
 	 longitudinal_mesh_count="10"
 	 longitudinal_mesh_power="1."
-	 r1="0.05"
-	 r2="0.055"
+	 r1="0.01"
+	 r2="0.015"
 	 radial_mesh_count="30"
 	 radial_mesh_power="1."
 	 axial_mesh_count="128"
@@ -74,8 +74,8 @@
 	 z2=".0038"
 	 longitudinal_mesh_count="10"
 	 longitudinal_mesh_power="1."
-	 r1="0.05"
-	 r2="0.055"
+	 r1="0.01"
+	 r2="0.015"
 	 radial_mesh_count="30"
 	 radial_mesh_power="1."
 	 axial_mesh_count="128"
@@ -422,11 +422,11 @@
 	</space> -->
       <space name="upstream_bathtub_coil" node="upstream_bathtub_coil_space">
     	<transformation rotation_euler="0. 0. 0."/>
-	<transformation displacement="{0.} {0.} {0.15}"/>
+	<transformation displacement="{0.} {0.} {0.03}"/>
 	</space>
       <space name="downstream_bathtub_coil" node="downstream_bathtub_coil_space">
     	<transformation rotation_euler="0. 0. 0."/> 
-	<transformation displacement="{0.} {0.} {-0.15}"/>
+	<transformation displacement="{0.} {0.} {-0.03}"/>
 	</space>
 
 
