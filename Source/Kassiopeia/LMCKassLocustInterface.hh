@@ -36,7 +36,6 @@ namespace locust
         bool fWaitAfterEvent;
         bool fKassEventReady;
         bool fEventInProgress;
-        bool fRunInProgress;
         bool fPreEventInProgress;
         bool fFalseStartKassiopeia; // flag to avoid false start on some Macs.
         bool fDoneWithSignalGeneration;  // do not continue to generate voltages and advance digitizer time.
@@ -55,7 +54,6 @@ namespace locust
         int fProject8Phase; // 1, 2, or 3, defined with the step modifier instance in the xml file.
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
-        double fTestvar;
 
     };
 

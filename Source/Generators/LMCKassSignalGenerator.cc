@@ -25,13 +25,14 @@ namespace locust
 			fLO_Frequency( 0.),
 			gxml_filename("blank.xml"),
 			gpitchangle_filename("blank.xml"),
-			fTruth( 0 ),
+			fTruth( false ),
+			fvoltageCheck( false ),
 			fPhi_t1(0.),
 			fPhi_t2(0.),
 			fPhiLO_t(0.),
-			fNPreEventSamples( 15 ),
+			fNPreEventSamples( 15000 ),
 			fEventStartTime(-99.),
-			fEventToFile(0),
+			fEventToFile( false ),
 			fInterface( new KassLocustInterface() )
 
     {
@@ -66,7 +67,17 @@ namespace locust
             fTruth = aParam["truth"]().as_bool();
         }
 
-    	if( aParam.has( "center-to-short" ) )
+        if( aParam.has( "voltage-check" ) )
+        {
+            fvoltageCheck = aParam["voltage-check"]().as_bool();
+        }
+
+        if( aParam.has( "event-spacing-samples" ) )
+        {
+            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+        }
+
+        if( aParam.has( "center-to-short" ) )
     	{
     		fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
     	}
@@ -98,7 +109,6 @@ namespace locust
 
     void KassSignalGenerator::WakeBeforeEvent()
     {
-    	fInterface->fRunInProgress = false;
         fInterface->fPreEventCondition.notify_one();
         return;
     }
@@ -108,17 +118,13 @@ namespace locust
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-        printf("LMC about to wait fKassEventReady is %d, fRunInProgress is %d\n ", fInterface->fKassEventReady, fInterface->fRunInProgress);
+        printf("LMC about to wait fKassEventReady is %d\n ", fInterface->fKassEventReady);
 
-        if((fInterface->fRunInProgress)&&(!fInterface->fKassEventReady))
+        if(!fInterface->fKassEventReady)
         {
             std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
             fInterface->fKassReadyCondition.wait( tLock );
             return true;
-        }
-        else if (!fInterface->fRunInProgress)
-        {
-        	return false;
         }
         else if (fInterface->fKassEventReady)
         {
@@ -214,21 +220,22 @@ namespace locust
         	aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
         	aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
         }
-
-        // test print statements:
-/*
-
-                                printf("driving antenna, ModeExcitation is %g\n\n", TE11ModeExcitation());
-                                printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
-                                printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
-                                printf("Locust says:  signal %d is %g and zposition is %g and zvelocity is %g and sqrtLarmorPower is %g and "
-                                "  fcyc is %.10g and tDopplerFrequency is %g and GammaZ is %.10g\n\n\n",
-                                index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
-//                    getchar();
+        else
+        {
+        	aSignal->LongSignalTimeComplex()[ index ][0] += sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * RealVoltage1 + sqrt(tLarmorPower/2.) * RealVoltage2 );
+        	aSignal->LongSignalTimeComplex()[ index ][1] += sqrt(50.) * TE10ModeExcitation() * ( sqrt(tLarmorPower/2.) * ImagVoltage1 + sqrt(tLarmorPower/2.) * ImagVoltage2  );
+        }
 
 
-        printf("fLO_Frequency is %g\n", fLO_Frequency); //getchar();
-*/
+        if (fvoltageCheck)
+        {
+            printf("Realvoltage1 is %g and Realvoltage2 is %g\n", RealVoltage1, RealVoltage2);
+            printf("IMagVoltage1 is %g and ImagVoltage2 is %g\n", ImagVoltage1, ImagVoltage2);
+            printf("Signal %d is %g, zposition is %g, zvelocity is %g, sqrtLarmorPower is %g, fcyc is %.10g, tDopplerFrequency is %g, GammaZ is %.10g\n\n\n",
+               index, aSignal->LongSignalTimeComplex()[ index ][0], tPositionZ, tVelocityZ, pow(tLarmorPower,0.5), tCyclotronFrequency, tDopplerFrequencyAntenna, tGammaZ);
+            printf("fLO_Frequency is %g\n", fLO_Frequency); //getchar();
+            getchar();
+        }
 
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());  // advance time here instead of in step modifier.  This preserves the freefield sampling.
@@ -290,11 +297,11 @@ namespace locust
         FILE *fp = fopen(gpitchangle_filename.c_str(), "w");
 
         fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        std::thread tKassiopeia (&KassSignalGenerator::KassiopeiaInit, this, gxml_filename);     // spawn new thread
+        std::thread tKassiopeia (&KassSignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         {
-            if ((!fInterface->fEventInProgress) /*&& (fInterface->fRunInProgress)*/ && (!fInterface->fPreEventInProgress))
+            if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
             {
             	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
             	else
@@ -303,11 +310,11 @@ namespace locust
             		break;
             	}
 
-            	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+            	printf("LMC says it ReceivedKassReady()\n");
 
             }
 
-            if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
+            if (fInterface->fPreEventInProgress)
             {
                 PreEventCounter += 1;
 
@@ -317,6 +324,7 @@ namespace locust
                     fInterface->fEventInProgress = true;
                     printf("LMC about to WakeBeforeEvent()\n");
                     WakeBeforeEvent();  // trigger Kass event.
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
             }
 

@@ -36,8 +36,6 @@ namespace locust
 
         printf("Kass is waiting for event trigger\n");
 
-//        fInterface->fKassEventReady = true;
-
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
         if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration))
         {
