@@ -63,6 +63,7 @@ namespace locust
 
             double fLO_Frequency;  // typically defined by a parameter in json file.
             bool fTruth; // parameter in json file.  default is false.
+            bool fvoltageCheck;  // parameter to print out voltage values.
             std::string gxml_filename;
             std::string gpitchangle_filename;
             double fPhi_t1; // antenna voltage phase in radians.
