@@ -251,6 +251,10 @@ namespace locust
         {
             fZShiftArray = aParam["zshift-array"]().as_double();
         }
+        if( aParam.has( "event-spacing-samples" ) )
+        {
+            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+        }
         if( aParam.has( "swap-frequency" ) )
         {
             fSwapFrequency = aParam["swap-frequency"]().as_int();
@@ -295,7 +299,6 @@ namespace locust
 
     void ArraySignalGenerator::WakeBeforeEvent()
     {
-    	fInterface->fRunInProgress = false;
         fInterface->fPreEventCondition.notify_one();
         return;
     }
@@ -304,17 +307,13 @@ namespace locust
     {
 
     	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        printf("LMC about to wait: fKassEventReady is %d, fRunInProgress is %d\n ", fInterface->fKassEventReady, fInterface->fRunInProgress);
+        printf("LMC about to wait: fKassEventReady is %d\n ", fInterface->fKassEventReady);
 
-        if((fInterface->fRunInProgress)&&(!fInterface->fKassEventReady))
+        if(!fInterface->fKassEventReady)
         {
             std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
             fInterface->fKassReadyCondition.wait( tLock );
             return true;
-        }
-        else if (!fInterface->fRunInProgress)
-        {
-        	return false;
         }
         else if (fInterface->fKassEventReady)
         {
@@ -568,7 +567,7 @@ namespace locust
 
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
-                if ((!fInterface->fEventInProgress) /*&& (fInterface->fRunInProgress)*/ && (!fInterface->fPreEventInProgress))
+                if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
                 	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
                 	else
@@ -577,11 +576,11 @@ namespace locust
                 		break;
                 	}
 
-                	printf("LMC says it ReceivedKassReady(), fRunInProgress is %d\n", fInterface->fRunInProgress);
+                	printf("LMC says it ReceivedKassReady()\n");
 
                 }
 
-                if ((fInterface->fPreEventInProgress)&&(fInterface->fRunInProgress))
+                if (fInterface->fPreEventInProgress)
                 {
                     PreEventCounter += 1;
 
@@ -591,6 +590,7 @@ namespace locust
                         fInterface->fEventInProgress = true;
                         printf("LMC about to WakeBeforeEvent()\n");
                         WakeBeforeEvent();  // trigger Kass event.
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
                 }
 

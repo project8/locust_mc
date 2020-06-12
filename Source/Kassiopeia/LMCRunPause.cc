@@ -54,7 +54,7 @@ namespace locust
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
-        fInterface->fRunInProgress = true;
+//        fInterface->fRunInProgress = true;
         return true;
     }
 
