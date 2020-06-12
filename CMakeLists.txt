@@ -49,7 +49,13 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
     execute_process( 
-        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
+                      -D CMAKE_INSTALL_LIBDIR:STRING=${LIB_INSTALL_SUBDIR}
+                      -D BUILD_KASSIOPEIA:BOOL=TRUE 
+                      -D BUILD_KEMFIELD:BOOL=TRUE 
+                      -D BUILD_KGEOBAG:BOOL=TRUE 
+                      -D BUILD_KOMMON:BOOL=TRUE 
+                      ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
     #execute_process( 
@@ -159,12 +165,12 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     )
 
 
-	get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
-	if ("${LIB64}" STREQUAL "TRUE")
-    	set(LIBSUFFIX "64")
-	else()
-    	set(LIBSUFFIX "")
-	endif()
+#	get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+#	if ("${LIB64}" STREQUAL "TRUE")
+#    	set(LIBSUFFIX "64")
+#	else()
+#    	set(LIBSUFFIX "")
+#	endif()
     
     # We need to have the LocustMC library depend on the Kassiopeia libraries, and to the KassiopeiaExt target
     # To do this we create an imported library for each Kassiopeia library
@@ -174,7 +180,14 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
         add_library( ${LIBRARY} SHARED IMPORTED )
-        SET_TARGET_PROPERTIES(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}${LIBSUFFIX}/lib${LIBRARY}.so" )
+        #get_property( output_name TARGET ${LIBRARY} PROPERTY OUTPUT_NAME )
+        #get_property( lib_output_name TARGET ${LIBRARY} PROPERTY LIBRARY_OUTPUT_NAME )
+        #message( STATUS "******* OUTPUT_NAME: ${output_name}" )
+        #message( STATUS "******* LIBRARY_OUTPUT_NAME: ${lib_output_name}" )
+        #message( STATUS "******* TARGET_FILE_NAME: $<TARGET_FILE_NAME:${LIBRARY}>" )
+        #file( GENERATE OUTPUT libraries.txt CONTENT "${LIBRARY}: $<TARGET_FILE_NAME:${LIBRARY}>" )
+        message( STATUS "****** constructed name: ${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+        set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
         add_dependencies( ${LIBRARY} KassiopeiaExt )
     endforeach()
       
