@@ -1,0 +1,59 @@
+{
+    "generators":
+    [          
+       "array-signal",
+       "lpf-fft",
+       "decimate-signal",
+       "digitizer"
+    ],
+
+    "lpf-fft":
+    {
+	
+    },
+
+    "decimate-signal":
+    {
+
+    },
+
+
+
+  "array-signal":
+    {
+        "transmitter": "antenna",
+        "transmitter-frequency": 25.9281e9,
+        "antenna-voltage-amplitude": 1.0,
+        "tf-transmitter-filename": "${CMAKE_INSTALL_PREFIX}/data/UncoupledHalfWaveeDipoleTF.txt",
+        "voltage-check": true,
+        "lo-frequency": 25.8781e9,
+        "array-radius": 0.05,
+        "nelements-per-strip": 1,
+        "power-combining-feed": "single-patch",
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/PatchTFLocust.txt",
+        "tf-receiver-bin-width": 0.01e9
+    },
+
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 8192,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+    	"v-range":  2.0e-8,
+    	"v-offset": -1.0e-8
+    }
+
+}
+
