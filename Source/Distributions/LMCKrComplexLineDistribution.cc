@@ -22,7 +22,7 @@ namespace locust
         fFWHM( 5. ),
         fLinePosition( 17826. ),
         fAmplitude{1,0},
-        fScatterProbability{0.,0.},
+        fScatterProbability(0.),
         fNPointsSELA(10000),
         fGases{"H2","Kr"},
         fEmittedPeak("shake")
@@ -33,6 +33,8 @@ namespace locust
             fLinePosition = aParam.get_value< double >( "line-position", fLinePosition );
         if(aParam.has("emitted-peak"))
             fEmittedPeak = aParam.get_value< std::string >( "emitted-peak", fEmittedPeak );
+        if(aParam.has("scatter-probability"))
+            fScatterProbability = aParam.get_value< double >( "scatter-probability", fScatterProbability );
 
         for(unsigned i=0; i < fGases.size(); ++i)
             fGasIndex.insert( std::pair<std::string, unsigned>(fGases[i], i) );
@@ -45,14 +47,6 @@ namespace locust
                     fAmplitude[fGasIndex[fGases[i]]] = aAmplitudeNode.get_value<double >( fGases[i], fAmplitude[i]) ;
         }
 
-        if(aParam.has("scatter-probability"))
-        {
-            scarab::param_node aScatterNode = aParam["scatter-probability"].as_node();
-            for(unsigned i=0;i<fGases.size();++i)
-                if(aScatterNode.has(fGases[i]))
-                    fScatterProbability[fGasIndex[fGases[i]]] = aScatterNode.get_value<double >( fGases[i], fScatterProbability[i]) ;
-        }
-
         //create random number generator instances
         const double kr_line_width = 2.83; // eV
         fXArray = linspace(-1000,1000,fNPointsSELA);
@@ -61,10 +55,7 @@ namespace locust
         fLorentzian = std::cauchy_distribution<double>(0, kr_line_width / 2. ); //pos, hwhm
         fUniform = std::uniform_real_distribution<double>(0,1);
 
-
-        for(unsigned i=0; i < fGases.size(); ++i)
-            fGeometric.push_back(std::geometric_distribution<int>(1. - fScatterProbability[i]));
-
+        fGeometric = std::geometric_distribution<int>(1. - fScatterProbability);
 
         fShakeAccelerator = gsl_interp_accel_alloc();
 
@@ -89,9 +80,9 @@ namespace locust
         for(unsigned i=0;i<fGases.size();++i)
         {
             amp_log_string += std::to_string(fAmplitude[i]) + "  ";
-            scatter_log_string += std::to_string(fScatterProbability[i]) + "  ";
         }
-        LDEBUG( lmclog, "Created kr-complex-line distribution. fwhm: " <<fFWHM<<" line-position: "<<fLinePosition<<" emitted-peak: "<<fEmittedPeak);
+
+        LDEBUG( lmclog, "Created kr-complex-line distribution. fwhm: " <<fFWHM<<" line-position: "<<fLinePosition<<" emitted-peak: "<<fEmittedPeak<<" scatter-prob: "<<fScatterProbability);
         LDEBUG( lmclog, "amplitudes: {" <<amp_log_string<<"} scatter-probabilities: {"<<scatter_log_string<<"}");
     }
 
@@ -357,9 +348,9 @@ namespace locust
         return generate_from_cdf(u, fEnergyLossInterpolator[gas_index], fEnergyLossAccelerator[gas_index]);
     }
 
-    int KrComplexLineDistribution::generate_nscatters(std::string &gas_species)
+    int KrComplexLineDistribution::generate_nscatters()
     {
-        return fGeometric[fGasIndex[gas_species]](*fRNEngine);
+        return fGeometric(*fRNEngine);
     }
 
     double KrComplexLineDistribution::Generate()
@@ -369,18 +360,24 @@ namespace locust
 
         if(fEmittedPeak == "lorentzian")
             generated_energy += fLorentzian(*fRNEngine);
-        if(fEmittedPeak == "shake")
+        else if(fEmittedPeak == "shake")
             generated_energy += generate_shake();
-        
+        else if(fEmittedPeak == "dirac" || fEmittedPeak == "fixed") //just to be explicit
+            generated_energy += 0;
+
         //choose gas species
         std::string gas_species = generate_gas_species();
         
         //generate number of scatters
-        int nScatters = generate_nscatters(gas_species);
+        int nScatters = generate_nscatters();
 
-        //calculate n missed tracks on energy loss
+        std::string gas_species;
+
         for(int i=0; i < nScatters; ++i)
+        {
+            gas_species = generate_gas_species();
             generated_energy -= generate_energy_loss(gas_species);
+        }
 
         //include gaussian smearing from finite detector resolution
         generated_energy += fNormal(*fRNEngine);
