@@ -371,8 +371,6 @@ namespace locust
         //generate number of scatters
         int nScatters = generate_nscatters();
 
-        std::string gas_species;
-
         for(int i=0; i < nScatters; ++i)
         {
             gas_species = generate_gas_species();
