@@ -8,6 +8,7 @@ configure_file( LocustKass_FreeSpace_Template.xml.in LocustKass_FreeSpace_Templa
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
 configure_file( LocustFreeSpaceTemplate.json.in LocustFreeSpaceTemplate.json )
 configure_file( LocustPlaneWaveTemplate.json.in LocustPlaneWaveTemplate.json )
+configure_file( LocustFakeTrack.json.in LocustFakeTrack.json )
 configure_file( LocustMagDipoleAntennaTemplate.json.in LocustMagDipoleAntennaTemplate.json )
 configure_file( LocustTestSignal.json.in LocustTestSignal.json )
 configure_file( plotfieldmap.c.in plotfieldmap.c )
@@ -24,6 +25,7 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json    
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json    
     ${CMAKE_CURRENT_BINARY_DIR}/LocustPlaneWaveTemplate.json    
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustFakeTrack.json    
     ${CMAKE_CURRENT_BINARY_DIR}/LocustMagDipoleAntennaTemplate.json    
     ${CMAKE_CURRENT_BINARY_DIR}/LocustTestSignal.json    
     ${CMAKE_CURRENT_BINARY_DIR}/katydid.json    
