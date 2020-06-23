@@ -35,8 +35,12 @@ namespace locust
      Available configuration options:
      - "frequency": double -- Frequency of the sine wave.
      - "amplitude": double -- Amplitude of the sine wave.
+     - "mixing-product": bool -- If true, use product of RF and LO for downmixing.  If false,
+     	 calculate lower sideband at RF-LO and replace mixing product with it.  The latter is best used
+     	 for sinusoidal RF signals.  Toggling this parameter is useful to see whether the upper sideband
+     	 RF+LO is downmixing into the measurement band, or not.
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
-            or frequency domain
+     	 or frequency domain
     
      Available options: "time" and "freq" [default]
 
@@ -58,6 +62,8 @@ namespace locust
             double GetLOFrequency() const;
             void SetLOFrequency( double aFrequency );
 
+            bool GetMixingProduct() const;
+            void SetMixingProduct( bool aMixingProduct );
 
             double GetAmplitude() const;
             void SetAmplitude( double aAmplitude );
@@ -77,6 +83,7 @@ namespace locust
             double fRF_frequency;
             double fLO_frequency;
             double fAmplitude;
+            bool fMixingProduct;
 
             
     };
