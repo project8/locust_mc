@@ -43,7 +43,7 @@ namespace locust
         if(dist_name == "dirac" || dist_name == "fixed" )
             fDistributionList.push_back( std::make_shared< DiracDistribution >(aParam) );
 
-        if(dist_name == "exponential")
+        else if(dist_name == "exponential")
             fDistributionList.push_back( std::make_shared< ExponentialDistribution >(aParam) );
 
         else if(dist_name == "gaussian")
