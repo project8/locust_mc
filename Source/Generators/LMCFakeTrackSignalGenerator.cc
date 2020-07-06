@@ -15,6 +15,7 @@
 #include <math.h>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 using std::string;
 
@@ -27,13 +28,8 @@ namespace locust
     FakeTrackSignalGenerator::FakeTrackSignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &FakeTrackSignalGenerator::DoGenerateTime ),
-        fAlpha( 0.01 ),
         fSignalPower( 0. ),
-        fStartFrequencyMax( 0. ),
-        fStartFrequencyMin( 0. ),
         fStartVPhase( 0. ),
-        fSlopeMean( 0. ),
-        fSlopeStd( 0. ),
         fStartTimeMin( 0. ),
         fStartTimeMax( 0. ),
         fStartPitchMin( 89.9 ),
@@ -49,8 +45,6 @@ namespace locust
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
-        fH2Interpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
-        fKrInterpolant(std::vector<double>(1).data(),std::vector<double>(1).data(),1,0),
         fRoot_filename("LocustEvent.root"),
         fSlope( 0. ),
         fPitch( 0. ),
@@ -59,6 +53,8 @@ namespace locust
         fEndTime( 0. ),
         fStartFrequency( 0. ),
         fCurrentFrequency( 0. ),
+        fUseEnergyDistribution(false),
+        fUseFrequencyDistribution(false),
         fNTracks(0)
     {
         fRequiredSignalState = Signal::kTime;
@@ -66,22 +62,52 @@ namespace locust
 
     FakeTrackSignalGenerator::~FakeTrackSignalGenerator()
     {
+        for(unsigned i=0;i<fInterpolators.size(); ++i)
+        {
+            gsl_spline_free(fInterpolators[i]);
+            gsl_interp_accel_free(fAccelerators[i]);
+        }
     }
-
 
     bool FakeTrackSignalGenerator::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "angle-alpha" ) )
-            SetAlpha( aParam.get_value< double >( "angle-alpha", fAlpha ) );
+        if( aParam.has( "scattering-angle" ) )
+        {
+            fScatteringAngleDistribution = fDistributionInterface.get_dist(aParam["scattering-angle"].as_node());
+        }
+        else
+        {
+            LWARN( lmclog, "Using default distribution: Scattering Angle = 0 ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            fScatteringAngleDistribution = fDistributionInterface.get_dist(default_setting);
+        }
+
+        if( aParam.has( "start-frequency" ) )
+        {
+            fStartFrequencyDistribution = fDistributionInterface.get_dist(aParam["start-frequency"].as_node());
+            fUseFrequencyDistribution = true;
+        }
+        if( aParam.has( "start-energy" ) )
+        {
+            fStartEnergyDistribution = fDistributionInterface.get_dist(aParam["start-energy"].as_node());
+            fUseEnergyDistribution = true;
+        }
+
+        if( aParam.has( "slope" ) )
+        {
+            fSlopeDistribution = fDistributionInterface.get_dist(aParam["slope"].as_node());
+        }
+        else
+        {
+            LWARN( lmclog, "Using default distribution: Slope = 0 ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            fSlopeDistribution = fDistributionInterface.get_dist(default_setting);
+        }
 
         if( aParam.has( "signal-power" ) )
             SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
-
-        if( aParam.has( "start-frequency-max" ) )
-            SetStartFrequencyMax( aParam.get_value< double >( "start-frequency-max", fStartFrequencyMax ) );
-
-        if( aParam.has( "start-frequency-min" ) )
-            SetStartFrequencyMin( aParam.get_value< double >( "start-frequency-min", fStartFrequencyMin ) );
 
         if( aParam.has( "start-vphase" ) )
             SetStartVPhase( aParam.get_value< double >( "start-vphase", fStartVPhase ) );
@@ -94,12 +120,6 @@ namespace locust
 
         if( aParam.has( "min-pitch" ) )
             SetPitchMin( aParam.get_value< double >( "min-pitch", fPitchMin ) );
-
-        if( aParam.has( "slope-mean" ) )
-            SetSlopeMean( aParam.get_value< double >( "slope-mean", fSlopeMean ) );
-
-        if( aParam.has( "slope-std" ) )
-            SetSlopeStd( aParam.get_value< double >( "slope-std", fSlopeStd ) );
 
         if( aParam.has( "start-time-max" ) )
             SetStartTimeMax( aParam.get_value< double >( "start-time-max", fStartTimeMax ) );
@@ -149,9 +169,23 @@ namespace locust
             fRandomEngine.seed(rd());
         }
 
+        fDistributionInterface.SetSeed(fRandomSeed);
+
         if(!fNTracksMean && !fPitchMin)
             LERROR( lmclog, "No condition set for NTracks per event! Set one of pitch-min or ntracks-mean");
 
+        if( fUseFrequencyDistribution && fUseEnergyDistribution)
+            LERROR( lmclog, "User specified both start frequency and start energy distribution! Please specify only one!");
+
+        if( ! (fUseFrequencyDistribution || fUseEnergyDistribution))
+        {
+            LWARN( lmclog, "Using default distribution: Frequency = fLO + 50 MHz ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            default_setting.add("value",fLO_frequency + 50e6);
+            fStartFrequencyDistribution = fDistributionInterface.get_dist(default_setting);
+            fUseFrequencyDistribution = true;
+        }
 
         if( aParam.has( "domain" ) )
         {
@@ -179,27 +213,17 @@ namespace locust
         ReadFile((dataDir / "KrOscillatorStrength.txt").string(), krData);
         ExtrapolateData(h2Data, std::array<double, 3>{0.195, 14.13, 10.60});
         ExtrapolateData(krData, std::array<double, 3>{0.4019, 22.31, 16.725});
-        SetInterpolator(fH2Interpolant,h2Data);
-        SetInterpolator(fKrInterpolant,krData);
+        fInterpolators = std::vector<gsl_spline*>(2);
+        fAccelerators = std::vector<gsl_interp_accel*>(2);
+        SetInterpolator(fInterpolators[0],h2Data);
+        SetInterpolator(fInterpolators[1],krData);
 
         return true;
     }
 
-
     void FakeTrackSignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetAlpha() const
-    {
-        return fAlpha;
-    }
-
-    void FakeTrackSignalGenerator::SetAlpha( double aAlpha )
-    {
-        fAlpha = aAlpha;
         return;
     }
 
@@ -211,28 +235,6 @@ namespace locust
     void FakeTrackSignalGenerator::SetSignalPower( double aPower )
     {
         fSignalPower = aPower;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetStartFrequencyMax() const
-    {
-        return fStartFrequencyMax;
-    }
-
-    void FakeTrackSignalGenerator::SetStartFrequencyMax( double aFrequencyMax )
-    {
-        fStartFrequencyMax = aFrequencyMax;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetStartFrequencyMin() const
-    {
-        return fStartFrequencyMin;
-    }
-
-    void FakeTrackSignalGenerator::SetStartFrequencyMin( double aFrequencyMin )
-    {
-        fStartFrequencyMin = aFrequencyMin;
         return;
     }
 
@@ -277,28 +279,6 @@ namespace locust
     void FakeTrackSignalGenerator::SetStartVPhase( double aPhase )
     {
         fStartVPhase = aPhase;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetSlopeMean() const
-    {
-        return fSlopeMean;
-    }
-
-    void FakeTrackSignalGenerator::SetSlopeMean( double aSlopeMean )
-    {
-        fSlopeMean = aSlopeMean;
-        return;
-    }
-
-    double FakeTrackSignalGenerator::GetSlopeStd() const
-    {
-        return fSlopeStd;
-    }
-
-    void FakeTrackSignalGenerator::SetSlopeStd( double aSlopeStd )
-    {
-        fSlopeStd = aSlopeStd;
         return;
     }
 
@@ -457,17 +437,21 @@ namespace locust
             std::stringstream ss(line);
             ss >> bufferE;
             ss >> bufferOsc;
-            readData.push_back(std::make_pair(bufferE, bufferOsc));
+            readData.push_back(std::make_pair(bufferE, fabs(bufferOsc)));
         }
 
         //sort data by energy
         std::sort(readData.begin(), readData.end(), [](const std::pair<double,double> & a, const std::pair<double, double> & b) -> bool { return a.first < b.first; });
+
+        //remove duplicates
+        auto equal_lambda = [](const std::pair<double, double> &a, const std::pair<double, double> & b) { return a.first == b.first;};
+        readData.erase( std::unique( readData.begin(), readData.end(), equal_lambda ), readData.end() );
         data = readData;
     }
 
     double FakeTrackSignalGenerator::EnergyLossSpectrum(double eLoss, double oscillator_strength)
     {
-        double T = rel_energy(fStartFrequencyMax, fBField);
+        double T = rel_energy(fLO_frequency + 50e6, fBField);
         return (LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * eLoss / pow(LMCConst::E_Rydberg(), 3.) ); // Produces energy loss spectrum (N. Buzinsky report Eqn XXX) 
         // NOTE: because this formula depends only on log T, I do NOT update with each change in kinetic energy (ie. from radiative losses). Including these changes may be better
 
@@ -495,7 +479,7 @@ namespace locust
         return asin(sinTheta_f);
     }
 
-    void FakeTrackSignalGenerator::SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data)
+    void FakeTrackSignalGenerator::SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data)
     {
         // Reads in oscillator strength data, fills boost interpolator with corresponding inverse CDF for subsequent inversion sampling
         std::vector<double> energies, oscillator_strengths, energy_loss;
@@ -520,7 +504,8 @@ namespace locust
         double cdf_end = cdf.back();
         std::transform(cdf.begin(), cdf.end(), cdf.begin(), [cdf_end](double& c){return c/cdf_end;});
 
-        interpolant = boost::math::barycentric_rational<double>(cdf.data(), energies.data(), energies.size(), 0); //linear interpolation: don't change, doesnt converge
+        interpolant = gsl_spline_alloc(gsl_interp_cspline, cdf.size());
+        gsl_spline_init(interpolant, cdf.data(), energies.data(), energies.size());
     }
 
     //extrapolate oscillator strength to +1000 eV energy loss using Aseev energy loss formula
@@ -577,16 +562,10 @@ namespace locust
     double FakeTrackSignalGenerator::GetEnergyLoss(double u, bool hydrogenScatter)
     {
         //uses interpolated cdf to return random energy
-        boost::math::barycentric_rational<double> *interpolant;
-        if(hydrogenScatter)
-        {
-            interpolant = &fH2Interpolant;
-        }
-        else
-        {
-            interpolant = &fKrInterpolant;
-        }
-        return (*interpolant)(u);
+        bool krScatter = !hydrogenScatter;
+        int gas_index = int(krScatter);
+
+        return gsl_spline_eval(fInterpolators[gas_index], u, fAccelerators[gas_index]);
     }
 
     double FakeTrackSignalGenerator::GetAxialFrequency() //angular frequency of axial motion Ali et al. (54) (harmonic trap)
@@ -607,12 +586,6 @@ namespace locust
 
     }
     
-    //use CDF to generate scattering angle
-    double FakeTrackSignalGenerator::GetThetaScatter(double u)
-    {
-        return atan(sqrt(pow(fAlpha,2.) / (1. + pow(fAlpha,2.))) * tan( LMCConst::Pi() / 2. * u));
-    }
-
     void FakeTrackSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset)
     {
         double current_energy = 0.;
@@ -625,8 +598,6 @@ namespace locust
         double theta_scatter;
         const double deg_to_rad = LMCConst::Pi() / 180.;
 
-        std::normal_distribution<double> slope_distribution(fSlopeMean,fSlopeStd);
-        std::uniform_real_distribution<double> startfreq_distribution(fStartFrequencyMin,fStartFrequencyMax);
         std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
         std::uniform_real_distribution<double> startpitch_distribution(cos(fStartPitchMin * deg_to_rad),cos(fStartPitchMax * deg_to_rad));
@@ -642,7 +613,16 @@ namespace locust
             {
                 fStartTime = aTimeOffset;
             }
-            fStartFrequency = startfreq_distribution(fRandomEngine);
+
+            if(fUseFrequencyDistribution)
+            {
+                fStartFrequency = fStartFrequencyDistribution->Generate();
+            }
+            else
+            {
+                fStartFrequency = rel_cyc(fStartEnergyDistribution->Generate(), fBField);
+            }
+
             fPitch = acos(startpitch_distribution(fRandomEngine));
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
@@ -655,7 +635,7 @@ namespace locust
             scatter_hydrogen = ( dist(fRandomEngine) <= fHydrogenFraction); // whether to scatter of H2 in this case
             scattering_cdf_val = dist(fRandomEngine); // random continous variable for scattering inverse cdf input
             energy_loss = GetEnergyLoss(scattering_cdf_val, scatter_hydrogen); // get a random energy loss using the inverse sampling theorem, scale to eV
-            theta_scatter = GetThetaScatter(dist(fRandomEngine)); // get scattering angle (NOT Pitch)
+            theta_scatter = fScatteringAngleDistribution->Generate(); // get scattering angle (NOT Pitch)
 
             // Compute new pitch angle, given initial pitch angle, scattering angle. Account for how kinematics change with different axial position of scatter
             if(fPitch != LMCConst::Pi() / 2.)
@@ -672,7 +652,7 @@ namespace locust
             aTrack.StartFrequency = fStartFrequency;
         }
 
-        fSlope = slope_distribution(fRandomEngine);
+        fSlope = fSlopeDistribution->Generate();
         fTrackLength = tracklength_distribution(fRandomEngine);
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
         aTrack.Slope = fSlope;
