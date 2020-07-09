@@ -12,6 +12,7 @@
 
 #include "LMCGenerator.hh"
 #include "LMCEvent.hh"
+#include "LMCRunParameters.hh"
 #include "LMCDistributionInterface.hh"
 
 #include <gsl/gsl_errno.h>
@@ -51,7 +52,6 @@ namespace locust
       - "magnetic-field": double -- Magnetic field used to convert from frequency to energy (for jumpsize) (T).
       - "n-events": int -- Number of events per simulation, spaced by 0.5 ms (hardcoded).
       - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used.
-      - "root-filename": str -- Name of root file containing event information to be written at output. 
       - "pitch-correction": bool -- Flag to switch pitch angle corrections on [default] or off.
 
 
@@ -168,7 +168,6 @@ namespace locust
             int fNEvents;
             bool fPitchCorrection;
             double fHydrogenFraction;
-            std::string fRoot_filename;
             std::default_random_engine fRandomEngine;
             std::vector<gsl_spline*> fInterpolators;
             std::vector<gsl_interp_accel*> fAccelerators;

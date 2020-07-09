@@ -11,6 +11,8 @@
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCConst.hh"
+#include "LMCRunParameters.hh"
+#include "LMCRootTreeWriter.hh"
 
 
 #include <random>
@@ -67,6 +69,7 @@ namespace locust
             void SetDomain( Signal::State aDomain );
 
         private:
+            bool WriteRootTree();
             bool DoGenerate( Signal* aSignal );
 
             bool DoGenerateTime( Signal* aSignal );
@@ -77,6 +80,7 @@ namespace locust
             double fMean;
             double fSigma;
             int fRandomSeed;
+            bool fWriteRootTree;
 
             mutable std::normal_distribution< double > fNormDist;
     };

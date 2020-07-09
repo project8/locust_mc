@@ -25,8 +25,9 @@ namespace locust
         fDoGenerateFunc( &GaussianNoiseGenerator::DoGenerateFreq ),
         fMean( 0. ),
         fSigma( 1. ),
-        fRandomSeed(0),
-        fNormDist( fMean, fSigma )
+        fRandomSeed( 0 ),
+        fNormDist( fMean, fSigma ),
+		fWriteRootTree( false )
     {
         fRequiredSignalState = Signal::kFreq;
     }
@@ -40,7 +41,6 @@ namespace locust
 
         if( aParam.has( "noise-floor-psd" ) )
         {
-            //tSigma = sqrt( aParam->get_value< double >( "noise-floor" ) * fAcquisitionRate * 1.e6);  // sampling rate
             fSigma = sqrt( aParam["noise-floor-psd"]().as_double() );
             if(aParam.has("noise-temperature"))
             {
@@ -57,6 +57,14 @@ namespace locust
             LERROR( lmclog, "LMCGaussianNoiseGenerator has been configured without a noise background.");
             exit(-1);
             return false;
+        }
+
+        if (aParam.has( "write-root-tree" ))
+        {
+            if (aParam["write-root-tree"]().as_bool())
+            {
+            	fWriteRootTree = true;
+            }
         }
 
 
@@ -123,6 +131,7 @@ namespace locust
         fSigma = aSigma;
         return;
     }
+
     int GaussianNoiseGenerator::GetRandomSeed() const
     {
         return fRandomSeed;
@@ -159,6 +168,18 @@ namespace locust
     }
 
 
+    bool GaussianNoiseGenerator::WriteRootTree()
+    {
+    	FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
+    	aRootTreeWriter->OpenFile("UPDATE");
+        RunParameters* aRunParameter = new RunParameters();
+        aRunParameter->fNoise = fSigma*fSigma;
+        aRootTreeWriter->WriteRunParameters(aRunParameter, "Noise");
+        aRootTreeWriter->CloseFile();
+        delete aRunParameter;
+        return true;
+    }
+
     bool GaussianNoiseGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
@@ -180,10 +201,10 @@ namespace locust
         std::default_random_engine generator(random_seed_val);
 
     	SetMeanAndSigma( fMean, fSigma, fSigma * sqrt(fAcquisitionRate * 1.e6) );
+    	if (fWriteRootTree) WriteRootTree();
 
         double gain=1.;
         const unsigned nchannels = fNChannels;
-        //double phi = 0.;  // voltage phase
         double mag_r = 0.;  // voltage mag
         double mag_i = 0.;
         const double tResistance = 50.;
@@ -192,7 +213,6 @@ namespace locust
         {
             for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
             {
-                //phi = fUniDist( fRNG );
                 mag_r = fNormDist( generator ) * sqrt(0.5);
                 mag_i = fNormDist( generator ) * sqrt(0.5);
                 aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += gain*sqrt(tResistance)* mag_r;

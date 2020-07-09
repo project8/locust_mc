@@ -45,7 +45,6 @@ namespace locust
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
-        fRoot_filename("LocustEvent.root"),
         fSlope( 0. ),
         fPitch( 0. ),
         fTrackLength( 0. ),
@@ -154,11 +153,6 @@ namespace locust
 
             if( fHydrogenFraction > 1 ||  fHydrogenFraction < 0)
                 LERROR( lmclog, "hydrogen-fraction must be between 0 and 1!");
-        }
-
-        if( aParam.has( "root-filename" ) )
-        {
-            fRoot_filename = aParam["root-filename"]().as_string();
         }
 
         if(fRandomSeed)
@@ -689,9 +683,8 @@ namespace locust
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-
-    	RootTreeWriter *aRootTreeWriter = new RootTreeWriter();
-        aRootTreeWriter->OpenFile(fRoot_filename);
+    	FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
+        aRootTreeWriter->OpenFile("RECREATE");
 
         const unsigned nChannels = fNChannels;
         const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);

@@ -10,14 +10,15 @@
 using std::string;
 
 
-
 namespace locust
 {
     LOGGER( lmclog, "RootTreeWriter" );
 
 
     RootTreeWriter::RootTreeWriter():
-	fFile ( 0 )
+	fFile ( 0 ),
+    fRoot_filename( "LocustEvent.root" ),
+	fTestVar( 1.5 )
     {
     }
 
@@ -28,28 +29,34 @@ namespace locust
     bool RootTreeWriter::Configure( const scarab::param_node& aParam )
     {
 
-/*    	if( !FileWriter::Configure(aParam))
+    	if( !FileWriter::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring FileWriter class from RootTreeWriter child class");
     	}
-*/
+
+    	if( aParam.has( "root-filename" ) )
+        {
+            fRoot_filename = aParam["root-filename"]().as_string();
+        }
+
+
+
     	return true;
     }
 
     double RootTreeWriter::GetTestVar()
     {
-    	return 0.;
-//    	return fTestVar;
+    	return fTestVar;
     }
 
     void RootTreeWriter::SetTestVar(double aValue)
     {
-//    	fTestVar = aValue;
+    	fTestVar = aValue;
     }
 
-    void RootTreeWriter::OpenFile(string aFileName)
+    void RootTreeWriter::OpenFile(string aFileFlag)
     {
-        fFile = new TFile(aFileName.c_str(),"RECREATE");
+        fFile = new TFile(fRoot_filename.c_str(), aFileFlag.c_str());
     }
 
     void RootTreeWriter::CloseFile()
@@ -57,6 +64,23 @@ namespace locust
     	fFile->Close();
     }
 
+    void RootTreeWriter::WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName )
+    {
+        TTree *aTree = new TTree("Run Parameters","Locust Tree");
+
+        if (aParameterName=="Noise")
+        	{
+        	aTree->Branch("Noise", &aRunParameter->fNoise, "Noise/D");
+        	}
+        if (aParameterName=="LOfrequency")
+        	{
+        	aTree->Branch("LO frequency", &aRunParameter->fLOfrequency, "LOfrequency/D");
+        	}
+
+        aTree->Fill();
+        aTree->Write();
+        delete aTree;
+    }
 
     void RootTreeWriter::WriteRootFile(Event* anEvent)
     {
@@ -81,9 +105,6 @@ namespace locust
         delete aTree;
     }
 
-
-    //Initialize pointer to zero so that it can be initialized in first call to getInstance
-//    RootTreeWriter *RootTreeWriter::instance = 0;
 
 
 } /* namespace locust */

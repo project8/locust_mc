@@ -10,6 +10,8 @@
 
 #include "TFile.h"  // order of includes matters.
 #include "TTree.h"  // include these first.
+#include "LMCEvent.hh"
+#include "LMCRunParameters.hh"
 
 #include "param.hh"
 #include "logger.hh"
@@ -26,12 +28,27 @@ namespace locust
  No input parameters
  */
 
-    class FileWriter : scarab::singleton< locust::FileWriter >
+//    class FileWriter : public scarab::singleton< locust::FileWriter >
+    class FileWriter
     {
     	protected:
     	FileWriter();
     	virtual ~FileWriter();
-        allow_singleton_access( FileWriter );
+        virtual bool Configure( const scarab::param_node& aNode );
+
+    	public:
+        virtual double GetTestVar() {};
+        virtual void SetTestVar(double aValue) {    	printf("filewriter says hello\n");
+};
+        virtual void WriteRootFile(Event* anEvent) {};
+        virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName ) {};
+        virtual void OpenFile(std::string aFileFlag) {};
+        virtual void CloseFile() {};
+
+
+    	private:
+
+//        double fTestVar;
 
 
     };

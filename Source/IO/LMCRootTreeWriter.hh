@@ -10,7 +10,6 @@
 
 #include "TFile.h"  // order of includes matters.
 #include "TTree.h"  // include these first.
-#include "LMCEvent.hh"
 
 #include "LMCFileWriter.hh"
 #include <string>
@@ -26,28 +25,31 @@ namespace locust
  Available configuration options:
  No input parameters
  */
-//    class RootTreeWriter: public FileWriter
-    class RootTreeWriter : FileWriter
+    class RootTreeWriter : public FileWriter, public scarab::singleton< locust::RootTreeWriter >
     {
+
 	public:
 
-        RootTreeWriter();
+    	RootTreeWriter();
         virtual ~RootTreeWriter();
 
         virtual bool Configure( const scarab::param_node& aNode );
+        allow_singleton_access( RootTreeWriter );
 
-        void WriteRootFile(Event* anEvent);
+        virtual void WriteRootFile(Event* anEvent);
+        virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName );
 
-        double GetTestVar();
+        virtual double GetTestVar();
+        virtual void SetTestVar(double aValue);
 
-        void SetTestVar(double aValue);
-
-        void OpenFile(std::string aFileName);
-        void CloseFile();
+        virtual void OpenFile(std::string aFileFlag);
+        virtual void CloseFile();
 
         private:
-//        double fTestVar;
+
+        double fTestVar;
         TFile* fFile;
+        std::string fRoot_filename;
 
 
     };

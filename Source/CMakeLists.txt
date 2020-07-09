@@ -197,6 +197,7 @@ if (locust_mc_BUILD_WITH_ROOT)
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
         Core/LMCEvent.hh
         Core/LMCTrack.hh
+        Core/LMCRunParameters.hh
         Generators/LMCFakeTrackSignalGenerator.hh    
 	    IO/LMCFileWriter.hh
     	IO/LMCRootTreeWriter.hh
@@ -205,6 +206,7 @@ if (locust_mc_BUILD_WITH_ROOT)
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Core/LMCEvent.cc
         Core/LMCTrack.cc
+        Core/LMCRunParameters.cc
         Generators/LMCFakeTrackSignalGenerator.cc   
 	    IO/LMCFileWriter.cc
     	IO/LMCRootTreeWriter.cc
@@ -239,6 +241,7 @@ if (locust_mc_BUILD_WITH_ROOT)
     endforeach()
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/LMCDict.cxx 
         COMMAND rootcling -f LMCDict.cxx -c -inlineInputHeader ${includedirs}
+            ${PROJECT_SOURCE_DIR}/Source/Core/LMCRunParameters.hh 
             ${PROJECT_SOURCE_DIR}/Source/Core/LMCEvent.hh 
             ${PROJECT_SOURCE_DIR}/Source/Core/LMCTrack.hh 
             ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCLinkDef.hh 
