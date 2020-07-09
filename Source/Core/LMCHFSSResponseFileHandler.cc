@@ -55,10 +55,13 @@ namespace locust
         if(fFIRNBins<=0){
             LERROR(lmclog,"Number of bins in the filter should be positive");
         }
-        for(int i=0;i<fFIRNBins;++i)
-        {
-            convolution+=fFilter[i]*inputBuffer[i];
-        }
+	int firBinNumber=0;
+	for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
+	{
+	    convolution+=*(it)*fFilter[firBinNumber];
+	    firBinNumber++;
+	}
+
         return convolution;
     }
     

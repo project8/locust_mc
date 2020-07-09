@@ -14,9 +14,14 @@
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCEvent.hh"
+#include "LMCDistributionInterface.hh"
+
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
+
 #include <random>
 #include <vector>
-#include <boost/math/interpolators/barycentric_rational.hpp>
+
 
 namespace scarab
 {
@@ -40,8 +45,6 @@ namespace locust
 
       Available configuration options:
       - "signal-power": double -- PSD of signal (at 90 degrees) (W/Hz).
-      - "start-frequency-max": double -- Upper bound for start frequency of signal (Hz); distribution: uniform.
-      - "start-frequency-min": double -- Lower bound for start frequency of signal (Hz); distribution: uniform.
       - "track-length-mean": double -- Average of track length (s); distribution: exponential.
       - "start-vphase": double -- Starting voltage phase (V).
       - "slope-mean": double -- Mean value of Gaussian slope distribution (MHz/ms); distribution: gaussian.
@@ -73,15 +76,6 @@ namespace locust
             double GetSignalPower() const;
             void SetSignalPower( double aPower );
 
-            double GetAlpha() const;
-            void SetAlpha( double aAlpha );
-
-            double GetStartFrequencyMax() const;
-            void SetStartFrequencyMax( double aFrequencyMax );
-
-            double GetStartFrequencyMin() const;
-            void SetStartFrequencyMin( double aFrequencyMin );
-
             double GetStartPitchMax() const;
             void SetStartPitchMax( double aPitchMax );
 
@@ -96,12 +90,6 @@ namespace locust
 
             double GetStartVPhase() const;
             void SetStartVPhase( double aPhase );
-
-            double GetSlopeMean() const;
-            void SetSlopeMean( double aSlopeMean );
-
-            double GetSlopeStd() const;
-            void SetSlopeStd( double aSlopeStd );
 
             double GetStartTimeMax() const;
             void SetStartTimeMax( double aTimeMax );
@@ -138,18 +126,16 @@ namespace locust
             void ReadFile(std::string filename, std::vector<std::pair<double,double> > &data);
             double EnergyLossSpectrum(double eLoss, double oscillator_strength);
             double GetScatteredPitchAngle(double thetaScatter, double pitchAngle, double phi);
-            void SetInterpolator(boost::math::barycentric_rational<double> &interpolant, std::vector< std::pair<double, double> > data);
+            void SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data);
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
             double GetEnergyLoss(double u, bool hydrogenScatter);
             double GetKa2(double eLoss, double T);
-            double GetThetaScatter(double u);
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetPitchCorrectedFrequency(double frequency) const;
             double GetAxialFrequency();
             void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
 
-            double fAlpha;
             double fSlope;
             double fPitch;
             double fTrackLength;
@@ -168,11 +154,11 @@ namespace locust
             bool (FakeTrackSignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             double fSignalPower;
-            double fStartFrequencyMax;
-            double fStartFrequencyMin;
             double fStartVPhase;
-            double fSlopeMean;
-            double fSlopeStd;
+            std::shared_ptr< BaseDistribution> fScatteringAngleDistribution;
+            std::shared_ptr< BaseDistribution> fStartEnergyDistribution;
+            std::shared_ptr< BaseDistribution> fStartFrequencyDistribution;
+            std::shared_ptr< BaseDistribution> fSlopeDistribution;
             double fStartTimeMax;
             double fStartTimeMin;
             double fStartPitchMin;
@@ -187,10 +173,13 @@ namespace locust
             double fHydrogenFraction;
             std::string fRoot_filename;
             std::default_random_engine fRandomEngine;
-            boost::math::barycentric_rational<double> fH2Interpolant;
-            boost::math::barycentric_rational<double> fKrInterpolant;
+            std::vector<gsl_spline*> fInterpolators;
+            std::vector<gsl_interp_accel*> fAccelerators;
             const double fTrapLength;
+            bool fUseEnergyDistribution;
+            bool fUseFrequencyDistribution;
 
+            DistributionInterface fDistributionInterface;
 
     };
 
