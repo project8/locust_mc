@@ -36,14 +36,11 @@ namespace locust
         virtual bool Configure( const scarab::param_node& aNode );
         allow_singleton_access( RootTreeWriter );
 
-        virtual void WriteRootFile(Event* anEvent);
+        virtual void WriteEvent(Event* anEvent);
         virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName );
 
         virtual double GetTestVar();
         virtual void SetTestVar(double aValue);
-
-        virtual void OpenFile(std::string aFileFlag);
-        virtual void CloseFile();
 
         private:
 

@@ -54,16 +54,6 @@ namespace locust
     	fTestVar = aValue;
     }
 
-    void RootTreeWriter::OpenFile(string aFileFlag)
-    {
-        fFile = new TFile(fRoot_filename.c_str(), aFileFlag.c_str());
-    }
-
-    void RootTreeWriter::CloseFile()
-    {
-    	fFile->Close();
-    }
-
     void RootTreeWriter::WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName )
     {
         TTree *aTree = new TTree("Run Parameters","Locust Tree");
@@ -82,7 +72,7 @@ namespace locust
         delete aTree;
     }
 
-    void RootTreeWriter::WriteRootFile(Event* anEvent)
+    void RootTreeWriter::WriteEvent(Event* anEvent)
     {
     	char buffer[100];
         int n=sprintf(buffer, "Event_%d", anEvent->fEventID);

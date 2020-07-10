@@ -10,6 +10,8 @@
 
 #include "TFile.h"  // order of includes matters.
 #include "TTree.h"  // include these first.
+#include "TH1.h"
+#include "TH2.h"
 #include "LMCEvent.hh"
 #include "LMCRunParameters.hh"
 
@@ -38,17 +40,21 @@ namespace locust
 
     	public:
         virtual double GetTestVar() {};
-        virtual void SetTestVar(double aValue) {    	printf("filewriter says hello\n");
-};
-        virtual void WriteRootFile(Event* anEvent) {};
+        virtual void SetTestVar(double aValue) {};
+        virtual void WriteEvent(Event* anEvent) {};
         virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName ) {};
-        virtual void OpenFile(std::string aFileFlag) {};
-        virtual void CloseFile() {};
+        virtual void Write1DHisto(TH1D* aHisto) {};
+        virtual void Write2DHisto(TH2D* aHisto) {};
+        virtual void WriteVector1DHisto(std::vector<double> aVector, double xmin, double xmax) {};
+
+        virtual void OpenFile(std::string aFileFlag);
+        virtual void CloseFile();
 
 
     	private:
+        TFile* fFile;
+        std::string fRoot_filename;
 
-//        double fTestVar;
 
 
     };

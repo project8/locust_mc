@@ -9,25 +9,35 @@
 
 namespace locust
 {
-	FileWriter::FileWriter() {}
+    FileWriter::FileWriter():
+	fFile ( 0 ),
+    	fRoot_filename( "LocustEvent.root" )
+	{
+	}
+ 
     FileWriter::~FileWriter() {}
 
     bool FileWriter::Configure( const scarab::param_node& aParam )
-     {
-          return true;
-     }
-
-    /*
-    double FileWriter::GetTestVar()
     {
-    	return fTestVar;
+
+    	if( aParam.has( "roothisto-filename" ) )
+        {
+            fRoot_filename = aParam["roothisto-filename"]().as_string();
+        }
+
+        return true;
     }
 
-    void FileWriter::SetTestVar(double aValue)
+    void FileWriter::OpenFile(std::string aFileFlag)
     {
-    	fTestVar = aValue;
+        fFile = new TFile(fRoot_filename.c_str(), aFileFlag.c_str());
     }
-*/
+
+    void FileWriter::CloseFile()
+    {
+    	fFile->Close();
+    }
+
 
 
 } /* namespace locust */

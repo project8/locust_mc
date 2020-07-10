@@ -201,6 +201,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Generators/LMCFakeTrackSignalGenerator.hh    
 	    IO/LMCFileWriter.hh
     	IO/LMCRootTreeWriter.hh
+    	IO/LMCRootHistoWriter.hh
        )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -210,6 +211,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Generators/LMCFakeTrackSignalGenerator.cc   
 	    IO/LMCFileWriter.cc
     	IO/LMCRootTreeWriter.cc
+    	IO/LMCRootHistoWriter.cc
         )
 
 
