@@ -8,10 +8,6 @@
 #ifndef LMCROOTHISTOWRITER_HH_
 #define LMCROOTHISTOWRITER_HH_
 
-#include "TFile.h"  // order of includes matters.
-#include "TH1D.h"  // include these first.
-#include "TH2D.h"  // include these first.
-
 #include "LMCFileWriter.hh"
 #include <string>
 #include <vector>
@@ -40,10 +36,9 @@ namespace locust
 
         private:
 
-        void Write1DHisto(TH1D* aHisto);
-        void Write2DHisto(TH2D* aHisto);
-
-        void WriteVector1DHisto(std::vector<double> aVector, double xmin, double xmax);
+        virtual void Write1DHisto(TH1D* aHisto);
+        virtual void Write2DHisto(TH2D* aHisto);
+        virtual void WriteVector1DHisto(std::vector<double> aVector, double xmin, double xmax);
 
 
     };

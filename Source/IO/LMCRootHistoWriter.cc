@@ -26,11 +26,11 @@ namespace locust
     bool RootHistoWriter::Configure( const scarab::param_node& aParam )
     {
 
+
     	if( !FileWriter::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring FileWriter class from RootHistoWriter child class");
     	}
-
 
     	return true;
     }
@@ -56,6 +56,5 @@ namespace locust
     	}
     	aHisto->Write();
     }
-
 
 } /* namespace locust */

@@ -10,6 +10,8 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
+#include "LMCRootGraphWriter.hh"
+#include "LMCRootHistoWriter.hh"
 
 
 namespace scarab
@@ -71,6 +73,10 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
 
+            bool WriteRootHisto();
+            bool WriteRootGraph();
+
+
 
         private:
             bool DoGenerate( Signal* aSignal );
@@ -84,6 +90,9 @@ namespace locust
             double fLO_frequency;
             double fAmplitude;
             bool fMixingProduct;
+            bool fWriteRootHisto;
+            bool fWriteRootGraph;
+            std::string fRootFilename;
 
             
     };

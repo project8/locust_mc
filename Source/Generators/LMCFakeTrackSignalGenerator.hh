@@ -168,6 +168,7 @@ namespace locust
             int fNEvents;
             bool fPitchCorrection;
             double fHydrogenFraction;
+            std::string fRootFilename;
             std::default_random_engine fRandomEngine;
             std::vector<gsl_spline*> fInterpolators;
             std::vector<gsl_interp_accel*> fAccelerators;

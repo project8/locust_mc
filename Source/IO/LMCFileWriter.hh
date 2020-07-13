@@ -12,6 +12,7 @@
 #include "TTree.h"  // include these first.
 #include "TH1.h"
 #include "TH2.h"
+#include "TGraph.h"
 #include "LMCEvent.hh"
 #include "LMCRunParameters.hh"
 
@@ -46,15 +47,19 @@ namespace locust
         virtual void Write1DHisto(TH1D* aHisto) {};
         virtual void Write2DHisto(TH2D* aHisto) {};
         virtual void WriteVector1DHisto(std::vector<double> aVector, double xmin, double xmax) {};
+        virtual void Write2DGraph(TGraph* aGraph) {};
+        virtual void WriteVectorGraph(std::vector<double> xVector, std::vector<double> yVector) {};
 
         virtual void OpenFile(std::string aFileFlag);
         virtual void CloseFile();
+
+        virtual void SetFilename(std::string aFilename);
+        virtual std::string GetFilename();
 
 
     	private:
         TFile* fFile;
         std::string fRoot_filename;
-
 
 
     };

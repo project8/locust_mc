@@ -8,9 +8,6 @@
 #ifndef LMCROOTTREEWRITER_HH_
 #define LMCROOTTREEWRITER_HH_
 
-#include "TFile.h"  // order of includes matters.
-#include "TTree.h"  // include these first.
-
 #include "LMCFileWriter.hh"
 #include <string>
 
@@ -39,14 +36,7 @@ namespace locust
         virtual void WriteEvent(Event* anEvent);
         virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName );
 
-        virtual double GetTestVar();
-        virtual void SetTestVar(double aValue);
-
         private:
-
-        double fTestVar;
-        TFile* fFile;
-        std::string fRoot_filename;
 
 
     };

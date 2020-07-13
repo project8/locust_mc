@@ -9,9 +9,7 @@
 
 namespace locust
 {
-    FileWriter::FileWriter():
-	fFile ( 0 ),
-    	fRoot_filename( "LocustEvent.root" )
+    FileWriter::FileWriter()
 	{
 	}
  
@@ -19,13 +17,17 @@ namespace locust
 
     bool FileWriter::Configure( const scarab::param_node& aParam )
     {
-
-    	if( aParam.has( "roothisto-filename" ) )
-        {
-            fRoot_filename = aParam["roothisto-filename"]().as_string();
-        }
-
         return true;
+    }
+
+    void FileWriter::SetFilename(std::string aFilename)
+    {
+    	fRoot_filename = aFilename;
+    }
+
+    std::string FileWriter::GetFilename()
+    {
+    	return fRoot_filename;
     }
 
     void FileWriter::OpenFile(std::string aFileFlag)

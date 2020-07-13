@@ -202,6 +202,7 @@ if (locust_mc_BUILD_WITH_ROOT)
 	    IO/LMCFileWriter.hh
     	IO/LMCRootTreeWriter.hh
     	IO/LMCRootHistoWriter.hh
+    	IO/LMCRootGraphWriter.hh
        )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -212,6 +213,7 @@ if (locust_mc_BUILD_WITH_ROOT)
 	    IO/LMCFileWriter.cc
     	IO/LMCRootTreeWriter.cc
     	IO/LMCRootHistoWriter.cc
+    	IO/LMCRootGraphWriter.cc
         )
 
 

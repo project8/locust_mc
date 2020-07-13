@@ -15,10 +15,7 @@ namespace locust
     LOGGER( lmclog, "RootTreeWriter" );
 
 
-    RootTreeWriter::RootTreeWriter():
-	fFile ( 0 ),
-    fRoot_filename( "LocustEvent.root" ),
-	fTestVar( 1.5 )
+    RootTreeWriter::RootTreeWriter()
     {
     }
 
@@ -34,24 +31,8 @@ namespace locust
     		LERROR(lmclog,"Error configuring FileWriter class from RootTreeWriter child class");
     	}
 
-    	if( aParam.has( "root-filename" ) )
-        {
-            fRoot_filename = aParam["root-filename"]().as_string();
-        }
-
-
 
     	return true;
-    }
-
-    double RootTreeWriter::GetTestVar()
-    {
-    	return fTestVar;
-    }
-
-    void RootTreeWriter::SetTestVar(double aValue)
-    {
-    	fTestVar = aValue;
     }
 
     void RootTreeWriter::WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName )

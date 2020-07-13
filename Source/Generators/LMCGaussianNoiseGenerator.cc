@@ -68,6 +68,7 @@ namespace locust
         }
 
 
+
         if (aParam.has( "random-seed") )
         {
             SetRandomSeed(  aParam.get_value< int >( "random-seed",fRandomSeed) );
@@ -179,6 +180,7 @@ namespace locust
         delete aRunParameter;
         return true;
     }
+
 
     bool GaussianNoiseGenerator::DoGenerate( Signal* aSignal )
     {

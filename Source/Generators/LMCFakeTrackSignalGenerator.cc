@@ -45,6 +45,7 @@ namespace locust
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
+        fRootFilename("LocustEvent.root"),
         fSlope( 0. ),
         fPitch( 0. ),
         fTrackLength( 0. ),
@@ -153,6 +154,11 @@ namespace locust
 
             if( fHydrogenFraction > 1 ||  fHydrogenFraction < 0)
                 LERROR( lmclog, "hydrogen-fraction must be between 0 and 1!");
+        }
+
+        if( aParam.has( "root-filename" ) )
+        {
+            fRootFilename = aParam["root-filename"]().as_string();
         }
 
         if(fRandomSeed)
@@ -684,6 +690,7 @@ namespace locust
     {
 
     	FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
+    	aRootTreeWriter->SetFilename(fRootFilename);
         aRootTreeWriter->OpenFile("RECREATE");
 
         const unsigned nChannels = fNChannels;
@@ -740,7 +747,7 @@ namespace locust
 
             } //track loop
 
-            aRootTreeWriter->WriteRootFile(anEvent);
+            aRootTreeWriter->WriteEvent(anEvent);
             delete anEvent;
         } //event loop
 
