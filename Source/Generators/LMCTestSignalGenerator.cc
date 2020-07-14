@@ -28,7 +28,8 @@ namespace locust
         fAmplitude( 5.e-8 ),
 		fMixingProduct( false ),
     	fWriteRootHisto( false ),
-		fWriteRootGraph( false )
+		fWriteRootGraph( false ),
+		fRootFilename( "LocustTestSignal.root")
     {
         fRequiredSignalState = Signal::kTime;
     }

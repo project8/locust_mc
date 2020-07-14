@@ -41,6 +41,11 @@ namespace locust
      	 calculate lower sideband at RF-LO and replace mixing product with it.  The latter is best used
      	 for sinusoidal RF signals.  Toggling this parameter is useful to see whether the upper sideband
      	 RF+LO is downmixing into the measurement band, or not.
+     - "write-root-histo": bool -- Flag to determine whether an example Root histogram is generated
+         and written to file.
+     - "write-root-graph": bool -- Flag to determine whether an example Root TGraph is generated
+         and written to file.
+     - "root-filename": string -- name of output Root file.
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
      	 or frequency domain
     

@@ -53,6 +53,9 @@ namespace locust
       - "n-events": int -- Number of events per simulation, spaced by 0.5 ms (hardcoded).
       - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used.
       - "pitch-correction": bool -- Flag to switch pitch angle corrections on [default] or off.
+      - "root-filename": string -- Name of output Root file.  This can have the same name as other
+          	 	 	 	  generators' output Root files, in which case all of the Root objects will
+          	 	 	 	  be written to the same output file.
 
 
 */

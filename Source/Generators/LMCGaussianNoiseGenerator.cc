@@ -27,7 +27,8 @@ namespace locust
         fSigma( 1. ),
         fRandomSeed( 0 ),
         fNormDist( fMean, fSigma ),
-		fWriteRootTree( false )
+		fWriteRootTree( false ),
+        fRootFilename( "LocustNoise.root")
     {
         fRequiredSignalState = Signal::kFreq;
     }
@@ -67,6 +68,10 @@ namespace locust
             }
         }
 
+    	if( aParam.has( "root-filename" ) )
+        {
+            fRootFilename = aParam["root-filename"]().as_string();
+        }
 
 
         if (aParam.has( "random-seed") )
@@ -172,6 +177,7 @@ namespace locust
     bool GaussianNoiseGenerator::WriteRootTree()
     {
     	FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
+    	aRootTreeWriter->SetFilename(fRootFilename);
     	aRootTreeWriter->OpenFile("UPDATE");
         RunParameters* aRunParameter = new RunParameters();
         aRunParameter->fNoise = fSigma*fSigma;
