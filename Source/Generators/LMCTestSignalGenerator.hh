@@ -11,6 +11,10 @@
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 
+#ifdef LMCFILEWRITER_HH_
+    #include "LMCRootGraphWriter.hh"
+    #include "LMCRootHistoWriter.hh"
+#endif
 
 namespace scarab
 {
@@ -39,6 +43,11 @@ namespace locust
      	 calculate lower sideband at RF-LO and replace mixing product with it.  The latter is best used
      	 for sinusoidal RF signals.  Toggling this parameter is useful to see whether the upper sideband
      	 RF+LO is downmixing into the measurement band, or not.
+     - "write-root-histo": bool -- Flag to determine whether an example Root histogram is generated
+         and written to file.
+     - "write-root-graph": bool -- Flag to determine whether an example Root TGraph is generated
+         and written to file.
+     - "root-filename": string -- name of output Root file.
      - "domain": string -- Determines whether the sinusoidal test signal is generated in the time 
      	 or frequency domain
     
@@ -71,6 +80,10 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
 
+            bool WriteRootHisto();
+            bool WriteRootGraph();
+
+
 
         private:
             bool DoGenerate( Signal* aSignal );
@@ -84,6 +97,9 @@ namespace locust
             double fLO_frequency;
             double fAmplitude;
             bool fMixingProduct;
+            bool fWriteRootHisto;
+            bool fWriteRootGraph;
+            std::string fRootFilename;
 
             
     };
