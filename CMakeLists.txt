@@ -50,7 +50,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     )
     execute_process( 
         COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
-                      -D CMAKE_INSTALL_LIBDIR:STRING=${LIB_INSTALL_SUBDIR}
                       -D BUILD_KASSIOPEIA:BOOL=TRUE 
                       -D BUILD_KEMFIELD:BOOL=TRUE 
                       -D BUILD_KGEOBAG:BOOL=TRUE 
