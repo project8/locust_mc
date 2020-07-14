@@ -40,11 +40,19 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transmitters/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/RxComponents/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
-    ${CMAKE_CURRENT_SOURCE_DIR}/Source/IO/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/IO/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Distributions/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Kassiopeia/
 )
+
+#if (locust_mc_BUILD_WITH_ROOT)
+#    set( LOCUST_MC_INCLUDE_DIRECTORIES ${LOCUST_MC_INCUDE_DIRECTORIES}
+#        ${CMAKE_CURRENT_SOURCE_DIR}/Source/IO/
+#        )
+#endif (locust_mc_BUILD_WITH_ROOT)
+
+        
 
 include_directories( BEFORE ${LOCUST_MC_INCLUDE_DIRECTORIES} )
 

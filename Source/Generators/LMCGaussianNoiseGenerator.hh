@@ -11,10 +11,11 @@
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 #include "LMCConst.hh"
-#include "LMCRunParameters.hh"
-#include "LMCFileWriter.hh"
-#include "LMCRootTreeWriter.hh"
 
+#ifdef LMCFILEWRITER_HH_
+    #include "LMCRunParameters.hh"
+    #include "LMCRootTreeWriter.hh"
+#endif
 
 #include <random>
 

@@ -176,6 +176,7 @@ namespace locust
 
     bool GaussianNoiseGenerator::WriteRootTree()
     {
+		#ifdef LMCFILEWRITER_HH_
     	FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
     	aRootTreeWriter->SetFilename(fRootFilename);
     	aRootTreeWriter->OpenFile("UPDATE");
@@ -184,6 +185,7 @@ namespace locust
         aRootTreeWriter->WriteRunParameters(aRunParameter, "Noise");
         aRootTreeWriter->CloseFile();
         delete aRunParameter;
+		#endif
         return true;
     }
 

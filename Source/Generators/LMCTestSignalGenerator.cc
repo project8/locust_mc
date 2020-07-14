@@ -181,6 +181,7 @@ namespace locust
 
     bool TestSignalGenerator::WriteRootHisto()
     {
+		#ifdef LMCFILEWRITER_HH_
     	FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
     	aRootHistoWriter->SetFilename(fRootFilename);
     	aRootHistoWriter->OpenFile("UPDATE");
@@ -191,11 +192,13 @@ namespace locust
     	}
     	aRootHistoWriter->Write1DHisto(aHisto);
         aRootHistoWriter->CloseFile();
+		#endif
         return true;
     }
 
     bool TestSignalGenerator::WriteRootGraph()
     {
+		#ifdef LMCFILEWRITER_HH_
     	FileWriter* aRootGraphWriter = RootGraphWriter::get_instance();
     	aRootGraphWriter->SetFilename(fRootFilename);
     	aRootGraphWriter->OpenFile("UPDATE");
@@ -203,6 +206,7 @@ namespace locust
     	std::vector<double> yVector{1,2,3,4,5};
     	aRootGraphWriter->WriteVectorGraph(xVector, yVector);
         aRootGraphWriter->CloseFile();
+		#endif
         return true;
     }
 

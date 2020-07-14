@@ -10,9 +10,11 @@
 
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
-#include "LMCRootGraphWriter.hh"
-#include "LMCRootHistoWriter.hh"
 
+#ifdef LMCFILEWRITER_HH_
+    #include "LMCRootGraphWriter.hh"
+    #include "LMCRootHistoWriter.hh"
+#endif
 
 namespace scarab
 {

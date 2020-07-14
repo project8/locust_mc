@@ -8,11 +8,10 @@
 #ifndef LMCFAKETRACKSIGNALGENERATOR_HH_
 #define LMCFAKETRACKSIGNALGENERATOR_HH_
 
-#include "LMCRootTreeWriter.hh"
-
 #include "LMCGenerator.hh"
 #include "LMCEvent.hh"
 #include "LMCRunParameters.hh"
+#include "LMCRootTreeWriter.hh"
 #include "LMCDistributionInterface.hh"
 
 #include <gsl/gsl_errno.h>
