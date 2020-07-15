@@ -84,9 +84,6 @@ namespace locust
             double GetPitchMin() const;
             void SetPitchMin( double aPitchMin );
 
-            double GetTrackLengthMean() const;
-            void SetTrackLengthMean( double aTrackLengthMean );
-
             double GetStartVPhase() const;
             void SetStartVPhase( double aPhase );
 
@@ -113,6 +110,9 @@ namespace locust
 
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
+
+            double GetTrapLength() const;
+            void SetTrapLength(  double aTrapLength );
 
 
             Signal::State GetDomain() const;
@@ -158,13 +158,14 @@ namespace locust
             std::shared_ptr< BaseDistribution> fStartEnergyDistribution;
             std::shared_ptr< BaseDistribution> fStartFrequencyDistribution;
             std::shared_ptr< BaseDistribution> fSlopeDistribution;
+            std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
+            std::shared_ptr< BaseDistribution> fz0Distribution;
             double fStartTimeMax;
             double fStartTimeMin;
             double fStartPitchMin;
             double fStartPitchMax;
             double fPitchMin;
             double fLO_frequency;
-            double fTrackLengthMean;
             double fNTracksMean;
             double fBField;
             int fRandomSeed;
@@ -175,7 +176,7 @@ namespace locust
             std::default_random_engine fRandomEngine;
             std::vector<gsl_spline*> fInterpolators;
             std::vector<gsl_interp_accel*> fAccelerators;
-            const double fTrapLength;
+            double fTrapLength;
             bool fUseEnergyDistribution;
             bool fUseFrequencyDistribution;
 

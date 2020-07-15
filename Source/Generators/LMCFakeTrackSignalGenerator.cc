@@ -36,7 +36,6 @@ namespace locust
         fStartPitchMax( 90. ),
         fPitchMin( 0. ),
         fLO_frequency( 0. ),
-        fTrackLengthMean( 0. ),
         fNTracksMean( 0. ),
         fBField(1.0),
         fRandomSeed(0),
@@ -106,6 +105,31 @@ namespace locust
             fSlopeDistribution = fDistributionInterface.get_dist(default_setting);
         }
 
+        if( aParam.has( "track-length" ) )
+        {
+            fTrackLengthDistribution = fDistributionInterface.get_dist(aParam["track-length"].as_node());
+        }
+        else
+        {
+            LWARN( lmclog, "Using default distribution: Track Length = 1e-4 ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            default_setting.add("value","1e-4");
+            fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
+        }
+
+        if( aParam.has( "z0" ) )
+        {
+            fz0Distribution = fDistributionInterface.get_dist(aParam["z0"].as_node());
+        }
+        else
+        {
+            LWARN( lmclog, "Using default distribution: z0 = 0 ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            fz0Distribution = fDistributionInterface.get_dist(default_setting);
+        }
+
         if( aParam.has( "signal-power" ) )
             SetSignalPower( aParam.get_value< double >( "signal-power", fSignalPower ) );
 
@@ -130,8 +154,6 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
             SetFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
 
-        if( aParam.has( "track-length-mean" ) )
-            SetTrackLengthMean( aParam.get_value< double >( "track-length-mean", fTrackLengthMean ) );
 
         if (aParam.has( "ntracks-mean") )
             SetNTracksMean( aParam.get_value< double >( "ntracks-mean",fNTracksMean) );
@@ -147,6 +169,9 @@ namespace locust
 
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
+
+        if (aParam.has( "trap-length") )
+            SetTrapLength(  aParam.get_value< double >( "trap-length", fTrapLength) );
 
         if (aParam.has( "hydrogen-fraction") )
         {
@@ -282,17 +307,6 @@ namespace locust
         return;
     }
 
-    double FakeTrackSignalGenerator::GetTrackLengthMean() const
-    {
-        return fTrackLengthMean;
-    }
-
-    void FakeTrackSignalGenerator::SetTrackLengthMean( double aTrackLengthMean )
-    {
-        fTrackLengthMean = aTrackLengthMean;
-        return;
-    }
-
     double FakeTrackSignalGenerator::GetStartTimeMin() const
     {
         return fStartTimeMin;
@@ -391,6 +405,17 @@ namespace locust
     void FakeTrackSignalGenerator::SetPitchCorrection( bool aPitchCorrection )
     {
         fPitchCorrection = aPitchCorrection;
+        return;
+    }
+
+    double FakeTrackSignalGenerator::GetTrapLength() const
+    {
+        return fTrapLength;
+    }
+
+    void FakeTrackSignalGenerator::SetTrapLength( double aTrapLength )
+    {
+        fTrapLength = aTrapLength;
         return;
     }
 
@@ -598,7 +623,6 @@ namespace locust
         double theta_scatter;
         const double deg_to_rad = LMCConst::Pi() / 180.;
 
-        std::exponential_distribution<double> tracklength_distribution(1./fTrackLengthMean);
         std::uniform_real_distribution<double> starttime_distribution(fStartTimeMin,fStartTimeMax);
         std::uniform_real_distribution<double> startpitch_distribution(cos(fStartPitchMin * deg_to_rad),cos(fStartPitchMax * deg_to_rad));
         std::uniform_real_distribution<double> dist(0,1);
@@ -623,7 +647,14 @@ namespace locust
                 fStartFrequency = rel_cyc(fStartEnergyDistribution->Generate(), fBField);
             }
 
-            fPitch = acos(startpitch_distribution(fRandomEngine));
+            do
+            {
+                fPitch = acos(startpitch_distribution(fRandomEngine));
+                double z0 = fz0Distribution->Generate();
+                fPitch = GetPitchAngleZ(fPitch, GetBField(zScatter), fBField);
+
+            } while(fPitch < fStartPitchMin * deg_to_rad ); ///XXX check radians on me!!! two-sided?
+
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
         }
@@ -653,7 +684,7 @@ namespace locust
         }
 
         fSlope = fSlopeDistribution->Generate();
-        fTrackLength = tracklength_distribution(fRandomEngine);
+        fTrackLength = fTrackLengthDistribution->Generate();
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
         aTrack.Slope = fSlope;
         aTrack.TrackLength = fTrackLength;
