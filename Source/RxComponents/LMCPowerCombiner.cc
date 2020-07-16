@@ -22,7 +22,8 @@ namespace locust
             fpatchLoss( 0.6 ),
             famplifierLoss( 0.66 ),
             fendPatchLoss( 1.0 ),
-            fjunctionResistance( 0.3 )
+            fjunctionResistance( 0.3 ),
+			fvoltageCheck( false )
 
     {}
     PowerCombiner::~PowerCombiner() {}
@@ -30,6 +31,12 @@ namespace locust
 
     bool PowerCombiner::Configure( const scarab::param_node& aParam )
     {
+
+    	if ( aParam.has( "voltage-check" ) )
+    	{
+    		fvoltageCheck = aParam["voltage-check"]().as_bool();
+    	}
+
         if( aParam.has( "nelements-per-strip" ) )
         {
             fnElementsPerStrip = aParam["nelements-per-strip"]().as_int();
@@ -63,13 +70,15 @@ namespace locust
     }
 
 
-
 	bool PowerCombiner::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
 	{
 
 		VoltageFIRSample *= GetDampingFactor(z_index);
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
+		if ( (sampleIndex%100 < 1) && (fvoltageCheck==true) )
+			LWARN( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 
 		return true;
 	}

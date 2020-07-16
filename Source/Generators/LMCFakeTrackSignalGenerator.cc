@@ -44,7 +44,7 @@ namespace locust
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
-        fRoot_filename("LocustEvent.root"),
+        fRootFilename("LocustEvent.root"),
         fSlope( 0. ),
         fPitch( 0. ),
         fTrackLength( 0. ),
@@ -183,7 +183,7 @@ namespace locust
 
         if( aParam.has( "root-filename" ) )
         {
-            fRoot_filename = aParam["root-filename"]().as_string();
+            fRootFilename = aParam["root-filename"]().as_string();
         }
 
         if(fRandomSeed)
@@ -718,32 +718,12 @@ namespace locust
     }
 
 
-    void WriteRootFile(Event* anEvent, TFile* hfile)
-    {
-    	char buffer[100];
-        int n=sprintf(buffer, "Event_%d", anEvent->fEventID);
-    	char* treename = buffer;
-
-        TTree *aTree = new TTree(treename,"Locust Tree");
-        aTree->Branch("EventID", &anEvent->fEventID, "EventID/I");
-        aTree->Branch("ntracks", &anEvent->fNTracks, "ntracks/I");
-        aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
-        aTree->Branch("StartTimes", "std::vector<double>", &anEvent->fStartTimes);
-        aTree->Branch("EndTimes", "std::vector<double>", &anEvent->fEndTimes);
-        aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->fTrackLengths);
-        aTree->Branch("Slopes", "std::vector<double>", &anEvent->fSlopes);
-        aTree->Branch("LOFrequency", &anEvent->fLOFrequency, "LOFrequency/D");
-        aTree->Branch("RandomSeed", &anEvent->fRandomSeed, "RandomSeed/I");
-        aTree->Branch("TrackPower", "std::vector<double>", &anEvent->fTrackPowers);
-        aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->fPitchAngles);
-        aTree->Fill();
-        aTree->Write();
-        delete aTree;
-    }
-
     bool FakeTrackSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-        TFile* hfile = new TFile(fRoot_filename.c_str(),"RECREATE");
+
+    	FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
+    	aRootTreeWriter->SetFilename(fRootFilename);
+        aRootTreeWriter->OpenFile("RECREATE");
 
         const unsigned nChannels = fNChannels;
         const double tLocustStep = 1./aSignal->DecimationFactor()/(fAcquisitionRate*1.e6);
@@ -798,11 +778,12 @@ namespace locust
                 }
 
             } //track loop
-            WriteRootFile(anEvent, hfile);
+
+            aRootTreeWriter->WriteEvent(anEvent);
             delete anEvent;
         } //event loop
 
-        hfile->Close();
+        aRootTreeWriter->CloseFile();
         return true;
     }
 

@@ -12,6 +12,10 @@
 #include "LMCRunLengthCalculator.hh"
 #include "LMCConst.hh"
 
+#ifdef LMCFILEWRITER_HH_
+    #include "LMCRunParameters.hh"
+    #include "LMCRootTreeWriter.hh"
+#endif
 
 #include <random>
 
@@ -30,12 +34,17 @@ namespace locust
      Configuration name: "gaussian-noise"
 
      Available configuration options:
-     - "noise-floor" -- Measured noise floor of system in W/Hz.  Overrides "sigma"
-     - "acquisition-rate" -- Digitization acquisition rate in MHz; Used in the calculation of sigma from the noise floor. Default is 100 MHz.
-     - "mean": double -- Mean of the Gaussian noise (usually remains at 0)
-     - "sigma": double -- Standard deviation of the Gaussian noise.  Ignored if "noise-floor" is present.
+     - "noise-floor-psd": double -- Noise power in W/Hz.
+     - "noise-temperature": double -- Noise temperature in K.
      - "domain": string -- Determines whether the noise is generated in the time or frequency domain
                            Available options: "time" and "freq" [default]
+     - "write-root-tree": boolean -- Flag to control whether or not value of noise power is written
+     	 	 			  to output Root file as a LMCRunParameter.
+     - "random-seed": int -- Random seed used to generate random noise.  If this is omitted then the
+     	 	 	 	 	  noise spectrum is reproducible.
+     - "root-filename": string -- Name of output Root file.  This can have the same name as other
+          	 	 	 	  generators' output Root files, in which case all of the Root objects will
+          	 	 	 	  be written to the same output file.
 
     */
     class GaussianNoiseGenerator : public Generator
@@ -67,6 +76,7 @@ namespace locust
             void SetDomain( Signal::State aDomain );
 
         private:
+            bool WriteRootTree();
             bool DoGenerate( Signal* aSignal );
 
             bool DoGenerateTime( Signal* aSignal );
@@ -77,6 +87,8 @@ namespace locust
             double fMean;
             double fSigma;
             int fRandomSeed;
+            bool fWriteRootTree;
+            std::string fRootFilename;
 
             mutable std::normal_distribution< double > fNormDist;
     };
