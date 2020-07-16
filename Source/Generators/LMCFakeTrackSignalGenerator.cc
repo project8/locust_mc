@@ -651,13 +651,14 @@ namespace locust
             {
                 fPitch = acos(startpitch_distribution(fRandomEngine));
                 double z0 = fz0Distribution->Generate();
-                fPitch = GetPitchAngleZ(fPitch, GetBField(zScatter), fBField);
+                fPitch = GetPitchAngleZ(fPitch, GetBField(z0), fBField);
 
-            } while(fPitch < fStartPitchMin * deg_to_rad ); ///XXX check radians on me!!! two-sided?
+            } while(fPitch < fStartPitchMin * deg_to_rad );
 
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
         }
+
        else
        {
             fStartTime = fEndTime + 0.;  // old track endtime + margin=0.

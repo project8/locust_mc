@@ -26,13 +26,13 @@ namespace locust
 
         public:
             ExponentialDistribution(const scarab::param_node &aParam);
-            ExponentialDistribution(const double &aLambda, const double &aShift);
+            ExponentialDistribution(const double &aTau, const double &aShift);
 
             double Generate();
 
         private:
             std::exponential_distribution<double> fDistribution;
-            double fLambda;
+            double fTau;
             double fShift; //shift of exponential distribution from 0
 };
 
