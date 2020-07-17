@@ -12,24 +12,28 @@ namespace locust
     LOGGER( lmclog, "LMCExponentialDistribution" );
 
     ExponentialDistribution::ExponentialDistribution(const scarab::param_node &aParam) :
-        fLambda( 1. )
+        fTau( 1. ),
+        fShift( 0. )
     {
-        if(aParam.has("lambda"))
-            fLambda = aParam.get_value< double >( "lambda", fLambda );
+        if(aParam.has("tau"))
+            fTau = aParam.get_value< double >( "tau", fTau );
+        if(aParam.has("shift"))
+            fShift = aParam.get_value< double >( "shift", fShift );
 
-        fDistribution = std::exponential_distribution<double>(fLambda);
-        LDEBUG( lmclog, "Created exponential distribution. lambda: " <<fLambda);
+        fDistribution = std::exponential_distribution<double>(1. / fTau);
+        LDEBUG( lmclog, "Created exponential distribution. tau: " <<fTau<<" shift: "<<fShift);
     }
 
-    ExponentialDistribution::ExponentialDistribution(const double &aLambda) :
-        fLambda( aLambda ),
-        fDistribution( aLambda )
+    ExponentialDistribution::ExponentialDistribution(const double &aTau, const double &aShift) :
+        fTau( aTau ),
+        fShift( aShift ),
+        fDistribution( aTau )
     {
     }
 
     double ExponentialDistribution::Generate()
     {
-        return fDistribution(*fRNEngine);
+        return fDistribution(*fRNEngine) + fShift;
     }
 
 } /* namespace locust */

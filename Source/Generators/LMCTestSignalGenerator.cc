@@ -26,7 +26,10 @@ namespace locust
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
         fAmplitude( 5.e-8 ),
-		fMixingProduct( false )
+		fMixingProduct( false ),
+    	fWriteRootHisto( false ),
+		fWriteRootGraph( false ),
+		fRootFilename( "LocustTestSignal.root")
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -57,6 +60,22 @@ namespace locust
         {
         	SetMixingProduct( aParam.get_value< bool >( "mixing-product", fMixingProduct ));
         }
+
+        if( aParam.has( "write-root-histo" ) )
+        {
+        	fWriteRootHisto = aParam.get_value< bool >( "write-root-histo", fWriteRootHisto );
+        }
+
+        if( aParam.has( "write-root-graph" ) )
+        {
+        	fWriteRootGraph = aParam.get_value< bool >( "write-root-graph", fWriteRootGraph );
+        }
+
+    	if( aParam.has( "root-filename" ) )
+        {
+            fRootFilename = aParam["root-filename"]().as_string();
+        }
+
 
         if( aParam.has( "domain" ) )
         {
@@ -160,6 +179,39 @@ namespace locust
         return;
     }
 
+    bool TestSignalGenerator::WriteRootHisto()
+    {
+		#ifdef LMCFILEWRITER_HH_
+    	FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
+    	aRootHistoWriter->SetFilename(fRootFilename);
+    	aRootHistoWriter->OpenFile("UPDATE");
+    	TH1D* aHisto = new TH1D("testhisto", "histotitle", 200, 0., 400.);
+    	for (unsigned i=0; i<200; i++)
+    	{
+    		aHisto->SetBinContent(i+1, (double)i);
+    	}
+    	aRootHistoWriter->Write1DHisto(aHisto);
+        aRootHistoWriter->CloseFile();
+		#endif
+        return true;
+    }
+
+    bool TestSignalGenerator::WriteRootGraph()
+    {
+		#ifdef LMCFILEWRITER_HH_
+    	FileWriter* aRootGraphWriter = RootGraphWriter::get_instance();
+    	aRootGraphWriter->SetFilename(fRootFilename);
+    	aRootGraphWriter->OpenFile("UPDATE");
+    	std::vector<double> xVector{1,2,3,4,5};
+    	std::vector<double> yVector{1,2,3,4,5};
+    	aRootGraphWriter->WriteVectorGraph(xVector, yVector);
+        aRootGraphWriter->CloseFile();
+		#endif
+        return true;
+    }
+
+
+
 
     bool TestSignalGenerator::DoGenerate( Signal* aSignal )
     {
@@ -168,6 +220,9 @@ namespace locust
 
     bool TestSignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+
+    	if (fWriteRootHisto) WriteRootHisto();
+    	if (fWriteRootGraph) WriteRootGraph();
 
         const unsigned nchannels = fNChannels;
 
