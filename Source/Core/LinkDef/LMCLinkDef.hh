@@ -9,6 +9,7 @@
 
 #pragma link C++ namespace locust;
 
+#pragma link C++ class locust::RunParameters+;
 #pragma link C++ class locust::Event+;
 #pragma link C++ class locust::Track+;
 

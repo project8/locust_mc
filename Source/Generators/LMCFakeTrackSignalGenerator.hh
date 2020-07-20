@@ -8,12 +8,10 @@
 #ifndef LMCFAKETRACKSIGNALGENERATOR_HH_
 #define LMCFAKETRACKSIGNALGENERATOR_HH_
 
-#include "TFile.h"  // order of includes matters.
-#include "TTree.h"  // include these first.
-
 #include "LMCGenerator.hh"
-#include "LMCRunLengthCalculator.hh"
 #include "LMCEvent.hh"
+#include "LMCRunParameters.hh"
+#include "LMCRootTreeWriter.hh"
 #include "LMCDistributionInterface.hh"
 
 #include <gsl/gsl_errno.h>
@@ -30,7 +28,6 @@ namespace scarab
 
 namespace locust
 {
-    class Digitizer;
 
     /*!
       @class FakeTrackSignalGenerator
@@ -54,8 +51,10 @@ namespace locust
       - "magnetic-field": double -- Magnetic field used to convert from frequency to energy (for jumpsize) (T).
       - "n-events": int -- Number of events per simulation, spaced by 0.5 ms (hardcoded).
       - "random-seed": integer -- integer seed for random number generator for above pdfs, if set to 0 random_device will be used.
-      - "root-filename": str -- Name of root file containing event information to be written at output. 
       - "pitch-correction": bool -- Flag to switch pitch angle corrections on [default] or off.
+      - "root-filename": string -- Name of output Root file.  This can have the same name as other
+          	 	 	 	  generators' output Root files, in which case all of the Root objects will
+          	 	 	 	  be written to the same output file.
 
 
 */
@@ -84,9 +83,6 @@ namespace locust
             double GetPitchMin() const;
             void SetPitchMin( double aPitchMin );
 
-            double GetTrackLengthMean() const;
-            void SetTrackLengthMean( double aTrackLengthMean );
-
             double GetStartVPhase() const;
             void SetStartVPhase( double aPhase );
 
@@ -113,6 +109,9 @@ namespace locust
 
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
+
+            double GetTrapLength() const;
+            void SetTrapLength(  double aTrapLength );
 
 
             Signal::State GetDomain() const;
@@ -158,24 +157,25 @@ namespace locust
             std::shared_ptr< BaseDistribution> fStartEnergyDistribution;
             std::shared_ptr< BaseDistribution> fStartFrequencyDistribution;
             std::shared_ptr< BaseDistribution> fSlopeDistribution;
+            std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
+            std::shared_ptr< BaseDistribution> fz0Distribution;
             double fStartTimeMax;
             double fStartTimeMin;
             double fStartPitchMin;
             double fStartPitchMax;
             double fPitchMin;
             double fLO_frequency;
-            double fTrackLengthMean;
             double fNTracksMean;
             double fBField;
             int fRandomSeed;
             int fNEvents;
             bool fPitchCorrection;
             double fHydrogenFraction;
-            std::string fRoot_filename;
+            std::string fRootFilename;
             std::default_random_engine fRandomEngine;
             std::vector<gsl_spline*> fInterpolators;
             std::vector<gsl_interp_accel*> fAccelerators;
-            const double fTrapLength;
+            double fTrapLength;
             bool fUseEnergyDistribution;
             bool fUseFrequencyDistribution;
 
