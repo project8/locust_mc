@@ -13,7 +13,6 @@ include( PackageBuilder )
 
 pbuilder_prepare_project()
 
-
 set_option( USE_CPP11 TRUE )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
@@ -67,6 +66,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     # Note that we disable the configure stage of the ExternalProject because we already took care of the configure stage above.
     include(ExternalProject)
     
+#    list(APPEND CMAKE_ARGS "-DCMAKE_INSTALL_LIBDIR=\"${CMAKE_INSTALL_PREFIX}/testlibrary\"")
+    list(APPEND CMAKE_ARGS "-DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_PREFIX}/testlibrary")
+    message (STATUS "*********************** cmake_args is ${CMAKE_ARGS}")
+        
     ExternalProject_Add( KassiopeiaExt
         PREFIX            ${CMAKE_INSTALL_PREFIX}
         SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
@@ -75,6 +78,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         BUILD_ALWAYS      1
         BUILD_COMMAND     make
         INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
+        CMAKE_ARGS        "${CMAKE_ARGS}"
         INSTALL_COMMAND   make install
     )
 
