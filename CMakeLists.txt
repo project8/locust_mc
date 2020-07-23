@@ -49,6 +49,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     )
     execute_process( 
         COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
+                      -D CMAKE_INSTALL_LIBDIR:STRING=lib
                       -D BUILD_KASSIOPEIA:BOOL=TRUE 
                       -D BUILD_KEMFIELD:BOOL=TRUE 
                       -D BUILD_KGEOBAG:BOOL=TRUE 
@@ -67,8 +68,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     include(ExternalProject)
     
 #    list(APPEND CMAKE_ARGS "-DCMAKE_INSTALL_LIBDIR=\"${CMAKE_INSTALL_PREFIX}/testlibrary\"")
-    list(APPEND CMAKE_ARGS "-DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_PREFIX}/testlibrary")
-    message (STATUS "*********************** cmake_args is ${CMAKE_ARGS}")
+#    list(APPEND CMAKE_ARGS "-DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_PREFIX}/testlibrary")
+#    message (STATUS "*********************** cmake_args is ${CMAKE_ARGS}")
         
     ExternalProject_Add( KassiopeiaExt
         PREFIX            ${CMAKE_INSTALL_PREFIX}
@@ -78,8 +79,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         BUILD_ALWAYS      1
         BUILD_COMMAND     make
         INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
-        CMAKE_ARGS        "${CMAKE_ARGS}"
-        INSTALL_COMMAND   make install
+#        CMAKE_ARGS        "${CMAKE_ARGS}"
+        INSTALL_COMMAND   make -j3 install
     )
 
     # Finally we use find_package() to learn about the Kassiopeia build targets.
