@@ -33,6 +33,12 @@ namespace locust
     	return zPosition;
     }
 
+    double AntennaElementPositioner::GetTheta(int channelIndex, double dThetaArray)
+    {
+    	double tTheta = channelIndex * dThetaArray;
+    	return tTheta;
+    }
+
 	void AntennaElementPositioner::PlaceElement(Receiver &modelElement, double elementRadius, double theta, double zPosition)
 	{
 		modelElement.SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });

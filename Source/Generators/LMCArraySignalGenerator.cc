@@ -534,7 +534,7 @@ namespace locust
 
         	for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         	{
-        		theta = channelIndex * dThetaArray;
+        		theta = fAntennaElementPositioner->GetTheta(channelIndex, dThetaArray);
 
         		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
         		{
