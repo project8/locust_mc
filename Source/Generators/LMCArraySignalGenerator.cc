@@ -71,6 +71,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring voltage divider.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "slotted-waveguide")
@@ -80,7 +86,14 @@ namespace locust
         		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring slotted waveguide.");
+        			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "single-patch")
@@ -92,6 +105,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring single patch.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new SinglePatchPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring single patch positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "corporate")
@@ -103,6 +122,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring corporate feed.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "s-matrix")
@@ -114,6 +139,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring s matrix.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
 
@@ -128,6 +159,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring unit cell.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
 
@@ -139,6 +176,12 @@ namespace locust
         		{
         			LERROR(lmclog,"Error configuring series feed.");
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
 
@@ -491,27 +534,18 @@ namespace locust
 
         	for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         	{
-        		theta = channelIndex * dThetaArray;
+        		theta = fAntennaElementPositioner->GetTheta(channelIndex, dThetaArray);
 
         		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
         		{
-        			zPosition =  fZShiftArray +
-        					(int(channelIndex/(nChannels/nSubarrays))-((nSubarrays -1.)/2.) )*nReceivers*elementSpacingZ +
-        					(receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
-
-        			if (fPowerCombiner->IsSinglePatch())
-        			{
-        				zPosition = 0.;
-        			}
+        			zPosition = fAntennaElementPositioner->GetPositionZ(fZShiftArray, channelIndex, nChannels,
+        						nSubarrays, nReceivers, elementSpacingZ, receiverIndex);
 
         			Receiver* modelElement = fPowerCombiner->ChooseElement();  // patch or slot?
 
-        			modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
-        			modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
-        			modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
-        			modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
-        			allRxChannels[channelIndex].AddReceiver(modelElement);
+        			fAntennaElementPositioner->PlaceElement(*modelElement, elementRadius, theta, zPosition);
 
+        			allRxChannels[channelIndex].AddReceiver(modelElement);
         		}
         	}
 
