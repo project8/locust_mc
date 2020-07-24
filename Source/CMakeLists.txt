@@ -68,7 +68,6 @@ set( LOCUST_MC_HEADER_FILES
     Transforms/LMCComplexFFT.hh    
 
     RxComponents/LMCPowerCombiner.hh
-    RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
     RxComponents/LMCSinglePatch.hh
@@ -80,6 +79,9 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCSlotAntenna.hh
     RxComponents/LMCChannel.hh
+    RxComponents/LMCAntennaElementPositioner.hh
+    RxComponents/LMCSinglePatchPositioner.hh
+    RxComponents/LMCPlanarArrayPositioner.hh
 
 )
 
@@ -130,7 +132,6 @@ set( LOCUST_MC_SOURCE_FILES
     Transforms/LMCComplexFFT.cc    
     
     RxComponents/LMCPowerCombiner.cc
-    RxComponents/LMCAntennaElementPositioner.cc
     RxComponents/LMCVoltageDivider.cc
     RxComponents/LMCSlottedWaveguide.cc
     RxComponents/LMCSinglePatch.cc
@@ -142,6 +143,10 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCPatchAntenna.cc
     RxComponents/LMCSlotAntenna.cc
     RxComponents/LMCChannel.cc    
+    RxComponents/LMCAntennaElementPositioner.cc
+    RxComponents/LMCSinglePatchPositioner.cc
+    RxComponents/LMCPlanarArrayPositioner.cc
+
 
 )
 

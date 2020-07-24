@@ -9,6 +9,9 @@
 #define LMCANTENNAELEMENTPOSITIONER_HH_
 #include "param.hh"
 #include "LMCException.hh"
+#include "LMCPatchAntenna.hh"
+#include "LMCSlotAntenna.hh"
+
 
 
 namespace locust
@@ -28,6 +31,9 @@ namespace locust
             AntennaElementPositioner();
             virtual ~AntennaElementPositioner();
             virtual bool Configure( const scarab::param_node& aNode );
+            virtual double GetPositionZ(double zShiftArray, int channelIndex, int nChannels,
+            		int nSubarrays, int nReceivers, double elementSpacingZ, int receiverIndex);
+			virtual void PlaceElement(Receiver &modelElement, double elementRadius, double theta, double zPosition);
 
 };
 
