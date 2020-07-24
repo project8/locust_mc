@@ -67,10 +67,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     # Note that we disable the configure stage of the ExternalProject because we already took care of the configure stage above.
     include(ExternalProject)
     
-#    list(APPEND CMAKE_ARGS "-DCMAKE_INSTALL_LIBDIR=\"${CMAKE_INSTALL_PREFIX}/testlibrary\"")
-#    list(APPEND CMAKE_ARGS "-DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_PREFIX}/testlibrary")
-#    message (STATUS "*********************** cmake_args is ${CMAKE_ARGS}")
-        
     ExternalProject_Add( KassiopeiaExt
         PREFIX            ${CMAKE_INSTALL_PREFIX}
         SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
@@ -79,15 +75,11 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         BUILD_ALWAYS      1
         BUILD_COMMAND     make
         INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
-#        CMAKE_ARGS        "${CMAKE_ARGS}"
         INSTALL_COMMAND   make -j3 install
     )
 
     # Finally we use find_package() to learn about the Kassiopeia build targets.
     find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
-    message( STATUS "@@@@@ Kommon_FOUND: ${Kommon_FOUND}" )
-    message( STATUS "@@@@@ Kommon_LIBRARIES: ${Kommon_LIBRARIES}" )
-    message( STATUS "@@@@@ Kommon_INCLUDE_DIRS: ${Kommon_INCLUDE_DIRS}" )
     find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
     find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
     find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
@@ -168,14 +160,6 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
         ${LIB_INSTALL_DIR}        
     )
 
-
-#	get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
-#	if ("${LIB64}" STREQUAL "TRUE")
-#    	set(LIBSUFFIX "64")
-#	else()
-#    	set(LIBSUFFIX "")
-#	endif()
-    
     # We need to have the LocustMC library depend on the Kassiopeia libraries, and to the KassiopeiaExt target
     # To do this we create an imported library for each Kassiopeia library
     # We then add a dependency of KassiopeiaExt to each imported library target
@@ -184,13 +168,7 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
         add_library( ${LIBRARY} SHARED IMPORTED )
-        #get_property( output_name TARGET ${LIBRARY} PROPERTY OUTPUT_NAME )
-        #get_property( lib_output_name TARGET ${LIBRARY} PROPERTY LIBRARY_OUTPUT_NAME )
-        #message( STATUS "******* OUTPUT_NAME: ${output_name}" )
-        #message( STATUS "******* LIBRARY_OUTPUT_NAME: ${lib_output_name}" )
-        #message( STATUS "******* TARGET_FILE_NAME: $<TARGET_FILE_NAME:${LIBRARY}>" )
-        #file( GENERATE OUTPUT libraries.txt CONTENT "${LIBRARY}: $<TARGET_FILE_NAME:${LIBRARY}>" )
-        message( STATUS "****** constructed name: ${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+        #message( STATUS "****** constructed name: ${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
         set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
         add_dependencies( ${LIBRARY} KassiopeiaExt )
     endforeach()
