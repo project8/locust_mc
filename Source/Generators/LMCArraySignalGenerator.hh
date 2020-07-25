@@ -27,8 +27,9 @@
 #include "LMCPlaneWaveTransmitter.hh"
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
-
-
+#include "LMCAntennaElementPositioner.hh"
+#include "LMCSinglePatchPositioner.hh"
+#include "LMCPlanarArrayPositioner.hh"
 #include <vector>
 
 
@@ -117,6 +118,7 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
+            AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object
             PowerCombiner* fPowerCombiner;
             TFReceiverHandler fTFReceiverHandler;
