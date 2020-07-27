@@ -5,11 +5,14 @@
  *      Author: nsoblath
  */
 
+#include "logger.hh"
 #include "LMCEventHold.hh"
 #include <csignal>
 
 namespace locust
 {
+
+	LOGGER( lmclog, "EventHold" );
 
     EventHold::EventHold() :
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
@@ -34,7 +37,7 @@ namespace locust
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
 
-        printf("Kass is waiting for event trigger\n");
+        LPROG( lmclog, "Kass is waiting for event trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
         if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration))
@@ -44,7 +47,7 @@ namespace locust
             fInterface->fPreEventCondition.wait( tLock );
             fInterface->fKassEventReady = false;
             fInterface->fTOld = 0.;  // reset time on event clock
-            printf("Kass got the event trigger\n");
+            LPROG( lmclog, "Kass got the event trigger" );
         }
         else
         {
@@ -61,7 +64,7 @@ namespace locust
     {
         fInterface->fEventInProgress = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock
-        printf("Kass is waking after event\n");
+        LPROG( lmclog, "Kass is waking after event" );
         return true;
     }
 

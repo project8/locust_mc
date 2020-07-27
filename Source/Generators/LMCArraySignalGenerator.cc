@@ -350,7 +350,7 @@ namespace locust
     {
 
     	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        printf("LMC about to wait: fKassEventReady is %d\n ", fInterface->fKassEventReady);
+        LPROG( lmclog, "LMC about to wait" );
 
         if(!fInterface->fKassEventReady)
         {
@@ -367,8 +367,6 @@ namespace locust
             printf("I am stuck.\n"); getchar();
             return true;
         }
-
-
 
     }
 
@@ -610,7 +608,7 @@ namespace locust
                 		break;
                 	}
 
-                	printf("LMC says it ReceivedKassReady()\n");
+                	LPROG( lmclog, "LMC ReceivedKassReady" );
 
                 }
 
@@ -622,7 +620,7 @@ namespace locust
                     {
                         fInterface->fPreEventInProgress = false;  // reset.
                         fInterface->fEventInProgress = true;
-                        printf("LMC about to WakeBeforeEvent()\n");
+                        LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
                         WakeBeforeEvent();  // trigger Kass event.
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
@@ -645,7 +643,7 @@ namespace locust
 
             fInterface->fDoneWithSignalGeneration = true;
             fclose(fp);
-            printf("finished signal loop.\n");
+            LPROG( lmclog, "Finished signal loop." );
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
 
