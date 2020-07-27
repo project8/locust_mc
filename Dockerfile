@@ -15,17 +15,19 @@ RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
     echo 'ln -sfT $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX/../current' >> setup.sh &&\
     echo 'export PATH=$LOCUST_BUILD_PREFIX/bin:$PATH' >> setup.sh &&\
     echo 'export LD_LIBRARY_PATH=$LOCUST_BUILD_PREFIX/lib:$LD_LIBRARY_PATH' >> setup.sh &&\
+    echo 'export LD_LIBRARY_PATH=$LOCUST_BUILD_PREFIX/lib64:$LD_LIBRARY_PATH' >> setup.sh &&\
     /bin/true
 
 ########################
 FROM locust_common as locust_done
 
-#COPY Config /tmp_source/Config
+COPY Config /tmp_source/Config
 COPY Data /tmp_source/Data
 COPY kassiopeia /tmp_source/kassiopeia
 COPY monarch /tmp_source/monarch
 COPY Scarab /tmp_source/Scarab
 COPY Source /tmp_source/Source
+COPY Config /tmp_source/Config
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
 COPY .git /tmp_source/.git
 
@@ -37,13 +39,11 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE \
-          -D CMAKE_SKIP_RPATH:BOOL=True .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE \
-          -D CMAKE_SKIP_RPATH:BOOL=True .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
     make -j3 install &&\
     /bin/true
 

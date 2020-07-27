@@ -1,0 +1,54 @@
+{
+    "generators":
+    [          
+       "fake-track",
+       "lpf-fft",
+       "decimate-signal",
+       "gaussian-noise",
+       "digitizer"
+    ],
+
+    "fake-track":
+    {
+    "signal-power": 1.0e-15,
+    "start-frequency-max": 20.053e9,
+    "start-frequency-min": 20.049e9,
+    "start-time-min": 0.001,
+    "start-time-max": 0.003,
+    "lo-frequency": 20.0e9,
+    "track-length-mean": 0.001,
+    "ntracks-mean": 2.0,
+    "random-seed": 0,
+    "n-events": 1,
+    "root-filename": "LocustEvent.root"
+    },
+    
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "n-records": 1,
+        "n-channels": 1,
+        "record-size": 4194304
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor-psd": 4.0e-30,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 1.0e-6,
+    "v-offset": -0.5e-6
+    },
+    
+    "decimate-signal":
+    {
+    },
+    
+    "lpf-fft":
+    {
+    }
+
+}

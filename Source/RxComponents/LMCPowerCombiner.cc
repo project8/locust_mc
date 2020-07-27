@@ -77,9 +77,8 @@ namespace locust
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
 
-		if ( (sampleIndex%100 < 1) && (fvoltageCheck==true) )
-			LWARN( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
-
+		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
+			LWARN( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
 

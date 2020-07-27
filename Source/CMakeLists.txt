@@ -1,27 +1,4 @@
 
-if (locust_mc_BUILD_WITH_KASSIOPEIA)
-
-    # Make up for variables not created by PackageBuilder, but required by kasper_module_paths
-    set_path(DATA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/data" "Install directory for data files")
-    set_path(SCRATCH_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/scratch" "Directory for temporary files")
-    set_path(OUTPUT_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/output" "Directory for output files")
-    set_path(CACHE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/cache" "Directory for cache files")
-    set_path(LOG_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/log" "Directory for log files")
-    
-    kasper_module_paths( locust_mc )
-    
-    foreach( FLAG ${Kassiopeia_CFLAGS} )
-        message( STATUS "%%% adding {FLAG}" )
-        add_definitions( -D${FLAG} )
-    endforeach( FLAG )
-        
-    # include directories
-    #kasper_internal_include_directories(
-    #)
-
-endif (locust_mc_BUILD_WITH_KASSIOPEIA)
-
-
 set( LOCUST_MC_HEADER_FILES
     Core/LMCConst.hh
     Core/LMCEggWriter.hh
@@ -151,6 +128,8 @@ set( LOCUST_MC_SOURCE_FILES
 )
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
+    # Here we only need to add the Kassiopeia-dependent header/source files to the header/source-file lists
+    
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
 
         Generators/LMCFreeFieldSignalGenerator.hh
@@ -159,40 +138,43 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
         Transmitters/LMCKassTransmitter.hh
-
-        Core/LMCGlobalsDeclaration.hh
-        Core/LMCGlobalsDefinition.hh
-        Core/LMCParticle.hh
-        Core/LMCLienardWiechert.hh
+        
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
+        Kassiopeia/LMCLienardWiechert.hh
+        Kassiopeia/LMCParticle.hh
         Kassiopeia/LMCFieldCalculator.hh
-        Kassiopeia/LMCFieldCalculatorBuilder.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
-        Kassiopeia/LMCRootBuilder.hh
+        Kassiopeia/LMCKassLocustInterface.hh
         Kassiopeia/LMCRunKassiopeia.hh
+        Kassiopeia/LMCRunPause.hh
+        Kassiopeia/LMCRunPauseBuilder.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
-	    Generators/LMCArraySignalGenerator.cc        
+	    Generators/LMCArraySignalGenerator.cc   
         
         Transmitters/LMCKassTransmitter.cc
         
+        # Why is this here?
         Core/LMCHFSSReader.cc
-        Core/LMCParticle.cc
-        Core/LMCLienardWiechert.cc
 
+        Kassiopeia/LMCCyclotronRadiationExtractor.cc
+        Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
+        Kassiopeia/LMCParticle.cc
+        Kassiopeia/LMCLienardWiechert.cc
         Kassiopeia/LMCFieldCalculator.cc
-        Kassiopeia/LMCFieldCalculatorBuilder.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
-        Kassiopeia/LMCRootBuilder.cc
+        Kassiopeia/LMCKassLocustInterface.cc
         Kassiopeia/LMCRunKassiopeia.cc
+        Kassiopeia/LMCRunPause.cc
+        Kassiopeia/LMCRunPauseBuilder.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -222,7 +204,6 @@ if (locust_mc_BUILD_WITH_ROOT)
     	IO/LMCRootHistoWriter.cc
     	IO/LMCRootGraphWriter.cc
         )
-
 
     if (CMAKE_COMPILER_IS_GNUCXX)
         option( GCC_FORCE_LINKING "Fix linker errors with some GCC versions by adding the --no-as-needed flag" ON )
@@ -258,15 +239,17 @@ if (locust_mc_BUILD_WITH_ROOT)
             ${PROJECT_SOURCE_DIR}/Source/Core/LinkDef/LMCLinkDef.hh 
         VERBATIM
     )
+
+    set (LOCUST_MC_SOURCE_FILES
+        ${LOCUST_MC_SOURCE_FILES}
+        ${DICT_OUTFILES}
+    )
     
     pbuilder_install_files (${LIB_INSTALL_DIR} ${DICT_PCMFILES})
         
 endif(locust_mc_BUILD_WITH_ROOT)
 
 
-#pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES EVENT_DICT_OUTFILE)
-add_library(LocustMC ${LOCUST_MC_SOURCE_FILES} ${DICT_OUTFILES})
-target_link_libraries (LocustMC ${EXTERNAL_LIBRARIES})
+pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
 
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
-pbuilder_install_libraries( LocustMC )

@@ -7,9 +7,8 @@
 
 #include "LMCRunKassiopeia.hh"
 
-
-#include <KSSimulation.h>
-#include <KSRoot.h>
+#include "KSSimulation.h"
+#include "KSRoot.h"
 #include "KMessage.h"
 #include "KTextFile.h"
 
@@ -53,14 +52,14 @@ namespace locust
     }
 
 
-    int RunKassiopeia::Run( const std::vector< std::string >& aFiles )
+    int RunKassiopeia::Run( const std::vector< std::string >& aFiles, kl_interface_ptr_t aInterface )
     {
 
 
-//    cout << "file vector is \n";
-//    cout << aFiles[0].c_str();
+        //    cout << "file vector is \n";
+        //    cout << aFiles[0].c_str();
 
-    	char* dummy_args[] = { (char*)"dummyname", (char*)aFiles[0].c_str(), NULL};
+        char* dummy_args[] = { (char*)"dummyname", (char*)aFiles[0].c_str(), NULL};
 
         KCommandLineTokenizer tCommandLine;
         tCommandLine.ProcessCommandLine( 2, dummy_args );
@@ -75,28 +74,27 @@ namespace locust
         KTagProcessor tTagProcessor;
         KElementProcessor tElementProcessor;
 
-    	tVariableProcessor.InsertAfter( &tTokenizer );
-    	tIncludeProcessor.InsertAfter( &tVariableProcessor );
+        tVariableProcessor.InsertAfter( &tTokenizer );
+        tIncludeProcessor.InsertAfter( &tVariableProcessor );
 
-	//#ifdef Kassiopeia_USE_ROOT
-	KFormulaProcessor tFormulaProcessor;
-	tFormulaProcessor.InsertAfter( &tVariableProcessor );
-	tIncludeProcessor.InsertAfter( &tFormulaProcessor );
-	//#endif
+        //#ifdef Kassiopeia_USE_ROOT
+        KFormulaProcessor tFormulaProcessor;
+        tFormulaProcessor.InsertAfter( &tVariableProcessor );
+        tIncludeProcessor.InsertAfter( &tFormulaProcessor );
+        //#endif
 
 
-    tLoopProcessor.InsertAfter( &tIncludeProcessor );
-    tConditionProcessor.InsertAfter( &tLoopProcessor );
-    tPrintProcessor.InsertAfter( &tConditionProcessor );
-    tTagProcessor.InsertAfter( &tPrintProcessor );
+        tLoopProcessor.InsertAfter( &tIncludeProcessor );
+        tConditionProcessor.InsertAfter( &tLoopProcessor );
+        tPrintProcessor.InsertAfter( &tConditionProcessor );
+        tTagProcessor.InsertAfter( &tPrintProcessor );
 
-    tElementProcessor.InsertAfter( &tTagProcessor );
-
-       mainmsg( eNormal ) << "starting ..." << eom;
-       KToolbox::GetInstance();
+        tElementProcessor.InsertAfter( &tTagProcessor );
 
         KTextFile* tFile;
-	
+
+        mainmsg( eNormal ) << "starting ..." << eom;
+
         for( std::vector< std::string >::const_iterator tIter = aFiles.begin(); tIter != aFiles.end(); tIter++ )
         {
             tFile = new KTextFile();
@@ -104,22 +102,22 @@ namespace locust
             tTokenizer.ProcessFile( tFile );
             delete tFile;
         }
-	
-        mainmsg( eNormal ) << "... finished" << eom;
-         
-	//	tTokenizer.~KXMLTokenizer();
 
-	KToolbox::GetInstance().Clear();
+        mainmsg( eNormal ) << "... finished" << eom;
+
+        //	tTokenizer.~KXMLTokenizer();
+
+        KToolbox::GetInstance().Clear();
 
         return 0;
     }
 
-    int RunKassiopeia::Run( const std::string& aFile )
+    int RunKassiopeia::Run( const std::string& aFile, kl_interface_ptr_t aInterface )
     {
         std::vector< std::string > tFileVec( 1 );
         tFileVec[ 0 ] = aFile;
-        return Run( tFileVec );
-        
+        return Run( tFileVec, aInterface );
+
     }
 
 } /* namespace locust */

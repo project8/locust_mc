@@ -9,8 +9,11 @@
 #define LMCKASSSIGNALGENERATOR_HH_
 
 #include "LMCGenerator.hh"
-#include "LMCConst.hh"
-#include "LMCThreeVector.hh"
+
+#include "LMCKassLocustInterface.hh"
+//#include "LMCConst.hh"
+//#include "LMCThreeVector.hh"
+
 #include <vector>
 using std::vector;
 
@@ -48,13 +51,19 @@ namespace locust
 
 
         private:
-            double fLO_Frequency;  // typically defined by a parameter in json file.
-            bool fTruth; // parameter in json file.  default is false.
+            void KassiopeiaInit(const std::string &aFile);
+            void WakeBeforeEvent();
+            bool ReceivedKassReady();
+
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
             int FindNode(double tNew) const;
             double TE11ModeExcitation() const;
             double TE10ModeExcitation() const;
+
+            double fLO_Frequency;  // typically defined by a parameter in json file.
+            bool fTruth; // parameter in json file.  default is false.
+            bool fvoltageCheck;  // parameter to print out voltage values.
             std::string gxml_filename;
             std::string gpitchangle_filename;
             double fPhi_t1; // antenna voltage phase in radians.
@@ -65,6 +74,7 @@ namespace locust
             mutable int fPreviousRetardedIndex;
             double fEventStartTime;
             bool fEventToFile;
+            kl_interface_ptr_t fInterface;
 
 
     };
