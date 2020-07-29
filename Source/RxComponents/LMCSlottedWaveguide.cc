@@ -49,6 +49,8 @@ namespace locust
 		for (unsigned z_index=0; z_index<GetNElementsPerStrip(); z_index++)
 		{
 			double aFactor = fImpedanceTransformation;
+            //Adhoc scaling in case the slotted waveguide has fewer/more slots than 5
+            aFactor = aFactor/sqrt(GetNElementsPerStrip()/5.);
 			SetDampingFactor(z_index, aFactor);
 		}
 
