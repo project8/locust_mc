@@ -65,9 +65,6 @@ namespace locust
         //initialize shakeon/ shakeoff data
         read_shake_data();
         fShakeSpectrum = shake_spectrum();
-        std::vector<double> v = to_vector(fShakeSpectrum);
-        for(int i=0;i<v.size();++i)
-            std::cout<<v[i]<<std::endl;
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
 
         //initialize energy loss scattering data
