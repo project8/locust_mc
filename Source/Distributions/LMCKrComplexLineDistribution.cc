@@ -65,6 +65,9 @@ namespace locust
         //initialize shakeon/ shakeoff data
         read_shake_data();
         fShakeSpectrum = shake_spectrum();
+        std::vector<double> v = to_vector(fShakeSpectrum);
+        for(int i=0;i<v.size();++i)
+            std::cout<<v[i]<<std::endl;
         create_cdf(fShakeInterpolator, to_vector(fShakeSpectrum), to_vector(fXArray));
 
         //initialize energy loss scattering data
@@ -310,7 +313,6 @@ namespace locust
         std::vector<double> cdf = trapezoidal_rule(f,x);
         interpolant = gsl_spline_alloc(gsl_interp_cspline, cdf.size());
         gsl_spline_init(interpolant, cdf.data(), x.data(), x.size());
-
     }
 
     std::vector<double> KrComplexLineDistribution::trapezoidal_rule(std::vector<double> f, std::vector<double> x)
