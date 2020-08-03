@@ -38,8 +38,6 @@ int main( int argc, char** argv )
     KCommandLineTokenizer tCommandLine;
     tCommandLine.ProcessCommandLine( argc, argv );
 
-    printf("check 1\n");
-
     KXMLTokenizer tTokenizer;
     KVariableProcessor tVariableProcessor( tCommandLine.GetVariables() );
     KIncludeProcessor tIncludeProcessor;
@@ -49,8 +47,6 @@ int main( int argc, char** argv )
     KTagProcessor tTagProcessor;
     KElementProcessor tElementProcessor;
 
-    printf("check 2\n");
-
 	tVariableProcessor.InsertAfter( &tTokenizer );
 	tIncludeProcessor.InsertAfter( &tVariableProcessor );
 
@@ -59,8 +55,6 @@ int main( int argc, char** argv )
 	tFormulaProcessor.InsertAfter( &tVariableProcessor );
 	tIncludeProcessor.InsertAfter( &tFormulaProcessor );
 //#endif
-
-	printf("check 3\n");
 
     tLoopProcessor.InsertAfter( &tIncludeProcessor );
     tConditionProcessor.InsertAfter( &tLoopProcessor );
@@ -72,17 +66,12 @@ int main( int argc, char** argv )
 
     KToolbox::GetInstance();
 
-    printf("check 4\n");
-
     KTextFile* tFile;
     for( auto tFilename : tCommandLine.GetFiles() )
     {
-      printf("check 5\n");
         tFile = new KTextFile();
         tFile->AddToNames( tFilename );
-	printf("check 5.5\n");
         tTokenizer.ProcessFile( tFile );
-	printf("check 6\n");
         delete tFile;
     }
 /*

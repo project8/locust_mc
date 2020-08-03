@@ -11,10 +11,7 @@
 #include "KSEventModifier.h"
 #include "KSComponentTemplate.h"
 
-#include "KField.h"
-
-#include <condition_variable>
-#include <mutex>
+#include "LMCKassLocustInterface.hh"
 
 namespace locust
 {
@@ -29,31 +26,13 @@ namespace locust
 
             EventHold* Clone() const;
 
-            K_SET_GET( bool, WaitBeforeEvent );
-            K_SET_GET( bool, WaitAfterEvent );
-
         public:
 
             virtual bool ExecutePreEventModification(Kassiopeia::KSEvent &anEvent);
             virtual bool ExecutePostEventModification(Kassiopeia::KSEvent &anEvent);
 
-        public:
-            void WakeBeforeEvent();
-            void WakeAfterEvent();
-
-        private:
-            std::mutex fMutex;
-            std::condition_variable fPreEventCondition;
-            std::condition_variable fPostEventCondition;
-
-        private:
-            void InitializeComponent();
-            void DeinitializeComponent();
-
         protected:
-            virtual void PullDeupdateComponent();
-            virtual void PushDeupdateComponent();
-
+            kl_interface_ptr_t fInterface;
 
     };
 

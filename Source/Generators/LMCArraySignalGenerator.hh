@@ -26,7 +26,12 @@
 #include "LMCAntennaSignalTransmitter.hh"
 #include "LMCPlaneWaveTransmitter.hh"
 #include "LMCKassTransmitter.hh"
+#include "LMCKassLocustInterface.hh"
+#include "LMCAntennaElementPositioner.hh"
+#include "LMCSinglePatchPositioner.hh"
+#include "LMCPlanarArrayPositioner.hh"
 #include <vector>
+
 
 
 namespace locust
@@ -76,6 +81,7 @@ namespace locust
         private:
             std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
             double fLO_Frequency;
+            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             double fArrayRadius;
             int fNElementsPerStrip;
             int fNSubarrays;
@@ -87,7 +93,8 @@ namespace locust
             int fSwapFrequency;
             double fphiLO; // voltage phase of LO in radians;
 
-            bool WakeBeforeEvent();
+            void KassiopeiaInit(const std::string &aFile);
+            void WakeBeforeEvent();
             bool ReceivedKassReady();
 
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
@@ -111,10 +118,14 @@ namespace locust
             bool DoGenerate( Signal* aSignal );
             void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
+            AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object
             PowerCombiner* fPowerCombiner;
             TFReceiverHandler fTFReceiverHandler;
             HilbertTransform fHilbertTransform;
+
+            kl_interface_ptr_t fInterface;
+
 
     };
 

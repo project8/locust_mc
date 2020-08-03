@@ -1,0 +1,51 @@
+{
+    "generators":
+    [          
+       "kass-signal",
+       "lpf-fft",
+       "decimate-signal", 
+       "gaussian-noise",
+       "digitizer"
+    ],
+    
+    "lpf-fft":
+    {
+  
+    },
+
+    "decimate-signal":
+    {
+
+    },
+
+    "kass-signal":
+    {
+        "lo-frequency": 25.3106e9,
+	"event-spacing-samples": 15000,
+	"center-to-short": 0.0488,
+        "center-to-antenna": 0.045,
+        "pitchangle-filename": "${CMAKE_INSTALL_PREFIX}/bin/pitchangles.txt",
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Waveguide_Template.xml"
+    },
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 819200
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor-psd": 2.0e-22,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 4.0e-5,
+    "v-offset": -2.0e-5
+    }
+
+}
+
