@@ -19,6 +19,7 @@ namespace locust
     LOGGER( lmclog, "LMCKrComplexLineDistribution" );
 
     KrComplexLineDistribution::KrComplexLineDistribution(const scarab::param_node &aParam) :
+        fECore( 0. ),
         fFWHM( 5. ),
         fLinePosition( 17826. ),
         fAmplitude{1,0},
