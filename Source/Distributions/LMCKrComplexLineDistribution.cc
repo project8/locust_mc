@@ -19,6 +19,7 @@ namespace locust
     LOGGER( lmclog, "LMCKrComplexLineDistribution" );
 
     KrComplexLineDistribution::KrComplexLineDistribution(const scarab::param_node &aParam) :
+        fECore( 0. ),
         fFWHM( 5. ),
         fLinePosition( 17826. ),
         fAmplitude{1,0},
@@ -309,6 +310,7 @@ namespace locust
         std::vector<double> cdf = trapezoidal_rule(f,x);
         interpolant = gsl_spline_alloc(gsl_interp_cspline, cdf.size());
         gsl_spline_init(interpolant, cdf.data(), x.data(), x.size());
+
     }
 
     std::vector<double> KrComplexLineDistribution::trapezoidal_rule(std::vector<double> f, std::vector<double> x)
