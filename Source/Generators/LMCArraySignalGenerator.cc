@@ -568,7 +568,8 @@ namespace locust
             exit(-1);
         }
 
-        FILE *fp = fopen("incidentfields.txt", "w");
+        FILE *fp;
+        if (fTextFileWriting==1) fp = fopen("incidentfields.txt", "w");
 
 
         //n samples for event spacing in Kass.
@@ -642,7 +643,7 @@ namespace locust
 
 
             fInterface->fDoneWithSignalGeneration = true;
-            fclose(fp);
+            if (fTextFileWriting==1) fclose(fp);
             LPROG( lmclog, "Finished signal loop." );
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
