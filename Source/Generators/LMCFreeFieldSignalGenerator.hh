@@ -14,6 +14,8 @@
 #include "LMCChannel.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCLienardWiechert.hh"
+#include "LMCKassLocustInterface.hh"
+
 
 namespace locust
 {
@@ -53,6 +55,7 @@ namespace locust
             std::vector< Channel<PatchAntenna> > allChannels; //Vector that contains pointer to all channels
 
             double fLO_Frequency;  // typically defined by a parameter in json file.
+            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             double fArrayRadius;
             int fNElementsPerStrip;
             double fElementSpacing;
@@ -61,11 +64,16 @@ namespace locust
             int fPileupSeed; 
             LienardWiechert fFieldSolver;
 
+            kl_interface_ptr_t fInterface;
+
             std::string gxml_filename;
 
             bool DoGenerate( Signal* aSignal );
             void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal);
             void InitializePatchArray();
+            void KassiopeiaInit(const std::string &aFile);
+            bool WakeBeforeEvent();
+            bool ReceivedKassReady();
 
     };
 

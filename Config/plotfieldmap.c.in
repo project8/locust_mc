@@ -1,0 +1,68 @@
+TGraph* grField(const char *filename)
+{
+
+    TFile* f = TFile::Open(filename);
+
+    double pz_array[200000];
+    double Bz_array[200000];
+    double x=0., y=0.;
+
+
+   // Create a TTreeReader for the tree, for instance by passing the
+    // TTree's name and the TDirectory / TFile it is in.
+    TTreeReader myReader("component_step_world_DATA", f);
+    TTreeReaderValue<double> pz(myReader,"position_z");
+    TTreeReaderValue<double> Bz(myReader,"magnetic_field_z");
+    TTreeReaderValue<double> px(myReader,"position_x");
+    TTreeReaderValue<double> py(myReader,"position_y");
+
+    int counter = 0;
+    while (myReader.Next()) 
+    {
+        x = *px;
+        y = *py;
+        if (x*x+y*y < 1e6)  // pick central field line?
+        {
+            pz_array[counter] = *pz;
+            Bz_array[counter] = *Bz;
+            counter += 1;
+	    printf("counter is %d, x is %g and y is %g, z is %g\n", counter, *px, *py, *pz);
+        }
+    }
+
+
+    TGraph *grField = new TGraph(counter, pz_array, Bz_array);
+    grField->GetXaxis()->SetRangeUser(-0.03,0.03);
+
+    grField->SetTitle("B_{z}");
+    grField->GetYaxis()->SetTitle("B_{z} (T)");
+    grField->GetXaxis()->SetTitle("z position (m)");
+    grField->GetYaxis()->SetTitleSize(0.05);
+    grField->GetXaxis()->SetTitleSize(0.05);
+    grField->GetYaxis()->SetLabelSize(0.045);
+    grField->GetXaxis()->SetLabelSize(0.045);
+
+    grField->GetYaxis()->SetTitleOffset(1.2);
+    grField->SetMarkerStyle(8);
+    return grField;
+}
+
+    // plot Bz.  Use radial cut to pick center axis.
+void fieldmap()
+{
+
+    const char *f = "${CMAKE_INSTALL_PREFIX}/FieldLineSeed335Output.root";
+
+    TGraph* gr = grField(f);
+
+        
+    gr->Draw("ap");
+    TLatex* t = new TLatex();
+    t->SetTextFont(42);
+    t->DrawLatex(-0.025, 1.02, "r=0cm");
+
+
+
+
+}
+

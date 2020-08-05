@@ -11,7 +11,7 @@
 #include "LMCGenerator.hh"
 #include "LMCRunLengthCalculator.hh"
 
-#ifdef LMCFILEWRITER_HH_
+#ifdef ROOT_FOUND
     #include "LMCRootGraphWriter.hh"
     #include "LMCRootHistoWriter.hh"
 #endif

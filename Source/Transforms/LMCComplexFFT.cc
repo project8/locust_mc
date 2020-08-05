@@ -94,8 +94,6 @@ namespace locust
     
     bool ComplexFFT::GenerateWindowFunction()
     {
-	std::ofstream myfile;
-	myfile.open ("WindowFunction.txt");
         if(fWindowFunctionType==0)
 	{
             for (int i = 0; i < fTotalWindowSize; ++i)
@@ -112,10 +110,6 @@ namespace locust
 		{
 		    fWindowFunction[i]=0.0;
 		}
-	        myfile<<i;
-	        myfile<<",";
-	        myfile<<fWindowFunction[i];
-	        myfile<<"\n";
 	    }
 	}
         else if(fWindowFunctionType==1)
@@ -152,17 +146,12 @@ namespace locust
 		{
 		    fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1.0/tukeyWindowAlpha+1)));
 		}
-	        myfile<<i;
-	        myfile<<",";
-	        myfile<<fWindowFunction[i];
-	        myfile<<"\n";
 	    }
 	}	
 	else
 	{
 	    return false;
 	}
-	myfile.close();
 	return true;
     }
 
@@ -253,19 +242,12 @@ namespace locust
 	    LERROR(lmclog,"Couldn't make FIR filter causal");
 	    exit(-1);
 	}
-	std::ofstream myfile;
-	myfile.open ("example.txt");
         for (int i = 0; i < 2*fSize+fNShiftBins; ++i)
 	{
 	   out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
         for (int i = 0; i < fSize+2*fNShiftBins; ++i){
-	   myfile<<i;
-	   myfile<<",";
-	   myfile<<fOutputArray[i][0]*2/fTotalWindowSize;
-	   myfile<<"\n";
 	}
-	myfile.close();
         return true;
     }
     
