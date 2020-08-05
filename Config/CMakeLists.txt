@@ -13,6 +13,7 @@ configure_file( LocustMagDipoleAntennaTemplate.json.in LocustMagDipoleAntennaTem
 configure_file( LocustTestSignal.json.in LocustTestSignal.json )
 configure_file( plotfieldmap.c.in plotfieldmap.c )
 configure_file( katydid.json.in katydid.json )
+configure_file( ChannelAggregatorConfig.yaml.in ChannelAggregatorConfig.yaml )
 
 
 set (EXAMPLE_CONFIGFILES
@@ -29,6 +30,7 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustMagDipoleAntennaTemplate.json    
     ${CMAKE_CURRENT_BINARY_DIR}/LocustTestSignal.json    
     ${CMAKE_CURRENT_BINARY_DIR}/katydid.json    
+    ${CMAKE_CURRENT_BINARY_DIR}/ChannelAggregatorConfig.yaml    
     ${CMAKE_CURRENT_BINARY_DIR}/plotfieldmap.c    
 )
 
