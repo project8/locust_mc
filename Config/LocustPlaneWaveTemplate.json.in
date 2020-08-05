@@ -25,7 +25,7 @@
         "transmitter-frequency": 25.9281e9,
 	"planewave-amplitude": 1.0e-8,
         "AOI": 0.0,
-        "voltage-check": false,
+        "voltage-check": true,
         "lo-frequency": 25.8781e9,
         "nelements-per-strip": 6,
         "element-spacing": 0.007753,
