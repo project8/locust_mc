@@ -54,7 +54,7 @@
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
 
-<external_define name="output_path" value="./"/> 
+<external_define name="output_path" value="${CMAKE_INSTALL_PREFIX}/output"/> 
 <external_define name="file" value="Phase1Seed[seed]Output"/>
 
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
