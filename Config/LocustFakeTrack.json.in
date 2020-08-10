@@ -44,7 +44,7 @@
     "n-events": 1,
     "hydrogen-fraction":1,
     "pitch-correction":0,
-    "root-filename": "LocustEvent.root"
+    "root-filename": "${CMAKE_INSTALL_PREFIX}/output/LocustEvent.root"
     },
     
     "simulation":
