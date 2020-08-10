@@ -44,12 +44,12 @@
     "n-events": 1,
     "hydrogen-fraction":1,
     "pitch-correction":0,
-    "root-filename": "LocustEvent.root"
+    "root-filename": "${CMAKE_INSTALL_PREFIX}/output/LocustEvent.root"
     },
     
     "simulation":
     {
-        "egg-filename": "${CMAKE_INSTALL_PREFIX}/locust_mc.egg",
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
         "n-channels": 1,
         "record-size": 4194304
