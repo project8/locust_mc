@@ -37,7 +37,7 @@
 
     "simulation":
     {
-        "egg-filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
         "record-size": 8192,
         "n-channels": 1
