@@ -110,6 +110,9 @@ namespace locust
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
 
+            bool GetSlopeCorrection() const;
+            void SetSlopeCorrection(  bool aSlopeCorrection );
+
             double GetTrapLength() const;
             void SetTrapLength(  double aTrapLength );
 
@@ -174,6 +177,7 @@ namespace locust
             int fRandomSeed;
             int fNEvents;
             bool fPitchCorrection;
+            bool fSlopeCorrection;
             double fHydrogenFraction;
             std::string fRootFilename;
             std::default_random_engine fRandomEngine;

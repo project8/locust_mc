@@ -41,6 +41,7 @@ namespace locust
         fRandomSeed(0),
         fNEvents(1),
         fPitchCorrection( true ),
+        fSlopeCorrection( false ),
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
@@ -166,7 +167,6 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
             SetFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
 
-
         if (aParam.has( "ntracks-mean") )
             SetNTracksMean( aParam.get_value< double >( "ntracks-mean",fNTracksMean) );
 
@@ -181,6 +181,8 @@ namespace locust
 
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
+        if (aParam.has( "slope-correction") )
+            SetSlopeCorrection( aParam.get_value< bool >( "slope-correction",fSlopeCorrection) );
 
         if (aParam.has( "trap-length") )
             SetTrapLength(  aParam.get_value< double >( "trap-length", fTrapLength) );
@@ -417,6 +419,18 @@ namespace locust
     void FakeTrackSignalGenerator::SetPitchCorrection( bool aPitchCorrection )
     {
         fPitchCorrection = aPitchCorrection;
+        return;
+    }
+
+    bool FakeTrackSignalGenerator::GetSlopeCorrection() const
+    {
+        return fSlopeCorrection;
+    }
+
+
+    void FakeTrackSignalGenerator::SetSlopeCorrection( bool aSlopeCorrection )
+    {
+        fSlopeCorrection = aSlopeCorrection;
         return;
     }
 
@@ -718,6 +732,8 @@ namespace locust
         }
 
         fSlope = fSlopeDistribution->Generate();
+        if(fSlopeCorrection) fSlope *= RadialPowerCoupling(fStartFrequency, fRadius);
+
         fTrackLength = fTrackLengthDistribution->Generate();
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
         aTrack.Slope = fSlope;
