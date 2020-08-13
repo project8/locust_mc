@@ -126,11 +126,13 @@ namespace locust
             double GetScatteredPitchAngle(double thetaScatter, double pitchAngle, double phi);
             void SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data);
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
+            double RadialPowerCoupling(double frequency, double radius);
             double GetEnergyLoss(double u, bool hydrogenScatter);
             double GetKa2(double eLoss, double T);
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
-            double GetPitchCorrectedFrequency(double frequency) const;
+            double GetCorrectedFrequency(double frequency, double radius) const;
+
             double GetAxialFrequency();
             void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
 
@@ -157,12 +159,14 @@ namespace locust
             std::shared_ptr< BaseDistribution> fStartEnergyDistribution;
             std::shared_ptr< BaseDistribution> fStartFrequencyDistribution;
             std::shared_ptr< BaseDistribution> fSlopeDistribution;
+            std::shared_ptr< BaseDistribution> fRadiusDistribution;
             std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
             std::shared_ptr< BaseDistribution> fz0Distribution;
             double fStartTimeMax;
             double fStartTimeMin;
             double fStartPitchMin;
             double fStartPitchMax;
+            double fRadius;
             double fPitchMin;
             double fLO_frequency;
             double fNTracksMean;

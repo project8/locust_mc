@@ -43,6 +43,7 @@ set( LOCUST_MC_HEADER_FILES
     Distributions/LMCGaussianDistribution.hh
     Distributions/LMCLorentzianDistribution.hh
     Distributions/LMCRuddDistribution.hh
+    Distributions/LMCUniformCircleDistribution.hh
     Distributions/LMCUniformDistribution.hh
     Distributions/LMCKrComplexLineDistribution.hh
     Distributions/LMCDistributionInterface.hh
@@ -103,6 +104,7 @@ set( LOCUST_MC_SOURCE_FILES
     Distributions/LMCGaussianDistribution.cc
     Distributions/LMCLorentzianDistribution.cc
     Distributions/LMCRuddDistribution.cc
+    Distributions/LMCUniformCircleDistribution.cc
     Distributions/LMCUniformDistribution.cc
     Distributions/LMCKrComplexLineDistribution.cc
     Distributions/LMCDistributionInterface.cc
