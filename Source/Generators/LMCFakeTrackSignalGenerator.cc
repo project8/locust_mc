@@ -609,7 +609,7 @@ namespace locust
         if(x > 1e-100)
             corr2 += pow(j1(x) / x , 2.);
         else
-            corr2 += 1./2.; //avoid nans
+            corr2 += 1./4.; //avoid nans
 
         return sqrt(2. * corr2);
     }
