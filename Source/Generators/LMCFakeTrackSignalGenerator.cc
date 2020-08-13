@@ -732,7 +732,7 @@ namespace locust
         }
 
         fSlope = fSlopeDistribution->Generate();
-        if(fSlopeCorrection) fSlope *= RadialPowerCoupling(fStartFrequency, fRadius);
+        if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fStartFrequency, fRadius),2.);
 
         fTrackLength = fTrackLengthDistribution->Generate();
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
