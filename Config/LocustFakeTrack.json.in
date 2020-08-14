@@ -1,0 +1,78 @@
+{
+    "generators":
+    [          
+       "fake-track",
+       "lpf-fft",
+       "decimate-signal",
+       "gaussian-noise",
+       "digitizer"
+    ],
+
+    "fake-track":
+    {
+    "start-energy":
+        {
+            "name":"kr-complex-line",
+            "fwhm": 5,
+            "emitted-peak":"",
+            "scatter-probability":0.8,
+            "amplitude":
+            {
+                "H2":1,
+                "Kr":1
+            }
+        },
+    "slope":
+        {
+            "name":"uniform",
+            "min-value": 2,
+            "max-value": 30
+        },
+    "scattering-angle":
+        {
+            "name":"rudd",
+            "alpha": 0.001
+        },
+    "signal-power": 1.0e-15,
+    "start-vphase": 0.0,
+    "start-time-min": 0.001,
+    "start-time-max": 0.003,
+    "lo-frequency": 20.0e9,
+    "track-length-mean": 0.002,
+    "ntracks-mean": 5.0,
+    "random-seed": 18,
+    "n-events": 1,
+    "hydrogen-fraction":1,
+    "pitch-correction":0,
+    "root-filename": "${CMAKE_INSTALL_PREFIX}/output/LocustEvent.root"
+    },
+    
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
+        "n-records": 1,
+        "n-channels": 1,
+        "record-size": 4194304
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-temperature": 1,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 1.0e-5,
+    "v-offset": -0.5e-5
+    },
+    
+    "decimate-signal":
+    {
+    },
+    
+    "lpf-fft":
+    {
+    }
+
+}

@@ -5,26 +5,22 @@
  *      Author: nsoblath
  */
 
+#include "logger.hh"
 #include "LMCEventHold.hh"
+#include <csignal>
 
 namespace locust
 {
 
+	LOGGER( lmclog, "EventHold" );
+
     EventHold::EventHold() :
-            fWaitBeforeEvent( false ),
-            fWaitAfterEvent( false ),
-            fMutex(),
-            fPreEventCondition(),
-            fPostEventCondition()
+            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
-    EventHold::EventHold( const EventHold& aOrig ) :
-            fWaitBeforeEvent( aOrig.fWaitBeforeEvent ),
-            fWaitAfterEvent( aOrig.fWaitAfterEvent ),
-            fMutex(),
-            fPreEventCondition(),
-            fPostEventCondition()
+    EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
+            fInterface( aOrig.fInterface )
     {
     }
 
@@ -41,54 +37,36 @@ namespace locust
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
 
-    	printf("check 1\n"); getchar();
-        if( fWaitBeforeEvent )
+        LPROG( lmclog, "Kass is waiting for event trigger" );
+
+        fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
+        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration))
         {
-            std::unique_lock< std::mutex >tLock( fMutex );
-            fPreEventCondition.wait( tLock );
-            return true;
+            fInterface->fKassReadyCondition.notify_one();
+            std::unique_lock< std::mutex >tLock( fInterface->fMutex );
+            fInterface->fPreEventCondition.wait( tLock );
+            fInterface->fKassEventReady = false;
+            fInterface->fTOld = 0.;  // reset time on event clock
+            LPROG( lmclog, "Kass got the event trigger" );
         }
-        return false;
+        else
+        {
+        	printf("Raising sigint to cancel Kassiopeia");
+        	raise(SIGINT);
+        	return true;
+        }
+
+        return true;
+
     }
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
-        if( fWaitAfterEvent )
-        {
-            std::unique_lock< std::mutex >tLock( fMutex );
-            fPostEventCondition.wait( tLock );
-            return true;
-        }
-        return false;
+        fInterface->fEventInProgress = false;
+        fInterface->fDigitizerCondition.notify_one();  // unlock
+        LPROG( lmclog, "Kass is waking after event" );
+        return true;
     }
-
-    void EventHold::WakeBeforeEvent()
-    {
-        fPreEventCondition.notify_one();
-        return;
-    }
-
-    void EventHold::WakeAfterEvent()
-    {
-        fPostEventCondition.notify_one();
-        return;
-    }
-
-    void EventHold::InitializeComponent()
-    {
-    }
-
-    void EventHold::DeinitializeComponent()
-    {
-    }
-
-    void EventHold::PullDeupdateComponent()
-    {
-    }
-    void EventHold::PushDeupdateComponent()
-    {
-    }
-
 
 } /* namespace locust */
 

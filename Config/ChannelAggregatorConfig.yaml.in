@@ -1,0 +1,80 @@
+processor-toolbox:
+    processors:
+      - type: egg-processor
+        name: egg
+      - type: forward-fftw
+        name: fft
+      - type: channel-aggregator
+        name: ch-sum
+      - type: aggregated-channel-optimizer
+        name: ch-opt
+      - type: convert-to-power
+        name: to-ps
+      - type: basic-root-writer
+        name: writer
+      - type: root-spectrogram-writer
+        name: waterfall-writer
+
+    connections:
+      - signal: "egg:header"
+        slot: "fft:header"
+      - signal: "egg:ts"
+        slot: "fft:ts-fftw"
+      - signal: "fft:fft"
+        slot: "ch-sum:fft"
+      - signal: "ch-sum:agg-fft"
+        slot: "ch-opt:agg-fft"
+      - signal: "ch-sum:agg-fft"
+        slot: "to-ps:aggfs-fftw-to-ps"
+      - signal: "ch-sum:agg-fft"
+        slot: "to-ps:aggfs-fftw-to-psd"
+      - signal: "ch-sum:agg-fft"
+        slot: "writer:agg-fs-fftw"
+      - signal: "ch-sum:agg-fft"
+        slot: "writer:agg-grid-fftw"
+      - signal: "to-ps:ps"
+        slot: "writer:agg-ps"
+      - signal: "to-ps:psd"
+        slot: "writer:agg-psd"
+      - signal: "to-ps:ps"
+        slot: "writer:agg-grid-ps"
+      - signal: "to-ps:psd"
+        slot: "writer:agg-grid-psd"
+      - signal: "to-ps:ps"
+        slot: "waterfall-writer:agg-ps"
+      - signal: "to-ps:psd"
+        slot: "waterfall-writer:agg-psd"
+      - signal: "egg:egg-done"
+        slot: "waterfall-writer:write-file"
+
+    run-queue:
+      - egg
+
+egg:
+    filename: "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg"
+    egg-reader: egg3
+    slice-size: 8192
+    number-of-slices: 10
+    stride: 8192
+
+fft:
+    transform-flag: ESTIMATE
+
+ch-sum:
+    grid-size: 5
+    active-radius: 0.0516
+    wavelength: 0.011
+    use-antispiral-phase-shifts: true
+
+writer:
+    output-file: "Summed_Channels.root"
+    file-flag: recreate
+
+waterfall-writer:
+    output-file: "Summed_Channels.root"
+    file-flag: recreate
+    min-time: 0.0
+    max-time: 0.025
+    min-freq: 0.0e6
+    max-freq: 200.0e6
+    

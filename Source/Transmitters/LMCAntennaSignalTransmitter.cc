@@ -8,8 +8,8 @@
 #include "LMCAntennaSignalTransmitter.hh"
 
 #include "logger.hh"
-
 using std::string;
+
 
 namespace locust
 {
@@ -87,7 +87,7 @@ namespace locust
 
     double* AntennaSignalTransmitter::GetEFieldCoPol(int fieldPointIndex, double dt)
     {
-	LMCThreeVector pointOfInterest=GetFieldPoint(fieldPointIndex);
+    	LMCThreeVector pointOfInterest=GetFieldPoint(fieldPointIndex);
         double estimatedField=0.0;
         //if ( ( zIndex == 0 ) && (channelIndex == 0) ) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;
         if (fieldPointIndex == 0) fPhaseDelay+= 2.*LMCConst::Pi()*fInputFrequency*dt;

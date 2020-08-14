@@ -12,7 +12,7 @@
 #include "LMCRunLengthCalculator.hh"
 #include "LMCConst.hh"
 
-#ifdef LMCFILEWRITER_HH_
+#ifdef ROOT_FOUND
     #include "LMCRunParameters.hh"
     #include "LMCRootTreeWriter.hh"
 #endif

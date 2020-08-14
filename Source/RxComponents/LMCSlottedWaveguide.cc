@@ -15,7 +15,7 @@ namespace locust
 	LOGGER( lmclog, "SlottedWaveguide" );
 
     SlottedWaveguide::SlottedWaveguide():
-    		fImpedanceTransformation( 0.339 ) // sqrt(50./435.) unless already included in HFSS TF.
+    		fImpedanceTransformation( 0.358 ) // sqrt(50./390.), where 390 ohms is the 5-slot TF input array impedance
     {
     }
 
@@ -49,8 +49,8 @@ namespace locust
 		for (unsigned z_index=0; z_index<GetNElementsPerStrip(); z_index++)
 		{
 			double aFactor = fImpedanceTransformation;
-			//Adhoc scaling in case the slotted waveguide has fewer/more slots than 10
-			aFactor = aFactor/sqrt(GetNElementsPerStrip()/10.);
+            //Adhoc scaling in case the slotted waveguide has fewer/more slots than 5
+            aFactor = aFactor/sqrt(GetNElementsPerStrip()/5.);
 			SetDampingFactor(z_index, aFactor);
 		}
 
