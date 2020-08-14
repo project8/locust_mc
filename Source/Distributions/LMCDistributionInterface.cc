@@ -58,6 +58,9 @@ namespace locust
         else if(dist_name == "uniform")
             fDistributionList.push_back( std::make_shared< UniformDistribution >(aParam) );
 
+        else if(dist_name == "uniform-circle")
+            fDistributionList.push_back( std::make_shared< UniformCircleDistribution >(aParam) );
+
         else if(dist_name == "kr-complex-line")
             fDistributionList.push_back( std::make_shared< KrComplexLineDistribution >(aParam) );
 
