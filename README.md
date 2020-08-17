@@ -111,6 +111,43 @@ The following steps will build locust from scratch.  In the terminal:
     ```
   If you have another kassiopeia installation on your computer, you should ensure that locust is not using the environmental variables of the independent kassiopeia installation by removing this line from your .bashrc.
 
+### Docker container
+
+* A Docker container with Locust is available at https://hub.docker.com/r/project8/locust_mc 
+
+* This Docker container can be used with Docker (with superuser privileges).
+
+* Pull the container to your system with
+```
+> sudo docker pull project8/locust_mc
+```
+
+Open a shell inside the container with
+```
+> sudo docker run --rm -it project8/locust_mc /bin/bash
+```
+
+* The Docker container can also be used with Singularity (as a regular user without sudo).
+
+Pull the container to your system with
+```
+> singularity pull docker://project8/locust_mc
+```
+
+Open a shell inside the container with
+```
+> singularity shell /path/to/local/sif/locust-latest.sif
+```
+
+or to avoid mounting the $HOME directory
+```
+> singularity shell --no-home /path/to/local/sif/locust-latest.sif
+```
+
+
+
+
+
 
 Directory Structure
 -------------------
