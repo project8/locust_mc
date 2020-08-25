@@ -503,7 +503,7 @@ namespace locust
     double FakeTrackSignalGenerator::EnergyLossSpectrum(double eLoss, double oscillator_strength)
     {
         double T = rel_energy(fLO_frequency + 50e6, fBField);
-        return (LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * eLoss / pow(LMCConst::E_Rydberg(), 3.) ); // Produces energy loss spectrum (N. Buzinsky report Eqn XXX) 
+        return (LMCConst::E_Rydberg() / eLoss) * oscillator_strength * log(4. * T * LMCConst::E_Rydberg() /  pow(eLoss,2.)  ); // Produces energy loss spectrum (N. Buzinsky report Eqn 3)
         // NOTE: because this formula depends only on log T, I do NOT update with each change in kinetic energy (ie. from radiative losses). Including these changes may be better
 
     }
