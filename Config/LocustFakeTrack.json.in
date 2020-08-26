@@ -33,12 +33,16 @@
             "name":"rudd",
             "alpha": 0.001
         },
+    "track-length":
+        {
+            "name":"exponential",
+            "tau": 1e-4
+        },
     "signal-power": 1.0e-15,
     "start-vphase": 0.0,
     "start-time-min": 0.001,
     "start-time-max": 0.003,
     "lo-frequency": 20.0e9,
-    "track-length-mean": 0.002,
     "ntracks-mean": 5.0,
     "random-seed": 18,
     "n-events": 1,
