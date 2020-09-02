@@ -35,11 +35,10 @@ namespace locust
     	double tTheta = LMCConst::Pi()/2.;
     	if (fabs(incidentCoPol)>0.) tTheta = atan(incidentNormal/incidentCoPol);
 
-    	// dipole theta dependence, normalized to 1.0 for normal incidence
-        double dipoleThetaFactor = 1.0;
+        // dipole theta dependence, normalized to 1.0 for normal incidence
+        double dipoleThetaFactor = 0.0;
         if (fabs(tTheta)>0.) dipoleThetaFactor = cos((LMCConst::Pi()/2.)*cos(tTheta))/sin(tTheta);
-        else dipoleThetaFactor = 0.0;
-    	
+
         double tPhi = 0.;
     	if (fabs(incidentNormal)>0.) tPhi = atan(incidentCrossPol/incidentNormal);
 
