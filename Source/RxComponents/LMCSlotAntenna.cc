@@ -35,10 +35,11 @@ namespace locust
     	double tTheta = LMCConst::Pi()/2.;
     	if (fabs(incidentCoPol)>0.) tTheta = atan(incidentNormal/incidentCoPol);
 
-    	// dipole theta dependence, normalized to 1.0 for normal incidence
-    	double dipoleThetaFactor = (-1.0) * (3.*cos(tTheta)*cos(tTheta)-1.);
+        // dipole theta dependence, normalized to 1.0 for normal incidence
+        double dipoleThetaFactor = 0.0;
+        if (fabs(tTheta)>0.) dipoleThetaFactor = cos((LMCConst::Pi()/2.)*cos(tTheta))/sin(tTheta);
 
-    	double tPhi = 0.;
+        double tPhi = 0.;
     	if (fabs(incidentNormal)>0.) tPhi = atan(incidentCrossPol/incidentNormal);
 
     	// dipole donut pinch from HFSS, normalized to 1.0 for normal incidence.
