@@ -16,7 +16,7 @@ After running Katydid, the processed fft spectra will have a span from 0 to the 
 
 ### Tutorial
 
-The [Config](https://github.com/project8/locust_mc/tree/develop/Config) directory contains instructions to guide the user through several short examples. 
+A tutorial with examples is located in the locust-tutorial repository, [here](https://github.com/project8/locust-tutorial). 
 
 Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issues).
 
