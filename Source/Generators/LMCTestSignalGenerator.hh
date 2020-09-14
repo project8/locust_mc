@@ -37,7 +37,17 @@ namespace locust
      Configuration name: "test-signal"
 
      Available configuration options:
-     - "frequency": double -- Frequency of the sine wave.
+     - "rf-frequency": double -- Frequency of the sine wave.
+     - "lo-frequency": double -- Frequency of the local oscillator.
+     - "am-frequency": double -- Frequency of AM modulation, if any.
+     - "am-mod-select":  int -- Select:
+      	  no AM modulation (default, 0),
+      	  AM modulation (1), or
+      	  AM modulation followed by demodulation (2)
+      	  Following discussion at http://web.mit.edu/6.02/www/s2012/handouts/14.pdf,
+      	  suggest rf-frequency = 41.0e6, lo-frequency = 40.0e6, am-frequency = 50.e6., am-mod-select = 1 or 2
+      	  This allows f_(rf-lo) << f_(am) for cleaner demodulation due to band limiting.
+      	  Look for loss of 2 in total power on AM modulation or demodulation as in reference above.
      - "amplitude": double -- Amplitude of the sine wave.
      - "mixing-product": bool -- If true, use product of RF and LO for downmixing.  If false,
      	 calculate lower sideband at RF-LO and replace mixing product with it.  The latter is best used
@@ -71,6 +81,12 @@ namespace locust
             double GetLOFrequency() const;
             void SetLOFrequency( double aFrequency );
 
+            double GetAMModFrequency() const;
+            void SetAMModFrequency( double aFrequency );
+
+            int GetAMModSelect() const;
+            void SetAMModSelect( int aModSelection );
+
             bool GetMixingProduct() const;
             void SetMixingProduct( bool aMixingProduct );
 
@@ -95,6 +111,8 @@ namespace locust
 
             double fRF_frequency;
             double fLO_frequency;
+            double fAMModfrequency;
+            int fAMModSelect;
             double fAmplitude;
             bool fMixingProduct;
             bool fWriteRootHisto;
