@@ -165,6 +165,7 @@ namespace locust
     fftw_complex* HilbertTransform::Transform(std::deque<double> FieldBuffer)
     {
         int windowsize=FieldBuffer.size();
+        ComplexFFT aComplexFFT;
 
         fftw_complex *originaldata;
         originaldata = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * windowsize);
@@ -175,10 +176,10 @@ namespace locust
         fftw_complex *hilbert;
         hilbert = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * windowsize);
 
-        fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
-        fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(windowsize, hilbert, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+//        fftw_plan ForwardPlan;
+//        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+//        fftw_plan ReversePlan;
+//        ReversePlan = fftw_plan_dft_1d(windowsize, hilbert, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
 
         int i=0;
         for (std::deque<double>::iterator it = FieldBuffer.begin(); it!=FieldBuffer.end(); ++it)
@@ -192,7 +193,8 @@ namespace locust
 
 
 
-        fftw_execute(ForwardPlan); // SignalComplex->FFTComplex
+//        fftw_execute(ForwardPlan); // SignalComplex->FFTComplex
+        aComplexFFT.ForwardFFT(windowsize, SignalComplex, FFTComplex);
 
 
         // do the phase shifts
@@ -211,7 +213,8 @@ namespace locust
         }
 
 
-        fftw_execute(ReversePlan); // hilbert->SignalComplex
+//        fftw_execute(ReversePlan); // hilbert->SignalComplex
+        aComplexFFT.ReverseFFT(windowsize, hilbert, SignalComplex);
 
 
         for (int i = 0; i < windowsize; i++)  // normalize with 1/N
@@ -250,8 +253,8 @@ namespace locust
     	getchar();  // Control-C to quit.
 */
 
-        fftw_destroy_plan(ForwardPlan);
-        fftw_destroy_plan(ReversePlan);
+//        fftw_destroy_plan(ForwardPlan);
+//        fftw_destroy_plan(ReversePlan);
         delete[] hilbert;
         delete[] SignalComplex;
         delete[] FFTComplex;

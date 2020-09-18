@@ -13,6 +13,7 @@
 #include <deque>
 #include "LMCConst.hh"
 #include "param.hh"
+#include "LMCComplexFFT.hh"
 
 
 namespace locust
