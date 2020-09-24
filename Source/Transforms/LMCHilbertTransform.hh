@@ -13,6 +13,7 @@
 #include <deque>
 #include "LMCConst.hh"
 #include "param.hh"
+#include "LMCComplexFFT.hh"
 
 
 namespace locust
@@ -40,6 +41,7 @@ namespace locust
 
         private:
 
+            ComplexFFT fComplexFFT;
             fftw_complex* Transform(std::deque<double> FieldBuffer);
             double* GetFrequencyData(std::deque<double> FrequencyBuffer);
             double GetMean( std::deque<double> FieldBuffer );
