@@ -211,7 +211,7 @@ namespace locust
         }
 
 
-        fComplexFFT.RawReverseFFT(windowsize, hilbert, SignalComplex);
+        fComplexFFT.ReverseFFT(windowsize, hilbert, SignalComplex);
 
 
         for (int i = 0; i < windowsize; i++)  // normalize with 1/N

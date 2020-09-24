@@ -111,7 +111,7 @@ namespace locust
         fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth);
 	fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
-        fComplexFFT.ReverseFFT(fTFNBins,fTFComplex,fFIRComplex);
+        fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
 	fResolution=fComplexFFT.GetTimeResolution();
         for (int i = 0; i < fFIRNBins; ++i){
             fFilter.push_back(fFIRComplex[i][0]);
