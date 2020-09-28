@@ -69,6 +69,7 @@ namespace locust
             if( newGenerator == nullptr )
             {
                 LERROR( lmclog, "Unrecognized generator name: " << (*it)().as_string() );
+                exit(-1);
                 // TODO: this should also be a fatal error
                 continue;
             }
