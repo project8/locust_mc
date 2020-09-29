@@ -99,10 +99,15 @@ namespace locust
             if( ! aNode.has( nextGenerator->GetName() ) )
             {
                 LDEBUG( lmclog, "No configuration information present" );
+            	nextGenerator = nextGenerator->GetNextGenerator();
                 continue;
             }
-            nextGenerator->Configure( aNode[ nextGenerator->GetName() ].as_node() );
-            nextGenerator = nextGenerator->GetNextGenerator();
+            else
+            {
+            	nextGenerator->Configure( aNode[ nextGenerator->GetName() ].as_node() );
+            	nextGenerator = nextGenerator->GetNextGenerator();
+            }
+
         }
 
         LINFO( lmclog, "Generator toolbox configuration complete" );
