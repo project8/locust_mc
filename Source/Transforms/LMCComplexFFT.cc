@@ -45,8 +45,6 @@ namespace locust
             fftw_free(fOutputArray);
             fOutputArray = NULL;
         }
-        fftw_destroy_plan(fReversePlan);
-        fftw_destroy_plan(fForwardPlan);
     }
     
     bool ComplexFFT::Configure(const scarab::param_node& aParam)
@@ -180,6 +178,7 @@ namespace locust
         
         fForwardPlan = fftw_plan_dft_1d(size, in, out, FFTW_FORWARD, fTransform);
         fftw_execute_dft(fForwardPlan, in, out);
+        fftw_destroy_plan(fForwardPlan);
         return true;
     }
     
@@ -190,6 +189,7 @@ namespace locust
 
         fReversePlan = fftw_plan_dft_1d(size, in, out, FFTW_BACKWARD, fTransform);
         fftw_execute_dft(fReversePlan, in, out);
+        fftw_destroy_plan(fReversePlan);
         return true;
     }
 
