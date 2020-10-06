@@ -56,7 +56,7 @@ namespace locust
             if( ! it->is_value() )
             {
                 LERROR( lmclog, "Non-value-type array element found in generator-list" );
-                // TODO: this indicates a problem in the config and should result in locust exiting
+                exit(-1);
                 continue;
             }
 //            else
@@ -70,7 +70,6 @@ namespace locust
             {
                 LERROR( lmclog, "Unrecognized generator name: " << (*it)().as_string() );
                 exit(-1);
-                // TODO: this should also be a fatal error
                 continue;
             }
 
