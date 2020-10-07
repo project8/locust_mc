@@ -13,6 +13,7 @@
 
 #include "factory.hh"
 
+
 namespace locust
 {
     LOGGER( lmclog, "GeneratorToolbox" );
@@ -44,6 +45,13 @@ namespace locust
         // TODO: this line will throw an exception if "generators" is not present or it's not an array
         // TODO: this should either check that those are the case and return false if not, or
         // TODO: catch the exception and then return false
+
+        if (!(aNode.has("generators")&&aNode["generators"].is_array()))
+        	{
+            LERROR( lmclog, "generators array is either not present or not an array." );
+            return false;
+        	}
+
         const scarab::param_array& generatorList = aNode["generators"].as_array();
 
 
