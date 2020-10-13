@@ -33,7 +33,8 @@ namespace locust
     	double incidentCoPol = currentElement.GetPolarizationDirection().Dot(incidentKVector);
     	double incidentCrossPol = currentElement.GetCrossPolarizationDirection().Dot(incidentKVector);
     	double tTheta = LMCConst::Pi()/2.;
-    	if (fabs(incidentCoPol)>0.) tTheta = atan(incidentNormal/incidentCoPol);
+        if (incidentCoPol>0.) tTheta = atan(incidentNormal/fabs(incidentCoPol));
+        if (incidentCoPol<0.) tTheta = LMCConst::Pi() - atan(incidentNormal/fabs(incidentCoPol));
 
         // dipole theta dependence, normalized to 1.0 for normal incidence
         double dipoleThetaFactor = 0.0;
