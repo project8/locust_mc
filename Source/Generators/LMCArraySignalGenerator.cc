@@ -94,6 +94,23 @@ namespace locust
             	}
         	}
 
+            if(aParam["power-combining-feed"]().as_string() == "design-antenna")
+            {
+                npowercombiners += 1;
+                fPowerCombiner = new DesignAntennaArray;
+                if(!fPowerCombiner->Configure(aParam))
+                {
+                    LERROR(lmclog,"Error configuring design antenna.");
+                    exit(-1);
+                }
+                fAntennaElementPositioner = new AntennaElementPositioner;
+                if(!fAntennaElementPositioner->Configure(aParam))
+                {
+                    LERROR(lmclog,"Error configuring antenna element positioner.");
+                    exit(-1);
+                }
+            }
+
         	if(aParam["power-combining-feed"]().as_string() == "single-patch")
         	{
         		npowercombiners += 1;

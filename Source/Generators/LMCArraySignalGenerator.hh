@@ -14,6 +14,7 @@
 #include "LMCPowerCombiner.hh"
 #include "LMCVoltageDivider.hh"
 #include "LMCSlottedWaveguide.hh"
+#include "LMCDesignAntennaArray.hh"
 #include "LMCSinglePatch.hh"
 #include "LMCCorporateFeed.hh"
 #include "LMCsMatrix.hh"

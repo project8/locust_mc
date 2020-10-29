@@ -13,6 +13,7 @@
 #include "LMCSignal.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCSlotAntenna.hh"
+#include "LMCDesignAntenna.hh"
 #include <vector>
 
 

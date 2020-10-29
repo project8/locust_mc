@@ -56,6 +56,8 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCReceiver.hh
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCSlotAntenna.hh
+    RxComponents/LMCDesignAntenna.hh
+    RxComponents/LMCDesignAntennaArray.hh
     RxComponents/LMCChannel.hh
     RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCSinglePatchPositioner.hh
@@ -121,6 +123,8 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCReceiver.cc
     RxComponents/LMCPatchAntenna.cc
     RxComponents/LMCSlotAntenna.cc
+    RxComponents/LMCDesignAntenna.cc
+    RxComponents/LMCDesignAntennaArray.cc
     RxComponents/LMCChannel.cc    
     RxComponents/LMCAntennaElementPositioner.cc
     RxComponents/LMCSinglePatchPositioner.cc
