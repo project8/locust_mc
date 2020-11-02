@@ -32,6 +32,7 @@ namespace locust
             DesignAntennaArray();
             virtual ~DesignAntennaArray();
             virtual bool Configure( const scarab::param_node& aNode );
+            virtual bool SetVoltageDampingFactors();
 
             virtual Receiver* ChooseElement();
 
