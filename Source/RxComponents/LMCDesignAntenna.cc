@@ -25,6 +25,14 @@ namespace locust
       	getchar();
     }
 
+    void DesignAntenna::SetFieldPatternExponents(double thetaPatternParameter, double phiPatternParameter)
+    {
+
+        fThetaPatternExponent = thetaPatternParameter;
+        fPhiPatternExponent = phiPatternParameter;
+
+    }
+
     double DesignAntenna::GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement)
     {
     	// This is the aoi factor only.  It is not the dot product with the co-pol direction.
@@ -43,12 +51,12 @@ namespace locust
 
         double tTheta = LMCConst::Pi()/2.; 
         if (incidentNormal>0.) tTheta = atan(incidentCoPol/incidentNormal);
-        double thetaFactor = pow(cos(tTheta), 2.3);
+        double thetaFactor = pow(cos(tTheta), fThetaPatternExponent);
 
         
         double tPhi = LMCConst::Pi()/2.;
         if (incidentNormal>0.) tPhi = atan(incidentCrossPol/incidentNormal);
-        double phiFactor = pow(cos(tPhi), 2.3);
+        double phiFactor = pow(cos(tPhi), fPhiPatternExponent);
 
         /*
         // dipole theta dependence, normalized to 1.0 for normal incidence

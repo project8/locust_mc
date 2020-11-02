@@ -37,8 +37,19 @@ namespace locust
             fImpedanceTransformation = aParam["impedance-transformation"]().as_double();
         }
 
+        if( aParam.has( "theta-pattern-exponent" ) )
+        {
+            fThetaPatternParameter = aParam["theta-pattern-exponent"]().as_double();
+        }
+
+        if( aParam.has( "phi-pattern-exponent" ) )
+        {
+            fPhiPatternParameter = aParam["phi-pattern-exponent"]().as_double();
+        }
+
+
         SetVoltageDampingFactors();
-        
+
         return true;
     }
 
@@ -60,6 +71,7 @@ namespace locust
     Receiver* DesignAntennaArray::ChooseElement()
     {
         DesignAntenna* aDesignAntenna = new DesignAntenna;
+        aDesignAntenna->SetFieldPatternExponents(fThetaPatternParameter, fPhiPatternParameter);
         return aDesignAntenna;
     }
 

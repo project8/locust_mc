@@ -30,7 +30,11 @@ namespace locust
 
             virtual void RxSayHello();
             virtual double GetPatternFactor(LMCThreeVector incidentKVector, Receiver currentElement);
+            virtual void SetFieldPatternExponents(double thetaPatternParameter, double phiPatternParameter);
 
+       	private:
+       		double fThetaPatternExponent;
+       		double fPhiPatternExponent;
 
     };
 

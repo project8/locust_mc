@@ -39,8 +39,8 @@ namespace locust
 
         private:
         	double fImpedanceTransformation;  // != 1.0 either in Locust or in HFSS, but not both.
-
-
+            double fThetaPatternParameter;
+            double fPhiPatternParameter;
 
     };
 
