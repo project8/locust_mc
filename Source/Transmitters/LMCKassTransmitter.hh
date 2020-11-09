@@ -15,7 +15,6 @@
 #include "LMCLienardWiechert.hh"
 #include "LMCGlobalsDeclaration.hh"
 
-
 namespace locust
 {
 
@@ -44,8 +43,8 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
-    	double* SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex);
-        void InitializeFieldPoint(LMCThreeVector fieldPoint);
+    	std::vector<double> SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex);
+    	void InitializeFieldPoint(LMCThreeVector fieldPoint);
 
     private:
 
