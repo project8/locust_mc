@@ -393,11 +393,10 @@ namespace locust
     	if (fabs(EFieldBuffer[channel*fNElementsPerStrip+element].front()) > 0.)  // field arrived yet?
     	{
 
-    		double* HilbertMagPhaseMean = new double[3];
+    		std::vector<double> HilbertMagPhaseMean; HilbertMagPhaseMean.resize(3);
     		HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNElementsPerStrip+element], EFrequencyBuffer[channel*fNElementsPerStrip+element]);
     		HilbertMag = HilbertMagPhaseMean[0];
     		HilbertPhase = HilbertMagPhaseMean[1];
-    		delete[] HilbertMagPhaseMean;
 
     		for (int i=0; i < nfilterbins; i++)  // populate filter with field.
     		{
@@ -438,7 +437,7 @@ namespace locust
             	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                double* tFieldSolution = new double[2];
+                std::vector<double> tFieldSolution; //tFieldSolution.resize(2);
                 if (!fTransmitter->IsKassiopeia())
                 {
                 	tFieldSolution = fTransmitter->GetEFieldCoPol(tTotalElementIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
