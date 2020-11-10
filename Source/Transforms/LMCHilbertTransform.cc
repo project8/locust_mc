@@ -69,9 +69,7 @@ namespace locust
     std::vector<double> HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer)
     {
 
-    	fftw_complex* transformeddata;
-//        transformeddata = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * FieldBuffer.size());
-        transformeddata = Transform( FieldBuffer );
+    	fftw_complex* transformeddata = Transform( FieldBuffer );
     	unsigned hilbertindex = fbufferMargin;
     	std::vector<double> magphasemean; magphasemean.resize(3);
 
