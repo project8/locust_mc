@@ -128,6 +128,11 @@ namespace locust
          return;
      }
 
+    void RunLengthCalculator::Visit( const FakeFreeSpaceSignalGenerator* )
+    {
+        // nothing to see here, move along, please
+        return;
+    }
 
     void RunLengthCalculator::Visit( const FakeTrackSignalGenerator* )
     {

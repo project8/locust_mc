@@ -190,6 +190,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Core/LMCTrack.hh
         Core/LMCRunParameters.hh
         Generators/LMCFakeTrackSignalGenerator.hh    
+        Generators/LMCFakeFreeSpaceSignalGenerator.hh
 	    IO/LMCFileWriter.hh
     	IO/LMCRootTreeWriter.hh
     	IO/LMCRootHistoWriter.hh
@@ -201,6 +202,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Core/LMCTrack.cc
         Core/LMCRunParameters.cc
         Generators/LMCFakeTrackSignalGenerator.cc   
+        Generators/LMCFakeFreeSpaceSignalGenerator.cc
 	    IO/LMCFileWriter.cc
     	IO/LMCRootTreeWriter.cc
     	IO/LMCRootHistoWriter.cc
