@@ -29,6 +29,8 @@ namespace locust
         fEndTimes.push_back( aTrack.EndTime );
         fSlopes.push_back( aTrack.Slope );
         fPitchAngles.push_back( aTrack.PitchAngle );
+        fRadii.push_back( aTrack.Radius );
+        fRadialPhases.push_back( aTrack.RadialPhase );
 
         //update size
         fNTracks = fStartFrequencies.size();

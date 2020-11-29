@@ -40,7 +40,8 @@ namespace locust
             fAntennaRadius( 0.05 ),
             fRadius( 0. ),
             fGradBFrequency( 0. ),
-            fRadialPhase( 0. ),
+            fStartRadialPhase( 0. ),
+            fCurrentRadialPhase( 0. ),
             fRandomEngine( 0 ),
             fRootFilename( "LocustEvent.root" ),
             fSlope( 0. ),
@@ -49,7 +50,6 @@ namespace locust
             fEndTime( 0. ),
             fStartFrequency( 0. ),
             fCurrentFrequency( 0. ),
-            fStartElectronPosition( 0., 0., 0. ),
             fUseEnergyDistribution(false),
             fUseFrequencyDistribution(false),
             fNTracks(0)
@@ -372,12 +372,9 @@ namespace locust
         return (tGamma - 1.) *LMCConst::M_el_eV(); // takes frequency in Hz, magnetic field in T, returns in kinetic energy eV
     }
 
-    LMCThreeVector FakeFreeSpaceSignalGenerator::GetElectronPosition(const double& aElectronTime, const LMCThreeVector& aElectronStartPosition)
+    LMCThreeVector FakeFreeSpaceSignalGenerator::GetElectronPosition(const double& aRadialPhase)
     {
-        double tRadialPhase = aElectronStartPosition.AzimuthalAngle();
-        tRadialPhase += 2. * LMCConst::Pi() * fGradBFrequency * aElectronTime;
-        return LMCThreeVector({fRadius * cos(tRadialPhase), fRadius * sin(tRadialPhase),0.});
-
+        return LMCThreeVector({fRadius * cos(aRadialPhase), fRadius * sin(aRadialPhase),0.});
     }
 
 
@@ -423,7 +420,6 @@ namespace locust
         PatchAntenna modelPatch;
 
         allChannels.resize(nChannels);
-        std::cout<<"aa"<<std::endl;
 
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         {
@@ -434,7 +430,6 @@ namespace locust
             modelPatch.SetNormalDirection({-cos(theta), -sin(theta), 0.}); //Say normals point inwards
             allChannels[channelIndex].AddReceiver(modelPatch);
         }
-        std::cout<<allChannels[0][0].GetPosition().X()<<std::endl;
     }
 
     void FakeFreeSpaceSignalGenerator::SetTrackProperties(Track &aTrack, int TrackID, double aTimeOffset)
@@ -467,10 +462,10 @@ namespace locust
             }
 
             fRadius = fRadiusDistribution->Generate();
-            fRadialPhase = fRadialPhaseDistribution->Generate();
+            fStartRadialPhase = fRadialPhaseDistribution->Generate();
 
             aTrack.Radius = fRadius;
-            aTrack.RadialPhase = fRadialPhase;
+            aTrack.RadialPhase = fStartRadialPhase;
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
         }
@@ -484,8 +479,10 @@ namespace locust
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             fStartFrequency = rel_cyc(new_energy, fBField);
             fCurrentFrequency = fStartFrequency;
+            fStartRadialPhase = fCurrentRadialPhase;
             aTrack.StartTime = fEndTime + 0.; // margin of time is 0.
             aTrack.StartFrequency = fStartFrequency;
+            aTrack.RadialPhase = fStartRadialPhase;
         }
 
         fSlope = fSlopeDistribution->Generate();
@@ -497,7 +494,6 @@ namespace locust
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
         aTrack.TrackPower = fSignalPower;
-        aTrack.StartFrequency = aTrack.StartFrequency;
     }
 
 
@@ -542,6 +538,7 @@ namespace locust
         double tTimeOffset = 0;
         const int signalSize = aSignal->TimeSize();
         double tAmplitude, tPhase;
+        LMCThreeVector tCurrentElectronPosition;
 
         for(unsigned eventID = 0; eventID < fNEvents; ++eventID)// event loop.
         {
@@ -553,9 +550,8 @@ namespace locust
             
             unsigned tTrackIndex = 0;
 
-            while( tTrackIndex < anEvent->fNTracks) //loop over tracks in event
+            while( tTrackIndex < fNTracks) //loop over tracks in event
             {
-
                 for(unsigned tChannelIndex = 0; tChannelIndex < nChannels; ++tChannelIndex) // over all channels
                 {
                 	double LO_phase = 0.;
@@ -566,15 +562,20 @@ namespace locust
 
                     for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
-                        tAmplitude = GetCRESAmplitude(fStartElectronPosition, tChannelIndex);
-                        tPhase = GetCRESPhase(tElectronTime, fStartElectronPosition, tChannelIndex);
+
+                        //Update times, frequency, electron position, etc.
                         LO_phase += 2.*LMCConst::Pi()*fLO_frequency * tLocustStep;
                         fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
+                        fCurrentRadialPhase += 2.*LMCConst::Pi()*fGradBFrequency * tLocustStep;
+                        tElectronTime += tLocustStep;
+                        tCurrentElectronPosition = GetElectronPosition(fCurrentRadialPhase);
+
+                        tAmplitude = GetCRESAmplitude(tCurrentElectronPosition, tChannelIndex);
+                        tPhase = GetCRESPhase(tElectronTime, tCurrentElectronPosition, tChannelIndex);
 
                         aSignal->LongSignalTimeComplex()[tChannelIndex*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += tAmplitude * cos(tPhase-LO_phase);
                         aSignal->LongSignalTimeComplex()[tChannelIndex*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += tAmplitude * cos(-LMCConst::Pi()/2. + tPhase-LO_phase);
 
-                        tElectronTime += tLocustStep;
                     }
 
                 } //channel loop
@@ -582,6 +583,12 @@ namespace locust
                 ++tTrackIndex;
                 tTimeOffset = fEndTime;
                 SetTrackProperties(aTrack, tTrackIndex, tTimeOffset);
+
+                if(tTrackIndex == fNTracks)
+                {
+                    break;
+                }
+
                 anEvent->AddTrack(aTrack);
 
             } //track loop

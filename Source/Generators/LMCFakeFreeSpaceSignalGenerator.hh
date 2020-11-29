@@ -103,7 +103,7 @@ namespace locust
             double rel_cyc(const double& aEnergy, const double& aMagneticField) const;
             double rel_energy(const double& aFrequency, const double& aMagneticField) const;
 
-            LMCThreeVector GetElectronPosition(const double& aElectronTime, const LMCThreeVector& aElectronStartPosition);
+            LMCThreeVector GetElectronPosition(const double& aRadialPhase);
 
             double GetCRESAmplitude(const LMCThreeVector& aElectronPosition, const unsigned channelIndex  );
             double GetCRESPhase(const double& aElectronTime, const LMCThreeVector& aElectronPosition, const unsigned& channelIndex  );
@@ -118,8 +118,8 @@ namespace locust
             double fStartFrequency;
             double fCurrentFrequency;
             double fRadius;
-            double fRadialPhase;
-            LMCThreeVector fStartElectronPosition;
+            double fStartRadialPhase;
+            double fCurrentRadialPhase;
             double fGradBFrequency;
             int fNTracks;
 
