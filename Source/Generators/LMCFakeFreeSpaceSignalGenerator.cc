@@ -407,7 +407,7 @@ namespace locust
         LMCThreeVector tElectronAntenna = currentPatch->GetPosition() - aElectronPosition;
         double rRadius = tElectronAntenna.Magnitude();
 
-        return sqrt(tResistance * fSignalPower) / rRadius;
+        return sqrt(tResistance * fSignalPower) * fAntennaRadius  / rRadius;
     }
 
     void FakeFreeSpaceSignalGenerator::InitializeAntennaArray()
