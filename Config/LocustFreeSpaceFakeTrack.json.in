@@ -1,0 +1,73 @@
+{
+    "generators":
+    [          
+       "free-space-fake",
+       "lpf-fft",
+       "decimate-signal",
+       "gaussian-noise",
+       "digitizer"
+    ],
+
+    "free-space-fake":
+    {
+    "start-frequency":
+        {
+            "name": "dirac",
+            "value": 26.025e9
+        },
+    "slope":
+        {
+            "name":"dirac",
+            "value": 0.0
+        },
+    "track-length":
+        {
+            "name":"dirac",
+            "value": 4.0e-6
+        },
+    "radius":
+        {
+            "name":"dirac",
+            "value": 0.02
+        },
+    "grad-B-frequency": 2.410e3,
+    "signal-power": 1.0e-15,
+    "start-vphase": 0.0,
+    "start-time-min": 0,
+    "start-time-max": 1e-7,
+    "lo-frequency": 26.0e9,
+    "ntracks-mean": 1.0,
+    "random-seed": 17,
+    "n-events": 1,
+    "root-filename": "${CMAKE_INSTALL_PREFIX}/output/LocustEvent.root"
+    },
+    
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
+        "n-records": 1,
+        "n-channels": 30,
+        "record-size": 131072
+    },
+
+    "gaussian-noise":
+    {
+    "noise-temperature": 1,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 4.0e-7,
+    "v-offset": -2.0e-7
+    },
+    
+    "decimate-signal":
+    {
+    },
+
+    "lpf-fft":
+    {
+    }
+
+}
