@@ -38,6 +38,7 @@ namespace locust
             double Slope = -99.;
             double PitchAngle = -99.;
             double Radius = -99.;
+            double RadialPhase = -99.;
 
             ClassDef(Track,1)  // Root syntax.
 

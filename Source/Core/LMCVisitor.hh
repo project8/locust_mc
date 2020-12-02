@@ -12,6 +12,7 @@ namespace locust
 {
     class Generator;
     class GaussianNoiseGenerator;
+    class FakeFreeSpaceSignalGenerator;
     class FakeTrackSignalGenerator;
     class TestSignalGenerator;
     class TestFIRFilterGenerator;
@@ -36,6 +37,7 @@ namespace locust
             virtual void Visit( const FreeFieldSignalGenerator* ) = 0;
             virtual void Visit( const ArraySignalGenerator* ) = 0;
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
+            virtual void Visit( const FakeFreeSpaceSignalGenerator* ) = 0;
             virtual void Visit( const FakeTrackSignalGenerator* ) = 0;
             virtual void Visit( const TestSignalGenerator* ) = 0;
             virtual void Visit( const LowPassFilterFFTGenerator* ) = 0;

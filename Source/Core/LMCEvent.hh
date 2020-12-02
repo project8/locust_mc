@@ -40,6 +40,8 @@ namespace locust
             std::vector<double> fTrackLengths;
             std::vector<double> fSlopes;
             std::vector<double> fPitchAngles;
+            std::vector<double> fRadii;
+            std::vector<double> fRadialPhases;
 
             unsigned fNTracks;
 
