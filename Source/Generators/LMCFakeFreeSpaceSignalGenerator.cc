@@ -559,6 +559,7 @@ namespace locust
                     unsigned tTrackIndexRange[2] = {static_cast<unsigned>(fStartTime / tLocustStep), static_cast<unsigned>(fEndTime / tLocustStep)};
                     tTrackIndexRange[1] = std::min(tTrackIndexRange[1], aSignal->TimeSize()*aSignal->DecimationFactor());
                     fCurrentFrequency = fStartFrequency;
+                    fCurrentRadialPhase = fStartRadialPhase;
 
                     for( unsigned index = tTrackIndexRange[0]; index < tTrackIndexRange[1]; ++index ) // advance sampling time
                     {
