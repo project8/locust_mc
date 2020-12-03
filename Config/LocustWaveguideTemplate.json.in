@@ -37,7 +37,7 @@
   
     "gaussian-noise":
     {
-    "noise-floor-psd": 2.0e-22,
+    "noise-floor-psd": 2.0e-26,
     "domain": "time"
     },
 
