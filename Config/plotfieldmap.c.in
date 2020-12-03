@@ -51,7 +51,7 @@ TGraph* grField(const char *filename)
 void fieldmap()
 {
 
-    const char *f = "${CMAKE_INSTALL_PREFIX}/FieldLineSeed335Output.root";
+    const char *f = "${CMAKE_INSTALL_PREFIX}/output/FieldLineSeed335Output.root";
 
     TGraph* gr = grField(f);
 
