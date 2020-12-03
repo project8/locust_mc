@@ -1,3 +1,14 @@
+<external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
+<external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
+<external_define name="bathtub" value="0.5"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
+ to apparent slow performance with 0.0 value -->
+    <!-- solenoid turns -->
+
+    <define name="pinch_turns" value="61.0"/>
+    <define name="bathtub_turns" value="51.0"/>
+
+
+
 
 	<!-- waveguide -->
 
@@ -101,6 +112,18 @@
             <transformation rotation_axis_angle="[alignment] 90. 90."/>
         </space>
     </space>
+
+    <!-- electromagnets -->
+
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
+
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
+
+    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
+
+
+
+
 
 
 
