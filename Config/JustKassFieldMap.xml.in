@@ -2,12 +2,7 @@
 
 
 <external_define name="simulation" value="1"/>
-<external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-<external_define name="bathtub" value="0.8"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
- to apparent slow performance with 0.0 value -->
 
-<external_define name="fieldZ" value="0.9583"/> <!-- no tilt -->
-<!--<external_define name="fieldZ" value="0.9581540"/> -->
 <external_define name="fieldX" value="0.0"/>  <!-- earth's horiz. field in Seattle -->
 <external_define name="fieldY" value="0.0"/>
 
@@ -34,28 +29,6 @@
     <include name="[config_path]/FreeSpaceGeometry.xml"/>
 </geometry>
     
-
-    <!-- solenoid turns -->
-
-    <define name="pinch_turns" value="61.0"/>
-    <define name="bathtub_turns" value="51.0"/>
-
-
-<geometry>
-
-    <!-- electromagnets -->
-
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
-
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
-
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
-
-
-
-</geometry>
-
-
 
 
  
