@@ -697,7 +697,7 @@ namespace locust
                 double z0 = fz0Distribution->Generate();
                 fPitch = GetPitchAngleZ(fPitch, GetBField(z0), fBField);
 
-            } while(fPitch < fStartPitchMin * deg_to_rad );
+            } while(fPitch < fPitchMin * deg_to_rad );
 
             fRadius = fRadiusDistribution->Generate();
 
