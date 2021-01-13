@@ -607,7 +607,10 @@ namespace locust
 
     double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double pitchAngle)
     {
-        double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
+        const double tWaveguideRadius = 0.00502920;
+        double f_c = 1.8412 * LMCConst::C() / (2 * LMCConst::Pi() * tWaveguideRadius);
+        double v_phase = LMCConst::C() / sqrt( 1 - pow(f_c / frequency, 2));
+        double k_lambda = 2. * LMCConst::Pi() * frequency / v_phase;
         double zMax = 0;
         if (pitchAngle != LMCConst::Pi() / 2.)
             zMax = fTrapLength / tan(pitchAngle);
