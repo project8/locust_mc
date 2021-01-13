@@ -144,7 +144,10 @@ or to avoid mounting the $HOME directory
 > singularity shell --no-home /path/to/local/sif/locust-latest.sif
 ```
 
-
+and to mount a local directory for e.g. I/O to the container
+```
+> singularity shell --no-home --bind /path/to/local/directory:/usr/local/p8/locust/v2.1.5/output ./locust_mc_latest.sif 
+```
 
 
 
