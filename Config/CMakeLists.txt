@@ -14,6 +14,7 @@ configure_file( LocustTestSignal.json.in LocustTestSignal.json )
 configure_file( plotfieldmap.c.in plotfieldmap.c )
 configure_file( katydid.json.in katydid.json )
 configure_file( ChannelAggregatorConfig.yaml.in ChannelAggregatorConfig.yaml )
+configure_file( LocustBlankTemplate.json.in LocustBlankTemplate.json )
 
 
 set (EXAMPLE_CONFIGFILES
@@ -23,15 +24,16 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_FreeSpace_Template.xml 
     WaveguideGeometry.xml
     FreeSpaceGeometry.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json    
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json    
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustPlaneWaveTemplate.json    
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustFakeTrack.json    
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustMagDipoleAntennaTemplate.json    
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustTestSignal.json    
-    ${CMAKE_CURRENT_BINARY_DIR}/katydid.json    
-    ${CMAKE_CURRENT_BINARY_DIR}/ChannelAggregatorConfig.yaml    
-    ${CMAKE_CURRENT_BINARY_DIR}/plotfieldmap.c    
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustPlaneWaveTemplate.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustFakeTrack.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustMagDipoleAntennaTemplate.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustTestSignal.json
+    ${CMAKE_CURRENT_BINARY_DIR}/katydid.json
+    ${CMAKE_CURRENT_BINARY_DIR}/ChannelAggregatorConfig.yaml
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustBlankTemplate.json
+    ${CMAKE_CURRENT_BINARY_DIR}/plotfieldmap.c
 )
 
 pbuilder_install_config (${EXAMPLE_CONFIGFILES})

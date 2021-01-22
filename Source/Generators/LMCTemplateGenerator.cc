@@ -16,7 +16,8 @@ namespace locust
     MT_REGISTER_GENERATOR([name]Generator, "config-name");
 
     [name]Generator::[name]Generator( const std::string& aName ) :
-            Generator( aName )
+        Generator( aName ),
+        fDoGenerateFunc( &[name]Generator::DoGenerateTime )
     {
         fRequiredSignalState = Signal::k[domain];
     }
@@ -36,13 +37,47 @@ namespace locust
         return;
     }
 
+    Signal::State [name]Generator::GetDomain() const
+    {
+        return fRequiredSignalState;
+    }
+
+    void [name]Generator::SetDomain( Signal::State aDomain )
+    {
+        if( aDomain == fRequiredSignalState ) return;
+        fRequiredSignalState = aDomain;
+        if( fRequiredSignalState == Signal::kTime )
+        {
+            fDoGenerateFunc = &[name]Generator::DoGenerateTime;
+        }
+        else if( fRequiredSignalState == Signal::kFreq )
+        {
+            fDoGenerateFunc = &[name]Generator::DoGenerateFreq;
+        }
+        else
+        {
+            LWARN( lmclog, "Unknown domain requested: " << aDomain );
+        }
+        return;
+    }
+
+
     bool [name]Generator::DoGenerate( Signal* aSignal )
     {
-        for( unsigned index = 0; index < aSignal->[domain]Size(); ++index )
-        {
-            aSignal->Signal[domain]S( index ) += ???;
-        }
+        return (this->*fDoGenerateFunc)( aSignal );
+    }
+
+    bool [name]Generator::DoGenerateTime( Signal* aSignal )
+    {
+//        aSignal->SignalTimeComplex()[index][0] +=  [...]
+//        aSignal->SignalTimeComplex()[index][1] +=  [...]
         return true;
     }
+
+    bool [name]Generator::DoGenerateFreq( Signal* aSignal )
+    {
+        return true;
+    }
+
 
 } /* namespace locust */
