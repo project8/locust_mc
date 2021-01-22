@@ -607,17 +607,21 @@ namespace locust
 
     double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double pitchAngle)
     {
-        double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
+        const double tWaveguideRadius = 0.00502920;
+        double f_c = 1.8412 * LMCConst::C() / (2 * LMCConst::Pi() * tWaveguideRadius);
+        double v_phase = LMCConst::C() / sqrt( 1 - pow(f_c / frequency, 2));
+        double k_lambda = 2. * LMCConst::Pi() * frequency / v_phase;
         double zMax = 0;
         if (pitchAngle != LMCConst::Pi() / 2.)
             zMax = fTrapLength / tan(pitchAngle);
         return j0(k_lambda * zMax);
     }
 
-    double FakeTrackSignalGenerator::RadialPowerCoupling(double frequency, double radius)
+    double FakeTrackSignalGenerator::RadialPowerCoupling(double radius)
     {
-        double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
-        double x = k_lambda * radius;
+        const double tWaveguideRadius = 0.00502920;
+        double k_c = 1.8412 / tWaveguideRadius;
+        double x = k_c * radius;
 
         double corr2 = 1. / 4. * pow(j0(x) - jn(2, x), 2.);
         if(x > 1e-100)
@@ -697,7 +701,7 @@ namespace locust
                 double z0 = fz0Distribution->Generate();
                 fPitch = GetPitchAngleZ(fPitch, GetBField(z0), fBField);
 
-            } while(fPitch < fStartPitchMin * deg_to_rad );
+            } while(fPitch < fPitchMin * deg_to_rad );
 
             fRadius = fRadiusDistribution->Generate();
 
@@ -732,7 +736,7 @@ namespace locust
         }
 
         fSlope = fSlopeDistribution->Generate();
-        if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fStartFrequency, fRadius),2.);
+        if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fRadius),2.);
 
         fTrackLength = fTrackLengthDistribution->Generate();
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
@@ -740,7 +744,7 @@ namespace locust
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
-        double coupling = WaveguidePowerCoupling(fStartFrequency, fPitch) * RadialPowerCoupling(fStartFrequency, fRadius);
+        double coupling = WaveguidePowerCoupling(fStartFrequency, fPitch) * RadialPowerCoupling(fRadius);
         aTrack.TrackPower = fSignalPower * pow(coupling,2.);
         aTrack.StartFrequency = GetCorrectedFrequency(aTrack.StartFrequency, aTrack.Radius);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
@@ -806,7 +810,7 @@ namespace locust
                         LO_phase += 2.*LMCConst::Pi()*fLO_frequency * tLocustStep;
                         fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
                         voltage_phase += 2.*LMCConst::Pi()*GetCorrectedFrequency(fCurrentFrequency, aTrack.Radius) * tLocustStep;
-                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch) * RadialPowerCoupling(fCurrentFrequency, fRadius);
+                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch) * RadialPowerCoupling(fRadius);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                     }

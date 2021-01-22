@@ -48,8 +48,8 @@ namespace locust
         
         bool SetupIFFT(int,double, double);
         bool ForwardFFT(int, fftw_complex*, fftw_complex*);
+        bool GenerateFIR(int, fftw_complex*, fftw_complex*);
         bool ReverseFFT(int, fftw_complex*, fftw_complex*);
-        bool RawReverseFFT(int, fftw_complex*, fftw_complex*);
 	double GetTimeResolution();
 	double GetFreqResolution();
 	int GetShiftNBins();

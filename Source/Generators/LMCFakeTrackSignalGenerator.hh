@@ -129,7 +129,7 @@ namespace locust
             double GetScatteredPitchAngle(double thetaScatter, double pitchAngle, double phi);
             void SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data);
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
-            double RadialPowerCoupling(double frequency, double radius);
+            double RadialPowerCoupling(double radius);
             double GetEnergyLoss(double u, bool hydrogenScatter);
             double GetKa2(double eLoss, double T);
             double GetBField(double z);

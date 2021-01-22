@@ -1,14 +1,14 @@
 {
     "generators":
     [          
-       "fake-track",
+       "free-space-fake",
        "lpf-fft",
        "decimate-signal",
        "gaussian-noise",
        "digitizer"
     ],
 
-    "fake-track":
+    "free-space-fake":
     {
     "start-frequency":
         {
@@ -23,23 +23,22 @@
     "track-length":
         {
             "name":"dirac",
-            "value": 0.2e-3
+            "value": 4.0e-6
         },
-    "scattering-angle":
+    "radius":
         {
             "name":"dirac",
-            "value": 0.0004
+            "value": 0.02
         },
-    "signal-power": 1.0e-15,
+    "grad-B-frequency": 2.410e3,
     "signal-power": 1.0e-15,
     "start-vphase": 0.0,
     "start-time-min": 0,
     "start-time-max": 1e-7,
     "lo-frequency": 26.0e9,
-    "min-pitch":89.97,
-    "random-seed": 16,
+    "ntracks-mean": 1.0,
+    "random-seed": 17,
     "n-events": 1,
-    "hydrogen-fraction":1,
     "root-filename": "${CMAKE_INSTALL_PREFIX}/output/LocustEvent.root"
     },
     
@@ -47,17 +46,13 @@
     {
         "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
-        "n-channels": 1,
-        "record-size": 4194304
-    },
-
-    "lpf-fft":
-    {
+        "n-channels": 30,
+        "record-size": 131072
     },
 
     "gaussian-noise":
     {
-    "noise-temperature": 1e1,
+    "noise-temperature": 1,
     "domain": "time"
     },
 
@@ -68,6 +63,10 @@
     },
     
     "decimate-signal":
+    {
+    },
+
+    "lpf-fft":
     {
     }
 

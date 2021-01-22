@@ -50,7 +50,7 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
-        virtual double* GetEFieldCoPol(int fieldPointIndex, double dt);
+        virtual std::vector<double> GetEFieldCoPol(int fieldPointIndex, double dt);
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
