@@ -7,7 +7,7 @@
 
 #ifndef LMCGENERATORTOOLBOX_HH_
 #define LMCGENERATORTOOLBOX_HH_
-
+#include "LMCException.hh"
 
 namespace scarab
 {
