@@ -22,7 +22,7 @@ namespace locust
      @details
      Operates in [domain] space
 
-     Configuration name: "config-name"
+     Configuration name: "square-wave"
 
      Available configuration options:
      - "param-name": type -- Description
@@ -48,7 +48,7 @@ namespace locust
             bool DoGenerateFreq( Signal* aSignal );
 
             bool ([name]Generator::*fDoGenerateFunc)( Signal* aSignal );
-	    double fRF_frequency;
+//            double fRF_frequency;
 
     };
 

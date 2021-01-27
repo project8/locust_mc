@@ -16,10 +16,9 @@ namespace locust
     MT_REGISTER_GENERATOR([name]Generator, "config-name");
 
     [name]Generator::[name]Generator( const std::string& aName ) :
+//        fRF_frequency( 10.e6 ),
         Generator( aName ),
-        fDoGenerateFunc( &[name]Generator::DoGenerateTime ),
-        fRF_frequency( 50.e6 )
-
+        fDoGenerateFunc( &[name]Generator::DoGenerateTime )
     {
         fRequiredSignalState = Signal::k[domain];
     }
@@ -30,12 +29,12 @@ namespace locust
 
     bool [name]Generator::Configure( const scarab::param_node& aParam )
     {
-
+/*
         if( aParam.has( "rf-frequency" ) )
         {
             fRF_frequency = aParam.get_value< double >( "rf-frequency", fRF_frequency );
         }
-
+*/
         return true;
     }
 
@@ -78,13 +77,15 @@ namespace locust
     bool [name]Generator::DoGenerateTime( Signal* aSignal )
     {
 /*
+        double RF_freq = 50.e6; // Hz
   	    double amplitude = 1.e-5; // volts
        
         for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
         {
-            int nRFHalfCycles = int(index*(1./(fAcquisitionRate*1.e6)*(2.0*fRF_frequency)));
+            int nRFHalfCycles = int(index*(1./(fAcquisitionRate*1.e6)*(2.0*RF_freq)));
+//            int nRFHalfCycles = int(index*(1./(fAcquisitionRate*1.e6)*(2.0*fRF_frequency)));
             double voltage = amplitude; // square wave is high
-	    if ( nRFHalfCycles%2==1 ) voltage = -amplitude; // square wave is low
+	        if ( nRFHalfCycles%2==1 ) voltage = -amplitude; // square wave is low
             aSignal->SignalTimeComplex()[index][0] +=  voltage; // in-phase (I)
 //            aSignal->SignalTimeComplex()[index][1] += [...]; // quadrature (Q) = 0 for real signals.
         }
