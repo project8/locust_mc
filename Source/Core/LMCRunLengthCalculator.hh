@@ -103,6 +103,7 @@ namespace locust
             void Visit( const LocalOscillatorGenerator* );
             void Visit( const DecimateSignalGenerator* );
             void Visit( const Digitizer* );
+//            void Visit( const SquareWaveSignalGenerator* );
 
             RunLengthState fState;
 

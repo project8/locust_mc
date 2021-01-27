@@ -24,6 +24,7 @@ namespace locust
     class ArraySignalGenerator;
     class LocalOscillatorGenerator;
     class DecimateSignalGenerator;
+//    class SquareWaveSignalGenerator;
 
     class GeneratorVisitor
     {
