@@ -595,13 +595,14 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetCorrectedFrequency(double frequency, double radius) const
     {
-        double correction_factor = 1.;
-        if ( (fPitch !=  LMCConst::Pi() / 2.) && ( fPitchCorrection == 1 ) )
-            correction_factor += 1. / (2. * pow(tan(fPitch), 2.));
+        //double correction_factor = 1.;
+        //if ( (fPitch !=  LMCConst::Pi() / 2.) && ( fPitchCorrection == 1 ) )
+        //    correction_factor += 1. / (2. * pow(tan(fPitch), 2.));
 
-        correction_factor -= 1. / 2. * pow(radius / fTrapLength, 2.);
+        //correction_factor -= 1. / 2. * pow(radius / fTrapLength, 2.);
 
-        return frequency * correction_factor;
+        //return frequency * correction_factor;
+        return frequency * GetAverageMagneticField(radius, fPitch);
 
     } // non-90 pitches change average B, changing apparent frequency (A. Astari Esfahani et al. (2019) (Eqn 56))
 
@@ -659,59 +660,7 @@ namespace locust
 
     }
 
-
-    double FakeTrackSignalGenerator::GetAverageMagneticField(std::vector<double> aTime, std::vector<double> aBField)
-    {
-        double tTotalSum = 0.;
-
-        for(unsigned i=0; i<aTime.size() - 1; ++i)
-        {
-            tTotalSum +=  aBField[i] * ( aTime[i+1] - aTime[i]);
-        }
-
-       return tTotalSum / aTime.back();
-    }
-
-    double FakeTrackSignalGenerator::GetZMax(double aTheta, double aRadius)
-    {
-        double tBMax =  (fBField - GetTrapField(0,aRadius)) / pow(sin(aTheta), 2.);
-
-        const double tZMaxMax = 0.02; //max possible z max
-        const unsigned tNPoints = 10000;
-        const double dZ = tZMaxMax / tNPoints;
-
-        std::vector<double> tBDifference;
-        for(double z=0; z < tZMaxMax; z+=dZ)
-            tBDifference.push_back(fabs( tBMax - GetTrapField(z,aRadius)) );
-
-        int tTurningPointIndex = std::min_element(tBDifference.begin(),tBDifference.end()) - tBDifference.begin();
-
-        return tTurningPointIndex * dZ;
-    }
-
-    std::pair< std::vector<double>, std::vector<double> > FakeTrackSignalGenerator::GetParticleTimes(double aRadius, double aTheta)
-    {
-        double tTime = 0.;
-        std::vector<double> tTimes, tZPositions; // = {};
-
-        const int nPoints = 100.;
-        double tZMax = GetZMax(aTheta, aRadius);
-        const double dZ = tZMax / nPoints;
-        double tDummy, xDummy;
-        double v0 = 0.25 * 3e8;
-
-        for(unsigned i=0; i<nPoints; ++i)
-        {
-            double tZi = i * dZ; 
-            xDummy = v0 * sqrt(1 - pow(sin(aTheta),2.) * (fBField - GetTrapField(tZi, aRadius)) / (fBField - GetTrapField(0,aRadius))) * dZ;
-            tDummy = 1./ xDummy;
-            tTimes.push_back(tTimes.back() + tDummy);
-        }
-
-        return std::pair< std::vector<double>, std::vector<double> >(tTimes, tZPositions);
-    }
-
-    double FakeTrackSignalGenerator::GetCoilField(double aR0, double aZ0, double aRadius, double aZ, double aCurrent)
+    double FakeTrackSignalGenerator::GetCoilField(double aR0, double aZ0, double aRadius, double aZ, double aCurrent) const
     {
         double alpha  = sqrt( pow(aR0,2.) + pow(aRadius,2.) + pow(aZ-aZ0,2.) - 2*aR0*aRadius);
         double beta  = sqrt( pow(aR0,2.) + pow(aRadius,2.) + pow(aZ-aZ0,2.)+ 2*aR0*aRadius);
@@ -723,7 +672,7 @@ namespace locust
         return tBField;
     }
     
-    double FakeTrackSignalGenerator::GetTrapField(double aZ , double aRadius, double aCurrent)
+    double FakeTrackSignalGenerator::GetTrapField(double aZ, double aRadius, double aCurrent) const
     {
         const double R = 0.01486 / 2.; //Inner Radius of the first round of coils
         const double OD = 0.0004572; //Wires Outer Radius
@@ -749,6 +698,64 @@ namespace locust
         }
 
         return B_value;
+    }
+
+    double FakeTrackSignalGenerator::GetZMax(double aTheta, double aRadius) const
+    {
+        double tBMax =  (fBField - GetTrapField(0,aRadius)) / pow(sin(aTheta), 2.);
+
+        const double tZMaxMax = 0.02; //max possible z max
+        const unsigned tNPoints = 10000;
+        const double dZ = tZMaxMax / tNPoints;
+
+        std::vector<double> tBDifference;
+        for(double z=0; z < tZMaxMax; z+=dZ)
+            tBDifference.push_back(fabs( tBMax - GetTrapField(z,aRadius)) );
+
+        int tTurningPointIndex = std::min_element(tBDifference.begin(),tBDifference.end()) - tBDifference.begin();
+
+        return tTurningPointIndex * dZ;
+    }
+
+    std::pair< std::vector<double>, std::vector<double> > FakeTrackSignalGenerator::GetParticleTimes(double aRadius, double aTheta) const
+    {
+        double tTime = 0.;
+        std::vector<double> tTimes, tBFields; // = {};
+
+        const int nPoints = 100.;
+        double tZMax = GetZMax(aTheta, aRadius);
+        const double dZ = tZMax / nPoints;
+        double tDummy, xDummy;
+        double v0 = 0.25 * 3e8;
+
+        for(unsigned i=0; i<nPoints; ++i)
+        {
+            double tZi = i * dZ; 
+            tBFields.push_back(GetTrapField(tZi, aRadius));
+
+            xDummy = v0 * sqrt(1 - pow(sin(aTheta),2.) * (fBField - GetTrapField(tZi, aRadius)) / (fBField - GetTrapField(0,aRadius))) * dZ;
+            tDummy = 1./ xDummy;
+            tTimes.push_back(tTimes.back() + tDummy);
+        }
+
+        return std::pair< std::vector<double>, std::vector<double> >(tTimes, tBFields);
+    }
+
+    double FakeTrackSignalGenerator::GetAverageMagneticField(double aRadius, double aTheta) const
+    {
+
+        auto tAHarmonicSolver = GetParticleTimes(aRadius, aTheta);
+        std::vector<double> tTimes = tAHarmonicSolver.first;
+        std::vector<double> tBFields = tAHarmonicSolver.second;
+
+        double tTotalSum = 0.;
+
+        for(unsigned i=0; i<tTimes.size() - 1; ++i)
+        {
+            tTotalSum +=  tBFields[i] * ( tTimes[i+1] - tTimes[i]);
+        }
+
+       return tTotalSum / tTimes.back();
     }
 
     
