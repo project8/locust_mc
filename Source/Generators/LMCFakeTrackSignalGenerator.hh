@@ -16,6 +16,7 @@
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
+#include <gsl/gsl_sf_ellint.h>
 
 #include <random>
 #include <vector>
@@ -135,6 +136,12 @@ namespace locust
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetCorrectedFrequency(double frequency, double radius) const;
+
+            double GetTrapField(double aZ , double aRadius, double aCurrent=0.3);
+            double GetCoilField(double aR0, double aZ0, double aRadius, double aZ, double aCurrent);
+            std::pair< std::vector<double>, std::vector<double> > GetParticleTimes(double aRadius, double aTheta);
+            double GetZMax(double aTheta, double aRadius);
+            double GetAverageMagneticField(std::vector<double> aTime, std::vector<double> aBField);
 
             double GetAxialFrequency();
             void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
