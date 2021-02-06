@@ -612,7 +612,7 @@ namespace locust
 
                 }
 
-                if (fInterface->fPreEventInProgress)
+                if (fInterface->fPreEventInProgress)  // Locust keeps sampling until Kass event.
                 {
                     PreEventCounter += 1;
 
@@ -622,13 +622,14 @@ namespace locust
                         fInterface->fEventInProgress = true;
                         LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
                         WakeBeforeEvent();  // trigger Kass event.
-                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
                 }
 
-                if ((fInterface->fEventInProgress)&&(!fInterface->fKassEventReady))  // fEventInProgress
+                if (fInterface->fEventInProgress)  // fEventInProgress
                 {
-                        std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
+                    std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
+                	if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+                	{
                         tLock.lock();
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
@@ -637,6 +638,21 @@ namespace locust
                             PreEventCounter = 0; // reset
                         }
                         tLock.unlock();
+                	}
+                	else  // either Kass thread fell behind, or it has stopped generating events.
+                	{
+                        tLock.lock();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+                        if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
+                        {
+                        	tLock.unlock();
+                        }
+                        else  // no Kass event ever started, unlock and break out of signal loop entirely.
+                        {
+                        	tLock.unlock();
+                        	break;
+                        }
+                	}
                 }
             }  // for loop
 
