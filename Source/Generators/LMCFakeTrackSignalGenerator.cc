@@ -182,8 +182,10 @@ namespace locust
 
         if (aParam.has( "aharmonic-correction") )
             SetAharmonicCorrection(  aParam.get_value< bool >( "aharmonic-correction", fAharmonicCorrection) );
+
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
+
         if (aParam.has( "slope-correction") )
             SetSlopeCorrection( aParam.get_value< bool >( "slope-correction",fSlopeCorrection) );
 
@@ -744,8 +746,6 @@ namespace locust
 
         const int nPoints = 100.;
         double tZMax = GetZMax(aTheta, aRadius);
-	//std::cout<<aTheta<<" "<<aRadius<<std::endl;
-	//std::cout<<"zm: "<<tZMax<<std::endl;
         const double dZ = tZMax / nPoints;
         double xDummy;
 	double tDummy = 0;
@@ -832,8 +832,11 @@ namespace locust
             fRadius = fRadiusDistribution->Generate();
 
 	    if(fAharmonicCorrection)
-		    fAharmonicCorrectionFactor = GetAverageMagneticField(fRadius,fPitch) / fBField;
+	    {
+		    double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,fRadius) ;
+		    fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
 
+	    }
             aTrack.Radius = fRadius;
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
@@ -860,7 +863,12 @@ namespace locust
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             fStartFrequency = rel_cyc(new_energy, fBField);
             fCurrentFrequency = fStartFrequency;
-	    fAharmonicCorrectionFactor = GetAverageMagneticField(fRadius,fPitch) / fBField;
+	    if(fAharmonicCorrection)
+	    {
+	        double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,fRadius) ;
+	        fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
+	    }
+
             aTrack.StartTime = fEndTime + 0.; // margin of time is 0.
             aTrack.StartFrequency = fStartFrequency;
         }
