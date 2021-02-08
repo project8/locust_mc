@@ -710,7 +710,7 @@ namespace locust
 
         std::vector<double> tBDifference;
         for(double z=0; z < tZMaxMax; z+=dZ)
-            tBDifference.push_back(fabs( tBMax - GetTrapField(z,aRadius)) );
+            tBDifference.push_back(fabs( -tBMax + fBField - GetTrapField(z,aRadius)) );
 
         int tTurningPointIndex = std::min_element(tBDifference.begin(),tBDifference.end()) - tBDifference.begin();
 
@@ -724,8 +724,11 @@ namespace locust
 
         const int nPoints = 100.;
         double tZMax = GetZMax(aTheta, aRadius);
+	//std::cout<<aTheta<<" "<<aRadius<<std::endl;
+	//std::cout<<"zm: "<<tZMax<<std::endl;
         const double dZ = tZMax / nPoints;
-        double tDummy, xDummy;
+        double xDummy;
+	double tDummy = 0;
         double v0 = 0.25 * 3e8;
 
         for(unsigned i=0; i<nPoints; ++i)
@@ -733,9 +736,9 @@ namespace locust
             double tZi = i * dZ; 
             tBFields.push_back(GetTrapField(tZi, aRadius));
 
-            xDummy = v0 * sqrt(1 - pow(sin(aTheta),2.) * (fBField - GetTrapField(tZi, aRadius)) / (fBField - GetTrapField(0,aRadius))) * dZ;
-            tDummy = 1./ xDummy;
-            tTimes.push_back(tTimes.back() + tDummy);
+            xDummy = v0 * dZ * sqrt(1. - pow(sin(aTheta),2.) * (fBField - GetTrapField(tZi, aRadius)) / (fBField - GetTrapField(0,aRadius)));
+            tDummy += 1./ xDummy;
+            tTimes.push_back(tDummy);
         }
 
         return std::pair< std::vector<double>, std::vector<double> >(tTimes, tBFields);
