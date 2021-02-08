@@ -33,6 +33,7 @@ namespace locust
 		fTextFileWriting( 0 ),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
+		fThreadCheckTime(10000),
         EFieldBuffer( 1 ),
         EPhaseBuffer( 1 ),
         EAmplitudeBuffer( 1 ),
@@ -297,6 +298,10 @@ namespace locust
         if( aParam.has( "event-spacing-samples" ) )
         {
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+        }
+        if( aParam.has( "thread-check-time" ) )
+        {
+            fThreadCheckTime = aParam["thread-check-time"]().as_int();
         }
         if( aParam.has( "swap-frequency" ) )
         {
@@ -642,7 +647,7 @@ namespace locust
                 	else  // either Kass thread fell behind, or it has stopped generating events.
                 	{
                         tLock.lock();
-                        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+                        std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
                         if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
                         {
                         	tLock.unlock();
