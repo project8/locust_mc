@@ -40,6 +40,7 @@ namespace locust
         fBField(1.0),
         fRandomSeed(0),
         fNEvents(1),
+        fAharmonicCorrection( false ),
         fPitchCorrection( true ),
         fSlopeCorrection( false ),
         fRandomEngine(0),
@@ -179,6 +180,8 @@ namespace locust
         if (aParam.has( "n-events") )
             SetNEvents(  aParam.get_value< int >( "n-events",fNEvents) );
 
+        if (aParam.has( "aharmonic-correction") )
+            SetAharmonicCorrection(  aParam.get_value< bool >( "aharmonic-correction", fAharmonicCorrection) );
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
         if (aParam.has( "slope-correction") )
@@ -409,6 +412,16 @@ namespace locust
         return;
     }
 
+    bool FakeTrackSignalGenerator::GetAharmonicCorrection() const
+    {
+        return fAharmonicCorrection;
+    }
+
+    void FakeTrackSignalGenerator::SetAharmonicCorrection( bool aAharmonicCorrection )
+    {
+        fAharmonicCorrection = aAharmonicCorrection;
+        return;
+    }
 
     bool FakeTrackSignalGenerator::GetPitchCorrection() const
     {
@@ -595,14 +608,21 @@ namespace locust
 
     double FakeTrackSignalGenerator::GetCorrectedFrequency(double frequency, double radius) const
     {
-        //double correction_factor = 1.;
-        //if ( (fPitch !=  LMCConst::Pi() / 2.) && ( fPitchCorrection == 1 ) )
-        //    correction_factor += 1. / (2. * pow(tan(fPitch), 2.));
+        double correction_factor = 1.;
 
-        //correction_factor -= 1. / 2. * pow(radius / fTrapLength, 2.);
+        if( (fPitch != LMCConst::Pi() / 2.) && fAharmonicCorrection)
+	{
+		correction_factor = fAharmonicCorrectionFactor;
+	}
 
-        //return frequency * correction_factor;
-        return frequency * GetAverageMagneticField(radius, fPitch);
+	else if ( (fPitch !=  LMCConst::Pi() / 2.) && ( fPitchCorrection == 1 ) )
+	{
+            correction_factor += 1. / (2. * pow(tan(fPitch), 2.));
+
+            correction_factor -= 1. / 2. * pow(radius / fTrapLength, 2.);
+	}
+
+        return frequency * correction_factor;
 
     } // non-90 pitches change average B, changing apparent frequency (A. Astari Esfahani et al. (2019) (Eqn 56))
 
@@ -729,7 +749,10 @@ namespace locust
         const double dZ = tZMax / nPoints;
         double xDummy;
 	double tDummy = 0;
-        double v0 = 0.25 * 3e8;
+        double tEnergy = rel_energy(fStartFrequency,fBField-GetTrapField(0,aRadius));
+	double tGamma = 1. + tEnergy / LMCConst::M_el_eV();
+	double tBeta = sqrt(1. - 1./pow(tGamma,2.));
+	double v0 = tBeta * LMCConst::C();
 
         for(unsigned i=0; i<nPoints; ++i)
         {
@@ -747,9 +770,9 @@ namespace locust
     double FakeTrackSignalGenerator::GetAverageMagneticField(double aRadius, double aTheta) const
     {
 
-        auto tAHarmonicSolver = GetParticleTimes(aRadius, aTheta);
-        std::vector<double> tTimes = tAHarmonicSolver.first;
-        std::vector<double> tBFields = tAHarmonicSolver.second;
+        auto tAharmonicSolver = GetParticleTimes(aRadius, aTheta);
+        std::vector<double> tTimes = tAharmonicSolver.first;
+        std::vector<double> tBFields = tAharmonicSolver.second;
 
         double tTotalSum = 0.;
 
@@ -808,6 +831,9 @@ namespace locust
 
             fRadius = fRadiusDistribution->Generate();
 
+	    if(fAharmonicCorrection)
+		    fAharmonicCorrectionFactor = GetAverageMagneticField(fRadius,fPitch) / fBField;
+
             aTrack.Radius = fRadius;
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
@@ -834,6 +860,7 @@ namespace locust
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             fStartFrequency = rel_cyc(new_energy, fBField);
             fCurrentFrequency = fStartFrequency;
+	    fAharmonicCorrectionFactor = GetAverageMagneticField(fRadius,fPitch) / fBField;
             aTrack.StartTime = fEndTime + 0.; // margin of time is 0.
             aTrack.StartFrequency = fStartFrequency;
         }

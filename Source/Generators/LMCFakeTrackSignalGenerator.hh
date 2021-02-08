@@ -111,6 +111,9 @@ namespace locust
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
 
+            bool GetAharmonicCorrection() const;
+	    void SetAharmonicCorrection( bool aAharmonicCorrection );
+
             bool GetSlopeCorrection() const;
             void SetSlopeCorrection(  bool aSlopeCorrection );
 
@@ -181,8 +184,10 @@ namespace locust
             double fLO_frequency;
             double fNTracksMean;
             double fBField;
+            double fAharmonicCorrectionFactor;
             int fRandomSeed;
             int fNEvents;
+            bool fAharmonicCorrection;
             bool fPitchCorrection;
             bool fSlopeCorrection;
             double fHydrogenFraction;
