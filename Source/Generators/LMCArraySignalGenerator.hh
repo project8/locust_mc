@@ -82,6 +82,7 @@ namespace locust
             std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
             double fLO_Frequency;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             double fArrayRadius;
             int fNElementsPerStrip;
             int fNSubarrays;

@@ -70,6 +70,7 @@ namespace locust
             double fPhi_t2; // reflecting short voltage phase in radians.
             double fPhiLO_t; // voltage phase of LO in radians;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            int fThreadCheckTime; // time (ms) to check for response from Kass thread.
             mutable double fPreviousRetardedTime;
             mutable int fPreviousRetardedIndex;
             double fEventStartTime;
