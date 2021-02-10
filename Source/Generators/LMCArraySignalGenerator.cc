@@ -450,6 +450,7 @@ namespace locust
                 else
                 {
                 	tFieldSolution = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
+                	if (tFieldSolution[0] == 0.) {printf("field is zero.\n");}
                 }
 
                 tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
@@ -458,6 +459,7 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
+            	if (VoltageFIRSample == 0.) {printf("VoltageFIRSample is zero.\n");}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 

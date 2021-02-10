@@ -77,6 +77,8 @@ namespace locust
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
 
+		if (VoltageFIRSample==0.) {printf("power combining sees zero.\n");}
+
 		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
 			LWARN( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
