@@ -92,6 +92,7 @@ namespace locust
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
             int fSwapFrequency;
+            int fSkipSampleCheck;
             double fphiLO; // voltage phase of LO in radians;
 
             void KassiopeiaInit(const std::string &aFile);
@@ -117,7 +118,7 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
+            void DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
             AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object

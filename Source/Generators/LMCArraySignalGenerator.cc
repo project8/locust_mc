@@ -43,6 +43,7 @@ namespace locust
         ElementFIRBuffer( 1 ),
         fFieldBufferSize( 50 ),
 		fSwapFrequency( 1000 ),
+		fSkipSampleCheck( 1000 ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
@@ -307,6 +308,10 @@ namespace locust
         {
             fSwapFrequency = aParam["swap-frequency"]().as_int();
         }
+        if( aParam.has( "skip-sample-check" ) )
+        {
+            fSkipSampleCheck = aParam["skip-sample-check"]().as_int();
+        }
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
@@ -419,7 +424,7 @@ namespace locust
     }
 
 
-    void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
+    void ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -459,7 +464,8 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
-            	if (VoltageFIRSample == 0.) {printf("VoltageFIRSample is zero.\n");}
+            	if (VoltageFIRSample == 0.) {printf("VoltageFIRSample is zero for index %d.\n", index);}
+            	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fSkipSampleCheck)) {printf("out of spec at sample %d\n", index);}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
@@ -601,6 +607,7 @@ namespace locust
         if (fTransmitter->IsKassiopeia())
         {
         	bool fTruth = false;
+        	int startingIndex;
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         	std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
@@ -627,6 +634,7 @@ namespace locust
                     {
                         fInterface->fPreEventInProgress = false;  // reset.
                         fInterface->fEventInProgress = true;
+                        startingIndex = index;
                         LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
                         WakeBeforeEvent();  // trigger Kass event.
                     }
@@ -641,7 +649,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
+                    		DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter);
                             PreEventCounter = 0; // reset
                         }
                         tLock.unlock();
