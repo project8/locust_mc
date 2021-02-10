@@ -92,7 +92,6 @@ namespace locust
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
             int fSwapFrequency;
-            int fSkipSampleCheck;
             double fphiLO; // voltage phase of LO in radians;
 
             void KassiopeiaInit(const std::string &aFile);

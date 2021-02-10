@@ -43,7 +43,6 @@ namespace locust
         ElementFIRBuffer( 1 ),
         fFieldBufferSize( 50 ),
 		fSwapFrequency( 1000 ),
-		fSkipSampleCheck( 1000 ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
@@ -308,10 +307,6 @@ namespace locust
         {
             fSwapFrequency = aParam["swap-frequency"]().as_int();
         }
-        if( aParam.has( "skip-sample-check" ) )
-        {
-            fSkipSampleCheck = aParam["skip-sample-check"]().as_int();
-        }
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
@@ -455,7 +450,6 @@ namespace locust
                 else
                 {
                 	tFieldSolution = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
-                	if (tFieldSolution[0] == 0.) {printf("field is zero.\n");}
                 }
 
                 tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
@@ -464,8 +458,10 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
-            	if (VoltageFIRSample == 0.) {printf("VoltageFIRSample is zero for index %d.\n", index);}
-            	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fSkipSampleCheck)) {printf("out of spec at sample %d\n", index);}
+            	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
+            	{
+            		printf("out of spec at sample %d\n", index);
+            	}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
