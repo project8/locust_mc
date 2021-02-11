@@ -462,7 +462,7 @@ namespace locust
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
             	{
-                    LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.  Exiting.\n");
+                    LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
             		return false;
             	}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
@@ -653,9 +653,9 @@ namespace locust
                     		{
                                 PreEventCounter = 0; // reset
                     		}
-                    		else
+                    		else if (!DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
                     		{
-                    			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
+                    			LERROR(lmclog,"The antenna did not respond correctly after two tries.  Exiting.\n");
                     			fSkippedSamples = true;
                                 tLock.unlock();
                     			break;
