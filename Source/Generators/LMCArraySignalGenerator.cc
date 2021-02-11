@@ -43,6 +43,8 @@ namespace locust
         ElementFIRBuffer( 1 ),
         fFieldBufferSize( 50 ),
 		fSwapFrequency( 1000 ),
+		fKassNeverStarted( false ),
+		fSkippedSamples( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
@@ -419,7 +421,7 @@ namespace locust
     }
 
 
-    void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
+    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -458,6 +460,11 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
+            	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
+            	{
+                    LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
+            		return false;
+            	}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
@@ -469,6 +476,7 @@ namespace locust
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
+        return true;
 
     }
 
@@ -599,6 +607,7 @@ namespace locust
         if (fTransmitter->IsKassiopeia())
         {
         	bool fTruth = false;
+        	int startingIndex;
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         	std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
@@ -625,6 +634,7 @@ namespace locust
                     {
                         fInterface->fPreEventInProgress = false;  // reset.
                         fInterface->fEventInProgress = true;
+                        startingIndex = index;
                         LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
                         WakeBeforeEvent();  // trigger Kass event.
                     }
@@ -639,8 +649,17 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
-                            PreEventCounter = 0; // reset
+                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		{
+                                PreEventCounter = 0; // reset
+                    		}
+                    		else if (!DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		{
+                    			LERROR(lmclog,"The antenna did not respond correctly after two tries.  Exiting.\n");
+                    			fSkippedSamples = true;
+                                tLock.unlock();
+                    			break;
+                    		}
                         }
                         tLock.unlock();
                 	}
@@ -652,8 +671,13 @@ namespace locust
                         {
                         	tLock.unlock();
                         }
-                        else  // no Kass event ever started, unlock and break out of signal loop entirely.
+                        else  // Kass event has not started, unlock and exit.
                         {
+                        	if ( index < fNPreEventSamples+1 )
+                        	{
+                    			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                        		fKassNeverStarted = true;
+                        	}
                         	tLock.unlock();
                         	break;
                         }
@@ -665,8 +689,11 @@ namespace locust
             fInterface->fDoneWithSignalGeneration = true;
             if (fTextFileWriting==1) fclose(fp);
             LPROG( lmclog, "Finished signal loop." );
+			fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
+            if (fKassNeverStarted == true) return false;
+            if (fSkippedSamples == true) return false;
 
 
         }  // fTransmitter->IsKassiopeia()
