@@ -647,7 +647,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		if (!DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
                     		{
                                 PreEventCounter = 0; // reset
                     		}
