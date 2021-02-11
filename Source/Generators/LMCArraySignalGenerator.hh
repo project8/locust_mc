@@ -31,7 +31,7 @@
 #include "LMCSinglePatchPositioner.hh"
 #include "LMCPlanarArrayPositioner.hh"
 #include <vector>
-
+#include "LMCException.hh"
 
 
 namespace locust
