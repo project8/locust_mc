@@ -419,7 +419,7 @@ namespace locust
     }
 
 
-    void ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
+    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -460,9 +460,8 @@ namespace locust
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
             	{
-                    LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
-            		printf("out of spec at sample %d\n", index);
-            		exit(-1);
+                    LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.  Exiting.\n");
+            		return false;
             	}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
@@ -475,6 +474,7 @@ namespace locust
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
+        return true;
 
     }
 
@@ -647,8 +647,16 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter);
-                            PreEventCounter = 0; // reset
+                    		if (!DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		{
+                                PreEventCounter = 0; // reset
+                    		}
+                    		else
+                    		{
+                                tLock.unlock();
+                    			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
+                    			exit(-1);
+                    		}
                         }
                         tLock.unlock();
                 	}
@@ -660,13 +668,11 @@ namespace locust
                         {
                         	tLock.unlock();
                         }
-                        else  // no Kass event ever started, unlock and break out of signal loop entirely.
+                        else  // no Kass event ever started, unlock and exit.
                         {
                         	tLock.unlock();
-                			LERROR(lmclog,"No response from Kassiopeia.\n");
-                			printf("no response from Kassiopeia.\n");
-//                			exit(-1);
-                        	break;
+                			LERROR(lmclog,"There was no response from Kassiopeia.  Exiting.\n");
+                			exit(-1);
                         }
                 	}
                 }

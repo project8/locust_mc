@@ -117,7 +117,7 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            void DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
+            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
             AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object
