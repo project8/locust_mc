@@ -43,6 +43,8 @@ namespace locust
         ElementFIRBuffer( 1 ),
         fFieldBufferSize( 50 ),
 		fSwapFrequency( 1000 ),
+		fKassNeverStarted( false ),
+		fSkippedSamples( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
@@ -653,9 +655,10 @@ namespace locust
                     		}
                     		else
                     		{
-                                tLock.unlock();
                     			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
-                    			exit(-1);
+                    			fSkippedSamples = true;
+                                tLock.unlock();
+                    			break;
                     		}
                         }
                         tLock.unlock();
@@ -668,11 +671,15 @@ namespace locust
                         {
                         	tLock.unlock();
                         }
-                        else  // no Kass event ever started, unlock and exit.
+                        else  // Kass event has not started, unlock and exit.
                         {
+                        	if ( index < fNPreEventSamples+1 )
+                        	{
+                    			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                        		fKassNeverStarted = true;
+                        	}
                         	tLock.unlock();
-                			LERROR(lmclog,"There was no response from Kassiopeia.  Exiting.\n");
-                			exit(-1);
+                        	break;
                         }
                 	}
                 }
@@ -682,8 +689,11 @@ namespace locust
             fInterface->fDoneWithSignalGeneration = true;
             if (fTextFileWriting==1) fclose(fp);
             LPROG( lmclog, "Finished signal loop." );
+			fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
+            if (fKassNeverStarted == true) return false;
+            if (fSkippedSamples == true) return false;
 
 
         }  // fTransmitter->IsKassiopeia()
