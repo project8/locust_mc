@@ -460,7 +460,9 @@ namespace locust
  	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
             	{
+                    LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
             		printf("out of spec at sample %d\n", index);
+            		exit(-1);
             	}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
@@ -661,6 +663,9 @@ namespace locust
                         else  // no Kass event ever started, unlock and break out of signal loop entirely.
                         {
                         	tLock.unlock();
+                			LERROR(lmclog,"No response from Kassiopeia.\n");
+                			printf("no response from Kassiopeia.\n");
+//                			exit(-1);
                         	break;
                         }
                 	}
