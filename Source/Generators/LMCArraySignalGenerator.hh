@@ -31,7 +31,7 @@
 #include "LMCSinglePatchPositioner.hh"
 #include "LMCPlanarArrayPositioner.hh"
 #include <vector>
-
+#include "LMCException.hh"
 
 
 namespace locust
@@ -82,6 +82,7 @@ namespace locust
             std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
             double fLO_Frequency;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             double fArrayRadius;
             int fNElementsPerStrip;
             int fNSubarrays;
@@ -91,6 +92,8 @@ namespace locust
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
             int fSwapFrequency;
+            bool fKassNeverStarted;
+            bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
 
             void KassiopeiaInit(const std::string &aFile);
@@ -116,7 +119,7 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
+            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
             AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object
