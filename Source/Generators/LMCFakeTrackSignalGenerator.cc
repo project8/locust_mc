@@ -757,10 +757,12 @@ namespace locust
         for(unsigned i=0; i<nPoints; ++i)
         {
             double tZi = i * dZ; 
-            tBFields.push_back(GetTrapField(tZi, aRadius));
 
             xDummy = v0 * dZ * sqrt(1. - pow(sin(aTheta),2.) * (fBField - GetTrapField(tZi, aRadius)) / (fBField - GetTrapField(0,aRadius)));
             tDummy += 1./ xDummy;
+            if(isnan(tDummy)) break;
+
+            tBFields.push_back(GetTrapField(tZi, aRadius));
             tTimes.push_back(tDummy);
         }
 
@@ -833,9 +835,8 @@ namespace locust
 
 	    if(fAharmonicCorrection)
 	    {
-		    double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,fRadius) ;
+		    double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,0);
 		    fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
-
 	    }
             aTrack.Radius = fRadius;
             aTrack.StartTime = fStartTime;
@@ -865,7 +866,7 @@ namespace locust
             fCurrentFrequency = fStartFrequency;
 	    if(fAharmonicCorrection)
 	    {
-	        double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,fRadius) ;
+	        double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,0);
 	        fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
 	    }
 
