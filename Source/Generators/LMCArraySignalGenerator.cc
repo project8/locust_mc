@@ -693,14 +693,14 @@ namespace locust
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
 
-            if (fKassNeverStarted == false)
-            {
-            	throw 3;
-            	return false;
-            }
-            if (fSkippedSamples == false)
+            if (fKassNeverStarted == true)
             {
             	throw 2;
+            	return false;
+            }
+            if (fSkippedSamples == true)
+            {
+            	throw 3;
             	return false;
             }
 
