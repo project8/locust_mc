@@ -692,8 +692,18 @@ namespace locust
 			fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
-            if (fKassNeverStarted == true) return false;
-            if (fSkippedSamples == true) return false;
+
+            if (fKassNeverStarted == false)
+            {
+            	throw 3;
+            	return false;
+            }
+            if (fSkippedSamples == false)
+            {
+            	throw 2;
+            	return false;
+            }
+
 
 
         }  // fTransmitter->IsKassiopeia()

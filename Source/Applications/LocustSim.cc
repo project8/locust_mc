@@ -73,6 +73,11 @@ int main( int argc, char** argv )
         LERROR( lmclog, "Exception caught: " << e.what() );
         return -1;
     }
+    catch( int &e )
+    {
+        LERROR( lmclog, "Exception caught: " << e );
+        return e;
+    }
 
     return 0;
 }
