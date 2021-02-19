@@ -120,6 +120,8 @@ namespace locust
             double GetTrapLength() const;
             void SetTrapLength(  double aTrapLength );
 
+            double GetCoilCurrent() const;
+            void SetCoilCurrent(  double aCoilCurrent );
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -134,14 +136,16 @@ namespace locust
             void SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data);
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
             double RadialPowerCoupling(double radius);
+            double AharmonicPowerCoupling(double aRadius, double aTheta);
             double GetEnergyLoss(double u, bool hydrogenScatter);
+
             double GetKa2(double eLoss, double T);
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetCorrectedFrequency(double frequency, double radius) const;
 
-            double GetTrapField(double aZ , double aRadius, double aCurrent=0.3) const;
-            double GetCoilField(double aR0, double aZ0, double aRadius, double aZ, double aCurrent) const;
+            double GetTrapField(double aZ , double aRadius) const;
+            double GetCoilField(double aR0, double aZ0, double aRadius, double aZ) const;
             std::pair< std::vector<double>, std::vector<double> > GetParticleTimes(double aRadius, double aTheta) const;
             double GetZMax(double aTheta, double aRadius) const;
             double GetAverageMagneticField(double aRadius, double aTheta) const;
@@ -184,6 +188,7 @@ namespace locust
             double fLO_frequency;
             double fNTracksMean;
             double fBField;
+            double fCoilCurrent;
             double fAharmonicCorrectionFactor;
             int fRandomSeed;
             int fNEvents;
