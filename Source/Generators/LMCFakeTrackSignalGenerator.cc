@@ -722,8 +722,9 @@ namespace locust
             tBFields.push_back(fBField - GetTrapField(tZPositions[i],aRadius));
 
         double tBAverage = fBField - GetAverageMagneticField(aRadius, aTheta);
-        double tGamma = 1.03;
-        double tRatioBToFreq = LMCConst::Q() * (LMCConst::M_el_kg() * tGamma);
+        double tEnergy = rel_energy(fStartFrequency,fBField-GetTrapField(0,aRadius));
+        double tGamma = 1. + tEnergy / LMCConst::M_el_eV();
+        double tRatioBToFreq = LMCConst::Q() / (LMCConst::M_el_kg() * tGamma);
         double tOmega0 = tBAverage * tRatioBToFreq;
 
         std::vector<double> tOmegas;
@@ -734,21 +735,25 @@ namespace locust
         double f_c = 1.8412 * LMCConst::C() / (2 * LMCConst::Pi() * tWaveguideRadius);
         double v_phase = LMCConst::C() / sqrt( 1 - pow(f_c / fStartFrequency, 2));
         double k_lambda = 2. * LMCConst::Pi() * fStartFrequency / v_phase;
-        //std::cout<<"f: "<<fStartFrequency<<std::endl;
 
         std::vector<double> tTimeDiffs;
         for(unsigned i=0; i<tTimes.size() - 1;++i)
             tTimeDiffs.push_back(tTimes[i+1] - tTimes[i]);
 
-        std::vector<double> tPhi=tOmegas;
-        std::partial_sum(tOmegas.begin(), tOmegas.end(), tPhi.begin());
+        std::vector<double> tPhi={0};
+        double tPhiSum = 0.;
+        for(unsigned i=0;i<tOmegas.size()-1;++i)
+        {
+            tPhiSum += tOmegas[i] * tTimeDiffs[i];
+            tPhi.push_back(tPhiSum);
+        }
 
         double tCosSum, tSinSum = 0;
 
-        for(unsigned i=1; i<tTimes.size();++i)
+        for(unsigned i=0; i<tTimes.size()-1;++i)
         {
-            tCosSum += cos( tPhi[i] + k_lambda * tZPositions[i]  - tOmega0 * tTimes[i] ) * tTimeDiffs[i-1];
-            tSinSum += sin( tPhi[i] + k_lambda * tZPositions[i]  - tOmega0 * tTimes[i] ) * tTimeDiffs[i-1];
+            tCosSum += cos( tPhi[i] + k_lambda * tZPositions[i]  - tOmega0 * tTimes[i] ) * tTimeDiffs[i];
+            tSinSum += sin( tPhi[i] + k_lambda * tZPositions[i]  - tOmega0 * tTimes[i] ) * tTimeDiffs[i];
 
         }
         double tA0 = sqrt(pow(tCosSum,2.) + pow(tSinSum,2.))/ tTimes.back();
@@ -819,8 +824,8 @@ namespace locust
         {
             double tZi = i * dZ; 
 
-            xDummy = v0 * dZ * sqrt(1. - pow(sin(aTheta),2.) * (fBField - GetTrapField(tZi, aRadius)) / (fBField - GetTrapField(0,aRadius)));
-            tDummy += 1./ xDummy;
+            xDummy = v0 * sqrt(1. - pow(sin(aTheta),2.) * (fBField - GetTrapField(tZi, aRadius)) / (fBField - GetTrapField(0,aRadius)));
+            tDummy += dZ / xDummy;
             if(isnan(tDummy)) break;
 
             tZPositions.push_back(tZi);
@@ -942,6 +947,7 @@ namespace locust
         fSlope = fSlopeDistribution->Generate();
         if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fRadius),2.);
 
+
         fTrackLength = fTrackLengthDistribution->Generate();
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
         aTrack.Slope = fSlope;
@@ -952,6 +958,11 @@ namespace locust
         aTrack.TrackPower = fSignalPower * pow(coupling,2.);
         aTrack.StartFrequency = GetCorrectedFrequency(aTrack.StartFrequency, aTrack.Radius);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
+
+        //std::cout<<AharmonicPowerCoupling(fRadius, fPitch)<<std::endl;
+        std::cout<<AharmonicPowerCoupling(0.0025, 89.0*LMCConst::Pi() / 180.)<<std::endl;
+        std::cout<<"normal: "<<WaveguidePowerCoupling(fStartFrequency, fPitch)<<std::endl;
+        std::cout<<"normal rad: "<<RadialPowerCoupling(fRadius)<<std::endl;
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
