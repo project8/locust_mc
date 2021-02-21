@@ -16,7 +16,7 @@ After running Katydid, the processed fft spectra will have a span from 0 to the 
 
 ### Tutorial
 
-Tutorials with examples are located in the locust-tutorial repository, [here](https://github.com/project8/locust-tutorial). 
+Tutorial documents with examples are located in the locust-tutorial repository, [here](https://github.com/project8/locust-tutorial). 
 
 Issues should be posted via [GitHub](https://github.com/project8/locust_mc/issues).
 
@@ -110,6 +110,15 @@ The following steps will build locust from scratch.  In the terminal:
     $ source /path/to/locust_mc/build/bin/kasperenv.sh 
     ```
   If you have another kassiopeia installation on your computer, you should ensure that locust is not using the environmental variables of the independent kassiopeia installation by removing this line from your .bashrc.
+  
+### Exit codes
+
+When running Locust with Kassiopeia in a shared cluster environment, 2 CPUs may be required unless hyperthreading is enabled on the cluster.  If the level of activity on the cluster is high, thread signals between the separate CPUs can occasionally be missed and an exception will be thrown.  Locust terminates with an integer exception in these two cases:
+
+*  ```exit(2)``` if the Kassiopeia thread did not start.
+*  ```exit(3)``` if a digitizer sample was skipped.  
+
+Immediately after Locust has finished, the exit status can be checked from a bash prompt with ```echo #?```.  If the returned value is zero, then no exception was thrown.  Returned values of 2 or 3 correspond to the exceptions above.  Output egg files are not written if an exception is thrown.
 
 ### Docker container
 
