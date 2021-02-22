@@ -119,7 +119,7 @@ When running Locust with Kassiopeia in a shared cluster environment, 2 CPUs may 
 *  ```exit(2)``` if the Kassiopeia thread did not start.
 *  ```exit(3)``` if a digitizer sample was skipped.  
 
-Immediately after Locust has finished, the exit status can be checked from a bash prompt with ```echo #?```.  If the returned value is zero, then no exception was thrown.  Returned values of 1, 2, or 3 correspond to the exceptions above.  Output egg files are not written if an exception is thrown.  Exit codes ```2``` or ```3``` can typically be immediately requeued.  An exit code of ```1``` should be either reconfigured to unsaturate the digitizer, or reported as an issue.
+Immediately after Locust has finished, the exit status can be checked from a bash prompt with ```echo #?```.  If the returned value is zero, then no exception was thrown.  Returned values of ```1```, ```2```, or ```3``` correspond to the exceptions above.  Output egg files are not written if an exception is thrown.  Exit codes ```2``` or ```3``` can typically be immediately requeued.  An exit code of ```1``` should be either reconfigured to unsaturate the digitizer, or if the digitizer does not appear saturated, reported as an issue.
 
 ### Docker container
 
