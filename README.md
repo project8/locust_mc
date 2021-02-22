@@ -113,12 +113,13 @@ The following steps will build locust from scratch.  In the terminal:
   
 ### Exit codes
 
-When running Locust with Kassiopeia in a shared cluster environment, 2 CPUs may be required unless hyperthreading is enabled on the cluster.  If the level of activity on the cluster is high, thread signals between the separate CPUs can occasionally be missed and an exception will be thrown.  Locust terminates with an integer exception in these two cases:
+When running Locust with Kassiopeia in a shared cluster environment, 2 CPUs may be required unless hyperthreading is enabled on the cluster.  If the level of activity on the cluster is high, thread signals between the separate CPUs can occasionally be missed and an exception will be thrown.  Locust terminates with an integer exception in these three cases:
 
+*  ```exit(1)``` if the digitizer range was saturated.
 *  ```exit(2)``` if the Kassiopeia thread did not start.
 *  ```exit(3)``` if a digitizer sample was skipped.  
 
-Immediately after Locust has finished, the exit status can be checked from a bash prompt with ```echo #?```.  If the returned value is zero, then no exception was thrown.  Returned values of 2 or 3 correspond to the exceptions above.  Output egg files are not written if an exception is thrown.
+Immediately after Locust has finished, the exit status can be checked from a bash prompt with ```echo #?```.  If the returned value is zero, then no exception was thrown.  Returned values of 1, 2, or 3 correspond to the exceptions above.  Output egg files are not written if an exception is thrown.  Exit codes ```2``` or ```3``` can typically be immediately requeued.  An exit code of ```1``` should be either reconfigured to unsaturate the digitizer, or reported as an issue.
 
 ### Docker container
 
