@@ -11,6 +11,7 @@
 #include "LMCConst.hh"
 #include "LMCThreeVector.hh"
 #include "path.hh"
+#include <algorithm>
 #include <random>
 #include <math.h>
 #include <sstream>
@@ -42,6 +43,7 @@ namespace locust
         fRandomSeed(0),
         fNEvents(1),
         fAharmonicCorrection( false ),
+        fAharmonicPowerCoupling( 1. ),
         fPitchCorrection( true ),
         fSlopeCorrection( false ),
         fRandomEngine(0),
@@ -711,9 +713,53 @@ namespace locust
         return tBField;
     }
 
+    void FakeTrackSignalGenerator::AddConst(std::vector<double> &aVec, const double aFactor, const double aConst)
+    {
+        std::transform(aVec.begin(), aVec.end(), aVec.begin(), [=](double &x) {return aFactor*x+aConst;});
+    }
+
+    //Converts quarter-period motion into full period (Aharmonic)
+    std::pair<std::vector<double>, std::vector<double> > FakeTrackSignalGenerator::GetFullCycle(std::pair< std::vector<double>, std::vector<double> > aHarmonicSolver)
+    {
+        std::vector<double> tTimesOrig = aHarmonicSolver.first;
+        std::vector<double> tZPositionsOrig = aHarmonicSolver.second;
+
+        std::vector<double> tTimes = tTimesOrig;
+        std::vector<double> tZPositions = tZPositionsOrig;
+        std::vector<double> tTimesRev = tTimesOrig;
+        std::vector<double> tZPositionsRev = tZPositionsOrig;
+
+        tTimesRev.pop_back();
+        tZPositionsRev.pop_back();
+
+        std::reverse(tTimesRev.begin(), tTimesRev.end());
+        std::reverse(tZPositionsRev.begin(), tZPositionsRev.end());
+
+        AddConst(tTimesRev, -1, 2*tTimes.back());
+
+        //Append electron returning to origin
+        tZPositions.insert(tZPositions.end(), tZPositionsRev.begin(), tZPositionsRev.end());
+        tTimes.insert(tTimes.end(), tTimesRev.begin(), tTimesRev.end());
+        tTimes.pop_back();
+        tZPositions.pop_back();
+
+        //Double the whole thing so the e- repeats path over negative z
+        std::vector<double> tTimesNeg = tTimes;
+        std::vector<double> tZPositionsNeg = tZPositions;
+
+        std::transform(tZPositionsNeg.begin(), tZPositionsNeg.end(), tZPositionsNeg.begin(), [](double &c) {return -c;});
+        AddConst(tTimesNeg, 1, tTimesNeg.back());
+
+        tZPositions.insert(tZPositions.end(), tZPositionsNeg.begin(), tZPositionsNeg.end());
+        tTimes.insert(tTimes.end(), tTimesNeg.begin(), tTimesNeg.end());
+
+        return std::pair< std::vector<double>, std::vector<double> >(tTimes, tZPositions);
+    }
+
     double FakeTrackSignalGenerator::AharmonicPowerCoupling(double aRadius, double aTheta)
     {
         auto tAharmonicSolver = GetParticleTimes(aRadius, aTheta);
+        tAharmonicSolver = GetFullCycle(tAharmonicSolver);
         std::vector<double> tTimes = tAharmonicSolver.first;
         std::vector<double> tZPositions = tAharmonicSolver.second;
         std::vector<double> tBFields;
@@ -724,6 +770,7 @@ namespace locust
         double tBAverage = fBField - GetAverageMagneticField(aRadius, aTheta);
         double tEnergy = rel_energy(fStartFrequency,fBField-GetTrapField(0,aRadius));
         double tGamma = 1. + tEnergy / LMCConst::M_el_eV();
+
         double tRatioBToFreq = LMCConst::Q() / (LMCConst::M_el_kg() * tGamma);
         double tOmega0 = tBAverage * tRatioBToFreq;
 
@@ -740,6 +787,7 @@ namespace locust
         for(unsigned i=0; i<tTimes.size() - 1;++i)
             tTimeDiffs.push_back(tTimes[i+1] - tTimes[i]);
 
+
         std::vector<double> tPhi={0};
         double tPhiSum = 0.;
         for(unsigned i=0;i<tOmegas.size()-1;++i)
@@ -748,7 +796,8 @@ namespace locust
             tPhi.push_back(tPhiSum);
         }
 
-        double tCosSum, tSinSum = 0;
+        double tCosSum = 0.;
+        double tSinSum = 0.;
 
         for(unsigned i=0; i<tTimes.size()-1;++i)
         {
@@ -756,6 +805,7 @@ namespace locust
             tSinSum += sin( tPhi[i] + k_lambda * tZPositions[i]  - tOmega0 * tTimes[i] ) * tTimeDiffs[i];
 
         }
+
         double tA0 = sqrt(pow(tCosSum,2.) + pow(tSinSum,2.))/ tTimes.back();
         return tA0;
     }
@@ -810,7 +860,7 @@ namespace locust
         double tTime = 0.;
         std::vector<double> tTimes, tZPositions;
 
-        const int nPoints = 100.;
+        const int nPoints = 2000;
         double tZMax = GetZMax(aTheta, aRadius);
         const double dZ = tZMax / nPoints;
         double xDummy;
@@ -903,11 +953,11 @@ namespace locust
 
             fRadius = fRadiusDistribution->Generate();
 
-	    if(fAharmonicCorrection)
-	    {
-		    double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,0);
-		    fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
-	    }
+            if(fAharmonicCorrection)
+            {
+                double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,0);
+                fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
+            }
             aTrack.Radius = fRadius;
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
@@ -934,19 +984,30 @@ namespace locust
             new_energy = current_energy - energy_loss; // new energy after loss, in eV
             fStartFrequency = rel_cyc(new_energy, fBField);
             fCurrentFrequency = fStartFrequency;
-	    if(fAharmonicCorrection)
-	    {
-	        double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,0);
-	        fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
-	    }
+            if(fAharmonicCorrection)
+            {
+                double tBDifference = GetAverageMagneticField(fRadius, fPitch) - GetTrapField(0,0);
+                fAharmonicCorrectionFactor = 1. - tBDifference / fBField;
+            }
 
             aTrack.StartTime = fEndTime + 0.; // margin of time is 0.
             aTrack.StartFrequency = fStartFrequency;
         }
 
         fSlope = fSlopeDistribution->Generate();
-        if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fRadius),2.);
+        if(fSlopeCorrection && fAharmonicCorrection) fSlope *= pow(AharmonicPowerCoupling(fRadius, fPitch),2.);
+        else if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fRadius),2.);
 
+        double coupling;
+        if(fAharmonicCorrection)
+        {
+            coupling = AharmonicPowerCoupling(fRadius, fPitch);
+            fAharmonicPowerCoupling = coupling;
+        }
+        else
+        {
+            coupling = WaveguidePowerCoupling(fStartFrequency, fPitch) * RadialPowerCoupling(fRadius);
+        }
 
         fTrackLength = fTrackLengthDistribution->Generate();
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
@@ -954,15 +1015,10 @@ namespace locust
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
-        double coupling = WaveguidePowerCoupling(fStartFrequency, fPitch) * RadialPowerCoupling(fRadius);
         aTrack.TrackPower = fSignalPower * pow(coupling,2.);
         aTrack.StartFrequency = GetCorrectedFrequency(aTrack.StartFrequency, aTrack.Radius);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
 
-        //std::cout<<AharmonicPowerCoupling(fRadius, fPitch)<<std::endl;
-        std::cout<<AharmonicPowerCoupling(0.0025, 89.0*LMCConst::Pi() / 180.)<<std::endl;
-        std::cout<<"normal: "<<WaveguidePowerCoupling(fStartFrequency, fPitch)<<std::endl;
-        std::cout<<"normal rad: "<<RadialPowerCoupling(fRadius)<<std::endl;
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
@@ -1025,7 +1081,14 @@ namespace locust
                         LO_phase += 2.*LMCConst::Pi()*fLO_frequency * tLocustStep;
                         fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
                         voltage_phase += 2.*LMCConst::Pi()*GetCorrectedFrequency(fCurrentFrequency, aTrack.Radius) * tLocustStep;
-                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch) * RadialPowerCoupling(fRadius);
+                        if(fAharmonicCorrection)
+                        {
+                            signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * fAharmonicPowerCoupling;
+                        }
+                        else
+                        {
+                            signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch) * RadialPowerCoupling(fRadius);
+                        }
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                     }

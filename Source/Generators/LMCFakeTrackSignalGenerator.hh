@@ -112,7 +112,7 @@ namespace locust
             void SetPitchCorrection(  bool aPitchCorrection );
 
             bool GetAharmonicCorrection() const;
-	    void SetAharmonicCorrection( bool aAharmonicCorrection );
+            void SetAharmonicCorrection( bool aAharmonicCorrection );
 
             bool GetSlopeCorrection() const;
             void SetSlopeCorrection(  bool aSlopeCorrection );
@@ -143,6 +143,9 @@ namespace locust
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetCorrectedFrequency(double frequency, double radius) const;
+
+            void AddConst(std::vector<double> &aVec, const double aFactor, const double aConst);
+            std::pair<std::vector<double>, std::vector<double> > GetFullCycle(std::pair< std::vector<double>, std::vector<double> > aHarmonicSolver);
 
             double GetTrapField(double aZ , double aRadius) const;
             double GetCoilField(double aR0, double aZ0, double aRadius, double aZ) const;
@@ -190,6 +193,7 @@ namespace locust
             double fBField;
             double fCoilCurrent;
             double fAharmonicCorrectionFactor;
+            double fAharmonicPowerCoupling;
             int fRandomSeed;
             int fNEvents;
             bool fAharmonicCorrection;
