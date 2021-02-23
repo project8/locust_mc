@@ -33,7 +33,7 @@ namespace locust
 		fTextFileWriting( 0 ),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
-		fThreadCheckTime(10000),
+		fThreadCheckTime(200),
         EFieldBuffer( 1 ),
         EPhaseBuffer( 1 ),
         EAmplitudeBuffer( 1 ),
@@ -653,9 +653,9 @@ namespace locust
                     		{
                                 PreEventCounter = 0; // reset
                     		}
-                    		else if (!DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		else
                     		{
-                    			LERROR(lmclog,"The antenna did not respond correctly after two tries.  Exiting.\n");
+                    			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
                     			fSkippedSamples = true;
                                 tLock.unlock();
                     			break;
@@ -692,8 +692,18 @@ namespace locust
 			fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
-            if (fKassNeverStarted == true) return false;
-            if (fSkippedSamples == true) return false;
+
+            if (fKassNeverStarted == true)
+            {
+            	throw 2;
+            	return false;
+            }
+            if (fSkippedSamples == true)
+            {
+            	throw 3;
+            	return false;
+            }
+
 
 
         }  // fTransmitter->IsKassiopeia()

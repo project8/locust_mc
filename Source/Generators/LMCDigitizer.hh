@@ -9,8 +9,8 @@
 #define LMCDIGITIZER_HH_
 
 #include "LMCGenerator.hh"
-
 #include "digital.hh"
+#include "LMCException.hh"
 
 
 
@@ -57,6 +57,10 @@ namespace locust
             struct scarab::dig_calib_params fParams;
 
             bool fADCValuesSigned;
+
+        private:
+            double fRange;
+            double fOffset;
     };
 
     inline void Digitizer::SetADCValuesSigned( bool aFlag )
