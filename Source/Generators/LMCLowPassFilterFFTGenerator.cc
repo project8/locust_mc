@@ -48,6 +48,11 @@ namespace locust
     void LowPassFilterFFTGenerator::SetThreshold( double aThreshold )
     {
         fThreshold = aThreshold;
+        if (fThreshold > 0.95)
+        {
+            LERROR(lmclog,"LPF threshold is too close to Nyquist frequency.  It should be < 0.9 .\n");
+        	exit(-1);
+        }
         return;
     }
 
@@ -113,6 +118,11 @@ namespace locust
             	int startingMargin = GetStartingMargin(aSignal, windowsize, nwin, ch);
             	int endingMargin = GetEndingMargin(aSignal, windowsize, nwin, ch);
             	int variableWindowSize = windowsize - startingMargin - endingMargin;
+            	if (variableWindowSize < 1)
+            	{
+                    LERROR(lmclog,"LPF-FFT variable window size is too small.\n");
+                    throw 1;
+            	}
 
                 fftw_complex *SignalComplex;
                 SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * variableWindowSize );
@@ -129,7 +139,6 @@ namespace locust
                 {
                     SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][0];
                     SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][1];
-                    //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
                 }
 
                 fftw_execute(ForwardPlan);
@@ -153,7 +162,6 @@ namespace locust
                     // normalize
                     aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][0] = SignalComplex[index][0]/norm;
                     aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][1] = SignalComplex[index][1]/norm;
-                    //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
                 }
 
                 fftw_destroy_plan(ForwardPlan);
