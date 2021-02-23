@@ -117,16 +117,7 @@ namespace locust
             {
             	int startingMargin = startingMargin = GetStartingMargin(aSignal, windowsize, nwin, ch);
             	int endingMargin = GetEndingMargin(aSignal, windowsize, nwin, ch);
-            	int variableWindowSize = windowsize;
-            	if (!((startingMargin > 0) && (endingMargin > 0)))  // fraction of event is in window
-            	{
-            		variableWindowSize = windowsize - startingMargin - endingMargin;
-            	}
-            	else // accommodate very short test events with zero-noise
-            	{
-            		startingMargin = 0;
-            		endingMargin = 0;
-            	}
+            	int variableWindowSize = windowsize - startingMargin - endingMargin;
 
             	if (variableWindowSize < 1)
             	{
@@ -165,7 +156,7 @@ namespace locust
 
                 fftw_execute(ReversePlan);
 
-                double norm = (double)(windowsize);
+                double norm = (double)(variableWindowSize);
 
                 for( unsigned index = 0; index < variableWindowSize; ++index )
                 {
