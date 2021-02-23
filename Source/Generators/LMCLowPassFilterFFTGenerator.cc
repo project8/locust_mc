@@ -115,9 +115,19 @@ namespace locust
         {
             for (int nwin = 0; nwin < nwindows; nwin++)
             {
-            	int startingMargin = GetStartingMargin(aSignal, windowsize, nwin, ch);
+            	int startingMargin = startingMargin = GetStartingMargin(aSignal, windowsize, nwin, ch);
             	int endingMargin = GetEndingMargin(aSignal, windowsize, nwin, ch);
-            	int variableWindowSize = windowsize - startingMargin - endingMargin;
+            	int variableWindowSize = windowsize;
+            	if (!((startingMargin > 0) && (endingMargin > 0)))  // fraction of event is in window
+            	{
+            		variableWindowSize = windowsize - startingMargin - endingMargin;
+            	}
+            	else // accommodate very short test events with zero-noise
+            	{
+            		startingMargin = 0;
+            		endingMargin = 0;
+            	}
+
             	if (variableWindowSize < 1)
             	{
                     LERROR(lmclog,"LPF-FFT variable window size is too small.\n");
