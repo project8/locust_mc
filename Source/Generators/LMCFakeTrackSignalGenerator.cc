@@ -995,13 +995,12 @@ namespace locust
         }
 
         fSlope = fSlopeDistribution->Generate();
-        if(fSlopeCorrection && fAharmonicCorrection) fSlope *= pow(AharmonicPowerCoupling(fRadius, fPitch),2.);
-        else if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fRadius),2.);
+        if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fRadius),2.);
 
         double coupling;
         if(fAharmonicCorrection)
         {
-            coupling = AharmonicPowerCoupling(fRadius, fPitch);
+            coupling = AharmonicPowerCoupling(fRadius, fPitch) * RadialPowerCoupling(fRadius);
             fAharmonicPowerCoupling = coupling;
         }
         else
