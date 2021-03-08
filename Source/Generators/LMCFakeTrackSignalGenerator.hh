@@ -137,6 +137,7 @@ namespace locust
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
             double RadialPowerCoupling(double radius);
             double AharmonicPowerCoupling(double aRadius, double aTheta);
+            double Z11(double aFrequency, double aRadius);
             double GetEnergyLoss(double u, bool hydrogenScatter);
 
             double GetKa2(double eLoss, double T);

@@ -658,6 +658,19 @@ namespace locust
         return j0(k_lambda * zMax);
     }
 
+    double FakeTrackSignalGenerator::Z11(double aFrequency, double aRadius)
+    {
+        const double tWaveguideRadius = 0.00502920;
+        double f_c = 1.8412 * LMCConst::C() / (2. * LMCConst::Pi() * tWaveguideRadius);
+
+        double tEnergy = rel_energy(aFrequency,fBField-GetTrapField(0,aRadius));
+        double tGamma = 1. + tEnergy / LMCConst::M_el_eV();
+        double tBeta = sqrt(1. - 1./pow(tGamma,2.));
+
+        double tZ11 = pow(tBeta,2.) / sqrt(1. - pow(f_c / aFrequency,2.));
+        return tZ11;
+    }
+
     double FakeTrackSignalGenerator::RadialPowerCoupling(double radius)
     {
         const double tWaveguideRadius = 0.00502920;
@@ -1000,8 +1013,10 @@ namespace locust
         double coupling;
         if(fAharmonicCorrection)
         {
-            coupling = AharmonicPowerCoupling(fRadius, fPitch) * RadialPowerCoupling(fRadius);
+            double tZRatio = Z11(fStartFrequency,fRadius)/Z11(rel_cyc(18600., fBField),0);
+            coupling = AharmonicPowerCoupling(fRadius, fPitch) * RadialPowerCoupling(fRadius) * sqrt(tZRatio);
             fAharmonicPowerCoupling = coupling;
+
         }
         else
         {
@@ -1017,7 +1032,6 @@ namespace locust
         aTrack.TrackPower = fSignalPower * pow(coupling,2.);
         aTrack.StartFrequency = GetCorrectedFrequency(aTrack.StartFrequency, aTrack.Radius);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
-
     }
 
     void FakeTrackSignalGenerator::InitiateEvent(Event* anEvent, int eventID)
