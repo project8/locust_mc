@@ -92,7 +92,7 @@ namespace locust
                 digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
                 digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
 
-                if ((int(digitizedData[ 2*ch*signalSize + index*2 ]) == 0 ) || ( int(digitizedData[ 2*ch*signalSize + index*2 ] == 255)))
+                if ((int(digitizedData[ 2*ch*signalSize + index*2 ]) == -128 ) || ( int(digitizedData[ 2*ch*signalSize + index*2 ] == 128)))
                 {
                     LERROR(lmclog,"Digitizer range limit.\n");
                     printf("Analog data at index %d channel %d is %g\n", index, ch, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
