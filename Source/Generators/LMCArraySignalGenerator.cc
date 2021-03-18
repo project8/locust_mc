@@ -663,27 +663,36 @@ namespace locust
                         }
                         tLock.unlock();
                 	}
-                    else  // Kass event has not started.
-                    {
-                     	if ( fInterface->fEventInProgress )
-                     	{
-                     		if ( index < fNPreEventSamples+1 ) // Kass never started at all.
-                     		{
-                    			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                        		fKassNeverStarted = true;
-                     		}
-                        	tLock.unlock(); // Kass either started or not, but is now finished.
-                        	break;
-                     	}
-                     	else  // Kass started an event and quickly terminated it.
-                     	{
-                    		LWARN(lmclog, "Kass event terminated quickly.\n");
-                    		tLock.unlock();
-                     	}
-                    }
-                }
-            }  // for loop
+                 	else  // diagnose Kass
+                 	{
+                         tLock.lock();
+                         std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
+                         if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
+                         {
+                         	tLock.unlock();
+                         }
+                         else  // Kass event has not started.
+                         {
+                          	if ( fInterface->fEventInProgress )
+                          	{
+                          		if ( index < fNPreEventSamples+1 ) // Kass never started at all.
+                          		{
+                         			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                             		fKassNeverStarted = true;
+                          		}
+                             	tLock.unlock(); // Kass either started or not, but is now finished.
+                             	break;
+                          	}
+                          	else  // Kass started an event and quickly terminated it.
+                          	{
+                         		LWARN(lmclog, "Kass event terminated quickly.\n");
+                         		tLock.unlock();
+                          	}
+                         }
+                 	} // diagnose Kass
 
+                } // if fEventInProgress
+            }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
             if (fTextFileWriting==1) fclose(fp);
