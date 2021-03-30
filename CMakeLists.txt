@@ -165,15 +165,17 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     # We then add a dependency of KassiopeiaExt to each imported library target
     # LocustMC library will link to those imported libraries, and therefore depend on KassiopeiaExt
 
+
+    # Problem:  In the next line, 2 sets of each library are being found.
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
+    message( STATUS "****** starting loop" )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-#		if (NOT TARGET ${LIBRARY})
-        	add_library( ${LIBRARY} SHARED IMPORTED )
-#        endif()
-        #message( STATUS "****** constructed name: ${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+        add_library( ${LIBRARY} SHARED IMPORTED )
+        message( STATUS "****** constructed name: ${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
         set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
         add_dependencies( ${LIBRARY} KassiopeiaExt )
     endforeach()
+    message( STATUS "****** finished loop" )
       
               
     pbuilder_add_ext_libraries(
