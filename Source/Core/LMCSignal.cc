@@ -51,15 +51,14 @@ namespace locust
         Reset();
 
         fTimeSize = aTimeSize;
-        fFreqSize = fTimeSize / 2 + 1;
-        fFreqSizeComplex = fTimeSize;
+        fFreqSize = fTimeSize;
 
         fSignalTime = new double [fTimeSize];
         fSignalFreq = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize );
         fSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize *nchannels);
-        fSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex * nchannels);
-        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * TimeSize()*DecimationFactor() *nchannels);
-        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex*DecimationFactor() *nchannels);
+        fSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize * nchannels);
+        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize*DecimationFactor() *nchannels);
+        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize*DecimationFactor() *nchannels);
 
 
         ResetValues();
