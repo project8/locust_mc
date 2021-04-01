@@ -25,6 +25,7 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateFreq ),
         fLO_Frequency( 0.),
+		fNModes( 1 ),
         fArrayRadius( 0. ),
         fNElementsPerStrip( 0. ),
 		fNSubarrays( 1 ),
@@ -79,6 +80,11 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
+        }
+
+        if( aParam.has( "n-modes" ) )
+        {
+            fNModes = aParam["n-modes"]().as_int();
         }
 
         if( aParam.has( "array-radius" ) )
@@ -355,7 +361,7 @@ namespace locust
     	const unsigned nchannels = 1;
     	double fLO_frequency = 20.03e9;
     	double fRF_frequency = 20.0e9;
-    	double fAmplitude = 1.e-8;
+    	double fAmplitude = 1.e-9;
         double LO_phase = 0.;
         double voltage_phase = 0.;
 
@@ -366,7 +372,7 @@ namespace locust
                 LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/(fAcquisitionRate*1.e6);
                 voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/(fAcquisitionRate*1.e6);
 
-                if (index == aSignal->FreqSize()/3 ) // pick a frequency bin and put some signal in it.
+                if (index == aSignal->FreqSize()/6 ) // pick a frequency bin and put some signal in it.
                 {
                 	aSignal->SignalFreqComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)*fAmplitude;
                 	aSignal->SignalFreqComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)*fAmplitude;
