@@ -23,6 +23,7 @@ namespace locust
 
     CavitySignalGenerator::CavitySignalGenerator( const std::string& aName ) :
         Generator( aName ),
+        fDoGenerateFunc( &CavitySignalGenerator::DoGenerateFreq ),
         fLO_Frequency( 0.),
         fArrayRadius( 0. ),
         fNElementsPerStrip( 0. ),
@@ -38,8 +39,7 @@ namespace locust
 		fSkippedSamples( false ),
 		fInterface( new KassLocustInterface() )
     {
-        fRequiredSignalState = Signal::kTime;
-
+        fRequiredSignalState = Signal::kFreq;
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
@@ -66,7 +66,7 @@ namespace locust
 
         	if (ntransmitters != 1)
         	{
-        		LERROR(lmclog,"LMCCavitySignalGenerator needs a single transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
+        		LERROR(lmclog,"LMCCavitySignalGenerator needs a single transmitter.  Please choose transmitter:kassiopeia in the config file.");
                 exit(-1);
         	}
         }
@@ -130,6 +130,29 @@ namespace locust
         return;
     }
 
+    Signal::State CavitySignalGenerator::GetDomain() const
+    {
+        return fRequiredSignalState;
+    }
+
+    void CavitySignalGenerator::SetDomain( Signal::State aDomain )
+    {
+        if( aDomain == fRequiredSignalState ) return;
+        fRequiredSignalState = aDomain;
+        if( fRequiredSignalState == Signal::kTime )
+        {
+            fDoGenerateFunc = &CavitySignalGenerator::DoGenerateTime;
+        }
+        else if( fRequiredSignalState == Signal::kFreq )
+        {
+            fDoGenerateFunc = &CavitySignalGenerator::DoGenerateFreq;
+        }
+        else
+        {
+            LWARN( lmclog, "Unknown domain requested: " << aDomain );
+        }
+        return;
+    }
 
 
     void CavitySignalGenerator::KassiopeiaInit(const std::string &aFile)
@@ -183,10 +206,15 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerate( Signal* aSignal )
     {
+        return (this->*fDoGenerateFunc)( aSignal );
+    }
+
+
+    bool CavitySignalGenerator::DoGenerateTimeKass( Signal* aSignal )
+    {
 
         FILE *fp;
         if (fTextFileWriting==1) fp = fopen("incidentfields.txt", "w");
-
 
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
@@ -321,6 +349,63 @@ namespace locust
         return true;
 
     }
+
+    bool CavitySignalGenerator::DoGenerateFreq( Signal* aSignal )
+    {
+    	const unsigned nchannels = 1;
+    	double fLO_frequency = 20.03e9;
+    	double fRF_frequency = 20.0e9;
+    	double fAmplitude = 1.e-8;
+        double LO_phase = 0.;
+        double voltage_phase = 0.;
+
+        for (unsigned ch = 0; ch < nchannels; ++ch)
+        {
+            for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
+            {
+                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/(fAcquisitionRate*1.e6);
+                voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/(fAcquisitionRate*1.e6);
+
+                if (index == aSignal->FreqSize()/3 ) // pick a frequency bin and put some signal in it.
+                {
+                	aSignal->SignalFreqComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)*fAmplitude;
+                	aSignal->SignalFreqComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)*fAmplitude;
+                }
+            }
+        }
+
+        aSignal->ToState(Signal::kTime);
+
+        return true;
+    }
+
+    bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
+    {
+
+    	const unsigned nchannels = 1;
+    	double fLO_frequency = 20.e9;
+    	double fRF_frequency = 20.05e9;
+    	double fAmplitude = 1.e-8;
+        double LO_phase = 0.;
+        double voltage_phase = 0.;
+
+        for (unsigned ch = 0; ch < nchannels; ++ch)
+        {
+            for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
+            {
+                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/(fAcquisitionRate*1.e6);
+                voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/(fAcquisitionRate*1.e6);
+
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)*fAmplitude*cos(voltage_phase-LO_phase);
+                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)*fAmplitude*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
+            }
+        }
+
+        return true;
+    }
+
+
+
 
 } /* namespace locust */
 

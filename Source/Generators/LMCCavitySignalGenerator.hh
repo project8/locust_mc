@@ -56,6 +56,9 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
+            Signal::State GetDomain() const;
+            void SetDomain( Signal::State aDomain );
+
 
 
 
@@ -82,6 +85,10 @@ namespace locust
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
 
             bool DoGenerate( Signal* aSignal );
+            bool DoGenerateTime( Signal* aSignal );
+            bool DoGenerateTimeKass( Signal* aSignal );
+            bool DoGenerateFreq( Signal* aSignal );
+            bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object
