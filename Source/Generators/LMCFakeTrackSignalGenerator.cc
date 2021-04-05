@@ -856,7 +856,7 @@ namespace locust
         double tBMax =  (fBField - GetTrapField(0,aRadius)) / pow(sin(aTheta), 2.);
 
         const double tZMaxMax = 0.02; //max possible z max
-        const unsigned tNPoints = 10000;
+        const unsigned tNPoints = 1000;
         const double dZ = tZMaxMax / tNPoints;
 
         std::vector<double> tBDifference;
@@ -873,7 +873,7 @@ namespace locust
         double tTime = 0.;
         std::vector<double> tTimes, tZPositions;
 
-        const int nPoints = 2000;
+        const int nPoints = 200;
         double tZMax = GetZMax(aTheta, aRadius);
         const double dZ = tZMax / nPoints;
         double xDummy;
