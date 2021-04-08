@@ -204,3 +204,10 @@ endif (locust_mc_ENABLE_EXECUTABLES )
 
 add_subdirectory( Config )
 
+################
+# Install empty output/ directory if building without Kassiopeia #
+################
+
+install( DIRECTORY DESTINATION ${CMAKE_INSTALL_PREFIX}/output )
+
+
