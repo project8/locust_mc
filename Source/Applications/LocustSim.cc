@@ -5,6 +5,7 @@
  *      Author: nsoblath
  */
 
+#include "application.hh"
 #include "configurator.hh"
 #include "LMCException.hh"
 #include "LMCGeneratorToolbox.hh"
@@ -13,11 +14,16 @@
 #include "logger.hh"
 
 using namespace locust;
+using namespace scarab;
 
 LOGGER( lmclog, "LocustSim" );
 
 int main( int argc, char** argv )
 {
+
+    main_app the_main;
+    CLI11_PARSE( the_main, argc, argv );
+/*
     try
     {
         LPROG( lmclog, "Welcome to Locust_MC\n\n" <<
@@ -78,6 +84,7 @@ int main( int argc, char** argv )
         LERROR( lmclog, "Exception caught: " << e );
         return e;
     }
+*/
 
     return 0;
 }
