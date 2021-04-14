@@ -31,7 +31,7 @@ int main( int argc, char** argv )
 
     if( argc == 1 )
     {
-        cout << "usage: ./Kassiopeia <config_file_one.xml> [<config_file_one.xml> <...>] [ -r variable1=value1 variable2=value ... ]" << endl;
+        std::cout << "usage: ./Kassiopeia <config_file_one.xml> [<config_file_one.xml> <...>] [ -r variable1=value1 variable2=value ... ]" << std::endl;
         exit( -1 );
     }
 
