@@ -26,13 +26,7 @@ namespace locust
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateFreq ),
         fLO_Frequency( 0.),
 		fNModes( 1 ),
-        fArrayRadius( 0. ),
-        fNElementsPerStrip( 0. ),
-		fNSubarrays( 1 ),
-		fZShiftArray( 0. ),
-        fElementSpacing( 0. ),
         gxml_filename("blank.xml"),
-		fTextFileWriting( 0 ),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
 		fThreadCheckTime(200),
@@ -87,29 +81,6 @@ namespace locust
             fNModes = aParam["n-modes"]().as_int();
         }
 
-        if( aParam.has( "array-radius" ) )
-        {
-            fArrayRadius = aParam["array-radius"]().as_double();
-        }
-
-        if( aParam.has( "nelements-per-strip" ) )
-        {
-            fNElementsPerStrip = aParam["nelements-per-strip"]().as_int();
-        }
-
-        if( aParam.has( "n-subarrays" ) )
-        {
-            fNSubarrays = aParam["n-subarrays"]().as_int();
-        }
-
-        if( aParam.has( "element-spacing" ) )
-        {
-            fElementSpacing = aParam["element-spacing"]().as_double();
-        }
-        if( aParam.has( "zshift-array" ) )
-        {
-            fZShiftArray = aParam["zshift-array"]().as_double();
-        }
         if( aParam.has( "event-spacing-samples" ) )
         {
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
@@ -121,10 +92,6 @@ namespace locust
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
-        }
-        if( aParam.has( "text-filewriting" ) )
-        {
-            fTextFileWriting = aParam["text-filewriting"]().as_bool();
         }
 
         return true;
@@ -170,13 +137,14 @@ namespace locust
 
     void CavitySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
     {
-	for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
+/*	for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
 	{
             for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
             {
             	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
             }
 	}
+	*/
     }
 
     void CavitySignalGenerator::WakeBeforeEvent()
@@ -219,8 +187,6 @@ namespace locust
     bool CavitySignalGenerator::DoGenerateTimeKass( Signal* aSignal )
     {
 
-        FILE *fp;
-        if (fTextFileWriting==1) fp = fopen("incidentfields.txt", "w");
 
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
@@ -331,7 +297,6 @@ namespace locust
             }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
-            if (fTextFileWriting==1) fclose(fp);
             LPROG( lmclog, "Finished signal loop." );
 			fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();

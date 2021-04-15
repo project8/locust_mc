@@ -13,9 +13,10 @@
 #include "LMCChannel.hh"
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
-#include "LMCAntennaElementPositioner.hh"
-#include "LMCSinglePatchPositioner.hh"
-#include <vector>
+#include "LMCSinglePatch.hh"
+//#include "LMCAntennaElementPositioner.hh"
+//#include "LMCSinglePatchPositioner.hh"
+//#include <vector>
 #include "LMCException.hh"
 
 
@@ -69,12 +70,7 @@ namespace locust
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             double fArrayRadius;
-            int fNElementsPerStrip;
-            int fNSubarrays;
-            double fZShiftArray;
-            double fElementSpacing;
             std::string gxml_filename;
-            bool fTextFileWriting;
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
@@ -91,7 +87,6 @@ namespace locust
             bool DoGenerateFreq( Signal* aSignal );
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
-            AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object
 
             kl_interface_ptr_t fInterface;
