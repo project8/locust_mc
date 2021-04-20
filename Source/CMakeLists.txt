@@ -35,6 +35,7 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCButterworthLPFGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
+    Transmitters/LMCTransmitterInterface.hh
    	Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
@@ -45,6 +46,7 @@ set( LOCUST_MC_HEADER_FILES
     Transforms/LMCHilbertTransform.hh
     Transforms/LMCComplexFFT.hh    
 
+    RxComponents/LMCPowerCombinerInterface.hh
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
@@ -57,6 +59,7 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPatchAntenna.hh
     RxComponents/LMCSlotAntenna.hh
     RxComponents/LMCChannel.hh
+    RxComponents/LMCAntennaElementPositionerInterface.hh
     RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCSinglePatchPositioner.hh
     RxComponents/LMCPlanarArrayPositioner.hh
