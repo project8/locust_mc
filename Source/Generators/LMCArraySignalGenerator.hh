@@ -8,28 +8,17 @@
 #ifndef LMCARRAYSIGNALGENERATOR_HH_
 #define LMCARRAYSIGNALGENERATOR_HH_
 
+#include "LMCPowerCombinerInterface.hh"
+#include "LMCTransmitterInterface.hh"
+#include "LMCAntennaElementPositionerInterface.hh"
 #include "LMCThreeVector.hh"
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
-#include "LMCPowerCombiner.hh"
-#include "LMCVoltageDivider.hh"
-#include "LMCSlottedWaveguide.hh"
-#include "LMCSinglePatch.hh"
-#include "LMCCorporateFeed.hh"
-#include "LMCsMatrix.hh"
-#include "LMCUnitCell.hh"
-#include "LMCSeriesFeed.hh"
 #include "LMCFieldBuffer.hh"
 #include "LMCHilbertTransform.hh"
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
-#include "LMCAntennaSignalTransmitter.hh"
-#include "LMCPlaneWaveTransmitter.hh"
-#include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
-#include "LMCAntennaElementPositioner.hh"
-#include "LMCSinglePatchPositioner.hh"
-#include "LMCPlanarArrayPositioner.hh"
 #include <vector>
 #include "LMCException.hh"
 
