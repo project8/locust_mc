@@ -5,13 +5,10 @@
  *      Author: nsoblath
  */
 
-//#include "application.hh"
-
 #include "param.hh"
 #include "param_json.hh"
 
 
-//#include "configurator.hh"
 #include "LMCException.hh"
 #include "LMCGeneratorToolbox.hh"
 #include "LMCSimulationController.hh"
@@ -39,7 +36,6 @@ int main( int argc, char** argv )
                 "\t\t|____|\\___/\\__|  \\_,_|/__/ \\__|_____|_|  |_|  \\___| \n" <<
                 "\t\t                              |_____|               \n");
 
-//        scarab::configurator configurator( argc, argv );
         //read file
         param_input_json t_input;
         param_ptr_t t_param_location( t_input.read_file( argv[1] ) );
@@ -49,23 +45,13 @@ int main( int argc, char** argv )
             return -1;
         }
 
-        LINFO( lmclog, "File read and parsed: \n" << *t_param_location );
-
-        //write file
-        param_output_json t_output;
-        bool t_did_write_file = t_output.write_file( *t_param_location, "test_output.json" );
-
-        if( ! t_did_write_file )
-        {
-            LERROR( lmclog, "File did not write!" );
-            return -1;
-        }
-
-        LINFO( lmclog, "File written successfully (test_output.json)" );
+        // Right now this extra step is needed:
+        param_node testNode;
+        testNode.as_node().merge( t_param_location->as_node() );
+        // End extra step.
 
         LPROG( lmclog, "Setting up generator toolbox" );
         GeneratorToolbox toolbox;
-//        if( ! toolbox.Configure( configurator.config() ) )
         if( ! toolbox.Configure( t_param_location->as_node() ) )
         {
             LERROR( lmclog, "Unable to configure the generator toolbox" );
@@ -76,15 +62,12 @@ int main( int argc, char** argv )
         LPROG( lmclog, "Setting up simulation controller" );
         SimulationController controller;
         controller.SetFirstGenerator( toolbox.GetFirstGenerator() );
-        //        if( ! controller.Configure( configurator.config()[ "simulation"].as_node()  ) )
 
-        if( ! controller.Configure( t_param_location->as_node() ))
+        if( ! controller.Configure( testNode["simulation"].as_node() ))
         {
             LERROR( lmclog, "Unable to configure the simulation controller" );
             return -1;
         }
-
-        LPROG( lmclog, "Successfully set up simulation controller" );
 
         LPROG( lmclog, "Preparing for run" );
         if( ! controller.Prepare() )
