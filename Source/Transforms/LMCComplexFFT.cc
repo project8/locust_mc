@@ -45,8 +45,6 @@ namespace locust
             fftw_free(fOutputArray);
             fOutputArray = NULL;
         }
-        fftw_destroy_plan(fReversePlan);
-        fftw_destroy_plan(fForwardPlan);
     }
     
     bool ComplexFFT::Configure(const scarab::param_node& aParam)
@@ -94,8 +92,6 @@ namespace locust
     
     bool ComplexFFT::GenerateWindowFunction()
     {
-	std::ofstream myfile;
-	myfile.open ("WindowFunction.txt");
         if(fWindowFunctionType==0)
 	{
             for (int i = 0; i < fTotalWindowSize; ++i)
@@ -112,10 +108,6 @@ namespace locust
 		{
 		    fWindowFunction[i]=0.0;
 		}
-	        myfile<<i;
-	        myfile<<",";
-	        myfile<<fWindowFunction[i];
-	        myfile<<"\n";
 	    }
 	}
         else if(fWindowFunctionType==1)
@@ -152,17 +144,12 @@ namespace locust
 		{
 		    fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1.0/tukeyWindowAlpha+1)));
 		}
-	        myfile<<i;
-	        myfile<<",";
-	        myfile<<fWindowFunction[i];
-	        myfile<<"\n";
 	    }
 	}	
 	else
 	{
 	    return false;
 	}
-	myfile.close();
 	return true;
     }
 
@@ -189,25 +176,20 @@ namespace locust
     {
         if(!IsInitialized) return false;
         
-        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-        
-        fForwardPlan = fftw_plan_dft_1d(size,fInputArray,fOutputArray,FFTW_FORWARD,fTransform);
-        fftw_execute_dft(fForwardPlan,in,out);
+        fForwardPlan = fftw_plan_dft_1d(size, in, out, FFTW_FORWARD, fTransform);
+        fftw_execute_dft(fForwardPlan, in, out);
+        fftw_destroy_plan(fForwardPlan);
         return true;
     }
     
 
-    bool ComplexFFT::RawReverseFFT(int size, fftw_complex* in, fftw_complex* out)
+    bool ComplexFFT::ReverseFFT(int size, fftw_complex* in, fftw_complex* out)
     {
         if(!IsInitialized) return false;
 
-        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * size);
-
-        fReversePlan = fftw_plan_dft_1d(size, fInputArray, fOutputArray, FFTW_BACKWARD, fTransform);
+        fReversePlan = fftw_plan_dft_1d(size, in, out, FFTW_BACKWARD, fTransform);
         fftw_execute_dft(fReversePlan, in, out);
-
+        fftw_destroy_plan(fReversePlan);
         return true;
     }
 
@@ -227,7 +209,7 @@ namespace locust
 	return true;
     }
 
-    bool ComplexFFT::ReverseFFT(int size, fftw_complex* in, fftw_complex* out)
+    bool ComplexFFT::GenerateFIR(int size, fftw_complex* in, fftw_complex* out)
     {
         fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
@@ -245,27 +227,20 @@ namespace locust
 	      fInputArray[i][1]=0.0;
 	    }
         }
-	fReversePlan= fftw_plan_dft_1d(fTotalWindowSize,fInputArray,fOutputArray,FFTW_BACKWARD,FFTW_ESTIMATE);
+
+        ReverseFFT(fTotalWindowSize, fInputArray, fOutputArray);
         
-        fftw_execute(fReversePlan);
-	if(!MakeFilterCausal(fOutputArray))
-	{
-	    LERROR(lmclog,"Couldn't make FIR filter causal");
-	    exit(-1);
-	}
-	std::ofstream myfile;
-	myfile.open ("example.txt");
+        if(!MakeFilterCausal(fOutputArray))
+        {
+        	LERROR(lmclog,"Couldn't make FIR filter causal");
+        	exit(-1);
+        }
         for (int i = 0; i < 2*fSize+fNShiftBins; ++i)
-	{
-	   out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
+        {
+        	out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
         for (int i = 0; i < fSize+2*fNShiftBins; ++i){
-	   myfile<<i;
-	   myfile<<",";
-	   myfile<<fOutputArray[i][0]*2/fTotalWindowSize;
-	   myfile<<"\n";
-	}
-	myfile.close();
+        	}
         return true;
     }
     

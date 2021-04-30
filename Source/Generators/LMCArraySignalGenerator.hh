@@ -28,7 +28,12 @@
 #include "LMCAntennaSignalTransmitter.hh"
 #include "LMCPlaneWaveTransmitter.hh"
 #include "LMCKassTransmitter.hh"
+#include "LMCKassLocustInterface.hh"
+#include "LMCAntennaElementPositioner.hh"
+#include "LMCSinglePatchPositioner.hh"
+#include "LMCPlanarArrayPositioner.hh"
 #include <vector>
+#include "LMCException.hh"
 
 
 namespace locust
@@ -73,14 +78,26 @@ namespace locust
         private:
             std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
             double fLO_Frequency;
+            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             double fArrayRadius;
             int fNElementsPerStrip;
             int fNSubarrays;
             double fZShiftArray;
             double fElementSpacing;
+            std::string gxml_filename;
+            bool fTextFileWriting;
+            unsigned fFieldBufferSize;
+            int fSwapFrequency;
+            bool fKassNeverStarted;
+            bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
 
-            void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
+            void KassiopeiaInit(const std::string &aFile);
+            void WakeBeforeEvent();
+            bool ReceivedKassReady();
+
+        	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
             double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
@@ -95,11 +112,16 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            void DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
+            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
             bool InitializeElementArray();
+            AntennaElementPositioner* fAntennaElementPositioner;
+            Transmitter* fTransmitter; // transmitter object
             PowerCombiner* fPowerCombiner;
             TFReceiverHandler fTFReceiverHandler;
             HilbertTransform fHilbertTransform;
+
+            kl_interface_ptr_t fInterface;
+
 
     };
 

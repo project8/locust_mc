@@ -9,8 +9,9 @@
 #define LMCKASSSIGNALGENERATOR_HH_
 
 #include "LMCGenerator.hh"
-#include "LMCConst.hh"
-#include "LMCThreeVector.hh"
+
+#include "LMCKassLocustInterface.hh"
+#include "LMCException.hh"
 #include <vector>
 using std::vector;
 
@@ -48,23 +49,33 @@ namespace locust
 
 
         private:
-            double fLO_Frequency;  // typically defined by a parameter in json file.
-            bool fTruth; // parameter in json file.  default is false.
+            void KassiopeiaInit(const std::string &aFile);
+            void WakeBeforeEvent();
+            bool ReceivedKassReady();
+
             bool DoGenerate( Signal* aSignal );
-            void* DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
+            bool DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp);
             int FindNode(double tNew) const;
             double TE11ModeExcitation() const;
             double TE10ModeExcitation() const;
+
+            double fLO_Frequency;  // typically defined by a parameter in json file.
+            bool fTruth; // parameter in json file.  default is false.
+            bool fvoltageCheck;  // parameter to print out voltage values.
             std::string gxml_filename;
             std::string gpitchangle_filename;
             double fPhi_t1; // antenna voltage phase in radians.
             double fPhi_t2; // reflecting short voltage phase in radians.
             double fPhiLO_t; // voltage phase of LO in radians;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            int fThreadCheckTime; // time (ms) to check for response from Kass thread.
             mutable double fPreviousRetardedTime;
             mutable int fPreviousRetardedIndex;
             double fEventStartTime;
             bool fEventToFile;
+            bool fKassNeverStarted;
+            bool fSkippedSamples;
+            kl_interface_ptr_t fInterface;
 
 
     };

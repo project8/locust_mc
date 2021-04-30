@@ -48,8 +48,44 @@ namespace locust
     void LowPassFilterFFTGenerator::SetThreshold( double aThreshold )
     {
         fThreshold = aThreshold;
+        if (fThreshold > 0.95)
+        {
+            LERROR(lmclog,"LPF threshold is too close to Nyquist frequency.  It should be < 0.9 .\n");
+        	exit(-1);
+        }
         return;
     }
+
+// Count leading zeroes in window.
+    int LowPassFilterFFTGenerator::GetStartingMargin( Signal* aSignal, int windowsize, int nwin, int ch )
+    {
+    	int startingMargin = 0;
+    	for (int i=0; i<windowsize; i++)
+    	{
+    		if (fabs(aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + i ][0]) > 0.)
+    		{
+    			startingMargin = i;
+    			break;
+    		}
+    	}
+    	return startingMargin;
+    }
+
+// Count trailing zeroes in window.
+    int LowPassFilterFFTGenerator::GetEndingMargin( Signal* aSignal, int windowsize, int nwin, int ch )
+    {
+    	int endingMargin = 0;
+    	for (int i=0; i<windowsize; i++)
+    	{
+        	if (fabs(aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (nwin+1)*windowsize - i ][0]) > 0.)
+    		{
+    			endingMargin = i;
+    			break;
+    		}
+    	}
+    	return endingMargin;
+    }
+
 
 
     void LowPassFilterFFTGenerator::Accept( GeneratorVisitor* aVisitor ) const
@@ -75,35 +111,43 @@ namespace locust
         int nwindows = 80;
         int windowsize = aSignal->DecimationFactor()*aSignal->TimeSize()/nwindows;
 
-
-        fftw_complex *SignalComplex;
-        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-        fftw_complex *FFTComplex;
-        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-
-        fftw_plan ForwardPlan;
-        ForwardPlan = fftw_plan_dft_1d(windowsize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
-        fftw_plan ReversePlan;
-        ReversePlan = fftw_plan_dft_1d(windowsize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
-
         for (int ch=0; ch<nchannels; ch++)
         {
             for (int nwin = 0; nwin < nwindows; nwin++)
             {
+            	int startingMargin = startingMargin = GetStartingMargin(aSignal, windowsize, nwin, ch);
+            	int endingMargin = GetEndingMargin(aSignal, windowsize, nwin, ch);
+            	int variableWindowSize = windowsize - startingMargin - endingMargin;
+
+            	if (variableWindowSize < 1)
+            	{
+                    LERROR(lmclog,"LPF-FFT variable window size is too small.\n");
+                    throw 1;
+            	}
+
+                fftw_complex *SignalComplex;
+                SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * variableWindowSize );
+                fftw_complex *FFTComplex;
+                FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * variableWindowSize );
+
+                fftw_plan ForwardPlan;
+                ForwardPlan = fftw_plan_dft_1d(variableWindowSize, SignalComplex, FFTComplex, FFTW_FORWARD, FFTW_ESTIMATE);
+                fftw_plan ReversePlan;
+                ReversePlan = fftw_plan_dft_1d(variableWindowSize, FFTComplex, SignalComplex, FFTW_BACKWARD, FFTW_ESTIMATE);
+
                 // Construct complex voltage.
-                for( unsigned index = 0; index < windowsize; ++index )
+                for( unsigned index = 0; index < variableWindowSize; ++index )
                 {
-                    SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0];
-                    SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1];
-                    //if (index==20000) {printf("signal 20000 is %g\n", aSignal->SignalTime()[index]); getchar();}
+                    SignalComplex[index][0] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][0];
+                    SignalComplex[index][1] = aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][1];
                 }
 
                 fftw_execute(ForwardPlan);
 
                 // Low Pass FilterFFT
-                for( unsigned index = 0; index < windowsize; ++index )
+                for( unsigned index = 0; index < variableWindowSize; ++index )
                 {
-                	if ( (index > windowsize/2.*CutoffFreq/FastNyquist) && (index < windowsize/2. * (1. + (FastNyquist-CutoffFreq)/FastNyquist)))
+                	if ( (index > variableWindowSize/2.*CutoffFreq/FastNyquist) && (index < variableWindowSize/2. * (1. + (FastNyquist-CutoffFreq)/FastNyquist)))
                 	{
                 		FFTComplex[index][0] = 0.;
                 		FFTComplex[index][1] = 0.;
@@ -112,23 +156,22 @@ namespace locust
 
                 fftw_execute(ReversePlan);
 
-                double norm = (double)(windowsize);
+                double norm = (double)(variableWindowSize);
 
-                for( unsigned index = 0; index < windowsize; ++index )
+                for( unsigned index = 0; index < variableWindowSize; ++index )
                 {
                     // normalize
-                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][0] = SignalComplex[index][0]/norm;
-                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index ][1] = SignalComplex[index][1]/norm;
-                    //if (index>=20000) {printf("filtered signal is %g\n", aSignal->SignalTime()[index]); getchar();}
+                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][0] = SignalComplex[index][0]/norm;
+                    aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + nwin*windowsize + index + startingMargin ][1] = SignalComplex[index][1]/norm;
                 }
+
+                fftw_destroy_plan(ForwardPlan);
+                fftw_destroy_plan(ReversePlan);
+                delete [] SignalComplex;
+                delete [] FFTComplex;
+
             }  // nwin
         }  // NCHANNELS
-
-        fftw_destroy_plan(ForwardPlan);
-        fftw_destroy_plan(ReversePlan);
-        delete [] SignalComplex;
-        delete [] FFTComplex;
-
 
 
         return true;

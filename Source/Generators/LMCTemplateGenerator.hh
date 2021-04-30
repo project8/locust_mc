@@ -38,8 +38,16 @@ namespace locust
 
             void Accept( GeneratorVisitor* aVisitor ) const;
 
+            Signal::State GetDomain() const;
+            void SetDomain( Signal::State aDomain );
+
+
         private:
-            bool DoGenerate( Signal* aSignal ) const;
+            bool DoGenerate( Signal* aSignal );
+            bool DoGenerateTime( Signal* aSignal );
+            bool DoGenerateFreq( Signal* aSignal );
+
+            bool ([name]Generator::*fDoGenerateFunc)( Signal* aSignal );
 
     };
 

@@ -39,7 +39,7 @@ namespace locust
 
         bool Configure( const scarab::param_node& aNode );
 
-        virtual double* GetEFieldCoPol(int fieldIndexPoint, double dt);
+        virtual std::vector<double> GetEFieldCoPol(int fieldIndexPoint, double dt);
 
 
     private:

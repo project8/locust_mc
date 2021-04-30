@@ -13,6 +13,7 @@
 #include <deque>
 #include "LMCConst.hh"
 #include "param.hh"
+#include "LMCComplexFFT.hh"
 
 
 namespace locust
@@ -32,7 +33,7 @@ namespace locust
             HilbertTransform();
             virtual ~HilbertTransform();
             bool Configure( const scarab::param_node& aNode);
-            double* GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer);
+            std::vector<double> GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer);
             void SetBufferSize( int aBufferSize );
             void SetBufferMargin( int aBufferMargin );
             int GetBufferSize();
@@ -40,11 +41,12 @@ namespace locust
 
         private:
 
+            ComplexFFT fComplexFFT;
             fftw_complex* Transform(std::deque<double> FieldBuffer);
             double* GetFrequencyData(std::deque<double> FrequencyBuffer);
             double GetMean( std::deque<double> FieldBuffer );
             double GetMean( fftw_complex* array, int IQ, int size );
-            double* GetSpan( fftw_complex* array, int IQ, int size );
+            std::vector<double> GetSpan( fftw_complex* array, int IQ, int size );
             double GetPhase( double VI, double VQ, double VMean);
             double QuadrantCorrection( double VI, double HilbertPhase, double HilbertMean );
             int fbufferMargin;

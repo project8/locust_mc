@@ -41,6 +41,7 @@ namespace locust
         fRandomSeed(0),
         fNEvents(1),
         fPitchCorrection( true ),
+        fSlopeCorrection( false ),
         fRandomEngine(0),
         fHydrogenFraction(1),
         fTrapLength(0.1784),  //Phase II harmonic trap L0 (A. Ashtari Esfahani et al.- Phys. Rev. C 99, 055501 )
@@ -118,6 +119,18 @@ namespace locust
             fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
         }
 
+        if( aParam.has( "radius" ) )
+        {
+            fRadiusDistribution = fDistributionInterface.get_dist(aParam["radius"].as_node());
+        }
+        else
+        {
+            LWARN( lmclog, "Using default distribution: radius = 0 ");
+            scarab::param_node default_setting;
+            default_setting.add("name","dirac");
+            fRadiusDistribution = fDistributionInterface.get_dist(default_setting);
+        }
+
         if( aParam.has( "z0" ) )
         {
             fz0Distribution = fDistributionInterface.get_dist(aParam["z0"].as_node());
@@ -154,7 +167,6 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
             SetFrequency( aParam.get_value< double >( "lo-frequency", fLO_frequency ) );
 
-
         if (aParam.has( "ntracks-mean") )
             SetNTracksMean( aParam.get_value< double >( "ntracks-mean",fNTracksMean) );
 
@@ -169,6 +181,8 @@ namespace locust
 
         if (aParam.has( "pitch-correction") )
             SetPitchCorrection(  aParam.get_value< bool >( "pitch-correction", fPitchCorrection) );
+        if (aParam.has( "slope-correction") )
+            SetSlopeCorrection( aParam.get_value< bool >( "slope-correction",fSlopeCorrection) );
 
         if (aParam.has( "trap-length") )
             SetTrapLength(  aParam.get_value< double >( "trap-length", fTrapLength) );
@@ -408,6 +422,18 @@ namespace locust
         return;
     }
 
+    bool FakeTrackSignalGenerator::GetSlopeCorrection() const
+    {
+        return fSlopeCorrection;
+    }
+
+
+    void FakeTrackSignalGenerator::SetSlopeCorrection( bool aSlopeCorrection )
+    {
+        fSlopeCorrection = aSlopeCorrection;
+        return;
+    }
+
     double FakeTrackSignalGenerator::GetTrapLength() const
     {
         return fTrapLength;
@@ -567,21 +593,43 @@ namespace locust
         return (gamma - 1.) *LMCConst::M_el_eV(); // takes frequency in Hz, magnetic field in T, returns in kinetic energy eV
     }
 
-    double FakeTrackSignalGenerator::GetPitchCorrectedFrequency(double frequency) const
+    double FakeTrackSignalGenerator::GetCorrectedFrequency(double frequency, double radius) const
     {
+        double correction_factor = 1.;
         if ( (fPitch !=  LMCConst::Pi() / 2.) && ( fPitchCorrection == 1 ) )
-            return frequency * ( 1. + 1. / (2. * pow(tan(fPitch), 2.)));
-        else
-            return frequency;
+            correction_factor += 1. / (2. * pow(tan(fPitch), 2.));
+
+        correction_factor -= 1. / 2. * pow(radius / fTrapLength, 2.);
+
+        return frequency * correction_factor;
+
     } // non-90 pitches change average B, changing apparent frequency (A. Astari Esfahani et al. (2019) (Eqn 56))
 
     double FakeTrackSignalGenerator::WaveguidePowerCoupling(double frequency, double pitchAngle)
     {
-        double k_lambda = 2. * LMCConst::Pi() * frequency / LMCConst::C();
+        const double tWaveguideRadius = 0.00502920;
+        double f_c = 1.8412 * LMCConst::C() / (2 * LMCConst::Pi() * tWaveguideRadius);
+        double v_phase = LMCConst::C() / sqrt( 1 - pow(f_c / frequency, 2));
+        double k_lambda = 2. * LMCConst::Pi() * frequency / v_phase;
         double zMax = 0;
         if (pitchAngle != LMCConst::Pi() / 2.)
             zMax = fTrapLength / tan(pitchAngle);
         return j0(k_lambda * zMax);
+    }
+
+    double FakeTrackSignalGenerator::RadialPowerCoupling(double radius)
+    {
+        const double tWaveguideRadius = 0.00502920;
+        double k_c = 1.8412 / tWaveguideRadius;
+        double x = k_c * radius;
+
+        double corr2 = 1. / 4. * pow(j0(x) - jn(2, x), 2.);
+        if(x > 1e-100)
+            corr2 += pow(j1(x) / x , 2.);
+        else
+            corr2 += 1./4.; //avoid nans
+
+        return sqrt(2. * corr2);
     }
 
     double FakeTrackSignalGenerator::GetEnergyLoss(double u, bool hydrogenScatter)
@@ -653,8 +701,11 @@ namespace locust
                 double z0 = fz0Distribution->Generate();
                 fPitch = GetPitchAngleZ(fPitch, GetBField(z0), fBField);
 
-            } while(fPitch < fStartPitchMin * deg_to_rad );
+            } while(fPitch < fPitchMin * deg_to_rad );
 
+            fRadius = fRadiusDistribution->Generate();
+
+            aTrack.Radius = fRadius;
             aTrack.StartTime = fStartTime;
             aTrack.StartFrequency = fStartFrequency;
         }
@@ -685,14 +736,17 @@ namespace locust
         }
 
         fSlope = fSlopeDistribution->Generate();
+        if(fSlopeCorrection) fSlope *= pow(RadialPowerCoupling(fRadius),2.);
+
         fTrackLength = fTrackLengthDistribution->Generate();
         fEndTime = fStartTime + fTrackLength;  // reset endtime.
         aTrack.Slope = fSlope;
         aTrack.TrackLength = fTrackLength;
         aTrack.EndTime = aTrack.StartTime + aTrack.TrackLength;
         aTrack.LOFrequency = fLO_frequency;
-        aTrack.TrackPower = fSignalPower * pow(WaveguidePowerCoupling(fStartFrequency, fPitch),2.);
-        aTrack.StartFrequency = GetPitchCorrectedFrequency(aTrack.StartFrequency);
+        double coupling = WaveguidePowerCoupling(fStartFrequency, fPitch) * RadialPowerCoupling(fRadius);
+        aTrack.TrackPower = fSignalPower * pow(coupling,2.);
+        aTrack.StartFrequency = GetCorrectedFrequency(aTrack.StartFrequency, aTrack.Radius);
         aTrack.PitchAngle = fPitch * 180. / LMCConst::Pi();
     }
 
@@ -755,8 +809,8 @@ namespace locust
                     {
                         LO_phase += 2.*LMCConst::Pi()*fLO_frequency * tLocustStep;
                         fCurrentFrequency += fSlope * 1.e6/1.e-3 * tLocustStep;
-                        voltage_phase += 2.*LMCConst::Pi()*GetPitchCorrectedFrequency(fCurrentFrequency) * tLocustStep;
-                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch);
+                        voltage_phase += 2.*LMCConst::Pi()*GetCorrectedFrequency(fCurrentFrequency, aTrack.Radius) * tLocustStep;
+                        signalAmplitude = sqrt(50.) * sqrt(fSignalPower) * WaveguidePowerCoupling(fCurrentFrequency, fPitch) * RadialPowerCoupling(fRadius);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][0] += signalAmplitude * cos(voltage_phase-LO_phase);
                         aSignal->LongSignalTimeComplex()[ch*aSignal->TimeSize()*aSignal->DecimationFactor() + index][1] += signalAmplitude * cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
                     }

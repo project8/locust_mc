@@ -6,18 +6,13 @@
  */
 
 #include "LMCArraySignalGenerator.hh"
-#include "LMCEventHold.hh"
+
 #include "LMCRunKassiopeia.hh"
 
 #include "logger.hh"
-#include <thread>
-#include <algorithm>
 
-#include <iostream>
-#include <fstream>
-
-#include "LMCDigitizer.hh"
 #include <chrono>
+#include <thread>
 
 
 namespace locust
@@ -35,10 +30,27 @@ namespace locust
 	fZShiftArray( 0. ),
 	fNSubarrays( 1 ),
         fElementSpacing( 0. ),
+        gxml_filename("blank.xml"),
+		fTextFileWriting( 0 ),
+        fphiLO(0.),
+		fNPreEventSamples( 150000 ),
+		fThreadCheckTime(200),
+        EFieldBuffer( 1 ),
+        EPhaseBuffer( 1 ),
+        EAmplitudeBuffer( 1 ),
+        EFrequencyBuffer( 1 ),
         LOPhaseBuffer( 1 ),
-        ElementFIRBuffer( 1 )
+        IndexBuffer( 1 ),
+        ElementFIRBuffer( 1 ),
+        fFieldBufferSize( 50 ),
+		fSwapFrequency( 1000 ),
+		fKassNeverStarted( false ),
+		fSkippedSamples( false ),
+		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
+
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
     ArraySignalGenerator::~ArraySignalGenerator()
@@ -61,6 +73,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring voltage divider.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "slotted-waveguide")
@@ -70,7 +88,14 @@ namespace locust
         		if(!fPowerCombiner->Configure(aParam))
         		{
         			LERROR(lmclog,"Error configuring slotted waveguide.");
+        			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "single-patch")
@@ -82,6 +107,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring single patch.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new SinglePatchPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring single patch positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "corporate")
@@ -93,6 +124,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring corporate feed.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
         	if(aParam["power-combining-feed"]().as_string() == "s-matrix")
@@ -104,6 +141,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring s matrix.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
 
@@ -118,6 +161,12 @@ namespace locust
         			LERROR(lmclog,"Error configuring unit cell.");
         			exit(-1);
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
 
@@ -129,6 +178,12 @@ namespace locust
         		{
         			LERROR(lmclog,"Error configuring series feed.");
         		}
+        		fAntennaElementPositioner = new AntennaElementPositioner;
+           		if(!fAntennaElementPositioner->Configure(aParam))
+            	{
+            		LERROR(lmclog,"Error configuring antenna element positioner.");
+            		exit(-1);
+            	}
         	}
 
 
@@ -183,16 +238,43 @@ namespace locust
         {
             fZShiftArray = aParam["zshift-array"]().as_double();
         }
+        if( aParam.has( "event-spacing-samples" ) )
+        {
+            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+        }
+        if( aParam.has( "thread-check-time" ) )
+        {
+            fThreadCheckTime = aParam["thread-check-time"]().as_int();
+        }
+        if( aParam.has( "swap-frequency" ) )
+        {
+            fSwapFrequency = aParam["swap-frequency"]().as_int();
+        }
+        if( aParam.has( "xml-filename" ) )
+        {
+            gxml_filename = aParam["xml-filename"]().as_string();
+        }
+        if( aParam.has( "text-filewriting" ) )
+        {
+            fTextFileWriting = aParam["text-filewriting"]().as_bool();
+        }
+
         return true;
     }
 
-    static void* KassiopeiaInit(const std::string &aFile)
+    void ArraySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
-        RunKassiopeia RunKassiopeia1;
-        RunKassiopeia1.Run(aFile);
-        RunKassiopeia1.~RunKassiopeia();
+        aVisitor->Visit( this );
+        return;
+    }
 
-        return 0;
+
+
+    void ArraySignalGenerator::KassiopeiaInit(const std::string &aFile)
+    {
+        RunKassiopeia tRunKassiopeia;
+        tRunKassiopeia.Run(aFile, fInterface);
+        return;
     }
 
     void ArraySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
@@ -206,6 +288,38 @@ namespace locust
 	}
     }
 
+    void ArraySignalGenerator::WakeBeforeEvent()
+    {
+        fInterface->fPreEventCondition.notify_one();
+        return;
+    }
+
+    bool ArraySignalGenerator::ReceivedKassReady()
+    {
+
+    	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        LPROG( lmclog, "LMC about to wait" );
+
+        if(!fInterface->fKassEventReady)
+        {
+            std::unique_lock< std::mutex >tLock( fInterface->fKassReadyMutex );
+            fInterface->fKassReadyCondition.wait( tLock );
+            return true;
+        }
+        else if (fInterface->fKassEventReady)
+        {
+        	return true;
+        }
+        else
+        {
+            printf("I am stuck.\n"); getchar();
+            return true;
+        }
+
+    }
+
+
+    // fields incident on element.
     void ArraySignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int elementIndex, double zelement, double tEFieldCoPol)
     {
 	if (t_old > 0.5e-9){
@@ -223,11 +337,10 @@ namespace locust
     	if (fabs(EFieldBuffer[channel*fNElementsPerStrip+element].front()) > 0.)  // field arrived yet?
     	{
 
-    		double* HilbertMagPhaseMean = new double[3];
+    		std::vector<double> HilbertMagPhaseMean; HilbertMagPhaseMean.resize(3);
     		HilbertMagPhaseMean = fHilbertTransform.GetMagPhaseMean(EFieldBuffer[channel*fNElementsPerStrip+element], EFrequencyBuffer[channel*fNElementsPerStrip+element]);
     		HilbertMag = HilbertMagPhaseMean[0];
     		HilbertPhase = HilbertMagPhaseMean[1];
-    		delete[] HilbertMagPhaseMean;
     		for (int i=0; i < nfilterbins; i++)  // populate filter with field.
     		{
     			HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
@@ -242,7 +355,7 @@ namespace locust
 
     }
 
-    void ArraySignalGenerator::DriveAntenna(FILE *fp, int PreEventCounter, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
+    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -252,7 +365,8 @@ namespace locust
 
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        double tReceiverTime = t_old;
+
+        double tReceiverTime =  fInterface->fTOld;
 
         unsigned tTotalElementIndex = 0;
 
@@ -263,7 +377,7 @@ namespace locust
             	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                double* tFieldSolution = new double[2];
+                std::vector<double> tFieldSolution; //tFieldSolution.resize(2);
                 if (!fTransmitter->IsKassiopeia())
                 {
                 	tFieldSolution = fTransmitter->GetEFieldCoPol(tTotalElementIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
@@ -275,11 +389,16 @@ namespace locust
 
                 tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
 
-                if (fTextFileWriting==1) RecordIncidentFields(fp, t_old, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
+                if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
- 	        FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
- 	        double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
- 	        fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+ 	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
+ 	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
+            	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
+            	{
+                    LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
+            		return false;
+            	}
+ 	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;
@@ -288,8 +407,9 @@ namespace locust
 
         } // channels loop
 
-        t_old += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         if ( index%fSwapFrequency == 0 ) CleanupBuffers();  // release memory
+        return true;
 
     }
 
@@ -349,27 +469,18 @@ namespace locust
 
         	for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)
         	{
-        		theta = channelIndex * dThetaArray;
+        		theta = fAntennaElementPositioner->GetTheta(channelIndex, dThetaArray);
 
         		for(int receiverIndex = 0; receiverIndex < nReceivers; ++receiverIndex)
         		{
-        			zPosition =  fZShiftArray +
-        					(int(channelIndex/(nChannels/nSubarrays))-((nSubarrays -1.)/2.) )*nReceivers*elementSpacingZ +
-        					(receiverIndex - (nReceivers - 1.) /2.) * elementSpacingZ;
-
-        			if (fPowerCombiner->IsSinglePatch())
-        			{
-        				zPosition = 0.;
-        			}
+        			zPosition = fAntennaElementPositioner->GetPositionZ(fZShiftArray, channelIndex, nChannels,
+        						nSubarrays, nReceivers, elementSpacingZ, receiverIndex);
 
         			Receiver* modelElement = fPowerCombiner->ChooseElement();  // patch or slot?
 
-        			modelElement->SetCenterPosition({elementRadius * cos(theta) , elementRadius * sin(theta) , zPosition });
-        			modelElement->SetPolarizationDirection({sin(theta), -cos(theta), 0.0});
-        			modelElement->SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
-        			modelElement->SetNormalDirection({-cos(theta), -sin(theta), 0.0}); //Say normals point inwards
-        			allRxChannels[channelIndex].AddReceiver(modelElement);
+        			fAntennaElementPositioner->PlaceElement(*modelElement, elementRadius, theta, zPosition);
 
+        			allRxChannels[channelIndex].AddReceiver(modelElement);
         		}
         	}
 
@@ -386,18 +497,18 @@ namespace locust
             exit(-1);
         }
 
-        FILE *fp = fopen("incidentfields.txt", "w");
+        FILE *fp;
+        if (fTextFileWriting==1) fp = fopen("incidentfields.txt", "w");
 
 
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
-        const int NPreEventSamples = 150000;
-        fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
         int nfilterbins = fTFReceiverHandler.GetFilterSize();
         double dtfilter = fTFReceiverHandler.GetFilterResolution();
         unsigned nfieldbufferbins = fFieldBufferSize;
         InitializeBuffers(nfilterbins, nfieldbufferbins);
+
         InitializeFieldPoints(allRxChannels);
 
         if (!fTransmitter->IsKassiopeia())
@@ -409,60 +520,112 @@ namespace locust
         	return true;
         }
 
+
         if (fTransmitter->IsKassiopeia())
         {
+        	bool fTruth = false;
+        	int startingIndex;
+            fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        	std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
-            std::thread Kassiopeia(KassiopeiaInit, gxml_filename);  // spawn new thread
-        	fRunInProgress = true;
-
-        for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-        {
-            if ((!fEventInProgress) && (fRunInProgress) && (!fPreEventInProgress))
+            for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
-                if (ReceivedKassReady()) fPreEventInProgress = true;
-            }
-
-            if (fPreEventInProgress)
-            {
-                PreEventCounter += 1;
-                //printf("preeventcounter is %d\n", PreEventCounter);
-                if (PreEventCounter > NPreEventSamples)  // finished noise samples.  Start event.
+                if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
-                    fPreEventInProgress = false;  // reset.
-                    fEventInProgress = true;
-                    //printf("LMC about to wakebeforeevent\n");
-                    WakeBeforeEvent();  // trigger Kass event.
+                	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
+                	else
+                	{
+                		printf("breaking\n");
+                		break;
+                	}
+
+                	LPROG( lmclog, "LMC ReceivedKassReady" );
+
                 }
-            }
 
-            if (fEventInProgress)  // fEventInProgress
-                if (fEventInProgress)  // check again.
+                if (fInterface->fPreEventInProgress)  // Locust keeps sampling until Kass event.
                 {
-                    //printf("waiting for digitizer trigger ... index is %d\n", index);
-                    std::unique_lock< std::mutex >tLock( fMutexDigitizer, std::defer_lock );
-                    tLock.lock();
-                    fDigitizerCondition.wait( tLock );
-                    if (fEventInProgress)
+                    PreEventCounter += 1;
+
+                    if (((!fTruth)&&(PreEventCounter > fNPreEventSamples))||((fTruth)&&(PreEventCounter > fNPreEventSamples)&&(index%(8192*aSignal->DecimationFactor())==0)  ))// finished pre-samples.  Start event.
                     {
-                        //printf("about to drive antenna, PEV is %d\n", PreEventCounter);
-                        DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
-                        PreEventCounter = 0; // reset
+                        fInterface->fPreEventInProgress = false;  // reset.
+                        fInterface->fEventInProgress = true;
+                        startingIndex = index;
+                        LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
+                        WakeBeforeEvent();  // trigger Kass event.
                     }
-                    tLock.unlock();
                 }
 
-        }  // for loop
+                if (fInterface->fEventInProgress)  // fEventInProgress
+                {
+                    std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
+                	if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+                	{
+                        tLock.lock();
+                        fInterface->fDigitizerCondition.wait( tLock );
+                        if (fInterface->fEventInProgress)
+                        {
+                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		{
+                                PreEventCounter = 0; // reset
+                    		}
+                    		else
+                    		{
+                    			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
+                    			fSkippedSamples = true;
+                                tLock.unlock();
+                    			break;
+                    		}
+                        }
+                        tLock.unlock();
+                	}
+                	else  // either Kass thread fell behind, or it has stopped generating events.
+                	{
+                        tLock.lock();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
+                        if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
+                        {
+                        	tLock.unlock();
+                        }
+                        else  // Kass event has not started, unlock and exit.
+                        {
+                        	if ( index < fNPreEventSamples+1 )
+                        	{
+                    			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                        		fKassNeverStarted = true;
+                        	}
+                        	tLock.unlock();
+                        	break;
+                        }
+                	}
+                }
+            }  // for loop
 
-        printf("finished signal loop\n");
 
-        fclose(fp);
-        fRunInProgress = false;  // tell Kassiopeia to finish.
-        fDoneWithSignalGeneration = true;  // tell LMCCyclotronRadExtractor
-        WakeBeforeEvent();
-        Kassiopeia.join();
+            fInterface->fDoneWithSignalGeneration = true;
+            if (fTextFileWriting==1) fclose(fp);
+            LPROG( lmclog, "Finished signal loop." );
+			fInterface->fWaitBeforeEvent = false;
+            WakeBeforeEvent();
+            tKassiopeia.join();  // finish thread
+
+            if (fKassNeverStarted == true)
+            {
+            	throw 2;
+            	return false;
+            }
+            if (fSkippedSamples == true)
+            {
+            	throw 3;
+            	return false;
+            }
+
+
+
+        }  // fTransmitter->IsKassiopeia()
 
         return true;
-        }
 
     }
 

@@ -15,6 +15,7 @@
 #include "LMCGaussianDistribution.hh"
 #include "LMCLorentzianDistribution.hh"
 #include "LMCRuddDistribution.hh"
+#include "LMCUniformCircleDistribution.hh"
 #include "LMCUniformDistribution.hh"
 #include "LMCKrComplexLineDistribution.hh"
 
