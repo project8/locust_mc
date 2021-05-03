@@ -5,8 +5,8 @@
  *      Author: nsoblath
  */
 
-#include "param.hh"
-#include "param_json.hh"
+
+#include "application.hh"
 
 
 #include "LMCException.hh"
@@ -36,34 +36,25 @@ int main( int argc, char** argv )
                 "\t\t|____|\\___/\\__|  \\_,_|/__/ \\__|_____|_|  |_|  \\___| \n" <<
                 "\t\t                              |_____|               \n");
 
-        //read file
-        param_input_json t_input;
-        param_ptr_t t_param_location( t_input.read_file( argv[1] ) );
-        if( ! t_param_location )
-        {
-            LERROR( lmclog, "File did not read!" );
-            return -1;
-        }
 
-        // Right now this extra step is needed:
-        param_node testNode;
-        testNode.as_node().merge( t_param_location->as_node() );
-        // End extra step.
+        main_app the_main;
+        CLI11_PARSE( the_main, argc, argv );
+        the_main.pre_callback();
 
         LPROG( lmclog, "Setting up generator toolbox" );
         GeneratorToolbox toolbox;
-        if( ! toolbox.Configure( t_param_location->as_node() ) )
+        LINFO( lmclog, "Printing contents:" << the_main.master_config().as_node());
+        if( ! toolbox.Configure( the_main.master_config().as_node() ))
         {
             LERROR( lmclog, "Unable to configure the generator toolbox" );
             return -1;
         }
 
-
         LPROG( lmclog, "Setting up simulation controller" );
         SimulationController controller;
         controller.SetFirstGenerator( toolbox.GetFirstGenerator() );
 
-        if( ! controller.Configure( testNode["simulation"].as_node() ))
+        if( ! controller.Configure( the_main.master_config()["simulation"].as_node() ))
         {
             LERROR( lmclog, "Unable to configure the simulation controller" );
             return -1;
@@ -81,6 +72,7 @@ int main( int argc, char** argv )
 
         LPROG( lmclog, "Run complete; finalizing" );
         controller.Finalize();
+
     }
     catch( Exception& e )
     {
