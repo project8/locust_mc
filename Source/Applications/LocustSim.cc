@@ -22,6 +22,15 @@ using namespace scarab;
 LOGGER( lmclog, "LocustSim" );
 
 
+void PrintHelpMessage()
+{
+    LPROG(lmclog, "\nUsage: LocustSim [options]\n\n" <<
+           "  If using a config file, it should be specified as:  -c config_file.json\n" <<
+           "  Config file options can be modified using:  \"address.of.option\"=value\n");
+    return;
+}
+
+
 int main( int argc, char** argv )
 {
 
@@ -41,6 +50,7 @@ int main( int argc, char** argv )
                 "\t\t                              |_____|               \n");
 
 
+        PrintHelpMessage();
         main_app the_main; // Scarab v2
         scarab::configurator configurator( argc, argv );  // Scarab v1
 
