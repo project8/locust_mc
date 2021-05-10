@@ -42,6 +42,18 @@ namespace locust
     {
     }
 
+    std::pair<double, double> CavitySignalGenerator::TE(int l, int m, int n, double r, double theta, double z)
+    {
+    	double x_lm = fBesselNKPrimeZeros[l][m];
+    	double k1 = 2.*x_lm / (2.*fR);
+    	double k3 = n * LMCConst::Pi() / fL; // n = 1
+    	double fEr = -l * boost::math::cyl_bessel_j(l, k1*r)/(k1*r) * sin(l*theta) * sin(k3*z);
+    	double jprime = n/(k1*r) * boost::math::cyl_bessel_j(l, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
+    	double fEtheta = -jprime * cos(l*theta) * sin(k3*z);
+        return std::make_pair(fEr, fEtheta);
+    }
+
+
     void CavitySignalGenerator::ReadFile(std::string filename, std::vector<std::vector<double> > &data)
     {
         std::ifstream input( filename );
@@ -55,8 +67,30 @@ namespace locust
             data.resize(n+1);
             data[n].resize(k+1);
             data[n][k] = zero;
-            printf("zero is %g and zero01 is %g\n\n", data[n][k], data[0][1]);
+//            printf("zero is %g and zero01 is %g\n\n", data[n][k], data[0][1]);
         }
+
+    }
+
+    void CavitySignalGenerator::PrintModeMap()
+    {
+    	FILE *fp = fopen("ModeMapDebug.txt", "w");
+    	fR = 0.1; //m, parametrize me.
+    	fL = 0.2; // m, parametrize me.
+    	fnPixels = 100; // me too.
+    	for (unsigned tR=0; tR<fnPixels; tR++)
+    	{
+    		double r = fR/fnPixels*tR;
+    		for (unsigned tTheta=0; tTheta<fnPixels; tTheta++)
+    		{
+    			double theta = 2.*LMCConst::Pi()/fnPixels*tTheta;
+    			double tEr = TE(0,1,1,r,theta,0.1).first;
+    			double tEtheta = TE(0,1,1,r,theta,0.1).second;
+             	fprintf(fp, "%g %g %g %g\n", r, theta, tEr, tEtheta);
+    		}
+    	}
+    	fclose (fp);
+
 
     }
 
@@ -67,6 +101,7 @@ namespace locust
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         ReadFile((dataDir / "BesselZeros.txt").string(), fBesselNKZeros );
         ReadFile((dataDir / "BesselPrimeZeros.txt").string(), fBesselNKPrimeZeros );
+        PrintModeMap();
 
         if( aParam.has( "transmitter" ))
         {
@@ -158,17 +193,18 @@ namespace locust
         return;
     }
 
-    void CavitySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
+/*    void CavitySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
     {
-/*	for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
+	for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
 	{
             for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
             {
             	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
             }
 	}
-	*/
+
     }
+    */
 
     void CavitySignalGenerator::WakeBeforeEvent()
     {
@@ -214,7 +250,7 @@ namespace locust
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
 
-        InitializeFieldPoints(allRxChannels);
+//        InitializeFieldPoints(allRxChannels);
 
         if (!fTransmitter->IsKassiopeia())
         {

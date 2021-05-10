@@ -9,11 +9,12 @@
 #define LMCCAVITYSIGNALGENERATOR_HH_
 
 #include "LMCThreeVector.hh"
+#include <boost/math/special_functions/bessel.hpp>
 #include "LMCGenerator.hh"
 #include "LMCChannel.hh"
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
-#include "LMCSinglePatch.hh"
+//#include "LMCSinglePatch.hh"
 #include <vector>
 #include <sstream>
 #include <string>
@@ -59,12 +60,16 @@ namespace locust
               
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
+            std::pair<double, double> TE(int l, int m, int n, double r, double theta, double z);
+            void PrintModeMap();
 
 
 
 
         private:
-            std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
+//            std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
+            double fR, fL; // cavity radius, length
+            int fnPixels;
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
@@ -83,7 +88,7 @@ namespace locust
             void WakeBeforeEvent();
             bool ReceivedKassReady();
 
-        	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
+//        	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
 
             bool DoGenerate( Signal* aSignal );
             bool DoGenerateTime( Signal* aSignal );
