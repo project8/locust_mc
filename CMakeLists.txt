@@ -193,6 +193,7 @@ link_directories( ${LOCUST_MC_LINK_DIRECTORIES} )
 add_subdirectory( Source )
 add_subdirectory( Data )
 add_subdirectory( Data/TransferFunctions )
+add_subdirectory( Data/Math )
 
 ###############
 # executables #

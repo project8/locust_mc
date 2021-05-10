@@ -14,9 +14,9 @@
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCSinglePatch.hh"
-//#include "LMCAntennaElementPositioner.hh"
-//#include "LMCSinglePatchPositioner.hh"
-//#include <vector>
+#include <vector>
+#include <sstream>
+#include <string>
 #include "LMCException.hh"
 
 
@@ -74,7 +74,11 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
+            std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
 
+
+
+            void ReadFile(std::string filename, std::vector<std::vector<double> > &data);
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();

@@ -23,7 +23,7 @@ namespace locust
 
     CavitySignalGenerator::CavitySignalGenerator( const std::string& aName ) :
         Generator( aName ),
-        fDoGenerateFunc( &CavitySignalGenerator::DoGenerateFreq ),
+        fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
 		fNModes( 1 ),
         gxml_filename("blank.xml"),
@@ -42,8 +42,31 @@ namespace locust
     {
     }
 
+    void CavitySignalGenerator::ReadFile(std::string filename, std::vector<std::vector<double> > &data)
+    {
+        std::ifstream input( filename );
+        int n = 0; int k = 0; double zero = 0.;
+        for( std::string line; getline( input, line ); )
+        {
+            std::stringstream ss(line);
+            ss >> n;
+            ss >> k;
+            ss >> zero;
+            data.resize(n+1);
+            data[n].resize(k+1);
+            data[n][k] = zero;
+            printf("zero is %g and zero01 is %g\n\n", data[n][k], data[0][1]);
+        }
+
+    }
+
+
+
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
+        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+        ReadFile((dataDir / "BesselZeros.txt").string(), fBesselNKZeros );
+        ReadFile((dataDir / "BesselPrimeZeros.txt").string(), fBesselNKPrimeZeros );
 
         if( aParam.has( "transmitter" ))
         {
