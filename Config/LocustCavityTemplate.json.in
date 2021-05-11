@@ -1,0 +1,34 @@
+{
+    "generators":
+    [          
+       "cavity-signal",
+       "digitizer"
+    ],
+
+    "cavity-signal":
+    {
+        "transmitter": "kassiopeia"
+    },
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 8192,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+    	"v-range":  2.0e-7,
+    	"v-offset": -1.0e-7
+    }
+
+}
+
