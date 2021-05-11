@@ -44,13 +44,15 @@ namespace locust
 
     std::pair<double, double> CavitySignalGenerator::TE(int l, int m, int n, double r, double theta, double z)
     {
+    	// from "Techniques of Microwave Measurements", C. G. Montgomery
     	double x_lm = fBesselNKPrimeZeros[l][m];
     	double k1 = 2.*x_lm / (2.*fR);
     	double k3 = n * LMCConst::Pi() / fL; // n = 1
-    	double fEr = -l * boost::math::cyl_bessel_j(l, k1*r)/(k1*r) * sin(l*theta) * sin(k3*z);
-    	double jprime = n/(k1*r) * boost::math::cyl_bessel_j(l, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	double fEtheta = -jprime * cos(l*theta) * sin(k3*z);
-        return std::make_pair(fEr, fEtheta);
+    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double tEr = -l * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
+    	double tEtheta = -jPrime * cos(l*theta) * sin(k3*z);
+        return std::make_pair(tEr, tEtheta);
     }
 
 
@@ -84,9 +86,8 @@ namespace locust
     		for (unsigned tTheta=0; tTheta<fnPixels; tTheta++)
     		{
     			double theta = 2.*LMCConst::Pi()/fnPixels*tTheta;
-    			double tEr = TE(0,1,1,r,theta,0.1).first;
-    			double tEtheta = TE(0,1,1,r,theta,0.1).second;
-             	fprintf(fp, "%g %g %g %g\n", r, theta, tEr, tEtheta);
+    			std::pair<double, double> tFieldValues = TE(0,1,1,r,theta,0.1);
+             	fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tFieldValues.first, tFieldValues.second);
     		}
     	}
     	fclose (fp);
