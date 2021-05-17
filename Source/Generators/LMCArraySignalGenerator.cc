@@ -45,6 +45,7 @@ namespace locust
 		fSwapFrequency( 1000 ),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
+		fAllowFastSampling( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
@@ -317,6 +318,10 @@ namespace locust
         {
             fTextFileWriting = aParam["text-filewriting"]().as_bool();
         }
+        if( aParam.has( "allow-fast-sampling" ) )
+        {
+            fAllowFastSampling = aParam["allow-fast-sampling"]().as_bool();
+        }
 
         return true;
     }
@@ -393,7 +398,6 @@ namespace locust
     {
 
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
-//    	printf("field frequency is %g\n", fieldfrequency); getchar();
     	double HilbertMag = 0.;
     	double HilbertPhase = 0.;
     	double convolution = 0.0;
@@ -414,8 +418,8 @@ namespace locust
     		}
 
     		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
-
     		return convolution;
+
     	}
     	else return 0.;
 
@@ -591,6 +595,7 @@ namespace locust
         int nFilterBins = fTFReceiverHandler.GetFilterSize();
         double dtFilter = fTFReceiverHandler.GetFilterResolution();
         int nFilterBinsRequired = 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter;
+        if (!fAllowFastSampling) nFilterBinsRequired = nFilterBins;
         unsigned nFieldBufferBins = fFieldBufferSize;
         InitializeBuffers(nFilterBins, nFieldBufferBins);
 

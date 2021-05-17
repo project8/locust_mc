@@ -50,6 +50,8 @@ namespace locust
      - "zshift-array":  shift of whole antenna array along z axis, for testing (meters).
      - "swap-frequency":  number of digitizer samples after which buffer memory is reset.  This
      	 	 becomes more important for large numbers of patches
+     - "allow-fast-sampling": use sampling interval to define overlap time between incident field and FIR.
+     	 	 default is false, which sets overlap to be the entire duration of FIR.
 
     */
 
@@ -83,6 +85,7 @@ namespace locust
             int fSwapFrequency;
             bool fKassNeverStarted;
             bool fSkippedSamples;
+            bool fAllowFastSampling;
             double fphiLO; // voltage phase of LO in radians;
 
             void KassiopeiaInit(const std::string &aFile);
