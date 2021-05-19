@@ -24,6 +24,9 @@ namespace locust
     CavitySignalGenerator::CavitySignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
+    	fR(0.1), //m
+    	fL(0.2), // m
+    	fnPixels(100),
         fLO_Frequency( 0.),
 		fNModes( 1 ),
         gxml_filename("blank.xml"),
@@ -42,9 +45,62 @@ namespace locust
     {
     }
 
-    std::pair<double, double> CavitySignalGenerator::TE(int l, int m, int n, double r, double theta, double z)
+    double CavitySignalGenerator::Integrate(int l, int m, int n, bool teMode, bool eField)
+    {
+    	std::vector<double> aField;
+    	double aFieldMagSq = 0.;
+    	double r, theta, z = 0.;
+    	double dR = fR/fnPixels;
+    	double dZ = fL/fnPixels;
+    	double dTheta = 2.*LMCConst::Pi()/fnPixels;
+    	double tVolume = 0.;
+    	double tIntegral = 0.;
+
+    	for (unsigned i=0; i<fnPixels; i++)
+    		for (unsigned j=0; j<fnPixels; j++)
+    			for (unsigned k=0; k<fnPixels; k++)
+    			{
+    	    		r = (double)i*dR;
+    	    		theta = (double)j*dTheta;
+    	    		z = (double)k*dZ;
+    	    		if (teMode)
+    	    		{
+    	    			if (eField)
+    	    			{
+    	    		    	aField = TE_E(l, m, n, r, theta, z);
+    	    			}
+    	    			else
+    	    			{
+    	    				aField = TE_H(l, m, n, r, theta, z);
+    	    			}
+    	    		}
+    	    		else
+    	    		{
+    	    			if (eField)
+    	    			{
+    	    				aField = TM_E(l, m, n, r, theta, z);
+    	    			}
+    	    			else
+    	    			{
+    	    				aField = TM_H(l, m, n, r, theta, z);
+    	    			}
+    	    		}
+    		    	for (unsigned index=0; index<aField.size(); index++)
+    		    		{
+    		    			if (!isnan(aField[index]))
+    		    				aFieldMagSq += aField[index]*aField[index];
+    		    		}
+    				tIntegral += aFieldMagSq*r*dR*dTheta*dZ;
+//    		    	tVolume += r*dR*dTheta*dZ;  // sanity check volume integral.
+    			}
+
+    	return tIntegral;
+    }
+
+    std::vector<double> CavitySignalGenerator::TE_E(int l, int m, int n, double r, double theta, double z) const
     {
     	// from "Techniques of Microwave Measurements", C. G. Montgomery
+    	std::vector<double> TE_E;
     	double x_lm = fBesselNKPrimeZeros[l][m];
     	double k1 = 2.*x_lm / (2.*fR);
     	double k3 = n * LMCConst::Pi() / fL; // n = 1
@@ -52,11 +108,62 @@ namespace locust
     	double tEr = -l * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	double tEtheta = -jPrime * cos(l*theta) * sin(k3*z);
-        return std::make_pair(tEr, tEtheta);
+    	TE_E.push_back(tEr);
+    	TE_E.push_back(tEtheta);
+        return TE_E;
+    }
+
+    std::vector<double> CavitySignalGenerator::TE_H(int l, int m, int n, double r, double theta, double z)
+    {
+    	std::vector<double> TE_H;
+    	// from "Techniques of Microwave Measurements", C. G. Montgomery
+    	double x_lm = fBesselNKPrimeZeros[l][m];
+    	double k1 = 2.*x_lm / (2.*fR);
+    	double k3 = n * LMCConst::Pi() / fL;
+    	double k = pow(k1*k1+k3*k3,0.5);
+    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
+    	TE_H.push_back(-k3/k * jPrime * cos(l*theta) * cos(k3*z));
+    	TE_H.push_back(-l*k3/k * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
+    	TE_H.push_back(k1/k * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
+        return TE_H;
+    }
+
+    std::vector<double> CavitySignalGenerator::TM_E(int l, int m, int n, double r, double theta, double z)
+    {
+    	std::vector<double> TM_E;
+    	// from "Techniques of Microwave Measurements", C. G. Montgomery
+    	double x_lm = fBesselNKPrimeZeros[l][m];
+    	double k1 = 2.*x_lm / (2.*fR);
+    	double k3 = n * LMCConst::Pi() / fL;
+    	double k = pow(k1*k1+k3*k3,0.5);
+    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
+    	TM_E.push_back(-k3/k * jPrime * cos(l*theta) * sin(k3*z));
+    	TM_E.push_back(l*k3/k * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z));
+    	TM_E.push_back(k1/k * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * cos(k3*z));
+        return TM_E;
+    }
+
+    std::vector<double> CavitySignalGenerator::TM_H(int l, int m, int n, double r, double theta, double z)
+    {
+    	// from "Techniques of Microwave Measurements", C. G. Montgomery
+    	std::vector<double> TM_H;
+    	double x_lm = fBesselNKZeros[l][m];
+    	double k1 = 2.*x_lm / (2.*fR);
+    	double k3 = n * LMCConst::Pi() / fL;
+    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double tHr = -l * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
+    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
+    	double tHtheta = -jPrime * cos(l*theta) * cos(k3*z);
+    	TM_H.push_back(tHr);
+    	TM_H.push_back(tHtheta);
+        return TM_H;
     }
 
 
-    void CavitySignalGenerator::ReadFile(std::string filename, std::vector<std::vector<double> > &data)
+
+    void CavitySignalGenerator::ReadBesselZeroes(std::string filename, std::vector<std::vector<double> > &data)
     {
         std::ifstream input( filename );
         int n = 0; int k = 0; double zero = 0.;
@@ -74,23 +181,29 @@ namespace locust
 
     }
 
-    void CavitySignalGenerator::PrintModeMap()
+    void CavitySignalGenerator::PrintModeMaps()
     {
-    	FILE *fp = fopen("ModeMapDebug.txt", "w");
-    	fR = 0.1; //m, parametrize me.
-    	fL = 0.2; // m, parametrize me.
-    	fnPixels = 100; // me too.
-    	for (unsigned tR=0; tR<fnPixels; tR++)
+    	FILE *fpTE_E = fopen("ModeMapTE_E.txt", "w");
+    	FILE *fpTE_H = fopen("ModeMapTE_H.txt", "w");
+    	FILE *fpTM_E = fopen("ModeMapTM_E.txt", "w");
+    	FILE *fpTM_H = fopen("ModeMapTM_H.txt", "w");
+
+    	double tNormalizationTE_E = pow(Integrate(0,1,1,1,1),0.5);
+
+    	for (unsigned i=0; i<fnPixels; i++)
     	{
-    		double r = fR/fnPixels*tR;
-    		for (unsigned tTheta=0; tTheta<fnPixels; tTheta++)
+    		double r = (double)i/fnPixels*fR;
+    		for (unsigned j=0; j<fnPixels; j++)
     		{
-    			double theta = 2.*LMCConst::Pi()/fnPixels*tTheta;
-    			std::pair<double, double> tFieldValues = TE(0,1,1,r,theta,0.1);
-             	fprintf(fp, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tFieldValues.first, tFieldValues.second);
+    			double theta = (double)j/fnPixels*2.*LMCConst::Pi();
+    	    	std::vector<double> tTE_E = TE_E(0,1,1,r,theta,0.05);
+                fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()/tNormalizationTE_E, tTE_E.back()/tNormalizationTE_E);
     		}
     	}
-    	fclose (fp);
+    	fclose (fpTE_E);
+    	fclose (fpTE_H);
+    	fclose (fpTM_E);
+    	fclose (fpTM_H);
 
 
     }
@@ -100,9 +213,9 @@ namespace locust
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        ReadFile((dataDir / "BesselZeros.txt").string(), fBesselNKZeros );
-        ReadFile((dataDir / "BesselPrimeZeros.txt").string(), fBesselNKPrimeZeros );
-        PrintModeMap();
+        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), fBesselNKZeros );
+        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), fBesselNKPrimeZeros );
+        PrintModeMaps();
 
         if( aParam.has( "transmitter" ))
         {

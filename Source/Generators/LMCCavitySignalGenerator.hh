@@ -60,8 +60,12 @@ namespace locust
               
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            std::pair<double, double> TE(int l, int m, int n, double r, double theta, double z);
-            void PrintModeMap();
+            std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const;
+            std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z);
+            std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z);
+            std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z);
+            double Integrate(int l, int m, int n, bool teMode, bool eField);
+            void PrintModeMaps();
 
 
 
@@ -83,7 +87,7 @@ namespace locust
 
 
 
-            void ReadFile(std::string filename, std::vector<std::vector<double> > &data);
+            void ReadBesselZeroes(std::string filename, std::vector<std::vector<double> > &data);
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();
