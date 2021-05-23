@@ -103,7 +103,7 @@ namespace locust
     	std::vector<double> TE_E;
     	double x_lm = fBesselNKPrimeZeros[l][m];
     	double k1 = 2.*x_lm / (2.*fR);
-    	double k3 = n * LMCConst::Pi() / fL; // n = 1
+    	double k3 = n * LMCConst::Pi() / fL;
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double tEr = -l * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
@@ -183,29 +183,31 @@ namespace locust
 
     void CavitySignalGenerator::PrintModeMaps()
     {
-    	FILE *fpTE_E = fopen("ModeMapTE_E.txt", "w");
-    	FILE *fpTE_H = fopen("ModeMapTE_H.txt", "w");
-    	FILE *fpTM_E = fopen("ModeMapTM_E.txt", "w");
-    	FILE *fpTM_H = fopen("ModeMapTM_H.txt", "w");
-
-    	double tNormalizationTE_E = pow(Integrate(0,1,1,1,1),0.5);
-
-    	for (unsigned i=0; i<fnPixels; i++)
-    	{
-    		double r = (double)i/fnPixels*fR;
-    		for (unsigned j=0; j<fnPixels; j++)
-    		{
-    			double theta = (double)j/fnPixels*2.*LMCConst::Pi();
-    	    	std::vector<double> tTE_E = TE_E(0,1,1,r,theta,0.05);
-                fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()/tNormalizationTE_E, tTE_E.back()/tNormalizationTE_E);
-    		}
-    	}
-    	fclose (fpTE_E);
-    	fclose (fpTE_H);
-    	fclose (fpTM_E);
-    	fclose (fpTM_H);
+    	char buffer[60];
 
 
+
+    	for (int l=0; l<5; l++)
+    		for (int m=0; m<5; m++)
+    			for (int n=0; n<5; n++)
+    			{
+    				printf("l m n is %d %d %d\n", l, m, n);
+    				double tNormalizationTE_E = pow(Integrate(l,m,n,1,1),0.5);
+    				int a = sprintf(buffer, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
+    				const char *fpname = buffer;
+    				FILE *fpTE_E = fopen(fpname, "w");
+    				for (unsigned i=0; i<fnPixels; i++)
+    				{
+    					double r = (double)i/fnPixels*fR;
+    					for (unsigned j=0; j<fnPixels; j++)
+    					{
+    						double theta = (double)j/fnPixels*2.*LMCConst::Pi();
+    						std::vector<double> tTE_E = TE_E(l,m,n,r,theta,0.05);
+    						fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()/tNormalizationTE_E, tTE_E.back()/tNormalizationTE_E);
+    					}
+    				}
+    				fclose (fpTE_E);
+    			}
     }
 
 
