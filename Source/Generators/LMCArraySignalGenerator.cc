@@ -41,6 +41,7 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         ElementFIRBuffer( 1 ),
+        FIRfrequencyBuffer( 1 ),
         fFieldBufferSize( 50 ),
 		fSwapFrequency( 1000 ),
 		fKassNeverStarted( false ),
@@ -394,7 +395,7 @@ namespace locust
 
 
 
-    double ArraySignalGenerator::GetFIRSample(int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
+    double ArraySignalGenerator::GetFIRSample(int nFilterBins, int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
     {
 
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
@@ -410,11 +411,28 @@ namespace locust
     		HilbertMag = HilbertMagPhaseMean[0];
     		HilbertPhase = HilbertMagPhaseMean[1];
 
-    		for (int i=0; i < nFilterBinsRequired; i++)  // populate filter with field.
+    		// populate FIR filter with frequency for just this sample interval:
+    		for (int i=0; i < nFilterBinsRequired; i++)
     		{
-    			HilbertPhase += 2.*3.1415926*fieldfrequency*dtFilter;
-    			ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(HilbertMag*cos(HilbertPhase));
+    			FIRfrequencyBuffer[channel*fNElementsPerStrip+element].push_back(fieldfrequency);
+    			FIRfrequencyBuffer[channel*fNElementsPerStrip+element].pop_front();
+    		}
+
+    		// populate entire FIR filter with field, using frequencies from recent previous samples:
+    		std::deque<double>::iterator it = FIRfrequencyBuffer[channel*fNElementsPerStrip+element].begin();
+    		while (it != FIRfrequencyBuffer[channel*fNElementsPerStrip+element].end())
+    		{
+    			HilbertPhase += 2.*3.1415926*(*it)*dtFilter;
+    			if (*it != 0.)
+    			{
+    				ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(HilbertMag*cos(HilbertPhase));
+    			}
+    			else
+    			{
+    				ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(0.);
+    			}
     			ElementFIRBuffer[channel*fNElementsPerStrip+element].pop_front();
+    			*it++;
     		}
 
     		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
@@ -426,7 +444,7 @@ namespace locust
     }
 
 
-    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtFilter)
+    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBins, int nFilterBinsRequired, double dtFilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -464,7 +482,7 @@ namespace locust
                 if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
- 	            double VoltageFIRSample = GetFIRSample(nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
+ 	            double VoltageFIRSample = GetFIRSample(nFilterBins, nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
             	{
                     LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
@@ -519,6 +537,7 @@ namespace locust
     	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
     	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
     	ElementFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
+    	FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
     }
 
 
@@ -529,6 +548,7 @@ namespace locust
     	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
     	LOPhaseBuffer = aFieldBuffer.CleanupBuffer(LOPhaseBuffer);
     	ElementFIRBuffer = aFieldBuffer.CleanupBuffer(ElementFIRBuffer);
+    	FIRfrequencyBuffer = aFieldBuffer.CleanupBuffer(FIRfrequencyBuffer);
     	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
     }
 
@@ -605,7 +625,7 @@ namespace locust
         {
         	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         	{
-        		DriveAntenna(fp, PreEventCounter, index, aSignal, nFilterBinsRequired, dtFilter);
+        		DriveAntenna(fp, PreEventCounter, index, aSignal, nFilterBins, nFilterBinsRequired, dtFilter);
         	}  // for loop
         	return true;
         }
@@ -656,7 +676,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
+                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBins, nFilterBinsRequired, dtFilter))
                     		{
                                 PreEventCounter = 0; // reset
                     		}
