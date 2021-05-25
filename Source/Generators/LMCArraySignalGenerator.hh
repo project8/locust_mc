@@ -94,7 +94,7 @@ namespace locust
 
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
-            double GetFIRSample(int nFilterBins, int nFilterBinsRequired, double dtfilter, unsigned channel, unsigned patch);
+            double GetFIRSample(int nFilterBinsRequired, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned channel, unsigned patch);
@@ -112,7 +112,7 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBins, int nFilterBinsRequired, double dtfilter);
+            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtfilter);
             bool InitializeElementArray();
             AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object

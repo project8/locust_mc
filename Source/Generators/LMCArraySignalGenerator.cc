@@ -395,7 +395,7 @@ namespace locust
 
 
 
-    double ArraySignalGenerator::GetFIRSample(int nFilterBins, int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
+    double ArraySignalGenerator::GetFIRSample(int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
     {
 
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
@@ -444,7 +444,7 @@ namespace locust
     }
 
 
-    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBins, int nFilterBinsRequired, double dtFilter)
+    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtFilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -482,7 +482,7 @@ namespace locust
                 if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
- 	            double VoltageFIRSample = GetFIRSample(nFilterBins, nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
+ 	            double VoltageFIRSample = GetFIRSample(nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
             	{
                     LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
@@ -625,7 +625,7 @@ namespace locust
         {
         	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         	{
-        		DriveAntenna(fp, PreEventCounter, index, aSignal, nFilterBins, nFilterBinsRequired, dtFilter);
+        		DriveAntenna(fp, PreEventCounter, index, aSignal, nFilterBinsRequired, dtFilter);
         	}  // for loop
         	return true;
         }
@@ -676,7 +676,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBins, nFilterBinsRequired, dtFilter))
+                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
                     		{
                                 PreEventCounter = 0; // reset
                     		}
