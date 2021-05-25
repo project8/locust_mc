@@ -614,7 +614,7 @@ namespace locust
 
         int nFilterBins = fTFReceiverHandler.GetFilterSize();
         double dtFilter = fTFReceiverHandler.GetFilterResolution();
-        int nFilterBinsRequired = 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter;
+        int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
         if (!fAllowFastSampling) nFilterBinsRequired = nFilterBins;
         unsigned nFieldBufferBins = fFieldBufferSize;
         InitializeBuffers(nFilterBins, nFieldBufferBins);

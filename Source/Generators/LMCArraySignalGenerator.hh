@@ -20,6 +20,7 @@
 #include "LMCTFFileHandler.hh"
 #include "LMCKassLocustInterface.hh"
 #include <vector>
+#include <algorithm>    // std::min
 #include "LMCException.hh"
 
 
