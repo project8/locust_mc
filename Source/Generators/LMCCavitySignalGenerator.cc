@@ -32,7 +32,7 @@ namespace locust
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
-		fThreadCheckTime(200),
+		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
 		fInterface( new KassLocustInterface() )
@@ -48,7 +48,8 @@ namespace locust
     double CavitySignalGenerator::Integrate(int l, int m, int n, bool teMode, bool eField)
     {
     	std::vector<double> aField;
-    	double aFieldMagSq = 0.;
+    	std::vector<double> anRfunc;
+//    	double aFieldMagSq = 0.;
     	double r, theta, z = 0.;
     	double dR = fR/fnPixels;
     	double dZ = fL/fnPixels;
@@ -85,77 +86,90 @@ namespace locust
     	    				aField = TM_H(l, m, n, r, theta, z);
     	    			}
     	    		}
-    		    	for (unsigned index=0; index<aField.size(); index++)
-    		    		{
-    		    			if (!isnan(aField[index]))
-    		    				aFieldMagSq += aField[index]*aField[index];
-    		    		}
+
+    	    		double aFieldMagSq = 0.;
+    	    		auto it = aField.begin();
+    	    		while (it != aField.end())
+    	    		{
+		    			if (!isnan(*it))
+		    				aFieldMagSq += (*it)*(*it);
+    	    			*it++;
+    	    		}
+
     				tIntegral += aFieldMagSq*r*dR*dTheta*dZ;
 //    		    	tVolume += r*dR*dTheta*dZ;  // sanity check volume integral.
     			}
-
+//    	printf("tVolume is %g\n", tVolume); getchar();
     	return tIntegral;
     }
 
     std::vector<double> CavitySignalGenerator::TE_E(int l, int m, int n, double r, double theta, double z) const
     {
-    	// from "Techniques of Microwave Measurements", C. G. Montgomery
+    	// from Pozar
     	std::vector<double> TE_E;
     	double x_lm = fBesselNKPrimeZeros[l][m];
-    	double k1 = 2.*x_lm / (2.*fR);
+    	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
+    	double k = pow(k1*k1+k3*k3,0.5);
+    	double omega = LMCConst::C()*k;
+    	double k0 = omega/LMCConst::C()*sqrt(LMCConst::MuNull()*LMCConst::EpsNull());
+    	double eta = LMCConst::MuNull()*omega/LMCConst::C()/k0;  // Jackson 8.32
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tEr = -l * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	double tEtheta = -jPrime * cos(l*theta) * sin(k3*z);
+    	double tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
     	TE_E.push_back(tEr);
     	TE_E.push_back(tEtheta);
         return TE_E;
     }
 
-    std::vector<double> CavitySignalGenerator::TE_H(int l, int m, int n, double r, double theta, double z)
+    std::vector<double> CavitySignalGenerator::TE_H(int l, int m, int n, double r, double theta, double z) const
     {
+    	// from Pozar
     	std::vector<double> TE_H;
-    	// from "Techniques of Microwave Measurements", C. G. Montgomery
     	double x_lm = fBesselNKPrimeZeros[l][m];
-    	double k1 = 2.*x_lm / (2.*fR);
+    	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	TE_H.push_back(-k3/k * jPrime * cos(l*theta) * cos(k3*z));
-    	TE_H.push_back(-l*k3/k * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
-    	TE_H.push_back(k1/k * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
+    	TE_H.push_back(-k3/k1 * jPrime * cos(l*theta) * cos(k3*z));
+    	TE_H.push_back(-l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
+    	TE_H.push_back(boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
         return TE_H;
     }
 
-    std::vector<double> CavitySignalGenerator::TM_E(int l, int m, int n, double r, double theta, double z)
+    std::vector<double> CavitySignalGenerator::TM_E(int l, int m, int n, double r, double theta, double z) const
     {
+    	// from Pozar
     	std::vector<double> TM_E;
-    	// from "Techniques of Microwave Measurements", C. G. Montgomery
-    	double x_lm = fBesselNKPrimeZeros[l][m];
-    	double k1 = 2.*x_lm / (2.*fR);
+    	double x_lm = fBesselNKZeros[l][m];
+    	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
     	double k = pow(k1*k1+k3*k3,0.5);
+    	double omega = LMCConst::C()*k;
+    	double k0 = omega/LMCConst::C()*sqrt(LMCConst::MuNull()*LMCConst::EpsNull());
+    	double eta = LMCConst::C()/LMCConst::EpsNull()/omega*k0;  // Jackson 8.32
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	TM_E.push_back(-k3/k * jPrime * cos(l*theta) * sin(k3*z));
-    	TM_E.push_back(l*k3/k * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z));
-    	TM_E.push_back(k1/k * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * cos(k3*z));
+    	TM_E.push_back(-k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z));
+    	TM_E.push_back(-l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
+    	TM_E.push_back(eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
         return TM_E;
     }
 
-    std::vector<double> CavitySignalGenerator::TM_H(int l, int m, int n, double r, double theta, double z)
+    std::vector<double> CavitySignalGenerator::TM_H(int l, int m, int n, double r, double theta, double z) const
     {
-    	// from "Techniques of Microwave Measurements", C. G. Montgomery
+    	// from Pozar
     	std::vector<double> TM_H;
     	double x_lm = fBesselNKZeros[l][m];
-    	double k1 = 2.*x_lm / (2.*fR);
+    	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
+    	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tHr = -l * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
+    	double tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	double tHtheta = -jPrime * cos(l*theta) * cos(k3*z);
+    	double tHtheta = -k/k1 * jPrime * cos(l*theta) * sin(k3*z);
     	TM_H.push_back(tHr);
     	TM_H.push_back(tHtheta);
         return TM_H;
@@ -181,11 +195,19 @@ namespace locust
 
     }
 
+    void CavitySignalGenerator::CheckNormalization()
+    {
+    	printf("TE011 E energy content is %g\n", LMCConst::EpsNull()*Integrate(0,1,1,1,1));
+    	printf("TE011 H energy content is %g\n\n", LMCConst::MuNull()*Integrate(0,1,1,1,0));
+    	printf("TM111 E energy content is %g\n", LMCConst::EpsNull()*Integrate(1,1,1,0,1));
+    	printf("TM111 H energy content is %g\n", LMCConst::MuNull()*Integrate(1,1,1,0,0));
+    }
+
+
+
     void CavitySignalGenerator::PrintModeMaps()
     {
     	char buffer[60];
-
-
 
     	for (int l=0; l<5; l++)
     		for (int m=0; m<5; m++)
@@ -217,6 +239,7 @@ namespace locust
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), fBesselNKZeros );
         ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), fBesselNKPrimeZeros );
+        CheckNormalization();
         PrintModeMaps();
 
         if( aParam.has( "transmitter" ))

@@ -61,10 +61,11 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
             std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const;
-            std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z);
-            std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z);
-            std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z);
+            std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z) const;
+            std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z) const;
+            std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z) const;
             double Integrate(int l, int m, int n, bool teMode, bool eField);
+            void CheckNormalization();
             void PrintModeMaps();
 
 
