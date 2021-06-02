@@ -33,7 +33,8 @@ namespace locust
             fKassReadyCondition(),
             fProject8Phase( 0 ),
             fCENTER_TO_SHORT( 0.05 ),
-            fCENTER_TO_ANTENNA( 0.05 )
+            fCENTER_TO_ANTENNA( 0.05 ),
+			fTFReceiverHandler()
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :
@@ -52,17 +53,20 @@ namespace locust
         return fInterface;
     }
 
+
     bool KLInterfaceBootstrapper::Configure( const scarab::param_node& aParam )
     {
+    	// TO-DO:  add bessel function vectors to fInterface.  Access them as below.
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
+    	if(!fInterface->fTFReceiverHandler.Configure(aParam))
+    	{
+//    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    	}
+
+
     }
 
-/*
-    void KLInterfaceBootstrapper::InitializeData()
-    {
-        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-    }
-*/
 
     void KLInterfaceBootstrapper::SetInterface( kl_interface_ptr_t aInterface )
     {

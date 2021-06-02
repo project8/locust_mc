@@ -8,6 +8,9 @@
 #ifndef LOCUST_LMCKASSLOCUSTINTERFACE_HH_
 #define LOCUST_LMCKASSLOCUSTINTERFACE_HH_
 
+
+#include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
 #include "LMCParticle.hh"
 #include "param.hh"
 #include "logger.hh"
@@ -55,19 +58,22 @@ namespace locust
         int fProject8Phase; // 1, 2, or 3, defined with the step modifier instance in the xml file.
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
+        TFReceiverHandler fTFReceiverHandler;
 
     };
+
 
     typedef std::shared_ptr< KassLocustInterface > kl_interface_ptr_t;
 
     class KLInterfaceBootstrapper : public scarab::singleton< KLInterfaceBootstrapper >
     {
         public:
+
+        	bool Configure( const scarab::param_node& aNode );
+
             kl_interface_ptr_t GetInterface() const;
 
             void SetInterface( kl_interface_ptr_t aInterface );
-            void InitializeData();
-            bool Configure( const scarab::param_node& aNode );
 
 
         protected:
