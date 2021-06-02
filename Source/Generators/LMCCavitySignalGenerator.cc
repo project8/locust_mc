@@ -48,8 +48,6 @@ namespace locust
     double CavitySignalGenerator::Integrate(int l, int m, int n, bool teMode, bool eField)
     {
     	std::vector<double> aField;
-    	std::vector<double> anRfunc;
-//    	double aFieldMagSq = 0.;
     	double r, theta, z = 0.;
     	double dR = fR/fnPixels;
     	double dZ = fL/fnPixels;
@@ -197,10 +195,19 @@ namespace locust
 
     void CavitySignalGenerator::CheckNormalization()
     {
-    	printf("TE011 E energy content is %g\n", LMCConst::EpsNull()*Integrate(0,1,1,1,1));
-    	printf("TE011 H energy content is %g\n\n", LMCConst::MuNull()*Integrate(0,1,1,1,0));
-    	printf("TM111 E energy content is %g\n", LMCConst::EpsNull()*Integrate(1,1,1,0,1));
-    	printf("TM111 H energy content is %g\n", LMCConst::MuNull()*Integrate(1,1,1,0,0));
+    	printf("\\epsilon\\int{|E_xlm|^2 dV} = \\mu\\int{|H_xlm|^2 dV} ?\n\n");
+    	for (int l=0; l<3; l++)
+    		for (int m=1; m<3; m++)
+    			for (int n=1; n<3; n++)
+    			{
+    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,1,1), LMCConst::MuNull()*Integrate(l,m,n,1,0));
+    			}
+    	for (int l=0; l<3; l++)
+    		for (int m=1; m<3; m++)
+    			for (int n=1; n<3; n++)
+    			{
+    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,0,1), LMCConst::MuNull()*Integrate(l,m,n,0,0));
+    			}
     }
 
 
@@ -210,8 +217,8 @@ namespace locust
     	char buffer[60];
 
     	for (int l=0; l<5; l++)
-    		for (int m=0; m<5; m++)
-    			for (int n=0; n<5; n++)
+    		for (int m=1; m<5; m++)
+    			for (int n=1; n<5; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
     				double tNormalizationTE_E = pow(Integrate(l,m,n,1,1),0.5);
