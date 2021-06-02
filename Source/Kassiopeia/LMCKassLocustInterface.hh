@@ -9,7 +9,8 @@
 #define LOCUST_LMCKASSLOCUSTINTERFACE_HH_
 
 #include "LMCParticle.hh"
-
+#include "param.hh"
+#include "logger.hh"
 #include "singleton.hh"
 
 #include <condition_variable>
@@ -65,6 +66,9 @@ namespace locust
             kl_interface_ptr_t GetInterface() const;
 
             void SetInterface( kl_interface_ptr_t aInterface );
+            void InitializeData();
+            bool Configure( const scarab::param_node& aNode );
+
 
         protected:
             friend class scarab::singleton< KLInterfaceBootstrapper >;

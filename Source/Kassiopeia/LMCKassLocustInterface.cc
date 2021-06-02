@@ -52,6 +52,18 @@ namespace locust
         return fInterface;
     }
 
+    bool KLInterfaceBootstrapper::Configure( const scarab::param_node& aParam )
+    {
+        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+    }
+
+/*
+    void KLInterfaceBootstrapper::InitializeData()
+    {
+        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+    }
+*/
+
     void KLInterfaceBootstrapper::SetInterface( kl_interface_ptr_t aInterface )
     {
         fInterface = aInterface;
