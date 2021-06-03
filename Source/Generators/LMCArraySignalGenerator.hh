@@ -20,6 +20,7 @@
 #include "LMCTFFileHandler.hh"
 #include "LMCKassLocustInterface.hh"
 #include <vector>
+#include <algorithm>    // std::min
 #include "LMCException.hh"
 
 
@@ -50,6 +51,8 @@ namespace locust
      - "zshift-array":  shift of whole antenna array along z axis, for testing (meters).
      - "swap-frequency":  number of digitizer samples after which buffer memory is reset.  This
      	 	 becomes more important for large numbers of patches
+     - "allow-fast-sampling": use sampling interval to define overlap time between incident field and FIR.
+     	 	 default is false, which sets overlap to be the entire duration of FIR.
 
     */
 
@@ -83,6 +86,7 @@ namespace locust
             int fSwapFrequency;
             bool fKassNeverStarted;
             bool fSkippedSamples;
+            bool fAllowFastSampling;
             double fphiLO; // voltage phase of LO in radians;
 
             void KassiopeiaInit(const std::string &aFile);
@@ -91,7 +95,7 @@ namespace locust
 
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
-            double GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned patch);
+            double GetFIRSample(int nFilterBinsRequired, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned channel, unsigned patch);
@@ -105,10 +109,11 @@ namespace locust
             std::vector<std::deque<double>> LOPhaseBuffer;
             std::vector<std::deque<unsigned>> IndexBuffer;
             std::vector<std::deque<double>> ElementFIRBuffer;
+            std::vector<std::deque<double>> FIRfrequencyBuffer;
 
 
             bool DoGenerate( Signal* aSignal );
-            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter);
+            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtfilter);
             bool InitializeElementArray();
             AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object
