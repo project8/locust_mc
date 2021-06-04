@@ -158,6 +158,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCRunKassiopeia.hh
         Kassiopeia/LMCRunPause.hh
         Kassiopeia/LMCRunPauseBuilder.hh
+        
+        Fields/LMCField.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -182,6 +184,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCRunKassiopeia.cc
         Kassiopeia/LMCRunPause.cc
         Kassiopeia/LMCRunPauseBuilder.cc
+        
+        Fields/LMCField.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
