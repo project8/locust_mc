@@ -12,8 +12,6 @@
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 #include "LMCParticle.hh"
-#include "param.hh"
-#include "logger.hh"
 #include "singleton.hh"
 
 #include <condition_variable>
@@ -58,7 +56,14 @@ namespace locust
         int fProject8Phase; // 1, 2, or 3, defined with the step modifier instance in the xml file.
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
+
+        // Cavity variables:
         TFReceiverHandler fTFReceiverHandler;
+        std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
+        int nFilterBinsRequired;
+        double dtFilter;
+        std::vector<std::deque<double>> eCurrentBuffer;
+
 
     };
 
@@ -69,10 +74,7 @@ namespace locust
     {
         public:
 
-        	bool Configure( const scarab::param_node& aNode );
-
             kl_interface_ptr_t GetInterface() const;
-
             void SetInterface( kl_interface_ptr_t aInterface );
 
 

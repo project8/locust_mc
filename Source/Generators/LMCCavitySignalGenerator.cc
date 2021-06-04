@@ -105,7 +105,7 @@ namespace locust
     {
     	// from Pozar
     	std::vector<double> TE_E;
-    	double x_lm = fBesselNKPrimeZeros[l][m];
+    	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
     	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
     	double k = pow(k1*k1+k3*k3,0.5);
@@ -125,7 +125,7 @@ namespace locust
     {
     	// from Pozar
     	std::vector<double> TE_H;
-    	double x_lm = fBesselNKPrimeZeros[l][m];
+    	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
     	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
     	double k = pow(k1*k1+k3*k3,0.5);
@@ -141,7 +141,7 @@ namespace locust
     {
     	// from Pozar
     	std::vector<double> TM_E;
-    	double x_lm = fBesselNKZeros[l][m];
+    	double x_lm = fInterface->fBesselNKZeros[l][m];
     	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
     	double k = pow(k1*k1+k3*k3,0.5);
@@ -160,7 +160,7 @@ namespace locust
     {
     	// from Pozar
     	std::vector<double> TM_H;
-    	double x_lm = fBesselNKZeros[l][m];
+    	double x_lm = fInterface->fBesselNKZeros[l][m];
     	double k1 = x_lm / fR;
     	double k3 = n * LMCConst::Pi() / fL;
     	double k = pow(k1*k1+k3*k3,0.5);
@@ -243,9 +243,25 @@ namespace locust
 
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
+
+    	if(!fInterface->fTFReceiverHandler.Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    	}
+
+        if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
+        {
+            return false;
+        }
+
+        fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
+    	FieldBuffer aFieldBuffer;
+    	fInterface->eCurrentBuffer = aFieldBuffer.InitializeBuffer(1, 1, fInterface->fTFReceiverHandler.GetFilterSize());
+
+
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), fBesselNKZeros );
-        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), fBesselNKPrimeZeros );
+        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), fInterface->fBesselNKZeros );
+        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), fInterface->fBesselNKPrimeZeros );
         CheckNormalization();
         PrintModeMaps();
 
@@ -339,18 +355,6 @@ namespace locust
         return;
     }
 
-/*    void CavitySignalGenerator::InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels)
-    {
-	for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)
-	{
-            for(int elementIndex = 0; elementIndex < fNElementsPerStrip; ++elementIndex)
-            {
-            	fTransmitter->InitializeFieldPoint(allRxChannels[channelIndex][elementIndex]->GetPosition());
-            }
-	}
-
-    }
-    */
 
     void CavitySignalGenerator::WakeBeforeEvent()
     {
@@ -395,8 +399,8 @@ namespace locust
 
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
+        fInterface->nFilterBinsRequired = (int) std::min( 1. / ((fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / fInterface->dtFilter), (double) fInterface->fTFReceiverHandler.GetFilterSize());
 
-//        InitializeFieldPoints(allRxChannels);
 
         if (!fTransmitter->IsKassiopeia())
         {

@@ -14,11 +14,13 @@
 #include "LMCChannel.hh"
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
-//#include "LMCSinglePatch.hh"
+#include "LMCFieldBuffer.hh"
 #include <vector>
 #include <sstream>
 #include <string>
 #include "LMCException.hh"
+#include <algorithm>    // std::min
+
 
 
 namespace locust
@@ -84,7 +86,6 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
-            std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
 
 
 
