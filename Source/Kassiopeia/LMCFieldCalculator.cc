@@ -99,6 +99,61 @@ namespace locust
     }
 
 
+    double FieldCalculator::GetOrbitPhase( double x, double y, double yMean)
+    {
+
+    	double phase = 0.;
+    	if (fabs(x) > 0.) phase = atan(y/x);
+
+    	// atan(Q/I) only outputs 2 quadrants.  need all 4.
+    	phase += QuadrantCorrection( x, phase, yMean);
+
+    	return phase;
+    }
+
+
+    double FieldCalculator::QuadrantCorrection( double x, double aPhase, double aMean)
+    {
+    	double phaseCorrection = 0.;
+    	if (((aPhase < 0.)&&(x < aMean)) || ((aPhase > 0.)&&(x < aMean)))
+    	{
+    		phaseCorrection = LMCConst::Pi();  // check IQ quadrant
+    	}
+    	return phaseCorrection;
+    }
+
+
+
+
+
+    double FieldCalculator::GetCavityTE011Excitation(Kassiopeia::KSParticle& aFinalParticle)
+    {
+        double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
+        double x = aFinalParticle.GetPosition().GetX();
+        double y = aFinalParticle.GetPosition().GetY();
+        double tPositionCenter = aFinalParticle.GetGuidingCenterPosition().GetY();
+
+        // use R and Z to access mode map info as needed for scaling, etc.:
+        double tPositionR = sqrt(x*x + y*y);
+        double tPositionZ = aFinalParticle.GetPosition().GetZ();
+
+        double tVelocityMag = aFinalParticle.GetTransVelocity();
+        double tOrbitPhase = GetOrbitPhase(x, y, tPositionCenter);
+
+		for (int i=0; i < fInterface->nFilterBinsRequired; i++)
+		{
+			tOrbitPhase += tCyclotronFrequency * fInterface->dtFilter;
+			fInterface->eCurrentBuffer[0].push_back(tVelocityMag*cos(tOrbitPhase));
+			fInterface->eCurrentBuffer[0].pop_front();
+		}
+
+		double TE011Excitation = fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->eCurrentBuffer[0]);
+        return TE011Excitation;
+
+
+    }
+
+
 
     double FieldCalculator::GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle)
     {
