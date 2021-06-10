@@ -9,8 +9,8 @@
 #define LMCFIELD_HH_
 
 #include "param.hh"
-
 #include "logger.hh"
+#include "LMCKassLocustInterface.hh"
 
 #include <vector>
 
@@ -32,7 +32,6 @@ namespace locust
         public:
             Field();
             virtual ~Field();
-            virtual void SayHello();
 
             virtual bool Configure( const scarab::param_node& ){};
     };

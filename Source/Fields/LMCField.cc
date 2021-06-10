@@ -16,10 +16,6 @@ namespace locust
 
 
 
-    void Field::SayHello()
-     {
-
-     }
 
 } /* namespace locust */
 

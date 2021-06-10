@@ -160,6 +160,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCRunPauseBuilder.hh
         
         Fields/LMCField.hh
+        Fields/LMCCylindricalCavity.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -186,6 +187,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCRunPauseBuilder.cc
         
         Fields/LMCField.cc
+        Fields/LMCCylindricalCavity.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
