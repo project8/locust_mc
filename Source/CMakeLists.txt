@@ -144,6 +144,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
         Transmitters/LMCKassTransmitter.hh
+        Transmitters/LMCKassCurrentTransmitter.hh
         
         Core/LMCHFSSReader.hh
 
@@ -170,6 +171,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 	    Generators/LMCCavitySignalGenerator.cc   
         
         Transmitters/LMCKassTransmitter.cc
+        Transmitters/LMCKassCurrentTransmitter.cc
         
         # Why is this here?
         Core/LMCHFSSReader.cc
