@@ -60,6 +60,9 @@ namespace locust
         // Cavity variables:
         TFReceiverHandler fTFReceiverHandler;
         std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
+        double fR;
+        double fL;
+        int fnPixels;
         int nFilterBinsRequired;
         double dtFilter;
         std::vector<std::deque<double>> eCurrentBuffer;

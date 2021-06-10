@@ -24,9 +24,6 @@ namespace locust
     CavitySignalGenerator::CavitySignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
-    	fR(0.1), //m
-    	fL(0.2), // m
-    	fnPixels(100),
         fLO_Frequency( 0.),
 		fNModes( 1 ),
         gxml_filename("blank.xml"),
@@ -45,137 +42,8 @@ namespace locust
     {
     }
 
-    double CavitySignalGenerator::Integrate(int l, int m, int n, bool teMode, bool eField)
-    {
-    	std::vector<double> aField;
-    	double r, theta, z = 0.;
-    	double dR = fR/fnPixels;
-    	double dZ = fL/fnPixels;
-    	double dTheta = 2.*LMCConst::Pi()/fnPixels;
-    	double tVolume = 0.;
-    	double tIntegral = 0.;
 
-    	for (unsigned i=0; i<fnPixels; i++)
-    		for (unsigned j=0; j<fnPixels; j++)
-    			for (unsigned k=0; k<fnPixels; k++)
-    			{
-    	    		r = (double)i*dR;
-    	    		theta = (double)j*dTheta;
-    	    		z = (double)k*dZ;
-    	    		if (teMode)
-    	    		{
-    	    			if (eField)
-    	    			{
-    	    		    	aField = TE_E(l, m, n, r, theta, z);
-    	    			}
-    	    			else
-    	    			{
-    	    				aField = TE_H(l, m, n, r, theta, z);
-    	    			}
-    	    		}
-    	    		else
-    	    		{
-    	    			if (eField)
-    	    			{
-    	    				aField = TM_E(l, m, n, r, theta, z);
-    	    			}
-    	    			else
-    	    			{
-    	    				aField = TM_H(l, m, n, r, theta, z);
-    	    			}
-    	    		}
-
-    	    		double aFieldMagSq = 0.;
-    	    		auto it = aField.begin();
-    	    		while (it != aField.end())
-    	    		{
-		    			if (!isnan(*it))
-		    				aFieldMagSq += (*it)*(*it);
-    	    			*it++;
-    	    		}
-
-    				tIntegral += aFieldMagSq*r*dR*dTheta*dZ;
-//    		    	tVolume += r*dR*dTheta*dZ;  // sanity check volume integral.
-    			}
-//    	printf("tVolume is %g\n", tVolume); getchar();
-    	return tIntegral;
-    }
-
-    std::vector<double> CavitySignalGenerator::TE_E(int l, int m, int n, double r, double theta, double z) const
-    {
-    	// from Pozar
-    	std::vector<double> TE_E;
-    	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / fR;
-    	double k3 = n * LMCConst::Pi() / fL;
-    	double k = pow(k1*k1+k3*k3,0.5);
-    	double omega = LMCConst::C()*k;
-    	double k0 = omega/LMCConst::C()*sqrt(LMCConst::MuNull()*LMCConst::EpsNull());
-    	double eta = LMCConst::MuNull()*omega/LMCConst::C()/k0;  // Jackson 8.32
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
-    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	double tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
-    	TE_E.push_back(tEr);
-    	TE_E.push_back(tEtheta);
-        return TE_E;
-    }
-
-    std::vector<double> CavitySignalGenerator::TE_H(int l, int m, int n, double r, double theta, double z) const
-    {
-    	// from Pozar
-    	std::vector<double> TE_H;
-    	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / fR;
-    	double k3 = n * LMCConst::Pi() / fL;
-    	double k = pow(k1*k1+k3*k3,0.5);
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	TE_H.push_back(-k3/k1 * jPrime * cos(l*theta) * cos(k3*z));
-    	TE_H.push_back(-l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
-    	TE_H.push_back(boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
-        return TE_H;
-    }
-
-    std::vector<double> CavitySignalGenerator::TM_E(int l, int m, int n, double r, double theta, double z) const
-    {
-    	// from Pozar
-    	std::vector<double> TM_E;
-    	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / fR;
-    	double k3 = n * LMCConst::Pi() / fL;
-    	double k = pow(k1*k1+k3*k3,0.5);
-    	double omega = LMCConst::C()*k;
-    	double k0 = omega/LMCConst::C()*sqrt(LMCConst::MuNull()*LMCConst::EpsNull());
-    	double eta = LMCConst::C()/LMCConst::EpsNull()/omega*k0;  // Jackson 8.32
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	TM_E.push_back(-k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z));
-    	TM_E.push_back(-l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
-    	TM_E.push_back(eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
-        return TM_E;
-    }
-
-    std::vector<double> CavitySignalGenerator::TM_H(int l, int m, int n, double r, double theta, double z) const
-    {
-    	// from Pozar
-    	std::vector<double> TM_H;
-    	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / fR;
-    	double k3 = n * LMCConst::Pi() / fL;
-    	double k = pow(k1*k1+k3*k3,0.5);
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
-    	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	double tHtheta = -k/k1 * jPrime * cos(l*theta) * sin(k3*z);
-    	TM_H.push_back(tHr);
-    	TM_H.push_back(tHtheta);
-        return TM_H;
-    }
-
-
-
-    void CavitySignalGenerator::ReadBesselZeroes(std::string filename, std::vector<std::vector<double> > &data)
+    void CavitySignalGenerator::ReadBesselZeroes(std::string filename, bool prime)
     {
         std::ifstream input( filename );
         int n = 0; int k = 0; double zero = 0.;
@@ -185,28 +53,41 @@ namespace locust
             ss >> n;
             ss >> k;
             ss >> zero;
-            data.resize(n+1);
-            data[n].resize(k+1);
-            data[n][k] = zero;
-//            printf("zero is %g and zero01 is %g\n\n", data[n][k], data[0][1]);
+            if (prime)
+            {
+            	fInterface->fBesselNKPrimeZeros.resize(n+1);
+            	fInterface->fBesselNKPrimeZeros[n].resize(k+1);
+            	fInterface->fBesselNKPrimeZeros[n][k] = zero;
+            }
+            else
+            {
+            	fInterface->fBesselNKZeros.resize(n+1);
+            	fInterface->fBesselNKZeros[n].resize(k+1);
+            	fInterface->fBesselNKZeros[n][k] = zero;
+            }
+
+//            printf("zero is %g and zero01 is %g\n\n", fInterface->fBesselNKPrimeZeros[n][k], fInterface->fBesselNKPrimeZeros[0][1]);
         }
 
     }
 
+
     void CavitySignalGenerator::CheckNormalization()
     {
+    	CylindricalCavity aCavity;
+
     	printf("\\epsilon\\int{|E_xlm|^2 dV} = \\mu\\int{|H_xlm|^2 dV} ?\n\n");
     	for (int l=0; l<3; l++)
-    		for (int m=1; m<3; m++)
-    			for (int n=1; n<3; n++)
+    		for (int m=1; m<4; m++)
+    			for (int n=1; n<4; n++)
     			{
-    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,1,1), LMCConst::MuNull()*Integrate(l,m,n,1,0));
+    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*aCavity.Integrate(l,m,n,1,1), LMCConst::MuNull()*aCavity.Integrate(l,m,n,1,0));
     			}
     	for (int l=0; l<3; l++)
     		for (int m=1; m<3; m++)
     			for (int n=1; n<3; n++)
     			{
-    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,0,1), LMCConst::MuNull()*Integrate(l,m,n,0,0));
+//    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*aCavity.Integrate(l,m,n,0,1), LMCConst::MuNull()*aCavity.Integrate(l,m,n,0,0));
     			}
     }
 
@@ -215,23 +96,24 @@ namespace locust
     void CavitySignalGenerator::PrintModeMaps()
     {
     	char buffer[60];
+    	CylindricalCavity aCavity;
 
     	for (int l=0; l<5; l++)
     		for (int m=1; m<5; m++)
     			for (int n=1; n<5; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
-    				double tNormalizationTE_E = pow(Integrate(l,m,n,1,1),0.5);
+    				double tNormalizationTE_E = pow(aCavity.Integrate(l,m,n,1,1),0.5);
     				int a = sprintf(buffer, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
     				const char *fpname = buffer;
     				FILE *fpTE_E = fopen(fpname, "w");
-    				for (unsigned i=0; i<fnPixels; i++)
+    				for (unsigned i=0; i<fInterface->fnPixels; i++)
     				{
-    					double r = (double)i/fnPixels*fR;
-    					for (unsigned j=0; j<fnPixels; j++)
+    					double r = (double)i/fInterface->fnPixels*fInterface->fR;
+    					for (unsigned j=0; j<fInterface->fnPixels; j++)
     					{
-    						double theta = (double)j/fnPixels*2.*LMCConst::Pi();
-    						std::vector<double> tTE_E = TE_E(l,m,n,r,theta,0.05);
+    						double theta = (double)j/fInterface->fnPixels*2.*LMCConst::Pi();
+    						std::vector<double> tTE_E = aCavity.TE_E(l,m,n,r,theta,0.05);
     						fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()/tNormalizationTE_E, tTE_E.back()/tNormalizationTE_E);
     					}
     				}
@@ -254,14 +136,26 @@ namespace locust
             return false;
         }
 
+        if( aParam.has( "cavity-radius" ) )
+        {
+            fInterface->fR = aParam["cavity-radius"]().as_double();
+            fInterface->fR = 500.;
+        }
+
+        if( aParam.has( "cavity-length" ) )
+        {
+            fInterface->fL = aParam["cavity-length"]().as_double();
+        }
+
+
         fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
     	FieldBuffer aFieldBuffer;
     	fInterface->eCurrentBuffer = aFieldBuffer.InitializeBuffer(1, 1, fInterface->fTFReceiverHandler.GetFilterSize());
 
 
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), fInterface->fBesselNKZeros );
-        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), fInterface->fBesselNKPrimeZeros );
+        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
         CheckNormalization();
         PrintModeMaps();
 

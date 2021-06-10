@@ -14,6 +14,7 @@
 #include "LMCChannel.hh"
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
+#include "LMCCylindricalCavity.hh"
 #include "LMCFieldBuffer.hh"
 #include <vector>
 #include <sstream>
@@ -62,11 +63,6 @@ namespace locust
               
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const;
-            std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z) const;
-            std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z) const;
-            std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z) const;
-            double Integrate(int l, int m, int n, bool teMode, bool eField);
             void CheckNormalization();
             void PrintModeMaps();
 
@@ -75,8 +71,6 @@ namespace locust
 
         private:
 //            std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
-            double fR, fL; // cavity radius, length
-            int fnPixels;
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
@@ -89,7 +83,7 @@ namespace locust
 
 
 
-            void ReadBesselZeroes(std::string filename, std::vector<std::vector<double> > &data);
+            void ReadBesselZeroes(std::string filename, bool prime);
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();
