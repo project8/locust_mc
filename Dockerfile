@@ -1,10 +1,17 @@
-FROM project8/p8compute_dependencies:v0.9.0 as locust_common
+ARG IMG_USER=project8
+ARG IMG_REPO=p8compute_dependencies
+ARG IMG_TAG=v1.0.0.beta
+
+FROM ${IMG_USER}/${IMG_REPO}:${IMG_TAG} as locust_common
 
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
 
-ENV LOCUST_TAG=v2.2.0
+ARG LOCUST_TAG=beta
+ENV LOCUST_TAG=${LOCUST_TAG}
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
+
+SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
     chmod -R 777 $LOCUST_BUILD_PREFIX/.. &&\
