@@ -90,8 +90,8 @@ jobs:
             --build-arg IMG_USER=project8 \
             --build-arg IMG_REPO=p8compute_dependencies \
             --build-arg IMG_TAG=${{ needs.init.outputs.luna_version }} \
-            --build-arg build_type=${{matrix.build_type}}
-            --build-arg LOCUST_TAG=test
+            --build-arg build_type=${{matrix.build_type}} \
+            --build-arg LOCUST_TAG=test \
             --build-arg CC_VAL=${{matrix.compiler}} \
             --build-arg CXX_VAL=${{env.CXX_VAL}} \
             --tag project8/locust_mc:test \
