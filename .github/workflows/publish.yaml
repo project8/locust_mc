@@ -188,3 +188,22 @@ jobs:
         run: |
           cd Documentation
           sphinx-build -M html . build --color
+
+  notify-packages:
+  
+      if: (github.event_name == 'push' && contains(github.ref, 'refs/tags/') ) 
+            || github.event_name == 'release' 
+            || github.event_name == 'workflow_dispatch'
+            || github.event_name == 'repository_dispatch'
+      name: Trigger new docker P8Compute image
+      runs-on: ubuntu-latest
+      needs: [publish]
+
+      steps:
+      
+        - name: Repository dispatch
+          uses: peter-evans/repository-dispatch@v1
+          with:
+            token: ${{ secrets.REPO_ACCESS_TOKEN }}
+            repository: project8/luna
+            event-type: release-event
