@@ -4,7 +4,7 @@ name: Publish
 on:
 
   push:
-    branches: [ main, develop, feature/github-actions]
+    branches: [ main, master, develop, feature/github-actions]
     tags: 'v*.*.*'
     
   pull_request:
