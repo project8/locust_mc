@@ -8,6 +8,7 @@
 #ifndef LMCPATCHANTENNA_HH_
 #define LMCPATCHANTENNA_HH_
 
+#include <boost/math/special_functions/trunc.hpp>
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include "LMCThreeVector.hh"
 #include "LMCConst.hh"

@@ -41,10 +41,12 @@ namespace locust
         LOPhaseBuffer( 1 ),
         IndexBuffer( 1 ),
         ElementFIRBuffer( 1 ),
+        FIRfrequencyBuffer( 1 ),
         fFieldBufferSize( 50 ),
 		fSwapFrequency( 1000 ),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
+		fAllowFastSampling( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
@@ -317,6 +319,10 @@ namespace locust
         {
             fTextFileWriting = aParam["text-filewriting"]().as_bool();
         }
+        if( aParam.has( "allow-fast-sampling" ) )
+        {
+            fAllowFastSampling = aParam["allow-fast-sampling"]().as_bool();
+        }
 
         return true;
     }
@@ -389,7 +395,7 @@ namespace locust
 
 
 
-    double ArraySignalGenerator::GetFIRSample(int nfilterbins, double dtfilter, unsigned channel, unsigned element)
+    double ArraySignalGenerator::GetFIRSample(int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
     {
 
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
@@ -405,23 +411,40 @@ namespace locust
     		HilbertMag = HilbertMagPhaseMean[0];
     		HilbertPhase = HilbertMagPhaseMean[1];
 
-    		for (int i=0; i < nfilterbins; i++)  // populate filter with field.
+    		// populate FIR filter with frequency for just this sample interval:
+    		for (int i=0; i < nFilterBinsRequired; i++)
     		{
-    			HilbertPhase += 2.*3.1415926*fieldfrequency*dtfilter;
-    			ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(HilbertMag*cos(HilbertPhase));
+    			FIRfrequencyBuffer[channel*fNElementsPerStrip+element].push_back(fieldfrequency);
+    			FIRfrequencyBuffer[channel*fNElementsPerStrip+element].pop_front();
+    		}
+
+    		// populate entire FIR filter with field, using frequencies from recent previous samples:
+    		std::deque<double>::iterator it = FIRfrequencyBuffer[channel*fNElementsPerStrip+element].begin();
+    		while (it != FIRfrequencyBuffer[channel*fNElementsPerStrip+element].end())
+    		{
+    			HilbertPhase += 2.*3.1415926*(*it)*dtFilter;
+    			if (*it != 0.)
+    			{
+    				ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(HilbertMag*cos(HilbertPhase));
+    			}
+    			else
+    			{
+    				ElementFIRBuffer[channel*fNElementsPerStrip+element].push_back(0.);
+    			}
     			ElementFIRBuffer[channel*fNElementsPerStrip+element].pop_front();
+    			*it++;
     		}
 
     		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
-
     		return convolution;
+
     	}
     	else return 0.;
 
     }
 
 
-    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nfilterbins, double dtfilter)
+    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtFilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -459,7 +482,7 @@ namespace locust
                 if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
- 	            double VoltageFIRSample = GetFIRSample(nfilterbins, dtfilter, channelIndex, elementIndex);
+ 	            double VoltageFIRSample = GetFIRSample(nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
             	{
                     LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
@@ -514,6 +537,7 @@ namespace locust
     	LOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
     	IndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
     	ElementFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
+    	FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
     }
 
 
@@ -524,6 +548,7 @@ namespace locust
     	EFrequencyBuffer = aFieldBuffer.CleanupBuffer(EFrequencyBuffer);
     	LOPhaseBuffer = aFieldBuffer.CleanupBuffer(LOPhaseBuffer);
     	ElementFIRBuffer = aFieldBuffer.CleanupBuffer(ElementFIRBuffer);
+    	FIRfrequencyBuffer = aFieldBuffer.CleanupBuffer(FIRfrequencyBuffer);
     	IndexBuffer = aFieldBuffer.CleanupBuffer(IndexBuffer);
     }
 
@@ -587,10 +612,12 @@ namespace locust
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
 
-        int nfilterbins = fTFReceiverHandler.GetFilterSize();
-        double dtfilter = fTFReceiverHandler.GetFilterResolution();
-        unsigned nfieldbufferbins = fFieldBufferSize;
-        InitializeBuffers(nfilterbins, nfieldbufferbins);
+        int nFilterBins = fTFReceiverHandler.GetFilterSize();
+        double dtFilter = fTFReceiverHandler.GetFilterResolution();
+        int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
+        if (!fAllowFastSampling) nFilterBinsRequired = nFilterBins;
+        unsigned nFieldBufferBins = fFieldBufferSize;
+        InitializeBuffers(nFilterBins, nFieldBufferBins);
 
         InitializeFieldPoints(allRxChannels);
 
@@ -598,7 +625,7 @@ namespace locust
         {
         	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         	{
-        		DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
+        		DriveAntenna(fp, PreEventCounter, index, aSignal, nFilterBinsRequired, dtFilter);
         	}  // for loop
         	return true;
         }
@@ -649,7 +676,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
                     		{
                                 PreEventCounter = 0; // reset
                     		}
@@ -663,28 +690,36 @@ namespace locust
                         }
                         tLock.unlock();
                 	}
-                	else  // either Kass thread fell behind, or it has stopped generating events.
-                	{
-                        tLock.lock();
-                        std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
-                        if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
-                        {
-                        	tLock.unlock();
-                        }
-                        else  // Kass event has not started, unlock and exit.
-                        {
-                        	if ( index < fNPreEventSamples+1 )
-                        	{
-                    			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                        		fKassNeverStarted = true;
-                        	}
-                        	tLock.unlock();
-                        	break;
-                        }
-                	}
-                }
-            }  // for loop
+                 	else  // diagnose Kass
+                 	{
+                         tLock.lock();
+                         std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
+                         if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
+                         {
+                         	tLock.unlock();
+                         }
+                         else  // Kass event has not started.
+                         {
+                          	if ( fInterface->fEventInProgress )
+                          	{
+                          		if ( index < fNPreEventSamples+1 ) // Kass never started at all.
+                          		{
+                         			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                             		fKassNeverStarted = true;
+                          		}
+                             	tLock.unlock(); // Kass either started or not, but is now finished.
+                             	break;
+                          	}
+                          	else  // Kass started an event and quickly terminated it.
+                          	{
+                         		LWARN(lmclog, "Kass event terminated quickly.\n");
+                         		tLock.unlock();
+                          	}
+                         }
+                 	} // diagnose Kass
 
+                } // if fEventInProgress
+            }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
             if (fTextFileWriting==1) fclose(fp);

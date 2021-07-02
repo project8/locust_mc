@@ -164,13 +164,17 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     # To do this we create an imported library for each Kassiopeia library
     # We then add a dependency of KassiopeiaExt to each imported library target
     # LocustMC library will link to those imported libraries, and therefore depend on KassiopeiaExt
-
+	# Also, as of Kassiopeia v3.7.7, guard against trying to add copies of the same target twice.  It is not
+	# clear why this is necessary, but without it the config crashes.
+	
+	
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-        add_library( ${LIBRARY} SHARED IMPORTED )
-        #message( STATUS "****** constructed name: ${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-        set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-        add_dependencies( ${LIBRARY} KassiopeiaExt )
+		if (NOT TARGET ${LIBRARY}) 
+			add_library( ${LIBRARY} SHARED IMPORTED )
+    	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+        	add_dependencies( ${LIBRARY} KassiopeiaExt )
+        endif()
     endforeach()
       
               
@@ -203,4 +207,11 @@ endif (locust_mc_ENABLE_EXECUTABLES )
 ################
 
 add_subdirectory( Config )
+
+################
+# Install empty output/ directory if building without Kassiopeia #
+################
+
+install( DIRECTORY DESTINATION ${CMAKE_INSTALL_PREFIX}/output )
+
 
