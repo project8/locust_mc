@@ -29,7 +29,7 @@ from subprocess import call, check_output
 # version
 this_version = 'v?.?.?'
 try:
-    this_version = check_output(['git', 'describe', '--abbrev=0', '--tags'])
+    this_version = check_output(['git', 'describe', '--abbrev=0', '--tags']).decode('utf-8')
 except:
     pass
 
