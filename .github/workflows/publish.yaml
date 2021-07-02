@@ -4,13 +4,20 @@ name: Publish
 on:
 
   push:
-    branches: [ master, main, develop, feature/github-actions]
+    branches: [ main, develop, feature/github-actions]
     tags: 'v*.*.*'
+    
+  pull_request:
+    branches: '*'
+    types: opened
   
   release:
     types: [published]
 
   workflow_dispatch:
+  
+  repository_dispatch:
+    types: [release-event]
 
 jobs:
 
@@ -18,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_type: ${{ steps.setvars.outputs.build_type }}
-      build_tests: ${{ steps.setvars.outputs.build_tests }}
+      luna_version: ${{ steps.setversion.outputs.luna_version }}
 
     steps:
       - name: Cancel previous workflow
@@ -34,75 +41,70 @@ jobs:
           echo ${{github.ref}}
           if [[ "${{github.base_ref}}" == "develop" || "${{github.ref}}" == "refs/heads/develop" ]]; then
             echo "::set-output name=build_type::DEBUG"
+            echo Debug build
           else
             echo "::set-output name=build_type::RELEASE"
           fi
+          
+      - name: Set Luna version
+        id: setversion
+        run: |
+          git clone https://github.com/project8/luna_base.git
+          cd luna_base
+          echo "::set-output name=luna_version::$(git describe --abbrev=0 --tags)"
 
-  #~ test_docker:
-    #~ runs-on: ubuntu-latest
-    #~ steps:
-      #~ - name: Checkout the repo 
-        #~ uses: actions/checkout@v2
-        #~ with:
-          #~ submodules: recursive
-      #~ - name: Build and run
-        #~ run: |
-          #~ cd ${{github.workspace}}
-          #~ docker build \
-            #~ --build-arg IMG_USER=project8 \
-            #~ --build-arg IMG_REPO=p8compute_dependencies \
-            #~ --build-arg IMG_TAG=v1.0.0.beta \
-            #~ --build-arg PSYLLID_BASE_PREFIX=/usr/local/p8/psyllid \
-            #~ --build-arg PSYLLID_PREFIX_TAG=test \
-            #~ --tag project8/psyllid:test \
-            #~ .
-          
-          
-  #~ test_linux_gcc:
-    #~ runs-on: ubuntu-latest
+  test_linux:
+    runs-on: ubuntu-latest
+    needs: [init]
+    
+    strategy:
+      matrix:
+        build_type: [DEBUG, RELEASE]
+        compiler: [gcc]
+      fail-fast: false
+        
+    steps:
+      - name: Checkout the repo 
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
-    #~ steps:
-      #~ - name: Checkout the repo 
-        #~ uses: actions/checkout@v2
-        #~ with:
-          #~ submodules: recursive
-      #~ - name: Install dependencies
-        #~ run: |
-          #~ sudo apt-get update
-          #~ sudo apt-get clean \
-          #~ sudo apt-get --fix-missing -y install \
-            #~ build-essential \
-            #~ cmake \
-            #~ libfftw3-3 \
-            #~ libfftw3-dev \
-            #~ gdb \
-            #~ libboost-all-dev \
-            #~ libhdf5-dev \
-            #~ librabbitmq-dev \
-            #~ rapidjson-dev \
-            #~ libyaml-cpp-dev \
-            #~ pybind11-dev \
-            #~ wget \
-      #~ - name: Configure CMake
-      #~ # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      #~ # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        #~ run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-      #~ - name: Build
-        #~ run: |
-          #~ cd ${{github.workspace}}/build
-          #~ make -j3 install
+      - name: Set env
+        run: |
+          if [[ "${{matrix.compiler}}" == "gcc" ]]; then
+            echo "CXX_VAL=g++" >> $GITHUB_ENV
+          else
+            echo "CXX_VAL=clang++" >> $GITHUB_ENV
+          fi
           
-      #TODO add tests for Psyllid
-      #~ - name: Run tests
-        #~ run: |
-          #~ cd build/testing
-          #~ ./run_tests
+      - name: Print config
+        run: |
+            echo Build type: ${{ matrix.build_type }}
+            echo Compiler: ${{ matrix.compiler }} ${{ env.CXX_VAL }} 
+            echo Luna version: ${{ needs.init.outputs.luna_version }}
+          
+      - name: Build with docker
+        run: |
+          cd ${{github.workspace}}
+          docker build \
+            --build-arg IMG_USER=project8 \
+            --build-arg IMG_REPO=p8compute_dependencies \
+            --build-arg IMG_TAG=${{ needs.init.outputs.luna_version }} \
+            --build-arg build_type=${{matrix.build_type}}
+            --build-arg LOCUST_TAG=test
+            --build-arg CC_VAL=${{matrix.compiler}} \
+            --build-arg CXX_VAL=${{env.CXX_VAL}} \
+            --tag project8/locust_mc:test \
+            .
+            
+      #- name: Run tests 
+      # TODO - At the moment not all tests give useful outputs or even terminate
 
   publish:
+    if: github.event_name != 'pull_request'
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-   # needs: [test_docker, test_linux_gcc]
-    needs: init
+    needs: [init, test_linux]
     steps:
     
       - name: Check out the repo
@@ -112,12 +114,9 @@ jobs:
           
       - name: Docker meta
         id: docker_meta
-        uses: crazy-max/ghaction-docker-meta@v1
+        uses: docker/metadata-action@v3
         with:
           images: project8/locust_mc
-          tag-sha: false
-          tag-semver: |
-            {{raw}}
           
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -129,7 +128,8 @@ jobs:
           buildkitd-flags: --debug
           
       - name: List platforms
-        run: echo ${{ steps.setup_buildx.outputs.platforms }}
+        run: | 
+            echo Platforms: ${{ steps.setup_buildx.outputs.platforms }}
         
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
@@ -138,7 +138,13 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           
       - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        run: | 
+            echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+            
+      - name: Print config
+        run: |
+            echo Release version: ${{ env.RELEASE_VERSION }}
+            echo Luna version: ${{ needs.init.outputs.luna_version }}
         
       - name: Push to Docker Hub
         id: build_push
@@ -149,7 +155,36 @@ jobs:
           build-args: |
             IMG_USER=project8
             IMG_REPO=p8compute_dependencies
-            IMG_TAG=v1.0.0.beta
+            IMG_TAG=${{ needs.init.outputs.luna_version }}
             LOCUST_TAG=${{ env.RELEASE_VERSION }}
             build_type=${{needs.init.outputs.build_type}}
           tags: ${{ steps.docker_meta.outputs.tags }}
+
+  doc:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    #needs: [init, test_linux]
+    steps:
+    
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
+            tree \
+            doxygen \
+            python3-sphinx \
+            graphviz
+          pip install sphinxcontrib-blockdiag
+          pip install sphinxcontrib-contentui
+          pip install sphinx_rtd_theme
+      
+      - name: Build docs
+        run: |
+          cd Documentation
+          sphinx-build -M html . build --color

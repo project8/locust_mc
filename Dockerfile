@@ -11,6 +11,11 @@ ARG LOCUST_TAG=beta
 ENV LOCUST_TAG=${LOCUST_TAG}
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
 
+ARG CC_VAL=gcc
+ENV CC=${CC_VAL}
+ARG CXX_VAL=g++
+ENV CXX=${CXX_VAL}
+
 SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
