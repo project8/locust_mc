@@ -13,7 +13,6 @@
 #include "param.hh"
 #include "LMCThreeVector.hh"
 #include "LMCLienardWiechert.hh"
-#include "LMCGlobalsDeclaration.hh"
 
 namespace locust
 {

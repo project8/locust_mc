@@ -17,7 +17,6 @@
 #include <cstdlib>
 #include <ctime>
 
-//#include "LMCGlobalsDeclaration.hh"
 #include "LMCHFSSReader.hh"
 
 namespace locust
