@@ -11,6 +11,7 @@
 
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
+#include "LMCField.hh"
 #include "LMCParticle.hh"
 #include "singleton.hh"
 
@@ -66,6 +67,7 @@ namespace locust
         int nFilterBinsRequired;
         double dtFilter;
         std::vector<std::deque<double>> eCurrentBuffer;
+        Field* fField;
 
 
     };

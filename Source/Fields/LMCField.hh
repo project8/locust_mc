@@ -10,7 +10,6 @@
 
 #include "param.hh"
 #include "logger.hh"
-#include "LMCKassLocustInterface.hh"
 
 #include <vector>
 
@@ -34,6 +33,13 @@ namespace locust
             virtual ~Field();
 
             virtual bool Configure( const scarab::param_node& ){};
+
+            virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const {};
+            virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z) const {};
+            virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z) const {};
+            virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z) const {};
+            virtual double Integrate(int l, int m, int n, bool teMode, bool eField){};
+
     };
 
 

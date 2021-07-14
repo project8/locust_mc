@@ -42,7 +42,8 @@ namespace locust
 			fnPixels( 100 ),
 	        nFilterBinsRequired( 0 ),
 	        dtFilter( 0 ),
-	        eCurrentBuffer( 0 )
+	        eCurrentBuffer( 0 ),
+			fField()
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :

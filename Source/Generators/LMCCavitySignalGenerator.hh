@@ -14,6 +14,7 @@
 #include "LMCChannel.hh"
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
+#include "LMCField.hh"
 #include "LMCCylindricalCavity.hh"
 #include "LMCFieldBuffer.hh"
 #include <vector>

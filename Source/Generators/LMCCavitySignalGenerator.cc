@@ -74,20 +74,20 @@ namespace locust
 
     void CavitySignalGenerator::CheckNormalization()
     {
-    	CylindricalCavity aCavity;
+    	fInterface->fField = new CylindricalCavity;
 
     	printf("\\epsilon\\int{|E_xlm|^2 dV} = \\mu\\int{|H_xlm|^2 dV} ?\n\n");
     	for (int l=0; l<3; l++)
     		for (int m=1; m<4; m++)
     			for (int n=1; n<4; n++)
     			{
-    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*aCavity.Integrate(l,m,n,1,1), LMCConst::MuNull()*aCavity.Integrate(l,m,n,1,0));
+    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1), LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0));
     			}
     	for (int l=0; l<3; l++)
     		for (int m=1; m<3; m++)
     			for (int n=1; n<3; n++)
     			{
-//    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*aCavity.Integrate(l,m,n,0,1), LMCConst::MuNull()*aCavity.Integrate(l,m,n,0,0));
+    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1), LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0));
     			}
     }
 
@@ -96,14 +96,15 @@ namespace locust
     void CavitySignalGenerator::PrintModeMaps()
     {
     	char buffer[60];
-    	CylindricalCavity aCavity;
+//    	CylindricalCavity aCavity;
+    	fInterface->fField = new CylindricalCavity;
 
     	for (int l=0; l<5; l++)
     		for (int m=1; m<5; m++)
     			for (int n=1; n<5; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
-    				double tNormalizationTE_E = pow(aCavity.Integrate(l,m,n,1,1),0.5);
+    				double tNormalizationTE_E = pow(fInterface->fField->Integrate(l,m,n,1,1),0.5);
     				int a = sprintf(buffer, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
     				const char *fpname = buffer;
     				FILE *fpTE_E = fopen(fpname, "w");
@@ -113,7 +114,7 @@ namespace locust
     					for (unsigned j=0; j<fInterface->fnPixels; j++)
     					{
     						double theta = (double)j/fInterface->fnPixels*2.*LMCConst::Pi();
-    						std::vector<double> tTE_E = aCavity.TE_E(l,m,n,r,theta,0.05);
+    						std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.05);
     						fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()/tNormalizationTE_E, tTE_E.back()/tNormalizationTE_E);
     					}
     				}
