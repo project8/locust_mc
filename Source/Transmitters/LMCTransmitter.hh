@@ -45,12 +45,12 @@ namespace locust
 
             /// Initialize the FIR filter and the field estimator
             virtual bool InitializeTransmitter(){};
-	    LMCThreeVector GetFieldPoint(int index);
-	    virtual LMCThreeVector GetIncidentKVector(int index);
-	    double GetPropagationPhaseDelay(int index);
-	    double GetNPoints();
-	    double GetMeanofFieldPoints(int axis);
-	    LMCThreeVector GetMeanofFieldPoints();
+            LMCThreeVector GetFieldPoint(int index);
+            virtual LMCThreeVector GetIncidentKVector(int index);
+            double GetPropagationPhaseDelay(int index);
+            double GetNPoints();
+            double GetMeanofFieldPoints(int axis);
+            LMCThreeVector GetMeanofFieldPoints();
 
 	protected:
 
@@ -59,13 +59,13 @@ namespace locust
     	    virtual void AddPropagationPhaseDelay(LMCThreeVector fieldPoint);
     	    void SetFieldPoint(int index,LMCThreeVector fieldPoint);
     	    void SetIncidentKVector(int index,LMCThreeVector incidentKVector);
-	    void SetPropagationPhaseDelay(int index,double phaseDelay);
+    	    void SetPropagationPhaseDelay(int index,double phaseDelay);
 
-        private:
-	    std::vector< LMCThreeVector> fFieldPoints; 
-	    std::vector< LMCThreeVector> fIncidentKVectors;
-	    std::vector< double> fPropagationPhaseDelays;
-	    void AddFieldPoint(LMCThreeVector fieldPoint);
+    private:
+    	    std::vector< LMCThreeVector> fFieldPoints;
+    	    std::vector< LMCThreeVector> fIncidentKVectors;
+    	    std::vector< double> fPropagationPhaseDelays;
+    	    void AddFieldPoint(LMCThreeVector fieldPoint);
 };
 
 
