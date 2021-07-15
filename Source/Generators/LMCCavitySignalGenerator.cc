@@ -289,7 +289,7 @@ namespace locust
 
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
-        CheckNormalization();
+        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
         PrintModeMaps();
 
 
