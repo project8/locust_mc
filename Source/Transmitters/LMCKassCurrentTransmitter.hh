@@ -12,6 +12,7 @@
 #include "LMCConst.hh"
 #include "param.hh"
 #include "LMCThreeVector.hh"
+#include "LMCLienardWiechert.hh"
 
 namespace locust
 {
@@ -41,10 +42,12 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
+        std::vector<double> ExtractParticleXP();
+
+
     private:
 
-        //LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
-
+    	LienardWiechert fFieldSolver;
 
     };
 

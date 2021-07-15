@@ -39,4 +39,21 @@ namespace locust
     	return true;
     }
 
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP()
+    {
+        locust::Particle tParticle = fFieldSolver.GetInstantaneousParticle();
+    	std::vector<double> particleXP;
+    	particleXP.resize(6);
+
+        particleXP[0] = tParticle.GetPosition().X();
+        particleXP[1] = tParticle.GetPosition().Y();
+        particleXP[2] = tParticle.GetPosition().Z();
+        particleXP[3] = tParticle.GetVelocity().X();
+        particleXP[4] = tParticle.GetVelocity().Y();
+        particleXP[5] = tParticle.GetVelocity().Z();
+
+    	return particleXP;
+    }
+
+
 } /* namespace locust */
