@@ -15,6 +15,18 @@ namespace locust
     Field::~Field() {}
 
 
+    std::vector<double> Field::GetNormFactors()
+    {
+    	return fNormFactor;
+    }
+
+    void Field::SetNormFactors(std::vector<double> aNormFactor)
+    {
+    	fNormFactor = aNormFactor;
+    }
+
+
+
 
 
 } /* namespace locust */

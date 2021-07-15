@@ -34,11 +34,19 @@ namespace locust
 
             virtual bool Configure( const scarab::param_node& ){};
 
+            // size of field vectors will be number of components in field value at (r,theta,z)
             virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const {};
             virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z) const {};
             virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z) const {};
             virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z) const {};
+
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){};
+
+            std::vector<double> GetNormFactors();
+            void SetNormFactors(std::vector<double> aNormFactor);
+
+        private:
+            std::vector<double> fNormFactor;  // size of vector will be n-modes.
 
     };
 

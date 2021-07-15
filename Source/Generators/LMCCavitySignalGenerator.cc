@@ -25,7 +25,7 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
-		fNModes( 1 ),
+		fNModes( 10 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
@@ -71,24 +71,95 @@ namespace locust
 
     }
 
+    std::vector<int> CavitySignalGenerator::ModeFilter(unsigned whichMode)
+    {
+    	// This is not really a mode filter, but could be modifed/replaced to act like one.
+
+    	unsigned modeCounter = 0;
+    	std::vector<int> modeIndex;
+    	modeIndex.resize(3);
+
+    	for (int l=0; l<fNModes; l++)
+    	{
+    		modeIndex[0] = l;
+    		for (int m=1; m<fNModes+1; m++)
+    		{
+        		modeIndex[1] = m;
+    			for (int n=1; n<fNModes+1; n++)
+    			{
+            		modeIndex[2] = n;
+    	    		modeCounter += 1;
+//    	    		printf("l is %d, m is %d, n is %d, modeCounter is %d\n", l, m, n, modeCounter);
+    	    		if (modeCounter > whichMode)
+    	    		{
+    	    	    	return modeIndex;
+    	    		}
+    			}
+    		}
+    	}
+
+
+    }
+
+
+    std::vector<double> CavitySignalGenerator::CalculateNormFactors(int nModes)
+    {
+    	std::vector<double> aNormFactor;
+    	aNormFactor.resize(nModes);
+
+    	for (unsigned i=0; i<nModes; i++)
+    	{
+        	std::vector<int> aModeFilter = ModeFilter(i);
+    		int l = aModeFilter[0];
+    		int m = aModeFilter[1];
+    		int n = aModeFilter[2];
+    		aNormFactor[i] = 1./fInterface->fField->Integrate(l,m,n,1,1);
+    	}
+
+    	return aNormFactor;
+    }
+
 
     void CavitySignalGenerator::CheckNormalization()
     {
-    	fInterface->fField = new CylindricalCavity;
+    	unsigned modeCounter = 0;
 
-    	printf("\\epsilon\\int{|E_xlm|^2 dV} = \\mu\\int{|H_xlm|^2 dV} ?\n\n");
-    	for (int l=0; l<3; l++)
-    		for (int m=1; m<4; m++)
-    			for (int n=1; n<4; n++)
+    	printf("\n \\epsilon\\int{|E_xlm|^2 dV} = \\mu\\int{|H_xlm|^2 dV} ?\n\n");
+    	for (int l=0; l<fNModes; l++)
+    	{
+	    	if (modeCounter >= fNModes) break;
+    		for (int m=1; m<fNModes+1; m++)
+    		{
+    	    	if (modeCounter >= fNModes) break;
+    			for (int n=1; n<fNModes+1; n++)
     			{
-    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1), LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0));
+    				double normFactor = fInterface->fField->GetNormFactors()[modeCounter];
+    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+    		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
+    		    	modeCounter += 1;
+    		    	if (modeCounter >= fNModes) break;
     			}
-    	for (int l=0; l<3; l++)
-    		for (int m=1; m<3; m++)
-    			for (int n=1; n<3; n++)
+    		}
+    	}
+
+
+    	modeCounter = 0;
+    	for (int l=0; l<fNModes; l++)
+    	{
+	    	if (modeCounter >= fNModes) break;
+    		for (int m=1; m<fNModes+1; m++)
+    		{
+    	    	if (modeCounter >= fNModes) break;
+    			for (int n=1; n<fNModes+1; n++)
     			{
-    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1), LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0));
+    				double normFactor = fInterface->fField->GetNormFactors()[modeCounter];
+    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
+    		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
+    		    	modeCounter += 1;
+    		    	if (modeCounter >= fNModes) break;
     			}
+    		}
+    	}
     }
 
 
@@ -96,15 +167,14 @@ namespace locust
     void CavitySignalGenerator::PrintModeMaps()
     {
     	char buffer[60];
-//    	CylindricalCavity aCavity;
-    	fInterface->fField = new CylindricalCavity;
+    	unsigned modeCounter = 0;
 
     	for (int l=0; l<5; l++)
     		for (int m=1; m<5; m++)
     			for (int n=1; n<5; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
-    				double tNormalizationTE_E = pow(fInterface->fField->Integrate(l,m,n,1,1),0.5);
+    				double tNormalizationTE_E = fInterface->fField->GetNormFactors()[modeCounter];
     				int a = sprintf(buffer, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
     				const char *fpname = buffer;
     				FILE *fpTE_E = fopen(fpname, "w");
@@ -115,10 +185,11 @@ namespace locust
     					{
     						double theta = (double)j/fInterface->fnPixels*2.*LMCConst::Pi();
     						std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.05);
-    						fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()/tNormalizationTE_E, tTE_E.back()/tNormalizationTE_E);
+    						fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
     					}
     				}
     				fclose (fpTE_E);
+    				modeCounter += 1;
     			}
     }
 
@@ -148,17 +219,29 @@ namespace locust
             fInterface->fL = aParam["cavity-length"]().as_double();
         }
 
+        if( aParam.has( "lo-frequency" ) )
+        {
+            fLO_Frequency = aParam["lo-frequency"]().as_double();
+        }
 
-        fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
-    	FieldBuffer aFieldBuffer;
-    	fInterface->eCurrentBuffer = aFieldBuffer.InitializeBuffer(1, 1, fInterface->fTFReceiverHandler.GetFilterSize());
+        if( aParam.has( "n-modes" ) )
+        {
+            fNModes = aParam["n-modes"]().as_int();
+        }
 
+        if( aParam.has( "event-spacing-samples" ) )
+        {
+            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+        }
+        if( aParam.has( "thread-check-time" ) )
+        {
+            fThreadCheckTime = aParam["thread-check-time"]().as_int();
+        }
+        if( aParam.has( "xml-filename" ) )
+        {
+            gxml_filename = aParam["xml-filename"]().as_string();
+        }
 
-        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
-        CheckNormalization();
-        PrintModeMaps();
 
         if( aParam.has( "transmitter" ))
         {
@@ -186,28 +269,21 @@ namespace locust
             exit(-1);
         }
 
-        if( aParam.has( "lo-frequency" ) )
-        {
-            fLO_Frequency = aParam["lo-frequency"]().as_double();
-        }
+        fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
+    	FieldBuffer aFieldBuffer;
+    	fInterface->eCurrentBuffer = aFieldBuffer.InitializeBuffer(1, 1, fInterface->fTFReceiverHandler.GetFilterSize());
+    	fInterface->fField = new CylindricalCavity;
 
-        if( aParam.has( "n-modes" ) )
-        {
-            fNModes = aParam["n-modes"]().as_int();
-        }
 
-        if( aParam.has( "event-spacing-samples" ) )
-        {
-            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
-        }
-        if( aParam.has( "thread-check-time" ) )
-        {
-            fThreadCheckTime = aParam["thread-check-time"]().as_int();
-        }
-        if( aParam.has( "xml-filename" ) )
-        {
-            gxml_filename = aParam["xml-filename"]().as_string();
-        }
+        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+
+
+        fInterface->fField->SetNormFactors(CalculateNormFactors(fNModes));
+        CheckNormalization();
+        PrintModeMaps();
+
 
         return true;
     }

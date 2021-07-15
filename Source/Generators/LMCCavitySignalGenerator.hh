@@ -64,6 +64,8 @@ namespace locust
               
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
+            std::vector<double> CalculateNormFactors(int nModes);
+            std::vector<int> ModeFilter(unsigned whichMode);
             void CheckNormalization();
             void PrintModeMaps();
 
