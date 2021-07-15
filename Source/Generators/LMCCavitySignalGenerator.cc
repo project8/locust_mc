@@ -102,7 +102,7 @@ namespace locust
     }
 
 
-    std::vector<double> CavitySignalGenerator::CalculateNormFactors(int nModes)
+    std::vector<double> CavitySignalGenerator::CalculateNormFactors(int nModes, bool TE)
     {
     	std::vector<double> aNormFactor;
     	aNormFactor.resize(nModes);
@@ -113,7 +113,14 @@ namespace locust
     		int l = aModeFilter[0];
     		int m = aModeFilter[1];
     		int n = aModeFilter[2];
-    		aNormFactor[i] = 1./fInterface->fField->Integrate(l,m,n,1,1);
+    		if (TE)
+    		{
+    			aNormFactor[i] = 1./fInterface->fField->Integrate(l,m,n,1,1)/LMCConst::EpsNull();
+    		}
+    		else
+    		{
+    			aNormFactor[i] = 1./fInterface->fField->Integrate(l,m,n,0,1)/LMCConst::EpsNull();
+    		}
     	}
 
     	return aNormFactor;
@@ -133,8 +140,8 @@ namespace locust
     	    	if (modeCounter >= fNModes) break;
     			for (int n=1; n<fNModes+1; n++)
     			{
-    				double normFactor = fInterface->fField->GetNormFactors()[modeCounter];
-    		    	printf("TE%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+    				double normFactor = fInterface->fField->GetNormFactorsTE()[modeCounter];
+    		    	printf("TE%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
     		    	modeCounter += 1;
     		    	if (modeCounter >= fNModes) break;
@@ -152,8 +159,8 @@ namespace locust
     	    	if (modeCounter >= fNModes) break;
     			for (int n=1; n<fNModes+1; n++)
     			{
-    				double normFactor = fInterface->fField->GetNormFactors()[modeCounter];
-    		    	printf("TM%d%d%d E %g H %g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
+    				double normFactor = fInterface->fField->GetNormFactorsTM()[modeCounter];
+    		    	printf("TM%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
     		    	modeCounter += 1;
     		    	if (modeCounter >= fNModes) break;
@@ -174,7 +181,7 @@ namespace locust
     			for (int n=1; n<5; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
-    				double tNormalizationTE_E = fInterface->fField->GetNormFactors()[modeCounter];
+    				double tNormalizationTE_E = fInterface->fField->GetNormFactorsTE()[modeCounter];
     				int a = sprintf(buffer, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
     				const char *fpname = buffer;
     				FILE *fpTE_E = fopen(fpname, "w");
@@ -280,7 +287,8 @@ namespace locust
         ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
 
 
-        fInterface->fField->SetNormFactors(CalculateNormFactors(fNModes));
+        fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
+        fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
         CheckNormalization();
         PrintModeMaps();
 
