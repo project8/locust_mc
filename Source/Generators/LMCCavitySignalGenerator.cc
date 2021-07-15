@@ -25,7 +25,7 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
-		fNModes( 10 ),
+		fNModes( 1 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
@@ -254,7 +254,7 @@ namespace locust
         {
         	int ntransmitters = 0;
 
-        	if(aParam["transmitter"]().as_string() == "kassiopeia")
+        	if(aParam["transmitter"]().as_string() == "kass-current")
         	{
         		ntransmitters += 1;
         		fTransmitter = new KassTransmitter;
@@ -266,7 +266,7 @@ namespace locust
 
         	if (ntransmitters != 1)
         	{
-        		LERROR(lmclog,"LMCCavitySignalGenerator needs a single transmitter.  Please choose transmitter:kassiopeia in the config file.");
+        		LERROR(lmclog,"LMCCavitySignalGenerator needs the kass-current transmitter.  Please choose transmitter:kass-current in the config file.");
                 exit(-1);
         	}
         }
@@ -326,6 +326,14 @@ namespace locust
         return;
     }
 
+    bool CavitySignalGenerator::DriveMode()
+    {
+
+    	// Convolve current with mode TF here.  Use FSCD libraries for this.
+
+    	return true;
+    }
+
 
     void CavitySignalGenerator::KassiopeiaInit(const std::string &aFile)
     {
@@ -372,29 +380,18 @@ namespace locust
     }
 
 
-    bool CavitySignalGenerator::DoGenerateTimeKass( Signal* aSignal )
+    bool CavitySignalGenerator::DoGenerateFreq( Signal* aSignal )
     {
+        return true;
+    }
 
-
-        //n samples for event spacing in Kass.
+    bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
+    {
         int PreEventCounter = 0;
-        fInterface->nFilterBinsRequired = (int) std::min( 1. / ((fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / fInterface->dtFilter), (double) fInterface->fTFReceiverHandler.GetFilterSize());
-
-
-        if (!fTransmitter->IsKassiopeia())
-        {
-        	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-        	{
-//        		DriveAntenna(fp, PreEventCounter, index, aSignal, nfilterbins, dtfilter);
-        	}  // for loop
-        	return true;
-        }
-
+        bool fTruth = false;
 
         if (fTransmitter->IsKassiopeia())
         {
-        	bool fTruth = false;
-        	int startingIndex;
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         	std::thread tKassiopeia (&CavitySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
@@ -421,7 +418,6 @@ namespace locust
                     {
                         fInterface->fPreEventInProgress = false;  // reset.
                         fInterface->fEventInProgress = true;
-                        startingIndex = index;
                         LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
                         WakeBeforeEvent();  // trigger Kass event.
                     }
@@ -436,12 +432,10 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-/*
-                      		if (DriveAntenna(fp, startingIndex, index, aSignal, nfilterbins, dtfilter))
+                    		if (DriveMode())
                     		{
                                 PreEventCounter = 0; // reset
                     		}
-
                     		else
                     		{
                     			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
@@ -449,7 +443,6 @@ namespace locust
                                 tLock.unlock();
                     			break;
                     		}
-*/
                         }
                         tLock.unlock();
                 	}
@@ -501,66 +494,11 @@ namespace locust
             	return false;
             }
 
-
-
         }  // fTransmitter->IsKassiopeia()
 
-        return true;
 
-    }
 
-    bool CavitySignalGenerator::DoGenerateFreq( Signal* aSignal )
-    {
-    	const unsigned nchannels = 1;
-    	double fLO_frequency = 20.03e9;
-    	double fRF_frequency = 20.0e9;
-    	double fAmplitude = 1.e-9;
-        double LO_phase = 0.;
-        double voltage_phase = 0.;
-
-        for (unsigned ch = 0; ch < nchannels; ++ch)
-        {
-            for( unsigned index = 0; index < aSignal->FreqSize(); ++index )
-            {
-                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/(fAcquisitionRate*1.e6);
-                voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/(fAcquisitionRate*1.e6);
-
-                if (index == aSignal->FreqSize()/6 ) // pick a frequency bin and put some signal in it.
-                {
-                	aSignal->SignalFreqComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)*fAmplitude;
-                	aSignal->SignalFreqComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)*fAmplitude;
-                }
-            }
-        }
-
-        aSignal->ToState(Signal::kTime);
-
-        return true;
-    }
-
-    bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
-    {
-
-    	const unsigned nchannels = 1;
-    	double fLO_frequency = 20.e9;
-    	double fRF_frequency = 20.05e9;
-    	double fAmplitude = 1.e-8;
-        double LO_phase = 0.;
-        double voltage_phase = 0.;
-
-        for (unsigned ch = 0; ch < nchannels; ++ch)
-        {
-            for( unsigned index = 0; index < aSignal->TimeSize(); ++index )
-            {
-                LO_phase = 2.*LMCConst::Pi()*fLO_frequency*(double)index/(fAcquisitionRate*1.e6);
-                voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/(fAcquisitionRate*1.e6);
-
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][0] += sqrt(50.)*fAmplitude*cos(voltage_phase-LO_phase);
-                aSignal->SignalTimeComplex()[ch*aSignal->TimeSize() + index][1] += sqrt(50.)*fAmplitude*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
-            }
-        }
-
-        return true;
+    	return true;
     }
 
 

@@ -11,7 +11,6 @@
 #include "LMCThreeVector.hh"
 #include <boost/math/special_functions/bessel.hpp>
 #include "LMCGenerator.hh"
-#include "LMCChannel.hh"
 #include "LMCKassTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCField.hh"
@@ -44,10 +43,6 @@ namespace locust
      - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      - "lo-frequency":  local oscillator frequency in Hz.
-     - "array-radius":  radius of cylindrical antenna array in meters.
-     - "nelements-per-strip":  number of patch antennas on each strip.
-     - "element-spacing":  spacing between patches on one strip in meters.
-     - "zshift-array":  shift of whole antenna array along z axis, for testing (meters).
 
     */
 
@@ -73,7 +68,6 @@ namespace locust
 
 
         private:
-//            std::vector< Channel<Receiver*> > allRxChannels; //Vector of channels with pointers to Rx elements.
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
@@ -90,12 +84,10 @@ namespace locust
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();
-
-//        	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
+            bool DriveMode();
 
             bool DoGenerate( Signal* aSignal );
             bool DoGenerateTime( Signal* aSignal );
-            bool DoGenerateTimeKass( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
