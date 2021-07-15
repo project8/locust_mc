@@ -7,9 +7,10 @@
 
     "cavity-signal":
     {
-        "transmitter": "kassiopeia",
+        "transmitter": "kass-current",
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/PatchTFLocust.txt",
-        "tf-receiver-bin-width": 0.01e9
+        "tf-receiver-bin-width": 0.01e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_FreeSpace_Template.xml"
         
     },
 
