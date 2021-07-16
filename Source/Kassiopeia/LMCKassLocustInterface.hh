@@ -13,6 +13,7 @@
 #include "LMCTFFileHandler.hh"
 #include "LMCField.hh"
 #include "LMCParticle.hh"
+#include "LMCFieldBuffer.hh"
 #include "singleton.hh"
 
 #include <condition_variable>
@@ -68,6 +69,8 @@ namespace locust
         double dtFilter;
         std::vector<std::deque<double>> eCurrentBuffer;
         Field* fField;
+        std::vector<std::deque<double>> ElementFIRBuffer;
+        std::vector<std::deque<double>> FIRfrequencyBuffer;
 
 
     };

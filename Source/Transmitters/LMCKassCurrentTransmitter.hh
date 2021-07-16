@@ -47,6 +47,9 @@ namespace locust
 
     private:
 
+        double calcOrbitPhase(std::vector<double> tKassParticleXP);
+        double quadrantCorrection(double phase, std::vector<double> tKassParticleXP);
+
     	LienardWiechert fFieldSolver;
 
     };

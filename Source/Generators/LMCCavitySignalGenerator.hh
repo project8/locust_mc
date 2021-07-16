@@ -11,7 +11,7 @@
 #include "LMCThreeVector.hh"
 #include <boost/math/special_functions/bessel.hpp>
 #include "LMCGenerator.hh"
-#include "LMCKassTransmitter.hh"
+#include "LMCKassCurrentTransmitter.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh"
@@ -84,7 +84,9 @@ namespace locust
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();
-            bool DriveMode();
+            bool DriveMode(int nFilterBinsRequired, double dtFilter);
+            bool GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter);
+            void InitializeBuffers(unsigned filterbuffersize);
 
             bool DoGenerate( Signal* aSignal );
             bool DoGenerateTime( Signal* aSignal );

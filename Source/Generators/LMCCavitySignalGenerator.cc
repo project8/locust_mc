@@ -257,7 +257,7 @@ namespace locust
         	if(aParam["transmitter"]().as_string() == "kass-current")
         	{
         		ntransmitters += 1;
-        		fTransmitter = new KassTransmitter;
+        		fTransmitter = new KassCurrentTransmitter;
         		if(!fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
@@ -326,10 +326,48 @@ namespace locust
         return;
     }
 
-    bool CavitySignalGenerator::DriveMode()
+    bool CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter)
     {
+    	double orbitPhase = tKassParticleXP[6];
+    	double fieldFrequency = tKassParticleXP[7];  // times 2 PI ?
+    	double convolution = 0.0;
 
+		// populate FIR filter with frequency for just this sample interval:
+		for (int i=0; i < nFilterBinsRequired; i++)
+		{
+			fInterface->FIRfrequencyBuffer[0].push_back(fieldFrequency);
+			fInterface->FIRfrequencyBuffer[0].pop_front();
+		}
+
+		// populate entire FIR filter with field, using frequencies from recent previous samples:
+		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
+		while (it != fInterface->FIRfrequencyBuffer[0].end())
+		{
+			orbitPhase += 2.*3.1415926*(*it)*dtFilter;
+			if (*it != 0.)
+			{
+				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
+			}
+			else
+			{
+				fInterface->ElementFIRBuffer[0].push_back(0.);
+			}
+			fInterface->ElementFIRBuffer[0].pop_front();
+			*it++;
+		}
+
+		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
+		return convolution;
+
+    	return true;
+    }
+
+    bool CavitySignalGenerator::DriveMode(int nFilterBinsRequired, double dtFilter)
+    {
     	// Convolve current with mode TF here.  Use FSCD libraries for this.
+
+        std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP();
+        GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter);
 
     	return true;
     }
@@ -389,6 +427,11 @@ namespace locust
     {
         int PreEventCounter = 0;
         bool fTruth = false;
+        int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
+        double dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
+        int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
+        InitializeBuffers(nFilterBins);
+
 
         if (fTransmitter->IsKassiopeia())
         {
@@ -432,7 +475,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveMode())
+                    		if (DriveMode(nFilterBinsRequired, dtFilter))
                     		{
                                 PreEventCounter = 0; // reset
                     		}
@@ -500,6 +543,15 @@ namespace locust
 
     	return true;
     }
+
+
+    void CavitySignalGenerator::InitializeBuffers(unsigned filterbuffersize)
+    {
+    	FieldBuffer aFieldBuffer;
+    	fInterface->ElementFIRBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
+    	fInterface->FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
+    }
+
 
 
 
