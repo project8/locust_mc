@@ -46,7 +46,7 @@ namespace locust
 		fSwapFrequency( 1000 ),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
-		fAllowFastSampling( false ),
+		fAllowFastSampling( true ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kTime;
