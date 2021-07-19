@@ -38,6 +38,7 @@ namespace locust
             void SetCyclotronFrequency(double);
             void SetMass(double);
             void SetCharge(double);
+            void SetAzimuthalAngleToX(double);
 
             void SetKinematicProperties();
 
@@ -53,6 +54,7 @@ namespace locust
             double GetKineticEnergy() const;
             double GetCharge() const;
             double GetLarmorPower() const;
+            double GetAzimuthalAngleToX() const;
 
             double CalculateVoltage(const LMCThreeVector&) const;
             LMCThreeVector CalculateElectricField(const LMCThreeVector&) const;
@@ -90,6 +92,7 @@ namespace locust
             double fCyclotronFrequency;
             double fCyclotronRadius;
             double fLarmorPower;
+            double fAzimuthalAngleToX;
 
             LMCThreeVector fSplineC;
             LMCThreeVector fSplineD;

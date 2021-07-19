@@ -40,6 +40,7 @@ namespace locust
         double tCharge = aFinalParticle.GetCharge();
         double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
         double tTime = aFinalParticle.GetTime();
+        double tAzimuthalAngle = aFinalParticle.GetAzimuthalAngleToX();
 
 
         locust::Particle aNewParticle;
@@ -51,6 +52,7 @@ namespace locust
         aNewParticle.SetTime(tTime);
         aNewParticle.SetCyclotronFrequency(2.*LMCConst::Pi()*tCyclotronFrequency);
         aNewParticle.SetKinematicProperties();
+        aNewParticle.SetAzimuthalAngleToX(tAzimuthalAngle);
 
 
         if (fPitchAngle == -99.)  // first crossing of center
@@ -79,7 +81,7 @@ namespace locust
         FieldCalculator aFieldCalculator;
         double DeltaE=0.;
 
-        //		       printf("fcyc is %g\n", aFinalParticle.GetCyclotronFrequency()); getchar();
+//        		       printf("fcyc is %g\n", aFinalParticle.GetCyclotronFrequency()); getchar();
 
         //	printf("dE/dt is %g\n", (aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy())/(aFinalParticle.GetTime() - anInitialParticle.GetTime())); getchar();
 

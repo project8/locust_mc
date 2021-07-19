@@ -33,6 +33,7 @@ namespace locust
             fCyclotronFrequency( -99. ),
             fCyclotronRadius( -99. ),
             fLarmorPower( -99. ),
+			fAzimuthalAngleToX( -99. ),
             fSplineC( -99., -99., -99. ),
             fSplineD( -99., -99., -99. )
     {
@@ -134,6 +135,17 @@ namespace locust
     double Particle::GetLarmorPower() const
     {
         return fLarmorPower;
+    }
+
+    void Particle::SetAzimuthalAngleToX(double anAngle)
+    {
+        fAzimuthalAngleToX = anAngle;
+        return;
+    }
+
+    double Particle::GetAzimuthalAngleToX() const
+    {
+        return fAzimuthalAngleToX;
     }
 
     void Particle::SetKinematicProperties()
