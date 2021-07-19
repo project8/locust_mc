@@ -50,6 +50,7 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
+    RxComponents/LMCCavityModes.hh
     RxComponents/LMCSinglePatch.hh
     RxComponents/LMCCorporateFeed.hh
     RxComponents/LMCsMatrix.hh
@@ -116,6 +117,7 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCVoltageDivider.cc
     RxComponents/LMCSlottedWaveguide.cc
+    RxComponents/LMCCavityModes.cc
     RxComponents/LMCSinglePatch.cc
     RxComponents/LMCCorporateFeed.cc
     RxComponents/LMCsMatrix.cc
