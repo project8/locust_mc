@@ -2,23 +2,27 @@
     "generators":
     [          
        "cavity-signal",
+       "lpf-fft",
+       "decimate-signal",
        "digitizer"
     ],
 
     "cavity-signal":
     {
         "transmitter": "kass-current",
+        "event-spacing-samples": 15000,
+        "voltage-check": "true",
+        "lo-frequency": 25.8581e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/PatchTFLocust.txt",
         "tf-receiver-bin-width": 0.01e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_FreeSpace_Template.xml"
-        
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_FreeSpace_Template.xml"        
     },
 
     "simulation":
     {
         "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
-        "record-size": 8192,
+        "record-size": 81920,
         "n-channels": 1
     },
   
@@ -30,8 +34,8 @@
 
     "digitizer":
     {
-    	"v-range":  2.0e-7,
-    	"v-offset": -1.0e-7
+    	"v-range":  0.02,
+    	"v-offset": -0.01
     }
 
 }
