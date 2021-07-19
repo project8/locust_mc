@@ -39,7 +39,6 @@ namespace locust
             LMCThreeVector GetElectricField( ) const;
             LMCThreeVector GetMagneticField() const;
             locust::Particle GetRetardedParticle() const;
-            locust::Particle GetInstantaneousParticle() const;
 
         private:
             void SetKassiopeiaTimeStep();

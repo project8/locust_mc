@@ -32,6 +32,7 @@ namespace locust
 
     void LienardWiechert::SetParticleHistory( std::deque<Particle> aParticleHistory )
     {
+    	printf("setting history\n"); getchar();
     	fInterface->fParticleHistory = aParticleHistory;
     }
 
@@ -95,12 +96,6 @@ namespace locust
     {
         return fCurrentParticle;
     }
-
-    locust::Particle LienardWiechert::GetInstantaneousParticle() const
-    {
-        return fInterface->fParticleHistory.back();
-    }
-
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
     unsigned LienardWiechert::FindClosestParticle(double tNew) const
