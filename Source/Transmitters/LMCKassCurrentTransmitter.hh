@@ -12,7 +12,7 @@
 #include "LMCConst.hh"
 #include "param.hh"
 #include "LMCThreeVector.hh"
-#include "LMCLienardWiechert.hh"
+#include "LMCKassLocustInterface.hh"
 
 namespace locust
 {
@@ -50,7 +50,7 @@ namespace locust
         double calcOrbitPhase(std::vector<double> tKassParticleXP);
         double quadrantCorrection(double phase, std::vector<double> tKassParticleXP);
 
-    	LienardWiechert fFieldSolver;
+        kl_interface_ptr_t fInterface;
 
     };
 

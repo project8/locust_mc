@@ -21,7 +21,8 @@ namespace locust
 {
     LOGGER( lmclog, "KassCurrentTransmitter" );
 
-    KassCurrentTransmitter::KassCurrentTransmitter()
+    KassCurrentTransmitter::KassCurrentTransmitter():
+    fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
@@ -43,7 +44,7 @@ namespace locust
     double KassCurrentTransmitter::quadrantCorrection(double phase, std::vector<double> tKassParticleXP)
     {
     	double phaseCorrection = 0.;
-    	if (((phase < 0.)&&(tKassParticleXP[3] < 0.)) || ((phase > 0.)&&(tKassParticleXP[3] > 0.)))
+    	if (((phase < 0.)&&(tKassParticleXP[3] > 0.)) || ((phase > 0.)&&(tKassParticleXP[3] < 0.)))
     		phaseCorrection = LMCConst::Pi();
 
     	return phaseCorrection;
@@ -53,7 +54,7 @@ namespace locust
     {
     	double phase = 0.;
     	if (fabs(tKassParticleXP[0]) > 0.)
-    		phase = atan(tKassParticleXP[1]/tKassParticleXP[0]);
+    		phase = atan(tKassParticleXP[4]/tKassParticleXP[3]);
     	phase += quadrantCorrection(phase, tKassParticleXP);
     	return phase;
     }
@@ -61,7 +62,7 @@ namespace locust
 
     std::vector<double> KassCurrentTransmitter::ExtractParticleXP()
     {
-        locust::Particle tParticle = fFieldSolver.GetInstantaneousParticle();
+    	locust::Particle tParticle = fInterface->fParticleHistory.back();
     	std::vector<double> particleXP;
     	particleXP.resize(8);
 
@@ -71,7 +72,8 @@ namespace locust
         particleXP[3] = tParticle.GetVelocity().X();
         particleXP[4] = tParticle.GetVelocity().Y();
         particleXP[5] = tParticle.GetVelocity().Z();
-        particleXP[6] = calcOrbitPhase(particleXP);
+//        particleXP[6] = calcOrbitPhase(particleXP);
+        particleXP[6] = tParticle.GetAzimuthalAngleToX() * LMCConst::Pi() / 180.;
         particleXP[7] = tParticle.GetCyclotronFrequency();
 
     	return particleXP;
