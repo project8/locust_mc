@@ -64,6 +64,7 @@ namespace locust
             std::vector<int> ModeFilter(unsigned whichMode);
             void CheckNormalization();
             void PrintModeMaps();
+            void StepSizeWarning();
 
 
 
@@ -78,6 +79,7 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
+            bool fStepsizeWarningAcknowledged;
 
 
 

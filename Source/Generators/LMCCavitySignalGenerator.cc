@@ -32,6 +32,7 @@ namespace locust
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
+		fStepsizeWarningAcknowledged( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -215,6 +216,17 @@ namespace locust
             return false;
         }
 
+        if (aParam.has( "stepsize-warning-acknowledged" ))
+        {
+        	fStepsizeWarningAcknowledged = aParam["stepsize-warning-acknowledged"]().as_bool();
+        	if (fStepsizeWarningAcknowledged == false )
+        	{
+        		StepSizeWarning();
+        	}
+        }
+        else StepSizeWarning();
+
+
         if( aParam.has( "cavity-radius" ) )
         {
             fInterface->fR = aParam["cavity-radius"]().as_double();
@@ -332,6 +344,13 @@ namespace locust
             LWARN( lmclog, "Unknown domain requested: " << aDomain );
         }
         return;
+    }
+
+    void CavitySignalGenerator::StepSizeWarning()
+    {
+		LERROR(lmclog,"Please make sure Kass stepsize is set to 0.125 and set \"stepsize-warning-acknowledged\"=\"true\" in json file.");
+		LERROR(lmclog,"Press return to continue...\n");
+		getchar();
     }
 
     double CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld)
