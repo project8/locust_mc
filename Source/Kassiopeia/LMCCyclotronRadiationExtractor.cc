@@ -40,7 +40,6 @@ namespace locust
         double tCharge = aFinalParticle.GetCharge();
         double tCyclotronFrequency = aFinalParticle.GetCyclotronFrequency();
         double tTime = aFinalParticle.GetTime();
-        double tAzimuthalAngle = aFinalParticle.GetAzimuthalAngleToX();
 
 
         locust::Particle aNewParticle;
@@ -52,7 +51,6 @@ namespace locust
         aNewParticle.SetTime(tTime);
         aNewParticle.SetCyclotronFrequency(2.*LMCConst::Pi()*tCyclotronFrequency);
         aNewParticle.SetKinematicProperties();
-        aNewParticle.SetAzimuthalAngleToX(tAzimuthalAngle);
 
 
         if (fPitchAngle == -99.)  // first crossing of center
