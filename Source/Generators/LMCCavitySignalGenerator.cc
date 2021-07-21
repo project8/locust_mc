@@ -372,8 +372,7 @@ namespace locust
 		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
 		while (it != fInterface->FIRfrequencyBuffer[0].end())
 		{
-//			orbitPhase += (*it)*dtFilter;  // radians
-//			orbitPhase -= fieldFrequency*dtFilter;
+			orbitPhase -= (*it)*dtFilter;  // radians, negative orbit.
 			if (*it != 0.)
 			{
 				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
@@ -387,8 +386,7 @@ namespace locust
 		}
 
 		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
-//		return convolution;
-		return cos(orbitPhase);
+		return convolution;
 
     }
 
