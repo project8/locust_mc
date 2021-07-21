@@ -86,7 +86,7 @@ namespace locust
             void WakeBeforeEvent();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
-            double GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter);
+            double GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld);
             void InitializeBuffers(unsigned filterbuffersize);
 
             bool DoGenerate( Signal* aSignal );
@@ -98,7 +98,7 @@ namespace locust
             PowerCombiner* fPowerCombiner;
 
             kl_interface_ptr_t fInterface;
-
+            FILE *fp;
 
     };
 

@@ -39,7 +39,7 @@ namespace locust
             virtual std::vector<double> GetEFieldCoPol(int fieldPointIndex, double dt) {};
 
             virtual std::vector<double> SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex) {};
-            virtual std::vector<double> ExtractParticleXP() {};
+            virtual std::vector<double> ExtractParticleXP(double TOld) {};
             virtual void InitializeFieldPoint(LMCThreeVector fieldPoint);
 
             virtual bool IsKassiopeia() {return false;};

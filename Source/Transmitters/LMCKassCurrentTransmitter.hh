@@ -42,13 +42,14 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
-        std::vector<double> ExtractParticleXP();
+        std::vector<double> ExtractParticleXP(double TOld);
 
 
     private:
 
         double calcOrbitPhase(std::vector<double> tKassParticleXP);
         double quadrantCorrection(double phase, std::vector<double> tKassParticleXP);
+        int FindNode(double tNew) const;
 
         kl_interface_ptr_t fInterface;
 

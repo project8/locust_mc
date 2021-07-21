@@ -334,7 +334,7 @@ namespace locust
         return;
     }
 
-    double CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter)
+    double CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld)
     {
     	double orbitPhase = tKassParticleXP[6];  // radians
     	double fieldFrequency = tKassParticleXP[7];  // rad/s
@@ -354,7 +354,7 @@ namespace locust
 		while (it != fInterface->FIRfrequencyBuffer[0].end())
 		{
 //			orbitPhase += (*it)*dtFilter;  // radians
-			orbitPhase += fieldFrequency*dtFilter;
+//			orbitPhase -= fieldFrequency*dtFilter;
 			if (*it != 0.)
 			{
 				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
@@ -368,7 +368,8 @@ namespace locust
 		}
 
 		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
-		return convolution;
+//		return convolution;
+		return cos(orbitPhase);
 
     }
 
@@ -385,11 +386,14 @@ namespace locust
         {
         	sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-        	std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP();
+        	std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP(fInterface->fTOld);
         	double modePhaseRotation = 0.; // TO-DO this needs to be calculated between Kass e- position and probe, using mode map.
 
-        	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter);
-//        	double FIRSample = LMCConst::Q()*tKassParticleXP[3];
+        	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
+    		fprintf(fp, "%g\n", FIRSample);
+
+
+        	//        	double FIRSample = LMCConst::Q()*tKassParticleXP[3];
         	// TO-DO:  Scale FIRSample with dot product of velocity with mode field.
 
         	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, modePhaseRotation, sampleIndex);
@@ -453,6 +457,12 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+
+        // dump to text file for debugging.
+    	fp = fopen("currentValues.txt", "w");
+
+
+
         int PreEventCounter = 0;
         int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
         double dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
@@ -565,6 +575,7 @@ namespace locust
 
         }  // fTransmitter->IsKassiopeia()
 
+    	fclose (fp);
 
 
     	return true;
