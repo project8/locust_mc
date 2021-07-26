@@ -35,7 +35,6 @@ namespace locust
 
 
         private:
-            bool SetProbeLocations();
 
 
 

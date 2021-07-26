@@ -22,20 +22,6 @@ namespace locust
     {
     }
 
-    bool CavityModes::SetProbeLocations()
-    {
-    	std::vector<double> probeZ;
-    	probeZ.resize(1);
-    	probeZ[0] = 0.;  // TO-DO:  parametrize this.
-    	SetCavityProbeZ(probeZ);
-
-    	std::vector<double> probeTheta;
-    	probeTheta.resize(1);
-    	probeTheta[0] = 0.;  // TO-DO:  parametrize this.
-    	SetCavityProbeTheta(probeTheta);
-
-    	return true;
-    }
 
     bool CavityModes::Configure( const scarab::param_node& aParam )
     {
@@ -46,17 +32,10 @@ namespace locust
     		return false;
     	}
 
-    	if ( aParam.has( "n-cavity-probes" ) )
-    	{
-    		SetNCavityProbes(aParam["n-cavity-probes"]().as_int());
-    	}
-
     	if ( aParam.has( "cavity-probe-impedance" ) )
     	{
     		SetCavityProbeImpedance(aParam["cavity-probe-impedance"]().as_double());
     	}
-
-    	SetProbeLocations();
 
     	return true;
     }
