@@ -87,12 +87,12 @@ namespace locust
 	}
 
 
-	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double modePhaseRotation, unsigned sampleIndex)
+	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double modeAmplitudeFactor, double cavityProbeImpedance, unsigned sampleIndex)
 	{
-		// TO-DO:  Apply modePhaseRotation (derived from mode map) to the induced signal.
 
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2.*VoltageFIRSample * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
+
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * VoltageFIRSample * modeAmplitudeFactor * cavityProbeImpedance * sin(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * VoltageFIRSample * modeAmplitudeFactor * cavityProbeImpedance * cos(phi_LO);
 
 //		printf("signal is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
@@ -181,6 +181,31 @@ namespace locust
     {
     	fCavityProbeImpedance = anImpedance;
     }
+
+    bool PowerCombiner::SetCavityProbeLocations(int nCavityProbes, double cavityLength)
+    {
+
+    	SetNCavityProbes(nCavityProbes);
+    	std::vector<double> probeZ;
+    	probeZ.resize(nCavityProbes);
+
+    	std::vector<double> probeTheta;
+    	probeTheta.resize(nCavityProbes);
+
+    	double probeSpacing = cavityLength / ((double)nCavityProbes + 1.);
+
+		for (unsigned index=0; index<probeZ.size(); index++)
+		{
+			probeZ[index] = -cavityLength/2. + (index+1)*probeSpacing;
+			probeTheta[index] = 0.0;
+		}
+
+    	SetCavityProbeZ(probeZ);
+    	SetCavityProbeTheta(probeTheta);
+
+    	return true;
+    }
+
 
 
     std::vector<double> PowerCombiner::GetCavityProbeZ()
