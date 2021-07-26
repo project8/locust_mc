@@ -22,7 +22,7 @@ namespace locust
     {
 
     	std::vector<double> aField;
-    	double r, theta, z = 0.;
+    	double r, theta, zPozar, zKass = 0.;
     	double dR = fInterface->fR/fInterface->fnPixels;
     	double dZ = fInterface->fL/fInterface->fnPixels;
     	double dTheta = 2.*LMCConst::Pi()/fInterface->fnPixels;
@@ -35,27 +35,29 @@ namespace locust
     			{
     	    		r = (double)i*dR;
     	    		theta = (double)j*dTheta;
-    	    		z = (double)k*dZ;
+    	    		zPozar = (double)k*dZ;
+    	    		zKass = zPozar - fInterface->fL/2.;
+
     	    		if (teMode)
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = TE_E(l, m, n, r, theta, z);
+    	    		    	aField = TE_E(l, m, n, r, theta, zKass);
     	    			}
     	    			else
     	    			{
-    	    				aField = TE_H(l, m, n, r, theta, z);
+    	    				aField = TE_H(l, m, n, r, theta, zKass);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = TM_E(l, m, n, r, theta, z);
+    	    				aField = TM_E(l, m, n, r, theta, zKass);
     	    			}
     	    			else
     	    			{
-    	    				aField = TM_H(l, m, n, r, theta, z);
+    	    				aField = TM_H(l, m, n, r, theta, zKass);
     	    			}
     	    		}
 
@@ -75,8 +77,10 @@ namespace locust
     	return tIntegral;
     }
 
-    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double z) const
+    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass) const
     {
+
+    	double z = zKass + fInterface->fL/2.;
 
     	// from Pozar
     	std::vector<double> TE_E;
@@ -96,8 +100,11 @@ namespace locust
         return TE_E;
     }
 
-    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double z) const
+    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass) const
     {
+
+    	double z = zKass + fInterface->fL/2.;
+
     	// from Pozar
     	std::vector<double> TE_H;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
@@ -112,8 +119,10 @@ namespace locust
         return TE_H;
     }
 
-    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double z) const
+    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass) const
     {
+    	double z = zKass + fInterface->fL/2.;
+
     	// from Pozar
     	std::vector<double> TM_E;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
@@ -131,8 +140,10 @@ namespace locust
         return TM_E;
     }
 
-    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double z) const
+    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass) const
     {
+    	double z = zKass + fInterface->fL/2.;
+
     	// from Pozar
     	std::vector<double> TM_H;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
