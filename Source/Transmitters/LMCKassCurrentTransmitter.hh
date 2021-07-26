@@ -47,8 +47,10 @@ namespace locust
 
     private:
 
-        double calcOrbitPhase(std::vector<double> tKassParticleXP);
-        double quadrantCorrection(double phase, std::vector<double> tKassParticleXP);
+        double calcOrbitPhase(double vx, double vy);
+        double calcTheta(double x, double y);
+        double quadrantOrbitCorrection(double phase, double vx);
+        double quadrantPositionCorrection(double phase, double x);
         int FindNode(double tNew) const;
 
         kl_interface_ptr_t fInterface;

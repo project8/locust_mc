@@ -41,24 +41,46 @@ namespace locust
     }
 
 
-    double KassCurrentTransmitter::quadrantCorrection(double phase, std::vector<double> tKassParticleXP)
+    double KassCurrentTransmitter::quadrantOrbitCorrection(double phase, double vx)
     {
     	double phaseCorrection = 0.;
-    	if (((phase < 0.)&&(tKassParticleXP[3] < 0.)) || ((phase > 0.)&&(tKassParticleXP[3] > 0.)))
+    	if (((phase < 0.)&&(vx < 0.)) || ((phase > 0.)&&(vx > 0.)))
     		phaseCorrection = LMCConst::Pi();
 
     	return phaseCorrection;
     }
 
-    double KassCurrentTransmitter::calcOrbitPhase(std::vector<double> tKassParticleXP)
+
+    double KassCurrentTransmitter::quadrantPositionCorrection(double phase, double x)
+    {
+    	double phaseCorrection = 0.;
+    	if (((phase < 0.)&&(x < 0.)) || ((phase > 0.)&&(x < 0.)))
+    		phaseCorrection = LMCConst::Pi();
+
+    	return phaseCorrection;
+    }
+
+
+    double KassCurrentTransmitter::calcOrbitPhase(double vx, double vy)
     {
     	double phase = 0.;
-    	if (fabs(tKassParticleXP[3]) > 0.)
-    		phase = atan(-tKassParticleXP[3]/tKassParticleXP[4]);
-    	phase += quadrantCorrection(phase, tKassParticleXP);
+    	if (fabs(vy) > 0.)
+    		phase = atan(-vx/vy);
+    	phase += quadrantOrbitCorrection(phase, vx);
 //    	printf("phase is %g\n", phase*180./LMCConst::Pi()); getchar();
     	return phase;
     }
+
+    double KassCurrentTransmitter::calcTheta(double x, double y)
+    {
+    	double phase = 0.;
+    	if (fabs(x) > 0.)
+    		phase = atan(y/x);
+    	phase += quadrantPositionCorrection(phase, x);
+    	return phase;
+    }
+
+
 
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
@@ -84,13 +106,13 @@ namespace locust
         std::vector<double> particleXP;
     	particleXP.resize(8);
 
-        particleXP[0] = tParticle.GetPosition().X();
-        particleXP[1] = tParticle.GetPosition().Y();
+        particleXP[0] = pow(tParticle.GetPosition().X()*tParticle.GetPosition().X() + tParticle.GetPosition().Y()*tParticle.GetPosition().Y(), 0.5);
+        particleXP[1] = calcTheta(tParticle.GetPosition().X(), tParticle.GetPosition().Y());
         particleXP[2] = tParticle.GetPosition().Z();
         particleXP[3] = tParticle.GetVelocity().X();
         particleXP[4] = tParticle.GetVelocity().Y();
         particleXP[5] = tParticle.GetVelocity().Z();
-        particleXP[6] = calcOrbitPhase(particleXP);
+        particleXP[6] = calcOrbitPhase(tParticle.GetVelocity().X(), tParticle.GetVelocity().Y());
         particleXP[7] = tParticle.GetCyclotronFrequency();
 
     	return particleXP;
