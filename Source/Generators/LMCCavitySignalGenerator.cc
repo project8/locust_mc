@@ -230,7 +230,6 @@ namespace locust
         if( aParam.has( "cavity-radius" ) )
         {
             fInterface->fR = aParam["cavity-radius"]().as_double();
-            fInterface->fR = 500.;
         }
 
         if( aParam.has( "cavity-length" ) )
@@ -309,7 +308,7 @@ namespace locust
 
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
-//        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
+        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
 //        PrintModeMaps();
 
 
@@ -404,16 +403,19 @@ namespace locust
         	sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
         	std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP(fInterface->fTOld);
-        	double modePhaseRotation = 0.; // TO-DO this needs to be calculated between Kass e- position and probe, using mode map.
 
         	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
-    		fprintf(fp, "%g\n", FIRSample);
 
-
-        	//        	double FIRSample = LMCConst::Q()*tKassParticleXP[3];
         	// TO-DO:  Scale FIRSample with dot product of velocity with mode field.
 
-        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, modePhaseRotation, sampleIndex);
+        	// Scale excitation amplitude at probe according to mode map:
+        	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]+fInterface->fL/2.);
+        	double thetaProbe = tKassParticleXP[1] + fPowerCombiner->GetCavityProbeTheta()[channelIndex];
+        	std::vector<double> tTE_E_probe = fInterface->fField->TE_E(0,1,1,fInterface->fR*0.95,thetaProbe,fPowerCombiner->GetCavityProbeZ()[channelIndex]+fInterface->fL/2.);
+        	double modeAmplitudeFactor = tTE_E_probe.back() / tTE_E_electron.back();
+
+//        	printf("modeamplitudeFactor is %g / %g = %g\n", tTE_E_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
+        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, modeAmplitudeFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
         }
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
@@ -481,6 +483,7 @@ namespace locust
 
 
         int PreEventCounter = 0;
+		fPowerCombiner->SetCavityProbeLocations(fNChannels, fInterface->fL);
         int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
         double dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
         int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
