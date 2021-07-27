@@ -389,6 +389,33 @@ namespace locust
 
     }
 
+    double CavitySignalGenerator::GetDotProductFactor(std::vector<double> tKassParticleXP)
+    {
+    	double tThetaParticle = tKassParticleXP[1];
+    	double tEtheta = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0], 0., tKassParticleXP[2]).back();
+    	double tEx = cos(tThetaParticle) * tEtheta;
+    	double tEy = sin(tThetaParticle) * tEtheta;
+    	double tEmag = tEtheta;
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+    	return (tEx*tVx + tEy*tVx)/tEmag/tVmag;
+    }
+
+
+
+    double CavitySignalGenerator::GetModeAmplitudeFactor(std::vector<double> tKassParticleXP, int channelIndex)
+    {
+    	// Scale excitation amplitude at probe according to mode map:
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]);
+    	double thetaProbe = tKassParticleXP[1] + fPowerCombiner->GetCavityProbeTheta()[channelIndex];
+    	std::vector<double> tTE_E_probe = fInterface->fField->TE_E(0,1,1,fInterface->fR*0.95,thetaProbe,fPowerCombiner->GetCavityProbeZ()[channelIndex]);
+        double modeAmplitudeFactor = tTE_E_probe.back() / tTE_E_electron.back();
+        //        	printf("modeamplitudeFactor is %g / %g = %g\n", tTE_E_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
+
+    	return modeAmplitudeFactor;
+    }
+
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
     {
         const int signalSize = aSignal->TimeSize();
@@ -406,16 +433,10 @@ namespace locust
 
         	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
 
-        	// TO-DO:  Scale FIRSample with dot product of velocity with mode field.
+        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);
+        	double modeAmplitudeFactor = GetModeAmplitudeFactor(tKassParticleXP, channelIndex);
 
-        	// Scale excitation amplitude at probe according to mode map:
-        	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]+fInterface->fL/2.);
-        	double thetaProbe = tKassParticleXP[1] + fPowerCombiner->GetCavityProbeTheta()[channelIndex];
-        	std::vector<double> tTE_E_probe = fInterface->fField->TE_E(0,1,1,fInterface->fR*0.95,thetaProbe,fPowerCombiner->GetCavityProbeZ()[channelIndex]+fInterface->fL/2.);
-        	double modeAmplitudeFactor = tTE_E_probe.back() / tTE_E_electron.back();
-
-//        	printf("modeamplitudeFactor is %g / %g = %g\n", tTE_E_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
-        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, modeAmplitudeFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
+        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, dotProductFactor, modeAmplitudeFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
         }
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());

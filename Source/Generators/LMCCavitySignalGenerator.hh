@@ -89,6 +89,8 @@ namespace locust
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
             double GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld);
+            double GetModeAmplitudeFactor(std::vector<double> tKassParticleXP, int channelIndex);
+            double GetDotProductFactor(std::vector<double> tKassParticleXP);
             void InitializeBuffers(unsigned filterbuffersize);
 
             bool DoGenerate( Signal* aSignal );

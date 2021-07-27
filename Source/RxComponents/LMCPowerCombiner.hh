@@ -40,7 +40,7 @@ namespace locust
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
         	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-        	bool AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double modeAmplitudeFactor, double cavityProbeImpedance, unsigned sampleIndex);
+        	bool AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double dotProductFactor, double modeAmplitudeFactor, double cavityProbeImpedance, unsigned sampleIndex);
         	virtual void SayHello();
         	virtual void Initialize() {};
 
