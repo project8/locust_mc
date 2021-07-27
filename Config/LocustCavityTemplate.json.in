@@ -14,8 +14,8 @@
         "event-spacing-samples": 15000,
         "voltage-check": "true",
         "lo-frequency": 25.8781e9,               
-        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/PatchTFLocust.txt",
-        "tf-receiver-bin-width": 0.01e9,
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
+        "tf-receiver-bin-width": 0.0005e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_FreeSpace_Template.xml"        
     },
 
