@@ -1113,7 +1113,7 @@ namespace locust
                 SetTrackProperties(aTrack, tTrackIndex, tTimeOffset);
                 double tPitchMinRad = fPitchMin * LMCConst::Pi() / 180.;
 
-                if( (!fNTracksMean && (fPitch < tPitchMinRad )) || (fNTracksMean && (tTrackIndex == fNTracks)))
+                if( (!fNTracksMean && (fPitch < tPitchMinRad )) || (fNTracksMean && ((tTrackIndex == fNTracks) || (fPitch < tPitchMinRad))) )
                 {
                     break;
                 }
