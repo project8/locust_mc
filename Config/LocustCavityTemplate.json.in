@@ -10,7 +10,6 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
-        "event-spacing-samples": 15000,
         "voltage-check": "true",
         "lo-frequency": 0.98e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
@@ -35,8 +34,8 @@
 
     "digitizer":
     {
-    	"v-range":  2.0e-7,
-    	"v-offset": -1.0e-7
+    	"v-range":  2.0e-6,
+    	"v-offset": -1.0e-6
     }
 
 }
