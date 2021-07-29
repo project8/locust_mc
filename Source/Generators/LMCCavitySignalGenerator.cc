@@ -32,7 +32,6 @@ namespace locust
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
-		fStepsizeWarningAcknowledged( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -216,17 +215,6 @@ namespace locust
             return false;
         }
 
-        if (aParam.has( "stepsize-warning-acknowledged" ))
-        {
-        	fStepsizeWarningAcknowledged = aParam["stepsize-warning-acknowledged"]().as_bool();
-        	if (fStepsizeWarningAcknowledged == false )
-        	{
-        		StepSizeWarning();
-        	}
-        }
-        else StepSizeWarning();
-
-
         if( aParam.has( "cavity-radius" ) )
         {
             fInterface->fR = aParam["cavity-radius"]().as_double();
@@ -345,13 +333,6 @@ namespace locust
         return;
     }
 
-    void CavitySignalGenerator::StepSizeWarning()
-    {
-		LERROR(lmclog,"Please make sure Kass stepsize is set to 0.125 and set \"stepsize-warning-acknowledged\"=\"true\" in json file.");
-		LERROR(lmclog,"Press return to continue...\n");
-		getchar();
-    }
-
     double CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld)
     {
     	double orbitPhase = tKassParticleXP[6];  // radians
@@ -404,7 +385,14 @@ namespace locust
 
 
 
-    double CavitySignalGenerator::GetModeAmplitudeFactor(std::vector<double> tKassParticleXP, int channelIndex)
+    double CavitySignalGenerator::GetNormalizedModeField(std::vector<double> tKassParticleXP)
+    {
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]);
+		double normFactor = fInterface->fField->GetNormFactorsTE()[0];  // select mode 0,1,1
+    	return normFactor*tTE_E_electron.back();  // return normalized theta component for right now.
+    }
+
+    double CavitySignalGenerator::GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex)
     {
     	// Scale excitation amplitude at probe according to mode map:
     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]);
@@ -431,12 +419,14 @@ namespace locust
 
         	std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP(fInterface->fTOld);
 
-        	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
+        	double FIRSample = LMCConst::Q()*GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
 
-        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);
-        	double modeAmplitudeFactor = GetModeAmplitudeFactor(tKassParticleXP, channelIndex);
+        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);  // unit velocity \dot unit theta
+        	double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);  // scale over to the probe.
+        	double modeAmplitude = GetNormalizedModeField(tKassParticleXP);  // absolute E_theta at electron
+        	double totalScalingFactor = dotProductFactor * modeScalingFactor * modeAmplitude;
 
-        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, dotProductFactor, modeAmplitudeFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
+        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
         }
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());

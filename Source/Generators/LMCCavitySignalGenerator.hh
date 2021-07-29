@@ -64,7 +64,6 @@ namespace locust
             std::vector<int> ModeFilter(unsigned whichMode);
             void CheckNormalization();
             void PrintModeMaps();
-            void StepSizeWarning();
 
 
 
@@ -79,7 +78,6 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
-            bool fStepsizeWarningAcknowledged;
 
 
 
@@ -89,8 +87,9 @@ namespace locust
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
             double GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld);
-            double GetModeAmplitudeFactor(std::vector<double> tKassParticleXP, int channelIndex);
+            double GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex);
             double GetDotProductFactor(std::vector<double> tKassParticleXP);
+            double GetNormalizedModeField(std::vector<double> tKassParticleXP);
             void InitializeBuffers(unsigned filterbuffersize);
 
             bool DoGenerate( Signal* aSignal );

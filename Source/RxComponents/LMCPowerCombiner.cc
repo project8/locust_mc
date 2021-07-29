@@ -87,11 +87,11 @@ namespace locust
 	}
 
 
-	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double dotProductFactor, double modeAmplitudeFactor, double cavityProbeImpedance, unsigned sampleIndex)
+	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex)
 	{
 
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * VoltageFIRSample * dotProductFactor * modeAmplitudeFactor * cavityProbeImpedance * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * VoltageFIRSample * dotProductFactor * modeAmplitudeFactor * cavityProbeImpedance * cos(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * sin(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * cos(phi_LO);
 
 //		printf("signal is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
