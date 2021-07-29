@@ -10,13 +10,12 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
-        "stepsize-warning-acknowledged": "false",
         "event-spacing-samples": 15000,
         "voltage-check": "true",
-        "lo-frequency": 25.8781e9,               
+        "lo-frequency": 0.98e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
         "tf-receiver-bin-width": 0.0005e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_FreeSpace_Template.xml"        
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
     },
 
     "simulation":
@@ -36,8 +35,8 @@
 
     "digitizer":
     {
-    	"v-range":  0.02,
-    	"v-offset": -0.01
+    	"v-range":  2.0e-7,
+    	"v-offset": -1.0e-7
     }
 
 }

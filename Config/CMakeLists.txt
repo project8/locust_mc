@@ -5,6 +5,7 @@ configure_file( JustKass.xml.in JustKass.xml )
 configure_file( JustKassFieldMap.xml.in JustKassFieldMap.xml )
 configure_file( LocustKass_Waveguide_Template.xml.in LocustKass_Waveguide_Template.xml )
 configure_file( LocustKass_FreeSpace_Template.xml.in LocustKass_FreeSpace_Template.xml )
+configure_file( LocustKass_Cavity_Template.xml.in LocustKass_Cavity_Template.xml )
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
 configure_file( LocustCavityTemplate.json.in LocustCavityTemplate.json )
 configure_file( LocustFreeSpaceTemplate.json.in LocustFreeSpaceTemplate.json )
@@ -23,8 +24,10 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/JustKassFieldMap.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Waveguide_Template.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_FreeSpace_Template.xml 
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_Template.xml 
     WaveguideGeometry.xml
     FreeSpaceGeometry.xml
+	FreeSpaceGeometry_V00_00_10_1GHz.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json
