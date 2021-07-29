@@ -23,7 +23,7 @@
 
 
 <geometry>
-    <include name="[config_path]/FreeSpaceGeometry_V00_00_10_1GHz.xml"/>
+    <include name="[config_path]/FreeSpaceGeometry_V00_00_11_1GHz.xml"/>
 </geometry>
     
 

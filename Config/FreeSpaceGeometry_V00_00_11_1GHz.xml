@@ -1,6 +1,5 @@
 <!-- bathtub coils -->
-<!--<external_define name="fieldZ" value="0.962640"/> -->
-<external_define name="fieldZ" value="0.0407"/>
+<external_define name="fieldZ" value="0.038219"/>
 <external_define name="current" value="1.000000"/>
 <external_define name="coil_length" value="0.001"/>
 <external_define name="radial_width" value="0.001"/>
@@ -12,8 +11,8 @@
     z2="{[coil_length]/2}"
     longitudinal_mesh_count="10"
     longitudinal_mesh_power="1."
-    r1="{0.050000-[radial_width]/2}"
-    r2="{0.050000+[radial_width]/2}"
+    r1="{0.209200-[radial_width]/2}"
+    r2="{0.209200+[radial_width]/2}"
     radial_mesh_count="30"
     radial_mesh_power="1."
     axial_mesh_count="128"
@@ -26,8 +25,8 @@
     z2="{[coil_length]/2}"
     longitudinal_mesh_count="10"
     longitudinal_mesh_power="1."
-    r1="{0.050000-[radial_width]/2}"
-    r2="{0.050000+[radial_width]/2}"
+    r1="{0.209200-[radial_width]/2}"
+    r2="{0.209200+[radial_width]/2}"
     radial_mesh_count="30"
     radial_mesh_power="1."
     axial_mesh_count="128"
@@ -40,8 +39,8 @@
     z2="{[coil_length]/2}"
     longitudinal_mesh_count="10"
     longitudinal_mesh_power="1."
-    r1="{0.068500-[radial_width]/2}"
-    r2="{0.068500+[radial_width]/2}"
+    r1="{0.101985-[radial_width]/2}"
+    r2="{0.101985+[radial_width]/2}"
     radial_mesh_count="30"
     radial_mesh_power="1."
     axial_mesh_count="128"
@@ -54,8 +53,8 @@
     z2="{[coil_length]/2}"
     longitudinal_mesh_count="10"
     longitudinal_mesh_power="1."
-    r1="{0.068500-[radial_width]/2}"
-    r2="{0.068500+[radial_width]/2}"
+    r1="{0.101985-[radial_width]/2}"
+    r2="{0.101985+[radial_width]/2}"
     radial_mesh_count="30"
     radial_mesh_power="1."
     axial_mesh_count="128"
@@ -68,8 +67,8 @@
     z2="{[coil_length]/2}"
     longitudinal_mesh_count="10"
     longitudinal_mesh_power="1."
-    r1="{0.050149-[radial_width]/2}"
-    r2="{0.050149+[radial_width]/2}"
+    r1="{0.108384-[radial_width]/2}"
+    r2="{0.108384+[radial_width]/2}"
     radial_mesh_count="30"
     radial_mesh_power="1."
     axial_mesh_count="128"
@@ -82,8 +81,8 @@
     z2="{[coil_length]/2}"
     longitudinal_mesh_count="10"
     longitudinal_mesh_power="1."
-    r1="{0.050149-[radial_width]/2}"
-    r2="{0.050149+[radial_width]/2}"
+    r1="{0.108384-[radial_width]/2}"
+    r2="{0.108384+[radial_width]/2}"
     radial_mesh_count="30"
     radial_mesh_power="1."
     axial_mesh_count="128"
@@ -95,32 +94,32 @@
 <space name="coil_000" node="coil_space_000">
   <transformation rotation_euler="0. 0. 0."/> 
 
-  <transformation displacement="{0.} {0.} {-0.092264}"/>
+  <transformation displacement="{0.} {0.} {0.077530}"/>
 </space>
 <space name="coil_001" node="coil_space_001">
   <transformation rotation_euler="0. 0. 0."/> 
 
-  <transformation displacement="{0.} {0.} {0.092264}"/>
+  <transformation displacement="{0.} {0.} {-0.077530}"/>
 </space>
 <space name="coil_002" node="coil_space_002">
   <transformation rotation_euler="0. 0. 0."/> 
 
-  <transformation displacement="{0.} {0.} {-0.019478}"/>
+  <transformation displacement="{0.} {0.} {0.149236}"/>
 </space>
 <space name="coil_003" node="coil_space_003">
   <transformation rotation_euler="0. 0. 0."/> 
 
-  <transformation displacement="{0.} {0.} {0.019478}"/>
+  <transformation displacement="{0.} {0.} {-0.149236}"/>
 </space>
 <space name="coil_004" node="coil_space_004">
   <transformation rotation_euler="0. 0. 0."/> 
 
-  <transformation displacement="{0.} {0.} {-0.056863}"/>
+  <transformation displacement="{0.} {0.} {0.200000}"/>
 </space>
 <space name="coil_005" node="coil_space_005">
   <transformation rotation_euler="0. 0. 0."/> 
 
-  <transformation displacement="{0.} {0.} {0.056863}"/>
+  <transformation displacement="{0.} {0.} {-0.200000}"/>
 </space>
 </space>
 
@@ -132,12 +131,12 @@
 </space>
 
 <!-- electromagnets -->
-<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_000" current="{-1*-750.000000*[current] }"/>
-<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_001" current="{-1*-750.000000*[current] }"/>
-<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_002" current="{-1*250.000000*[current] }"/>
-<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_003" current="{-1*250.000000*[current] }"/>
-<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_004" current="{-1*220.323104*[current] }"/>
-<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_005" current="{-1*220.323104*[current] }"/>
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_000" current="{-1*250.000000*[current] }"/>
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_001" current="{-1*250.000000*[current] }"/>
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_002" current="{-1*62.413686*[current] }"/>
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_003" current="{-1*62.413686*[current] }"/>
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_004" current="{-1*-125.000000*[current] }"/>
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_005" current="{-1*-125.000000*[current] }"/>
 
 <!-- VTK appearance -->
 <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/coil_000/#"/>
