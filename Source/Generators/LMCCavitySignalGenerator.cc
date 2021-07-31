@@ -337,9 +337,8 @@ namespace locust
     {
     	double orbitPhase = tKassParticleXP[6];  // radians
     	double fieldFrequency = tKassParticleXP[7];  // rad/s
+    	double vMag = pow(tKassParticleXP[3]*tKassParticleXP[3] + tKassParticleXP[4]*tKassParticleXP[4],0.5);
     	double convolution = 0.0;
-
-//    	printf("orbitPhase is %g\n", orbitPhase); getchar();
 
 		// populate FIR filter with frequency for just this sample interval:
 		for (int i=0; i < nFilterBinsRequired; i++)
@@ -348,14 +347,14 @@ namespace locust
 			fInterface->FIRfrequencyBuffer[0].pop_front();
 		}
 
-		// populate entire FIR filter with field, using frequencies from recent previous samples:
+		// populate entire FIR filter with current, using frequencies from recent previous samples:
 		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
 		while (it != fInterface->FIRfrequencyBuffer[0].end())
 		{
-			orbitPhase -= (*it)*dtFilter;  // radians, negative orbit.
+			orbitPhase += (*it)*dtFilter;
 			if (*it != 0.)
 			{
-				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
+				fInterface->ElementFIRBuffer[0].push_back(LMCConst::Q()*vMag*cos(orbitPhase));
 			}
 			else
 			{
@@ -419,9 +418,10 @@ namespace locust
 
         	std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP(fInterface->fTOld);
 
-        	double FIRSample = LMCConst::Q()*GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
+        	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
 
-        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);  // unit velocity \dot unit theta
+//        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);  // unit velocity \dot unit theta
+        	double dotProductFactor = 0.5;  // TO-DO:  Calculate this with ctr. of motion.
         	double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);  // scale over to the probe.
         	double modeAmplitude = GetNormalizedModeField(tKassParticleXP);  // absolute E_theta at electron
         	double totalScalingFactor = dotProductFactor * modeScalingFactor * modeAmplitude;
