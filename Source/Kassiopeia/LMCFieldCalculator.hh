@@ -9,13 +9,6 @@
 #include "KSStep.h"
 #include "KSTrajectory.h"
 
-#include "KMathBracketingSolver.h"
-
-//#include "LMCConst.hh"
-//#include "LMCThreeVector.hh"
-#include <vector>
-using std::vector;
-
 
 namespace Kassiopeia
 {
@@ -41,9 +34,6 @@ namespace locust
             double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-            double GetCavityTE011Excitation(Kassiopeia::KSParticle& aFinalParticle);
-            double QuadrantCorrection( double x, double aPhase, double aMean);
-            double GetOrbitPhase( double x, double y, double yMean);
 
             kl_interface_ptr_t fInterface;
     };

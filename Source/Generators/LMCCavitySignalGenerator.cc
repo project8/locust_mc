@@ -333,7 +333,7 @@ namespace locust
         return;
     }
 
-    double CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld)
+    double CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter)
     {
     	double orbitPhase = tKassParticleXP[6];  // radians
     	double fieldFrequency = tKassParticleXP[7];  // rad/s
@@ -418,7 +418,7 @@ namespace locust
 
         	std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP(fInterface->fTOld);
 
-        	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
+        	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter);
 
 //        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);  // unit velocity \dot unit theta
         	double dotProductFactor = 0.8;  // TO-DO:  Check dotProductFactor - should it be an actual dot product?

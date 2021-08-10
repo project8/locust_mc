@@ -86,7 +86,7 @@ namespace locust
             void WakeBeforeEvent();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
-            double GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter, double TOld);
+            double GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter);
             double GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex);
             double GetDotProductFactor(std::vector<double> tKassParticleXP);
             double GetNormalizedModeField(std::vector<double> tKassParticleXP);
