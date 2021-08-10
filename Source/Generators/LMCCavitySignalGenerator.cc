@@ -373,8 +373,8 @@ namespace locust
     {
     	double tThetaParticle = tKassParticleXP[1];
     	double tEtheta = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0], 0., tKassParticleXP[2]).back();
-    	double tEx = cos(tThetaParticle) * tEtheta;
-    	double tEy = sin(tThetaParticle) * tEtheta;
+    	double tEx = -sin(tThetaParticle) * tEtheta;
+    	double tEy = cos(tThetaParticle) * tEtheta;
     	double tEmag = tEtheta;
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
@@ -421,7 +421,7 @@ namespace locust
         	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter, fInterface->fTOld);
 
 //        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);  // unit velocity \dot unit theta
-        	double dotProductFactor = 0.5;  // TO-DO:  Calculate this with ctr. of motion.
+        	double dotProductFactor = 0.8;  // TO-DO:  Check dotProductFactor - should it be an actual dot product?
         	double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);  // scale over to the probe.
         	double modeAmplitude = GetNormalizedModeField(tKassParticleXP);  // absolute E_theta at electron
         	double totalScalingFactor = dotProductFactor * modeScalingFactor * modeAmplitude;
