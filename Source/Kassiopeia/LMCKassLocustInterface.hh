@@ -11,6 +11,7 @@
 
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
+#include "LMCTransmitter.hh"
 #include "LMCField.hh"
 #include "LMCParticle.hh"
 #include "LMCFieldBuffer.hh"
@@ -61,6 +62,7 @@ namespace locust
 
         // Cavity variables:
         TFReceiverHandler fTFReceiverHandler;
+        Transmitter* fTransmitter;
         std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
         double fR;
         double fL;
@@ -71,6 +73,9 @@ namespace locust
         Field* fField;
         std::vector<std::deque<double>> ElementFIRBuffer;
         std::vector<std::deque<double>> FIRfrequencyBuffer;
+    	double dotProductFactor;
+    	double modeAmplitude;
+    	double CavityFIRSample;
 
 
     };

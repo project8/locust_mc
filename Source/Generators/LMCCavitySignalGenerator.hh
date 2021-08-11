@@ -11,9 +11,9 @@
 #include "LMCThreeVector.hh"
 #include <boost/math/special_functions/bessel.hpp>
 #include "LMCGenerator.hh"
-#include "LMCKassCurrentTransmitter.hh" // : LMCTransmitter
 #include "LMCCavityModes.hh" // : LMCPowerCombiner
 #include "LMCKassLocustInterface.hh"
+#include "LMCKassCurrentTransmitter.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
 #include "LMCFieldBuffer.hh"
@@ -86,10 +86,7 @@ namespace locust
             void WakeBeforeEvent();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
-            double GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter);
             double GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex);
-            double GetDotProductFactor(std::vector<double> tKassParticleXP);
-            double GetNormalizedModeField(std::vector<double> tKassParticleXP);
             void InitializeBuffers(unsigned filterbuffersize);
 
             bool DoGenerate( Signal* aSignal );
@@ -97,7 +94,6 @@ namespace locust
             bool DoGenerateFreq( Signal* aSignal );
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
-            Transmitter* fTransmitter; // transmitter object
             PowerCombiner* fPowerCombiner;
 
             kl_interface_ptr_t fInterface;

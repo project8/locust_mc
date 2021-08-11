@@ -139,6 +139,130 @@ namespace locust
       return DampingFactorTM01;
     }
 
+    double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
+    {
+
+    	fInterface->CavityFIRSample = GetCavityFIRSample(aFinalParticle, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+
+//    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle);  // unit velocity \dot unit theta
+    	fInterface->dotProductFactor = 0.5;  // TO-DO:  Check dotProductFactor - should it be an instantaneous dot product?
+    	fInterface->modeAmplitude = GetCavityNormalizedModeField(aFinalParticle);  // absolute E_theta at electron
+
+    	double DampingFactorCavity = 1.0; // TO-DO:  Insert power correction factor here.
+
+    	return DampingFactorCavity;
+    }
+
+    double FieldCalculator::GetCavityFIRSample(Kassiopeia::KSParticle& aFinalParticle, int nFilterBinsRequired, double dtFilter)
+    {
+    	double tVx = aFinalParticle.GetVelocity().X();
+    	double tVy = aFinalParticle.GetVelocity().Y();
+    	double orbitPhase = calcOrbitPhase(tVx, tVy);  // radians
+    	double fieldFrequency = 2.*LMCConst::Pi() * aFinalParticle.GetCyclotronFrequency();  // rad/s
+    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+    	double convolution = 0.0;
+
+		// populate FIR filter with frequency for just this sample interval:
+		for (int i=0; i < nFilterBinsRequired; i++)
+		{
+			fInterface->FIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
+			fInterface->FIRfrequencyBuffer[0].pop_front();
+		}
+
+		// populate entire FIR filter with current, using frequencies from recent previous samples:
+		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
+		while (it != fInterface->FIRfrequencyBuffer[0].end())
+		{
+			orbitPhase += (*it)*dtFilter;
+			if (*it != 0.)
+			{
+				fInterface->ElementFIRBuffer[0].push_back(LMCConst::Q()*vMag*cos(orbitPhase));
+			}
+			else
+			{
+				fInterface->ElementFIRBuffer[0].push_back(0.);
+			}
+			fInterface->ElementFIRBuffer[0].pop_front();
+			*it++;
+		}
+
+		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
+		return convolution;
+
+    }
+
+
+    double FieldCalculator::quadrantOrbitCorrection(double phase, double vx)
+    {
+    	double phaseCorrection = 0.;
+    	if (((phase < 0.)&&(vx < 0.)) || ((phase > 0.)&&(vx > 0.)))
+    		phaseCorrection = LMCConst::Pi();
+
+    	return phaseCorrection;
+    }
+
+
+    double FieldCalculator::quadrantPositionCorrection(double phase, double x)
+    {
+    	double phaseCorrection = 0.;
+    	if (((phase < 0.)&&(x < 0.)) || ((phase > 0.)&&(x < 0.)))
+    		phaseCorrection = LMCConst::Pi();
+
+    	return phaseCorrection;
+    }
+
+
+    double FieldCalculator::calcOrbitPhase(double vx, double vy)
+    {
+    	double phase = 0.;
+    	if (fabs(vy) > 0.)
+    		phase = atan(-vx/vy);
+    	phase += quadrantOrbitCorrection(phase, vx);
+//    	printf("phase is %g\n", phase*180./LMCConst::Pi()); getchar();
+    	return phase;
+    }
+
+    double FieldCalculator::calcTheta(double x, double y)
+    {
+    	double phase = 0.;
+    	if (fabs(x) > 0.)
+    		phase = atan(y/x);
+    	phase += quadrantPositionCorrection(phase, x);
+    	return phase;
+    }
+
+
+
+    double FieldCalculator::GetCavityDotProductFactor(Kassiopeia::KSParticle& aFinalParticle)
+    {
+    	double tX = aFinalParticle.GetPosition().X();
+    	double tY = aFinalParticle.GetPosition().Y();
+    	double tZ = aFinalParticle.GetPosition().Z();
+    	double tR = sqrt(tX*tX + tY*tY);
+    	double tThetaParticle = calcOrbitPhase(tX, tY);
+
+    	double tEtheta = fInterface->fField->TE_E(0,1,1, tR, 0., tZ).back();
+    	double tEx = -sin(tThetaParticle) * tEtheta;
+    	double tEy = cos(tThetaParticle) * tEtheta;
+    	double tEmag = tEtheta;
+    	double tVx = aFinalParticle.GetVelocity().X();
+    	double tVy = aFinalParticle.GetVelocity().Y();
+    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+    	return (tEx*tVx + tEy*tVx)/tEmag/tVmag;
+    }
+
+
+
+    double FieldCalculator::GetCavityNormalizedModeField(Kassiopeia::KSParticle& aFinalParticle)
+    {
+    	double tX = aFinalParticle.GetPosition().X();
+    	double tY = aFinalParticle.GetPosition().Y();
+    	double tZ = aFinalParticle.GetPosition().Z();
+    	double tR = sqrt(tX*tX + tY*tY);
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tR,0.,tZ);
+		double normFactor = fInterface->fField->GetNormFactorsTE()[0];  // select mode 0,1,1
+    	return normFactor*tTE_E_electron.back();  // return normalized theta component for right now.
+    }
 
 
 

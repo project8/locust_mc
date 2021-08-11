@@ -141,8 +141,6 @@ namespace locust
     			for (int n=1; n<fNModes+1; n++)
     			{
     				double normFactor = fInterface->fField->GetNormFactorsTE()[modeCounter];
-    		    	printf("TE%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
-    		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
     		    	modeCounter += 1;
     		    	if (modeCounter >= fNModes) break;
     			}
@@ -191,7 +189,7 @@ namespace locust
     					for (unsigned j=0; j<fInterface->fnPixels; j++)
     					{
     						double theta = (double)j/fInterface->fnPixels*2.*LMCConst::Pi();
-    						std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.05);
+    						std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0);
     						fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
     					}
     				}
@@ -264,8 +262,8 @@ namespace locust
         	if(aParam["transmitter"]().as_string() == "kass-current")
         	{
         		ntransmitters += 1;
-        		fTransmitter = new KassCurrentTransmitter;
-        		if(!fTransmitter->Configure(aParam))
+        		fInterface->fTransmitter = new KassCurrentTransmitter;
+        		if(!fInterface->fTransmitter->Configure(aParam))
         		{
         			LERROR(lmclog,"Error Configuring kass-current transmitter class");
         		}
@@ -298,7 +296,6 @@ namespace locust
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
         CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
 //        PrintModeMaps();
-
 
         return true;
     }
@@ -333,63 +330,6 @@ namespace locust
         return;
     }
 
-    double CavitySignalGenerator::GetFIRSample(std::vector<double> tKassParticleXP, int nFilterBinsRequired, double dtFilter)
-    {
-    	double orbitPhase = tKassParticleXP[6];  // radians
-    	double fieldFrequency = tKassParticleXP[7];  // rad/s
-    	double vMag = pow(tKassParticleXP[3]*tKassParticleXP[3] + tKassParticleXP[4]*tKassParticleXP[4],0.5);
-    	double convolution = 0.0;
-
-		// populate FIR filter with frequency for just this sample interval:
-		for (int i=0; i < nFilterBinsRequired; i++)
-		{
-			fInterface->FIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
-			fInterface->FIRfrequencyBuffer[0].pop_front();
-		}
-
-		// populate entire FIR filter with current, using frequencies from recent previous samples:
-		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
-		while (it != fInterface->FIRfrequencyBuffer[0].end())
-		{
-			orbitPhase += (*it)*dtFilter;
-			if (*it != 0.)
-			{
-				fInterface->ElementFIRBuffer[0].push_back(LMCConst::Q()*vMag*cos(orbitPhase));
-			}
-			else
-			{
-				fInterface->ElementFIRBuffer[0].push_back(0.);
-			}
-			fInterface->ElementFIRBuffer[0].pop_front();
-			*it++;
-		}
-
-		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
-		return convolution;
-
-    }
-
-    double CavitySignalGenerator::GetDotProductFactor(std::vector<double> tKassParticleXP)
-    {
-    	double tThetaParticle = tKassParticleXP[1];
-    	double tEtheta = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0], 0., tKassParticleXP[2]).back();
-    	double tEx = -sin(tThetaParticle) * tEtheta;
-    	double tEy = cos(tThetaParticle) * tEtheta;
-    	double tEmag = tEtheta;
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
-    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	return (tEx*tVx + tEy*tVx)/tEmag/tVmag;
-    }
-
-
-
-    double CavitySignalGenerator::GetNormalizedModeField(std::vector<double> tKassParticleXP)
-    {
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]);
-		double normFactor = fInterface->fField->GetNormFactorsTE()[0];  // select mode 0,1,1
-    	return normFactor*tTE_E_electron.back();  // return normalized theta component for right now.
-    }
 
     double CavitySignalGenerator::GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex)
     {
@@ -416,17 +356,12 @@ namespace locust
         {
         	sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-        	std::vector<double> tKassParticleXP = fTransmitter->ExtractParticleXP(fInterface->fTOld);
+//        	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
+//       	double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);  // scale over to the probe?
+        	double modeScalingFactor = 1.0; // override
+        	double totalScalingFactor = modeScalingFactor * fInterface->dotProductFactor * fInterface->modeAmplitude;
 
-        	double FIRSample = GetFIRSample(tKassParticleXP, nFilterBinsRequired, dtFilter);
-
-//        	double dotProductFactor = GetDotProductFactor(tKassParticleXP);  // unit velocity \dot unit theta
-        	double dotProductFactor = 0.8;  // TO-DO:  Check dotProductFactor - should it be an actual dot product?
-        	double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);  // scale over to the probe.
-        	double modeAmplitude = GetNormalizedModeField(tKassParticleXP);  // absolute E_theta at electron
-        	double totalScalingFactor = dotProductFactor * modeScalingFactor * modeAmplitude;
-
-        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, FIRSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
+        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, fInterface->CavityFIRSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
         }
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
@@ -496,12 +431,10 @@ namespace locust
         int PreEventCounter = 0;
 		fPowerCombiner->SetCavityProbeLocations(fNChannels, fInterface->fL);
         int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
-        double dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
-        int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
         InitializeBuffers(nFilterBins);
 
 
-        if (fTransmitter->IsKassiopeia())
+        if (fInterface->fTransmitter->IsKassiopeia())
         {
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         	std::thread tKassiopeia (&CavitySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
@@ -542,7 +475,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveMode(aSignal, nFilterBinsRequired, dtFilter, index))
+                    		if (DriveMode(aSignal, fInterface->nFilterBinsRequired, fInterface->dtFilter, index))
                     		{
                                 PreEventCounter = 0; // reset
                     		}
@@ -604,7 +537,7 @@ namespace locust
             	return false;
             }
 
-        }  // fTransmitter->IsKassiopeia()
+        }  // fInterface->fTransmitter->IsKassiopeia()
 
     	fclose (fp);
 

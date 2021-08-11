@@ -35,6 +35,7 @@ namespace locust
             fCENTER_TO_SHORT( 0.05 ),
             fCENTER_TO_ANTENNA( 0.05 ),
 			fTFReceiverHandler(),
+			fTransmitter(),
 	        fBesselNKZeros( 0 ),
 			fBesselNKPrimeZeros( 0 ),
 			fR( 0.1 ),
@@ -43,7 +44,11 @@ namespace locust
 	        nFilterBinsRequired( 0 ),
 	        dtFilter( 0 ),
 	        eCurrentBuffer( 0 ),
-			fField()
+			fField(),
+	    	dotProductFactor( 0. ),
+	    	modeAmplitude( 0. ),
+			CavityFIRSample( 0. )
+
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :
