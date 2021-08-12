@@ -25,7 +25,7 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
-		fNModes( 1 ),
+		fNModes( 3 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
@@ -102,69 +102,79 @@ namespace locust
     }
 
 
-    std::vector<double> CavitySignalGenerator::CalculateNormFactors(int nModes, bool TE)
+    std::vector<std::vector<std::vector<double>>> CavitySignalGenerator::CalculateNormFactors(int nModes, bool TE)
     {
-    	std::vector<double> aNormFactor;
-    	aNormFactor.resize(nModes);
 
-    	for (unsigned i=0; i<nModes; i++)
+        LPROG( lmclog, "Calculating mode normalization factors ... " );
+
+    	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
+    	aModeNormFactor.resize(nModes);
+
+    	for (unsigned m=0; m<nModes; m++)
     	{
-        	std::vector<int> aModeFilter = ModeFilter(i);
-    		int l = aModeFilter[0];
-    		int m = aModeFilter[1];
-    		int n = aModeFilter[2];
-    		if (TE)
-    		{
-    			aNormFactor[i] = 1./fInterface->fField->Integrate(l,m,n,1,1)/LMCConst::EpsNull();
-    		}
-    		else
-    		{
-    			aNormFactor[i] = 1./fInterface->fField->Integrate(l,m,n,0,1)/LMCConst::EpsNull();
-    		}
+    		aModeNormFactor[m].resize(nModes);
+        	for (unsigned n=0; n<nModes; n++)
+        	{
+        		aModeNormFactor[m][n].resize(nModes);
+        	}
     	}
 
-    	return aNormFactor;
+
+    	for (unsigned l=0; l<nModes; l++)
+    	{
+        	for (unsigned m=1; m<nModes; m++)
+        	{
+            	for (unsigned n=1; n<nModes; n++)
+            	{
+
+            		if (TE)
+            		{
+            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,1,1)/LMCConst::EpsNull();
+            		}
+            		else
+            		{
+            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,0,1)/LMCConst::EpsNull();
+            		}
+            	}
+        	}
+    	}
+
+    	return aModeNormFactor;
     }
 
 
     void CavitySignalGenerator::CheckNormalization()
     {
-    	unsigned modeCounter = 0;
 
     	printf("\n \\epsilon\\int{|E_xlm|^2 dV} = \\mu\\int{|H_xlm|^2 dV} ?\n\n");
     	for (int l=0; l<fNModes; l++)
     	{
-	    	if (modeCounter >= fNModes) break;
-    		for (int m=1; m<fNModes+1; m++)
+    		for (int m=1; m<fNModes; m++)
     		{
-    	    	if (modeCounter >= fNModes) break;
-    			for (int n=1; n<fNModes+1; n++)
+    			for (int n=1; n<fNModes; n++)
     			{
-    				double normFactor = fInterface->fField->GetNormFactorsTE()[modeCounter];
-    		    	modeCounter += 1;
-    		    	if (modeCounter >= fNModes) break;
+    				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
+       		    	printf("TE%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+        		    		LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
     			}
     		}
     	}
 
 
-    	modeCounter = 0;
     	for (int l=0; l<fNModes; l++)
     	{
-	    	if (modeCounter >= fNModes) break;
-    		for (int m=1; m<fNModes+1; m++)
+    		for (int m=1; m<fNModes; m++)
     		{
-    	    	if (modeCounter >= fNModes) break;
-    			for (int n=1; n<fNModes+1; n++)
+    			for (int n=1; n<fNModes; n++)
     			{
-    				double normFactor = fInterface->fField->GetNormFactorsTM()[modeCounter];
+    				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
     		    	printf("TM%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
-    		    	modeCounter += 1;
-    		    	if (modeCounter >= fNModes) break;
     			}
     		}
     	}
+
+    	printf("The modes normalized as above are available for use in the simulation.\n");
     }
 
 
@@ -179,7 +189,7 @@ namespace locust
     			for (int n=1; n<5; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
-    				double tNormalizationTE_E = fInterface->fField->GetNormFactorsTE()[modeCounter];
+    				double tNormalizationTE_E = fInterface->fField->GetNormFactorsTE()[l][m][n];
     				int a = sprintf(buffer, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
     				const char *fpname = buffer;
     				FILE *fpTE_E = fopen(fpname, "w");

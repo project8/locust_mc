@@ -15,24 +15,24 @@ namespace locust
     Field::~Field() {}
 
 
-    std::vector<double> Field::GetNormFactorsTE()
+    std::vector<std::vector<std::vector<double>>> Field::GetNormFactorsTE()
     {
-    	return fNormFactorTE;
+    	return fModeNormFactorTE;
     }
 
-    void Field::SetNormFactorsTE(std::vector<double> aNormFactor)
+    void Field::SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor)
     {
-    	fNormFactorTE = aNormFactor;
+    	fModeNormFactorTE = aNormFactor;
     }
 
-    std::vector<double> Field::GetNormFactorsTM()
+    std::vector<std::vector<std::vector<double>>> Field::GetNormFactorsTM()
     {
-    	return fNormFactorTM;
+    	return fModeNormFactorTM;
     }
 
-    void Field::SetNormFactorsTM(std::vector<double> aNormFactor)
+    void Field::SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor)
     {
-    	fNormFactorTM = aNormFactor;
+    	fModeNormFactorTM = aNormFactor;
     }
 
 

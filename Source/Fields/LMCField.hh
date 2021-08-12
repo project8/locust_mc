@@ -42,14 +42,14 @@ namespace locust
 
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){};
 
-            std::vector<double> GetNormFactorsTE();
-            void SetNormFactorsTE(std::vector<double> aNormFactor);
-            std::vector<double> GetNormFactorsTM();
-            void SetNormFactorsTM(std::vector<double> aNormFactor);
+            std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
+            void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
+            std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
+            void SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor);
 
         private:
-            std::vector<double> fNormFactorTE;  // size of vector will be n-modes.
-            std::vector<double> fNormFactorTM;  // size of vector will be n-modes.
+            std::vector<std::vector<std::vector<double>>> fModeNormFactorTE;  // 3D vector [n-modes][n-modes][n-modes].
+            std::vector<std::vector<std::vector<double>>> fModeNormFactorTM;  // 3D vector [n-modes][n-modes][n-modes].
 
     };
 

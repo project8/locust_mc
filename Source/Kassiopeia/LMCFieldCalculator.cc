@@ -260,7 +260,7 @@ namespace locust
     	double tZ = aFinalParticle.GetPosition().Z();
     	double tR = sqrt(tX*tX + tY*tY);
     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tR,0.,tZ);
-		double normFactor = fInterface->fField->GetNormFactorsTE()[0];  // select mode 0,1,1
+		double normFactor = fInterface->fField->GetNormFactorsTE()[0][1][1];  // select mode 0,1,1
     	return normFactor*tTE_E_electron.back();  // return normalized theta component for right now.
     }
 
