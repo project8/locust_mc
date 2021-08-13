@@ -142,14 +142,14 @@ namespace locust
     double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
 
+    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,aFinalParticle); // lmn 011 for now.
+//    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle, tTE_E_normalized);  // unit velocity \dot unit theta
+    	fInterface->dotProductFactor = 0.5;  // TO-DO:  Check dotProductFactor - should it be an instantaneous dot product?
+    	fInterface->modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
+
     	fInterface->CavityFIRSample = GetCavityFIRSample(aFinalParticle, fInterface->nFilterBinsRequired, fInterface->dtFilter);
 
-//    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle);  // unit velocity \dot unit theta
-    	fInterface->dotProductFactor = 0.5;  // TO-DO:  Check dotProductFactor - should it be an instantaneous dot product?
-    	fInterface->modeAmplitude = GetCavityNormalizedModeField(aFinalParticle);  // absolute E_theta at electron
-
     	double DampingFactorCavity = 1.0; // TO-DO:  Insert power correction factor here.
-
     	return DampingFactorCavity;
     }
 
@@ -233,15 +233,13 @@ namespace locust
 
 
 
-    double FieldCalculator::GetCavityDotProductFactor(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetCavityDotProductFactor(Kassiopeia::KSParticle& aFinalParticle, std::vector<double> aTE_E_normalized)
     {
     	double tX = aFinalParticle.GetPosition().X();
     	double tY = aFinalParticle.GetPosition().Y();
-    	double tZ = aFinalParticle.GetPosition().Z();
-    	double tR = sqrt(tX*tX + tY*tY);
     	double tThetaParticle = calcOrbitPhase(tX, tY);
 
-    	double tEtheta = fInterface->fField->TE_E(0,1,1, tR, 0., tZ).back();
+    	double tEtheta = aTE_E_normalized.back();
     	double tEx = -sin(tThetaParticle) * tEtheta;
     	double tEy = cos(tThetaParticle) * tEtheta;
     	double tEmag = tEtheta;
@@ -253,15 +251,23 @@ namespace locust
 
 
 
-    double FieldCalculator::GetCavityNormalizedModeField(Kassiopeia::KSParticle& aFinalParticle)
+    std::vector<double> FieldCalculator::GetCavityNormalizedModeField(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle)
     {
     	double tX = aFinalParticle.GetPosition().X();
     	double tY = aFinalParticle.GetPosition().Y();
     	double tZ = aFinalParticle.GetPosition().Z();
     	double tR = sqrt(tX*tX + tY*tY);
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tR,0.,tZ);
-		double normFactor = fInterface->fField->GetNormFactorsTE()[0][1][1];  // select mode 0,1,1
-    	return normFactor*tTE_E_electron.back();  // return normalized theta component for right now.
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ);
+		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
+
+		auto it = tTE_E_electron.begin();
+		while (it != tTE_E_electron.end())
+		{
+			if (!isnan(*it))
+				(*it) *= normFactor;
+			*it++;
+		}
+    	return tTE_E_electron;  // return normalized field.
     }
 
 
