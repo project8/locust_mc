@@ -237,7 +237,7 @@ namespace locust
     {
     	double tX = aFinalParticle.GetPosition().X();
     	double tY = aFinalParticle.GetPosition().Y();
-    	double tThetaParticle = calcOrbitPhase(tX, tY);
+    	double tThetaParticle = calcTheta(tX, tY);
 
     	double tEtheta = aTE_E_normalized.back();
     	double tEx = -sin(tThetaParticle) * tEtheta;
