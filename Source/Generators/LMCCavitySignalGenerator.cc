@@ -304,7 +304,7 @@ namespace locust
 
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
-        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
+//        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
 //        PrintModeMaps();
 
         return true;
@@ -353,6 +353,89 @@ namespace locust
     	return modeAmplitudeFactor;
     }
 
+
+    double CavitySignalGenerator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
+    {
+    	double tThetaParticle = tKassParticleXP[1];
+    	double tEtheta = aTE_E_normalized.back();
+    	double tEx = -sin(tThetaParticle) * tEtheta;
+    	double tEy = cos(tThetaParticle) * tEtheta;
+    	double tEmag = tEtheta;
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+    	return (tEx*tVx + tEy*tVx)/tEmag/tVmag;
+    }
+
+    std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+     {
+     	double tR = tKassParticleXP[0];
+     	double tZ = tKassParticleXP[2];
+     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ);
+ 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
+
+ 		auto it = tTE_E_electron.begin();
+ 		while (it != tTE_E_electron.end())
+ 		{
+ 			if (!isnan(*it))
+ 				(*it) *= normFactor;
+ 			*it++;
+ 		}
+     	return tTE_E_electron;  // return normalized field.
+     }
+
+    double CavitySignalGenerator::GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> aLocalFIRfrequencyBuffer, std::vector<std::deque<double>> aLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter)
+    {
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double orbitPhase = tKassParticleXP[6];  // radians
+    	double fieldFrequency = tKassParticleXP[7];  // rad/s
+    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+    	double convolution = 0.0;
+
+		// populate FIR filter with frequency for just this sample interval:
+		for (int i=0; i < nFilterBinsRequired; i++)
+		{
+			aLocalFIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
+			aLocalFIRfrequencyBuffer[0].pop_front();
+		}
+		std::deque<double>::iterator it = aLocalFIRfrequencyBuffer[0].begin();
+		while (it != aLocalFIRfrequencyBuffer[0].end())
+		{
+			orbitPhase += (*it)*dtFilter;
+
+			if (*it != 0.)
+			{
+				aLocalElementFIRBuffer[0].push_back(LMCConst::Q()*vMag*cos(orbitPhase));
+			}
+			else
+			{
+				aLocalElementFIRBuffer[0].push_back(0.);
+			}
+			aLocalElementFIRBuffer[0].pop_front();
+
+			*it++;
+		}
+
+		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(aLocalElementFIRBuffer[0]);
+		return convolution;
+
+    }
+
+
+    std::vector<std::deque<double>> CavitySignalGenerator::create_copy(std::vector<std::deque<double>> const &vec)
+    {
+        std::vector<std::deque<double>> v(vec.size());
+        v = vec;
+/*    	for (unsigned i=0; i<vec.size(); i++)
+    	{
+    		std::copy(vec[i].begin(), vec[i].end(), v[i].begin());
+    	}
+    	*/
+        return v;
+    }
+
+
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
     {
         const int signalSize = aSignal->TimeSize();
@@ -362,16 +445,27 @@ namespace locust
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
+
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
+    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
+//        	double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+    	double dotProductFactor = 0.5; // override
+    	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
+
+// fix-me:  We may need more precise nFilterBinsRequired.
+    	std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
+    	std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
+        double tFirSample = GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+        std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
+        std::vector<std::deque<double>>().swap(tLocalElementFIRBuffer);
+
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
         {
         	sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-
-//        	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
 //       	double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);  // scale over to the probe?
-        	double modeScalingFactor = 1.0; // override
-        	double totalScalingFactor = modeScalingFactor * fInterface->dotProductFactor * fInterface->modeAmplitude;
-
-        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, fInterface->CavityFIRSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
+        	double modeScalingFactor = 1.0; // override for now.
+        	double totalScalingFactor = modeScalingFactor * dotProductFactor * modeAmplitude;
+        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
         }
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
@@ -560,7 +654,12 @@ namespace locust
     {
     	FieldBuffer aFieldBuffer;
     	fInterface->ElementFIRBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
+    	fInterface->ElementFIRBufferCopy = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
     	fInterface->FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
+    	fInterface->FIRfrequencyBufferCopy = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
+    	fStupidBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
+//    	fLocalFIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
+//    	fLocalElementFIRBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
     }
 
 

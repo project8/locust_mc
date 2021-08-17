@@ -187,6 +187,11 @@ namespace locust
 		}
 
 		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
+
+		// Make copies of the buffers to keep the contents arranged sequentially in Locust:
+		fInterface->ElementFIRBufferCopy[0] = fInterface->ElementFIRBuffer[0];
+		fInterface->FIRfrequencyBufferCopy[0] = fInterface->FIRfrequencyBuffer[0];
+
 		return convolution;
 
     }

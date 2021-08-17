@@ -78,6 +78,9 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
+                        std::vector<std::deque<double>> fStupidBuffer;
+//            std::vector<std::deque<double>> fLocalFIRfrequencyBuffer;
+//            std::vector<std::deque<double>> fLocalElementFIRBuffer;
 
 
 
@@ -88,6 +91,11 @@ namespace locust
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
             double GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex);
             void InitializeBuffers(unsigned filterbuffersize);
+            std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
+            double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
+            std::vector<std::deque<double>> create_copy(std::vector<std::deque<double>> const &vec);
+
 
             bool DoGenerate( Signal* aSignal );
             bool DoGenerateTime( Signal* aSignal );
