@@ -375,7 +375,7 @@
 
     
     <!-- modifiers -->
-    <cycl_rad_extr name="rad_extr" P8Phase="3" /> 
+    <cycl_rad_extr name="rad_extr" P8Phase="4" /> 
     <mod_run_pause name="run_pause"/>
     <mod_event_hold name="event_hold"/>
 
