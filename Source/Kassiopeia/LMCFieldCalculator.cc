@@ -251,7 +251,7 @@ namespace locust
     	double tVx = aFinalParticle.GetVelocity().X();
     	double tVy = aFinalParticle.GetVelocity().Y();
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	return (tEx*tVx + tEy*tVx)/tEmag/tVmag;
+    	return (tEx*tVx + tEy*tVy)/tEmag/tVmag;
     }
 
 

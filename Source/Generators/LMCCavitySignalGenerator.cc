@@ -304,7 +304,7 @@ namespace locust
 
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
-//        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
+        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
 //        PrintModeMaps();
 
         return true;
@@ -360,11 +360,13 @@ namespace locust
     	double tEtheta = aTE_E_normalized.back();
     	double tEx = -sin(tThetaParticle) * tEtheta;
     	double tEy = cos(tThetaParticle) * tEtheta;
-    	double tEmag = tEtheta;
+    	double tEmag = fabs(tEtheta);
+    	// fix-me:  should below be instantaneous velocity or center of motion?
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	return (tEx*tVx + tEy*tVx)/tEmag/tVmag;
+//    	printf("tEmag is %g, r is %g, and theta is %g\n", tEmag, tKassParticleXP[0], tKassParticleXP[1]); getchar();
+    	return (tEx*tVx + tEy*tVy)/tEmag/tVmag;
     }
 
     std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
@@ -448,7 +450,7 @@ namespace locust
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
     	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
-//        	double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+//        double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
     	double dotProductFactor = 0.5; // override
     	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
