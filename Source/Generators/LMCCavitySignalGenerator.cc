@@ -366,7 +366,7 @@ namespace locust
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
 //    	printf("tEmag is %g, r is %g, and theta is %g\n", tEmag, tKassParticleXP[0], tKassParticleXP[1]); getchar();
-    	return (tEx*tVx + tEy*tVy)/tEmag/tVmag;
+    	return fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
     }
 
     std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
@@ -450,8 +450,8 @@ namespace locust
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
     	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
-//        double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
-    	double dotProductFactor = 0.5; // override
+        double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+//    	double dotProductFactor = 0.5; // override
     	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
 // fix-me:  We may need more precise nFilterBinsRequired.

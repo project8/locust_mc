@@ -143,8 +143,8 @@ namespace locust
     {
 
     	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,aFinalParticle); // lmn 011 for now.
-//    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle, tTE_E_normalized);  // unit velocity \dot unit theta
-    	fInterface->dotProductFactor = 0.5;  // TO-DO:  Check dotProductFactor - should it be an instantaneous dot product?
+    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle, tTE_E_normalized);  // unit velocity \dot unit theta
+//    	fInterface->dotProductFactor = 0.5;  // TO-DO:  Check dotProductFactor - should it be an instantaneous dot product?
     	fInterface->modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
     	fInterface->CavityFIRSample = GetCavityFIRSample(aFinalParticle, fInterface->nFilterBinsRequired, fInterface->dtFilter);
@@ -251,7 +251,7 @@ namespace locust
     	double tVx = aFinalParticle.GetVelocity().X();
     	double tVy = aFinalParticle.GetVelocity().Y();
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	return (tEx*tVx + tEy*tVy)/tEmag/tVmag;
+    	return fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
     }
 
 
