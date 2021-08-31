@@ -40,7 +40,10 @@ namespace locust
      Configuration name: "cavity-signal"
 
      Available configuration options:
-     - "param-name": type -- Description
+     - "cavity-radius" : double -- ideal cylindrical cavity radius.
+     - "cavity-length" : double -- ideal cylindrical cavity length.
+     - "n-modes" : int -- range of l, m, and n indices used to configure mode normalizations.
+     	 	 However, presently the only mode being simulated is 011.
      - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      - "lo-frequency":  local oscillator frequency in Hz.
@@ -78,9 +81,6 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
-                        std::vector<std::deque<double>> fStupidBuffer;
-//            std::vector<std::deque<double>> fLocalFIRfrequencyBuffer;
-//            std::vector<std::deque<double>> fLocalElementFIRBuffer;
 
 
 
@@ -94,7 +94,6 @@ namespace locust
             std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
             double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
-            std::vector<std::deque<double>> create_copy(std::vector<std::deque<double>> const &vec);
 
 
             bool DoGenerate( Signal* aSignal );

@@ -425,19 +425,6 @@ namespace locust
     }
 
 
-    std::vector<std::deque<double>> CavitySignalGenerator::create_copy(std::vector<std::deque<double>> const &vec)
-    {
-        std::vector<std::deque<double>> v(vec.size());
-        v = vec;
-/*    	for (unsigned i=0; i<vec.size(); i++)
-    	{
-    		std::copy(vec[i].begin(), vec[i].end(), v[i].begin());
-    	}
-    	*/
-        return v;
-    }
-
-
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
     {
         const int signalSize = aSignal->TimeSize();
@@ -451,7 +438,6 @@ namespace locust
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
     	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
         double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
-//    	double dotProductFactor = 0.5; // override
     	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
 // fix-me:  We may need more precise nFilterBinsRequired.
@@ -659,9 +645,6 @@ namespace locust
     	fInterface->ElementFIRBufferCopy = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
     	fInterface->FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
     	fInterface->FIRfrequencyBufferCopy = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-    	fStupidBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-//    	fLocalFIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-//    	fLocalElementFIRBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
     }
 
 
