@@ -161,10 +161,6 @@ and to mount a local directory for e.g. I/O to the container
 
 
 
-
-
-
-
 Directory Structure
 -------------------
 

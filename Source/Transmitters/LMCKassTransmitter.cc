@@ -41,7 +41,7 @@ namespace locust
 
     void KassTransmitter::InitializeFieldPoint(LMCThreeVector fieldPoint)
     {
-	Transmitter::InitializeFieldPoint(fieldPoint);
+    	Transmitter::InitializeFieldPoint(fieldPoint);
     	fFieldSolver.AddFieldPoint(fieldPoint);
     }
 

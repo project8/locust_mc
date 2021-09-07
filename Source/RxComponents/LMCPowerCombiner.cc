@@ -23,6 +23,10 @@ namespace locust
             famplifierLoss( 0.66 ),
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
+            fnCavityProbes( 0 ),
+            fCavityProbeImpedance( 50.0 ),
+            fCavityProbeZ( 0. ),
+            fCavityProbeTheta( 0. ),
 			fvoltageCheck( false )
 
     {}
@@ -83,6 +87,22 @@ namespace locust
 	}
 
 
+	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex)
+	{
+
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * sin(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * cos(phi_LO);
+
+//		printf("signal is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
+
+		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
+			LWARN( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+		return true;
+	}
+
+
+
+
     int PowerCombiner::GetNElementsPerStrip()
     {
     	return fnElementsPerStrip;
@@ -91,6 +111,16 @@ namespace locust
     void PowerCombiner::SetNElementsPerStrip( int aNumberOfElements )
     {
     	fnElementsPerStrip = aNumberOfElements;
+    }
+
+    int PowerCombiner::GetNCavityProbes()
+    {
+    	return fnCavityProbes;
+    }
+
+    void PowerCombiner::SetNCavityProbes( int aNumberOfProbes )
+    {
+    	fnCavityProbes = aNumberOfProbes;
     }
 
     double PowerCombiner::GetJunctionLoss()
@@ -140,6 +170,58 @@ namespace locust
     void PowerCombiner::SetDampingFactor (int z_index, double aDampingFactor )
     {
     	fdampingFactors[z_index] = aDampingFactor;
+    }
+
+    double PowerCombiner::GetCavityProbeImpedance()
+    {
+    	return fCavityProbeImpedance;
+    }
+    void PowerCombiner::SetCavityProbeImpedance( double anImpedance )
+    {
+    	fCavityProbeImpedance = anImpedance;
+    }
+
+    bool PowerCombiner::SetCavityProbeLocations(int nCavityProbes, double cavityLength)
+    {
+
+    	SetNCavityProbes(nCavityProbes);
+    	std::vector<double> probeZ;
+    	probeZ.resize(nCavityProbes);
+
+    	std::vector<double> probeTheta;
+    	probeTheta.resize(nCavityProbes);
+
+    	double probeSpacing = cavityLength / ((double)nCavityProbes + 1.);
+
+		for (unsigned index=0; index<probeZ.size(); index++)
+		{
+			probeZ[index] = -cavityLength/2. + (index+1)*probeSpacing;
+			probeTheta[index] = 0.0;
+		}
+
+    	SetCavityProbeZ(probeZ);
+    	SetCavityProbeTheta(probeTheta);
+
+    	return true;
+    }
+
+
+
+    std::vector<double> PowerCombiner::GetCavityProbeZ()
+    {
+    	return fCavityProbeZ;
+    }
+    void PowerCombiner::SetCavityProbeZ ( std::vector<double> aVector )
+    {
+    	fCavityProbeZ = aVector;
+    }
+    std::vector<double> PowerCombiner::GetCavityProbeTheta()
+    {
+    	return fCavityProbeTheta;
+    }
+    void PowerCombiner::SetCavityProbeTheta ( std::vector<double> aVector )
+    {
+    	fCavityProbeTheta = aVector;
     }
 
 

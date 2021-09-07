@@ -48,7 +48,6 @@ namespace locust
     private:
 
     	LienardWiechert fFieldSolver;
-        //LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
 
 
     };
