@@ -146,7 +146,7 @@ namespace locust
     void CavitySignalGenerator::CheckNormalization()
     {
 
-    	printf("\n \\epsilon\\int{|E_xlm|^2 dV} = \\mu\\int{|H_xlm|^2 dV} ?\n\n");
+    	printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
     	for (int l=0; l<fNModes; l++)
     	{
     		for (int m=1; m<fNModes; m++)
@@ -292,8 +292,6 @@ namespace locust
         }
 
         fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
-    	FieldBuffer aFieldBuffer;
-    	fInterface->eCurrentBuffer = aFieldBuffer.InitializeBuffer(1, 1, fInterface->fTFReceiverHandler.GetFilterSize());
     	fInterface->fField = new CylindricalCavity;
 
 
