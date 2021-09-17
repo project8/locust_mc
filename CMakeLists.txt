@@ -79,6 +79,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         INSTALL_COMMAND   make -j3 install
     )
 
+
+    # The following 4 find_package lines are causing CMake to fail, but we need them to work so
+    # that Locust can see the Kassiopeia libraries: 
     # Finally we use find_package() to learn about the Kassiopeia build targets.
     find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
     find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
