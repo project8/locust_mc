@@ -58,6 +58,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
+    
+    message( STATUS "in Locust, %%%%%%%%%%%%% check 1" )
+    
+    
     #execute_process( 
     #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
     #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
@@ -79,16 +83,27 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         INSTALL_COMMAND   make -j3 install
     )
 
+    message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 2")
+    message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 2.1, Kommon found is ${Kommon_FOUND}") # not found here.
 
-    # The following 4 find_package lines are causing CMake to fail, but we need them to work so
-    # that Locust can see the Kassiopeia libraries: 
+    # In the next 4 lines with find_package(), the Kassiopeia config is crashing
+    # even though the packages are being found by Locust, and even though standalone Kassiopeia 
+    # builds with no problems.  It seems to crash at this line:
+    #      include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+    # in each @PROJECT_NAME@Config.cmake file.  There may be a problem with CMAKE_CURRENT_LIST_DIR being
+    # changed by Locust.
+
     # Finally we use find_package() to learn about the Kassiopeia build targets.
     find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
     find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
     find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
     find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
+    
+    message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, Kommon found is ${Kommon_FOUND}") # found here.
+    
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
+
 
 
 #####################
@@ -180,8 +195,7 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
         	add_dependencies( ${LIBRARY} KassiopeiaExt )
         endif()
     endforeach()
-      
-              
+                       
     pbuilder_add_ext_libraries(
         ${Kommon_LIBRARIES}
         ${KGeoBag_LIBRARIES}
