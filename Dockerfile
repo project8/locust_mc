@@ -16,6 +16,8 @@ ENV CC=${CC_VAL}
 ARG CXX_VAL=g++
 ENV CXX=${CXX_VAL}
 
+ENV VTK_DIR=/usr/lib/cmake/vtk-6.3/
+
 SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
