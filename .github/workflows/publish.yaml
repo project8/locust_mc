@@ -4,12 +4,10 @@ name: Publish
 on:
 
   push:
-    branches: [ main, master, develop, feature/github-actions, feature/vtk_support]
-    tags: 'v*.*.*'
+    branches: [ main, develop, feature/github-actions, feature/vtk_support]
+    tags: ['v*.*.*']
     
   pull_request:
-    branches: '*'
-    types: opened
   
   release:
     types: [published]

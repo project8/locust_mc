@@ -36,21 +36,13 @@ RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
 FROM locust_common as locust_done
 
 COPY Config /tmp_source/Config
-RUN true
 COPY Data /tmp_source/Data
-RUN true
 COPY kassiopeia /tmp_source/kassiopeia
-RUN true
 COPY monarch /tmp_source/monarch
-RUN true
 COPY Scarab /tmp_source/Scarab
-RUN true
 COPY Source /tmp_source/Source
-RUN true
 COPY Config /tmp_source/Config
-RUN true
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
-RUN true
 COPY .git /tmp_source/.git
 
 # repeat the cmake command to get the change of install prefix to set correctly (a package_builder known issue)
