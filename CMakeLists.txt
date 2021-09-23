@@ -53,7 +53,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       -D BUILD_KASSIOPEIA:BOOL=TRUE 
                       -D BUILD_KEMFIELD:BOOL=TRUE 
                       -D BUILD_KGEOBAG:BOOL=TRUE 
-                      -D BUILD_KOMMON:BOOL=TRUE 
+                      -D BUILD_KOMMON:BOOL=TRUE
+		      -D KASPER_USE_VTK:BOOL=TRUE
+		      -D VTK_DIR:STRING=/usr/lib/cmake/vtk-6.3/ 
                       ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
