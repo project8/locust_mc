@@ -84,7 +84,7 @@ jobs:
       - name: Build with docker
         run: |
           cd ${{github.workspace}}
-          docker build \
+          DOCKER_BUILDKIT=1 docker build \
             --build-arg IMG_USER=project8 \
             --build-arg IMG_REPO=p8compute_dependencies \
             --build-arg IMG_TAG=${{ needs.init.outputs.luna_version }} \
