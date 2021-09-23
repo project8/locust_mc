@@ -1,4 +1,4 @@
-FROM project8/p8compute_dependencies:v0.9.0 as locust_common
+FROM project8/p8compute_dependencies:feature-vtk_support as locust_common
 
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
