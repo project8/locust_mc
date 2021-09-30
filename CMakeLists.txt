@@ -58,17 +58,22 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       -D BUILD_KEMFIELD:BOOL=TRUE 
                       -D BUILD_KGEOBAG:BOOL=TRUE 
                       -D BUILD_KOMMON:BOOL=TRUE 
+                      -D KASPER_USE_VTK:BOOL=FALSE
                       ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
-
+    execute_process( 
+        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
+                      -D CMAKE_INSTALL_LIBDIR:STRING=lib
+                      -D BUILD_KASSIOPEIA:BOOL=TRUE 
+                      -D BUILD_KEMFIELD:BOOL=TRUE 
+                      -D BUILD_KGEOBAG:BOOL=TRUE 
+                      -D BUILD_KOMMON:BOOL=TRUE 
+                      -D KASPER_USE_VTK:BOOL=FALSE
+                      ${PROJECT_SOURCE_DIR}/kassiopeia
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    )
         
-    
-    #execute_process( 
-    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    #)
-
     # Second we use the ExternalProject module to build and install Kassiopeia.
     # This takes place during the build phase of Locust.
     # Note that we disable the configure stage of the ExternalProject because we already took care of the configure stage above.
@@ -102,7 +107,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, KGeoBag found is ${KGeoBag_FOUND}") # found here.
     message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, KEMField found is ${KEMField_FOUND}") # found here.
     message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, Kassiopeia found is ${Kassiopeia_FOUND}") # found here.
-    message(STATUS "Kommon libraries are ${Kommon_LIBRARIES}" )
+    message(STATUS "Kommon libraries are ${Kommon_LDFLAGS}" )
 #    message(STATUS "Kommon include dirs are ${Kommon_INCLUDE_DIRS}" )
     message(STATUS "Locust check3.1" )
     
@@ -195,17 +200,21 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
 		if (NOT TARGET ${LIBRARY}) 
+			message(STATUS "check 8 library is ${LIBRARY}" )
 			add_library( ${LIBRARY} SHARED IMPORTED )
     	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+			get_target_property( LOCATION_CHECK ${LIBRARY} IMPORTED_LOCATION )
+			message(STATUS "library location is ${LOCATION_CHECK}" )
         	add_dependencies( ${LIBRARY} KassiopeiaExt )
         endif()
     endforeach()
+             	
                        
     pbuilder_add_ext_libraries(
-        ${Kommon_LIBRARIES}
-        ${KGeoBag_LIBRARIES}
-        ${KEMField_LIBRARIES}
-        ${Kassiopeia_LIBRARIES}
+        ${Kommon_LDFLAGS}
+        ${KGeoBag_LDFLAGS}
+        ${KEMField_LDFLAGS}
+        ${Kassiopeia_LDFLAGS}
     )
 
 endif( locust_mc_BUILD_WITH_KASSIOPEIA )
