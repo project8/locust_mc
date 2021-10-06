@@ -28,6 +28,7 @@ set (EXAMPLE_CONFIGFILES
     WaveguideGeometry.xml
     FreeSpaceGeometry.xml
 	FreeSpaceGeometry_V00_00_11_1GHz.xml
+	FreeSpaceGeometry_V00_00_10_1GHz.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json
