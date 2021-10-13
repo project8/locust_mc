@@ -1,5 +1,5 @@
 <!-- bathtub coils -->
-<external_define name="fieldZ" value="0.0405"/>
+<external_define name="fieldZ" value="0.962640"/>
 <external_define name="current" value="1.000000"/>
 <external_define name="coil_length" value="0.001"/>
 <external_define name="radial_width" value="0.001"/>
