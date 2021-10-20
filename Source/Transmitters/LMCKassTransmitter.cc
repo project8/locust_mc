@@ -41,11 +41,11 @@ namespace locust
 
     void KassTransmitter::InitializeFieldPoint(LMCThreeVector fieldPoint)
     {
-	Transmitter::InitializeFieldPoint(fieldPoint);
+    	Transmitter::InitializeFieldPoint(fieldPoint);
     	fFieldSolver.AddFieldPoint(fieldPoint);
     }
 
-    double* KassTransmitter::SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex)
+    std::vector<double> KassTransmitter::SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex)
     {
 
         fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
@@ -63,7 +63,8 @@ namespace locust
 	    double tEFieldCoPol = tRadiatedElectricField.Dot(coPolDirection);
 	    SetIncidentKVector(tTotalElementIndex,tRadiatedElectricField.Cross(tRadiatedMagneticField));
 
-        double* tSolution = new double[2];
+        std::vector<double> tSolution;
+        tSolution.resize(2);
         tSolution[0] = tEFieldCoPol;
         tSolution[1] = tDopplerFrequency;
 

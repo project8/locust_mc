@@ -74,7 +74,7 @@ namespace locust
     	//fIncidentKVector.SetComponents(cos(fAOI), 0.0, sin(fAOI));
     }
 
-    double* PlaneWaveTransmitter::GetEFieldCoPol(int fieldPointIndex, double dt)
+    std::vector<double> PlaneWaveTransmitter::GetEFieldCoPol(int fieldPointIndex, double dt)
     {
     	double initialPhaseDelay = GetPropagationPhaseDelay(fieldPointIndex); 
 		double fieldAmp = fAmplitude;
@@ -84,7 +84,7 @@ namespace locust
 		double fieldValue = fieldAmp*cos(fPhaseDelay + initialPhaseDelay);
 		//AddIncidentKVector(pointOfInterest);
 
-        double* fieldSolution = new double[2];
+        std::vector<double> fieldSolution; fieldSolution.resize(2);
         fieldSolution[0] = fieldValue;
         fieldSolution[1] = 2. * LMCConst::Pi() * fRF_Frequency;  // rad/s
 

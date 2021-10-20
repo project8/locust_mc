@@ -41,6 +41,7 @@ namespace locust
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
         	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	bool AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex);
         	virtual void SayHello();
         	virtual void Initialize() {};
 
@@ -58,6 +59,15 @@ namespace locust
             void SetJunctionResistance( double aJunctionResistance );
             double GetDampingFactor( int z_index );
             void SetDampingFactor (int z_index, double aDampingFactor );
+            std::vector<double> GetCavityProbeZ();
+            void SetCavityProbeZ ( std::vector<double> aVector );
+            std::vector<double> GetCavityProbeTheta();
+            void SetCavityProbeTheta ( std::vector<double> aVector );
+            int GetNCavityProbes();
+            void SetNCavityProbes( int aNumberOfProbes );
+            double GetCavityProbeImpedance();
+            void SetCavityProbeImpedance( double anImpedance );
+            bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
 
 
         private:
@@ -69,6 +79,10 @@ namespace locust
             double fendPatchLoss;
             double fjunctionResistance;
             bool fvoltageCheck;
+            int fnCavityProbes;
+            double fCavityProbeImpedance;
+            std::vector<double> fCavityProbeZ;
+            std::vector<double> fCavityProbeTheta;
 
 };
 

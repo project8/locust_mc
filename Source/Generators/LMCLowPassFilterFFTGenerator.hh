@@ -49,6 +49,8 @@ class LowPassFilterFFTGenerator : public Generator
 
             bool DoGenerateTime( Signal* aSignal );
             bool DoGenerateFreq( Signal* aSignal );
+            int GetStartingMargin( Signal* aSignal, int windowsize, int nwin, int ch );
+            int GetEndingMargin( Signal* aSignal, int windowsize, int nwin, int ch );
 
             bool (LowPassFilterFFTGenerator::*fDoGenerateFunc)( Signal* aSignal );
 

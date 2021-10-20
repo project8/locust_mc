@@ -32,7 +32,10 @@ namespace locust
 			fPhiLO_t(0.),
 			fNPreEventSamples( 15000 ),
 			fEventStartTime(-99.),
+			fThreadCheckTime(200),
 			fEventToFile( false ),
+			fKassNeverStarted( false ),
+			fSkippedSamples( false ),
 			fInterface( new KassLocustInterface() )
 
     {
@@ -75,6 +78,11 @@ namespace locust
         if( aParam.has( "event-spacing-samples" ) )
         {
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+        }
+
+        if( aParam.has( "thread-check-time" ) )
+        {
+            fThreadCheckTime = aParam["thread-check-time"]().as_int();
         }
 
         if( aParam.has( "center-to-short" ) )
@@ -139,7 +147,7 @@ namespace locust
 
     }
 
-    void* KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
+    bool KassSignalGenerator::DriveAntenna(int PreEventCounter, unsigned index, Signal* aSignal, FILE *fp)
     {
 
         double tDopplerFrequencyAntenna = 0.;  // Doppler shifted cyclotron frequency in Hz.
@@ -239,7 +247,7 @@ namespace locust
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());  // advance time here instead of in step modifier.  This preserves the freefield sampling.
 
-        return 0;
+        return true;
     }
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
@@ -298,55 +306,106 @@ namespace locust
         fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         std::thread tKassiopeia (&KassSignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
+
         for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
-        {
-            if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
-            {
-            	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-            	else
-            	{
-            		printf("breaking\n");
-            		break;
-            	}
+         {
+             if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
+             {
+             	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
+             	else
+             	{
+             		printf("breaking\n");
+             		break;
+             	}
 
-            	LPROG( lmclog, "LMC ReceivedKassReady()" );
+             	LPROG( lmclog, "LMC ReceivedKassReady" );
 
-            }
+             }
 
-            if (fInterface->fPreEventInProgress)
-            {
-                PreEventCounter += 1;
+             if (fInterface->fPreEventInProgress)  // Locust keeps sampling until Kass event.
+             {
+                 PreEventCounter += 1;
 
-                if (((!fTruth)&&(PreEventCounter > fNPreEventSamples))||((fTruth)&&(PreEventCounter > fNPreEventSamples)&&(index%(8192*aSignal->DecimationFactor())==0)  ))// finished pre-samples.  Start event.
-                {
-                    fInterface->fPreEventInProgress = false;  // reset.
-                    fInterface->fEventInProgress = true;
-                    LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
-                    WakeBeforeEvent();  // trigger Kass event.
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-            }
+                 if (((!fTruth)&&(PreEventCounter > fNPreEventSamples))||((fTruth)&&(PreEventCounter > fNPreEventSamples)&&(index%(8192*aSignal->DecimationFactor())==0)  ))// finished pre-samples.  Start event.
+                 {
+                     fInterface->fPreEventInProgress = false;  // reset.
+                     fInterface->fEventInProgress = true;
+                     LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
+                     WakeBeforeEvent();  // trigger Kass event.
+                 }
+             }
 
-            if ((fInterface->fEventInProgress)&&(!fInterface->fKassEventReady))  // fEventInProgress
-            {
-                    std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
-                    tLock.lock();
-                    fInterface->fDigitizerCondition.wait( tLock );
-                    if (fInterface->fEventInProgress)
-                    {
-                        DriveAntenna(PreEventCounter, index, aSignal, fp);
-                        PreEventCounter = 0; // reset
-                    }
-                    tLock.unlock();
-            }
-        }  // for loop
+             if (fInterface->fEventInProgress)  // fEventInProgress
+             {
+                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
+             	if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+             	{
+                     tLock.lock();
+                     fInterface->fDigitizerCondition.wait( tLock );
+                     if (fInterface->fEventInProgress)
+                     {
+                 		if (DriveAntenna(PreEventCounter, index, aSignal, fp))
+                 		{
+                             PreEventCounter = 0; // reset
+                 		}
+                 		else
+                 		{
+                 			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
+                 			fSkippedSamples = true;
+                            tLock.unlock();
+                 			break;
+                 		}
+                     }
+                     tLock.unlock();
+             	}
+             	else  // diagnose Kass
+             	{
+                     tLock.lock();
+                     std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
+                     if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
+                     {
+                     	tLock.unlock();
+                     }
+                     else  // Kass event has not started.
+                     {
+                      	if ( fInterface->fEventInProgress )
+                      	{
+                      		if ( index < fNPreEventSamples+1 ) // Kass never started at all.
+                      		{
+                     			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                         		fKassNeverStarted = true;
+                      		}
+                         	tLock.unlock(); // Kass either started or not, but is now finished.
+                         	break;
+                      	}
+                      	else  // Kass started an event and quickly terminated it.
+                      	{
+                     		LWARN(lmclog, "Kass event terminated quickly.\n");
+                     		tLock.unlock();
+                      	}
+                     }
+             	}
+             }
+         }  // for loop
 
 
-        fInterface->fDoneWithSignalGeneration = true;
-        fclose(fp);
-        LPROG( lmclog, "Finished signal loop." );
-        WakeBeforeEvent();
-        tKassiopeia.join();  // finish thread
+         fInterface->fDoneWithSignalGeneration = true;
+         LPROG( lmclog, "Finished signal loop." );
+			fInterface->fWaitBeforeEvent = false;
+         WakeBeforeEvent();
+         tKassiopeia.join();  // finish thread
+
+         if (fKassNeverStarted == true)
+         {
+         	throw 2;
+         	return false;
+         }
+         if (fSkippedSamples == true)
+         {
+         	throw 3;
+         	return false;
+         }
+
 
         return true;
     }

@@ -71,7 +71,7 @@
         
     "egg1":
     {
-        "filename": "${CMAKE_INSTALL_PREFIX}/bin/locust_mc.egg",
+        "filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "egg-reader": "egg3",
         "number-of-slices": 3,
         "slice-size": 8192,
@@ -93,7 +93,7 @@
 
     "waterfall-writer":
     {
-        "output-file": "${CMAKE_INSTALL_PREFIX}/bin/katydidwaterfall.root",
+        "output-file": "${CMAKE_INSTALL_PREFIX}/output/katydidwaterfall.root",
         "file-flag": "recreate",
         "min-time": 0.0,
         "max-time": 0.025,
@@ -105,7 +105,7 @@
 
     "writer":
     {
-        "output-file": "${CMAKE_INSTALL_PREFIX}/bin/basic.root",
+        "output-file": "${CMAKE_INSTALL_PREFIX}/output/basic.root",
         "file-flag": "recreate"
     }
 

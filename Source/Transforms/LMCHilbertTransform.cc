@@ -66,12 +66,12 @@ namespace locust
     }
 
 
-    double* HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer)
+    std::vector<double> HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer)
     {
 
     	fftw_complex* transformeddata = Transform( FieldBuffer );
     	unsigned hilbertindex = fbufferMargin;
-    	double* magphasemean = new double[3];
+    	std::vector<double> magphasemean; magphasemean.resize(3);
 
     	double mag = pow(transformeddata[hilbertindex][0]*transformeddata[hilbertindex][0] + transformeddata[hilbertindex][1]*transformeddata[hilbertindex][1], 0.5);
     	double mean = 0.;  // this is set to zero in HilbertTransform::Transform().
@@ -133,9 +133,9 @@ namespace locust
     }
 
 
-    double* HilbertTransform::GetSpan( fftw_complex* array, int IQ, int size )
+    std::vector<double> HilbertTransform::GetSpan( fftw_complex* array, int IQ, int size )
     {
-    	double* span = new double[2];
+    	std::vector<double> span; span.resize(2);
     	double max = -99.;
     	double min = 99.;
     	for (unsigned i=size/4; i<3*size/4; i++)
@@ -230,8 +230,8 @@ namespace locust
         }
 
 
-        double* spanI = GetSpan(originaldata, 0, FieldBuffer.size());
-        double* spanQ = GetSpan(originaldata, 1, FieldBuffer.size());
+        std::vector<double> spanI = GetSpan(originaldata, 0, FieldBuffer.size());
+        std::vector<double> spanQ = GetSpan(originaldata, 1, FieldBuffer.size());
 
         for (int i = 0; i < windowsize; ++i)
         {

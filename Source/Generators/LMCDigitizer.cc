@@ -21,6 +21,8 @@ namespace locust
     MT_REGISTER_GENERATOR(Digitizer, "digitizer");
 
     Digitizer::Digitizer( const std::string& aName ) :
+    		fRange( 2.e-8 ),
+			fOffset( -1.e-8 ),
             Generator( aName ),
             fADCValuesSigned( false )
     {
@@ -39,11 +41,11 @@ namespace locust
 
         unsigned bitDepth = aNode.get_value( "bit-depth", fParams.bit_depth );
         unsigned dataTypeSize = aNode.get_value( "data-type-size", fParams.data_type_size );
-        double vRange = aNode.get_value( "v-range", fParams.v_range );
-        double vMin = aNode.get_value( "v-offset", fParams.v_offset );
+        fRange = aNode.get_value( "v-range", fParams.v_range );
+        fOffset = aNode.get_value( "v-offset", fParams.v_offset );
         
 
-        get_calib_params( bitDepth, dataTypeSize, vMin, vRange, false, &fParams );
+        get_calib_params( bitDepth, dataTypeSize, fOffset, fRange, false, &fParams );
 
         LDEBUG( lmclog, "Digitizer calibration parameters set" );
 
@@ -90,6 +92,15 @@ namespace locust
                 digitizedData[2*ch*signalSize + index*2 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
                 digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, int8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
 
+                if ((int(digitizedData[ 2*ch*signalSize + index*2 ]) == -128 ) || ( int(digitizedData[ 2*ch*signalSize + index*2 ] == 128)))
+                {
+                    LERROR(lmclog,"Digitizer range limit.\n");
+                    printf("Analog data at index %d channel %d is %g\n", index, ch, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
+                    printf("Digitized data at index %d channel %d is %d\n", index, ch, digitizedData[2*ch*signalSize + index*2 ]);
+                	throw 1;
+                	return false;
+                }
+
                 if( index < 10 )
                 {
 
@@ -114,6 +125,14 @@ namespace locust
                     digitizedData[2*ch*signalSize + index*2 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][0], &fParams );
                     digitizedData[2*ch*signalSize + index*2+1 ] = a2d< double, uint8_t >( aSignal->SignalTimeComplex()[ch*signalSize + index ][1], &fParams );
 
+                    if ((int(digitizedData[ 2*ch*signalSize + index*2 ]) == 0 ) || ( int(digitizedData[ 2*ch*signalSize + index*2 ] == 255)))
+                    {
+                        LERROR(lmclog,"Digitizer range limit.\n");
+                        printf("Analog data at index %d channel %d is %g\n", index, ch, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
+                        printf("Digitized data at index %d channel %d is %d\n", index, ch, digitizedData[2*ch*signalSize + index*2 ]);
+                    	throw 1;
+                    	return false;
+                    }
 
                     if( index < 20 )
                     {

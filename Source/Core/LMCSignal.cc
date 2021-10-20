@@ -51,16 +51,14 @@ namespace locust
         Reset();
 
         fTimeSize = aTimeSize;
-        fFreqSize = fTimeSize / 2 + 1;
-        fFreqSizeComplex = fTimeSize;
+        fFreqSize = fTimeSize;
 
         fSignalTime = new double [fTimeSize];
         fSignalFreq = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize );
         fSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize *nchannels);
-        fSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex * nchannels);
-        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * TimeSize()*DecimationFactor() *nchannels);
-        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSizeComplex*DecimationFactor() *nchannels);
-
+        fSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize * nchannels);
+        fLongSignalTimeComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fTimeSize*DecimationFactor() *nchannels);
+        fLongSignalFreqComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fFreqSize*DecimationFactor() *nchannels);
 
         ResetValues();
 
@@ -71,9 +69,8 @@ namespace locust
         fLongPlanToFreqComplex = fftw_plan_dft_1d( TimeSize()*DecimationFactor(), fLongSignalTimeComplex, fLongSignalFreqComplex, FFTW_FORWARD, aFFTFlags);
         fLongPlanToTimeComplex = fftw_plan_dft_1d( TimeSize()*DecimationFactor(), fLongSignalFreqComplex, fLongSignalTimeComplex, FFTW_BACKWARD, aFFTFlags);
 
-
         fState = kTime;
-//        fState = kFreq;
+//      fState = kFreq;
 
         LDEBUG( lmclog, "Signal initialized; time size = " << fTimeSize << "; state = " << fState );
 
@@ -389,7 +386,7 @@ namespace locust
     bool Signal::FFTToTime()
     {
         LDEBUG( lmclog, "Performing reverse FFT to the time domain" );
-        fftw_execute( fPlanToTime );
+        fftw_execute( fPlanToTimeComplex );
         fState = kTime;
         return true;
     }
@@ -397,7 +394,7 @@ namespace locust
     bool Signal::FFTToFreq()
     {
         LDEBUG( lmclog, "Performing forward FFT to frequency domain" );
-        fftw_execute( fPlanToFreq );
+        fftw_execute( fPlanToFreqComplex );
         fState = kFreq;
         return true;
     }
@@ -420,6 +417,16 @@ namespace locust
     fftw_complex* Signal::SignalTimeComplex()
     {
         return fSignalTimeComplex;
+    }
+
+    const fftw_complex* Signal::SignalFreqComplex() const
+    {
+        return fSignalFreqComplex;
+    }
+
+    fftw_complex* Signal::SignalFreqComplex()
+    {
+        return fSignalFreqComplex;
     }
 
 

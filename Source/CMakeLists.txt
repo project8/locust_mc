@@ -35,6 +35,7 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCButterworthLPFGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
+    Transmitters/LMCTransmitterInterface.hh
    	Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
@@ -45,9 +46,11 @@ set( LOCUST_MC_HEADER_FILES
     Transforms/LMCHilbertTransform.hh
     Transforms/LMCComplexFFT.hh    
 
+    RxComponents/LMCPowerCombinerInterface.hh
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
+    RxComponents/LMCCavityModes.hh
     RxComponents/LMCSinglePatch.hh
     RxComponents/LMCCorporateFeed.hh
     RxComponents/LMCsMatrix.hh
@@ -59,6 +62,7 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCDesignAntenna.hh
     RxComponents/LMCDesignAntennaArray.hh
     RxComponents/LMCChannel.hh
+    RxComponents/LMCAntennaElementPositionerInterface.hh
     RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCSinglePatchPositioner.hh
     RxComponents/LMCPlanarArrayPositioner.hh
@@ -115,6 +119,7 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCVoltageDivider.cc
     RxComponents/LMCSlottedWaveguide.cc
+    RxComponents/LMCCavityModes.cc
     RxComponents/LMCSinglePatch.cc
     RxComponents/LMCCorporateFeed.cc
     RxComponents/LMCsMatrix.cc
@@ -141,9 +146,11 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
 	    Generators/LMCArraySignalGenerator.hh
+	    Generators/LMCCavitySignalGenerator.hh
 
 
         Transmitters/LMCKassTransmitter.hh
+        Transmitters/LMCKassCurrentTransmitter.hh
         
         Core/LMCHFSSReader.hh
 
@@ -158,14 +165,19 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCRunKassiopeia.hh
         Kassiopeia/LMCRunPause.hh
         Kassiopeia/LMCRunPauseBuilder.hh
+        
+        Fields/LMCField.hh
+        Fields/LMCCylindricalCavity.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
 	    Generators/LMCArraySignalGenerator.cc   
+	    Generators/LMCCavitySignalGenerator.cc   
         
         Transmitters/LMCKassTransmitter.cc
+        Transmitters/LMCKassCurrentTransmitter.cc
         
         # Why is this here?
         Core/LMCHFSSReader.cc
@@ -181,6 +193,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCRunKassiopeia.cc
         Kassiopeia/LMCRunPause.cc
         Kassiopeia/LMCRunPauseBuilder.cc
+        
+        Fields/LMCField.cc
+        Fields/LMCCylindricalCavity.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -194,6 +209,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Core/LMCTrack.hh
         Core/LMCRunParameters.hh
         Generators/LMCFakeTrackSignalGenerator.hh    
+        Generators/LMCFakeFreeSpaceSignalGenerator.hh
 	    IO/LMCFileWriter.hh
     	IO/LMCRootTreeWriter.hh
     	IO/LMCRootHistoWriter.hh
@@ -205,6 +221,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Core/LMCTrack.cc
         Core/LMCRunParameters.cc
         Generators/LMCFakeTrackSignalGenerator.cc   
+        Generators/LMCFakeFreeSpaceSignalGenerator.cc
 	    IO/LMCFileWriter.cc
     	IO/LMCRootTreeWriter.cc
     	IO/LMCRootHistoWriter.cc
