@@ -24,7 +24,7 @@ namespace locust
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
             fnCavityProbes( 0 ),
-            fCavityProbeImpedance( 50.0 ),
+            fCavityProbeInductance( 50.0 ),
             fCavityProbeZ( 0. ),
             fCavityProbeTheta( 0. ),
 			fvoltageCheck( false )
@@ -172,13 +172,13 @@ namespace locust
     	fdampingFactors[z_index] = aDampingFactor;
     }
 
-    double PowerCombiner::GetCavityProbeImpedance()
+    double PowerCombiner::GetCavityProbeInductance()
     {
-    	return fCavityProbeImpedance;
+    	return fCavityProbeInductance;
     }
-    void PowerCombiner::SetCavityProbeImpedance( double anImpedance )
+    void PowerCombiner::SetCavityProbeInductance( double anInductance )
     {
-    	fCavityProbeImpedance = anImpedance;
+    	fCavityProbeInductance = anInductance;
     }
 
     bool PowerCombiner::SetCavityProbeLocations(int nCavityProbes, double cavityLength)

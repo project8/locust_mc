@@ -64,8 +64,8 @@ namespace locust
             void SetCavityProbeTheta ( std::vector<double> aVector );
             int GetNCavityProbes();
             void SetNCavityProbes( int aNumberOfProbes );
-            double GetCavityProbeImpedance();
-            void SetCavityProbeImpedance( double anImpedance );
+            double GetCavityProbeInductance();
+            void SetCavityProbeInductance( double anInductance );
             bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
 
 
@@ -79,7 +79,7 @@ namespace locust
             double fjunctionResistance;
             bool fvoltageCheck;
             int fnCavityProbes;
-            double fCavityProbeImpedance;
+            double fCavityProbeInductance;
             std::vector<double> fCavityProbeZ;
             std::vector<double> fCavityProbeTheta;
 

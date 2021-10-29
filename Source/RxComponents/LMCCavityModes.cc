@@ -32,9 +32,9 @@ namespace locust
     		return false;
     	}
 
-    	if ( aParam.has( "cavity-probe-impedance" ) )
+    	if ( aParam.has( "cavity-probe-inductance" ) )
     	{
-    		SetCavityProbeImpedance(aParam["cavity-probe-impedance"]().as_double());
+    		SetCavityProbeInductance(aParam["cavity-probe-inductance"]().as_double());
     	}
 
     	return true;

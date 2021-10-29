@@ -341,14 +341,20 @@ namespace locust
 
     double CavitySignalGenerator::GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex)
     {
-    	// Scale excitation amplitude at probe according to mode map:
+    	// Calculate ratio between mode E-field max amplitude at electron and mode H-field max amplitude
+    	// at probe.
+    	// Ignore 90-degree phase difference between E-field and H-field as it is constant.  This means
+    	// that the data stream will have an artificial phase shift of 90 degrees everywhere, which seems
+    	// acceptable if we are only sensitive to phase evolution and phase differences between probes.
+
     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]);
     	double thetaProbe = tKassParticleXP[1] + fPowerCombiner->GetCavityProbeTheta()[channelIndex];
-    	std::vector<double> tTE_E_probe = fInterface->fField->TE_E(0,1,1,fInterface->fR*0.95,thetaProbe,fPowerCombiner->GetCavityProbeZ()[channelIndex]);
-        double modeAmplitudeFactor = tTE_E_probe.back() / tTE_E_electron.back();
-        //        	printf("modeamplitudeFactor is %g / %g = %g\n", tTE_E_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
+    	double zProbe = fPowerCombiner->GetCavityProbeZ()[channelIndex];
+    	std::vector<double> tTE_H_probe = fInterface->fField->TE_H(0,1,1,fInterface->fR,thetaProbe,zProbe);
+        double modeScalingFactor = tTE_H_probe.back() / tTE_E_electron.back();
+        //        	printf("modeScalingFactor is %g / %g = %g\n", tTE_H_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
 
-    	return modeAmplitudeFactor;
+    	return modeScalingFactor;
     }
 
 
@@ -448,10 +454,16 @@ namespace locust
         for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
         {
         	sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-//       	double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);  // scale over to the probe?
+
+        	// TO-DO:  Implement modeScalingFactor to calculate signal amplitude at probe/channel using
+        	// H-field and probe inductance.  Probe inductance is presently set to a fake value of 1.0
+        	// in LMCPowerCombiner.cc
+        	// double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);
         	double modeScalingFactor = 1.0; // override for now.
+        	// end TO-DO
+
         	double totalScalingFactor = modeScalingFactor * dotProductFactor * modeAmplitude;
-        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeImpedance(), sampleIndex);
+        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
         }
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
