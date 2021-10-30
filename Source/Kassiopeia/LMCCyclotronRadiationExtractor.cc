@@ -79,18 +79,19 @@ namespace locust
         FieldCalculator aFieldCalculator;
         double DeltaE=0.;
 
-        //		       printf("fcyc is %g\n", aFinalParticle.GetCyclotronFrequency()); getchar();
-
-        //	printf("dE/dt is %g\n", (aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy())/(aFinalParticle.GetTime() - anInitialParticle.GetTime())); getchar();
-
         if(fInterface->fProject8Phase==1)
         {
             DeltaE = aFieldCalculator.GetDampingFactorPhase1(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
-        if(fInterface->fProject8Phase==2)  // this code can be commented out to save time as DeltaE will be small.
+        if(fInterface->fProject8Phase==2)
         {
             DeltaE = aFieldCalculator.GetDampingFactorPhase2(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+        }
+        if(fInterface->fProject8Phase==4)
+        {
+            DeltaE = aFieldCalculator.GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
 
@@ -99,6 +100,7 @@ namespace locust
 
             if (fInterface->fTOld == 0.)
             {
+            	fInterface->nFilterBinsRequired = 1 + (int)((aFinalParticle.GetTime() - anInitialParticle.GetTime()) / fInterface->dtFilter);
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             }
             double t_poststep = aFinalParticle.GetTime();
@@ -143,6 +145,9 @@ namespace locust
 
             }
         } // DoneWithSignalGeneration
+
+
+
 
         return false;
     }

@@ -29,6 +29,7 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/IO/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Distributions/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Fields/
 )
 
 
@@ -193,6 +194,7 @@ link_directories( ${LOCUST_MC_LINK_DIRECTORIES} )
 add_subdirectory( Source )
 add_subdirectory( Data )
 add_subdirectory( Data/TransferFunctions )
+add_subdirectory( Data/Math )
 
 ###############
 # executables #

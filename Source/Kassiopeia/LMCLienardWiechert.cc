@@ -32,6 +32,7 @@ namespace locust
 
     void LienardWiechert::SetParticleHistory( std::deque<Particle> aParticleHistory )
     {
+    	printf("setting history\n"); getchar();
     	fInterface->fParticleHistory = aParticleHistory;
     }
 
