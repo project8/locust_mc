@@ -404,7 +404,7 @@ namespace locust
     	double HilbertPhase = 0.;
     	double convolution = 0.0;
 
-    	if (fabs(EFieldBuffer[channel*fNElementsPerStrip+element].front()) > 0.)  // field arrived yet?
+    	if (EFieldBuffer[channel*fNElementsPerStrip+element].front() != 0.)  // field arrived yet?
     	{
 
     		std::vector<double> HilbertMagPhaseMean; HilbertMagPhaseMean.resize(3);
