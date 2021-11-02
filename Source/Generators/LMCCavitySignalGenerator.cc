@@ -525,10 +525,6 @@ namespace locust
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-        // dump to text file for debugging.
-    	fp = fopen("currentValues.txt", "w");
-
-
 
         int PreEventCounter = 0;
 		fPowerCombiner->SetCavityProbeLocations(fNChannels, fInterface->fL);
@@ -641,7 +637,6 @@ namespace locust
 
         }  // fInterface->fTransmitter->IsKassiopeia()
 
-    	fclose (fp);
 
 
     	return true;
