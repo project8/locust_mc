@@ -43,6 +43,7 @@ namespace locust
         ElementFIRBuffer( 1 ),
         FIRfrequencyBuffer( 1 ),
         fFieldBufferSize( 50 ),
+		fFIRzeroBuffer( 20 ),
 		fSwapFrequency( 1000 ),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
@@ -420,7 +421,7 @@ namespace locust
     	double HilbertPhase = 0.;
     	double convolution = 0.0;
 
-    	if (fabs(EFieldBuffer[channel*fNElementsPerStrip+element].front()) > 0.)  // field arrived yet?
+    	if (EFieldBuffer[channel*fNElementsPerStrip+element].front() != 0.)  // field arrived yet?
     	{
 
     		std::vector<double> HilbertMagPhaseMean; HilbertMagPhaseMean.resize(3);
@@ -500,12 +501,13 @@ namespace locust
 
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
-            	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
+            	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize + fFIRzeroBuffer))
             	{
                     LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
             		return false;
             	}
- 	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
+
+            	fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;

@@ -83,6 +83,7 @@ namespace locust
             std::string gxml_filename;
             bool fTextFileWriting;
             unsigned fFieldBufferSize;
+            unsigned fFIRzeroBuffer;
             int fSwapFrequency;
             bool fKassNeverStarted;
             bool fSkippedSamples;
