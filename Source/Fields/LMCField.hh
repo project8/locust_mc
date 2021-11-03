@@ -32,15 +32,15 @@ namespace locust
             Field();
             virtual ~Field();
 
-            virtual bool Configure( const scarab::param_node& ){};
+            virtual bool Configure( const scarab::param_node& ){return true;};
 
             // size of field vectors will be number of components in field value at (r,theta,z)
-            virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const {};
-            virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z) const {};
-            virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z) const {};
-            virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z) const {};
+            virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const {return {0.};};
+            virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z) const {return {0.};};
+            virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z) const {return {0.};};
+            virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z) const {return {0.};};
 
-            virtual double Integrate(int l, int m, int n, bool teMode, bool eField){};
+            virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
 
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);

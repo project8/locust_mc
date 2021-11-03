@@ -97,7 +97,7 @@ namespace locust
     			}
     		}
     	}
-
+    	return {0};
 
     }
 

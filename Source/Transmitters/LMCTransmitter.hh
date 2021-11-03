@@ -35,17 +35,17 @@ namespace locust
             virtual ~Transmitter();
             virtual void TxSayHello();
 
-            virtual bool Configure( const scarab::param_node& ){};
-            virtual std::vector<double> GetEFieldCoPol(int fieldPointIndex, double dt) {};
+            virtual bool Configure( const scarab::param_node& ){return true;};
+            virtual std::vector<double> GetEFieldCoPol(int fieldPointIndex, double dt) {return {0.};};
 
-            virtual std::vector<double> SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex) {};
-            virtual std::vector<double> ExtractParticleXP(double TOld) {};
+            virtual std::vector<double> SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex) {return {0.};};
+            virtual std::vector<double> ExtractParticleXP(double TOld) {return {0.};};
             virtual void InitializeFieldPoint(LMCThreeVector fieldPoint);
 
             virtual bool IsKassiopeia() {return false;};
 
             /// Initialize the FIR filter and the field estimator
-            virtual bool InitializeTransmitter(){};
+            virtual bool InitializeTransmitter(){return true;};
             LMCThreeVector GetFieldPoint(int index);
             virtual LMCThreeVector GetIncidentKVector(int index);
             double GetPropagationPhaseDelay(int index);
