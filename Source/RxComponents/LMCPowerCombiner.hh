@@ -35,8 +35,8 @@ namespace locust
             int GetNElementsPerStrip();
             void SetNElementsPerStrip( int aNumberOfElements );
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool SetVoltageDampingFactors() {};
-        	virtual bool SetSMatrixParameters() {};
+        	virtual bool SetVoltageDampingFactors() {return true;};
+        	virtual bool SetSMatrixParameters() {return true;};
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
         	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);

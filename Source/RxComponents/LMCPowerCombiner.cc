@@ -82,7 +82,7 @@ namespace locust
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
 
 		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
-			LWARN( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+			LPROG( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
 
@@ -96,7 +96,7 @@ namespace locust
 //		printf("signal is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
 		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
-			LWARN( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
 
