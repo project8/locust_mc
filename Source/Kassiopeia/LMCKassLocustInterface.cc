@@ -40,6 +40,8 @@ namespace locust
 			fBesselNKPrimeZeros( 0 ),
 			fR( 0.1 ),
 			fL( 0.2 ),
+			fX( 0.010668 ),
+			fY( 0.004318 ),
 			fnPixels( 100 ),
 	        nFilterBinsRequired( 0 ),
 	        dtFilter( 0 ),
