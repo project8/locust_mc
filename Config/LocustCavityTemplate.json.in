@@ -10,6 +10,7 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
+	"e-gun": false,
         "voltage-check": "true",
         "lo-frequency": 0.98e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",

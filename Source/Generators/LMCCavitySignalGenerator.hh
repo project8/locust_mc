@@ -16,6 +16,7 @@
 #include "LMCKassCurrentTransmitter.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
+#include "LMCRectangularWaveguide.hh" // : LMCField
 #include "LMCFieldBuffer.hh"
 #include <vector>
 #include <sstream>
@@ -72,6 +73,7 @@ namespace locust
 
 
         private:
+            bool fE_Gun;
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
