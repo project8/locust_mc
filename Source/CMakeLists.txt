@@ -64,6 +64,7 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCSinglePatchPositioner.hh
     RxComponents/LMCPlanarArrayPositioner.hh
+    RxComponenets/LMCWaveguide.hh
 
 )
 
