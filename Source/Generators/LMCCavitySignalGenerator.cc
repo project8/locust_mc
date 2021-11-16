@@ -400,6 +400,20 @@ namespace locust
     }
 
 
+
+    double CavitySignalGenerator::GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
+    {
+    	double tThetaParticle = tKassParticleXP[1];
+    	double tEy = aTE_E_normalized.back();
+     	double tEmag = fabs(tEy);
+    	// fix-me:  should below be instantaneous velocity or center of motion?
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+//    	printf("tEmag is %g, r is %g, and theta is %g\n", tEmag, tKassParticleXP[0], tKassParticleXP[1]); getchar();
+    	return fabs(0. + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
+    }
+
     double CavitySignalGenerator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
     {
     	double tThetaParticle = tKassParticleXP[1];
@@ -414,6 +428,26 @@ namespace locust
 //    	printf("tEmag is %g, r is %g, and theta is %g\n", tEmag, tKassParticleXP[0], tKassParticleXP[1]); getchar();
     	return fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
     }
+
+    std::vector<double> CavitySignalGenerator::GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+     {
+    	// The l index is inert in the waveguide.
+     	double tX = tKassParticleXP[0] * sin(tKassParticleXP[1]);
+     	double tY = tKassParticleXP[0] * cos(tKassParticleXP[1]);
+     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(m,n,tX,tY);
+ 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
+// 		printf("normFactor is %g and Ey is %g\n", normFactor, tTE_E_electron.back()); getchar();
+
+ 		auto it = tTE_E_electron.begin();
+ 		while (it != tTE_E_electron.end())
+ 		{
+ 			if (!isnan(*it))
+ 				(*it) *= normFactor;
+ 			*it++;
+ 		}
+     	return tTE_E_electron;  // return normalized field.
+     }
+
 
     std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
      {
@@ -480,10 +514,19 @@ namespace locust
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
-    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
-        double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+    	std::vector<double> tTE_E_normalized;
+        double dotProductFactor = 0.;
+        if (!fE_Gun)
+        {
+        	tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
+    		dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+        }
+        else
+        {
+        	tTE_E_normalized = GetWaveguideNormalizedModeField(0,1,0,tKassParticleXP); // lmn 011 for now.
+    		dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+        }
     	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
 // fix-me:  We may need more precise nFilterBinsRequired.
