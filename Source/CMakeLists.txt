@@ -65,6 +65,8 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCSinglePatchPositioner.hh
     RxComponents/LMCPlanarArrayPositioner.hh
     RxComponents/LMCEquivalentCircuit.hh
+    RxComponents/LMCWaveguide.hh
+
 )
 
 
@@ -131,6 +133,8 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCSinglePatchPositioner.cc
     RxComponents/LMCPlanarArrayPositioner.cc
     RxComponents/LMCEquivalentCircuit.cc
+    RxComponents/LMCWaveguide.cc
+
 
 )
 
@@ -164,6 +168,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         
         Fields/LMCField.hh
         Fields/LMCCylindricalCavity.hh
+        Fields/LMCRectangularWaveguide.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -192,6 +197,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         
         Fields/LMCField.cc
         Fields/LMCCylindricalCavity.cc
+        Fields/LMCRectangularWaveguide.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 

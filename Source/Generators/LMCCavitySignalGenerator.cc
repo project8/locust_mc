@@ -25,7 +25,8 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
-		fNModes( 3 ),
+		fE_Gun( false ),
+		fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
@@ -122,11 +123,10 @@ namespace locust
 
     	for (unsigned l=0; l<nModes; l++)
     	{
-        	for (unsigned m=1; m<nModes; m++)
+        	for (unsigned m=0; m<nModes; m++)
         	{
-            	for (unsigned n=1; n<nModes; n++)
+            	for (unsigned n=0; n<nModes; n++)
             	{
-
             		if (TE)
             		{
             			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,1,1)/LMCConst::EpsNull();
@@ -151,11 +151,19 @@ namespace locust
     	{
     		for (int m=1; m<fNModes; m++)
     		{
-    			for (int n=1; n<fNModes; n++)
+    			for (int n=0; n<fNModes; n++)
     			{
     				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
-       		    	printf("TE%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+    				if (!isnan(normFactor)&&(isfinite(normFactor)))
+    				{
+    					printf("TE%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
         		    		LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
+    				}
+    				else
+    				{
+    					printf("TE%d%d%d is undefined.\n", l, m, n);
+    				}
+
     			}
     		}
     	}
@@ -168,8 +176,15 @@ namespace locust
     			for (int n=1; n<fNModes; n++)
     			{
     				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
-    		    	printf("TM%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
+    				if (!isnan(normFactor)&&(isfinite(normFactor)))
+    				{
+    					printf("TM%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
+    				}
+    				else
+    				{
+    					printf("TM%d%d%d is undefined.\n", l, m, n);
+    				}
     			}
     		}
     	}
@@ -184,9 +199,9 @@ namespace locust
     	char buffer[60];
     	unsigned modeCounter = 0;
 
-    	for (int l=0; l<5; l++)
-    		for (int m=1; m<5; m++)
-    			for (int n=1; n<5; n++)
+    	for (int l=0; l<3; l++)
+    		for (int m=1; m<3; m++)
+    			for (int n=0; n<3; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
     				double tNormalizationTE_E = fInterface->fField->GetNormFactorsTE()[l][m][n];
@@ -196,11 +211,23 @@ namespace locust
     				for (unsigned i=0; i<fInterface->fnPixels; i++)
     				{
     					double r = (double)i/fInterface->fnPixels*fInterface->fR;
+    					double x = (double)i/fInterface->fnPixels*fInterface->fX - fInterface->fX/2.;
     					for (unsigned j=0; j<fInterface->fnPixels; j++)
     					{
     						double theta = (double)j/fInterface->fnPixels*2.*LMCConst::Pi();
-    						std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0);
-    						fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
+        					double y = (double)j/fInterface->fnPixels*fInterface->fY - fInterface->fY/2.;
+    						std::vector<double> tTE_E;
+    						if (!fE_Gun)
+    						{
+    							tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0);
+    							fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
+    						}
+    						else
+    						{
+    							tTE_E = fInterface->fField->TE_E(m,n,x,y);
+    							fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
+    						}
+
     					}
     				}
     				fclose (fpTE_E);
@@ -256,6 +283,11 @@ namespace locust
         	}
 	}
 //--------------------------------------------------------------------------------------
+
+        if( aParam.has( "e-gun" ) )
+        {
+            fE_Gun = aParam["e-gun"]().as_bool();
+        }
 
         if( aParam.has( "cavity-radius" ) )
         {
@@ -347,7 +379,15 @@ namespace locust
         }
 
         fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
-    	fInterface->fField = new CylindricalCavity;
+
+        if (fE_Gun)
+        {
+        	fInterface->fField = new RectangularWaveguide;
+        }
+        else
+        {
+        	fInterface->fField = new CylindricalCavity;
+        }
 
 
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
@@ -358,7 +398,9 @@ namespace locust
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
         CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
+//        getchar();
 //        PrintModeMaps();
+//        getchar();
 
         return true;
     }
@@ -413,6 +455,20 @@ namespace locust
     }
 
 
+
+    double CavitySignalGenerator::GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
+    {
+    	double tThetaParticle = tKassParticleXP[1];
+    	double tEy = aTE_E_normalized.back();
+     	double tEmag = fabs(tEy);
+    	// fix-me:  should below be instantaneous velocity or center of motion?
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+//    	printf("tEmag is %g, r is %g, and theta is %g\n", tEmag, tKassParticleXP[0], tKassParticleXP[1]); getchar();
+    	return fabs(0. + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
+    }
+
     double CavitySignalGenerator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
     {
     	double tThetaParticle = tKassParticleXP[1];
@@ -427,6 +483,26 @@ namespace locust
 //    	printf("tEmag is %g, r is %g, and theta is %g\n", tEmag, tKassParticleXP[0], tKassParticleXP[1]); getchar();
     	return fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
     }
+
+    std::vector<double> CavitySignalGenerator::GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+     {
+    	// The l index is inert in the waveguide.
+     	double tX = tKassParticleXP[0] * sin(tKassParticleXP[1]);
+     	double tY = tKassParticleXP[0] * cos(tKassParticleXP[1]);
+     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(m,n,tX,tY);
+ 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
+// 		printf("normFactor is %g and Ey is %g\n", normFactor, tTE_E_electron.back()); getchar();
+
+ 		auto it = tTE_E_electron.begin();
+ 		while (it != tTE_E_electron.end())
+ 		{
+ 			if (!isnan(*it))
+ 				(*it) *= normFactor;
+ 			*it++;
+ 		}
+     	return tTE_E_electron;  // return normalized field.
+     }
+
 
     std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
      {
@@ -493,10 +569,19 @@ namespace locust
         //Receiver Properties
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
-
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
-    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
-        double dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+    	std::vector<double> tTE_E_normalized;
+        double dotProductFactor = 0.;
+        if (!fE_Gun)
+        {
+        	tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
+    		dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+        }
+        else
+        {
+        	tTE_E_normalized = GetWaveguideNormalizedModeField(0,1,0,tKassParticleXP); // lmn 011 for now.
+    		dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+        }
     	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
 // fix-me:  We may need more precise nFilterBinsRequired.

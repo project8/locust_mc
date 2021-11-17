@@ -17,6 +17,7 @@
 #include "LMCKassCurrentTransmitter.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
+#include "LMCRectangularWaveguide.hh" // : LMCField
 #include "LMCFieldBuffer.hh"
 #include <vector>
 #include <sstream>
@@ -76,6 +77,7 @@ namespace locust
 
 
         private:
+            bool fE_Gun;
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
@@ -96,7 +98,9 @@ namespace locust
             double GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex);
             void InitializeBuffers(unsigned filterbuffersize);
             std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            std::vector<double> GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
+            double GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
             double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
 
 
