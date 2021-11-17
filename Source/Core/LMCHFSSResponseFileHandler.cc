@@ -48,7 +48,12 @@ namespace locust
     {
         return true;
     }
-    
+   
+    bool HFSSResponseFileHandlerCore::GenerateAnalyticTFtoFIR(std::vector<std::complex<double>> tfArray)
+    {
+	return true;
+    }
+ 
     double HFSSResponseFileHandlerCore::ConvolveWithFIRFilter(std::deque<double> inputBuffer)
     {
         double convolution=0.0;
@@ -186,6 +191,77 @@ namespace locust
 	fIsFIRCreated=true;
         return true;
     }
+
+    bool TFFileHandlerCore::GenerateAnalyticTFtoFIR(std::vector<std::complex<double>> tfArray)
+    {
+        if(fIsFIRCreated)
+        {
+            return true;
+        }
+/*
+        fTFNBins=0;
+        if(!ends_with(fHFSSFilename,".txt"))
+        {
+            LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<"doesn't end in .txt");
+            return false;
+        }
+        double tfIndex;
+        double tfRealValue;
+        double tfImaginaryValue;
+        std::vector<std::complex<double>> tfArray;
+        std::fstream tfFile(fHFSSFilename.c_str(),std::ios::in);
+        if (tfFile.fail())
+        {
+            LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<" doesn't exist");
+            return false;
+        }
+        //logic copied from /LMCPatchSignalGenerator.cc
+        int totalcount=0;
+
+        while (!tfFile.eof()){
+            std::string lineContent;
+            while(std::getline(tfFile,lineContent))
+            {
+                if (lineContent.find('#')==std::string::npos)
+                {
+                    if (totalcount%fNSkips!=0){
+                        ++totalcount;
+                        continue;
+                    }
+                    std::string token;
+                    std::stringstream ss(lineContent);
+                    int wordCount=0;
+                    while (ss >> token)
+                    {
+                        if(wordCount==0)tfIndex=std::stod(token);
+                        else if(wordCount==1)tfRealValue=std::stod(token);
+                        else if(wordCount==2)tfImaginaryValue=std::stod(token);
+                        else
+                        {
+                            LERROR(lmclog, "There are more column than expected in the input TF file");
+                            return false;
+                        }
+                        ++wordCount;
+                    }
+                    // The TF values from HFSS are in GHz, so need to convert to Hz
+                    if(fTFNBins==0)fInitialTFIndex=tfIndex*pow(10.0,9);
+                    const std::complex<double> temp(tfRealValue,tfImaginaryValue);
+                    tfArray.push_back(temp);
+                    ++fTFNBins;
+                }
+            }
+        }
+        tfFile.close();
+        LDEBUG( lmclog, "Finished reading transfer function file");
+*/
+	fTFNBins=tfArray.size();
+	printf("Check: size of fTFNBins: %d\n", fTFNBins);
+        if(!ConvertTFtoFIR(tfArray)){
+            return false;
+        }
+        fIsFIRCreated=true;
+        return true;
+    }    
     
     FIRFileHandlerCore::FIRFileHandlerCore():HFSSResponseFileHandlerCore()
     {
