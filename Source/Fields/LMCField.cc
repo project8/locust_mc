@@ -11,7 +11,9 @@
 namespace locust
 {
     LOGGER( lmclog, "Field" );
-    Field::Field() {}
+    Field::Field():
+    fCentralFrequency( 25.9e9 )
+    {}
     Field::~Field() {}
 
 
@@ -35,6 +37,16 @@ namespace locust
     	fModeNormFactorTM = aNormFactor;
     }
 
+
+    double Field::GetCentralFrequency()
+    {
+    	return fCentralFrequency;
+    }
+
+    void Field::SetCentralFrequency( double aCentralFrequency )
+    {
+    	fCentralFrequency = aCentralFrequency;
+    }
 
 
 

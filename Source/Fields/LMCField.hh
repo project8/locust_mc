@@ -35,16 +35,18 @@ namespace locust
             virtual bool Configure( const scarab::param_node& ){return true;};
 
             // size of field vectors will be number of components in field value at (r,theta,z)
-            virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z) const {return {0.};};
-            virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z) const {return {0.};};
-            virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z) const {return {0.};};
-            virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z) const {return {0.};};
+
+            // cylindrical cavity
+            virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
+            virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
+            virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
+            virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
 
             // rectangular waveguide
-            virtual std::vector<double> TE_E(int m, int n, double x, double y) const {return {0.};};
-            virtual std::vector<double> TE_H(int m, int n, double x, double y) const {return {0.};};
-            virtual std::vector<double> TM_E(int m, int n, double x, double y) const {return {0.};};
-            virtual std::vector<double> TM_H(int m, int n, double x, double y) const {return {0.};};
+            virtual std::vector<double> TE_E(int m, int n, double x, double y, double fcyc) const {return {0.};};
+            virtual std::vector<double> TE_H(int m, int n, double x, double y, double fcyc) const {return {0.};};
+            virtual std::vector<double> TM_E(int m, int n, double x, double y, double fcyc) const {return {0.};};
+            virtual std::vector<double> TM_H(int m, int n, double x, double y, double fcyc) const {return {0.};};
 
 
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
@@ -53,10 +55,13 @@ namespace locust
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
             void SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor);
+            double GetCentralFrequency();
+            void SetCentralFrequency( double aCentralFrequency );
 
         private:
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTE;  // 3D vector [n-modes][n-modes][n-modes].
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTM;  // 3D vector [n-modes][n-modes][n-modes].
+            double fCentralFrequency;
 
     };
 

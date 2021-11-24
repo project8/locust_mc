@@ -42,22 +42,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = TE_E(l, m, n, r, theta, zKass);
+    	    		    	aField = TE_E(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    			else
     	    			{
-    	    				aField = TE_H(l, m, n, r, theta, zKass);
+    	    				aField = TE_H(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = TM_E(l, m, n, r, theta, zKass);
+    	    				aField = TM_E(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    			else
     	    			{
-    	    				aField = TM_H(l, m, n, r, theta, zKass);
+    	    				aField = TM_H(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    		}
 
@@ -77,7 +77,7 @@ namespace locust
     	return tIntegral;
     }
 
-    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass) const
+    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -100,7 +100,7 @@ namespace locust
         return TE_E;
     }
 
-    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass) const
+    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -119,7 +119,7 @@ namespace locust
         return TE_H;
     }
 
-    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass) const
+    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
     	double z = zKass + fInterface->fL/2.;
 
@@ -140,7 +140,7 @@ namespace locust
         return TM_E;
     }
 
-    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass) const
+    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
     	double z = zKass + fInterface->fL/2.;
 

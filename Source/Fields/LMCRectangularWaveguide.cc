@@ -40,22 +40,22 @@ namespace locust
     	    	{
     	    		if (eField)
     	    		{
-    	    		    aField = TE_E(m, n, xKass, yKass);
+    	    		    aField = TE_E(m, n, xKass, yKass, GetCentralFrequency());
     	    		}
     	    		else
     	    		{
-    	    			aField = TE_H(m, n, xKass, yKass);
+    	    			aField = TE_H(m, n, xKass, yKass, GetCentralFrequency());
     	    		}
     	    	}
     	    	else
     	    	{
     	    		if (eField)
     	    		{
-    	    			aField = TM_E(m, n, xKass, yKass);
+    	    			aField = TM_E(m, n, xKass, yKass, GetCentralFrequency());
     	    		}
     	    		else
     	    		{
-    	    			aField = TM_H(m, n, xKass, yKass);
+    	    			aField = TM_H(m, n, xKass, yKass, GetCentralFrequency());
     	    		}
     	    	}
 
@@ -75,7 +75,7 @@ namespace locust
     	return tIntegral;
     }
 
-    std::vector<double> RectangularWaveguide::TE_E(int m, int n, double xKass, double yKass) const
+    std::vector<double> RectangularWaveguide::TE_E(int m, int n, double xKass, double yKass, double fcyc) const
     {
 
     	double x = xKass + fInterface->fX/2.;
@@ -87,6 +87,8 @@ namespace locust
     	double k2 = n * LMCConst::Pi() / fInterface->fY;
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double omega = LMCConst::C()*kc;  // TO-DO:  Make this frequency-dependent.
+    	double k = omega / sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
+
     	double tEx = omega*LMCConst::MuNull()*n*LMCConst::Pi()/kc/kc/fInterface->fY * cos(k1*x) * sin(k2*y);
     	double tEy = -omega*LMCConst::MuNull()*m*LMCConst::Pi()/kc/kc/fInterface->fX * sin(k1*x) * cos(k2*y);
     	TE_E.push_back(tEx);
@@ -94,7 +96,7 @@ namespace locust
         return TE_E;
     }
 
-    std::vector<double> RectangularWaveguide::TE_H(int m, int n, double xKass, double yKass) const
+    std::vector<double> RectangularWaveguide::TE_H(int m, int n, double xKass, double yKass, double fcyc) const
     {
     	double x = xKass + fInterface->fX/2.;
     	double y = yKass + fInterface->fY/2.;
@@ -105,14 +107,17 @@ namespace locust
     	double k2 = n * LMCConst::Pi() / fInterface->fY;
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double omega = LMCConst::C()*kc;  // TO-DO:  Make this frequency-dependent.
-    	double tHx = kc*m*LMCConst::Pi()/kc/kc/fInterface->fX * sin(k1*x) * cos(k2*y);
-    	double tHy = kc*n*LMCConst::Pi()/kc/kc/fInterface->fY * cos(k1*x) * sin(k2*y);
+    	double k = omega / sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
+    	double beta = sqrt(k*k - kc*kc);
+
+    	double tHx = beta*m*LMCConst::Pi()/kc/kc/fInterface->fX * sin(k1*x) * cos(k2*y);
+    	double tHy = beta*n*LMCConst::Pi()/kc/kc/fInterface->fY * cos(k1*x) * sin(k2*y);
     	TE_H.push_back(tHx);
     	TE_H.push_back(tHy);
         return TE_H;
     }
 
-    std::vector<double> RectangularWaveguide::TM_E(int m, int n, double xKass, double yKass) const
+    std::vector<double> RectangularWaveguide::TM_E(int m, int n, double xKass, double yKass, double fcyc) const
     {
     	double x = xKass + fInterface->fX/2.;
     	double y = yKass + fInterface->fY/2.;
@@ -123,14 +128,17 @@ namespace locust
     	double k2 = n * LMCConst::Pi() / fInterface->fY;
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double omega = LMCConst::C()*kc;  // TO-DO:  Make this frequency-dependent.
-    	double tEx = kc*m*LMCConst::Pi()/kc/kc/fInterface->fX * cos(k1*x) * sin(k2*y);
-    	double tEy = kc*n*LMCConst::Pi()/kc/kc/fInterface->fY * sin(k1*x) * cos(k2*y);
+    	double k = omega / sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
+    	double beta = sqrt(k*k - kc*kc);
+
+    	double tEx = beta*m*LMCConst::Pi()/kc/kc/fInterface->fX * cos(k1*x) * sin(k2*y);
+    	double tEy = beta*n*LMCConst::Pi()/kc/kc/fInterface->fY * sin(k1*x) * cos(k2*y);
     	TM_E.push_back(tEx);
     	TM_E.push_back(tEy);
         return TM_E;
     }
 
-    std::vector<double> RectangularWaveguide::TM_H(int m, int n, double xKass, double yKass) const
+    std::vector<double> RectangularWaveguide::TM_H(int m, int n, double xKass, double yKass, double fcyc) const
     {
     	double x = xKass + fInterface->fX/2.;
     	double y = yKass + fInterface->fY/2.;
@@ -141,6 +149,8 @@ namespace locust
     	double k2 = n * LMCConst::Pi() / fInterface->fY;
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double omega = LMCConst::C()*kc;  // TO-DO:  Make this frequency-dependent.
+    	double k = omega / sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
+
     	double tHx = omega*LMCConst::EpsNull()*n*LMCConst::Pi()/kc/kc/fInterface->fY * sin(k1*x) * cos(k2*y);
     	double tHy = omega*LMCConst::EpsNull()*m*LMCConst::Pi()/kc/kc/fInterface->fX * cos(k1*x) * sin(k2*y);
     	TM_H.push_back(tHx);
