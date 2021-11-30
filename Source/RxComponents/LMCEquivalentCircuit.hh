@@ -35,6 +35,7 @@ namespace locust
             virtual ~EquivalentCircuit();
 	    void GenerateTransferFunction(double R, double L, double C);
 	    std::vector<std::complex<double>> tfArray;
+	    double initialFreq;
 
         private:
 	    int nbins;

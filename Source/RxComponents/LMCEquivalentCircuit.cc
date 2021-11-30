@@ -19,8 +19,8 @@ namespace locust
     EquivalentCircuit::~EquivalentCircuit() {}
 
     void EquivalentCircuit::GenerateTransferFunction(double R, double L, double C){
-	double freq_min = (26.-2.6)*1.e9;
-	double freq_max = (26.+2.6)*1.e9;
+	double freq_min = (1.-0.1)*1.e9;
+	double freq_max = (1.+0.1)*1.e9;
 	double PI = 3.1415926;
 	nbins = 400;
 	double f_res = 1./2./PI/sqrt(L*C);
@@ -30,7 +30,7 @@ namespace locust
 	double freq[nbins];
 	double V_re[nbins];
 	double V_im[nbins];
-	printf("Frequency : vRe : vIm\n");
+	//printf("Frequency : vRe : vIm\n");
 	for (int counts=0; counts<nbins; counts++){
 		freq[counts] = freq_min + counts*(freq_max - freq_min)/(1.0 * nbins);
 
@@ -39,9 +39,11 @@ namespace locust
 		double VoutByVin = R/sqrt( R*R + Z_LC*Z_LC);
 		V_re[counts] = VoutByVin * cos(phase);
 		V_im[counts] = VoutByVin * sin(phase);
+		//printf("%e : %g : %g\n", freq[counts], V_re[counts], V_im[counts]);
 		const std::complex<double> temp(V_re[counts], V_im[counts]);
 		tfArray.push_back(temp);
 	}
+	initialFreq = freq[0];
     }
 
 

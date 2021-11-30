@@ -26,7 +26,7 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode);
         virtual bool ReadHFSSFile();
-	virtual bool GenerateAnalyticTFtoFIR(std::vector<std::complex<double>> tfArray);
+	virtual bool GenerateAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
         virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
@@ -74,7 +74,7 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
         bool ReadHFSSFile() override;
-	bool GenerateAnalyticTFtoFIR(std::vector<std::complex<double>> tfArray) override;
+	bool GenerateAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray) override;
     
     private:
         //Member variables

@@ -249,6 +249,7 @@ namespace locust
 //-------------New implementation of fEquivalentCircuit for cavity parameterization-----
 	if ( (aParam.has( "equivalentR" )) or (aParam.has( "equivalentL" )) or (aParam.has( "equivalentL" )) ) { //Only initiate the configurable TF if at least one parameter is specified in the config file
 		//Default RLC parameters if not defined in config file, values (mostly arbitratily) based on external script from P. Slocum for 26GHz cavity
+		printf("Entering RLC Config Loop\n");
 		double equivalentR = 1.;
                 double equivalentL = 0.159e-6/26.;
                 double equivalentC = 0.159e-12/26.;
@@ -256,14 +257,17 @@ namespace locust
 		//Update any parameters defined in the config file
                 if( aParam.has( "equivalentR" ) )
                 {
+			printf("Retrieved R value: %e\n", aParam["equivalentR"]().as_double());
                         equivalentR = aParam["equivalentR"]().as_double();
                 }
                 if( aParam.has( "equivalentL" ) )
                 {
+                        printf("Retrieved L value: %e\n", aParam["equivalentL"]().as_double());
                         equivalentL = aParam["equivalentL"]().as_double();
                 }
                 if( aParam.has( "equivalentC" ) )
                 {
+                        printf("Retrieved C value: %e\n", aParam["equivalentC"]().as_double());
                         equivalentC = aParam["equivalentC"]().as_double();
                 }
 
@@ -271,7 +275,7 @@ namespace locust
                 fEquivalentCircuit = new EquivalentCircuit();
                 fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC); //R,L,C inputs with hard coded frequency about 26 GHz
 
-		if(!fInterface->fTFReceiverHandler.GenerateAnalyticTFtoFIR(fEquivalentCircuit->tfArray))
+		if(!fInterface->fTFReceiverHandler.GenerateAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
 		{
 		return false;
 		}
@@ -279,6 +283,7 @@ namespace locust
 	else{
         	if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
         	{
+		printf("Using externally built Transfer Function via file \n");
             	return false;
         	}
 	}
@@ -321,27 +326,6 @@ namespace locust
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
-
-
-//-------------New implementation of fEquivalentCircuit class for cavity parameterization----------
-		double equivalentR = 1.;
-		double equivalentL = 0.159e-6/26.;
-		double equivalentC = 0.159e-12/26.;
-		if( aParam.has( "equivalentR" ) )
-		{
-			equivalentR = aParam["equivalentR"]().as_double();
-		}
-                if( aParam.has( "equivalentL" ) )
-		{
-                        equivalentL = aParam["equivalentL"]().as_double();
-		}
-                if( aParam.has( "equivalentC" ) )
-		{
-                        equivalentC = aParam["equivalentC"]().as_double();	
-		}
-		fEquivalentCircuit = new EquivalentCircuit();
-		fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC); //R,L,C inputs with hard coded frequency about 26 GHz
-//-----------------------------------------------------------------------------------------------
 
 
 		fPowerCombiner = new CavityModes;

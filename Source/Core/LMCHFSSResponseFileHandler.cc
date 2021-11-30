@@ -49,7 +49,7 @@ namespace locust
         return true;
     }
    
-    bool HFSSResponseFileHandlerCore::GenerateAnalyticTFtoFIR(std::vector<std::complex<double>> tfArray)
+    bool HFSSResponseFileHandlerCore::GenerateAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray)
     {
 	return true;
     }
@@ -192,23 +192,24 @@ namespace locust
         return true;
     }
 
-    bool TFFileHandlerCore::GenerateAnalyticTFtoFIR(std::vector<std::complex<double>> tfArray)
+    bool TFFileHandlerCore::GenerateAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray)
     {
         if(fIsFIRCreated)
         {
             return true;
         }
-/*
         fTFNBins=0;
-        if(!ends_with(fHFSSFilename,".txt"))
+/*        if(!ends_with(fHFSSFilename,".txt"))
         {
             LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<"doesn't end in .txt");
             return false;
         }
+*/
         double tfIndex;
         double tfRealValue;
         double tfImaginaryValue;
-        std::vector<std::complex<double>> tfArray;
+/*
+        std::vector<std::complex<double>> tfArray_temp;
         std::fstream tfFile(fHFSSFilename.c_str(),std::ios::in);
         if (tfFile.fail())
         {
@@ -246,17 +247,23 @@ namespace locust
                     // The TF values from HFSS are in GHz, so need to convert to Hz
                     if(fTFNBins==0)fInitialTFIndex=tfIndex*pow(10.0,9);
                     const std::complex<double> temp(tfRealValue,tfImaginaryValue);
-                    tfArray.push_back(temp);
+                    tfArray_temp.push_back(temp);
                     ++fTFNBins;
                 }
             }
         }
         tfFile.close();
         LDEBUG( lmclog, "Finished reading transfer function file");
+
+
 */
+
 	fTFNBins=tfArray.size();
-	printf("Check: size of fTFNBins: %d\n", fTFNBins);
+	fInitialTFIndex = initialFreq;
+//	printf("Check: size of fTFNBins and temp: %ld, %d\n", tfArray.size(), fTFNBins);
+//	printf("First and last values of arrays (generated) and (temp): (%e,%e), (%e,%e)\n",(tfArray[0]).real(),(tfArray[tfArray.size()-1]).real(),(tfArray_temp[0]).real(),(tfArray_temp[fTFNBins-1]).real());
         if(!ConvertTFtoFIR(tfArray)){
+	//if(!ConvertTFtoFIR(tfArray_temp)){
             return false;
         }
         fIsFIRCreated=true;
