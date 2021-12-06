@@ -41,6 +41,8 @@ namespace locust
             std::vector<double> TE_H(int m, int n, double xKass, double yKass, double fcyc) const;
             std::vector<double> TM_E(int m, int n, double xKass, double yKass, double fcyc) const;
             std::vector<double> TM_H(int m, int n, double xKass, double yKass, double fcyc) const;
+            double Z_TE(int l, int m, int n) const;
+            double Z_TM(int l, int m, int n) const;
             double Integrate(int l, int m, int n, bool teMode, bool eField);
 
 

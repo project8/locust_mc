@@ -75,6 +75,19 @@ namespace locust
     	return tIntegral;
     }
 
+    double RectangularWaveguide::Z_TE(int l, int m, int n) const
+    {
+    	double Z_TE = 1.; // placeholder
+    	return Z_TE;
+    }
+
+    double RectangularWaveguide::Z_TM(int l, int m, int n) const
+    {
+    	double Z_TM = 1.; // placeholder
+    	return Z_TM;
+    }
+
+
     std::vector<double> RectangularWaveguide::TE_E(int m, int n, double xKass, double yKass, double fcyc) const
     {
 
