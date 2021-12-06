@@ -41,6 +41,9 @@ namespace locust
             virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
             virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
             virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
+            virtual double Z_TM(int l, int m, int n) const {return {0.};};
+            virtual double Z_TE(int l, int m, int n) const {return {0.};};
+
 
             // rectangular waveguide
             virtual std::vector<double> TE_E(int m, int n, double x, double y, double fcyc) const {return {0.};};
