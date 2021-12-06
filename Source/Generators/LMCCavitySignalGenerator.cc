@@ -219,12 +219,12 @@ namespace locust
     						std::vector<double> tTE_E;
     						if (!fE_Gun)
     						{
-    							tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0);
+    							tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency());
     							fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
     						}
     						else
     						{
-    							tTE_E = fInterface->fField->TE_E(m,n,x,y);
+    							tTE_E = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
     							fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
     						}
 
@@ -428,10 +428,12 @@ namespace locust
     	// that the data stream will have an artificial phase shift of 90 degrees everywhere, which seems
     	// acceptable if we are only sensitive to phase evolution and phase differences between probes.
 
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2]);
+    	double fcyc = tKassParticleXP[7];
+
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2], fcyc);
     	double thetaProbe = tKassParticleXP[1] + fPowerCombiner->GetCavityProbeTheta()[channelIndex];
     	double zProbe = fPowerCombiner->GetCavityProbeZ()[channelIndex];
-    	std::vector<double> tTE_H_probe = fInterface->fField->TE_H(0,1,1,fInterface->fR,thetaProbe,zProbe);
+    	std::vector<double> tTE_H_probe = fInterface->fField->TE_H(0,1,1,fInterface->fR,thetaProbe,zProbe, fcyc);
         double modeScalingFactor = tTE_H_probe.back() / tTE_E_electron.back();
         //        	printf("modeScalingFactor is %g / %g = %g\n", tTE_H_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
 
@@ -473,7 +475,8 @@ namespace locust
     	// The l index is inert in the waveguide.
      	double tX = tKassParticleXP[0] * sin(tKassParticleXP[1]);
      	double tY = tKassParticleXP[0] * cos(tKassParticleXP[1]);
-     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(m,n,tX,tY);
+     	double fcyc = tKassParticleXP[7];
+     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(m,n,tX,tY,fcyc);
  		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
 // 		printf("normFactor is %g and Ey is %g\n", normFactor, tTE_E_electron.back()); getchar();
 
@@ -492,7 +495,8 @@ namespace locust
      {
      	double tR = tKassParticleXP[0];
      	double tZ = tKassParticleXP[2];
-     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ);
+     	double fcyc = tKassParticleXP[7];
+     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc);
  		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
 
  		auto it = tTE_E_electron.begin();
