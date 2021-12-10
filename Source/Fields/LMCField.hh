@@ -32,7 +32,8 @@ namespace locust
             Field();
             virtual ~Field();
 
-            virtual bool Configure( const scarab::param_node& ){return true;};
+            bool Configure( const scarab::param_node& aNode );
+
 
             // size of field vectors will be number of components in field value at (r,theta,z)
 

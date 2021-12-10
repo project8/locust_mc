@@ -11,6 +11,7 @@
     {
         "transmitter": "kass-current",
 		"e-gun": true,
+		"central-frequency": 25.9e9,
         "voltage-check": "true",
         "lo-frequency": 25.8741e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/WR42_centerline_TF.txt",
