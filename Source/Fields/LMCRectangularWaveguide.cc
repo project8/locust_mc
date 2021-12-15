@@ -75,15 +75,29 @@ namespace locust
     	return tIntegral;
     }
 
-    double RectangularWaveguide::Z_TE(int l, int m, int n) const
+    double RectangularWaveguide::Z_TE(int l, int m, int n, double fcyc) const
     {
-    	double Z_TE = 1.; // placeholder
+    	double k1 = m * LMCConst::Pi() / fInterface->fX;
+    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double kc = pow(k1*k1+k2*k2,0.5);
+    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );
+    	double k = fcyc * sqrt( LMCConst::EpsNull() * LMCConst::MuNull() );
+    	double beta = sqrt(k*k - kc*kc);
+
+    	double Z_TE = k*eta/beta;
     	return Z_TE;
     }
 
-    double RectangularWaveguide::Z_TM(int l, int m, int n) const
+    double RectangularWaveguide::Z_TM(int l, int m, int n, double fcyc) const
     {
-    	double Z_TM = 1.; // placeholder
+    	double k1 = m * LMCConst::Pi() / fInterface->fX;
+    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double kc = pow(k1*k1+k2*k2,0.5);
+    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );
+    	double k = fcyc * sqrt( LMCConst::EpsNull() * LMCConst::MuNull() );
+    	double beta = sqrt(k*k - kc*kc);
+
+    	double Z_TM = beta*eta/k;
     	return Z_TM;
     }
 
