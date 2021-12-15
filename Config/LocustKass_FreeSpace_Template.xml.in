@@ -1,66 +1,29 @@
-
 <!-- parameters -->
-
-<external_define name="fieldX" value="0.0"/>
-<external_define name="fieldY" value="0.0"/>
-
- <external_define name="generator" value="gen_uniform"/>
+<external_define name="simulation" value="1"/>
+<external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
-<!-- <external_define name="generator" value="gen_bfieldlines" />  -->
- <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
+<!-- <external_define name="generator" value="gen_bfieldlines" /> -->
+<external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
 <!-- <external_define name="trajectory" value="trajectory_exact"/> -->
 <!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
-<external_define name="alignment" value="0."/>
-
 <external_define name="count" value="1"/>
 <external_define name="seed" value="112377"/>
+<external_define name="alignment" value="0."/>
 
 <external_define name="output_path" value="${CMAKE_INSTALL_PREFIX}/output"/> 
 <external_define name="file" value="Phase3Seed[seed]Output"/>
 
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
 
-
-<geometry>
-    <include name="[config_path]/FreeSpaceGeometry.xml"/>
-</geometry>
-    
+<!-- Here the geometry and magnetic field is definedand solved. -->
+<!-- The filed is has the name: total_magnetic_field -->	
+<include name="[config_path]/FreeSpaceGeometry.xml"/>
 
 
- 
+
+
 <kassiopeia>
-
-    <!-- fields -->
-
-
-    <ksfield_electromagnet
-        name="field_electromagnet"
-        file="Project8Magnets.kbd"
-        system="world/project8"
-        spaces="world/project8/@magnet_tag"
-    >
-        <zonal_harmonic_field_solver
-            number_of_bifurcations="-1"
-            convergence_ratio=".99"
-            convergence_parameter="1.e-15"
-            proximity_to_sourcepoint="1.e-12"
-            number_of_central_coefficients="500"
-            use_fractional_central_sourcepoint_spacing="true"
-            central_sourcepoint_fractional_distance="1e-2"
-            central_sourcepoint_spacing="2.e-5"
-            number_of_remote_coefficients="200"
-            remote_sourcepoint_start="-1.e-1"
-            remote_sourcepoint_end="1.e-1"
-        />
-    </ksfield_electromagnet>
-
-
-    <ksfield_magnetic_constant
-        name="field_magnetic_main"
-        field="[fieldX] [fieldY]  [fieldZ]"
-    />
-
     <!-- generators -->
 
 
@@ -71,7 +34,7 @@
         <position_cylindrical_composite>
             <r_list add_value="0.0"/>
             <phi_list add_value="0.0"/>
-            <z_list add_value="-0.06"/>
+            <z_list add_value="-0.3"/>
         </position_cylindrical_composite>
         <direction_spherical_composite>
             <theta_fix value="0."/>
@@ -163,16 +126,16 @@
 
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="18600."/>
+            <energy_fix value="18600.0"/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0." value_max="0.0"/>
-            <y_uniform value_min="0." value_max="0.0"/>
-            <z_uniform value_min="0." value_max="0."/>
+            <x_uniform value_min="0.0" value_max="0.0"/>
+            <y_uniform value_min="0.0" value_max="0.0"/>
+            <z_uniform value_min="0.0" value_max="0.0"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90." value_max="90."/> 
+        <theta_uniform value_min="90.0" value_max="90.0"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -181,16 +144,16 @@
     </ksgen_generator_composite>
 
 
-
+<!--
     <ksgen_generator_composite name="gen_krypton">
         <energy_krypton_event force_conversion="true" do_conversion="true" do_auger="false"/>
         <position_rectangular_composite space="world/project8">
             <x_uniform value_min="-.005334" value_max=".005334"/>
             <y_uniform value_min="-.002159" value_max=".002159"/>
-            <z_uniform value_min="-.0" value_max=".0"/>
+            <z_uniform value_min="-.0381" value_max=".0381"/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
-            <theta_spherical angle_min="89." angle_max="91."/>
+            <theta_spherical angle_min="85." angle_max="95."/>
             <phi_uniform value_min="0." value_max="360"/>
         </direction_spherical_composite>
         <time_composite>
@@ -198,7 +161,7 @@
         </time_composite>
     </ksgen_generator_composite>
 
-
+-->
 
 
 
@@ -365,19 +328,20 @@
 <!--    <ksnav_surface name="nav_surface"/>  -->
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
+
+
     <!-- terminators -->
     <ksterm_max_time name="term_max_time" time="1.0e-6"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
-    <ksterm_max_energy name="term_max_energy" energy="30430."/>
-    <ksterm_min_z name="term_min_z" z="-.07"/>
-    <ksterm_max_z name="term_max_z" z=".07"/>
-
+    <ksterm_min_z name="term_min_z" z="-.3"/>
+    <ksterm_max_z name="term_max_z" z=".3"/>
     
     <!-- modifiers -->
-    <cycl_rad_extr name="rad_extr" P8Phase="0" /> 
+    <cycl_rad_extr name="rad_extr" P8Phase="3" /> 
     <mod_run_pause name="run_pause"/>
     <mod_event_hold name="event_hold"/>
+
 
     <!-- writers -->
 
@@ -449,18 +413,12 @@
 
         <command parent="root_terminator" field="add_terminator" child="term_max_time"/>
 
-
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
-
-
-
-        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
-<!--        <command parent="root_terminator" field="add_terminator" child="term_max_energy"/> -->
-
+<!--        <command parent="root_terminator" field="add_terminator" child="term_min_energy"/>  -->
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
-<!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> --> 
+        <command parent="write_root" field="add_step_output" child="component_step_world"/> 
 
 
 
@@ -472,7 +430,7 @@
             <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_64"/>
 -->
 
-       
+          
 
     </ksgeo_space>
 
@@ -486,8 +444,7 @@
         run="1"
         seed="[seed]"
         events="3"
-        magnetic_field="field_electromagnet"
-        magnetic_field="field_magnetic_main"
+        magnetic_field="total_magnetic_field"
         space="space_world"
         generator="[generator]"
         trajectory="[trajectory]"
