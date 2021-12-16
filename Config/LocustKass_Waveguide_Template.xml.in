@@ -1,11 +1,6 @@
 
 <!-- parameters -->
 
-
-<external_define name="simulation" value="1"/>
-<external_define name="fieldX" value="0.0"/>
-<external_define name="fieldY" value="0.0"/>
-
 <external_define name="alignment" value="0."/>
 
  <external_define name="generator" value="gen_uniform"/>
