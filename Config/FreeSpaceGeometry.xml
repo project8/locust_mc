@@ -408,7 +408,7 @@
 
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
+<!--    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/>  -->
 
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
