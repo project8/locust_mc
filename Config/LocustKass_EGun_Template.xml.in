@@ -1,9 +1,3 @@
-
-<!-- parameters -->
-
-<external_define name="fieldX" value="0.0"/>
-<external_define name="fieldY" value="0.0"/>
-
  <external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
@@ -22,47 +16,16 @@
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
 
 
-<geometry>
-    <include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/>
-</geometry>
+
+<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/>
+
     
 
 
  
 <kassiopeia>
 
-    <!-- fields -->
-
-
-    <ksfield_electromagnet
-        name="field_electromagnet"
-        file="Project8Magnets.kbd"
-        system="world/project8"
-        spaces="world/project8/@magnet_tag"
-    >
-        <zonal_harmonic_field_solver
-            number_of_bifurcations="-1"
-            convergence_ratio=".99"
-            convergence_parameter="1.e-15"
-            proximity_to_sourcepoint="1.e-12"
-            number_of_central_coefficients="500"
-            use_fractional_central_sourcepoint_spacing="true"
-            central_sourcepoint_fractional_distance="1e-2"
-            central_sourcepoint_spacing="2.e-5"
-            number_of_remote_coefficients="200"
-            remote_sourcepoint_start="-1.e-1"
-            remote_sourcepoint_end="1.e-1"
-        />
-    </ksfield_electromagnet>
-
-
-    <ksfield_magnetic_constant
-        name="field_magnetic_main"
-        field="[fieldX] [fieldY]  [fieldZ]"
-    />
-
     <!-- generators -->
-
 
     <ksgen_generator_composite name="gen_bfieldlines">
         <energy_composite>
@@ -486,8 +449,7 @@
         run="1"
         seed="[seed]"
         events="1"
-        magnetic_field="field_electromagnet"
-        magnetic_field="field_magnetic_main"
+        magnetic_field="total_magnetic_field"
         space="space_world"
         generator="[generator]"
         trajectory="[trajectory]"
