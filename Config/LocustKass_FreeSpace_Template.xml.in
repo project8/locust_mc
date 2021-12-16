@@ -1,5 +1,4 @@
 <!-- parameters -->
-<external_define name="simulation" value="1"/>
 <external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
 <!-- <external_define name="generator" value="gen_bfieldlines" /> -->
@@ -338,7 +337,7 @@
     <ksterm_max_z name="term_max_z" z=".3"/>
     
     <!-- modifiers -->
-    <cycl_rad_extr name="rad_extr" P8Phase="3" /> 
+    <cycl_rad_extr name="rad_extr" P8Phase="0" /> 
     <mod_run_pause name="run_pause"/>
     <mod_event_hold name="event_hold"/>
 
