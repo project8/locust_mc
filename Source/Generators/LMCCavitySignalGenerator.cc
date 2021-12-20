@@ -146,7 +146,11 @@ namespace locust
     void CavitySignalGenerator::CheckNormalization()
     {
 
-    	printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
+    	if (!fE_Gun)
+    		printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
+    	else
+    		printf("\n |E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used.\n\n");
+
     	for (int l=0; l<fNModes; l++)
     	{
     		for (int m=1; m<fNModes; m++)
@@ -156,7 +160,7 @@ namespace locust
     				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TE%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
         		    		LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
     				}
     				else
@@ -178,7 +182,7 @@ namespace locust
     				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TM%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
+    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
     				}
     				else
@@ -189,7 +193,7 @@ namespace locust
     		}
     	}
 
-    	printf("The modes normalized as above are available for use in the simulation.\n");
+    	printf("\nThe modes normalized as above are available for use in the simulation.\n\n");
     }
 
 
@@ -252,7 +256,23 @@ namespace locust
 
         if( aParam.has( "e-gun" ) )
         {
-            fE_Gun = aParam["e-gun"]().as_bool();
+
+        	fE_Gun = aParam["e-gun"]().as_bool();
+
+            if (fE_Gun)
+            {
+            	fInterface->fField = new RectangularWaveguide;
+            }
+            else
+            {
+            	fInterface->fField = new CylindricalCavity;
+            }
+
+        }
+
+        if( aParam.has( "central-frequency" ) )
+        {
+            fInterface->fField->SetCentralFrequency(2.*LMCConst::Pi()*aParam["central-frequency"]().as_double());
         }
 
         if( aParam.has( "cavity-radius" ) )
@@ -323,17 +343,9 @@ namespace locust
             exit(-1);
         }
 
+
+
         fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
-
-        if (fE_Gun)
-        {
-        	fInterface->fField = new RectangularWaveguide;
-        }
-        else
-        {
-        	fInterface->fField = new CylindricalCavity;
-        }
-
 
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
