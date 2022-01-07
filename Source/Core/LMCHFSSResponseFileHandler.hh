@@ -82,7 +82,7 @@ namespace locust
         fftw_complex *fFIRComplex;
         
         // Member functions
-        bool ConvertTFtoFIR(std::vector<std::complex<double>> &);
+        bool ConvertTFtoFIR(std::vector<std::complex<double>> &, bool GeneratedTF);
     protected:
         //Member variables
         double fInitialTFIndex;

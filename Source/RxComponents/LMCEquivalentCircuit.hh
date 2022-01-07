@@ -33,7 +33,7 @@ namespace locust
         public:
             EquivalentCircuit();
             virtual ~EquivalentCircuit();
-	    void GenerateTransferFunction(double R, double L, double C);
+	    void GenerateTransferFunction(double R, double L, double C, int nBins_config, double FreqRangeCenter);
 	    std::vector<std::complex<double>> tfArray;
 	    double initialFreq;
 

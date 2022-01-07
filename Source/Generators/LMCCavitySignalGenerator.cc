@@ -253,6 +253,8 @@ namespace locust
 		double equivalentR = 1.;
                 double equivalentL = 0.159e-6/26.;
                 double equivalentC = 0.159e-12/26.;
+		int TFBins = 4000;
+		double FreqRangeCenter = 1.0e9;
 
 		//Update any parameters defined in the config file
                 if( aParam.has( "equivalentR" ) )
@@ -270,10 +272,18 @@ namespace locust
                         printf("Retrieved C value: %e\n", aParam["equivalentC"]().as_double());
                         equivalentC = aParam["equivalentC"]().as_double();
                 }
-
-
+		if( aParam.has( "TFBins" ) )
+		{
+			printf("Retrieved TFBins: %d\n", aParam["TFBins"]().as_int());
+			TFBins = aParam["TFBins"]().as_int();
+		}
+		if( aParam.has( "FreqRangeCenter" ) )
+		{
+			printf("Retrieved FreqRangeCenter: %f\n", aParam["FreqRangeCenter"]().as_double());
+                        FreqRangeCenter = aParam["FreqRangeCenter"]().as_double();
+		}
                 fEquivalentCircuit = new EquivalentCircuit();
-                fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC); //R,L,C inputs with hard coded frequency about 26 GHz
+                fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC,TFBins,FreqRangeCenter); //R,L,C inputs with hard coded frequency about 26 GHz
 
 		if(!fInterface->fTFReceiverHandler.GenerateAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
 		{

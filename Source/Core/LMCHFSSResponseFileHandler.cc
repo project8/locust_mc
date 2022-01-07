@@ -9,6 +9,7 @@
 #include "LMCException.hh"
 #include "LMCHFSSResponseFileHandler.hh"
 
+#include <stdio.h>
 #include "logger.hh"
 
 #include<unistd.h>
@@ -98,7 +99,7 @@ namespace locust
         return true;
     }
   
-    bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray)
+    bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray, bool GeneratedTF)
     {
         if(fTFNBins<=0)
         {
@@ -113,14 +114,25 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
-        fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth);
-	fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
+	//printf("\n\nTF Bin Width for Complex FFT: %e\n\n", fTFBinWidth);
+	double TFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins);
+	if(GeneratedTF){ 
+		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,TFBinWidth);//Calculates TFBinWidth assuming frequency range defined as .9 to 1.1 the center of the frequency bins.
+	}
+	else{ 
+		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth); //Uses degenerately defined fTFNBins AND fTFBinWidth
+	}
+	fFIRNBins=fTFNBins+fComplexFFT.GetShiftNBins();
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
         fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
 	fResolution=fComplexFFT.GetTimeResolution();
+	FILE * fFIRout = fopen("FIR.txt", "w");
+	fprintf(fFIRout,"#FIR for cavity simulation (index,coefficient)\n");
         for (int i = 0; i < fFIRNBins; ++i){
             fFilter.push_back(fFIRComplex[i][0]);
+	    fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
         }
+	fclose(fFIRout);
         LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
         return true;
     }
@@ -185,7 +197,7 @@ namespace locust
         }
         tfFile.close();
         LDEBUG( lmclog, "Finished reading transfer function file");
-        if(!ConvertTFtoFIR(tfArray)){
+        if(!ConvertTFtoFIR(tfArray,false)){ //bool determines if TF was generated dynamically
             return false;
         }
 	fIsFIRCreated=true;
@@ -207,8 +219,7 @@ namespace locust
 	fInitialTFIndex = initialFreq;
 //	printf("Check: size of fTFNBins and temp: %ld, %d\n", tfArray.size(), fTFNBins);
 //	printf("First and last values of arrays (generated) and (temp): (%e,%e), (%e,%e)\n",(tfArray[0]).real(),(tfArray[tfArray.size()-1]).real(),(tfArray_temp[0]).real(),(tfArray_temp[fTFNBins-1]).real());
-        if(!ConvertTFtoFIR(tfArray)){
-	//if(!ConvertTFtoFIR(tfArray_temp)){
+	if(!ConvertTFtoFIR(tfArray, true)){ //bool determines if TF was generated dynamically
             return false;
         }
         fIsFIRCreated=true;
