@@ -122,7 +122,7 @@ namespace locust
 	else{ 
 		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth); //Uses degenerately defined fTFNBins AND fTFBinWidth
 	}
-	fFIRNBins=fTFNBins+fComplexFFT.GetShiftNBins();
+	fFIRNBins=fTFNBins+2*2*fComplexFFT.GetShiftNBins();
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
         fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
 	fResolution=fComplexFFT.GetTimeResolution();
