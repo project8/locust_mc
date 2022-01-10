@@ -1,0 +1,59 @@
+/*
+ * LMCWindowFunctions.hh
+ *
+ *  Created on: Jan 10, 2022
+ *      Author: A. B. Telles
+ */
+
+#ifndef LMCWINDOWFUNCTIONS_HH_
+#define LMCWINDOWFUNCTIONS_HH_
+
+//#include <fftw3.h>
+//#include <math.h>
+//#include <string>
+//#include <complex>
+//#include <boost/numeric/ublas/vector.hpp>
+
+#include "param.hh"
+
+namespace locust
+{
+    /*!
+     @class WindowFunctions
+     @author A. B. Telles
+     @brief Class to create and apply window functions
+     @details
+     Currently being used for the complex FFT class. Can be expanded to other things such as LPF in the future.
+     
+     Available configuration options:
+     -"window-function-type": string -- The window function to use
+     
+     */
+    class WindowFunctions
+    {
+        
+    public:
+        WindowFunctions();
+        virtual ~WindowFunctions();
+        bool Configure( const scarab::param_node& aNode);
+        bool GenerateWindowFunction(int windowsize, int prewindowbins, int signalsize);
+        std::vector<double> GetWindowFunction();
+
+    private:
+    
+        int fWindowFunctionType;
+        int fTotalWindowSize;
+        int fPreWindowBins;
+        int fSignalSize;
+        bool IsInitialized;
+        std::vector<double> fWindowFunction;
+
+        // Member functions:
+        void GenerateRectangularWindow();
+        void GenerateTukeyWindow();
+        void GenerateOtherWindow();
+    };
+    
+} /* namespace locust */
+
+#endif /* LMCWINDOWFUNCTION_HH_ */

@@ -44,7 +44,8 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCTurnstileAntenna.hh
     
     Transforms/LMCHilbertTransform.hh
-    Transforms/LMCComplexFFT.hh    
+    Transforms/LMCComplexFFT.hh 
+    Transforms/LMCWindowFunctions.hh   
 
     RxComponents/LMCPowerCombinerInterface.hh
     RxComponents/LMCPowerCombiner.hh
@@ -113,7 +114,8 @@ set( LOCUST_MC_SOURCE_FILES
    	Transmitters/LMCTurnstileAntenna.cc
     
     Transforms/LMCHilbertTransform.cc
-    Transforms/LMCComplexFFT.cc    
+    Transforms/LMCComplexFFT.cc
+    Transforms/LMCWindowFunctions.cc    
     
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCVoltageDivider.cc

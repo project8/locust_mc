@@ -13,6 +13,7 @@
 #include <string>
 #include <complex>
 #include <boost/numeric/ublas/vector.hpp>
+#include <LMCWindowFunctions.hh>
 
 #include "param.hh"
 
@@ -50,10 +51,10 @@ namespace locust
         bool ForwardFFT(int, fftw_complex*, fftw_complex*);
         bool GenerateFIR(int, fftw_complex*, fftw_complex*);
         bool ReverseFFT(int, fftw_complex*, fftw_complex*);
-	double GetTimeResolution();
-	double GetFreqResolution();
-	int GetShiftNBins();
-        
+        double GetTimeResolution();
+        double GetFreqResolution();
+        int GetShiftNBins();
+
     private:
 	// Member variables
         fftw_complex* fInputArray;
@@ -68,26 +69,27 @@ namespace locust
             estimate=FFTW_ESTIMATE
         };
         Transform fTransform;
-        
         std::string fTransformFlag;
         bool fUseWisdom;
         std::string fWisdomFilename;
-	int fSize;
-	double fTimeResolution;
-	double fFreqResolution;
-	int fWindowFunctionType;
-	int fTotalWindowSize;
-	int fZeroPaddingSize;
-	int fPreFilterBins;
+
+        int fSize;
+        double fTimeResolution;
+        double fFreqResolution;
+        int fWindowFunctionType;
+        int fTotalWindowSize;
+        int fZeroPaddingSize;
+        int fPreFilterBins;
         bool IsInitialized;
-	std::vector<double> fWindowFunction;
-	int fNShiftBins;
-	
-	// Member functions
-    	bool GenerateWindowFunction();
-	bool MakeFilterCausal(fftw_complex*);
+        int fNShiftBins;
+
+        WindowFunctions fWindowFunction;
+        // Member functions
+        bool GenerateWindowFunction();
+        bool ApplyWindowFunction(fftw_complex*);
+        bool MakeFilterCausal(fftw_complex*);
     };
-    
+
 } /* namespace locust */
 
 #endif /* LMCHILBERTTRANSFORM_HH_ */
