@@ -38,7 +38,7 @@ namespace locust
 			fTransmitter(),
 	        fBesselNKZeros( 0 ),
 			fBesselNKPrimeZeros( 0 ),
-			fR( 0.1 ),
+			fR( 0.05 ),
 			fL( 0.2 ),
 			fX( 0.010668 ),
 			fY( 0.004318 ),

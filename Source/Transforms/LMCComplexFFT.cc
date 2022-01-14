@@ -237,10 +237,11 @@ namespace locust
         }
         for (int i = 0; i < 2*fSize+fNShiftBins; ++i)
         {
-        	out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
-        for (int i = 0; i < fSize+2*fNShiftBins; ++i){
-        	}
+        for (int i = 0; i < fSize+2*fNShiftBins; ++i)
+        {
+            out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
+        }
         return true;
     }
     
