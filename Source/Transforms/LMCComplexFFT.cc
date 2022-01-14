@@ -144,6 +144,7 @@ namespace locust
                 else if(i>midWindowFinalBin && i<=finalWindowFinalBin)
                 {
                     fWindowFunction[i]=0.5*(1 - std::cos( (LMCConst::Pi()*2*(fSize-j)) / (tukeyWindowAlpha*fSize) ) );
+                    j++;
                 }
             }
         }
@@ -151,6 +152,17 @@ namespace locust
         {
             return false;
         }
+        ////////////////////////////
+        //text file for testing.   
+        std::ofstream windowfile;
+        windowfile.open("windowfile.txt");
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+            windowfile << fWindowFunction.at(i);
+            windowfile << "\n";
+        }
+        windowfile.close();
+        ////////////////////////////
         return true;
     }
 
