@@ -339,7 +339,7 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.0e-6"/>
+    <ksterm_max_time name="term_max_time" time="1.0e-4"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="25000."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
@@ -461,7 +461,8 @@
         run="1"
         seed="[seed]"
         events="10"
-        magnetic_field="total_magnetic_field"
+        magnetic_field="trap_field"
+        magnetic_field="background_field"
         space="space_world"
         generator="[generator]"
         trajectory="[trajectory]"

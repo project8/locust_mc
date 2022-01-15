@@ -145,7 +145,7 @@
 
 <kemfield>
     <electromagnet_field
-        name="field_electromagnet"
+        name="trap_field"
         file="Project8Magnets.kbd"
         system="world/project8"
         spaces="world/project8/@magnet_tag"
@@ -175,7 +175,7 @@
         use_caching="true"
             >
         <add_field name="background_field" enhancement="1.0" />
-        <add_field name="field_electromagnet" enhancement="1.0" />
+        <add_field name="trap_field" enhancement="1.0" />
     </magnetic_superposition_field>
 
 </kemfield>
