@@ -129,11 +129,11 @@ namespace locust
             	{
             		if (TE)
             		{
-            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,1,1)/LMCConst::EpsNull();
+            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,1,1);
             		}
             		else
             		{
-            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,0,1)/LMCConst::EpsNull();
+            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,0,1);
             		}
             	}
         	}
@@ -146,17 +146,21 @@ namespace locust
     void CavitySignalGenerator::CheckNormalization()
     {
 
-    	printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
+    	if (!fE_Gun)
+    		printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
+    	else
+    		printf("\n |E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used.\n\n");
+
     	for (int l=0; l<fNModes; l++)
     	{
     		for (int m=1; m<fNModes; m++)
     		{
     			for (int n=0; n<fNModes; n++)
     			{
-    				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
+    				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n] / LMCConst::EpsNull();
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TE%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
         		    		LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
     				}
     				else
@@ -175,10 +179,10 @@ namespace locust
     		{
     			for (int n=1; n<fNModes; n++)
     			{
-    				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
+    				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n] / LMCConst::EpsNull();
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TM%d%d%d E %.4f H %.4f\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
+    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
     				}
     				else
@@ -189,7 +193,7 @@ namespace locust
     		}
     	}
 
-    	printf("The modes normalized as above are available for use in the simulation.\n");
+    	printf("\nThe modes normalized as above are available for use in the simulation.\n\n");
     }
 
 
@@ -252,7 +256,23 @@ namespace locust
 
         if( aParam.has( "e-gun" ) )
         {
-            fE_Gun = aParam["e-gun"]().as_bool();
+
+        	fE_Gun = aParam["e-gun"]().as_bool();
+
+            if (fE_Gun)
+            {
+            	fInterface->fField = new RectangularWaveguide;
+            }
+            else
+            {
+            	fInterface->fField = new CylindricalCavity;
+            }
+
+        }
+
+        if( aParam.has( "central-frequency" ) )
+        {
+            fInterface->fField->SetCentralFrequency(2.*LMCConst::Pi()*aParam["central-frequency"]().as_double());
         }
 
         if( aParam.has( "cavity-radius" ) )
@@ -323,17 +343,9 @@ namespace locust
             exit(-1);
         }
 
+
+
         fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
-
-        if (fE_Gun)
-        {
-        	fInterface->fField = new RectangularWaveguide;
-        }
-        else
-        {
-        	fInterface->fField = new CylindricalCavity;
-        }
-
 
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
@@ -521,15 +533,20 @@ namespace locust
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
     	std::vector<double> tTE_E_normalized;
         double dotProductFactor = 0.;
+        double impedanceFactor = 0.;
+        double unitConversion = 1./sqrt(4.*LMCConst::Pi()*LMCConst::EpsNull()); // Gaussian -> S.I. units
+
         if (!fE_Gun)
         {
         	tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
     		dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+        	impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(0,1,1) / LMCConst::C(); // Jackson Eq. 8.140
         }
         else
         {
         	tTE_E_normalized = GetWaveguideNormalizedModeField(0,1,0,tKassParticleXP); // lmn 011 for now.
     		dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+        	impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(0,1,0) / LMCConst::C(); // Jackson Eq. 8.140
         }
     	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
@@ -551,7 +568,9 @@ namespace locust
         	double modeScalingFactor = 1.0; // override for now.
         	// end TO-DO
 
-        	double totalScalingFactor = modeScalingFactor * dotProductFactor * modeAmplitude;
+        	// This scaling factor includes a 50 ohm impedance that is expected in signal processing, as well
+        	// as other factors as defined above.
+        	double totalScalingFactor = sqrt(50.) * unitConversion * impedanceFactor * modeScalingFactor * dotProductFactor * modeAmplitude;
         	fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
         }
 

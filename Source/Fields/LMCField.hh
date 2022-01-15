@@ -32,7 +32,8 @@ namespace locust
             Field();
             virtual ~Field();
 
-            virtual bool Configure( const scarab::param_node& ){return true;};
+            bool Configure( const scarab::param_node& aNode );
+
 
             // size of field vectors will be number of components in field value at (r,theta,z)
 
@@ -43,6 +44,8 @@ namespace locust
             virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z, double fcyc) const {return {0.};};
             virtual double Z_TM(int l, int m, int n) const {return {0.};};
             virtual double Z_TE(int l, int m, int n) const {return {0.};};
+            virtual double Z_TM(int l, int m, int n, double fcyc) const {return {0.};};
+            virtual double Z_TE(int l, int m, int n, double fcyc) const {return {0.};};
 
 
             // rectangular waveguide
