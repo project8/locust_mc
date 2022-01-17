@@ -172,7 +172,7 @@
 
     <magnetic_superposition_field
         name="total_magnetic_field"
-        use_caching="true"
+        use_caching="false"
             >
         <add_field name="background_field" enhancement="1.0" />
         <add_field name="trap_field" enhancement="1.0" />
