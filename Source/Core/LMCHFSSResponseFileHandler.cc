@@ -24,7 +24,9 @@ namespace locust
     fNSkips(1),
     fComplexFFT(),
     fHFSSFiletype(""),
-    fIsFIRCreated(false)
+    fIsFIRCreated(false),
+    fWindowName("tukey"),
+    fWindowParam(0.5)
     {
     }
     
@@ -34,6 +36,7 @@ namespace locust
     
     bool HFSSResponseFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
+
         return true;
     }
     
@@ -108,11 +111,14 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
+
+        fComplexFFT.SetupWindow(fWindowName, fWindowParam);
         fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth);
-	fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
+        fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
         fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
-	fResolution=fComplexFFT.GetTimeResolution();
+        fResolution=fComplexFFT.GetTimeResolution();
+
         for (int i = 0; i < fFIRNBins; ++i){
             fFilter.push_back(fFIRComplex[i][0]);
         }

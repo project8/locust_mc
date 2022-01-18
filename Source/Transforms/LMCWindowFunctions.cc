@@ -16,12 +16,12 @@ namespace locust
     LOGGER( lmclog, "WindowFunctions" );
 
     WindowFunctions::WindowFunctions():
-    IsInitialized(false),
     fTotalWindowSize(0),
     fPreWindowBins(0),
     fSignalSize(0),
     fWindowFunctionType(1),
-    fWindowFunction( 1 )
+    fWindowFunction( 1 ),
+    fTukeyWindowAlpha( 0.5 )
     {
     }
     
@@ -31,23 +31,31 @@ namespace locust
     
     bool WindowFunctions::Configure(const scarab::param_node& aParam)
     {
-        if(aParam.has("window-function-type"))
-        {
-            if(aParam["window-function-type"]().as_string() == "rectangular")
-            {
-                fWindowFunctionType = 0;
-            }
-            if(aParam["window-function-type"]().as_string() == "tukey")
-            {
-                fWindowFunctionType = 1;
-            }
-            if(aParam["window-function-type"]().as_string() == "other")
-            {
-                fWindowFunctionType = 2;
-            }
-        }
+        return true;
+    }
 
-        IsInitialized=true;
+    bool WindowFunctions::SetupWindow(std::string windowname, double windowparam)
+    {
+        if(windowname == "rectangular")
+        {
+            fWindowFunctionType = 0;
+        }
+        else if(windowname == "tukey")
+        {
+            fWindowFunctionType = 1;
+            fTukeyWindowAlpha = windowparam;
+            printf("In Setup function\n");
+            printf("fWindowFunctionType is %d\n", fWindowFunctionType);
+            printf("fTukeyWindowAlpha is %g\n", fTukeyWindowAlpha);
+        }
+        else if(windowname == "other")
+        {
+            fWindowFunctionType = 2;
+        }
+        else
+        {
+            return false;
+        }
         return true;
     }
     
@@ -78,6 +86,19 @@ namespace locust
         {
             return false;
         }
+
+        ////////////////////////////
+        //text file for testing.   
+        std::ofstream windowfile;
+        windowfile.open("windowfile.txt");
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+            windowfile << fWindowFunction.at(i);
+            windowfile << "\n";
+        }
+        windowfile.close();
+        ////////////////////////////
+
         return true;
     }
 
@@ -98,34 +119,34 @@ namespace locust
 
     void WindowFunctions::GenerateTukeyWindow()
     {
-        //Tukey window is defined as 
-        //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-1))); if 0<=n<alpha*N/2
-        //w[n]= 1; alpha*N/2<=n<=N(1-alpha/2)
-        //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-2/alpha+1))) if N(1-alpha/2)<n<=N
+        // Tukey window is defined as: (wikipedia)
+        // w[n]=0.5*(1-cos((pi*2*n)/(alpha*N))); if 0<=n<alpha*N/2
+        // w[n]= 1; alpha*N/2<=n<=N/2
+        // w[N-n] = w[n] for 0 <= n <= N/2
 
-        double tukeyWindowAlpha = 0.5;
+        //double tukeyWindowAlpha = 0.5;
         int firstWindowFirstBin = fPreWindowBins;
-        int midWindowFirstBin = fPreWindowBins+tukeyWindowAlpha*fSignalSize/2.0;
-        int midWindowFinalBin = fPreWindowBins+fSignalSize-tukeyWindowAlpha*fSignalSize/2.0;
+        int midWindowFirstBin = fPreWindowBins+fTukeyWindowAlpha*fSignalSize/2.0;
+        int midWindowFinalBin = fPreWindowBins+fSignalSize-fTukeyWindowAlpha*fSignalSize/2.0;
         int finalWindowFinalBin = fPreWindowBins+fSignalSize;
+        int j = 0; // index for the window itself, inside the larger array            
         
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
-           fWindowFunction.push_back(0.0);
-        }
-        for (int i = 0; i < fTotalWindowSize; ++i)
-        {
-            if(i>firstWindowFirstBin && i<midWindowFirstBin)
+            if(i>fPreWindowBins && i<midWindowFirstBin)
             {
-                fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSignalSize)-1)));
+                fWindowFunction[i]=0.5*(1 - std::cos( (LMCConst::Pi()*2*j) / (fTukeyWindowAlpha*fSignalSize) ) );
+                j++;
             }
             else if(i>=midWindowFirstBin && i<=midWindowFinalBin)
             {
                 fWindowFunction[i]=1.0;
+                j++;
             }
             else if(i>midWindowFinalBin && i<=finalWindowFinalBin)
             {
-                fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSignalSize)-1.0/tukeyWindowAlpha+1)));
+                fWindowFunction[i]=0.5*(1 - std::cos( (LMCConst::Pi()*2*(fSignalSize-j)) / (fTukeyWindowAlpha*fSignalSize) ) );
+                j++;
             }
         }
     }

@@ -54,6 +54,7 @@ namespace locust
         double GetTimeResolution();
         double GetFreqResolution();
         int GetShiftNBins();
+        bool SetupWindow(std::string windowname, double windowparam);
 
     private:
 	// Member variables
@@ -76,7 +77,6 @@ namespace locust
         int fSize;
         double fTimeResolution;
         double fFreqResolution;
-        int fWindowFunctionType;
         int fTotalWindowSize;
         int fZeroPaddingSize;
         int fPreFilterBins;

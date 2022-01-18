@@ -40,6 +40,14 @@ namespace locust
         {
             fNSkips=aParam["tf-transmitter-nskips"]().as_int();
         }
+        if(aParam.has("tf-window-type"))
+        {
+            fWindowName = aParam["tf-window-type"]().as_string();
+        }
+        if(aParam.has("tf-window-parameter"))
+        {
+            fWindowParam = aParam["tf-window-parameter"]().as_double();
+        }
         fHFSSFiletype="tf";
         return true;
     }
@@ -70,6 +78,14 @@ namespace locust
         if( aParam.has( "tf-receiver-nskips" ) )
         {
             fNSkips=aParam["tf-receiver-nskips"]().as_int();
+        }
+        if(aParam.has("tf-window-type"))
+        {
+            fWindowName = aParam["tf-window-type"]().as_string();
+        }
+        if(aParam.has("tf-window-parameter"))
+        {
+            fWindowParam = aParam["tf-window-parameter"]().as_double();
         }
         fHFSSFiletype="tf";
         return true;

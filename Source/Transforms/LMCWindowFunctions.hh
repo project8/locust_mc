@@ -37,6 +37,7 @@ namespace locust
         virtual ~WindowFunctions();
         bool Configure( const scarab::param_node& aNode);
         bool GenerateWindowFunction(int windowsize, int prewindowbins, int signalsize);
+        bool SetupWindow(std::string windowname, double windowparam);
         std::vector<double> GetWindowFunction();
 
     private:
@@ -45,7 +46,7 @@ namespace locust
         int fTotalWindowSize;
         int fPreWindowBins;
         int fSignalSize;
-        bool IsInitialized;
+        double fTukeyWindowAlpha;
         std::vector<double> fWindowFunction;
 
         // Member functions:

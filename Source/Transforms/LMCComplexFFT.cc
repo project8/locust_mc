@@ -22,7 +22,6 @@ namespace locust
     fSize(0),
     fTotalWindowSize(0),
     fZeroPaddingSize(100000),
-    fWindowFunctionType(1),
     fInputArray(NULL),
     fOutputArray(NULL),
     fNShiftBins(2000),
@@ -113,7 +112,7 @@ namespace locust
 
     bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double freqResolution)
     {
-        fSize=size;
+        fSize=size;	
         fFreqResolution=freqResolution;
         fPreFilterBins=(int)(intialBinValue*1.0/freqResolution);
         fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
@@ -132,10 +131,20 @@ namespace locust
         fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         if(!IsInitialized) return false;
 
-        if(!ApplyWindowFunction(fInputArray))
-        {
-            LERROR(lmclog,"Couldn't apply windowing function");
-            exit(-1);
+        double windowfactor = 0.0;
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        { 
+            if(i>fPreFilterBins && i<fSize+fPreFilterBins)
+            {
+                windowfactor = fWindowFunction.GetWindowFunction().at(i);
+                fInputArray[i][0]=windowfactor*in[i-fPreFilterBins][0];
+                fInputArray[i][1]=windowfactor*in[i-fPreFilterBins][1];
+            }
+            else
+            {
+                fInputArray[i][0]=0.0;
+                fInputArray[i][1]=0.0;
+            }
         }
 
         ReverseFFT(fTotalWindowSize, fInputArray, fOutputArray);
@@ -145,19 +154,23 @@ namespace locust
         	LERROR(lmclog,"Couldn't make FIR filter causal");
         	exit(-1);
         }
-        for (int i = 0; i < 2*fSize+fNShiftBins; ++i)
-        {
-        }
+
         for (int i = 0; i < fSize+2*fNShiftBins; ++i)
         {
             out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
+        
         return true;
     }
 
     bool ComplexFFT::GenerateWindowFunction()
     {
        return fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize);
+    }
+
+    bool ComplexFFT::SetupWindow(std::string windowname, double windowparam)
+    {
+        return fWindowFunction.SetupWindow(windowname, windowparam);
     }
     
     bool ComplexFFT::ApplyWindowFunction(fftw_complex* in)
@@ -170,25 +183,26 @@ namespace locust
             fInputArray[i][0]=windowfactor*in[i][0];
             fInputArray[i][1]=windowfactor*in[i][1];
         }
+        return true;
     }
 
     bool ComplexFFT::MakeFilterCausal(fftw_complex* in)
     {
-    std::vector<double> vectorToTransformReal;
-    std::vector<double> vectorToTransformImag;
+        std::vector<double> vectorToTransformReal;
+        std::vector<double> vectorToTransformImag;
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
-        vectorToTransformReal.push_back(in[i][0]);
-        vectorToTransformImag.push_back(in[i][1]);
-    }
-    std::rotate(vectorToTransformReal.rbegin(),vectorToTransformReal.rbegin()+fNShiftBins,vectorToTransformReal.rend());
-    std::rotate(vectorToTransformImag.rbegin(),vectorToTransformImag.rbegin()+fNShiftBins,vectorToTransformImag.rend());
+            vectorToTransformReal.push_back(in[i][0]);
+            vectorToTransformImag.push_back(in[i][1]);
+        }
+        std::rotate(vectorToTransformReal.rbegin(),vectorToTransformReal.rbegin()+fNShiftBins,vectorToTransformReal.rend());
+        std::rotate(vectorToTransformImag.rbegin(),vectorToTransformImag.rbegin()+fNShiftBins,vectorToTransformImag.rend());
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
-        in[i][0]=vectorToTransformReal.at(i);
-        in[i][1]=vectorToTransformReal.at(i);
-    }
-    return true;
+            in[i][0]=vectorToTransformReal.at(i);
+            in[i][1]=vectorToTransformReal.at(i);
+        }
+        return true;
     }
 
     double ComplexFFT::GetTimeResolution()
