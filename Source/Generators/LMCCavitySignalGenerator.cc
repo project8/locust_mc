@@ -33,6 +33,7 @@ namespace locust
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
+		fBypassTF( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -299,10 +300,17 @@ namespace locust
         {
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
         }
+
         if( aParam.has( "thread-check-time" ) )
         {
             fThreadCheckTime = aParam["thread-check-time"]().as_int();
         }
+
+        if( aParam.has( "bypass-tf" ) )
+        {
+        	fBypassTF = aParam["bypass-tf"]().as_bool();
+        }
+
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
@@ -350,7 +358,6 @@ namespace locust
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
         ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
-
 
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
@@ -504,7 +511,7 @@ namespace locust
 
 			if (*it != 0.)
 			{
-				aLocalElementFIRBuffer[0].push_back(LMCConst::Q()*vMag*cos(orbitPhase));
+				aLocalElementFIRBuffer[0].push_back(cos(orbitPhase));
 			}
 			else
 			{
@@ -515,8 +522,16 @@ namespace locust
 			*it++;
 		}
 
-		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(aLocalElementFIRBuffer[0]);
-		return convolution;
+		if ( !fBypassTF )
+		{
+			convolution = fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(aLocalElementFIRBuffer[0]);
+		}
+		else
+		{
+			convolution = 1.0;
+		}
+
+		return LMCConst::Q()*vMag*convolution;
 
     }
 
