@@ -587,6 +587,7 @@ namespace locust
         	// as other factors as defined above.
         	double totalScalingFactor = sqrt(50.) * unitConversion * impedanceFactor * modeScalingFactor * dotProductFactor * modeAmplitude;
         	fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
+        	fPowerCombiner->AddOneSampleToRollingAvg(tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
         }
 
         fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());

@@ -64,9 +64,11 @@ namespace locust
             void SetCavityProbeTheta ( std::vector<double> aVector );
             int GetNCavityProbes();
             void SetNCavityProbes( int aNumberOfProbes );
+            void SetCounter( int aValue );
             double GetCavityProbeInductance();
             void SetCavityProbeInductance( double anInductance );
             bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
+        	bool AddOneSampleToRollingAvg(double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex);
 
 
         private:
@@ -82,6 +84,8 @@ namespace locust
             double fCavityProbeInductance;
             std::vector<double> fCavityProbeZ;
             std::vector<double> fCavityProbeTheta;
+            double fRollingAvg;
+            int fCounter;
 
 };
 

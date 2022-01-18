@@ -27,7 +27,8 @@ namespace locust
             fCavityProbeInductance( 1.0 ),
             fCavityProbeZ( 0. ),
             fCavityProbeTheta( 0. ),
-			fvoltageCheck( false )
+			fvoltageCheck( false ),
+			fRollingAvg( 0. )
 
     {}
     PowerCombiner::~PowerCombiner() {}
@@ -99,6 +100,34 @@ namespace locust
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
+
+	void PowerCombiner::SetCounter( int aValue )
+	{
+		fCounter = aValue;
+	}
+
+	bool PowerCombiner::AddOneSampleToRollingAvg(double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex)
+	{
+    	char buffer[60];
+		double vI = 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * sin(phi_LO);
+		double vQ = 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * cos(phi_LO);
+
+		fRollingAvg = ( fRollingAvg * fCounter + vI*vI + vQ*vQ ) / ( fCounter + 1 );
+		int a = sprintf(buffer, "output/modeEnergies.txt");
+		const char *fpname = buffer;
+		FILE *fp = fopen(fpname, "a");
+
+		if ( (fCounter == 1000) )
+		{
+			fprintf(fp, "fRollingAvg is %g\n", fRollingAvg);
+		}
+		fCounter += 1;
+		fclose (fp);
+
+		return true;
+	}
+
+
 
 
 
