@@ -8,12 +8,6 @@
 #ifndef LMCWINDOWFUNCTIONS_HH_
 #define LMCWINDOWFUNCTIONS_HH_
 
-//#include <fftw3.h>
-//#include <math.h>
-//#include <string>
-//#include <complex>
-//#include <boost/numeric/ublas/vector.hpp>
-
 #include "param.hh"
 
 namespace locust
@@ -26,7 +20,6 @@ namespace locust
      Currently being used for the complex FFT class. Can be expanded to other things such as LPF in the future.
      
      Available configuration options:
-     -"window-function-type": string -- The window function to use
      
      */
     class WindowFunctions
@@ -38,7 +31,8 @@ namespace locust
         bool Configure( const scarab::param_node& aNode);
         bool GenerateWindowFunction(int windowsize, int prewindowbins, int signalsize);
         bool SetupWindow(std::string windowname, double windowparam);
-        std::vector<double> GetWindowFunction();
+        std::vector<double>* GetWindowFunction();
+        bool IsWindowGenerated();
 
     private:
     
@@ -48,6 +42,8 @@ namespace locust
         int fSignalSize;
         double fTukeyWindowAlpha;
         std::vector<double> fWindowFunction;
+        std::vector<double>* fWindowPtr;
+        bool IsWindowGeneratedFlag;
 
         // Member functions:
         void GenerateRectangularWindow();

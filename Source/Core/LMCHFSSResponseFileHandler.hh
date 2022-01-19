@@ -80,6 +80,7 @@ namespace locust
         //Member variables
         fftw_complex *fTFComplex;
         fftw_complex *fFIRComplex;
+        fftw_complex *fTFComplexWindowed;
         
         // Member functions
         bool ConvertTFtoFIR(std::vector<std::complex<double>> &);

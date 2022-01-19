@@ -71,6 +71,7 @@ namespace locust
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
     fFIRComplex(NULL),
+    fTFComplexWindowed(NULL),
     fInitialTFIndex(0.0),
     fTFBinWidth(100e6)
     {
@@ -88,6 +89,12 @@ namespace locust
         {
             fftw_free(fFIRComplex);
             fFIRComplex = NULL;
+        }
+
+        if (fTFComplexWindowed != NULL)
+        {
+            fftw_free(fTFComplexWindowed);
+            fTFComplexWindowed = NULL;
         }
     }
     
@@ -112,16 +119,23 @@ namespace locust
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
 
-        fComplexFFT.SetupWindow(fWindowName, fWindowParam);
-        fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth);
+        // this length is somewhat arbitrary, but works for now
+        // future improvement: make it adjust depending on length of FIR
         fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
+
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
-        fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
+        fTFComplexWindowed=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTFNBins);
+
+        fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam);
+        fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex, fTFComplexWindowed);
+        fComplexFFT.GenerateFIR(fTFNBins,fTFComplexWindowed,fFIRComplex);
         fResolution=fComplexFFT.GetTimeResolution();
 
-        for (int i = 0; i < fFIRNBins; ++i){
+        for (int i = 0; i < fFIRNBins; ++i)
+        {
             fFilter.push_back(fFIRComplex[i][0]);
         }
+
         LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
         return true;
     }

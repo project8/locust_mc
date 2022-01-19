@@ -71,6 +71,7 @@ namespace locust
         {
             fHFSSFilename=aParam["tf-receiver-filename"]().as_string();
         }
+        
         if( aParam.has( "tf-receiver-bin-width" ) )
         {
             fTFBinWidth=aParam["tf-receiver-bin-width"]().as_double();

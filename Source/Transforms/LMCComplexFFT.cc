@@ -22,8 +22,10 @@ namespace locust
     fSize(0),
     fTotalWindowSize(0),
     fZeroPaddingSize(100000),
-    fInputArray(NULL),
-    fOutputArray(NULL),
+    fInputWindowArray(NULL),
+    fOutputWindowArray(NULL),
+    fInputSignalArray(NULL),
+    fOutputSignalArray(NULL),
     fNShiftBins(2000),
     fForwardPlan(),
     fReversePlan()
@@ -32,16 +34,25 @@ namespace locust
     
     ComplexFFT::~ComplexFFT()
     {
-        if (fInputArray != NULL)
+        if (fInputWindowArray != NULL)
         {
-            fftw_free(fInputArray);
-            fInputArray = NULL;
+            fftw_free(fInputWindowArray);
+            fInputWindowArray = NULL;
         }
-        
-        if (fOutputArray != NULL)
+        if (fOutputWindowArray != NULL)
         {
-            fftw_free(fOutputArray);
-            fOutputArray = NULL;
+            fftw_free(fOutputWindowArray);
+            fOutputWindowArray = NULL;
+        }
+        if (fInputSignalArray != NULL)
+        {
+            fftw_free(fInputSignalArray);
+            fInputSignalArray = NULL;
+        }
+        if (fOutputSignalArray != NULL)
+        {
+            fftw_free(fOutputSignalArray);
+            fOutputSignalArray = NULL;
         }
     }
     
@@ -84,6 +95,7 @@ namespace locust
         {
             return false;
         }
+
         IsInitialized=true;
         return true;
     }
@@ -110,14 +122,43 @@ namespace locust
     }
 
 
-    bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double freqResolution)
+    bool ComplexFFT::SetupIFFTWindow(int size, double intialBinValue, double freqResolution, std::string windowname, double windowparam)
     {
         fSize=size;	
         fFreqResolution=freqResolution;
         fPreFilterBins=(int)(intialBinValue*1.0/freqResolution);
         fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
         fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
-        if(GenerateWindowFunction()==false)
+
+        fInputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        fOutputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+
+        fInputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fOutputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+
+        fWindowFunction.SetupWindow(windowname, windowparam);
+        if(!fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize))
+        {
+            LERROR(lmclog,"Error generating window function");
+            exit(-1);
+        }
+        return true;
+    }
+
+    bool ComplexFFT::SetupFFTWindow(int size, std::string windowname, double windowparam)
+    {
+        fSize=size; 
+        fPreFilterBins=0;
+        fTotalWindowSize=size;
+
+        fInputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        fOutputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+
+        fInputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fOutputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+
+        fWindowFunction.SetupWindow(windowname, windowparam);
+        if(!fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize))
         {
             LERROR(lmclog,"Error generating window function");
             exit(-1);
@@ -127,29 +168,25 @@ namespace locust
 
     bool ComplexFFT::GenerateFIR(int size, fftw_complex* in, fftw_complex* out)
     {
-        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
-        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         if(!IsInitialized) return false;
 
-        double windowfactor = 0.0;
         for (int i = 0; i < fTotalWindowSize; ++i)
-        { 
+        {
             if(i>fPreFilterBins && i<fSize+fPreFilterBins)
             {
-                windowfactor = fWindowFunction.GetWindowFunction().at(i);
-                fInputArray[i][0]=windowfactor*in[i-fPreFilterBins][0];
-                fInputArray[i][1]=windowfactor*in[i-fPreFilterBins][1];
+                fInputWindowArray[i][0]=in[i-fPreFilterBins][0];
+                fInputWindowArray[i][1]=in[i-fPreFilterBins][1];
             }
             else
-            {
-                fInputArray[i][0]=0.0;
-                fInputArray[i][1]=0.0;
+            {   
+                fInputWindowArray[i][0]=0.0;
+                fInputWindowArray[i][1]=0.0;
             }
         }
 
-        ReverseFFT(fTotalWindowSize, fInputArray, fOutputArray);
+        ReverseFFT(fTotalWindowSize, fInputWindowArray, fOutputWindowArray);
         
-        if(!MakeFilterCausal(fOutputArray))
+        if(!MakeFilterCausal(fOutputWindowArray))
         {
         	LERROR(lmclog,"Couldn't make FIR filter causal");
         	exit(-1);
@@ -157,32 +194,43 @@ namespace locust
 
         for (int i = 0; i < fSize+2*fNShiftBins; ++i)
         {
-            out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
+            out[i][0]=fOutputWindowArray[i][0]*2/fTotalWindowSize;
         }
         
         return true;
     }
 
-    bool ComplexFFT::GenerateWindowFunction()
+    bool ComplexFFT::ApplyWindowFunction(int size, fftw_complex* in, fftw_complex* out)
     {
-       return fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize);
-    }
 
-    bool ComplexFFT::SetupWindow(std::string windowname, double windowparam)
-    {
-        return fWindowFunction.SetupWindow(windowname, windowparam);
-    }
-    
-    bool ComplexFFT::ApplyWindowFunction(fftw_complex* in)
-    {
-        double windowfactor = 0.;
 
-        for (int i = 0; i < fTotalWindowSize; ++i)
+
+        if(!fWindowFunction.IsWindowGenerated())
         {
-            windowfactor = fWindowFunction.GetWindowFunction().at(i);
-            fInputArray[i][0]=windowfactor*in[i][0];
-            fInputArray[i][1]=windowfactor*in[i][1];
+            LERROR(lmclog,"Error applying window function, it has not been generated");
+            exit(-1); 
         }
+
+        for (int i = 0; i < size; ++i)
+        {
+            fInputSignalArray[i][0]=in[i][0];
+            fInputSignalArray[i][1]=in[i][1];
+        }
+
+        double windowfactor = 0.0;
+        for (int i = 0; i < size; ++i)
+        { 
+            windowfactor = fWindowFunction.GetWindowFunction()->at(i+fPreFilterBins);
+            fOutputSignalArray[i][0]=windowfactor*fInputSignalArray[i][0];
+            fOutputSignalArray[i][1]=windowfactor*fInputSignalArray[i][1];
+        }
+
+        for (int i = 0; i < size; ++i)
+        {
+            out[i][0]=fOutputSignalArray[i][0];
+            out[i][1]=fOutputSignalArray[i][1];
+        }
+
         return true;
     }
 

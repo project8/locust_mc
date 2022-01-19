@@ -16,10 +16,11 @@ namespace locust
     LOGGER( lmclog, "WindowFunctions" );
 
     WindowFunctions::WindowFunctions():
+    IsWindowGeneratedFlag( false ),
     fTotalWindowSize(0),
     fPreWindowBins(0),
     fSignalSize(0),
-    fWindowFunctionType(1),
+    fWindowFunctionType(0),
     fWindowFunction( 1 ),
     fTukeyWindowAlpha( 0.5 )
     {
@@ -44,9 +45,6 @@ namespace locust
         {
             fWindowFunctionType = 1;
             fTukeyWindowAlpha = windowparam;
-            printf("In Setup function\n");
-            printf("fWindowFunctionType is %d\n", fWindowFunctionType);
-            printf("fTukeyWindowAlpha is %g\n", fTukeyWindowAlpha);
         }
         else if(windowname == "other")
         {
@@ -98,7 +96,8 @@ namespace locust
         }
         windowfile.close();
         ////////////////////////////
-
+        fWindowPtr = &fWindowFunction;
+        IsWindowGeneratedFlag = true;
         return true;
     }
 
@@ -159,9 +158,14 @@ namespace locust
         }
     }
 
-    std::vector<double> WindowFunctions::GetWindowFunction()
+    std::vector<double>* WindowFunctions::GetWindowFunction()
     {
-        return fWindowFunction;
+        return fWindowPtr;
+    }
+
+    bool WindowFunctions::IsWindowGenerated()
+    {
+        return IsWindowGeneratedFlag;
     }
     
 } /* namespace locust */
