@@ -54,7 +54,7 @@ namespace locust
         double GetTimeResolution();
         double GetFreqResolution();
         int GetShiftNBins();
-        bool ApplyWindowFunction(int, fftw_complex*, fftw_complex*);
+        bool ApplyWindowFunction(int, fftw_complex*);
 
 
     private:

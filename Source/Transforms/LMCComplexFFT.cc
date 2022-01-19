@@ -200,35 +200,19 @@ namespace locust
         return true;
     }
 
-    bool ComplexFFT::ApplyWindowFunction(int size, fftw_complex* in, fftw_complex* out)
+    bool ComplexFFT::ApplyWindowFunction(int size, fftw_complex* in)
     {
-
-
-
         if(!fWindowFunction.IsWindowGenerated())
         {
             LERROR(lmclog,"Error applying window function, it has not been generated");
             exit(-1); 
         }
-
-        for (int i = 0; i < size; ++i)
-        {
-            fInputSignalArray[i][0]=in[i][0];
-            fInputSignalArray[i][1]=in[i][1];
-        }
-
         double windowfactor = 0.0;
         for (int i = 0; i < size; ++i)
         { 
             windowfactor = fWindowFunction.GetWindowFunction()->at(i+fPreFilterBins);
-            fOutputSignalArray[i][0]=windowfactor*fInputSignalArray[i][0];
-            fOutputSignalArray[i][1]=windowfactor*fInputSignalArray[i][1];
-        }
-
-        for (int i = 0; i < size; ++i)
-        {
-            out[i][0]=fOutputSignalArray[i][0];
-            out[i][1]=fOutputSignalArray[i][1];
+            in[i][0]*=windowfactor;
+            in[i][1]*=windowfactor;
         }
 
         return true;

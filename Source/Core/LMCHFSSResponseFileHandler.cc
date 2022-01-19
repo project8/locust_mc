@@ -71,7 +71,6 @@ namespace locust
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
     fFIRComplex(NULL),
-    fTFComplexWindowed(NULL),
     fInitialTFIndex(0.0),
     fTFBinWidth(100e6)
     {
@@ -89,12 +88,6 @@ namespace locust
         {
             fftw_free(fFIRComplex);
             fFIRComplex = NULL;
-        }
-
-        if (fTFComplexWindowed != NULL)
-        {
-            fftw_free(fTFComplexWindowed);
-            fTFComplexWindowed = NULL;
         }
     }
     
@@ -124,11 +117,10 @@ namespace locust
         fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
 
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
-        fTFComplexWindowed=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTFNBins);
 
         fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam);
-        fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex, fTFComplexWindowed);
-        fComplexFFT.GenerateFIR(fTFNBins,fTFComplexWindowed,fFIRComplex);
+        fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex);
+        fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
         fResolution=fComplexFFT.GetTimeResolution();
 
         for (int i = 0; i < fFIRNBins; ++i)
