@@ -73,36 +73,25 @@ namespace locust
 
     }
 
-    std::vector<int> CavitySignalGenerator::ModeFilter(unsigned whichMode)
+
+    bool CavitySignalGenerator::ModeSelect(int l, int m, int n, bool eGun)
     {
-    	// This is not really a mode filter, but could be modifed/replaced to act like one.
-
-    	unsigned modeCounter = 0;
-    	std::vector<int> modeIndex;
-    	modeIndex.resize(3);
-
-    	for (int l=0; l<fNModes; l++)
+    	if (eGun)
     	{
-    		modeIndex[0] = l;
-    		for (int m=1; m<fNModes+1; m++)
-    		{
-        		modeIndex[1] = m;
-    			for (int n=1; n<fNModes+1; n++)
-    			{
-            		modeIndex[2] = n;
-    	    		modeCounter += 1;
-//    	    		printf("l is %d, m is %d, n is %d, modeCounter is %d\n", l, m, n, modeCounter);
-    	    		if (modeCounter > whichMode)
-    	    		{
-    	    	    	return modeIndex;
-    	    		}
-    			}
-    		}
+    		if ((l==0)&&(m==1)&&(n==0))
+    			return true;
+    		else
+    			return false;
     	}
-    	return {0};
-
+    	else
+    	{
+//    		if ((l==0)&&(m==1)&&(n==1))
+        	if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
+    			return true;
+    		else
+    			return false;
+    	}
     }
-
 
     std::vector<std::vector<std::vector<double>>> CavitySignalGenerator::CalculateNormFactors(int nModes, bool TE)
     {
@@ -318,6 +307,7 @@ namespace locust
 
 
 		fPowerCombiner = new CavityModes;
+		fPowerCombiner->SetNCavityModes(fNModes);
 		if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring CavityModes:PowerCombiner.");
@@ -477,9 +467,11 @@ namespace locust
      	double tZ = tKassParticleXP[2];
      	double fcyc = tKassParticleXP[7];
      	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc);
+
  		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
 
  		auto it = tTE_E_electron.begin();
+
  		while (it != tTE_E_electron.end())
  		{
  			if (!isnan(*it))
@@ -546,51 +538,68 @@ namespace locust
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
-    	std::vector<double> tTE_E_normalized;
         double dotProductFactor = 0.;
         double impedanceFactor = 0.;
         double unitConversion = 1./sqrt(4.*LMCConst::Pi()*LMCConst::EpsNull()); // Gaussian -> S.I. units
 
-        if (!fE_Gun)
-        {
-        	tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,tKassParticleXP); // lmn 011 for now.
-    		dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
-        	impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(0,1,1) / LMCConst::C(); // Jackson Eq. 8.140
-        }
-        else
-        {
-        	tTE_E_normalized = GetWaveguideNormalizedModeField(0,1,0,tKassParticleXP); // lmn 011 for now.
-    		dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
-        	impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(0,1,0) / LMCConst::C(); // Jackson Eq. 8.140
-        }
-    	double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
+    	for (int l=0; l<fNModes; l++)
+    	{
+    		for (int m=1; m<fNModes; m++)
+    		{
+    			for (int n=0; n<fNModes; n++)
+    			{
+    				if (ModeSelect(l, m, n, fE_Gun))
+    				{
+    			    	std::vector<double> tTE_E_normalized;
+    					impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n) / LMCConst::C(); // Jackson Eq. 8.140
+    					if (!fE_Gun)
+    					{
+    						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
+    						dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+    					}
+    					else
+    					{
+    						tTE_E_normalized = GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
+    						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+    					}
+    					double modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
-// fix-me:  We may need more precise nFilterBinsRequired.
-    	std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
-    	std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
-        double tFirSample = GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
-        std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
-        std::vector<std::deque<double>>().swap(tLocalElementFIRBuffer);
+    					// fix-me:  We may need more precise nFilterBinsRequired.
+    					std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
+    					std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
+    					double tFirSample = GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+    					std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
+    					std::vector<std::deque<double>>().swap(tLocalElementFIRBuffer);
 
-        for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
-        {
-        	sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+    					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
+    					{
+    						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-        	// TO-DO:  Implement modeScalingFactor to calculate signal amplitude at probe/channel using
-        	// H-field and probe inductance.  Probe inductance is presently set to a fake value of 1.0
-        	// in LMCPowerCombiner.cc
-        	// double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);
-        	double modeScalingFactor = 1.0; // override for now.
-        	// end TO-DO
+    						// TO-DO:  Implement modeScalingFactor to calculate signal amplitude at probe/channel using
+    						// H-field and probe inductance.  Probe inductance is presently set to a fake value of 1.0
+    						// in LMCPowerCombiner.cc
+    						// double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);
+    						double modeScalingFactor = 1.0; // override for now.
+    						// end TO-DO
 
-        	// This scaling factor includes a 50 ohm impedance that is expected in signal processing, as well
-        	// as other factors as defined above.
-        	double totalScalingFactor = sqrt(50.) * unitConversion * impedanceFactor * modeScalingFactor * dotProductFactor * modeAmplitude;
-        	fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
-        	fPowerCombiner->AddOneSampleToRollingAvg(tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
-        }
+    						// This scaling factor includes a 50 ohm impedance that is expected in signal processing, as well
+    						// as other factors as defined above.
+    						double totalScalingFactor = sqrt(50.) * unitConversion * impedanceFactor * modeScalingFactor * dotProductFactor * modeAmplitude;
+/*    						if (totalScalingFactor < 0.)
+    							{
+    								printf("impdeance is %g, modeScalingFActor is %g, dotProdFactor is %g, modeAmplitude is %g\n", impedanceFactor, modeScalingFactor, dotProductFactor, modeAmplitude);
+    								getchar();
+    							}
+*/
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
+    						fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, tFirSample, totalScalingFactor, sampleIndex);
+    					}
 
-        fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+    					fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+    				} // ModeSelect
+    			} // n
+    		} // m
+    	} // l
 
     	return true;
     }
