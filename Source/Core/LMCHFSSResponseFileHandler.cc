@@ -114,13 +114,12 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
-	//printf("\n\nTF Bin Width for Complex FFT: %e\n\n", fTFBinWidth);
-	double TFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins);
+	double TFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins); //Calculates TFBinWidth assuming frequency range defined as .9 to 1.1 the center of the frequency bins.
 	if(GeneratedTF){ 
-		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,TFBinWidth);//Calculates TFBinWidth assuming frequency range defined as .9 to 1.1 the center of the frequency bins.
+		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,TFBinWidth);//Uses binwidth as calculated in the previous line based on internally generated TF
 	}
 	else{ 
-		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth); //Uses degenerately defined fTFNBins AND fTFBinWidth
+		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth); //Uses degenerately defined fTFNBins AND fTFBinWidth if using external TF function.
 	}
 	fFIRNBins=fTFNBins+2*2*fComplexFFT.GetShiftNBins();
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
@@ -206,6 +205,9 @@ namespace locust
 
     bool TFFileHandlerCore::GenerateAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray)
     {
+
+	//Replaces ReadHFSSFile() in the case where a Transfer Funciton has been generated analytically
+
         if(fIsFIRCreated)
         {
             return true;
@@ -217,8 +219,6 @@ namespace locust
 
 	fTFNBins=tfArray.size();
 	fInitialTFIndex = initialFreq;
-//	printf("Check: size of fTFNBins and temp: %ld, %d\n", tfArray.size(), fTFNBins);
-//	printf("First and last values of arrays (generated) and (temp): (%e,%e), (%e,%e)\n",(tfArray[0]).real(),(tfArray[tfArray.size()-1]).real(),(tfArray_temp[0]).real(),(tfArray_temp[fTFNBins-1]).real());
 	if(!ConvertTFtoFIR(tfArray, true)){ //bool determines if TF was generated dynamically
             return false;
         }

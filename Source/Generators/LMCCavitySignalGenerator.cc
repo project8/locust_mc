@@ -252,11 +252,11 @@ namespace locust
 
 //-------------New implementation of fEquivalentCircuit for cavity parameterization-----
 	if ( (aParam.has( "equivalentR" )) or (aParam.has( "equivalentL" )) or (aParam.has( "equivalentL" )) ) { //Only initiate the configurable TF if at least one parameter is specified in the config file
-		//Default RLC parameters if not defined in config file, values (mostly arbitratily) based on external script from P. Slocum for 26GHz cavity
+		//Default RLC parameters if not defined in config file, values (mostly arbitratily) based on external script from P. Slocum for 1 GHz cavity
 		printf("Entering RLC Config Loop\n");
 		double equivalentR = 1.;
-                double equivalentL = 0.159e-6/26.;
-                double equivalentC = 0.159e-12/26.;
+                double equivalentL = 0.159e-6;
+                double equivalentC = 0.159e-12
 		int TFBins = 4000;
 		double FreqRangeCenter = 1.0e9;
 
@@ -286,8 +286,10 @@ namespace locust
 			printf("Retrieved FreqRangeCenter: %f\n", aParam["FreqRangeCenter"]().as_double());
                         FreqRangeCenter = aParam["FreqRangeCenter"]().as_double();
 		}
+
+		//Call EquivalentCircuit Class and use to analytically generate a Transfer function
                 fEquivalentCircuit = new EquivalentCircuit();
-                fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC,TFBins,FreqRangeCenter); //R,L,C inputs with hard coded frequency about 26 GHz
+                fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC,TFBins,FreqRangeCenter); //R,L,C inputs
 
 		if(!fInterface->fTFReceiverHandler.GenerateAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
 		{
