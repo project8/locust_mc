@@ -48,7 +48,7 @@ namespace locust
         // Member functions:
         void GenerateRectangularWindow();
         void GenerateTukeyWindow();
-        void GenerateOtherWindow();
+        void GenerateHanningWindow();
     };
     
 } /* namespace locust */

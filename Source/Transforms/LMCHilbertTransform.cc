@@ -16,12 +16,39 @@ namespace locust
 
     HilbertTransform::HilbertTransform():
         fbufferMargin( 25 ),
-		fbufferSize( 50 )
+		fbufferSize( 50 ),
+        originaldata(NULL),
+        SignalComplex(NULL),
+        FFTComplex(NULL),
+        hilbert(NULL),
+        fWindowName( "rectangular" ),
+        fWindowParam( 0. )
     {
     }
 
     HilbertTransform::~HilbertTransform()
     {
+        if (originaldata != NULL)
+        {
+            fftw_free(originaldata);
+            originaldata = NULL;
+        }
+        if (SignalComplex != NULL)
+        {
+            fftw_free(SignalComplex);
+            SignalComplex = NULL;
+        }
+        if (FFTComplex != NULL)
+        {
+            fftw_free(FFTComplex);
+            FFTComplex = NULL;
+        }
+        if (hilbert != NULL)
+        {
+            fftw_free(hilbert);
+            hilbert = NULL;
+        }
+
     }
 
     bool HilbertTransform::Configure(const scarab::param_node& aParam)
@@ -37,6 +64,14 @@ namespace locust
        	if( aParam.has( "hilbert-buffer-size" ) )
         {
        		fbufferSize=aParam["hilbert-buffer-size"]().as_int();
+        }
+        if( aParam.has( "hilbert-window-type" ) )
+        {
+            fWindowName = aParam["hilbert-window-type"]().as_string();
+        }
+        if( aParam.has( "hilbert-window-parameter" ) )
+        {
+            fWindowParam = aParam["hilbert-window-parameter"]().as_double();
         }
        	if (2*fbufferMargin > fbufferSize)
        	{
@@ -65,6 +100,14 @@ namespace locust
     	return fbufferMargin;
     }
 
+    bool HilbertTransform::SetupHilbertTransform()
+    {
+        originaldata = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * fbufferSize);
+        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fbufferSize );
+        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * fbufferSize );
+        hilbert = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * fbufferSize);
+        return fComplexFFT.SetupFFTWindow(fbufferSize, fWindowName, fWindowParam);
+    }
 
     std::vector<double> HilbertTransform::GetMagPhaseMean(std::deque<double> FieldBuffer, std::deque<double> FrequencyBuffer)
     {
@@ -81,7 +124,7 @@ namespace locust
     	magphasemean[1] = phase;
     	magphasemean[2] = mean;
 
-    	delete[] transformeddata;
+    	//delete[] transformeddata;
 
     	return magphasemean;
     }
@@ -169,20 +212,12 @@ namespace locust
 
     fftw_complex* HilbertTransform::Transform(std::deque<double> FieldBuffer)
     {
-        int windowsize=FieldBuffer.size();
-
-        fftw_complex *originaldata;
-        originaldata = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * windowsize);
-        fftw_complex *SignalComplex;
-        SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-        fftw_complex *FFTComplex;
-        FFTComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * windowsize );
-        fftw_complex *hilbert;
-        hilbert = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * windowsize);
+        int windowsize=FieldBuffer.size()-1;
 
         int i=0;
         for (std::deque<double>::iterator it = FieldBuffer.begin(); it!=FieldBuffer.end(); ++it)
         {
+            if(i == windowsize) break;
         	SignalComplex[i][0] = *it;
         	originaldata[i][0] = *it;
         	SignalComplex[i][1] = 0.;
@@ -190,10 +225,8 @@ namespace locust
         	i += 1;
         }
 
-
-
+        fComplexFFT.ApplyWindowFunction(windowsize, SignalComplex);
         fComplexFFT.ForwardFFT(windowsize, SignalComplex, FFTComplex);
-
 
         // do the phase shifts
         for (int i = 0; i < windowsize; ++i)
@@ -210,9 +243,7 @@ namespace locust
             }
         }
 
-
         fComplexFFT.ReverseFFT(windowsize, hilbert, SignalComplex);
-
 
         for (int i = 0; i < windowsize; i++)  // normalize with 1/N
         {
@@ -249,10 +280,6 @@ namespace locust
     	fclose (fp);
     	getchar();  // Control-C to quit.
 */
-
-        delete[] hilbert;
-        delete[] SignalComplex;
-        delete[] FFTComplex;
 
         return originaldata;
    

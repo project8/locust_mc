@@ -46,7 +46,7 @@ namespace locust
             fWindowFunctionType = 1;
             fTukeyWindowAlpha = windowparam;
         }
-        else if(windowname == "other")
+        else if(windowname == "hanning")
         {
             fWindowFunctionType = 2;
         }
@@ -78,7 +78,7 @@ namespace locust
         }
         else if(fWindowFunctionType==2)
         {
-            GenerateOtherWindow();
+            GenerateHanningWindow();
         }	
         else
         {
@@ -105,7 +105,7 @@ namespace locust
     {
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
-            if(i>fPreWindowBins && i<=fPreWindowBins+fSignalSize)
+            if(i>=fPreWindowBins && i<fPreWindowBins+fSignalSize)
             {
                 fWindowFunction[i]=1.0;
             }
@@ -132,7 +132,7 @@ namespace locust
         
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
-            if(i>fPreWindowBins && i<midWindowFirstBin)
+            if(i>=fPreWindowBins && i<midWindowFirstBin)
             {
                 fWindowFunction[i]=0.5*(1 - std::cos( (LMCConst::Pi()*2*j) / (fTukeyWindowAlpha*fSignalSize) ) );
                 j++;
@@ -150,11 +150,19 @@ namespace locust
         }
     }
 
-    void WindowFunctions::GenerateOtherWindow()
+    void WindowFunctions::GenerateHanningWindow()
     {
+        int firstWindowFirstBin = fPreWindowBins;
+        int finalWindowFinalBin = fPreWindowBins+fSignalSize;
+        int j = 0; // index for the window itself, inside the larger array            
+        
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
-            fWindowFunction[i]=0.0;
+            if(i>=fPreWindowBins && i<finalWindowFinalBin)
+            {
+                fWindowFunction[i]=0.5*(1 - std::cos( (2*LMCConst::Pi()*j) / fSignalSize ) );
+                j++;
+            }
         }
     }
 

@@ -22,10 +22,8 @@ namespace locust
     fSize(0),
     fTotalWindowSize(0),
     fZeroPaddingSize(100000),
-    fInputWindowArray(NULL),
-    fOutputWindowArray(NULL),
-    fInputSignalArray(NULL),
-    fOutputSignalArray(NULL),
+    fInputArray(NULL),
+    fOutputArray(NULL),
     fNShiftBins(2000),
     fForwardPlan(),
     fReversePlan()
@@ -34,25 +32,15 @@ namespace locust
     
     ComplexFFT::~ComplexFFT()
     {
-        if (fInputWindowArray != NULL)
+        if (fInputArray != NULL)
         {
-            fftw_free(fInputWindowArray);
-            fInputWindowArray = NULL;
+            fftw_free(fInputArray);
+            fInputArray = NULL;
         }
-        if (fOutputWindowArray != NULL)
+        if (fOutputArray != NULL)
         {
-            fftw_free(fOutputWindowArray);
-            fOutputWindowArray = NULL;
-        }
-        if (fInputSignalArray != NULL)
-        {
-            fftw_free(fInputSignalArray);
-            fInputSignalArray = NULL;
-        }
-        if (fOutputSignalArray != NULL)
-        {
-            fftw_free(fOutputSignalArray);
-            fOutputSignalArray = NULL;
+            fftw_free(fOutputArray);
+            fOutputArray = NULL;
         }
     }
     
@@ -130,11 +118,8 @@ namespace locust
         fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
         fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
 
-        fInputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
-        fOutputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
-
-        fInputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
-        fOutputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
 
         fWindowFunction.SetupWindow(windowname, windowparam);
         if(!fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize))
@@ -151,11 +136,8 @@ namespace locust
         fPreFilterBins=0;
         fTotalWindowSize=size;
 
-        fInputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
-        fOutputWindowArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
-
-        fInputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
-        fOutputSignalArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fSize);
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
 
         fWindowFunction.SetupWindow(windowname, windowparam);
         if(!fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize))
@@ -174,19 +156,19 @@ namespace locust
         {
             if(i>fPreFilterBins && i<fSize+fPreFilterBins)
             {
-                fInputWindowArray[i][0]=in[i-fPreFilterBins][0];
-                fInputWindowArray[i][1]=in[i-fPreFilterBins][1];
+                fInputArray[i][0]=in[i-fPreFilterBins][0];
+                fInputArray[i][1]=in[i-fPreFilterBins][1];
             }
             else
             {   
-                fInputWindowArray[i][0]=0.0;
-                fInputWindowArray[i][1]=0.0;
+                fInputArray[i][0]=0.0;
+                fInputArray[i][1]=0.0;
             }
         }
 
-        ReverseFFT(fTotalWindowSize, fInputWindowArray, fOutputWindowArray);
+        ReverseFFT(fTotalWindowSize, fInputArray, fOutputArray);
         
-        if(!MakeFilterCausal(fOutputWindowArray))
+        if(!MakeFilterCausal(fOutputArray))
         {
         	LERROR(lmclog,"Couldn't make FIR filter causal");
         	exit(-1);
@@ -194,7 +176,7 @@ namespace locust
 
         for (int i = 0; i < fSize+2*fNShiftBins; ++i)
         {
-            out[i][0]=fOutputWindowArray[i][0]*2/fTotalWindowSize;
+            out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
         
         return true;

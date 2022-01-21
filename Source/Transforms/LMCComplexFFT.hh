@@ -60,10 +60,8 @@ namespace locust
     private:
 	// Member variables
         // arrays for doing FFTs and windowing
-        fftw_complex* fInputWindowArray;   // input array, size = fTotalWindowSize
-        fftw_complex* fOutputWindowArray;  // output array, size = fTotalWindowSize
-        fftw_complex* fInputSignalArray;   // input array, size = fSize
-        fftw_complex* fOutputSignalArray;  // output array, size = fSize
+        fftw_complex* fInputArray;   // input array, size = fTotalWindowSize
+        fftw_complex* fOutputArray;  // output array, size = fTotalWindowSize
         
         fftw_plan fReversePlan;
         fftw_plan fForwardPlan;
