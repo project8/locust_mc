@@ -256,34 +256,34 @@ namespace locust
 		printf("Entering RLC Config Loop\n");
 		double equivalentR = 1.;
                 double equivalentL = 0.159e-6;
-                double equivalentC = 0.159e-12
+                double equivalentC = 0.159e-12;
 		int TFBins = 4000;
 		double FreqRangeCenter = 1.0e9;
 
 		//Update any parameters defined in the config file
                 if( aParam.has( "equivalentR" ) )
                 {
-			printf("Retrieved R value: %e\n", aParam["equivalentR"]().as_double());
+			//printf("Retrieved R value: %e\n", aParam["equivalentR"]().as_double());
                         equivalentR = aParam["equivalentR"]().as_double();
                 }
                 if( aParam.has( "equivalentL" ) )
                 {
-                        printf("Retrieved L value: %e\n", aParam["equivalentL"]().as_double());
+                        //printf("Retrieved L value: %e\n", aParam["equivalentL"]().as_double());
                         equivalentL = aParam["equivalentL"]().as_double();
                 }
                 if( aParam.has( "equivalentC" ) )
                 {
-                        printf("Retrieved C value: %e\n", aParam["equivalentC"]().as_double());
+                        //printf("Retrieved C value: %e\n", aParam["equivalentC"]().as_double());
                         equivalentC = aParam["equivalentC"]().as_double();
                 }
 		if( aParam.has( "TFBins" ) )
 		{
-			printf("Retrieved TFBins: %d\n", aParam["TFBins"]().as_int());
+			//printf("Retrieved TFBins: %d\n", aParam["TFBins"]().as_int());
 			TFBins = aParam["TFBins"]().as_int();
 		}
 		if( aParam.has( "FreqRangeCenter" ) )
 		{
-			printf("Retrieved FreqRangeCenter: %f\n", aParam["FreqRangeCenter"]().as_double());
+			//printf("Retrieved FreqRangeCenter: %f\n", aParam["FreqRangeCenter"]().as_double());
                         FreqRangeCenter = aParam["FreqRangeCenter"]().as_double();
 		}
 

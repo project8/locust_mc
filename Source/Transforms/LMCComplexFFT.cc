@@ -212,9 +212,7 @@ namespace locust
         fSize=size;	
 	fFreqResolution=freqResolution;
 	fPreFilterBins=(int)(intialBinValue*1.0/freqResolution);
-	printf("initialBinValue, freqResolution: %e, %e\n", intialBinValue, freqResolution);
 	fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
-	printf("PreFilterFins, fZeroPaddingSize, fSize, fTotalWindowSize: %d, %d, %d, %d\n",fPreFilterBins,fZeroPaddingSize,fSize,fTotalWindowSize);
 	fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
 	if(GenerateWindowFunction()==false)
 	{

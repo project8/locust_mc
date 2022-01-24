@@ -26,12 +26,12 @@ namespace locust
 	nbins = nBins_config;
 	double f_res = 1./2./PI/sqrt(L*C);
 	double Q = 1./R*sqrt(L/C);
-	printf("f_res and Q are %g and %g\n", f_res, Q);
+	//printf("f_res and Q are %g and %g\n", f_res, Q);
 
 	double freq[nbins];
 	double V_re[nbins];
 	double V_im[nbins];
-	FILE * fTFout = fopen("TF.txt", "w");
+	FILE * fTFout = fopen("Generated_TF.txt", "w");
 	fprintf(fTFout,"#Transfer function: Frequency, magnitude, phase, vRe, vIm\n");
 	for (int counts=0; counts<nbins; counts++){
 		freq[counts] = freq_min + counts*(freq_max - freq_min)/(1.0 * nbins);
