@@ -123,19 +123,42 @@ namespace locust
 	bool PowerCombiner::AddOneSampleToRollingAvg(int l, int m, int n, double VoltageFIRSample, double totalScalingFactor, unsigned sampleIndex)
 	{
     	char buffer[60];
-		double qv = VoltageFIRSample;  // Kass electron current, charge * velocity, with optional resonance.
+		double qv = VoltageFIRSample;  // Kass electron current, charge * velocity, with optional resonance if !fBypassTF.
 
-		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + qv*qv * fabs(totalScalingFactor) ) / ( fCounter[l][m][n] + 1 );
+		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(qv*totalScalingFactor/sqrt(50.),2.) ) / ( fCounter[l][m][n] + 1 );
 		int a = sprintf(buffer, "output/modeEnergies.txt");
 		const char *fpname = buffer;
 		FILE *fp = fopen(fpname, "a");
 
-		if ( (sampleIndex%10000 < 1) )
+		if ( (sampleIndex%1000 < 1) )
 		{
 			printf("Writing to file:  sampleIndex is %d, totalScalingFactor is %g, fCounter is %d\n",
 					sampleIndex, totalScalingFactor, fCounter[l][m][n]);
 
 			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
+
+
+			if ((l==fNCavityModes-1)&&(m==fNCavityModes-1)&&(n==fNCavityModes-1))
+			{
+				double totalEnergy = 0.;
+				for (int iL=0; iL<fNCavityModes; iL++)
+				{
+					for (int iM=0; iM<fNCavityModes; iM++)
+					{
+						for (int iN=0; iN<fNCavityModes; iN++)
+						{
+							if (!isnan(fRollingAvg[iL][iM][iN]))
+							{
+								totalEnergy += fRollingAvg[iL][iM][iN];
+							}
+						}
+					}
+				}
+
+				fprintf(fp, "\ntotal energy is %g\n\n\n", totalEnergy);
+
+			}
+
 		}
 
 		fCounter[l][m][n] += 1;

@@ -34,6 +34,7 @@ namespace locust
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
 		fBypassTF( false ),
+		fNormCheck( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -85,11 +86,20 @@ namespace locust
     	}
     	else
     	{
-//    		if ((l==0)&&(m==1)&&(n==1))
-        	if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
-    			return true;
+    		if (!fNormCheck)
+    		{
+    			if ((l==0)&&(m==1)&&(n==1))
+    				return true;
+    			else
+    				return false;
+    		}
     		else
-    			return false;
+    		{
+    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
+    				return true;
+    			else
+    				return false;
+    		}
     	}
     }
 
@@ -585,21 +595,16 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that is expected in signal processing, as well
     						// as other factors as defined above.
     						double totalScalingFactor = sqrt(50.) * unitConversion * impedanceFactor * modeScalingFactor * dotProductFactor * modeAmplitude;
-/*    						if (totalScalingFactor < 0.)
-    							{
-    								printf("impdeance is %g, modeScalingFActor is %g, dotProdFactor is %g, modeAmplitude is %g\n", impedanceFactor, modeScalingFactor, dotProductFactor, modeAmplitude);
-    								getchar();
-    							}
-*/
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
-    						fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, tFirSample, totalScalingFactor, sampleIndex);
+    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, tFirSample, totalScalingFactor, sampleIndex);
     					}
 
-    					fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
     				} // ModeSelect
     			} // n
     		} // m
     	} // l
+
+    	fInterface->fTOld += 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
 
     	return true;
     }

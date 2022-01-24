@@ -83,6 +83,7 @@ namespace locust
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
             bool fBypassTF;
+            bool fNormCheck;
 
 
 
