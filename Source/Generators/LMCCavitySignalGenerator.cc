@@ -310,6 +310,11 @@ namespace locust
         	fBypassTF = aParam["bypass-tf"]().as_bool();
         }
 
+        if( aParam.has( "norm-check" ) )
+        {
+        	fNormCheck = aParam["norm-check"]().as_bool();
+        }
+
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
