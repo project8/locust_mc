@@ -561,7 +561,7 @@ namespace locust
     				if (ModeSelect(l, m, n, fE_Gun))
     				{
     			    	std::vector<double> tTE_E_normalized;
-    					impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n) / LMCConst::C(); // Jackson Eq. 8.140
+    					impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) / LMCConst::C(); // Jackson Eq. 8.140
     					if (!fE_Gun)
     					{
     						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
