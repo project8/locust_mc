@@ -49,7 +49,7 @@ namespace locust
      - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      - "lo-frequency":  local oscillator frequency in Hz.
-     - "equivalentR": Resistance from equivalent RLC circuit in Hz
+     - "equivalentR": Resistance from equivalent RLC circuit in Ohms
      - "equivalentL": Inductance from equivalent RLC circuit in Henries
      - "equivalentC": Capacitance from equivalent RLC circuit in Farads
 

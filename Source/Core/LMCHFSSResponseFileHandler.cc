@@ -50,11 +50,6 @@ namespace locust
         return true;
     }
    
-    bool HFSSResponseFileHandlerCore::GenerateAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray)
-    {
-	return true;
-    }
- 
     double HFSSResponseFileHandlerCore::ConvolveWithFIRFilter(std::deque<double> inputBuffer)
     {
         double convolution=0.0;
@@ -114,14 +109,16 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
-	double TFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins); //Calculates TFBinWidth assuming frequency range defined as .9 to 1.1 the center of the frequency bins.
 	if(GeneratedTF){ 
-		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,TFBinWidth);//Uses binwidth as calculated in the previous line based on internally generated TF
+		//if TF generated based on config file (frequency ranges from 0.9 - 1.1 times the center given in .json config file), calculate the TF bin width given number of bins (also set in .json config file)).
+		double AnalyticTFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins);
+		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,AnalyticTFBinWidth);//Uses binwidth as calculated in the previous line based on internally generated TF
 	}
 	else{ 
+		//if TF read from externally generated TF file, use TF bin width as given in .json config file
 		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth); //Uses degenerately defined fTFNBins AND fTFBinWidth if using external TF function.
 	}
-	fFIRNBins=fTFNBins+2*2*fComplexFFT.GetShiftNBins();
+	fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
         fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
 	fResolution=fComplexFFT.GetTimeResolution();
@@ -203,7 +200,7 @@ namespace locust
         return true;
     }
 
-    bool TFFileHandlerCore::GenerateAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray)
+    bool TFFileHandlerCore::ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray)
     {
 
 	//Replaces ReadHFSSFile() in the case where a Transfer Funciton has been generated analytically
@@ -213,9 +210,6 @@ namespace locust
             return true;
         }
         fTFNBins=0;
-        double tfIndex;
-        double tfRealValue;
-        double tfImaginaryValue;
 
 	fTFNBins=tfArray.size();
 	fInitialTFIndex = initialFreq;

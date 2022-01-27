@@ -19,14 +19,6 @@
 
 namespace locust
 {
- /*!
- @class LMCEquivalentCicuit
- @author J. Gaison
- @brief Base class to implement cavity parameterization
- @details
- Available configuration options:
- R, L, and C of effective circuit for cavity
- */
     class EquivalentCircuit
     {
 

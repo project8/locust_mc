@@ -291,7 +291,7 @@ namespace locust
                 fEquivalentCircuit = new EquivalentCircuit();
                 fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC,TFBins,FreqRangeCenter); //R,L,C inputs
 
-		if(!fInterface->fTFReceiverHandler.GenerateAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
+		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
 		{
 		return false;
 		}

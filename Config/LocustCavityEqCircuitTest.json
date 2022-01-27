@@ -1,10 +1,10 @@
 {
     "generators":
     [          
-       "cavity-signal",
-       "lpf-fft",
-       "decimate-signal",
-       "digitizer"
+	"cavity-signal",
+        "lpf-fft",
+        "decimate-signal",
+        "digitizer"
     ],
 
     "cavity-signal":
