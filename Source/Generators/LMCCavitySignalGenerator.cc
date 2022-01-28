@@ -26,15 +26,15 @@ namespace locust
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
 		fE_Gun( false ),
-		fNModes( 2 ),
+		fNModes( 8 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
-		fBypassTF( false ),
-		fNormCheck( false ),
+		fBypassTF( true ),
+		fNormCheck( true ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -554,7 +554,7 @@ namespace locust
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
         double dotProductFactor = 0.;
-        double impedanceFactor = 0.;
+        double expansionCoefficient = 0.;
         double unitConversion = 1./sqrt(4.*LMCConst::Pi()*LMCConst::EpsNull()); // Gaussian -> S.I. units
 
     	for (int l=0; l<fNModes; l++)
@@ -566,7 +566,7 @@ namespace locust
     				if (ModeSelect(l, m, n, fE_Gun))
     				{
     			    	std::vector<double> tTE_E_normalized;
-    					impedanceFactor = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) / LMCConst::C(); // Jackson Eq. 8.140
+    					expansionCoefficient = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) / LMCConst::C(); // Jackson Eq. 8.140
     					if (!fE_Gun)
     					{
     						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
@@ -599,7 +599,7 @@ namespace locust
 
     						// This scaling factor includes a 50 ohm impedance that is expected in signal processing, as well
     						// as other factors as defined above.
-    						double totalScalingFactor = sqrt(50.) * unitConversion * impedanceFactor * modeScalingFactor * dotProductFactor * modeAmplitude;
+    						double totalScalingFactor = sqrt(50.) * unitConversion * expansionCoefficient * modeScalingFactor * dotProductFactor * modeAmplitude;
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tFirSample, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, tFirSample, totalScalingFactor, sampleIndex);
     					}
