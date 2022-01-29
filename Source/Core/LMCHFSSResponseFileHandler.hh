@@ -73,6 +73,7 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
         bool ReadHFSSFile() override;
+	bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
     
     private:
         //Member variables
@@ -80,7 +81,7 @@ namespace locust
         fftw_complex *fFIRComplex;
         
         // Member functions
-        bool ConvertTFtoFIR(std::vector<std::complex<double>> &);
+        bool ConvertTFtoFIR(std::vector<std::complex<double>> &, bool GeneratedTF);
     protected:
         //Member variables
         double fInitialTFIndex;

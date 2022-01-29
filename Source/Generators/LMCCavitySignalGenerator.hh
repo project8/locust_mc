@@ -12,6 +12,7 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include "LMCGenerator.hh"
 #include "LMCCavityModes.hh" // : LMCPowerCombiner
+#include "LMCEquivalentCircuit.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
 #include "LMCField.hh"
@@ -50,7 +51,10 @@ namespace locust
      - "lo-frequency":  local oscillator frequency in Hz.
      - "bypass-tf":  bool(false) -- if true, set FIR convolution output to 1.0
      - "norm-check": bool(false) -- if true, calculate weighted running averages of J \cdot E
-     	 for all modes with indices of order < fNModes, and write the avgs to an intermediate file.
+      	 for all modes with indices of order < fNModes, and write the avgs to an intermediate file.
+     - "equivalentR": Resistance from equivalent RLC circuit in Ohms
+     - "equivalentL": Inductance from equivalent RLC circuit in Henries
+     - "equivalentC": Capacitance from equivalent RLC circuit in Farads
 
     */
 
@@ -110,6 +114,7 @@ namespace locust
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
+	    EquivalentCircuit* fEquivalentCircuit;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;
