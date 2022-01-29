@@ -93,64 +93,77 @@ namespace locust
     bool ComplexFFT::GenerateWindowFunction()
     {
         if(fWindowFunctionType==0)
-	{
+        {
             for (int i = 0; i < fTotalWindowSize; ++i)
             {
-	        fWindowFunction.push_back(0.0);
-	    }
+                fWindowFunction.push_back(0.0);
+            }
             for (int i = 0; i < fTotalWindowSize; ++i)
             {
-		if(i>fPreFilterBins && i<=fPreFilterBins+fSize)
-		{
-	            fWindowFunction[i]=1.0;
-		}
-		else
-		{
-		    fWindowFunction[i]=0.0;
-		}
-	    }
-	}
+                if(i>fPreFilterBins && i<=fPreFilterBins+fSize)
+                {
+                    fWindowFunction[i]=1.0;
+                }
+                else
+                {
+                    fWindowFunction[i]=0.0;
+                }
+            }
+        }
         else if(fWindowFunctionType==1)
-	{
-	    //Tukey window is defined as 
-	    //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-1))); if 0<=n<alpha*N/2
-	    //w[n]= 1; alpha*N/2<=n<=N(1-alpha/2)
-	    //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-2/alpha+1))) if N(1-alpha/2)<n<=N
-	    double tukeyWindowAlpha = 0.5;
-	    int firstWindowFirstBin = fPreFilterBins;
-	    int midWindowFirstBin = fPreFilterBins+tukeyWindowAlpha*fSize/2.0;
-	    int midWindowFinalBin = fPreFilterBins+fSize-tukeyWindowAlpha*fSize/2.0;
-	    int finalWindowFinalBin = fPreFilterBins+fSize;
-	    //std::cout<< "firstWindowFirstBin: "<<firstWindowFirstBin<<std::endl;
-	    //std::cout<< "midWindowFirstBin: "<<midWindowFirstBin<<std::endl;
-	    //std::cout<< "midWindowFinalBin: "<<midWindowFinalBin<<std::endl;
-	    //std::cout<< "finalWindowFinalBin: "<<finalWindowFinalBin<<std::endl;
-            for (int i = 0; i < fTotalWindowSize; ++i)
-            {
-	        fWindowFunction.push_back(0.0);
-	    }
+        {
 
+        // Tukey window is defined as: (wikipedia)
+	    // w[n]=0.5*(1-cos((pi*2*n)/(alpha*N))); if 0<=n<alpha*N/2
+	    // w[n]= 1; alpha*N/2<=n<=N/2
+	    // w[N-n] = w[n] for 0 <= n <= N/2
+
+            double tukeyWindowAlpha = 0.5;
+            int firstWindowFirstBin = fPreFilterBins;
+            int midWindowFirstBin = fPreFilterBins+tukeyWindowAlpha*fSize/2.0;
+            int midWindowFinalBin = fPreFilterBins+fSize-tukeyWindowAlpha*fSize/2.0;
+            int finalWindowFinalBin = fPreFilterBins+fSize;
+
+            int j = 0; // index for the window itself, inside the larger array            
             for (int i = 0; i < fTotalWindowSize; ++i)
             {
-		if(i>fPreFilterBins && i<midWindowFirstBin)
-		{
-	            fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1)));
-		}
-		else if(i>=midWindowFirstBin && i<=midWindowFinalBin)
-		{
-		    fWindowFunction[i]=1.0;
-		}
-		else if(i>midWindowFinalBin && i<=finalWindowFinalBin)
-		{
-		    fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1.0/tukeyWindowAlpha+1)));
-		}
-	    }
-	}	
-	else
-	{
-	    return false;
-	}
-	return true;
+                fWindowFunction.push_back(0.0);
+            }
+            for (int i = 0; i < fTotalWindowSize; ++i)
+            {
+                if(i>fPreFilterBins && i<midWindowFirstBin)
+                {
+                    fWindowFunction[i]=0.5*(1 - std::cos( (LMCConst::Pi()*2*j) / (tukeyWindowAlpha*fSize) ) );
+                    j++;
+                }
+                else if(i>=midWindowFirstBin && i<=midWindowFinalBin)
+                {
+                    fWindowFunction[i]=1.0;
+                    j++;
+                }
+                else if(i>midWindowFinalBin && i<=finalWindowFinalBin)
+                {
+                    fWindowFunction[i]=0.5*(1 - std::cos( (LMCConst::Pi()*2*(fSize-j)) / (tukeyWindowAlpha*fSize) ) );
+                    j++;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+        ////////////////////////////
+        //text file for testing.   
+        std::ofstream windowfile;
+        windowfile.open("windowfile.txt");
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+            windowfile << fWindowFunction.at(i);
+            windowfile << "\n";
+        }
+        windowfile.close();
+        ////////////////////////////
+        return true;
     }
 
     bool ComplexFFT::MakeFilterCausal(fftw_complex* in)
@@ -234,9 +247,6 @@ namespace locust
         {
         	LERROR(lmclog,"Couldn't make FIR filter causal");
         	exit(-1);
-        }
-        for (int i = 0; i < 2*fSize+fNShiftBins; ++i)
-        {
         }
         for (int i = 0; i < fSize+2*fNShiftBins; ++i)
         {

@@ -77,25 +77,33 @@ namespace locust
     	return tIntegral;
     }
 
-    double CylindricalCavity::Z_TE(int l, int m, int n) const
+    double CylindricalCavity::Z_TE(int l, int m, int n, double fcyc) const
     {
+    	double Z_TE = 1.0;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
     	double k1 = x_lm / fInterface->fR;
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
-    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
-    	double Z_TE = k * eta / k3; // Pozar p. 286, Jackson Eq. 8.32
+    	double k0 = fcyc / LMCConst::C();
+    	if ( k*k-k0*k0 != 0. )
+    	{
+    		Z_TE *= fcyc/(k0*k0 - k*k);  // after Collin Foundations of M.E. Eq. 7.132
+    	}
     	return Z_TE;
     }
 
-    double CylindricalCavity::Z_TM(int l, int m, int n) const
+    double CylindricalCavity::Z_TM(int l, int m, int n, double fcyc) const
     {
+    	double Z_TM = 1.0;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
     	double k1 = x_lm / fInterface->fR;
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
-    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
-    	double Z_TM = k3 * eta / k; // Pozar p. 286, Jackson Eq. 8.32
+    	double k0 = fcyc / LMCConst::C();
+    	if ( k*k-k0*k0 != 0. )
+    	{
+    		Z_TM *= fcyc/(k0*k0 - k*k);  // after Collin Foundations of M.E. Eq. 7.132
+    	}
     	return Z_TM;
     }
 
