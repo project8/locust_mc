@@ -49,6 +49,9 @@ namespace locust
      - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      - "lo-frequency":  local oscillator frequency in Hz.
+     - "bypass-tf":  bool(false) -- if true, set FIR convolution output to 1.0
+     - "norm-check": bool(false) -- if true, calculate weighted running averages of J \cdot E
+      	 for all modes with indices of order < fNModes, and write the avgs to an intermediate file.
      - "equivalentR": Resistance from equivalent RLC circuit in Ohms
      - "equivalentL": Inductance from equivalent RLC circuit in Henries
      - "equivalentC": Capacitance from equivalent RLC circuit in Farads
@@ -69,10 +72,9 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
             std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool TE);
-            std::vector<int> ModeFilter(unsigned whichMode);
+            bool ModeSelect(int l, int m, int n, bool eGun);
             void CheckNormalization();
             void PrintModeMaps();
-
 
 
 
@@ -87,6 +89,8 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
+            bool fBypassTF;
+            bool fNormCheck;
 
 
 
