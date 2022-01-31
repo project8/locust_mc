@@ -15,6 +15,8 @@
         "lo-frequency": 0.98e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
         "tf-receiver-bin-width": 0.0005e9,
+        "tf-window-type": "rectangular",
+        "tf-window-paramter": 0.0,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
     },
 
@@ -35,8 +37,8 @@
 
     "digitizer":
     {
-    	"v-range":  40.0,
-    	"v-offset": -20.0
+    	"v-range":  5.0e-7,
+    	"v-offset": -2.5e-7
     }
 
 }

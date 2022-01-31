@@ -412,24 +412,6 @@ namespace locust
     		HilbertMag = HilbertMagPhaseMean[0];
     		HilbertPhase = HilbertMagPhaseMean[1];
 
-            ////////////////////////////
-            //text file for testing.   
-            std::ofstream hilbertfile;
-            hilbertfile.open("hilbertfile.txt", std::ios::app);
-            hilbertfile << HilbertMag << ", " << HilbertPhase;
-            hilbertfile << "\n";
-            hilbertfile.close();
-            ////////////////////////////
-
-            ////////////////////////////
-            //text file for testing.   
-            std::ofstream fieldfile;
-            fieldfile.open("fieldfile.txt", std::ios::app);
-            fieldfile << EFieldBuffer[channel*fNElementsPerStrip+element].at(fFieldBufferSize/2);
-            fieldfile << "\n";
-            fieldfile.close();
-            ////////////////////////////
-
     		// populate FIR filter with frequency for just this sample interval:
     		for (int i=0; i < nFilterBinsRequired; i++)
     		{

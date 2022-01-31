@@ -65,6 +65,7 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCSinglePatchPositioner.hh
     RxComponents/LMCPlanarArrayPositioner.hh
+    RxComponents/LMCEquivalentCircuit.hh
     RxComponents/LMCWaveguide.hh
 
 )
@@ -133,6 +134,7 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCAntennaElementPositioner.cc
     RxComponents/LMCSinglePatchPositioner.cc
     RxComponents/LMCPlanarArrayPositioner.cc
+    RxComponents/LMCEquivalentCircuit.cc
     RxComponents/LMCWaveguide.cc
 
 

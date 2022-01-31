@@ -1,0 +1,50 @@
+{
+    "generators":
+    [          
+	"cavity-signal",
+        "lpf-fft",
+        "decimate-signal",
+        "digitizer"
+    ],
+
+    "cavity-signal":
+    {
+        "transmitter": "kass-current",
+	"e-gun": false,
+	"voltage-check": "true",
+        "lo-frequency": 0.98e9,               
+	"shift-n-bins": 6000,
+	"zero-padding-size": 1000,
+	"TFBins": 4000,
+	"equivalentR": 1.0,
+	"equivalentL": 0.159e-6,
+	"equivalentC": 0.159e-12,
+	"FreqRangeCenter": 1.0e9,
+    "tf-window-type": "rectangular",
+    "tf-window-parameter": 0.0,
+	"xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
+    },
+
+    "simulation":
+    {
+        "egg-filename": "/tmp/locust_mc/build/output/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 81920,
+        "acquisition-rate": 210,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+    	"v-range":  2.0e-9,
+    	"v-offset": -1.0e-9
+    }
+
+}
+

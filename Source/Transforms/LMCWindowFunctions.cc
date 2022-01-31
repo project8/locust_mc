@@ -85,17 +85,6 @@ namespace locust
             return false;
         }
 
-        ////////////////////////////
-        //text file for testing.   
-        std::ofstream windowfile;
-        windowfile.open("windowfile.txt");
-        for (int i = 0; i < fTotalWindowSize; ++i)
-        {
-            windowfile << fWindowFunction.at(i);
-            windowfile << "\n";
-        }
-        windowfile.close();
-        ////////////////////////////
         fWindowPtr = &fWindowFunction;
         IsWindowGeneratedFlag = true;
         return true;

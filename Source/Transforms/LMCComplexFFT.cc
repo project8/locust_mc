@@ -70,7 +70,6 @@ namespace locust
         {
             LERROR(lmclog,"Error configuring Window Function class");
         }
-
         if(fTransformFlag.compare("MEASURE"))
         {
             fTransform=Transform::measure;
@@ -173,7 +172,7 @@ namespace locust
         	LERROR(lmclog,"Couldn't make FIR filter causal");
         	exit(-1);
         }
-
+        
         for (int i = 0; i < fSize+2*fNShiftBins; ++i)
         {
             out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
