@@ -10,8 +10,8 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
-		"e-gun": true,
-		"central-frequency": 25.9e9,
+	"e-gun": true,
+	"central-frequency": 25.9e9,
         "voltage-check": "true",
         "lo-frequency": 25.8741e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/WR42_centerline_TF.txt",
@@ -36,8 +36,8 @@
 
     "digitizer":
     {
-    	"v-range":  120.0,
-    	"v-offset": -60.0
+    	"v-range":  0.5e-10,
+    	"v-offset": -2.5e-10
     }
 
 }
