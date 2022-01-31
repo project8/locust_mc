@@ -26,15 +26,15 @@ namespace locust
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
 		fE_Gun( false ),
-		fNModes( 8 ),
+		fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
-		fBypassTF( true ),
-		fNormCheck( true ),
+		fBypassTF( false ),
+		fNormCheck( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -79,10 +79,20 @@ namespace locust
     {
     	if (eGun)
     	{
-    		if ((l==0)&&(m==1)&&(n==0))
-    			return true;
+    		if (!fNormCheck)
+    		{
+    			if ((l==0)&&(m==1)&&(n==0))
+    				return true;
+    			else
+    				return false;
+    		}
     		else
-    			return false;
+    		{
+    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
+    				return true;
+    			else
+    				return false;
+    		}
     	}
     	else
     	{
@@ -617,7 +627,7 @@ namespace locust
     				if (ModeSelect(l, m, n, fE_Gun))
     				{
     			    	std::vector<double> tTE_E_normalized;
-    					expansionCoefficient = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) / LMCConst::C(); // Jackson Eq. 8.140
+    					expansionCoefficient = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) / LMCConst::C();
     					if (!fE_Gun)
     					{
     						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
