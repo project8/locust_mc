@@ -616,7 +616,7 @@ namespace locust
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
         double dotProductFactor = 0.;
         double expansionCoefficient = 0.;
-        double unitConversion = 1./sqrt(4.*LMCConst::Pi()*LMCConst::EpsNull()); // Gaussian -> S.I. units
+        double unitConversion = 1.;
 
     	for (int l=0; l<fNModes; l++)
     	{
@@ -627,7 +627,7 @@ namespace locust
     				if (ModeSelect(l, m, n, fE_Gun))
     				{
     			    	std::vector<double> tTE_E_normalized;
-    					expansionCoefficient = 2. * LMCConst::Pi() * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) / LMCConst::C();
+    					expansionCoefficient = fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]);
     					if (!fE_Gun)
     					{
     						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
@@ -635,6 +635,8 @@ namespace locust
     					}
     					else
     					{
+    				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
+    				        unitConversion = 1. / LMCConst::FourPiEps();
     						tTE_E_normalized = GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
     						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
     					}
