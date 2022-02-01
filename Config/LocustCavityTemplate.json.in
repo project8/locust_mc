@@ -15,8 +15,6 @@
         "lo-frequency": 0.98e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
         "tf-receiver-bin-width": 0.0005e9,
-        "tf-window-type": "rectangular",
-        "tf-window-paramter": 0.0,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
     },
 

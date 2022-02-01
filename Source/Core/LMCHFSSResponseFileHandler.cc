@@ -118,14 +118,14 @@ namespace locust
 
 	if(GeneratedTF)
     { 
-		//if TF generated based on config file (frequency ranges from 0.9 - 1.1 times the center given in .json config file), calculate the TF bin width given number of bins (also set in .json config file)).
+		// If TF generated based on config file (frequency ranges from 0.9 - 1.1 times the center given in .json config file), calculate the TF bin width given number of bins (also set in .json config file)).
 		double AnalyticTFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins);
 		fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,AnalyticTFBinWidth, fWindowName, fWindowParam);//Uses binwidth as calculated in the previous line based on internally generated TF
 	}
 	else
     { 
-		//if TF read from externally generated TF file, use TF bin width as given in .json config file
-		fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam); //Uses degenerately defined fTFNBins AND fTFBinWidth if using external TF function.
+		// If TF read from externally generated TF file, use TF bin width as given in .json config file
+		fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam); 
 	}
 
     fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);

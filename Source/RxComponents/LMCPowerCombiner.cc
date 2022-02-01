@@ -24,12 +24,13 @@ namespace locust
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
             fnCavityProbes( 0 ),
+            fNCavityModes( 0 ),
             fCavityProbeInductance( 1.0 ),
             fCavityProbeZ( 0. ),
             fCavityProbeTheta( 0. ),
 			fvoltageCheck( false ),
 			fRollingAvg( 0. ),
-			fCounter( 0 )
+			fCounter( 0 ),
 
     {}
     PowerCombiner::~PowerCombiner() {}
