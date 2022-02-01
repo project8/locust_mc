@@ -11,8 +11,22 @@
 namespace locust
 {
     LOGGER( lmclog, "Field" );
-    Field::Field() {}
+    Field::Field():
+    	fCentralFrequency(0.)
+    {}
     Field::~Field() {}
+
+    bool Field::Configure( const scarab::param_node& aParam )
+    {
+
+    	if( aParam.has( "central-frequency" ) )
+        	{
+            	fCentralFrequency= aParam["central-frequency"]().as_double();
+        	}
+
+    	return true;
+
+    }
 
 
     std::vector<std::vector<std::vector<double>>> Field::GetNormFactorsTE()
@@ -35,6 +49,16 @@ namespace locust
     	fModeNormFactorTM = aNormFactor;
     }
 
+
+    double Field::GetCentralFrequency()
+    {
+    	return fCentralFrequency;
+    }
+
+    void Field::SetCentralFrequency( double aCentralFrequency )
+    {
+    	fCentralFrequency = aCentralFrequency;
+    }
 
 
 

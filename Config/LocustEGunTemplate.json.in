@@ -10,12 +10,13 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
-	"e-gun": false,
+		"e-gun": true,
+		"central-frequency": 25.9e9,
         "voltage-check": "true",
-        "lo-frequency": 0.98e9,               
-        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
-        "tf-receiver-bin-width": 0.0005e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
+        "lo-frequency": 25.8741e9,               
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/WR42_centerline_TF.txt",
+        "tf-receiver-bin-width": 0.01e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_EGun_Template.xml"        
     },
 
     "simulation":
@@ -35,8 +36,8 @@
 
     "digitizer":
     {
-    	"v-range":  5.0e-7,
-    	"v-offset": -2.5e-7
+    	"v-range":  120.0,
+    	"v-offset": -60.0
     }
 
 }

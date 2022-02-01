@@ -103,16 +103,23 @@ namespace locust
         locust::Particle tParticle = fInterface->fParticleHistory[currentIndex];
         tParticle.Interpolate(TOld);
 
+        double tposX = tParticle.GetPosition(true).X();
+        double tposY = tParticle.GetPosition(true).Y();
+        double tposZ = tParticle.GetPosition(true).Z();
+		double tvX = tParticle.GetVelocity(true).X();
+		double tvY = tParticle.GetVelocity(true).Y();
+		double tvZ = tParticle.GetVelocity(true).Z();
+
         std::vector<double> particleXP;
     	particleXP.resize(8);
 
-        particleXP[0] = pow(tParticle.GetPosition().X()*tParticle.GetPosition().X() + tParticle.GetPosition().Y()*tParticle.GetPosition().Y(), 0.5);
-        particleXP[1] = calcTheta(tParticle.GetPosition().X(), tParticle.GetPosition().Y());
-        particleXP[2] = tParticle.GetPosition().Z();
-        particleXP[3] = tParticle.GetVelocity().X();
-        particleXP[4] = tParticle.GetVelocity().Y();
-        particleXP[5] = tParticle.GetVelocity().Z();
-        particleXP[6] = calcOrbitPhase(tParticle.GetVelocity().X(), tParticle.GetVelocity().Y());
+        particleXP[0] = pow( tposX*tposX + tposY*tposY, 0.5);
+        particleXP[1] = calcTheta(tposX, tposY);
+        particleXP[2] = tposZ;
+        particleXP[3] = tvX;
+        particleXP[4] = tvY;
+        particleXP[5] = tvZ;
+        particleXP[6] = calcOrbitPhase(tvX, tvY);
         particleXP[7] = tParticle.GetCyclotronFrequency();
 
     	return particleXP;

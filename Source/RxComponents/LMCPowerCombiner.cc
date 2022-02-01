@@ -24,10 +24,12 @@ namespace locust
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
             fnCavityProbes( 0 ),
-            fCavityProbeImpedance( 50.0 ),
+            fCavityProbeInductance( 1.0 ),
             fCavityProbeZ( 0. ),
             fCavityProbeTheta( 0. ),
-			fvoltageCheck( false )
+			fvoltageCheck( false ),
+			fRollingAvg( 0. ),
+			fCounter( 0 )
 
     {}
     PowerCombiner::~PowerCombiner() {}
@@ -52,6 +54,19 @@ namespace locust
             fdampingFactors.resize( fnElementsPerStrip );
         }
 
+        fRollingAvg.resize(fNCavityModes);
+        fCounter.resize(fNCavityModes);
+        for (int i = 0; i < fNCavityModes; i++)
+        {
+            fRollingAvg[i].resize(fNCavityModes);
+            fCounter[i].resize(fNCavityModes);
+            for (int j = 0; j < fNCavityModes; j++)
+            {
+            	fRollingAvg[i][j].resize(fNCavityModes);
+            	fCounter[i][j].resize(fNCavityModes);
+            }
+        }
+
         return true;
 
     }
@@ -73,6 +88,11 @@ namespace locust
     	return aPatch;
     }
 
+    void PowerCombiner::SetNCavityModes( int aNumberOfModes )
+    {
+    	fNCavityModes = aNumberOfModes;
+    }
+
 
 	bool PowerCombiner::AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex)
 	{
@@ -82,7 +102,7 @@ namespace locust
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
 
 		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
-			LWARN( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+			LPROG( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
 
@@ -96,9 +116,58 @@ namespace locust
 //		printf("signal is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
 
 		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
-			LWARN( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
+
+	bool PowerCombiner::AddOneSampleToRollingAvg(int l, int m, int n, double VoltageFIRSample, double totalScalingFactor, unsigned sampleIndex)
+	{
+    	char buffer[60];
+		double qv = VoltageFIRSample;  // Kass electron current, charge * velocity, with optional resonance if !fBypassTF.
+
+		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(qv*totalScalingFactor/sqrt(50.),2.) ) / ( fCounter[l][m][n] + 1 );
+		int a = sprintf(buffer, "output/modeEnergies.txt");
+		const char *fpname = buffer;
+		FILE *fp = fopen(fpname, "a");
+
+		if ( (sampleIndex%1000 < 1) )
+		{
+			printf("Writing to file:  sampleIndex is %d, totalScalingFactor is %g, fCounter is %d\n",
+					sampleIndex, totalScalingFactor, fCounter[l][m][n]);
+
+			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
+
+
+			if ((l==fNCavityModes-1)&&(m==fNCavityModes-1)&&(n==fNCavityModes-1))
+			{
+				double totalEnergy = 0.;
+				for (int iL=0; iL<fNCavityModes; iL++)
+				{
+					for (int iM=0; iM<fNCavityModes; iM++)
+					{
+						for (int iN=0; iN<fNCavityModes; iN++)
+						{
+							if (!isnan(fRollingAvg[iL][iM][iN]))
+							{
+								totalEnergy += fRollingAvg[iL][iM][iN];
+							}
+						}
+					}
+				}
+
+				fprintf(fp, "\ntotal energy is %g\n\n\n", totalEnergy);
+
+			}
+
+		}
+
+		fCounter[l][m][n] += 1;
+		fclose (fp);
+
+		return true;
+	}
+
+
 
 
 
@@ -172,13 +241,13 @@ namespace locust
     	fdampingFactors[z_index] = aDampingFactor;
     }
 
-    double PowerCombiner::GetCavityProbeImpedance()
+    double PowerCombiner::GetCavityProbeInductance()
     {
-    	return fCavityProbeImpedance;
+    	return fCavityProbeInductance;
     }
-    void PowerCombiner::SetCavityProbeImpedance( double anImpedance )
+    void PowerCombiner::SetCavityProbeInductance( double anInductance )
     {
-    	fCavityProbeImpedance = anImpedance;
+    	fCavityProbeInductance = anInductance;
     }
 
     bool PowerCombiner::SetCavityProbeLocations(int nCavityProbes, double cavityLength)

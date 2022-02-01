@@ -103,7 +103,7 @@ namespace locust
     double HilbertTransform::QuadrantCorrection( double VI, double HilbertPhase, double HilbertMean)
     {
     	double phasecorrection = 0.;
-    	if (((HilbertPhase < 0.)&&(VI < HilbertMean)) || ((HilbertPhase > 0.)&&(VI < HilbertMean)))
+    	if (VI < HilbertMean)
     	{
     		phasecorrection = LMCConst::Pi();  // check IQ quadrant
     	}

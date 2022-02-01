@@ -42,22 +42,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = TE_E(l, m, n, r, theta, zKass);
+    	    		    	aField = TE_E(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    			else
     	    			{
-    	    				aField = TE_H(l, m, n, r, theta, zKass);
+    	    				aField = TE_H(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = TM_E(l, m, n, r, theta, zKass);
+    	    				aField = TM_E(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    			else
     	    			{
-    	    				aField = TM_H(l, m, n, r, theta, zKass);
+    	    				aField = TM_H(l, m, n, r, theta, zKass, GetCentralFrequency());
     	    			}
     	    		}
 
@@ -77,7 +77,37 @@ namespace locust
     	return tIntegral;
     }
 
-    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass) const
+    double CylindricalCavity::Z_TE(int l, int m, int n, double fcyc) const
+    {
+    	double Z_TE = 1.0;
+    	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
+    	double k1 = x_lm / fInterface->fR;
+    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k = pow(k1*k1+k3*k3,0.5);
+    	double k0 = fcyc / LMCConst::C();
+    	if ( k*k-k0*k0 != 0. )
+    	{
+    		Z_TE *= fcyc/(k0*k0 - k*k);  // after Collin Foundations of M.E. Eq. 7.132
+    	}
+    	return Z_TE;
+    }
+
+    double CylindricalCavity::Z_TM(int l, int m, int n, double fcyc) const
+    {
+    	double Z_TM = 1.0;
+    	double x_lm = fInterface->fBesselNKZeros[l][m];
+    	double k1 = x_lm / fInterface->fR;
+    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k = pow(k1*k1+k3*k3,0.5);
+    	double k0 = fcyc / LMCConst::C();
+    	if ( k*k-k0*k0 != 0. )
+    	{
+    		Z_TM *= fcyc/(k0*k0 - k*k);  // after Collin Foundations of M.E. Eq. 7.132
+    	}
+    	return Z_TM;
+    }
+
+    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -88,9 +118,7 @@ namespace locust
     	double k1 = x_lm / fInterface->fR;
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
-    	double omega = LMCConst::C()*k;
-    	double k0 = omega/LMCConst::C()*sqrt(LMCConst::MuNull()*LMCConst::EpsNull());
-    	double eta = LMCConst::MuNull()*omega/LMCConst::C()/k0;  // Jackson 8.32
+    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
@@ -100,7 +128,7 @@ namespace locust
         return TE_E;
     }
 
-    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass) const
+    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -119,7 +147,7 @@ namespace locust
         return TE_H;
     }
 
-    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass) const
+    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
     	double z = zKass + fInterface->fL/2.;
 
@@ -129,9 +157,7 @@ namespace locust
     	double k1 = x_lm / fInterface->fR;
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
-    	double omega = LMCConst::C()*k;
-    	double k0 = omega/LMCConst::C()*sqrt(LMCConst::MuNull()*LMCConst::EpsNull());
-    	double eta = LMCConst::C()/LMCConst::EpsNull()/omega*k0;  // Jackson 8.32
+    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	TM_E.push_back(-k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z));
@@ -140,7 +166,7 @@ namespace locust
         return TM_E;
     }
 
-    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass) const
+    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
     {
     	double z = zKass + fInterface->fL/2.;
 
