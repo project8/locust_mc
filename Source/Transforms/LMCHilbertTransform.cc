@@ -15,13 +15,13 @@ namespace locust
 
 
     HilbertTransform::HilbertTransform():
-        fbufferMargin( 25 ),
-		fbufferSize( 50 ),
+        fbufferMargin( 50 ),
+		fbufferSize( 100 ),
         originaldata(NULL),
         SignalComplex(NULL),
         FFTComplex(NULL),
         hilbert(NULL),
-        fWindowName( "rectangular" ),
+        fWindowName( "hanning" ),
         fWindowParam( 0. )
     {
     }

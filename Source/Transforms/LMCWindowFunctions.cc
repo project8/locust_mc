@@ -50,6 +50,10 @@ namespace locust
         {
             fWindowFunctionType = 2;
         }
+        else if(windowname == "hann")
+        {
+            fWindowFunctionType = 2;
+        }
         else
         {
             return false;

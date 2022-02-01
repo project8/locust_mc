@@ -42,7 +42,7 @@ namespace locust
         IndexBuffer( 1 ),
         ElementFIRBuffer( 1 ),
         FIRfrequencyBuffer( 1 ),
-        fFieldBufferSize( 50 ),
+        fFieldBufferSize( 100 ),
 		fFIRzeroBuffer( 20 ),
 		fSwapFrequency( 1000 ),
 		fKassNeverStarted( false ),
