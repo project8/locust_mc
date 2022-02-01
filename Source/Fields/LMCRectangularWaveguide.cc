@@ -81,11 +81,11 @@ namespace locust
     	double k2 = n * LMCConst::Pi() / fInterface->fY;
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );
-    	double k = fcyc * sqrt( LMCConst::EpsNull() * LMCConst::MuNull() );
+    	double k = fcyc / LMCConst::C();
     	double beta = sqrt(k*k - kc*kc);
 
     	double Z_TE = k*eta/beta;
-    	return Z_TE;
+    	return 2. * LMCConst::Pi() * Z_TE / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
     }
 
     double RectangularWaveguide::Z_TM(int l, int m, int n, double fcyc) const
@@ -94,11 +94,11 @@ namespace locust
     	double k2 = n * LMCConst::Pi() / fInterface->fY;
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );
-    	double k = fcyc * sqrt( LMCConst::EpsNull() * LMCConst::MuNull() );
+    	double k = fcyc / LMCConst::C();
     	double beta = sqrt(k*k - kc*kc);
 
     	double Z_TM = beta*eta/k;
-    	return Z_TM;
+    	return 2. * LMCConst::Pi() * Z_TM / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
     }
 
 
