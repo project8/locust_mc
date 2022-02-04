@@ -16,21 +16,21 @@ namespace locust
 
 
     PowerCombiner::PowerCombiner():
-			fnElementsPerStrip( 0 ),
-			fdampingFactors( 0 ),
-      fjunctionLoss( 1.0 ),
-      fpatchLoss( 0.6 ),
-      famplifierLoss( 0.66 ),
-      fendPatchLoss( 1.0 ),
-      fjunctionResistance( 0.3 ),
-      fnCavityProbes( 0 ),
-			fNCavityModes( 0 ),
-      fCavityProbeInductance( 1.0 ),
-      fCavityProbeZ( 0. ),
-      fCavityProbeTheta( 0. ),
-			fvoltageCheck( false ),
-			fRollingAvg( 0. ),
-			fCounter( 0 )
+        fnElementsPerStrip( 0 ),
+		fdampingFactors( 0 ),
+        fjunctionLoss( 1.0 ),
+        fpatchLoss( 0.6 ),
+        famplifierLoss( 0.66 ),
+        fendPatchLoss( 1.0 ),
+        fjunctionResistance( 0.3 ),
+        fnCavityProbes( 0 ),
+        fNCavityModes( 0 ),
+        fCavityProbeInductance( 1.0 ),
+        fCavityProbeZ( 0. ),
+        fCavityProbeTheta( 0. ),
+        fvoltageCheck( false ),
+        fRollingAvg( 0. ),
+        fCounter( 0 )
             
     {}
     PowerCombiner::~PowerCombiner() {}
