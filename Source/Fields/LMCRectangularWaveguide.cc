@@ -75,6 +75,38 @@ namespace locust
     	return tIntegral;
     }
 
+
+    double RectangularWaveguide::GetGroupVelocity(int m, int n, double fcyc)
+    {
+    	double CutOffFrequency = 0.;
+    	if ((m<2)&&(n<1))  // most likely case
+    	{
+    		// rad/s
+    		CutOffFrequency = LMCConst::C() * LMCConst::Pi() / fInterface->fX;
+    	}
+    	else  // general case
+    	{
+    		// rad/s
+    		CutOffFrequency = LMCConst::C() *
+    				sqrt(pow(m*LMCConst::Pi()/fInterface->fX,2.) + sqrt(pow(n*LMCConst::Pi()/fInterface->fY,2.)));
+    	}
+        double GroupVelocity = LMCConst::C() * pow( 1. - pow(CutOffFrequency/fcyc, 2.) , 0.5);
+        //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
+        return GroupVelocity;
+    }
+
+
+    double RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    {
+    	double fcyc = tKassParticleXP[7];
+    	double groupVelocity = GetGroupVelocity(m,n,fcyc);
+    	double zVelocity = tKassParticleXP[5];
+        double gammaZ = 1.0 / pow(1.0-pow(zVelocity/groupVelocity,2.),0.5);
+        double fPrime = fcyc * gammaZ * (1.+zVelocity/groupVelocity);
+    	return fPrime;
+    }
+
+
     double RectangularWaveguide::Z_TE(int l, int m, int n, double fcyc) const
     {
     	double k1 = m * LMCConst::Pi() / fInterface->fX;

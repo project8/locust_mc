@@ -55,6 +55,7 @@ namespace locust
 
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
 
+            virtual double GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
