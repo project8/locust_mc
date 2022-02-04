@@ -30,8 +30,8 @@ namespace locust
             fCavityProbeTheta( 0. ),
 			fvoltageCheck( false ),
 			fRollingAvg( 0. ),
-			fCounter( 0 ),
-
+			fCounter( 0 )
+            
     {}
     PowerCombiner::~PowerCombiner() {}
 
