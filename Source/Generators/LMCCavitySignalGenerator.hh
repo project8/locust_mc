@@ -75,6 +75,7 @@ namespace locust
             bool ModeSelect(int l, int m, int n, bool eGun);
             void CheckNormalization();
             void PrintModeMaps();
+            double PoyntingVectorIntegral(double fcyc);
 
 
 
