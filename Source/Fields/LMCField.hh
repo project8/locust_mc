@@ -62,11 +62,15 @@ namespace locust
             void SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor);
             double GetCentralFrequency();
             void SetCentralFrequency( double aCentralFrequency );
+            int GetNPixels();
+            void SetNPixels( int aNumberOfPixels );
 
         private:
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTE;  // 3D vector [n-modes][n-modes][n-modes].
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTM;  // 3D vector [n-modes][n-modes][n-modes].
             double fCentralFrequency;
+            int fnPixels;
+
 
     };
 

@@ -27,13 +27,13 @@ namespace locust
 
     	std::vector<double> aField;
     	double xPozar, yPozar, xKass, yKass = 0.;
-    	double dX = fInterface->fX/fInterface->fnPixels;
-    	double dY = fInterface->fY/fInterface->fnPixels;
+    	double dX = fInterface->fX/GetNPixels();
+    	double dY = fInterface->fY/GetNPixels();
     	double tArea = 0.;
     	double tIntegral = 0.;
 
-    	for (unsigned i=0; i<fInterface->fnPixels; i++)
-    		for (unsigned j=0; j<fInterface->fnPixels; j++)
+    	for (unsigned i=0; i<GetNPixels(); i++)
+    		for (unsigned j=0; j<GetNPixels(); j++)
     		{
     	    	xPozar = (double)i*dX;
     	    	yPozar = (double)j*dY;
