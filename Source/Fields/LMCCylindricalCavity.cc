@@ -79,12 +79,15 @@ namespace locust
 
     double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
     {
-    	return tKassParticleXP[7];  // fcyc
+    	// fix me (placeholder)
+    	return 0.;
+//    	return tKassParticleXP[7];  // fcyc
     }
 
 
     double CylindricalCavity::Z_TE(int l, int m, int n, double fcyc) const
     {
+    	// fix me (placeholder)
     	double Z_TE = 1.0;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
     	double k1 = x_lm / fInterface->fR;
@@ -100,6 +103,7 @@ namespace locust
 
     double CylindricalCavity::Z_TM(int l, int m, int n, double fcyc) const
     {
+    	// fix me (placeholder)
     	double Z_TM = 1.0;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
     	double k1 = x_lm / fInterface->fR;

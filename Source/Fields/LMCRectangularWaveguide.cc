@@ -116,7 +116,7 @@ namespace locust
     	double k = fcyc / LMCConst::C();
     	double beta = sqrt(k*k - kc*kc);
 
-    	double Z_TE = k*eta/beta;
+    	double Z_TE = k*eta/beta;  // This is 448 ohms for TE10 at 25.9 GHz.
     	return 2. * LMCConst::Pi() * Z_TE / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
     }
 
