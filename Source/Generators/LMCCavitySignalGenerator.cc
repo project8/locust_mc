@@ -260,6 +260,7 @@ namespace locust
     	}
 
 
+// To-do:  Move this into EquivalentCircuit::Configure()
 //-------------New implementation of fEquivalentCircuit for cavity parameterization-----
 	if ( (aParam.has( "equivalentR" )) or (aParam.has( "equivalentL" )) or (aParam.has( "equivalentL" )) ) { //Only initiate the configurable TF if at least one parameter is specified in the config file
 		//Default RLC parameters if not defined in config file, values (mostly arbitratily) based on external script from P. Slocum for 1 GHz cavity
@@ -427,10 +428,8 @@ namespace locust
 
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
-        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.  H fields near 1.0
-//        getchar();
-//        PrintModeMaps();
-//        getchar();
+        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.
+//        PrintModeMaps();  // Write to text files for plotting mode maps.
 
         return true;
     }
@@ -468,12 +467,9 @@ namespace locust
 
     double CavitySignalGenerator::GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex)
     {
-    	// Calculate ratio between mode E-field max amplitude at electron and mode H-field max amplitude
-    	// at probe.
-    	// Ignore 90-degree phase difference between E-field and H-field as it is constant.  This means
-    	// that the data stream will have an artificial phase shift of 90 degrees everywhere, which seems
-    	// acceptable if we are only sensitive to phase evolution and phase differences between probes.
+    	// Placeholder function.
 
+    	/*
     	double fcyc = tKassParticleXP[7];
 
     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2], fcyc);
@@ -484,6 +480,8 @@ namespace locust
         //        	printf("modeScalingFactor is %g / %g = %g\n", tTE_H_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
 
     	return modeScalingFactor;
+    	*/
+    	return 1.;
     }
 
 
@@ -493,12 +491,13 @@ namespace locust
     	double tThetaParticle = tKassParticleXP[1];
     	double tEy = aTE_E_normalized.back();
      	double tEmag = fabs(tEy);
-    	// fix-me:  should below be instantaneous velocity or center of motion?
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
     	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
 
+    	/*
+    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (0==0)
     	{
         	char buffer[60];
@@ -507,10 +506,11 @@ namespace locust
     		FILE *fp = fopen(fpname, "a");
     		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
     		fclose(fp);
-    	}
 
-    	printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
+    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
     			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
+    	}
+    	 */
 
     	return unitJdotE;
     }
@@ -623,7 +623,7 @@ namespace locust
     	double k1 = LMCConst::Pi() / fInterface->fX;
     	double beta = sqrt( k*k - k1*k1 );
     	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fX,3.) * fInterface->fY * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
-    	return sqrt(areaIntegral/2.);
+    	return sqrt(areaIntegral/2.);  // areaIntegral/2. propagates power/2.
     }
 
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
@@ -652,6 +652,7 @@ namespace locust
     			    	std::vector<double> tTE_E_normalized;
     					if (!fE_Gun)
     					{
+    						unitConversion = 1.;  // fix me.
     						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
     						dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
     					}
@@ -668,10 +669,21 @@ namespace locust
     					// fix-me:  We may need more precise nFilterBinsRequired.
     					std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
     					std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
-    					tExcitationAmplitude = modeAmplitude * PoyntingVectorIntegral(tKassParticleXP[7]) *
+    					if (!fE_Gun)
+    					{
+    						// This is still a placeholder and is not yet correct:
+    						tExcitationAmplitude = modeAmplitude *
     							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
 								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
-//    					tExcitationAmplitude = sqrt(tKassParticleXP[8]/2.);  // sqrt( Larmor power / 2 )
+    					}
+    					else
+    					{
+    						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
+    						tExcitationAmplitude = modeAmplitude * PoyntingVectorIntegral(tKassParticleXP[7]) *
+    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
+								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+    						// tExcitationAmplitude = sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( Larmor power / 2 )
+    					}
     					std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
     					std::vector<std::deque<double>>().swap(tLocalElementFIRBuffer);
 
@@ -686,11 +698,9 @@ namespace locust
     						// double modeScalingFactor = 1.0; // override for now.
     						// end TO-DO
 
-    						// This scaling factor includes a 50 ohm impedance that is expected in signal processing, as well
+    						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion * dotProductFactor;
-//    						double totalScalingFactor = sqrt(50.) * dotProductFactor;
-//    						double totalScalingFactor = sqrt(50.);
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tExcitationAmplitude, tDopplerFrequency, dt, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, tExcitationAmplitude, totalScalingFactor, sampleIndex);
     					}
