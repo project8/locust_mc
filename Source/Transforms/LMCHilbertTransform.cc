@@ -15,13 +15,13 @@ namespace locust
 
 
     HilbertTransform::HilbertTransform():
-        fbufferMargin( 50 ),
-		fbufferSize( 100 ),
+        fbufferMargin( 25 ),
+		fbufferSize( 50 ),
         originaldata(NULL),
         SignalComplex(NULL),
         FFTComplex(NULL),
         hilbert(NULL),
-        fWindowName( "hanning" ),
+        fWindowName( "rectangular" ),
         fWindowParam( 0. )
     {
     }
@@ -77,6 +77,12 @@ namespace locust
        	{
        		return false;
        	}
+        if(!SetupHilbertTransform())
+        {
+            LERROR(lmclog,"Error configuring Hilbert Transform class");
+            exit(-1);
+            return false;
+        }
        	else
        	{
        		return true;
@@ -212,8 +218,8 @@ namespace locust
 
     fftw_complex* HilbertTransform::Transform(std::deque<double> FieldBuffer)
     {
-        int windowsize=FieldBuffer.size()-1;
-
+        int windowsize=FieldBuffer.size();
+        
         int i=0;
         for (std::deque<double>::iterator it = FieldBuffer.begin(); it!=FieldBuffer.end(); ++it)
         {

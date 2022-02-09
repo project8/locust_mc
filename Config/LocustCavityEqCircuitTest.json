@@ -20,9 +20,7 @@
 	"equivalentL": 0.159e-6,
 	"equivalentC": 0.159e-12,
 	"FreqRangeCenter": 1.0e9,
-    "tf-window-type": "rectangular",
-    "tf-window-parameter": 0.0,
-	"xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
+	"xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"
     },
 
     "simulation":

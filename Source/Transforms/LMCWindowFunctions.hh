@@ -42,7 +42,6 @@ namespace locust
         int fSignalSize;
         double fTukeyWindowAlpha;
         std::vector<double> fWindowFunction;
-        std::vector<double>* fWindowPtr;
         bool IsWindowGeneratedFlag;
 
         // Member functions:

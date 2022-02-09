@@ -88,8 +88,6 @@ namespace locust
         {
             return false;
         }
-
-        fWindowPtr = &fWindowFunction;
         IsWindowGeneratedFlag = true;
         return true;
     }
@@ -161,7 +159,7 @@ namespace locust
 
     std::vector<double>* WindowFunctions::GetWindowFunction()
     {
-        return fWindowPtr;
+        return &fWindowFunction;
     }
 
     bool WindowFunctions::IsWindowGenerated()

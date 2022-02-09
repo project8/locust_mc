@@ -42,7 +42,7 @@ namespace locust
         IndexBuffer( 1 ),
         ElementFIRBuffer( 1 ),
         FIRfrequencyBuffer( 1 ),
-        fFieldBufferSize( 100 ),
+        fFieldBufferSize( 50 ),
 		fFIRzeroBuffer( 20 ),
 		fSwapFrequency( 1000 ),
 		fKassNeverStarted( false ),
@@ -481,7 +481,8 @@ namespace locust
                 tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
-
+                
+                PopBuffers(channelIndex, elementIndex);
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize + fFIRzeroBuffer))
@@ -491,7 +492,6 @@ namespace locust
             	}
 
             	fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
-                PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;
 
@@ -560,12 +560,6 @@ namespace locust
 
         if(!fTFReceiverHandler.ReadHFSSFile())
         {
-            return false;
-        }
-
-        if(!fHilbertTransform.SetupHilbertTransform())
-        {
-            LERROR(lmclog,"Error initializing Hilbert transform.\n");
             return false;
         }
 
