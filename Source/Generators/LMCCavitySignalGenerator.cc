@@ -616,13 +616,14 @@ namespace locust
 
     }
 
-    double CavitySignalGenerator::PoyntingVectorIntegral(double fcyc)
+    double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
     {
     	// rectangular waveguide, TE10 mode, after Pozar p. 114:
     	double k = fcyc / LMCConst::C();
     	double k1 = LMCConst::Pi() / fInterface->fX;
     	double beta = sqrt( k*k - k1*k1 );
     	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fX,3.) * fInterface->fY * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
+    	// sqrt of propagating power gives amplitude of E
     	return sqrt(areaIntegral/2.);  // areaIntegral/2. propagates power/2.
     }
 
@@ -679,7 +680,7 @@ namespace locust
     					else
     					{
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-    						tExcitationAmplitude = modeAmplitude * PoyntingVectorIntegral(tKassParticleXP[7]) *
+    						tExcitationAmplitude = modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) *
     							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
 								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
     						// tExcitationAmplitude = sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( Larmor power / 2 )
