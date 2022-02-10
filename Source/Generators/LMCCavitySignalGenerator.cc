@@ -618,7 +618,10 @@ namespace locust
 
     double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
     {
-    	// rectangular waveguide, TE10 mode, after Pozar p. 114:
+    	// This function calculates the coefficients of the Poynting vector integral
+    	// in the TE10 mode in WR42.  It then returns the sqrt of the half of the propagating
+    	// power that is moving toward the antenna.
+    	// After Pozar p. 114:
     	double k = fcyc / LMCConst::C();
     	double k1 = LMCConst::Pi() / fInterface->fX;
     	double beta = sqrt( k*k - k1*k1 );
