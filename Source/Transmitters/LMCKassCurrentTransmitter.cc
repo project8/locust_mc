@@ -121,6 +121,7 @@ namespace locust
         particleXP[5] = tvZ;
         particleXP[6] = calcOrbitPhase(tvX, tvY);
         particleXP[7] = tParticle.GetCyclotronFrequency();
+        particleXP[8] = tParticle.GetLarmorPower();
 
     	return particleXP;
     }

@@ -23,15 +23,15 @@ namespace locust
 
     	std::vector<double> aField;
     	double r, theta, zPozar, zKass = 0.;
-    	double dR = fInterface->fR/fInterface->fnPixels;
-    	double dZ = fInterface->fL/fInterface->fnPixels;
-    	double dTheta = 2.*LMCConst::Pi()/fInterface->fnPixels;
+    	double dR = fInterface->fR/GetNPixels();
+    	double dZ = fInterface->fL/GetNPixels();
+    	double dTheta = 2.*LMCConst::Pi()/GetNPixels();
     	double tVolume = 0.;
     	double tIntegral = 0.;
 
-    	for (unsigned i=0; i<fInterface->fnPixels; i++)
-    		for (unsigned j=0; j<fInterface->fnPixels; j++)
-    			for (unsigned k=0; k<fInterface->fnPixels; k++)
+    	for (unsigned i=0; i<GetNPixels(); i++)
+    		for (unsigned j=0; j<GetNPixels(); j++)
+    			for (unsigned k=0; k<GetNPixels(); k++)
     			{
     	    		r = (double)i*dR;
     	    		theta = (double)j*dTheta;
@@ -77,8 +77,17 @@ namespace locust
     	return tIntegral;
     }
 
+    double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    {
+    	// fix me (placeholder)
+    	return 0.;
+//    	return tKassParticleXP[7];  // fcyc
+    }
+
+
     double CylindricalCavity::Z_TE(int l, int m, int n, double fcyc) const
     {
+    	// fix me (placeholder)
     	double Z_TE = 1.0;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
     	double k1 = x_lm / fInterface->fR;
@@ -94,6 +103,7 @@ namespace locust
 
     double CylindricalCavity::Z_TM(int l, int m, int n, double fcyc) const
     {
+    	// fix me (placeholder)
     	double Z_TM = 1.0;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
     	double k1 = x_lm / fInterface->fR;

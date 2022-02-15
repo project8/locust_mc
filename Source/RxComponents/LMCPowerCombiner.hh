@@ -39,8 +39,8 @@ namespace locust
         	virtual bool SetSMatrixParameters() {return true;};
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
-        	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-        	bool AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex);
+        	bool AddOneVoltageToStripSum(Signal* aSignal, double excitationAmplitude, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex);
         	virtual void SayHello();
         	virtual void Initialize() {};
 
@@ -87,6 +87,7 @@ namespace locust
             std::vector<double> fCavityProbeTheta;
             std::vector<std::vector<std::vector<double>>> fRollingAvg;
             std::vector<std::vector<std::vector<int>>> fCounter;
+            double fVoltagePhase;
 
 
 };

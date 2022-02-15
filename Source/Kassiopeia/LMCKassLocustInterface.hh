@@ -68,7 +68,6 @@ namespace locust
         double fL;
         double fX;  // Rectangular waveguide dimensions.
         double fY;
-        int fnPixels;
         int nFilterBinsRequired;
         double dtFilter;
         std::vector<std::deque<double>> eCurrentBuffer;
