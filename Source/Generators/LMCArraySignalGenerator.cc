@@ -503,7 +503,7 @@ namespace locust
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize*fPowerCombiner->GetNElementsPerStrip()))
             	{
                     LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
-            		return false;
+            		//return false;
             	}
  	            fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
                 PopBuffers(channelIndex, elementIndex);
