@@ -35,6 +35,14 @@ namespace locust
             		int nSubarrays, int nReceivers, double elementSpacingZ, int receiverIndex);
             double GetTheta(int channelIndex, double dThetaArray);
 			virtual void PlaceElement(Receiver &modelElement, double elementRadius, double theta, double zPosition);
+            void PlaceAtPosition(Receiver &modelElement, double elementRadius, double theta, double zPosition);
+            void PlaceAtConfigured(Receiver &modelElement);
+            
+        private:
+            double fCenterPositionX=0., fCenterPositionY=0., fCenterPositionZ=0.;
+            double fPolarizationDirectionX=0., fPolarizationDirectionY=0., fPolarizationDirectionZ=0.;
+            double fNormalDirectionX=0., fNormalDirectionY=0., fNormalDirectionZ=0.;
+            bool fManualPlacement = false;
 
 };
 
