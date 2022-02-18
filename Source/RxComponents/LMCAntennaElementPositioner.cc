@@ -121,10 +121,10 @@ namespace locust
 	{
         LDEBUG(lmclog, "Placing element manually");
         
-        modelElement.SetCenterPosition({centerPositionX , centerPositionY , centerPositionZ });
-		modelElement.SetPolarizationDirection({polarizationDirectionX, polarizationDirectionY, polarizationDirectionZ});
+        modelElement.SetCenterPosition({fCenterPositionX , fCenterPositionY , fCenterPositionZ });
+		modelElement.SetPolarizationDirection({fPolarizationDirectionX, fPolarizationDirectionY, fPolarizationDirectionZ});
 		modelElement.SetCrossPolarizationDirection({0.0, 0.0, 1.0});  // longitudinal axis of array.
-		modelElement.SetNormalDirection({normalDirectionX, normalDirectionY, normalDirectionZ}); //Say normals point inwards
+		modelElement.SetNormalDirection({fNormalDirectionX, fNormalDirectionY, fNormalDirectionZ}); //Say normals point inwards
 	}
 
 } /* namespace locust */
