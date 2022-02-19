@@ -76,7 +76,7 @@ namespace locust
             void CheckNormalization();
             void PrintModeMaps();
             double ScaleEPoyntingVector(double fcyc);
-
+	    double ScaleAmplitude(int l, int m, int n, double fcyc);
 
 
         private:

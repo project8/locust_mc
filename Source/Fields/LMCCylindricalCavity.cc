@@ -125,7 +125,7 @@ namespace locust
     	// from Pozar
     	std::vector<double> TE_E;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / fInterface->fR;
+    	double k1 = x_lm / fInterface->fR; //k_c
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.

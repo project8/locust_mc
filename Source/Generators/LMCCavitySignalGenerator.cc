@@ -630,6 +630,65 @@ namespace locust
     	return sqrt(areaIntegral/2.);  // areaIntegral/2. propagates power/2.
     }
 
+    double CavitySignalGenerator::ScaleAmplitude(int l, int m, int n, double fcyc)
+    {
+	// This function calculates the expansion coefficient for the cavity mode for total normalization
+	// From Jackson (blue edition Eq 8.140)
+
+
+	double Aplus = 0.;
+	double Aminus = 0.;
+
+	double Z_TE = fInterface->fField->Z_TE(l,m,n,fcyc);
+
+	for (unsigned int i=0; i<fInterface->fField->GetNPixels(); i++)
+	{
+		double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fR;
+    		double x = (double)i/fInterface->fField->GetNPixels()*fInterface->fX - fInterface->fX/2.;
+		for (unsigned int j=0; j<fInterface->fField->GetNPixels(); j++)
+    		{
+			double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
+        		double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fY - fInterface->fY/2.;
+			if (!fE_Gun)
+			{
+				std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency());
+				std::vector<double> tTE_H = fInterface->fField->TE_H(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency());
+				double E_t_r = 1.0; //Placeholder
+				double E_t_theta = 1.0; //Placeholder
+                                double H_t_r = 1.0; //Placeholder
+                                double H_t_theta = 1.0; //Placeholder
+                                double H_t_z = 1.0; //Placeholder
+
+				double E_dot_product = tTE_E.begin()*E_t_r + tTE_E.end()*E_t_theta;
+				double H_dot_product = tTE_H.begin()*H_t_r + tTE_H[1]*H_t_theta + tTE_H.end()*H_t_z;
+				
+				double dA = r*(fInterface->fR/fInterface->fField->GetNPixels())*(2.*LMCConst::Pi()/fInterface->fField->GetNPixels());
+				Aplus += 0.5*(E_dot_product + Z_TE*Z_TE*H_dot_product)*dA;
+				Aminus +=  0.5*(E_dot_product - Z_TE*Z_TE*H_dot_product)*dA;
+			}
+			else
+			{
+				std::vector<double> tTE_E = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
+				std::vector<double> tTE_H = fInterface->fField->TE_H(m,n,x,y,fInterface->fField->GetCentralFrequency());
+				double E_t_x = 1.0; //Placeholder
+                                double E_t_y  = 1.0; //Placeholder
+                                double H_t_x = 1.0; //Placeholder
+                                double H_t_y = 1.0; //Placeholder
+                                double H_t_z = 1.0; //Placeholder	
+
+				double E_dot_product = tTE_E.begin()*E_t_x + tTE_E.end()*E_t_y;
+                                double H_dot_product = tTE_H.begin()*H_t_x + tTE_H[1]*H_t_y + tTE_H.end()*H_t_z;
+
+				double dA = (fInterface->fX /fInterface->fField->GetNPixels()) * (fInterface->fY /fInterface->fField->GetNPixels());
+				Aplus += 0.5*(E_dot_product + Z_TE*Z_TE*H_dot_product)*dA;
+                                Aminus +=  0.5*(E_dot_product - Z_TE*Z_TE*H_dot_product)*dA;
+			}
+		}
+	}
+	
+	return 1.0;
+    }
+
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
     {
         const int signalSize = aSignal->TimeSize();
@@ -676,8 +735,8 @@ namespace locust
     					if (!fE_Gun)
     					{
     						// This is still a placeholder and is not yet correct:
-    						tExcitationAmplitude = modeAmplitude *
-    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
+    						tExcitationAmplitude = modeAmplitude * ScaleAmplitude(l, m, n, tKassParticleXP[7]) *
+    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 
 								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
     					}
     					else
