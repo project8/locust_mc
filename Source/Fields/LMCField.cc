@@ -12,6 +12,7 @@ namespace locust
 {
     LOGGER( lmclog, "Field" );
     Field::Field():
+		fnPixels( 100 ),
     	fCentralFrequency(0.)
     {}
     Field::~Field() {}
@@ -58,6 +59,16 @@ namespace locust
     void Field::SetCentralFrequency( double aCentralFrequency )
     {
     	fCentralFrequency = aCentralFrequency;
+    }
+
+    int Field::GetNPixels()
+    {
+    	return fnPixels;
+    }
+
+    void Field::SetNPixels( int aNumberOfPixels )
+    {
+    	fnPixels = aNumberOfPixels;
     }
 
 

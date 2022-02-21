@@ -16,22 +16,22 @@ namespace locust
 
 
     PowerCombiner::PowerCombiner():
-        fnElementsPerStrip( 0 ),
-		fdampingFactors( 0 ),
-        fjunctionLoss( 1.0 ),
-        fpatchLoss( 0.6 ),
-        famplifierLoss( 0.66 ),
-        fendPatchLoss( 1.0 ),
-        fjunctionResistance( 0.3 ),
-        fnCavityProbes( 0 ),
-        fNCavityModes( 0 ),
-        fCavityProbeInductance( 1.0 ),
-        fCavityProbeZ( 0. ),
-        fCavityProbeTheta( 0. ),
-        fvoltageCheck( false ),
-        fRollingAvg( 0. ),
-        fCounter( 0 )
-            
+			fnElementsPerStrip( 0 ),
+			fdampingFactors( 0 ),
+            fjunctionLoss( 1.0 ),
+            fpatchLoss( 0.6 ),
+            famplifierLoss( 0.66 ),
+            fendPatchLoss( 1.0 ),
+            fjunctionResistance( 0.3 ),
+            fnCavityProbes( 0 ),
+			fNCavityModes( 0 ),
+            fCavityProbeInductance( 1.0 ),
+            fCavityProbeZ( 0. ),
+            fCavityProbeTheta( 0. ),
+			fvoltageCheck( false ),
+			fRollingAvg( 0. ),
+			fCounter( 0 ),
+			fVoltagePhase( 0. )
     {}
     PowerCombiner::~PowerCombiner() {}
 
@@ -108,13 +108,14 @@ namespace locust
 	}
 
 
-	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex)
+	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex)
 	{
 
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * cos(phi_LO);
+		fVoltagePhase += dopplerFrequency * dt;
+		double voltageValue = excitationAmplitude * cos(fVoltagePhase);
 
-//		printf("signal is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * cavityProbeImpedance * sin(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cavityProbeImpedance * cos(phi_LO);
 
 		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );

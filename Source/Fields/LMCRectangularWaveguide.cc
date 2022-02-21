@@ -23,13 +23,13 @@ namespace locust
 
     	std::vector<double> aField;
     	double xPozar, yPozar, xKass, yKass = 0.;
-    	double dX = fInterface->fX/fInterface->fnPixels;
-    	double dY = fInterface->fY/fInterface->fnPixels;
+    	double dX = fInterface->fX/GetNPixels();
+    	double dY = fInterface->fY/GetNPixels();
     	double tArea = 0.;
     	double tIntegral = 0.;
 
-    	for (unsigned i=0; i<fInterface->fnPixels; i++)
-    		for (unsigned j=0; j<fInterface->fnPixels; j++)
+    	for (unsigned i=0; i<GetNPixels(); i++)
+    		for (unsigned j=0; j<GetNPixels(); j++)
     		{
     	    	xPozar = (double)i*dX;
     	    	yPozar = (double)j*dY;
@@ -75,6 +75,38 @@ namespace locust
     	return tIntegral;
     }
 
+
+    double RectangularWaveguide::GetGroupVelocity(int m, int n, double fcyc)
+    {
+    	double CutOffFrequency = 0.;
+    	if ((m<2)&&(n<1))  // most likely case
+    	{
+    		// rad/s
+    		CutOffFrequency = LMCConst::C() * LMCConst::Pi() / fInterface->fX;
+    	}
+    	else  // general case
+    	{
+    		// rad/s
+    		CutOffFrequency = LMCConst::C() *
+    				sqrt(pow(m*LMCConst::Pi()/fInterface->fX,2.) + sqrt(pow(n*LMCConst::Pi()/fInterface->fY,2.)));
+    	}
+        double GroupVelocity = LMCConst::C() * pow( 1. - pow(CutOffFrequency/fcyc, 2.) , 0.5);
+        //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
+        return GroupVelocity;
+    }
+
+
+    double RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    {
+    	double fcyc = tKassParticleXP[7];
+    	double groupVelocity = GetGroupVelocity(m,n,fcyc);
+    	double zVelocity = tKassParticleXP[5];
+        double gammaZ = 1.0 / pow(1.0-pow(zVelocity/groupVelocity,2.),0.5);
+        double fPrime = fcyc * gammaZ * (1.+zVelocity/groupVelocity);
+    	return fPrime;
+    }
+
+
     double RectangularWaveguide::Z_TE(int l, int m, int n, double fcyc) const
     {
     	double k1 = m * LMCConst::Pi() / fInterface->fX;
@@ -84,7 +116,7 @@ namespace locust
     	double k = fcyc / LMCConst::C();
     	double beta = sqrt(k*k - kc*kc);
 
-    	double Z_TE = k*eta/beta;
+    	double Z_TE = k*eta/beta;  // This is 448 ohms for TE10 at 25.9 GHz.
     	return 2. * LMCConst::Pi() * Z_TE / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
     }
 

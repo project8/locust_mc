@@ -42,7 +42,6 @@ namespace locust
 			fL( 0.2 ),
 			fX( 0.010668 ),
 			fY( 0.004318 ),
-			fnPixels( 100 ),
 	        nFilterBinsRequired( 0 ),
 	        dtFilter( 0 ),
 	        eCurrentBuffer( 0 ),
