@@ -157,7 +157,7 @@ namespace locust
         }
     }
 
-    std::vector<double>* WindowFunctions::GetWindowFunction()
+    const std::vector<double>* WindowFunctions::GetWindowFunction()
     {
         return &fWindowFunction;
     }

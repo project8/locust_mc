@@ -188,10 +188,11 @@ namespace locust
             LERROR(lmclog,"Error applying window function, it has not been generated");
             exit(-1); 
         }
+        const std::vector<double>* aWindowFunction=fWindowFunction.GetWindowFunction();
         double windowfactor = 0.0;
         for (int i = 0; i < size; ++i)
         { 
-            windowfactor = fWindowFunction.GetWindowFunction()->at(i+fPreFilterBins);
+            windowfactor = aWindowFunction->at(i+fPreFilterBins);
             in[i][0]*=windowfactor;
             in[i][1]*=windowfactor;
         }
