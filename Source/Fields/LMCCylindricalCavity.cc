@@ -94,9 +94,19 @@ namespace locust
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double k0 = fcyc / LMCConst::C();
+    	double A = 1.;
+    	double B = k*k;
+    	double C = k0*k0;
+    	double Q = 1000.;
+    	double denom = (Q*B + Q*C + C) * (Q*B+ Q*C + C) + C*C;
+    	double real = (Q*A * (Q*B + Q*C + C)) / denom;
+    	double imag = Q*A*C / denom;
+
     	if ( k*k-k0*k0 != 0. )
     	{
-    		Z_TE *= fcyc/(k0*k0 - k*k);  // after Collin Foundations of M.E. Eq. 7.132
+    		// after Collin Foundations of M.E. Eq. 7.132
+//    		Z_TE *= fcyc * LMCConst::MuNull() / (k0*k0 - k*k);  // neglect Q term.
+    		Z_TE *= fcyc * LMCConst::MuNull() *sqrt( real*real + imag*imag ); // mag
     	}
     	return Z_TE;
     }

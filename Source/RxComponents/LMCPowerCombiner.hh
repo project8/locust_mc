@@ -68,7 +68,7 @@ namespace locust
             double GetCavityProbeInductance();
             void SetCavityProbeInductance( double anInductance );
             bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
-        	bool AddOneSampleToRollingAvg(int l, int m, int n, double VoltageFIRSample, double totalScalingFactor, unsigned sampleIndex);
+        	bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
 
 
         private:

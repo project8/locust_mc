@@ -123,20 +123,20 @@ namespace locust
 		return true;
 	}
 
-	bool PowerCombiner::AddOneSampleToRollingAvg(int l, int m, int n, double VoltageFIRSample, double totalScalingFactor, unsigned sampleIndex)
+	bool PowerCombiner::AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
 	{
     	char buffer[60];
-		double qv = VoltageFIRSample;  // Kass electron current, charge * velocity, with optional resonance if !fBypassTF.
+		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, with optional resonance if !fBypassTF.
 
-		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(qv*totalScalingFactor/sqrt(50.),2.) ) / ( fCounter[l][m][n] + 1 );
+		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
 		int a = sprintf(buffer, "output/modeEnergies.txt");
 		const char *fpname = buffer;
 		FILE *fp = fopen(fpname, "a");
 
 		if ( (sampleIndex%1000 < 1) )
 		{
-			printf("Writing to file:  sampleIndex is %d, totalScalingFactor is %g, fCounter is %d\n",
-					sampleIndex, totalScalingFactor, fCounter[l][m][n]);
+			printf("Writing to file:  sampleIndex is %d, fCounter is %d\n",
+					sampleIndex, fCounter[l][m][n]);
 
 			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
 

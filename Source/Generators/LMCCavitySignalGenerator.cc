@@ -26,15 +26,15 @@ namespace locust
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
 		fE_Gun( false ),
-		fNModes( 2 ),
+		fNModes( 6 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
-		fBypassTF( false ),
-		fNormCheck( false ),
+		fBypassTF( true ),
+		fNormCheck( true ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -643,7 +643,7 @@ namespace locust
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
         double dotProductFactor = 0.;
         double unitConversion = 1.;
-        double tExcitationAmplitude = 0.;
+        double excitationAmplitude = 0.;
 
     	for (int l=0; l<fNModes; l++)
     	{
@@ -667,25 +667,26 @@ namespace locust
     						tTE_E_normalized = GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
     						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
     					}
-    					double modeAmplitude = tTE_E_normalized.back();  // normalized E_theta at electron
-    			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
     					// fix-me:  We may need more precise nFilterBinsRequired.
     					std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
     					std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
+
+    					double modeAmplitude = tTE_E_normalized.back();  // normalized E_theta at electron
+    			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+    					double cavityFIRSample = GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+
     					if (!fE_Gun)
     					{
     						// This is still a placeholder and is not yet correct:
-    						tExcitationAmplitude = modeAmplitude *
-    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
-								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+    						excitationAmplitude = modeAmplitude * dotProductFactor *
+    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
     					}
     					else
     					{
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-    						tExcitationAmplitude = modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) *
-    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
-								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
     						// tExcitationAmplitude = sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( Larmor power / 2 )
     					}
     					std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
@@ -704,9 +705,9 @@ namespace locust
 
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting from c.g.s amplitudes.
-    						double totalScalingFactor = sqrt(50.) * unitConversion * dotProductFactor;
-    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tExcitationAmplitude, tDopplerFrequency, dt, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
-    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, tExcitationAmplitude, totalScalingFactor, sampleIndex);
+    						double totalScalingFactor = sqrt(50.) * unitConversion;
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tDopplerFrequency, dt, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
+    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
     				} // ModeSelect
