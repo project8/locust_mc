@@ -214,9 +214,9 @@ namespace locust
     	char buffer[60];
     	unsigned modeCounter = 0;
 
-    	for (int l=0; l<3; l++)
-    		for (int m=1; m<3; m++)
-    			for (int n=0; n<3; n++)
+    	for (int l=0; l<fNModes; l++)
+    		for (int m=1; m<fNModes; m++)
+    			for (int n=0; n<fNModes; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
     				double normFactor;
@@ -719,7 +719,15 @@ namespace locust
     					std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
     					std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
 
-    					double modeAmplitude = pow(tE_normalized.back()*tE_normalized.back() + tE_normalized.front()*tE_normalized.front(), 0.5);  // normalized E at electron
+    					double modeAmplitude = 0.;
+    					if ( (!isnan(tE_normalized.back())) && (!isnan(tE_normalized.front())) )
+    					{
+    						modeAmplitude = pow(tE_normalized.back()*tE_normalized.back() + tE_normalized.front()*tE_normalized.front(), 0.5);  // normalized E at electron
+    					}
+    					else if ( !isnan(tE_normalized.back()) )
+    					{
+    						modeAmplitude = tE_normalized.back();
+    					}
     			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					double cavityFIRSample = GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
 
