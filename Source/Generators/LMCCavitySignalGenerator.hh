@@ -92,6 +92,7 @@ namespace locust
             double fphiLO; // voltage phase of LO in radians;
             bool fBypassTF;
             bool fNormCheck;
+            bool fTE; // (if false, use TM modes.)
 
 
 
@@ -104,7 +105,7 @@ namespace locust
             void InitializeBuffers(unsigned filterbuffersize);
             std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             std::vector<double> GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
-            double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
+            double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized);
             double GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
             double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
 
@@ -115,7 +116,7 @@ namespace locust
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
-	    EquivalentCircuit* fEquivalentCircuit;
+            EquivalentCircuit* fEquivalentCircuit;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;
