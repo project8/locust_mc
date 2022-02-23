@@ -539,10 +539,19 @@ namespace locust
     double CavitySignalGenerator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized)
     {
     	double tThetaParticle = tKassParticleXP[1];
-    	double tEtheta = anE_normalized.back();
-    	double tEx = -sin(tThetaParticle) * tEtheta;
-    	double tEy = cos(tThetaParticle) * tEtheta;
-    	double tEmag = fabs(tEtheta);
+    	double tEtheta = 0.;
+    	double tEr = 0.;
+    	if (!isnan(anE_normalized.back()))
+    	{
+    		tEtheta = anE_normalized.back();
+    	}
+    	if (!isnan(anE_normalized.front()))
+    	{
+    		tEr = anE_normalized.front();
+    	}
+    	double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
+    	double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
+    	double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
