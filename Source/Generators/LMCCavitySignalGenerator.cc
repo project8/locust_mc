@@ -26,15 +26,15 @@ namespace locust
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
 		fE_Gun( false ),
-		fNModes( 6 ),
+		fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
 		fNPreEventSamples( 150000 ),
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
-		fBypassTF( true ),
-		fNormCheck( true ),
+		fBypassTF( false ),
+		fNormCheck( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
