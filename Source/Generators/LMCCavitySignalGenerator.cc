@@ -219,7 +219,7 @@ namespace locust
     			for (int n=0; n<fNModes; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
-    				double normFactor;
+    				double normFactor = 1.0;
     				int a = 0;
     				if (fTE)
     				{
@@ -233,11 +233,11 @@ namespace locust
     				}
     				const char *fpname = buffer;
     				FILE *fp_E = fopen(fpname, "w");
-    				for (unsigned i=0; i<fInterface->fField->GetNPixels(); i++)
+    				for (unsigned i=0; i<fInterface->fField->GetNPixels()+1; i++)
     				{
     					double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fR;
     					double x = (double)i/fInterface->fField->GetNPixels()*fInterface->fX - fInterface->fX/2.;
-    					for (unsigned j=0; j<fInterface->fField->GetNPixels(); j++)
+    					for (unsigned j=0; j<fInterface->fField->GetNPixels()+1; j++)
     					{
     						double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
         					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fY - fInterface->fY/2.;
@@ -265,6 +265,8 @@ namespace locust
     				fclose (fp_E);
     				modeCounter += 1;
     			}
+    	printf("\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.\n");
+    	getchar();
     }
 
 
