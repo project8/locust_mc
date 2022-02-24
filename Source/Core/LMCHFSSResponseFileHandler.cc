@@ -25,7 +25,9 @@ namespace locust
     fNSkips(1),
     fComplexFFT(),
     fHFSSFiletype(""),
-    fIsFIRCreated(false)
+    fIsFIRCreated(false),
+    fWindowName("tukey"),
+    fWindowParam(0.5)
     {
     }
     
@@ -35,6 +37,7 @@ namespace locust
     
     bool HFSSResponseFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
+
         return true;
     }
     
@@ -109,28 +112,34 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
-	if(GeneratedTF){ 
-		//if TF generated based on config file (frequency ranges from 0.9 - 1.1 times the center given in .json config file), calculate the TF bin width given number of bins (also set in .json config file)).
+        // this length is somewhat arbitrary, but works for now
+        // future improvement: make it adjust depending on length of FIR
+        fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
+
+	if(GeneratedTF)
+    { 
+		// If TF generated based on config file (frequency ranges from 0.9 - 1.1 times the center given in .json config file), calculate the TF bin width given number of bins (also set in .json config file)).
 		double AnalyticTFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins);
-		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,AnalyticTFBinWidth);//Uses binwidth as calculated in the previous line based on internally generated TF
+		fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,AnalyticTFBinWidth, fWindowName, fWindowParam);//Uses binwidth as calculated in the previous line based on internally generated TF
 	}
-	else{ 
-		//if TF read from externally generated TF file, use TF bin width as given in .json config file
-		fComplexFFT.SetupIFFT(fTFNBins,fInitialTFIndex,fTFBinWidth); //Uses degenerately defined fTFNBins AND fTFBinWidth if using external TF function.
+	else
+    { 
+		// If TF read from externally generated TF file, use TF bin width as given in .json config file
+		fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam); 
 	}
-	fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
-        fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
-        fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
-	fResolution=fComplexFFT.GetTimeResolution();
-	FILE * fFIRout = fopen("FIR.txt", "w");
-	fprintf(fFIRout,"#FIR for cavity simulation (index,coefficient)\n");
-        for (int i = 0; i < fFIRNBins; ++i){
-            fFilter.push_back(fFIRComplex[i][0]);
-	    fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
-        }
-	fclose(fFIRout);
-        LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
-        return true;
+
+    fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
+    fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex);
+    fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
+    fResolution=fComplexFFT.GetTimeResolution();
+
+    for (int i = 0; i < fFIRNBins; ++i)
+    {
+        fFilter.push_back(fFIRComplex[i][0]);
+    }
+
+    LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
+    return true;
     }
     
     bool TFFileHandlerCore::ReadHFSSFile()

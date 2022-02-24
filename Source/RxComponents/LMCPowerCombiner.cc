@@ -32,7 +32,6 @@ namespace locust
 			fRollingAvg( 0. ),
 			fCounter( 0 ),
 			fVoltagePhase( 0. )
-
     {}
     PowerCombiner::~PowerCombiner() {}
 

@@ -42,7 +42,9 @@ namespace locust
         bool fHFSSFiletype;
         ComplexFFT fComplexFFT;
         bool fIsFIRCreated;
-        
+        std::string fWindowName;
+        double fWindowParam;
+
         //Member functions
         bool ends_with(const std::string &, const std::string &);
     };
@@ -85,7 +87,7 @@ namespace locust
     protected:
         //Member variables
         double fInitialTFIndex;
-	double fTFBinWidth;
+        double fTFBinWidth;
     };
     
     /*!
