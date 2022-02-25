@@ -35,6 +35,7 @@ namespace locust
 		fSkippedSamples( false ),
 		fBypassTF( false ),
 		fNormCheck( false ),
+		fModeMaps( false ),
 		fTE( true ),
 		fInterface( new KassLocustInterface() )
     {
@@ -400,6 +401,10 @@ namespace locust
         {
         	fTE = aParam["te-modes"]().as_bool();
         }
+        if( aParam.has( "mode-maps" ) )
+        {
+        	fModeMaps = aParam["mode-maps"]().as_bool();
+        }
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
@@ -452,7 +457,7 @@ namespace locust
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
         CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.
-//        PrintModeMaps();  // Write to text files for plotting mode maps.
+        if (fModeMaps) PrintModeMaps();  // Write to text files for plotting mode maps.
 
         return true;
     }

@@ -92,6 +92,7 @@ namespace locust
             double fphiLO; // voltage phase of LO in radians;
             bool fBypassTF;
             bool fNormCheck;
+            bool fModeMaps;
             bool fTE; // (if false, use TM modes.)
 
 
