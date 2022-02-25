@@ -699,14 +699,7 @@ namespace locust
     					if (!fE_Gun)
     					{
     						unitConversion = 1.;  // mks units in Collin amplitudes.
-    						if (fTE)
-    						{
-    							tE_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
-    						}
-    						else
-    						{
-    							tE_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
-    						}
+    						tE_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
     						dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tE_normalized);  // unit velocity \dot unit theta
     					}
     					else
