@@ -493,26 +493,6 @@ namespace locust
     }
 
 
-    double CavitySignalGenerator::GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex)
-    {
-    	// Placeholder function.
-
-    	/*
-    	double fcyc = tKassParticleXP[7];
-
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2], fcyc);
-    	double thetaProbe = tKassParticleXP[1] + fPowerCombiner->GetCavityProbeTheta()[channelIndex];
-    	double zProbe = fPowerCombiner->GetCavityProbeZ()[channelIndex];
-    	std::vector<double> tTE_H_probe = fInterface->fField->TE_H(0,1,1,fInterface->fR,thetaProbe,zProbe, fcyc);
-        double modeScalingFactor = tTE_H_probe.back() / tTE_E_electron.back();
-        //        	printf("modeScalingFactor is %g / %g = %g\n", tTE_H_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
-
-    	return modeScalingFactor;
-    	*/
-    	return 1.;
-    }
-
-
 
     double CavitySignalGenerator::GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
     {
