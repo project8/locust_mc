@@ -132,6 +132,7 @@ namespace locust
 //    		Z_TM *= fcyc * LMCConst::MuNull() / (k0*k0 - k*k);  // neglect Q term.
     		Z_TM *= fcyc * LMCConst::MuNull() * sqrt( real*real + imag*imag ); // mag
     	}
+
     	return Z_TM;
     }
 
@@ -170,9 +171,9 @@ namespace locust
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	TE_H.push_back(-k3/k1 * jPrime * cos(l*theta) * cos(k3*z));
-    	TE_H.push_back(-l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
     	TE_H.push_back(boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
-        return TE_H;
+    	TE_H.push_back(-l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
+        return TE_H; // r, z, theta
     }
 
     std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
@@ -189,9 +190,9 @@ namespace locust
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	TM_E.push_back(-k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z));
-    	TM_E.push_back(-l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
     	TM_E.push_back(eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
-        return TM_E;
+    	TM_E.push_back(-l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
+        return TM_E; // r, z, theta
     }
 
     std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
