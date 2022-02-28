@@ -94,6 +94,7 @@ namespace locust
             bool fNormCheck;
             bool fModeMaps;
             bool fTE; // (if false, use TM modes.)
+            bool fIntermediateFile;
 
 
 

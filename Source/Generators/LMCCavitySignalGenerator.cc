@@ -37,6 +37,7 @@ namespace locust
 		fNormCheck( false ),
 		fModeMaps( false ),
 		fTE( true ),
+		fIntermediateFile( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -405,6 +406,10 @@ namespace locust
         {
         	fModeMaps = aParam["mode-maps"]().as_bool();
         }
+        if( aParam.has( "intermediate-file" ) )
+        {
+        	fIntermediateFile = aParam["intermediate-file"]().as_bool();
+        }
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
@@ -504,9 +509,9 @@ namespace locust
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
     	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
 
-    	/*
+
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-    	if (0==0)
+    	if (fIntermediateFile)
     	{
         	char buffer[60];
     		int a = sprintf(buffer, "output/dotProducts.txt");
@@ -518,7 +523,6 @@ namespace locust
     		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
     			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
     	}
-    	 */
 
     	return unitJdotE;
     }
@@ -544,9 +548,9 @@ namespace locust
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
     	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
 
-    	/*
+
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-    	if (0==0)
+    	if (fIntermediateFile)
     	{
         	char buffer[60];
     		int a = sprintf(buffer, "output/dotProducts.txt");
@@ -558,8 +562,6 @@ namespace locust
     		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
     			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
     	}
-    	*/
-
 
     	return unitJdotE;
     }
