@@ -340,23 +340,22 @@ namespace locust
 
         if( aParam.has( "e-gun" ) )
         {
-
         	fE_Gun = aParam["e-gun"]().as_bool();
-
-            if (fE_Gun)
-            {
-            	fInterface->fField = new RectangularWaveguide;
-            }
-            else
-            {
-            	fInterface->fField = new CylindricalCavity;
-            }
-
         }
 
-        if( aParam.has( "central-frequency" ) )
+        if (fE_Gun)
         {
-            fInterface->fField->SetCentralFrequency(2.*LMCConst::Pi()*aParam["central-frequency"]().as_double());
+            fInterface->fField = new RectangularWaveguide;
+        }
+        else
+        {
+            fInterface->fField = new CylindricalCavity;
+        }
+
+        if (!fInterface->fField->Configure(aParam))
+        {
+        	LERROR(lmclog,"Error configuring LMCField.");
+        	exit(-1);
         }
 
         if( aParam.has( "cavity-radius" ) )

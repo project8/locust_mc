@@ -10,6 +10,7 @@
 
 #include "param.hh"
 #include "logger.hh"
+#include "LMCConst.hh"
 
 #include <vector>
 
