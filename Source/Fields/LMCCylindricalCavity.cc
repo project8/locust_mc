@@ -129,10 +129,12 @@ namespace locust
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	double jl_of_k1r_by_k1r = 1./2. * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double tEr = -1. * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	double tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+	//printf("\nInputs (l,m,n,r,theta,zKass,fcyc): (%d, %d, %d, %e, %e, %e, %e)\n", l, m, n, r, theta, zKass, fcyc);
+	//printf("Calculated: (x_lm, k1, k3, k, eta, jl, tEr, jPrime, tEthera): (%e, %e, %e, %e, %e, %e, %e, %e, %e)\n", x_lm, k1, k3, k, eta, jl_of_k1r_by_k1r, tEr, jPrime, tEtheta);
     	TE_E.push_back(tEr);
     	TE_E.push_back(tEtheta);
         return TE_E;
@@ -149,10 +151,11 @@ namespace locust
     	double k1 = x_lm / fInterface->fR;
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double jl_of_k1r_by_k1r = 1./2. * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	TE_H.push_back(-k3/k1 * jPrime * cos(l*theta) * cos(k3*z));
-    	TE_H.push_back(-l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
+	//printf("TE_H theta components: (l,k3,k1,jl_of_k1r_by_k1r): (%d, %e %e %e)\n", l,k3,k1,jl_of_k1r_by_k1r);
+    	TE_H.push_back(-1.*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
     	TE_H.push_back(boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
         return TE_H;
     }
@@ -168,10 +171,10 @@ namespace locust
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double jl_of_k1r_by_k1r = 1./2. * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	TM_E.push_back(-k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z));
-    	TM_E.push_back(-l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
+    	TM_E.push_back(-1.*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
     	TM_E.push_back(eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
         return TM_E;
     }
@@ -186,8 +189,8 @@ namespace locust
     	double k1 = x_lm / fInterface->fR;
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
-    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	double jl_of_k1r_by_k1r = 1./2. * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double tHr = -1. * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	double tHtheta = -k/k1 * jPrime * cos(l*theta) * sin(k3*z);
     	TM_H.push_back(tHr);

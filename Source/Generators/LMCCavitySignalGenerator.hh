@@ -90,6 +90,7 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
+	    unsigned fFieldBufferSize;
             bool fBypassTF;
             bool fNormCheck;
 
@@ -103,11 +104,35 @@ namespace locust
             double GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex);
             void InitializeBuffers(unsigned filterbuffersize);
             std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+	    std::vector<double> GetCavityNormalizedModeFieldM(int l, int m, int n, std::vector<double> tKassParticleXP);
             std::vector<double> GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
             double GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
             double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
 
+//-------------------- New Implementation from ArraySignalGenerator
+	    void InitializeFieldPoints();
+            void GetFieldSolution();
+	    void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
+	    void InitializeFieldBuffers(unsigned fieldbuffersize);
+	    void CleanupBuffers();
+            void PopBuffers(unsigned index);
+            void FillBuffers(double EFieldXValue, double EFieldYValue, double EFieldZValue, double BFieldXValue, double BFieldYValue, double BFieldZValue, unsigned index);
+
+
+	    std::vector<std::deque<double>> EFieldXBuffer;
+            std::vector<std::deque<double>> EFieldYBuffer;
+            std::vector<std::deque<double>> EFieldZBuffer;
+            std::vector<std::deque<double>> EAmplitudeBuffer;
+
+            std::vector<std::deque<double>> BFieldXBuffer;
+            std::vector<std::deque<double>> BFieldYBuffer;
+            std::vector<std::deque<double>> BFieldZBuffer;
+            std::vector<std::deque<double>> BAmplitudeBuffer;
+
+	    //KassCurrentTransmitter* fTransmitter;
+	    Transmitter* fTransmitter;
+//--------------------
 
             bool DoGenerate( Signal* aSignal );
             bool DoGenerateTime( Signal* aSignal );

@@ -13,6 +13,7 @@
 #include "param.hh"
 #include "LMCThreeVector.hh"
 #include "LMCKassLocustInterface.hh"
+#include "LMCLienardWiechert.hh"
 
 namespace locust
 {
@@ -43,9 +44,12 @@ namespace locust
         virtual bool IsKassiopeia();
 
         std::vector<double> ExtractParticleXP(double TOld);
-
+        void InitializeFieldPoint(LMCThreeVector fieldPoint);
+	std::vector<double> SolveCavityKassFields(LMCThreeVector& pointOfInterest, double& tReceiverTime, unsigned& tTotalElementIndex);
 
     private:
+
+	LienardWiechert fFieldSolver;
 
         double calcOrbitPhase(double vx, double vy);
         double calcTheta(double x, double y);

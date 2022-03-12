@@ -14,6 +14,11 @@
 #include <chrono>
 #include <thread>
 
+double maxPower11 = 0.;
+double maxPower01 = 0.;
+double maxPower12 = 0.;
+double maxPower02 = 0.;
+double zPos = 0.;
 
 namespace locust
 {
@@ -29,6 +34,9 @@ namespace locust
 		fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
+	EFieldXBuffer( 1 ),
+        EAmplitudeBuffer( 1 ),
+	fFieldBufferSize( 50 ),
 		fNPreEventSamples( 150000 ),
 		fThreadCheckTime(100),
 		fKassNeverStarted( false ),
@@ -70,8 +78,7 @@ namespace locust
             }
 
 //            printf("zero is %g and zero01 is %g\n\n", fInterface->fBesselNKPrimeZeros[n][k], fInterface->fBesselNKPrimeZeros[0][1]);
-        }
-
+	}
     }
 
 
@@ -215,7 +222,7 @@ namespace locust
 
     	for (int l=0; l<3; l++)
     		for (int m=1; m<3; m++)
-    			for (int n=0; n<3; n++)
+    			for (int n=1; n<2; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
     				double tNormalizationTE_E = fInterface->fField->GetNormFactorsTE()[l][m][n];
@@ -233,7 +240,8 @@ namespace locust
     						std::vector<double> tTE_E;
     						if (!fE_Gun)
     						{
-    							tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency());
+	//MOVED Z LOCATION TO 1!!!!!!!
+    							tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,zPos,fInterface->fField->GetCentralFrequency());
     							fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
     						}
     						else
@@ -347,6 +355,11 @@ namespace locust
             fInterface->fL = aParam["cavity-length"]().as_double();
         }
 
+        if( aParam.has( "buffer-size" ) )
+        {
+        	fFieldBufferSize = aParam["buffer-size"]().as_int();
+        }
+
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
@@ -451,6 +464,7 @@ namespace locust
         fRequiredSignalState = aDomain;
         if( fRequiredSignalState == Signal::kTime )
         {
+	    printf("\n\nGenerateTime Check\n\n");
             fDoGenerateFunc = &CavitySignalGenerator::DoGenerateTime;
         }
         else if( fRequiredSignalState == Signal::kFreq )
@@ -556,9 +570,7 @@ namespace locust
      	double tZ = tKassParticleXP[2];
      	double fcyc = tKassParticleXP[7];
      	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc);
-
  		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
-
  		auto it = tTE_E_electron.begin();
 
  		while (it != tTE_E_electron.end())
@@ -569,6 +581,7 @@ namespace locust
  		}
      	return tTE_E_electron;  // return normalized field.
      }
+
 
     double CavitySignalGenerator::GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> aLocalFIRfrequencyBuffer, std::vector<std::deque<double>> aLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter)
     {
@@ -616,6 +629,94 @@ namespace locust
 
     }
 
+    void CavitySignalGenerator::InitializeFieldPoints()
+    {
+	for (unsigned i=0; i<fInterface->fField->GetNPixels(); i++)
+        {
+                double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fR;
+                for (unsigned j=0; j<fInterface->fField->GetNPixels(); j++)
+                {
+                        double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
+			LMCThreeVector PixelPoint;
+			PixelPoint.SetX(r*cos(theta));
+			PixelPoint.SetY(r*sin(theta));
+//Changed Z to 1!!!!!
+			PixelPoint.SetZ(zPos);
+			fInterface->fTransmitter->InitializeFieldPoint(PixelPoint);
+		}
+	}
+    }
+
+    void CavitySignalGenerator::GetFieldSolution()
+    {
+    unsigned tTotalElementIndex = 0;
+	for (unsigned i=0; i<fInterface->fField->GetNPixels(); i++)
+        {
+                double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fR;
+                for (unsigned j=0; j<fInterface->fField->GetNPixels(); j++)
+                {
+                        double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
+                        LMCThreeVector PixelPoint;
+                        PixelPoint.SetX(r*cos(theta));
+                        PixelPoint.SetY(r*sin(theta));
+                        PixelPoint.SetZ(0.);
+			
+			std::vector<double> tFieldSolution;
+			if(fInterface->fTransmitter->IsKassiopeia())
+			{
+				tFieldSolution = fInterface->fTransmitter->SolveCavityKassFields(PixelPoint, fInterface->fTOld, tTotalElementIndex);
+				FillBuffers(tFieldSolution[0], tFieldSolution[1], tFieldSolution[2], tFieldSolution[3], tFieldSolution[4], tFieldSolution[5], tTotalElementIndex);
+				PopBuffers(tTotalElementIndex); 	
+			}
+
+		++tTotalElementIndex;
+                }
+        }
+    }
+
+
+    void CavitySignalGenerator::FillBuffers(double EFieldXValue, double EFieldYValue, double EFieldZValue, double BFieldXValue, double BFieldYValue, double BFieldZValue, unsigned index)
+    {
+    	EFieldXBuffer[index].push_back(EFieldXValue);
+	EFieldYBuffer[index].push_back(EFieldYValue);
+	EFieldZBuffer[index].push_back(EFieldZValue);
+        BFieldXBuffer[index].push_back(BFieldXValue);
+        BFieldYBuffer[index].push_back(BFieldYValue);
+        BFieldZBuffer[index].push_back(BFieldZValue);
+	double EAmplitude = sqrt(EFieldXValue*EFieldXValue + EFieldYValue*EFieldYValue + EFieldZValue*EFieldZValue);
+	EAmplitudeBuffer[index].push_back(EAmplitude);
+        double BAmplitude = sqrt(BFieldXValue*BFieldXValue + BFieldYValue*BFieldYValue + BFieldZValue*BFieldZValue);
+        BAmplitudeBuffer[index].push_back(BAmplitude);	
+    }
+
+    void CavitySignalGenerator::PopBuffers(unsigned index)
+    {
+	EFieldXBuffer[index].pop_front();
+        EFieldYBuffer[index].pop_front();
+        EFieldZBuffer[index].pop_front();
+        EAmplitudeBuffer[index].pop_front();
+
+        BFieldXBuffer[index].pop_front();
+        BFieldYBuffer[index].pop_front();
+        BFieldZBuffer[index].pop_front();
+        BAmplitudeBuffer[index].pop_front();
+    }
+
+    void CavitySignalGenerator::InitializeFieldBuffers(unsigned fieldbuffersize)
+    {
+    	FieldBuffer aFieldBuffer;
+	printf("FieldBuffer initialization: %d, %d\n", fInterface->fField->GetNPixels(), fieldbuffersize);
+    	EFieldXBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+        EFieldYBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+        EFieldZBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+        EAmplitudeBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+
+	BFieldXBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+        BFieldYBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+        BFieldZBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+        BAmplitudeBuffer = aFieldBuffer.InitializeBuffer(fInterface->fField->GetNPixels(), fInterface->fField->GetNPixels(), fieldbuffersize);
+    }
+
     double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
     {
     	// This function calculates the coefficients of the Poynting vector integral
@@ -630,39 +731,75 @@ namespace locust
     	return sqrt(areaIntegral/2.);  // areaIntegral/2. propagates power/2.
     }
 
-    double CavitySignalGenerator::ScaleAmplitude(int l, int m, int n, double fcyc)
+    double CavitySignalGenerator::ScaleAmplitude(int l, int m, int n, double fcyc )
     {
 	// This function calculates the expansion coefficient for the cavity mode for total normalization
 	// From Jackson (blue edition Eq 8.140)
 
-
+	printf("Entered ScaleAmplitude (l,m,n,fcyc): %d, %d, %d, %e\n", l, m, n, fcyc);
 	double Aplus = 0.;
 	double Aminus = 0.;
 
 	double Z_TE = fInterface->fField->Z_TE(l,m,n,fcyc);
 
-	for (unsigned int i=0; i<fInterface->fField->GetNPixels(); i++)
+	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
+
+	double normFactorE = fInterface->fField->GetNormFactorsTE()[l][m][n];
+
+	for (unsigned i=0; i<fInterface->fField->GetNPixels(); i++)
 	{
 		double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fR;
     		double x = (double)i/fInterface->fField->GetNPixels()*fInterface->fX - fInterface->fX/2.;
-		for (unsigned int j=0; j<fInterface->fField->GetNPixels(); j++)
+		for (unsigned j=0; j<fInterface->fField->GetNPixels(); j++)
     		{
 			double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
         		double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fY - fInterface->fY/2.;
 			if (!fE_Gun)
 			{
-				std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency());
-				std::vector<double> tTE_H = fInterface->fField->TE_H(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency());
-				double E_t_r = 1.0; //Placeholder
-				double E_t_theta = 1.0; //Placeholder
-                                double H_t_r = 1.0; //Placeholder
-                                double H_t_theta = 1.0; //Placeholder
-                                double H_t_z = 1.0; //Placeholder
+//				GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
+				std::vector<double> tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,zPos,fInterface->fField->GetCentralFrequency());
+				std::vector<double> tTE_H = fInterface->fField->TE_H(l,m,n,r,theta,zPos,fInterface->fField->GetCentralFrequency());
+				
+				auto itE = tTE_E.begin();
+				while (itE != tTE_E.end())
+				{
+					if (!isnan(*itE))
+						(*itE) *= normFactorE;
+					*itE++;
+				}
 
-				double E_dot_product = tTE_E.begin()*E_t_r + tTE_E.end()*E_t_theta;
-				double H_dot_product = tTE_H.begin()*H_t_r + tTE_H[1]*H_t_theta + tTE_H.end()*H_t_z;
+				 auto itH = tTE_H.begin();
+                                while (itH != tTE_H.end())
+                                {
+                                        if (!isnan(*itH))
+                                        
+                                                (*itH) *= normFactorE; //Use same scaling as E, which is needed for Z_TE comparison
+                                        *itH++;
+                                }
+				if((i==0) and (j==0)) printf("l,m,n and norm factor: (%d, %d, %d) %e\n", l, m, n, normFactorE);
+				unsigned PositionIndex = i*fInterface->fField->GetNPixels() + j;
+				
+				double Ex = EFieldXBuffer[PositionIndex].front();
+				double Ey = EFieldYBuffer[PositionIndex].front();				
+
+				double Bx = BFieldXBuffer[PositionIndex].front();
+                                double By = BFieldYBuffer[PositionIndex].front();
+				double Bz = BFieldZBuffer[PositionIndex].front();
+
+				double E_t_r = sqrt(Ex*Ex + Ey*Ey); 
+				double E_t_theta = atan(Ey / Ex); 
+                                double H_t_r = sqrt(Bx*Bx + By*By);
+                                double H_t_theta = atan(By / Bx);
+                                double H_t_z = Bz; 
+
+
+				//printf("\nE_dot_components (TE_r, E_t_r, TE_theta, E_t_theta): (%e, %e, %e, %e)\n", tTE_E[0], E_t_r, tTE_E[1], E_t_theta);
+				//printf("H_dot_components (TH_r, H_t_r, TH_theta, H_t_theta, TH_z, H_t_z): (%e, %e, %e, %e, %e, %e)\n",  tTE_H[0], H_t_r, tTE_H[1], H_t_theta, tTE_H[2], H_t_z);
+				double E_dot_product = tTE_E[0]*E_t_r + tTE_E[1]*E_t_theta;
+				double H_dot_product = tTE_H[0]*H_t_r + tTE_H[1]*H_t_theta + tTE_H[2]*H_t_z;
 				
 				double dA = r*(fInterface->fR/fInterface->fField->GetNPixels())*(2.*LMCConst::Pi()/fInterface->fField->GetNPixels());
+				//printf("A components (E_dot, H_dot, Z, dA): (%e, %e, %e, %e)\n", E_dot_product, H_dot_product, Z_TE, dA); 
 				Aplus += 0.5*(E_dot_product + Z_TE*Z_TE*H_dot_product)*dA;
 				Aminus +=  0.5*(E_dot_product - Z_TE*Z_TE*H_dot_product)*dA;
 			}
@@ -676,8 +813,8 @@ namespace locust
                                 double H_t_y = 1.0; //Placeholder
                                 double H_t_z = 1.0; //Placeholder	
 
-				double E_dot_product = tTE_E.begin()*E_t_x + tTE_E.end()*E_t_y;
-                                double H_dot_product = tTE_H.begin()*H_t_x + tTE_H[1]*H_t_y + tTE_H.end()*H_t_z;
+				double E_dot_product = tTE_E[0]*E_t_x + tTE_E[1]*E_t_y;
+                                double H_dot_product = tTE_H[0]*H_t_x + tTE_H[1]*H_t_y + tTE_H[2]*H_t_z;
 
 				double dA = (fInterface->fX /fInterface->fField->GetNPixels()) * (fInterface->fY /fInterface->fField->GetNPixels());
 				Aplus += 0.5*(E_dot_product + Z_TE*Z_TE*H_dot_product)*dA;
@@ -685,7 +822,21 @@ namespace locust
 			}
 		}
 	}
-	
+
+
+	if(true) 
+	{
+		printf("A+/-: %e, %e\n ", Aplus, Aminus);	
+		double fractionalPower = (Aplus+Aminus)*(Aplus+Aminus);
+		if((fractionalPower > maxPower01) and (l==0) and (m==1)) maxPower01 = fractionalPower;
+		if((fractionalPower > maxPower11) and (l==1) and (m==1)) maxPower11 = fractionalPower;
+                if((fractionalPower > maxPower02) and (l==0) and (m==2)) maxPower02 = fractionalPower;
+                if((fractionalPower > maxPower12) and (l==1) and (m==2)) maxPower12 = fractionalPower;
+		if((l==0) and (m==1)) printf("fractional power in mode (%d,%d,%d) is %e\n", l, m, n, maxPower01);
+                if((l==0) and (m==2)) printf("fractional power in mode (%d,%d,%d) is %e\n", l, m, n, maxPower02);
+                if((l==1) and (m==1)) printf("fractional power in mode (%d,%d,%d) is %e\n", l, m, n, maxPower11);
+                if((l==1) and (m==2)) printf("fractional power in mode (%d,%d,%d) is %e\n", l, m, n, maxPower12);
+	}
 	return 1.0;
     }
 
@@ -704,19 +855,28 @@ namespace locust
         double unitConversion = 1.;
         double tExcitationAmplitude = 0.;
 
-    	for (int l=0; l<fNModes; l++)
-    	{
-    		for (int m=1; m<fNModes; m++)
+	InitializeFieldPoints();
+	GetFieldSolution();
+
+	printf("\nAbout to start mode loop\n");
+
+    	//for (int l=0; l<fNModes; l++)
+    	for (int l=0; l<2; l++)
+	{
+    		for (int m=1; m<3; m++)
+		//for (int m=1; m<fNModes; m++)
     		{
-    			for (int n=0; n<fNModes; n++)
+			for (int n=1; n<2; n++)
+    			//for (int n=0; n<fNModes; n++)
     			{
-    				if (ModeSelect(l, m, n, fE_Gun))
+    				//if (ModeSelect(l, m, n, fE_Gun))
+				if(true)
     				{
     			    	std::vector<double> tTE_E_normalized;
     					if (!fE_Gun)
     					{
     						unitConversion = 1.;  // fix me.
-    						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
+   						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
     						dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
     					}
     					else
@@ -727,7 +887,7 @@ namespace locust
     						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
     					}
     					double modeAmplitude = tTE_E_normalized.back();  // normalized E_theta at electron
-    			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+    			    		double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
     					// fix-me:  We may need more precise nFilterBinsRequired.
     					std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
@@ -735,7 +895,10 @@ namespace locust
     					if (!fE_Gun)
     					{
     						// This is still a placeholder and is not yet correct:
-    						tExcitationAmplitude = modeAmplitude * ScaleAmplitude(l, m, n, tKassParticleXP[7]) *
+
+						
+						printf("\n\n\n Larmor Power: %e\n", tKassParticleXP[8]); 
+   						tExcitationAmplitude = modeAmplitude * ScaleAmplitude(l, m, n, tKassParticleXP[7]) *
     							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 
 								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
     					}
@@ -837,7 +1000,7 @@ namespace locust
 		fPowerCombiner->SetCavityProbeLocations(fNChannels, fInterface->fL);
         int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
         InitializeBuffers(nFilterBins);
-
+	InitializeFieldBuffers(fFieldBufferSize);
 
         if (fInterface->fTransmitter->IsKassiopeia())
         {
@@ -873,6 +1036,7 @@ namespace locust
 
                 if (fInterface->fEventInProgress)  // fEventInProgress
                 {
+		    printf("EventInProgress if conditional\n");
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                 	if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                 	{

@@ -126,5 +126,34 @@ namespace locust
     	return particleXP;
     }
 
+    void KassCurrentTransmitter::InitializeFieldPoint(LMCThreeVector fieldPoint)
+    {
+    	Transmitter::InitializeFieldPoint(fieldPoint);
+    	fFieldSolver.AddFieldPoint(fieldPoint);
+    }
+
+    std::vector<double> KassCurrentTransmitter::SolveCavityKassFields(LMCThreeVector& pointOfInterest, double& tReceiverTime, unsigned& tTotalElementIndex)
+    {
+
+	//Currently just solve for fields as if in free space without reflections or mode suppression. Need to update this at some point
+
+        fFieldSolver.SetFieldEvent(tReceiverTime, tTotalElementIndex);
+        fFieldSolver.SolveFieldSolutions();
+
+        LMCThreeVector tRadiatedElectricField = fFieldSolver.GetElectricField();
+        LMCThreeVector tRadiatedMagneticField = fFieldSolver.GetMagneticField();
+
+
+        std::vector<double> tSolution;
+        tSolution.resize(6);
+        tSolution[0] = tRadiatedElectricField.GetX();
+        tSolution[1] = tRadiatedElectricField.GetY();
+	tSolution[2] = tRadiatedElectricField.GetZ();
+	tSolution[3] = tRadiatedMagneticField.GetX();
+        tSolution[4] = tRadiatedMagneticField.GetY();
+        tSolution[5] = tRadiatedMagneticField.GetZ();
+	return tSolution;
+
+    }
 
 } /* namespace locust */
