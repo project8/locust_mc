@@ -124,9 +124,9 @@ namespace locust
     	double C = k0*k0;
     	double Q = 1.;  // Q for suppressed modes.
     	if ((l==0)&&(m==1)&&(n==1)) Q = 1000.; // Q for lmn = 011.
-    	double denom = (Q*B + Q*C + C) * (Q*B+ Q*C + C) + C*C;
-    	double real = (Q*A * (Q*B + Q*C + C)) / denom;
-    	double imag = Q*A*C / denom;
+    	double denom = (Q*B - Q*C - C) * (Q*B - Q*C - C) + C*C;
+    	double real = (Q*A * (Q*B - Q*C - C)) / denom;
+    	double imag = -Q*A*C / denom;
 
     	if ( k*k-k0*k0 != 0. )
     	{
