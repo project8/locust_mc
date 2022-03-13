@@ -42,22 +42,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = TE_E(l, m, n, r, theta, zKass, GetCentralFrequency());
+    	    		    	aField = TE_E(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
     	    			}
     	    			else
     	    			{
-    	    				aField = TE_H(l, m, n, r, theta, zKass, GetCentralFrequency());
+    	    				aField = TE_H(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = TM_E(l, m, n, r, theta, zKass, GetCentralFrequency());
+    	    				aField = TM_E(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
     	    			}
     	    			else
     	    			{
-    	    				aField = TM_H(l, m, n, r, theta, zKass, GetCentralFrequency());
+    	    				aField = TM_H(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
     	    			}
     	    		}
 
@@ -138,7 +138,7 @@ namespace locust
     	return Z_TM;
     }
 
-    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
+    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -151,15 +151,25 @@ namespace locust
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	double tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	TE_E.push_back(tEr);
+    	double tEtheta = 0.;
+
+    	if ((!avgOverTheta)||(l==0))
+    	{
+    		tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+    	}
+    	else
+    	{
+    		tEtheta = -k/k1 * eta * jPrime * (2./LMCConst::Pi()) * sin(k3*z);
+    	}
+
     	TE_E.push_back(tEtheta);
         return TE_E;
     }
 
-    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
+    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -172,13 +182,26 @@ namespace locust
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	TE_H.push_back(-k3/k1 * jPrime * cos(l*theta) * cos(k3*z));
-    	TE_H.push_back(boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
-    	TE_H.push_back(-l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
-        return TE_H; // r, z, theta
+    	double tHr = -k3/k1 * jPrime * cos(l*theta) * cos(k3*z);
+    	double tHz = boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z);
+    	TE_H.push_back(tHr);  // r
+    	TE_H.push_back(tHz);  // z
+    	double tHtheta = 0.;
+
+    	if ((!avgOverTheta)||(l==0))
+    	{
+    		tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
+    	}
+    	else
+    	{
+    		tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * cos(k3*z);
+    	}
+
+    	TE_H.push_back(tHtheta); // theta
+    	return TE_H; // r, z, theta
     }
 
-    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
+    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
     {
     	double z = zKass + fInterface->fL/2.;
 
@@ -191,13 +214,26 @@ namespace locust
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	TM_E.push_back(-k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z));
-    	TM_E.push_back(eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z));
-    	TM_E.push_back(-l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z));
-        return TM_E; // r, z, theta
+    	double tEr = -k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z);
+    	double tEz = eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z);
+    	TM_E.push_back(tEr); // r
+    	TM_E.push_back(tEz);  // z
+    	double tEtheta = 0.;
+
+    	if ((!avgOverTheta)||(l==0))
+    	{
+    		tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
+    	}
+    	else
+    	{
+    		tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * cos(k3*z);
+    	}
+
+    	TM_E.push_back(tEtheta);  // theta
+    	return TM_E; // r, z, theta
     }
 
-    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, double fcyc) const
+    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
     {
     	double z = zKass + fInterface->fL/2.;
 
@@ -208,11 +244,21 @@ namespace locust
     	double k3 = n * LMCConst::Pi() / fInterface->fL;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
-    	double tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
-    	double tHtheta = -k/k1 * jPrime * cos(l*theta) * sin(k3*z);
-    	TM_H.push_back(tHr);
-    	TM_H.push_back(tHtheta);
+    	double tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	TM_H.push_back(tHr);  // r
+    	double tHtheta = 0.;
+
+    	if ((!avgOverTheta)||(l==0))
+    	{
+    		tHtheta = -k/k1 * jPrime * cos(l*theta) * sin(k3*z);
+    	}
+    	else
+    	{
+    		tHtheta = -k/k1 * jPrime * (2./LMCConst::Pi()) * sin(k3*z);
+    	}
+
+    	TM_H.push_back(tHtheta); // theta
         return TM_H;
     }
 
