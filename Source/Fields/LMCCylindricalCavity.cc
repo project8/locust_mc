@@ -185,7 +185,6 @@ namespace locust
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	double tHz = boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z);
-    	TE_H.push_back(tHz);  // z
     	double tHr = 0.;
     	double tHtheta = 0.;
 
@@ -201,6 +200,7 @@ namespace locust
     	}
 
     	TE_H.push_back(tHr);  // r
+    	TE_H.push_back(tHz);  // z
     	TE_H.push_back(tHtheta); // theta
     	return TE_H; // r, z, theta
     }
@@ -219,7 +219,6 @@ namespace locust
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
     	double tEz = eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z);
-    	TM_E.push_back(tEz);  // z
     	double tEr = 0.;
     	double tEtheta = 0.;
 
@@ -235,6 +234,7 @@ namespace locust
     	}
 
     	TM_E.push_back(tEr); // r
+    	TM_E.push_back(tEz);  // z
     	TM_E.push_back(tEtheta);  // theta
     	return TM_E; // r, z, theta
     }
