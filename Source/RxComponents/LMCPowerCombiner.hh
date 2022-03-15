@@ -36,12 +36,12 @@ namespace locust
             int GetNElementsPerStrip();
             void SetNElementsPerStrip( int aNumberOfElements );
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool SetVoltageDampingFactors() {};
-        	virtual bool SetSMatrixParameters() {};
+        	virtual bool SetVoltageDampingFactors() {return true;};
+        	virtual bool SetSMatrixParameters() {return true;};
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
-        	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-        	bool AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex);
+        	bool AddOneVoltageToStripSum(Signal* aSignal, double excitationAmplitude, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex);
         	virtual void SayHello();
         	virtual void Initialize() {};
 
@@ -65,9 +65,11 @@ namespace locust
             void SetCavityProbeTheta ( std::vector<double> aVector );
             int GetNCavityProbes();
             void SetNCavityProbes( int aNumberOfProbes );
+            void SetNCavityModes( int aNumberOfModes );
             double GetCavityProbeInductance();
             void SetCavityProbeInductance( double anInductance );
             bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
+        	bool AddOneSampleToRollingAvg(int l, int m, int n, double VoltageFIRSample, double totalScalingFactor, unsigned sampleIndex);
 
 
         private:
@@ -80,9 +82,14 @@ namespace locust
             double fjunctionResistance;
             bool fvoltageCheck;
             int fnCavityProbes;
+            int fNCavityModes;
             double fCavityProbeInductance;
             std::vector<double> fCavityProbeZ;
             std::vector<double> fCavityProbeTheta;
+            std::vector<std::vector<std::vector<double>>> fRollingAvg;
+            std::vector<std::vector<std::vector<int>>> fCounter;
+            double fVoltagePhase;
+
 
 };
 

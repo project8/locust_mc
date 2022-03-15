@@ -1,8 +1,13 @@
-<!-- bathtub coils -->
+<!-- parameters -->
+
+<external_define name="fieldX" value="0.0"/>
+<external_define name="fieldY" value="0.0"/>
 <external_define name="fieldZ" value="0.962640"/>
 <external_define name="current" value="1.000000"/>
 <external_define name="coil_length" value="0.001"/>
 <external_define name="radial_width" value="0.001"/>
+
+<geometry>
 
 <tag name="magnet_tag" name="coil_tag_000">
   <cylinder_tube_space
@@ -145,3 +150,48 @@
 <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/coil_003/#"/>
 <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/coil_004/#"/>
 <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/coil_005/#"/>
+
+</geometry>
+
+<kemfield>
+
+    <!-- fields -->
+
+
+    <electromagnet_field
+        name="trap_field"
+        file="Project8Magnets.kbd"
+        system="world/project8"
+        spaces="world/project8/@magnet_tag"
+    >
+        <zonal_harmonic_field_solver
+            number_of_bifurcations="-1"
+            convergence_ratio=".99"
+            convergence_parameter="1.e-15"
+            proximity_to_sourcepoint="1.e-12"
+            number_of_central_coefficients="500"
+            use_fractional_central_sourcepoint_spacing="true"
+            central_sourcepoint_fractional_distance="1e-2"
+            central_sourcepoint_spacing="2.e-5"
+            number_of_remote_coefficients="200"
+            remote_sourcepoint_start="-1.e-1"
+            remote_sourcepoint_end="1.e-1"
+        />
+    </electromagnet_field>
+
+    <constant_magnetic_field
+        name="background_field"
+        field="[fieldX] [fieldY] [fieldZ]"
+            />
+
+    <magnetic_superposition_field
+        name="total_magnetic_field"
+        use_caching="false"
+            >
+        <add_field name="background_field" enhancement="1.0" />
+        <add_field name="trap_field" enhancement="1.0" />
+    </magnetic_superposition_field>
+
+</kemfield>
+
+

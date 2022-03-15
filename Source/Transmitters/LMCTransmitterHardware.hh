@@ -52,12 +52,12 @@ namespace locust
 	    double GetPropagationDistance(LMCThreeVector pointOfInterest);
             
 	    // Factor that describes the radiaiton pattern and depoends on the type of antenna 
-            virtual double GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber) {};
+            virtual double GetPatternFactor(LMCThreeVector pointOfInterest, int antennaNumber) {return 0.;};
 
 	    // vector pointing from antenna to requested point of interest
             LMCThreeVector ExtractIncidentKVector(LMCThreeVector pointOfInterest);
 
-            virtual double GetDrivePhaseDifference() {};
+            virtual double GetDrivePhaseDifference() {return 0.;};
 
         protected:
 

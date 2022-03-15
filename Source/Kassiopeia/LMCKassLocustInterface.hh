@@ -60,13 +60,14 @@ namespace locust
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
 
-        // Cavity variables:
+        // Cavity and e-gun variables:
         TFReceiverHandler fTFReceiverHandler;
         Transmitter* fTransmitter;
         std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
-        double fR;
+        double fR;  // Cylindrical cavity dimenions.
         double fL;
-        int fnPixels;
+        double fX;  // Rectangular waveguide dimensions.
+        double fY;
         int nFilterBinsRequired;
         double dtFilter;
         std::vector<std::deque<double>> eCurrentBuffer;

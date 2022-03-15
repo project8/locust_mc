@@ -142,10 +142,10 @@ namespace locust
     double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
 
-    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,aFinalParticle); // lmn 011 for now.
-    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle, tTE_E_normalized);  // unit velocity \dot unit theta
+//    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,aFinalParticle); // lmn 011 for now.
+//    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle, tTE_E_normalized);  // unit velocity \dot unit theta
 //    	fInterface->dotProductFactor = 0.5;  // TO-DO:  Check dotProductFactor - should it be an instantaneous dot product?
-    	fInterface->modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
+//    	fInterface->modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
 
     	fInterface->CavityFIRSample = GetCavityFIRSample(aFinalParticle, fInterface->nFilterBinsRequired, fInterface->dtFilter);
 
@@ -176,7 +176,7 @@ namespace locust
 			orbitPhase += (*it)*dtFilter;
 			if (*it != 0.)
 			{
-				fInterface->ElementFIRBuffer[0].push_back(LMCConst::Q()*vMag*cos(orbitPhase));
+				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
 			}
 			else
 			{
@@ -192,6 +192,7 @@ namespace locust
 		fInterface->ElementFIRBufferCopy[0] = fInterface->ElementFIRBuffer[0];
 		fInterface->FIRfrequencyBufferCopy[0] = fInterface->FIRfrequencyBuffer[0];
 
+		convolution *= LMCConst::Q()*vMag;
 		return convolution;
 
     }
@@ -262,7 +263,8 @@ namespace locust
     	double tY = aFinalParticle.GetPosition().Y();
     	double tZ = aFinalParticle.GetPosition().Z();
     	double tR = sqrt(tX*tX + tY*tY);
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ);
+    	double fcyc = aFinalParticle.GetCyclotronFrequency();  // TO_DO Is this in radians or Hz?
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc);
 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
 
 		auto it = tTE_E_electron.begin();
