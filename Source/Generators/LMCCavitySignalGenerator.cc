@@ -346,11 +346,20 @@ namespace locust
         if (fE_Gun)
         {
             fInterface->fField = new RectangularWaveguide;
+    		fPowerCombiner = new WaveguideModes;
         }
         else
         {
             fInterface->fField = new CylindricalCavity;
+    		fPowerCombiner = new CavityModes;
         }
+
+		if(!fPowerCombiner->Configure(aParam))
+		{
+			LERROR(lmclog,"Error configuring PowerCombiner.");
+			exit(-1);
+		}
+
 
         if (!fInterface->fField->Configure(aParam))
         {
@@ -413,16 +422,6 @@ namespace locust
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
-
-
-		fPowerCombiner = new CavityModes;
-		fPowerCombiner->SetNCavityModes(fNModes);
-		if(!fPowerCombiner->Configure(aParam))
-		{
-			LERROR(lmclog,"Error configuring CavityModes:PowerCombiner.");
-			exit(-1);
-		}
-
 
         if( aParam.has( "transmitter" ))
         {
@@ -761,7 +760,7 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tDopplerFrequency, dt, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tDopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
@@ -831,7 +830,6 @@ namespace locust
 
 
         int PreEventCounter = 0;
-		fPowerCombiner->SetCavityProbeLocations(fNChannels, fInterface->fL);
         int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
         InitializeBuffers(nFilterBins);
 

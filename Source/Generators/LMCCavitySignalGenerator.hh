@@ -12,6 +12,7 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include "LMCGenerator.hh"
 #include "LMCCavityModes.hh" // : LMCPowerCombiner
+#include "LMCWaveguideModes.hh" // : LMCPowerCombiner
 #include "LMCEquivalentCircuit.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
