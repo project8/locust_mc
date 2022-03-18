@@ -60,6 +60,9 @@ namespace locust
             double GetDampingFactor( int z_index );
             void SetDampingFactor (int z_index, double aDampingFactor );
             bool GetVoltageCheck();
+            void SetNCavityModes( int aNumberOfModes );
+            int GetNCavityModes();
+
 
 
         private:
@@ -71,6 +74,7 @@ namespace locust
             double fendPatchLoss;
             double fjunctionResistance;
             bool fvoltageCheck;
+            int fNCavityModes;
 
 
 };

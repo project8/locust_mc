@@ -354,12 +354,17 @@ namespace locust
     		fPowerCombiner = new CavityModes;
         }
 
-		if(!fPowerCombiner->Configure(aParam))
+        if( aParam.has( "n-modes" ) )
+        {
+            fNModes = aParam["n-modes"]().as_int();
+        }
+
+		fPowerCombiner->SetNCavityModes(fNModes);
+        if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
 			exit(-1);
 		}
-
 
         if (!fInterface->fField->Configure(aParam))
         {
@@ -380,11 +385,6 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
-        }
-
-        if( aParam.has( "n-modes" ) )
-        {
-            fNModes = aParam["n-modes"]().as_int();
         }
 
         if( aParam.has( "event-spacing-samples" ) )

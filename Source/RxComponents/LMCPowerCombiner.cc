@@ -23,7 +23,8 @@ namespace locust
             famplifierLoss( 0.66 ),
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
-			fvoltageCheck( false )
+			fvoltageCheck( false ),
+			fNCavityModes( 0 )
     {}
     PowerCombiner::~PowerCombiner() {}
 
@@ -149,6 +150,15 @@ namespace locust
     {
     	return fvoltageCheck;
     }
+    int PowerCombiner::GetNCavityModes()
+    {
+        return fNCavityModes;
+    }
+    void PowerCombiner::SetNCavityModes( int aNumberOfModes )
+    {
+     	fNCavityModes = aNumberOfModes;
+    }
+
 
 
 } /* namespace locust */

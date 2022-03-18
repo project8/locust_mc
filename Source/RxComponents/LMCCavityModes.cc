@@ -15,8 +15,7 @@ namespace locust
 	LOGGER( lmclog, "CavityModes" );
 
     CavityModes::CavityModes():
-		fnCavityProbes( 0 ),
-		fNCavityModes( 0 ),
+		fNCavityProbes( 0 ),
 		fCavityProbeInductance( 1.0 ),
 		fCavityProbeZ( 0. ),
 		fCavityProbeTheta( 0. )
@@ -42,22 +41,16 @@ namespace locust
     		SetCavityProbeInductance(aParam["cavity-probe-inductance"]().as_double());
     	}
 
-        if( aParam.has( "n-modes" ) )
+        fRollingAvg.resize(GetNCavityModes());
+        fCounter.resize(GetNCavityModes());
+        for (int i = 0; i < GetNCavityModes(); i++)
         {
-            fNCavityModes = aParam["n-modes"]().as_int();
-        }
-
-
-        fRollingAvg.resize(fNCavityModes);
-        fCounter.resize(fNCavityModes);
-        for (int i = 0; i < fNCavityModes; i++)
-        {
-            fRollingAvg[i].resize(fNCavityModes);
-            fCounter[i].resize(fNCavityModes);
-            for (int j = 0; j < fNCavityModes; j++)
+            fRollingAvg[i].resize(GetNCavityModes());
+            fCounter[i].resize(GetNCavityModes());
+            for (int j = 0; j < GetNCavityModes(); j++)
             {
-            	fRollingAvg[i][j].resize(fNCavityModes);
-            	fCounter[i][j].resize(fNCavityModes);
+            	fRollingAvg[i][j].resize(GetNCavityModes());
+            	fCounter[i][j].resize(GetNCavityModes());
             }
         }
 
@@ -66,12 +59,12 @@ namespace locust
 
     int CavityModes::GetNCavityProbes()
     {
-        return fnCavityProbes;
+        return fNCavityProbes;
     }
 
     void CavityModes::SetNCavityProbes( int aNumberOfProbes )
     {
-     	fnCavityProbes = aNumberOfProbes;
+     	fNCavityProbes = aNumberOfProbes;
     }
 
 	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
@@ -91,6 +84,7 @@ namespace locust
 
 	bool CavityModes::AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
 	{
+
     	char buffer[60];
 		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, with optional resonance if !fBypassTF.
 
@@ -107,14 +101,14 @@ namespace locust
 			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
 
 
-			if ((l==fNCavityModes-1)&&(m==fNCavityModes-1)&&(n==fNCavityModes-1))
+			if ((l==GetNCavityModes()-1)&&(m==GetNCavityModes()-1)&&(n==GetNCavityModes()-1))
 			{
 				double totalEnergy = 0.;
-				for (int iL=0; iL<fNCavityModes; iL++)
+				for (int iL=0; iL<GetNCavityModes(); iL++)
 				{
-					for (int iM=0; iM<fNCavityModes; iM++)
+					for (int iM=0; iM<GetNCavityModes(); iM++)
 					{
-						for (int iN=0; iN<fNCavityModes; iN++)
+						for (int iN=0; iN<GetNCavityModes(); iN++)
 						{
 							if (!isnan(fRollingAvg[iL][iM][iN]))
 							{

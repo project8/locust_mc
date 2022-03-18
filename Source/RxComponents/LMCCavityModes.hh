@@ -1,7 +1,7 @@
 /*
  * LMCCavityModes.hh
  *
- *  Created on: Feb 28, 2020
+ *  Created on: Mar. 18, 2022
  *      Author: pslocum
  */
 
@@ -40,15 +40,13 @@ namespace locust
             void SetCavityProbeTheta ( std::vector<double> aVector );
             int GetNCavityProbes();
             void SetNCavityProbes( int aNumberOfProbes );
-            void SetNCavityModes( int aNumberOfModes );
             double GetCavityProbeInductance();
             void SetCavityProbeInductance( double anInductance );
             bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
 
 
         private:
-            int fnCavityProbes;
-            int fNCavityModes;
+            int fNCavityProbes;
             double fCavityProbeInductance;
             std::vector<double> fCavityProbeZ;
             std::vector<double> fCavityProbeTheta;
