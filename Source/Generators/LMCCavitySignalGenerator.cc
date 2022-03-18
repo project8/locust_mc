@@ -248,11 +248,11 @@ namespace locust
     						{
     							if (fTE)
     							{
-    								tE = fInterface->fField->TE_E(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency(),0);
+    								tE = fInterface->fField->TE_E(l,m,n,r,theta,0.0,0);
     							}
     							else
     							{
-    								tE = fInterface->fField->TM_E(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency(),0);
+    								tE = fInterface->fField->TM_E(l,m,n,r,theta,0.0,0);
     							}
     							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
     						}
@@ -588,18 +588,17 @@ namespace locust
      {
      	double tR = tKassParticleXP[0];
      	double tZ = tKassParticleXP[2];
-     	double fcyc = tKassParticleXP[7];
      	std::vector<double> tE_electron;
      	double normFactor = 0.;
 
      	if (fTE)
      	{
-     		tE_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc,1);
+     		tE_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ,1);
      		normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
      	}
      	else
      	{
-     		tE_electron = fInterface->fField->TM_E(l,m,n,tR,0.,tZ, fcyc,1);
+     		tE_electron = fInterface->fField->TM_E(l,m,n,tR,0.,tZ,1);
      		normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
      	}
 

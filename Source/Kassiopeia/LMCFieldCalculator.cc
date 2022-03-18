@@ -264,7 +264,7 @@ namespace locust
     	double tZ = aFinalParticle.GetPosition().Z();
     	double tR = sqrt(tX*tX + tY*tY);
     	double fcyc = aFinalParticle.GetCyclotronFrequency();  // radians
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc,1);
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ,1);
 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
 
 		auto it = tTE_E_electron.begin();

@@ -42,22 +42,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = TE_E(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
+    	    		    	aField = TE_E(l, m, n, r, theta, zKass,1);
     	    			}
     	    			else
     	    			{
-    	    				aField = TE_H(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
+    	    				aField = TE_H(l, m, n, r, theta, zKass,1);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = TM_E(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
+    	    				aField = TM_E(l, m, n, r, theta, zKass,1);
     	    			}
     	    			else
     	    			{
-    	    				aField = TM_H(l, m, n, r, theta, zKass, GetCentralFrequency(),1);
+    	    				aField = TM_H(l, m, n, r, theta, zKass,1);
     	    			}
     	    		}
 
@@ -138,7 +138,7 @@ namespace locust
     	return Z_TM;
     }
 
-    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
+    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -171,7 +171,7 @@ namespace locust
         return TE_E;
     }
 
-    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
+    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
 
     	double z = zKass + fInterface->fL/2.;
@@ -205,7 +205,7 @@ namespace locust
     	return TE_H; // r, z, theta
     }
 
-    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
+    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
     	double z = zKass + fInterface->fL/2.;
 
@@ -239,7 +239,7 @@ namespace locust
     	return TM_E; // r, z, theta
     }
 
-    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, double fcyc, bool avgOverTheta) const
+    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
     	double z = zKass + fInterface->fL/2.;
 
