@@ -35,7 +35,7 @@ namespace locust
     	return true;
     }
 
-	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
+	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
 	{
 
 		fVoltagePhase += dopplerFrequency * dt;

@@ -32,24 +32,14 @@ namespace locust
             CavityModes();
             virtual ~CavityModes();
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex);
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double BFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex);
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
-            std::vector<double> GetCavityProbeZ();
-            void SetCavityProbeZ ( std::vector<double> aVector );
-            std::vector<double> GetCavityProbeTheta();
-            void SetCavityProbeTheta ( std::vector<double> aVector );
-            int GetNCavityProbes();
-            void SetNCavityProbes( int aNumberOfProbes );
-            double GetCavityProbeInductance();
-            void SetCavityProbeInductance( double anInductance );
-            bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
+            double GetCavityProbeGain();
+            void SetCavityProbeGain( double aGain );
 
 
         private:
-            int fNCavityProbes;
-            double fCavityProbeInductance;
-            std::vector<double> fCavityProbeZ;
-            std::vector<double> fCavityProbeTheta;
+            double fProbeGain;
             std::vector<std::vector<std::vector<double>>> fRollingAvg;
             std::vector<std::vector<std::vector<int>>> fCounter;
 

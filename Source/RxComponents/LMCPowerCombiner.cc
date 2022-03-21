@@ -24,7 +24,9 @@ namespace locust
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
 			fvoltageCheck( false ),
-			fNCavityModes( 0 )
+			fNCavityModes( 0 ),
+			fCavityProbeZ( 0. ),
+			fCavityProbeRFrac( 0.5 )
     {}
     PowerCombiner::~PowerCombiner() {}
 
@@ -158,6 +160,26 @@ namespace locust
     {
      	fNCavityModes = aNumberOfModes;
     }
+
+    double PowerCombiner::GetCavityProbeZ()
+    {
+    	return fCavityProbeZ;
+    }
+    void PowerCombiner::SetCavityProbeZ ( double aZ )
+    {
+    	fCavityProbeZ = aZ;
+    }
+
+    double PowerCombiner::GetCavityProbeRFrac()
+    {
+    	return fCavityProbeRFrac;
+    }
+    void PowerCombiner::SetCavityProbeRFrac ( double aFraction )
+    {
+    	fCavityProbeRFrac = aFraction;
+    }
+
+
 
 
 

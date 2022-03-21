@@ -15,10 +15,7 @@ namespace locust
 	LOGGER( lmclog, "CavityModes" );
 
     CavityModes::CavityModes():
-		fNCavityProbes( 0 ),
-		fCavityProbeInductance( 1.0 ),
-		fCavityProbeZ( 0. ),
-		fCavityProbeTheta( 0. )
+		fProbeGain( 1.0 )
     {
     }
 
@@ -36,9 +33,19 @@ namespace locust
     		return false;
     	}
 
-    	if ( aParam.has( "cavity-probe-inductance" ) )
+    	if ( aParam.has( "cavity-probe-gain" ) )
     	{
-    		SetCavityProbeInductance(aParam["cavity-probe-inductance"]().as_double());
+    		SetCavityProbeGain(aParam["cavity-probe-gain"]().as_double());
+    	}
+
+    	if ( aParam.has( "cavity-probe-z" ) )
+    	{
+    		SetCavityProbeZ(aParam["cavity-probe-z"]().as_double());
+    	}
+
+    	if ( aParam.has( "cavity-probe-r-fraction" ) )
+    	{
+    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
     	}
 
         fRollingAvg.resize(GetNCavityModes());
@@ -57,24 +64,14 @@ namespace locust
     	return true;
     }
 
-    int CavityModes::GetNCavityProbes()
-    {
-        return fNCavityProbes;
-    }
 
-    void CavityModes::SetNCavityProbes( int aNumberOfProbes )
-    {
-     	fNCavityProbes = aNumberOfProbes;
-    }
-
-	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
+	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
 	{
 
-		double voltageValue = excitationAmplitude;
+		double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
 
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
-
 
 		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
@@ -130,59 +127,13 @@ namespace locust
 		return true;
 	}
 
-    double CavityModes::GetCavityProbeInductance()
+    double CavityModes::GetCavityProbeGain()
     {
-    	return fCavityProbeInductance;
+    	return fProbeGain;
     }
-    void CavityModes::SetCavityProbeInductance( double anInductance )
+    void CavityModes::SetCavityProbeGain( double aGain )
     {
-    	fCavityProbeInductance = anInductance;
+    	fProbeGain = aGain;
     }
-
-    bool CavityModes::SetCavityProbeLocations(int nCavityProbes, double cavityLength)
-    {
-
-    	SetNCavityProbes(nCavityProbes);
-    	std::vector<double> probeZ;
-    	probeZ.resize(nCavityProbes);
-
-    	std::vector<double> probeTheta;
-    	probeTheta.resize(nCavityProbes);
-
-    	double probeSpacing = cavityLength / ((double)nCavityProbes + 1.);
-
-		for (unsigned index=0; index<probeZ.size(); index++)
-		{
-			probeZ[index] = -cavityLength/2. + (index+1)*probeSpacing;
-			probeTheta[index] = 0.0;
-		}
-
-    	SetCavityProbeZ(probeZ);
-    	SetCavityProbeTheta(probeTheta);
-
-    	return true;
-    }
-
-
-
-    std::vector<double> CavityModes::GetCavityProbeZ()
-    {
-    	return fCavityProbeZ;
-    }
-    void CavityModes::SetCavityProbeZ ( std::vector<double> aVector )
-    {
-    	fCavityProbeZ = aVector;
-    }
-    std::vector<double> CavityModes::GetCavityProbeTheta()
-    {
-    	return fCavityProbeTheta;
-    }
-    void CavityModes::SetCavityProbeTheta ( std::vector<double> aVector )
-    {
-    	fCavityProbeTheta = aVector;
-    }
-
-
-
 
 } /* namespace locust */

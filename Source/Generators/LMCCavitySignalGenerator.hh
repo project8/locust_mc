@@ -105,7 +105,7 @@ namespace locust
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
             void InitializeBuffers(unsigned filterbuffersize);
-            std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tLocation, bool tElectric);
             std::vector<double> GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized);
             double GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
