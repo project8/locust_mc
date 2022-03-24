@@ -22,8 +22,13 @@ namespace locust
 
     	if( aParam.has( "central-frequency" ) )
         	{
-            	fCentralFrequency= aParam["central-frequency"]().as_double();
+            	fCentralFrequency= 2.*LMCConst::Pi()*aParam["central-frequency"]().as_double();
         	}
+
+       	if( aParam.has( "n-pixels" ) )
+            {
+                SetNPixels(aParam["n-pixels"]().as_int());
+            }
 
     	return true;
 

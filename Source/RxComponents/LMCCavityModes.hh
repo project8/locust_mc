@@ -1,7 +1,7 @@
 /*
  * LMCCavityModes.hh
  *
- *  Created on: Feb 28, 2020
+ *  Created on: Mar. 18, 2022
  *      Author: pslocum
  */
 
@@ -32,9 +32,17 @@ namespace locust
             CavityModes();
             virtual ~CavityModes();
             virtual bool Configure( const scarab::param_node& aNode );
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double BFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex);
+        	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
+            double GetCavityProbeGain();
+            void SetCavityProbeGain( double aGain );
 
 
         private:
+            double fProbeGain;
+            std::vector<std::vector<std::vector<double>>> fRollingAvg;
+            std::vector<std::vector<std::vector<int>>> fCounter;
+
 
 
 

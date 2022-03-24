@@ -263,8 +263,8 @@ namespace locust
     	double tY = aFinalParticle.GetPosition().Y();
     	double tZ = aFinalParticle.GetPosition().Z();
     	double tR = sqrt(tX*tX + tY*tY);
-    	double fcyc = aFinalParticle.GetCyclotronFrequency();  // TO_DO Is this in radians or Hz?
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc);
+    	double fcyc = aFinalParticle.GetCyclotronFrequency();  // radians
+    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ,1);
 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
 
 		auto it = tTE_E_electron.begin();

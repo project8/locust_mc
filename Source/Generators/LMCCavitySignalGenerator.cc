@@ -35,6 +35,9 @@ namespace locust
 		fSkippedSamples( false ),
 		fBypassTF( false ),
 		fNormCheck( false ),
+		fModeMaps( false ),
+		fTE( true ),
+		fIntermediateFile( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -210,43 +213,71 @@ namespace locust
 
     void CavitySignalGenerator::PrintModeMaps()
     {
-    	char buffer[60];
+    	char bufferE[60];
+    	char bufferH[60];
     	unsigned modeCounter = 0;
 
-    	for (int l=0; l<3; l++)
-    		for (int m=1; m<3; m++)
-    			for (int n=0; n<3; n++)
+    	for (int l=0; l<fNModes; l++)
+    		for (int m=1; m<fNModes; m++)
+    			for (int n=0; n<fNModes; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
-    				double tNormalizationTE_E = fInterface->fField->GetNormFactorsTE()[l][m][n];
-    				int a = sprintf(buffer, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
-    				const char *fpname = buffer;
-    				FILE *fpTE_E = fopen(fpname, "w");
-    				for (unsigned i=0; i<fInterface->fField->GetNPixels(); i++)
+    				double normFactor = 1.0;
+    				int a = 0;
+    				if (fTE)
+    				{
+    					normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
+        				a = sprintf(bufferE, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
+        				a = sprintf(bufferH, "output/ModeMapTE%d%d%d_H.txt", l, m, n);
+    				}
+    				else
+    				{
+    					normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
+        				a = sprintf(bufferE, "output/ModeMapTM%d%d%d_E.txt", l, m, n);
+        				a = sprintf(bufferH, "output/ModeMapTM%d%d%d_H.txt", l, m, n);
+    				}
+    				const char *fpnameE = bufferE;
+    				FILE *fp_E = fopen(fpnameE, "w");
+    				const char *fpnameH = bufferH;
+    				FILE *fp_H = fopen(fpnameH, "w");
+    				for (unsigned i=0; i<fInterface->fField->GetNPixels()+1; i++)
     				{
     					double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fR;
     					double x = (double)i/fInterface->fField->GetNPixels()*fInterface->fX - fInterface->fX/2.;
-    					for (unsigned j=0; j<fInterface->fField->GetNPixels(); j++)
+    					for (unsigned j=0; j<fInterface->fField->GetNPixels()+1; j++)
     					{
     						double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
         					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fY - fInterface->fY/2.;
-    						std::vector<double> tTE_E;
+    						std::vector<double> tE;
+    						std::vector<double> tH;
     						if (!fE_Gun)
     						{
-    							tTE_E = fInterface->fField->TE_E(l,m,n,r,theta,0.0,fInterface->fField->GetCentralFrequency());
-    							fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
+    							if (fTE)
+    							{
+    								tE = fInterface->fField->TE_E(l,m,n,r,theta,0.0,0);
+    								tH = fInterface->fField->TE_H(l,m,n,r,theta,0.0,0);
+    							}
+    							else
+    							{
+    								tE = fInterface->fField->TM_E(l,m,n,r,theta,0.0,0);
+    								tH = fInterface->fField->TM_H(l,m,n,r,theta,0.0,0);
+    							}
+    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
+    							fprintf(fp_H, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tH.front()*normFactor, tH.back()*normFactor);
     						}
     						else
     						{
-    							tTE_E = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
-    							fprintf(fpTE_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tTE_E.front()*tNormalizationTE_E, tTE_E.back()*tNormalizationTE_E);
+    							tE = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
+    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
     						}
-
     					}
     				}
-    				fclose (fpTE_E);
+    				fclose (fp_E);
+    				fclose (fp_H);
     				modeCounter += 1;
     			}
+    	printf("\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.\n");
+    	getchar();
     }
 
 
@@ -318,23 +349,36 @@ namespace locust
 
         if( aParam.has( "e-gun" ) )
         {
-
         	fE_Gun = aParam["e-gun"]().as_bool();
-
-            if (fE_Gun)
-            {
-            	fInterface->fField = new RectangularWaveguide;
-            }
-            else
-            {
-            	fInterface->fField = new CylindricalCavity;
-            }
-
         }
 
-        if( aParam.has( "central-frequency" ) )
+        if (fE_Gun)
         {
-            fInterface->fField->SetCentralFrequency(2.*LMCConst::Pi()*aParam["central-frequency"]().as_double());
+            fInterface->fField = new RectangularWaveguide;
+    		fPowerCombiner = new WaveguideModes;
+        }
+        else
+        {
+            fInterface->fField = new CylindricalCavity;
+    		fPowerCombiner = new CavityModes;
+        }
+
+        if( aParam.has( "n-modes" ) )
+        {
+            fNModes = aParam["n-modes"]().as_int();
+        }
+
+		fPowerCombiner->SetNCavityModes(fNModes);
+        if(!fPowerCombiner->Configure(aParam))
+		{
+			LERROR(lmclog,"Error configuring PowerCombiner.");
+			exit(-1);
+		}
+
+        if (!fInterface->fField->Configure(aParam))
+        {
+        	LERROR(lmclog,"Error configuring LMCField.");
+        	exit(-1);
         }
 
         if( aParam.has( "cavity-radius" ) )
@@ -350,11 +394,6 @@ namespace locust
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
-        }
-
-        if( aParam.has( "n-modes" ) )
-        {
-            fNModes = aParam["n-modes"]().as_int();
         }
 
         if( aParam.has( "event-spacing-samples" ) )
@@ -376,21 +415,22 @@ namespace locust
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
         }
-
+        if( aParam.has( "te-modes" ) )
+        {
+        	fTE = aParam["te-modes"]().as_bool();
+        }
+        if( aParam.has( "mode-maps" ) )
+        {
+        	fModeMaps = aParam["mode-maps"]().as_bool();
+        }
+        if( aParam.has( "intermediate-file" ) )
+        {
+        	fIntermediateFile = aParam["intermediate-file"]().as_bool();
+        }
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
-
-
-		fPowerCombiner = new CavityModes;
-		fPowerCombiner->SetNCavityModes(fNModes);
-		if(!fPowerCombiner->Configure(aParam))
-		{
-			LERROR(lmclog,"Error configuring CavityModes:PowerCombiner.");
-			exit(-1);
-		}
-
 
         if( aParam.has( "transmitter" ))
         {
@@ -429,7 +469,7 @@ namespace locust
         fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
         fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
         CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.
-//        PrintModeMaps();  // Write to text files for plotting mode maps.
+        if (fModeMaps) PrintModeMaps();  // Write to text files for plotting mode maps.
 
         return true;
     }
@@ -465,26 +505,6 @@ namespace locust
     }
 
 
-    double CavitySignalGenerator::GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex)
-    {
-    	// Placeholder function.
-
-    	/*
-    	double fcyc = tKassParticleXP[7];
-
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(0,1,1,tKassParticleXP[0],0.,tKassParticleXP[2], fcyc);
-    	double thetaProbe = tKassParticleXP[1] + fPowerCombiner->GetCavityProbeTheta()[channelIndex];
-    	double zProbe = fPowerCombiner->GetCavityProbeZ()[channelIndex];
-    	std::vector<double> tTE_H_probe = fInterface->fField->TE_H(0,1,1,fInterface->fR,thetaProbe,zProbe, fcyc);
-        double modeScalingFactor = tTE_H_probe.back() / tTE_E_electron.back();
-        //        	printf("modeScalingFactor is %g / %g = %g\n", tTE_H_probe.back(), tTE_E_electron.back(), modeAmplitudeFactor); getchar();
-
-    	return modeScalingFactor;
-    	*/
-    	return 1.;
-    }
-
-
 
     double CavitySignalGenerator::GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
     {
@@ -496,9 +516,9 @@ namespace locust
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
     	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
 
-    	/*
+
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-    	if (0==0)
+    	if (fIntermediateFile)
     	{
         	char buffer[60];
     		int a = sprintf(buffer, "output/dotProducts.txt");
@@ -510,24 +530,47 @@ namespace locust
     		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
     			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
     	}
-    	 */
 
     	return unitJdotE;
     }
 
-    double CavitySignalGenerator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
+    double CavitySignalGenerator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized)
     {
     	double tThetaParticle = tKassParticleXP[1];
-    	double tEtheta = aTE_E_normalized.back();
-    	double tEx = -sin(tThetaParticle) * tEtheta;
-    	double tEy = cos(tThetaParticle) * tEtheta;
-    	double tEmag = fabs(tEtheta);
-    	// fix-me:  should below be instantaneous velocity or center of motion?
+    	double tEtheta = 0.;
+    	double tEr = 0.;
+    	if (!isnan(anE_normalized.back()))
+    	{
+    		tEtheta = anE_normalized.back();
+    	}
+    	if (!isnan(anE_normalized.front()))
+    	{
+    		tEr = anE_normalized.front();
+    	}
+    	double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
+    	double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
+    	double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-//    	printf("tEmag is %g, r is %g, and theta is %g\n", tEmag, tKassParticleXP[0], tKassParticleXP[1]); getchar();
-    	return fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
+    	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
+
+
+    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
+    	if (fIntermediateFile)
+    	{
+        	char buffer[60];
+    		int a = sprintf(buffer, "output/dotProducts.txt");
+    		const char *fpname = buffer;
+    		FILE *fp = fopen(fpname, "a");
+    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
+    		fclose(fp);
+
+    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
+    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
+    	}
+
+    	return unitJdotE;
     }
 
     std::vector<double> CavitySignalGenerator::GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
@@ -537,7 +580,7 @@ namespace locust
      	double tY = tKassParticleXP[0] * sin(tKassParticleXP[1]);
      	double fcyc = tKassParticleXP[7];
      	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(m,n,tX,tY,fcyc);
- 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
+ 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
 
  		auto it = tTE_E_electron.begin();
  		while (it != tTE_E_electron.end())
@@ -550,24 +593,49 @@ namespace locust
      }
 
 
-    std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+    std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tLocation, bool tElectric)
      {
-     	double tR = tKassParticleXP[0];
-     	double tZ = tKassParticleXP[2];
-     	double fcyc = tKassParticleXP[7];
-     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc);
+     	double tR = tLocation[0];
+     	double tZ = tLocation[2];
+     	std::vector<double> tField;
+     	double normFactor = 0.;
 
- 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
+     	if (fTE)
+     	{
+     		if (tElectric)  // Get the electric field, usually at the electron.
+     		{
+     			tField = fInterface->fField->TE_E(l,m,n,tR,0.,tZ,1);
+     		}
+     		else  // Get the magnetic field, nominally at e.g. a readout probe location.
+     		{
+     			tField = fInterface->fField->TE_H(l,m,n,tR,0.,tZ,1);
+     		}
+     		normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
+     	}
+     	else
+     	{
+     		if (tElectric)
+     		{
+     			tField = fInterface->fField->TM_E(l,m,n,tR,0.,tZ,1);
+     		}
+     		else
+     		{
+     			tField = fInterface->fField->TM_H(l,m,n,tR,0.,tZ,1);
+     		}
+     		normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
+     	}
 
- 		auto it = tTE_E_electron.begin();
 
- 		while (it != tTE_E_electron.end())
+ 		auto it = tField.begin();
+
+ 		while (it != tField.end())
  		{
  			if (!isnan(*it))
  				(*it) *= normFactor;
  			*it++;
  		}
-     	return tTE_E_electron;  // return normalized field.
+
+     	return tField;  // return normalized field.
      }
 
     double CavitySignalGenerator::GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> aLocalFIRfrequencyBuffer, std::vector<std::deque<double>> aLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter)
@@ -643,7 +711,8 @@ namespace locust
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
         double dotProductFactor = 0.;
         double unitConversion = 1.;
-        double tExcitationAmplitude = 0.;
+        double excitationAmplitude = 0.;
+        double tEFieldAtProbe = 0.;
 
     	for (int l=0; l<fNModes; l++)
     	{
@@ -653,39 +722,57 @@ namespace locust
     			{
     				if (ModeSelect(l, m, n, fE_Gun))
     				{
-    			    	std::vector<double> tTE_E_normalized;
+    			    	std::vector<double> tE_normalized;
     					if (!fE_Gun)
     					{
-    						unitConversion = 1.;  // fix me.
-    						tTE_E_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP);
-    						dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+    						unitConversion = 1.;  // mks units in Collin amplitudes.
+    						tE_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP, true);
+    						dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tE_normalized);  // unit velocity \dot unit theta
     					}
     					else
     					{
     				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
-    				        unitConversion = 1. / LMCConst::FourPiEps();
-    						tTE_E_normalized = GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
-    						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tTE_E_normalized);  // unit velocity \dot unit theta
+    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    						tE_normalized = GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
+    						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized);  // unit velocity \dot unit theta
     					}
-    					double modeAmplitude = tTE_E_normalized.back();  // normalized E_theta at electron
-    			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
     					// fix-me:  We may need more precise nFilterBinsRequired.
     					std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
     					std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
+
+    					double modeAmplitude = 0.;
+    					if ( (!isnan(tE_normalized.back())) && (!isnan(tE_normalized.front())) )
+    					{
+    						modeAmplitude = pow(tE_normalized.back()*tE_normalized.back() + tE_normalized.front()*tE_normalized.front(), 0.5);  // normalized E at electron
+    					}
+    					else if ( !isnan(tE_normalized.back()) )
+    					{
+    						modeAmplitude = tE_normalized.back();
+    					}
+    			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+    					double cavityFIRSample = GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+
     					if (!fE_Gun)
     					{
-    						// This is still a placeholder and is not yet correct:
-    						tExcitationAmplitude = modeAmplitude *
-    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
-								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+    						double collinAmplitude = 0.;
+    						if (fTE)
+    						{
+    							collinAmplitude = fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]);
+    						}
+    						else
+    						{
+    							collinAmplitude = fInterface->fField->Z_TM(l,m,n,tKassParticleXP[7]);
+    						}
+    						excitationAmplitude = modeAmplitude * dotProductFactor * collinAmplitude * cavityFIRSample;
+    						std::vector<double> tProbeLocation = {fInterface->fR*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
+    						tEFieldAtProbe = GetCavityNormalizedModeField(l,m,n,tProbeLocation,true).back();
     					}
     					else
     					{
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-    						tExcitationAmplitude = modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) *
-    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) *
-								GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
     						// tExcitationAmplitude = sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( Larmor power / 2 )
     					}
     					std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
@@ -695,18 +782,11 @@ namespace locust
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-    						// TO-DO:  Implement modeScalingFactor to calculate signal amplitude at probe/channel using
-    						// H-field and probe inductance.  Probe inductance is presently set to a fake value of 1.0
-    						// in LMCPowerCombiner.cc
-    						// double modeScalingFactor = GetModeScalingFactor(tKassParticleXP, channelIndex);
-    						// double modeScalingFactor = 1.0; // override for now.
-    						// end TO-DO
-
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
-    						// as other factors as defined above, e.g. 1/4PiEps0 if converting from c.g.s amplitudes.
-    						double totalScalingFactor = sqrt(50.) * unitConversion * dotProductFactor;
-    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tExcitationAmplitude, tDopplerFrequency, dt, fphiLO, totalScalingFactor, fPowerCombiner->GetCavityProbeInductance(), sampleIndex);
-    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, tExcitationAmplitude, totalScalingFactor, sampleIndex);
+    						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
+    						double totalScalingFactor = sqrt(50.) * unitConversion;
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, tDopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
+    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
     				} // ModeSelect
@@ -775,7 +855,6 @@ namespace locust
 
 
         int PreEventCounter = 0;
-		fPowerCombiner->SetCavityProbeLocations(fNChannels, fInterface->fL);
         int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
         InitializeBuffers(nFilterBins);
 
