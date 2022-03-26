@@ -671,7 +671,7 @@ namespace locust
 			*it++;
 		}
 
-		if (( !fBypassTF )&&(!fE_Gun))
+		if ( !fBypassTF )
 		{
 			convolution = fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(aLocalElementFIRBuffer[0]);
 		}
@@ -695,7 +695,7 @@ namespace locust
     	double beta = sqrt( k*k - k1*k1 );
     	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fX,3.) * fInterface->fY * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
     	// sqrt of propagating power gives amplitude of E
-    	return sqrt(areaIntegral/2.);  // areaIntegral/2. propagates power/2.
+    	return sqrt(areaIntegral);
     }
 
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
@@ -771,9 +771,20 @@ namespace locust
     					else
     					{
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
-    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
-    						// tExcitationAmplitude = sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( Larmor power / 2 )
+
+    						if (!fBypassTF)
+    						{
+    							excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    									cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						}
+    						else
+    						{
+    							excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    									fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
+    						}
+
+//    						excitationAmplitude = sqrt(0.4*tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
+
     					}
     					std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
     					std::vector<std::deque<double>>().swap(tLocalElementFIRBuffer);
