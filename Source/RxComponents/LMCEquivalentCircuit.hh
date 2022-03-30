@@ -25,12 +25,19 @@ namespace locust
         public:
             EquivalentCircuit();
             virtual ~EquivalentCircuit();
-	    void GenerateTransferFunction(double R, double L, double C, int nBins_config, double FreqRangeCenter);
+	    virtual bool Configure( const scarab::param_node& aNode );
+	    void GenerateTransferFunction();
 	    std::vector<std::complex<double>> tfArray;
 	    double initialFreq;
+	    bool fGeneratingTF;
 
         private:
 	    int nbins;
+	    double fEquivalentR;
+            double fEquivalentL;
+            double fEquivalentC;
+            int fTFBins;
+            double fFreqRangeCenter;
 };
 
 

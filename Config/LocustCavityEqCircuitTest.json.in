@@ -25,7 +25,7 @@
 
     "simulation":
     {
-        "egg-filename": "/tmp/locust_mc/build/output/locust_mc.egg",
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
         "record-size": 81920,
         "acquisition-rate": 210,
@@ -40,8 +40,8 @@
 
     "digitizer":
     {
-    	"v-range":  2.0e-9,
-    	"v-offset": -1.0e-9
+    	"v-range":  10.0e-9,
+    	"v-offset": -5.0e-9
     }
 
 }
