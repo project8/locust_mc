@@ -291,27 +291,31 @@ namespace locust
     	}
 
 
-//-------------New implementation of fEquivalentCircuit for cavity parameterization-----
+//   Optional implementation of equivalent circuit, selected by specifying any of
+//	 equivalentR, equivalentL, equivalentC in config file.
+    	fEquivalentCircuit = new EquivalentCircuit();
+    	if (!fEquivalentCircuit->Configure( aParam ))
+    	{
+    		LERROR(lmclog,"Error configuring LMCEquivalentCircuit.");
+    		exit(-1);
+    	}
 
-	fEquivalentCircuit = new EquivalentCircuit();
-	fEquivalentCircuit->Configure( aParam );
-
-	if(fEquivalentCircuit->fGeneratingTF)
-	{
-               	fEquivalentCircuit->GenerateTransferFunction(); 
-		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
-		{
-		return false;
-		}
-	}
-	else
-	{
+    	if(fEquivalentCircuit->fGeneratingTF)
+    	{
+    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
+    		{
+    			return false;
+    		}
+    	}
+    	else
+    	{
         	if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
         	{
             	return false;
         	}
-	}
-//--------------------------------------------------------------------------------------
+    	}
+
+
 
         if( aParam.has( "e-gun" ) )
         {

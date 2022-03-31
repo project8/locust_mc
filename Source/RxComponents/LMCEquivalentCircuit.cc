@@ -54,6 +54,8 @@ namespace locust
     	{
     		fFreqRangeCenter = aParam["FreqRangeCenter"]().as_double();
     	}
+
+    	if (fGeneratingTF) GenerateTransferFunction();
 		
     	return true;
     }
