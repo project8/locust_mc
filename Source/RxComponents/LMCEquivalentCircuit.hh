@@ -23,21 +23,21 @@ namespace locust
     {
 
         public:
-            EquivalentCircuit();
-            virtual ~EquivalentCircuit();
-	    virtual bool Configure( const scarab::param_node& aNode );
-	    void GenerateTransferFunction();
-	    std::vector<std::complex<double>> tfArray;
-	    double initialFreq;
-	    bool fGeneratingTF;
+    		EquivalentCircuit();
+    		virtual ~EquivalentCircuit();
+    		virtual bool Configure( const scarab::param_node& aNode );
+    		void GenerateTransferFunction();
+    		std::vector<std::complex<double>> tfArray;
+    		double initialFreq;
+    		bool fGeneratingTF;
 
         private:
-	    int nbins;
-	    double fEquivalentR;
-            double fEquivalentL;
-            double fEquivalentC;
-            int fTFBins;
-            double fFreqRangeCenter;
+    		int nbins;
+    		double fEquivalentR;
+    		double fEquivalentL;
+    		double fEquivalentC;
+    		int fTFBins;
+    		double fFreqRangeCenter;
 };
 
 
