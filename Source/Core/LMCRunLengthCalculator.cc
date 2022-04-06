@@ -99,17 +99,7 @@ namespace locust
         return;
     }
 
-<<<<<<< HEAD
-    void RunLengthCalculator::Visit( const TransmitterInterfaceGenerator* )
-    {
-        // nothing to see here, move along, please
-        return;
-    }
-
-    void RunLengthCalculator::Visit( const FieldParameterGenerator* )
-=======
     void RunLengthCalculator::Visit( const CavitySignalGenerator* )
->>>>>>> develop
     {
         // nothing to see here, move along, please
         return;
