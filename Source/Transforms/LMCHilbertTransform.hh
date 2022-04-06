@@ -38,6 +38,7 @@ namespace locust
             void SetBufferMargin( int aBufferMargin );
             int GetBufferSize();
             int GetBufferMargin();
+            bool SetupHilbertTransform();
 
         private:
 
@@ -51,6 +52,12 @@ namespace locust
             double QuadrantCorrection( double VI, double HilbertPhase, double HilbertMean );
             int fbufferMargin;
             int fbufferSize;
+            fftw_complex *originaldata;
+            fftw_complex *SignalComplex;
+            fftw_complex *FFTComplex;
+            fftw_complex *hilbert;
+            std::string fWindowName;
+            double fWindowParam;
 
     };
 

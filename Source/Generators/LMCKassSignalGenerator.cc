@@ -358,7 +358,7 @@ namespace locust
                      }
                      tLock.unlock();
              	}
-             	else  // either Kass thread fell behind, or it has stopped generating events.
+             	else  // diagnose Kass
              	{
                      tLock.lock();
                      std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
@@ -366,15 +366,23 @@ namespace locust
                      {
                      	tLock.unlock();
                      }
-                     else  // Kass event has not started, unlock and exit.
+                     else  // Kass event has not started.
                      {
-                     	if ( index < fNPreEventSamples+1 )
-                     	{
-                 			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                     		fKassNeverStarted = true;
-                     	}
-                     	tLock.unlock();
-                     	break;
+                      	if ( fInterface->fEventInProgress )
+                      	{
+                      		if ( index < fNPreEventSamples+1 ) // Kass never started at all.
+                      		{
+                     			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                         		fKassNeverStarted = true;
+                      		}
+                         	tLock.unlock(); // Kass either started or not, but is now finished.
+                         	break;
+                      	}
+                      	else  // Kass started an event and quickly terminated it.
+                      	{
+                     		LWARN(lmclog, "Kass event terminated quickly.\n");
+                     		tLock.unlock();
+                      	}
                      }
              	}
              }

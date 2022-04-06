@@ -24,6 +24,7 @@ namespace locust
     class TransmitterInterfaceGenerator;
     class FieldParameterGenerator;
     class ArraySignalGenerator;
+    class CavitySignalGenerator;
     class LocalOscillatorGenerator;
     class DecimateSignalGenerator;
 
@@ -38,8 +39,7 @@ namespace locust
             virtual void Visit( const KassSignalGenerator* ) = 0;
             virtual void Visit( const FreeFieldSignalGenerator* ) = 0;
             virtual void Visit( const ArraySignalGenerator* ) = 0;
-	    virtual void Visit( const TransmitterInterfaceGenerator* ) = 0;
-	    virtual void Visit( const FieldParameterGenerator* ) = 0;
+            virtual void Visit( const CavitySignalGenerator* ) = 0;
             virtual void Visit( const GaussianNoiseGenerator* ) = 0;
             virtual void Visit( const FakeFreeSpaceSignalGenerator* ) = 0;
             virtual void Visit( const FakeTrackSignalGenerator* ) = 0;

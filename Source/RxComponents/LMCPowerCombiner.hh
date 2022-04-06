@@ -35,11 +35,13 @@ namespace locust
             int GetNElementsPerStrip();
             void SetNElementsPerStrip( int aNumberOfElements );
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool SetVoltageDampingFactors() {};
-        	virtual bool SetSMatrixParameters() {};
+        	virtual bool SetVoltageDampingFactors() {return true;};
+        	virtual bool SetSMatrixParameters() {return true;};
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
-        	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	bool AddOneVoltageToStripSum(Signal* aSignal, double excitationAmplitude, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double BFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex) {return true;};
+        	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex) {return true;};
         	virtual void SayHello();
         	virtual void Initialize() {};
 
@@ -57,6 +59,14 @@ namespace locust
             void SetJunctionResistance( double aJunctionResistance );
             double GetDampingFactor( int z_index );
             void SetDampingFactor (int z_index, double aDampingFactor );
+            bool GetVoltageCheck();
+            void SetNCavityModes( int aNumberOfModes );
+            int GetNCavityModes();
+            double GetCavityProbeZ();
+            void SetCavityProbeZ ( double aZ );
+            double GetCavityProbeRFrac();
+            void SetCavityProbeRFrac ( double aFraction );
+
 
 
         private:
@@ -68,6 +78,11 @@ namespace locust
             double fendPatchLoss;
             double fjunctionResistance;
             bool fvoltageCheck;
+            int fNCavityModes;
+            double fCavityProbeZ;
+            double fCavityProbeRFrac;
+
+
 
 };
 

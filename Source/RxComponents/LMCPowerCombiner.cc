@@ -23,8 +23,10 @@ namespace locust
             famplifierLoss( 0.66 ),
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
-			fvoltageCheck( false )
-
+			fvoltageCheck( false ),
+			fNCavityModes( 0 ),
+			fCavityProbeZ( 0. ),
+			fCavityProbeRFrac( 0.5 )
     {}
     PowerCombiner::~PowerCombiner() {}
 
@@ -78,9 +80,14 @@ namespace locust
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2.*VoltageFIRSample * cos(phi_LO);
 
 		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
-			LWARN( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+			LPROG( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
+
+
+
+
+
 
 
     int PowerCombiner::GetNElementsPerStrip()
@@ -141,6 +148,38 @@ namespace locust
     {
     	fdampingFactors[z_index] = aDampingFactor;
     }
+    bool PowerCombiner::GetVoltageCheck()
+    {
+    	return fvoltageCheck;
+    }
+    int PowerCombiner::GetNCavityModes()
+    {
+        return fNCavityModes;
+    }
+    void PowerCombiner::SetNCavityModes( int aNumberOfModes )
+    {
+     	fNCavityModes = aNumberOfModes;
+    }
+
+    double PowerCombiner::GetCavityProbeZ()
+    {
+    	return fCavityProbeZ;
+    }
+    void PowerCombiner::SetCavityProbeZ ( double aZ )
+    {
+    	fCavityProbeZ = aZ;
+    }
+
+    double PowerCombiner::GetCavityProbeRFrac()
+    {
+    	return fCavityProbeRFrac;
+    }
+    void PowerCombiner::SetCavityProbeRFrac ( double aFraction )
+    {
+    	fCavityProbeRFrac = aFraction;
+    }
+
+
 
 
 

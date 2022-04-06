@@ -16,6 +16,7 @@
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_spline.h>
+#include <gsl/gsl_sf_ellint.h>
 
 #include <random>
 #include <vector>
@@ -110,12 +111,17 @@ namespace locust
             bool GetPitchCorrection() const;
             void SetPitchCorrection(  bool aPitchCorrection );
 
+            bool GetAharmonicCorrection() const;
+            void SetAharmonicCorrection( bool aAharmonicCorrection );
+
             bool GetSlopeCorrection() const;
             void SetSlopeCorrection(  bool aSlopeCorrection );
 
             double GetTrapLength() const;
             void SetTrapLength(  double aTrapLength );
 
+            double GetCoilCurrent() const;
+            void SetCoilCurrent(  double aCoilCurrent );
 
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
@@ -130,11 +136,23 @@ namespace locust
             void SetInterpolator(gsl_spline*& interpolant, std::vector< std::pair<double, double> > data);
             double WaveguidePowerCoupling(double frequency, double pitchAngle);
             double RadialPowerCoupling(double radius);
+            double AharmonicPowerCoupling(double aRadius, double aTheta);
+            double Z11(double aFrequency, double aRadius);
             double GetEnergyLoss(double u, bool hydrogenScatter);
+
             double GetKa2(double eLoss, double T);
             double GetBField(double z);
             double GetPitchAngleZ(double theta_i, double B_i, double B_f);
             double GetCorrectedFrequency(double frequency, double radius) const;
+
+            void AddConst(std::vector<double> &aVec, const double aFactor, const double aConst);
+            std::pair<std::vector<double>, std::vector<double> > GetFullCycle(std::pair< std::vector<double>, std::vector<double> > aHarmonicSolver);
+
+            double GetTrapField(double aZ , double aRadius) const;
+            double GetCoilField(double aR0, double aZ0, double aRadius, double aZ) const;
+            std::pair< std::vector<double>, std::vector<double> > GetParticleTimes(double aRadius, double aTheta) const;
+            double GetZMax(double aTheta, double aRadius) const;
+            double GetAverageMagneticField(double aRadius, double aTheta) const;
 
             double GetAxialFrequency();
             void ExtrapolateData(std::vector< std::pair<double, double> > &data, std::array<double, 3> fitPars);
@@ -174,8 +192,12 @@ namespace locust
             double fLO_frequency;
             double fNTracksMean;
             double fBField;
+            double fCoilCurrent;
+            double fAharmonicCorrectionFactor;
+            double fAharmonicPowerCoupling;
             int fRandomSeed;
             int fNEvents;
+            bool fAharmonicCorrection;
             bool fPitchCorrection;
             bool fSlopeCorrection;
             double fHydrogenFraction;
