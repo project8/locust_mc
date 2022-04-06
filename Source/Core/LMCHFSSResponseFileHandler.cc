@@ -133,7 +133,7 @@ namespace locust
     fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
     fResolution=fComplexFFT.GetTimeResolution();
     FILE * fFIRout = fopen("output/FIR.txt", "w");
-    fprintf(fFIRout,"#FIR for cavity simulation (index,coefficient)\n");
+    fprintf(fFIRout,"#FIR used to process simulation (index,coefficient)\n");
     for (int i = 0; i < fFIRNBins; i++)
     {
         fFilter.push_back(fFIRComplex[i][0]);
