@@ -42,6 +42,7 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCTransmitterHardware.hh
     Transmitters/LMCDipoleAntenna.hh
     Transmitters/LMCTurnstileAntenna.hh
+    Transmitters/LMCOpenWG.hh
     
     Transforms/LMCHilbertTransform.hh
     Transforms/LMCComplexFFT.hh 
@@ -114,6 +115,7 @@ set( LOCUST_MC_SOURCE_FILES
    	Transmitters/LMCTransmitterHardware.cc
    	Transmitters/LMCDipoleAntenna.cc
    	Transmitters/LMCTurnstileAntenna.cc
+    Transmitters/LMCOpenWG.cc
     
     Transforms/LMCHilbertTransform.cc
     Transforms/LMCComplexFFT.cc
