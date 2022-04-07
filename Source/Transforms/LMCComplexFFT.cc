@@ -177,7 +177,6 @@ namespace locust
         {
             out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
-        
         return true;
     }
 

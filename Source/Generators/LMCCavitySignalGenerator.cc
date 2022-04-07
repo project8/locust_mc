@@ -291,61 +291,31 @@ namespace locust
     	}
 
 
-// To-do:  Move this into EquivalentCircuit::Configure()
-//-------------New implementation of fEquivalentCircuit for cavity parameterization-----
-	if ( (aParam.has( "equivalentR" )) or (aParam.has( "equivalentL" )) or (aParam.has( "equivalentL" )) ) { //Only initiate the configurable TF if at least one parameter is specified in the config file
-		//Default RLC parameters if not defined in config file, values (mostly arbitratily) based on external script from P. Slocum for 1 GHz cavity
-		printf("Entering RLC Config Loop\n");
-		double equivalentR = 1.;
-                double equivalentL = 0.159e-6;
-                double equivalentC = 0.159e-12;
-		int TFBins = 4000;
-		double FreqRangeCenter = 1.0e9;
+//   Optional implementation of equivalent circuit, selected by specifying any of
+//	 equivalentR, equivalentL, equivalentC in config file.
+    	fEquivalentCircuit = new EquivalentCircuit();
+    	if (!fEquivalentCircuit->Configure( aParam ))
+    	{
+    		LERROR(lmclog,"Error configuring LMCEquivalentCircuit.");
+    		exit(-1);
+    	}
 
-		//Update any parameters defined in the config file
-                if( aParam.has( "equivalentR" ) )
-                {
-			//printf("Retrieved R value: %e\n", aParam["equivalentR"]().as_double());
-                        equivalentR = aParam["equivalentR"]().as_double();
-                }
-                if( aParam.has( "equivalentL" ) )
-                {
-                        //printf("Retrieved L value: %e\n", aParam["equivalentL"]().as_double());
-                        equivalentL = aParam["equivalentL"]().as_double();
-                }
-                if( aParam.has( "equivalentC" ) )
-                {
-                        //printf("Retrieved C value: %e\n", aParam["equivalentC"]().as_double());
-                        equivalentC = aParam["equivalentC"]().as_double();
-                }
-		if( aParam.has( "TFBins" ) )
-		{
-			//printf("Retrieved TFBins: %d\n", aParam["TFBins"]().as_int());
-			TFBins = aParam["TFBins"]().as_int();
-		}
-		if( aParam.has( "FreqRangeCenter" ) )
-		{
-			//printf("Retrieved FreqRangeCenter: %f\n", aParam["FreqRangeCenter"]().as_double());
-                        FreqRangeCenter = aParam["FreqRangeCenter"]().as_double();
-		}
-
-		//Call EquivalentCircuit Class and use to analytically generate a Transfer function
-                fEquivalentCircuit = new EquivalentCircuit();
-                fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC,TFBins,FreqRangeCenter); //R,L,C inputs
-
-		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
-		{
-		return false;
-		}
-	}
-	else{
+    	if(fEquivalentCircuit->fGeneratingTF)
+    	{
+    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
+    		{
+    			return false;
+    		}
+    	}
+    	else
+    	{
         	if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
         	{
-		printf("Using externally built Transfer Function via file \n");
             	return false;
         	}
-	}
-//--------------------------------------------------------------------------------------
+    	}
+
+
 
         if( aParam.has( "e-gun" ) )
         {

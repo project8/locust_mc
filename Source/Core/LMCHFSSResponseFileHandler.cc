@@ -123,7 +123,7 @@ namespace locust
 		fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,AnalyticTFBinWidth, fWindowName, fWindowParam);//Uses binwidth as calculated in the previous line based on internally generated TF
 	}
 	else
-    { 
+    {
 		// If TF read from externally generated TF file, use TF bin width as given in .json config file
 		fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam); 
 	}
@@ -132,12 +132,15 @@ namespace locust
     fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex);
     fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
     fResolution=fComplexFFT.GetTimeResolution();
-
-    for (int i = 0; i < fFIRNBins; ++i)
+    FILE * fFIRout = fopen("output/FIR.txt", "w");
+    fprintf(fFIRout,"#FIR used to process simulation (index,coefficient)\n");
+    for (int i = 0; i < fFIRNBins; i++)
     {
         fFilter.push_back(fFIRComplex[i][0]);
+	fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
     }
 
+    fclose(fFIRout);
     LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
     return true;
     }
