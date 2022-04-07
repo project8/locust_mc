@@ -40,7 +40,7 @@ namespace locust
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
         	bool AddOneVoltageToStripSum(Signal* aSignal, double excitationAmplitude, double phi_LO, unsigned z_index, unsigned sampleIndex);
-        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double BFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex) {return true;};
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double BFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex) {return true;};
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex) {return true;};
         	virtual void SayHello();
         	virtual void Initialize() {};
@@ -66,6 +66,8 @@ namespace locust
             void SetCavityProbeZ ( double aZ );
             double GetCavityProbeRFrac();
             void SetCavityProbeRFrac ( double aFraction );
+            double GetVoltagePhase();
+            void SetVoltagePhase( double aPhase );
 
 
 
@@ -81,6 +83,7 @@ namespace locust
             int fNCavityModes;
             double fCavityProbeZ;
             double fCavityProbeRFrac;
+            double fVoltagePhase;
 
 
 
