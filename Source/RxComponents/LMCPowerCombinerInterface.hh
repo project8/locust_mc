@@ -17,6 +17,7 @@
 #include "LMCUnitCell.hh"
 #include "LMCSeriesFeed.hh"
 #include "LMCDesignAntennaArray.hh"
+#include "LMCWaveguide.hh"
 
 
 

@@ -12,10 +12,12 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include "LMCGenerator.hh"
 #include "LMCCavityModes.hh" // : LMCPowerCombiner
+#include "LMCEquivalentCircuit.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
+#include "LMCRectangularWaveguide.hh" // : LMCField
 #include "LMCFieldBuffer.hh"
 #include <vector>
 #include <sstream>
@@ -47,6 +49,12 @@ namespace locust
      - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      - "lo-frequency":  local oscillator frequency in Hz.
+     - "bypass-tf":  bool(false) -- if true, set FIR convolution output to 1.0
+     - "norm-check": bool(false) -- if true, calculate weighted running averages of J \cdot E
+      	 for all modes with indices of order < fNModes, and write the avgs to an intermediate file.
+     - "equivalentR": Resistance from equivalent RLC circuit in Ohms
+     - "equivalentL": Inductance from equivalent RLC circuit in Henries
+     - "equivalentC": Capacitance from equivalent RLC circuit in Farads
 
     */
 
@@ -64,14 +72,15 @@ namespace locust
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
             std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool TE);
-            std::vector<int> ModeFilter(unsigned whichMode);
+            bool ModeSelect(int l, int m, int n, bool eGun);
             void CheckNormalization();
             void PrintModeMaps();
-
+            double ScaleEPoyntingVector(double fcyc);
 
 
 
         private:
+            bool fE_Gun;
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
@@ -81,6 +90,8 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
+            bool fBypassTF;
+            bool fNormCheck;
 
 
 
@@ -92,7 +103,9 @@ namespace locust
             double GetModeScalingFactor(std::vector<double> tKassParticleXP, int channelIndex);
             void InitializeBuffers(unsigned filterbuffersize);
             std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            std::vector<double> GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
+            double GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
             double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
 
 
@@ -102,6 +115,7 @@ namespace locust
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
+	    EquivalentCircuit* fEquivalentCircuit;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;

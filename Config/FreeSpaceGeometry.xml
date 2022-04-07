@@ -1,18 +1,20 @@
+<external_define name="fieldX" value="0.0"/>
+<external_define name="fieldY" value="0.0"/>
 <external_define name="fieldZ" value="0.9583"/>
 
-    <!-- solenoid turns -->
-
-    <external_define name="pinch_turns" value="61.0"/>
-    <external_define name="bathtub_turns" value="51.0"/>
-	<external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
-	<external_define name="bathtub" value="0.8"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due\
- to apparent slow performance with 0.0 value -->
+<!-- solenoid turns -->
+<external_define name="pinch_turns" value="61.0"/>
+<external_define name="bathtub_turns" value="51.0"/>
+<external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
+<external_define name="bathtub" value="0.8"/>  <!-- 1.0 for bathtub, 1.e-5 for harmonic due to apparent slow performance with 0.0 value -->
 
 <!--  coil currents -->
 <external_define name="pinch" value="1.e-5"/> <!-- -1.0 for harmonic, 1.e-5 for bathtub due to apparent slow performance with 0.0 value -->
 <external_define name="bathtub" value="5.0"/>  <!-- >=1.0 for bathtub, 1.e-5 for harmonic due\
  to apparent slow performance with 0.0 value -->
 
+
+<geometry>
 
     <!-- pinch coils -->
 
@@ -406,7 +408,7 @@
 
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@upstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
-    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/> 
+<!--    <electromagnet name="electromagnet_solenoid" spaces="world/project8/@center_pinch_coil_tag" current="{ [pinch] * [pinch_turns] }"/>  -->
 
     <electromagnet name="electromagnet_solenoid" spaces="world/project8/@downstream_bathtub_coil_tag" current="{ [bathtub] * [bathtub_turns] }"/> 
 
@@ -419,6 +421,48 @@
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_pinch_coil/#"/>  -->
     <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/downstream_bathtub_coil/#"/> 
 <!--    <appearance name="app_patch" color="10 255 96 96" arc="72" surfaces="patch_assembly/patch"/> -->
+
+</geometry>
+
+
+
+<kemfield>
+    <!-- fields -->
+    <electromagnet_field
+        name="trap_field"
+        file="Project8Magnets.kbd"
+        directory="[KEMFIELD_CACHE]"
+        system="world/project8"
+        spaces="world/project8/@magnet_tag"
+    >
+        <zonal_harmonic_field_solver
+            number_of_bifurcations="-1"
+            convergence_ratio=".99"
+            convergence_parameter="1.e-15"
+            proximity_to_sourcepoint="1.e-12"
+            number_of_central_coefficients="500"
+            use_fractional_central_sourcepoint_spacing="true"
+            central_sourcepoint_fractional_distance="1e-2"
+            central_sourcepoint_spacing="2.e-5"
+            number_of_remote_coefficients="200"
+            remote_sourcepoint_start="-1.e-1"
+            remote_sourcepoint_end="1.e-1"
+        />
+    </electromagnet_field>
+
+    <constant_magnetic_field
+        name="background_field"
+        field="[fieldX] [fieldY] [fieldZ]"
+            />
+
+    <magnetic_superposition_field
+        name="total_magnetic_field"
+        use_caching="false"
+            >
+        <add_field name="background_field" enhancement="1.0" />
+        <add_field name="trap_field" enhancement="1.0" />
+    </magnetic_superposition_field>
+</kemfield>
 
 
 

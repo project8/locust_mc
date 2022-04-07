@@ -15,7 +15,7 @@ namespace locust
     LOGGER( lmclog, "DesignAntennaArray" );
 
     DesignAntennaArray::DesignAntennaArray():
-            fImpedanceTransformation( 0.358 ) // sqrt(50./390.), where 390 ohms is the 5-slot TF input array impedance
+            fImpedanceTransformation( 1.0 ) // default to 50 ohms
     {
     }
 
@@ -59,8 +59,8 @@ namespace locust
         for (unsigned z_index=0; z_index<GetNElementsPerStrip(); z_index++)
         {
             double aFactor = fImpedanceTransformation;
-            //Adhoc scaling in case the slotted waveguide has fewer/more slots than 5
-            aFactor = aFactor/sqrt(GetNElementsPerStrip()/5.);
+            // no scaling by the number of elements here
+            // transfer function should be made for 1 element.
             SetDampingFactor(z_index, aFactor);
         }
 

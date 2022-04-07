@@ -95,7 +95,7 @@ namespace locust
                 if ((int(digitizedData[ 2*ch*signalSize + index*2 ]) == -128 ) || ( int(digitizedData[ 2*ch*signalSize + index*2 ] == 128)))
                 {
                     LERROR(lmclog,"Digitizer range limit.\n");
-                    printf("Analog data at index %d channel %d is %g\n", index, ch, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
+                    printf("Analog data at index %d / %d channel %d / %d is %g\n", index, signalSize,  ch, nchannels, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
                     printf("Digitized data at index %d channel %d is %d\n", index, ch, digitizedData[2*ch*signalSize + index*2 ]);
                 	throw 1;
                 	return false;
@@ -128,7 +128,7 @@ namespace locust
                     if ((int(digitizedData[ 2*ch*signalSize + index*2 ]) == 0 ) || ( int(digitizedData[ 2*ch*signalSize + index*2 ] == 255)))
                     {
                         LERROR(lmclog,"Digitizer range limit.\n");
-                        printf("Analog data at index %d channel %d is %g\n", index, ch, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
+                        printf("Analog data at index %d / %d channel %d / %d is %g\n", index, signalSize, ch, nchannels, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
                         printf("Digitized data at index %d channel %d is %d\n", index, ch, digitizedData[2*ch*signalSize + index*2 ]);
                     	throw 1;
                     	return false;
