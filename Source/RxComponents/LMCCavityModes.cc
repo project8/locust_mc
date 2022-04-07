@@ -15,6 +15,7 @@ namespace locust
 	LOGGER( lmclog, "CavityModes" );
 
     CavityModes::CavityModes():
+    	fOrbitPhase( 0. ),
 		fProbeGain( 1.0 )
     {
     }
@@ -65,13 +66,16 @@ namespace locust
     }
 
 
-	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
+	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
 	{
 
-		double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
+		SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
+		fOrbitPhase += particleXP[7] * dt;
+		double phaseLag = GetVoltagePhase() - fOrbitPhase;
 
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
+		double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO - phaseLag);
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO - phaseLag);
 
 		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
