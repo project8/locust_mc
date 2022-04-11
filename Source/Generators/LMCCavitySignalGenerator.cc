@@ -291,61 +291,31 @@ namespace locust
     	}
 
 
-// To-do:  Move this into EquivalentCircuit::Configure()
-//-------------New implementation of fEquivalentCircuit for cavity parameterization-----
-	if ( (aParam.has( "equivalentR" )) or (aParam.has( "equivalentL" )) or (aParam.has( "equivalentL" )) ) { //Only initiate the configurable TF if at least one parameter is specified in the config file
-		//Default RLC parameters if not defined in config file, values (mostly arbitratily) based on external script from P. Slocum for 1 GHz cavity
-		printf("Entering RLC Config Loop\n");
-		double equivalentR = 1.;
-                double equivalentL = 0.159e-6;
-                double equivalentC = 0.159e-12;
-		int TFBins = 4000;
-		double FreqRangeCenter = 1.0e9;
+//   Optional implementation of equivalent circuit, selected by specifying any of
+//	 equivalentR, equivalentL, equivalentC in config file.
+    	fEquivalentCircuit = new EquivalentCircuit();
+    	if (!fEquivalentCircuit->Configure( aParam ))
+    	{
+    		LERROR(lmclog,"Error configuring LMCEquivalentCircuit.");
+    		exit(-1);
+    	}
 
-		//Update any parameters defined in the config file
-                if( aParam.has( "equivalentR" ) )
-                {
-			//printf("Retrieved R value: %e\n", aParam["equivalentR"]().as_double());
-                        equivalentR = aParam["equivalentR"]().as_double();
-                }
-                if( aParam.has( "equivalentL" ) )
-                {
-                        //printf("Retrieved L value: %e\n", aParam["equivalentL"]().as_double());
-                        equivalentL = aParam["equivalentL"]().as_double();
-                }
-                if( aParam.has( "equivalentC" ) )
-                {
-                        //printf("Retrieved C value: %e\n", aParam["equivalentC"]().as_double());
-                        equivalentC = aParam["equivalentC"]().as_double();
-                }
-		if( aParam.has( "TFBins" ) )
-		{
-			//printf("Retrieved TFBins: %d\n", aParam["TFBins"]().as_int());
-			TFBins = aParam["TFBins"]().as_int();
-		}
-		if( aParam.has( "FreqRangeCenter" ) )
-		{
-			//printf("Retrieved FreqRangeCenter: %f\n", aParam["FreqRangeCenter"]().as_double());
-                        FreqRangeCenter = aParam["FreqRangeCenter"]().as_double();
-		}
-
-		//Call EquivalentCircuit Class and use to analytically generate a Transfer function
-                fEquivalentCircuit = new EquivalentCircuit();
-                fEquivalentCircuit->GenerateTransferFunction(equivalentR,equivalentL,equivalentC,TFBins,FreqRangeCenter); //R,L,C inputs
-
-		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
-		{
-		return false;
-		}
-	}
-	else{
+    	if(fEquivalentCircuit->fGeneratingTF)
+    	{
+    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
+    		{
+    			return false;
+    		}
+    	}
+    	else
+    	{
         	if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
         	{
-		printf("Using externally built Transfer Function via file \n");
             	return false;
         	}
-	}
-//--------------------------------------------------------------------------------------
+    	}
+
+
 
         if( aParam.has( "e-gun" ) )
         {
@@ -671,7 +641,7 @@ namespace locust
 			*it++;
 		}
 
-		if (( !fBypassTF )&&(!fE_Gun))
+		if ( !fBypassTF )
 		{
 			convolution = fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(aLocalElementFIRBuffer[0]);
 		}
@@ -695,7 +665,7 @@ namespace locust
     	double beta = sqrt( k*k - k1*k1 );
     	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fX,3.) * fInterface->fY * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
     	// sqrt of propagating power gives amplitude of E
-    	return sqrt(areaIntegral/2.);  // areaIntegral/2. propagates power/2.
+    	return sqrt(areaIntegral);
     }
 
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
@@ -771,9 +741,20 @@ namespace locust
     					else
     					{
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
-    							fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
-    						// tExcitationAmplitude = sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( Larmor power / 2 )
+
+    						if (!fBypassTF)
+    						{
+    							excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    									cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						}
+    						else
+    						{
+    							excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    									fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
+    						}
+
+//    						excitationAmplitude = sqrt(0.4*tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
+
     					}
     					std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
     					std::vector<std::deque<double>>().swap(tLocalElementFIRBuffer);

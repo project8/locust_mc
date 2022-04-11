@@ -8,6 +8,7 @@ configure_file( LocustKass_FreeSpace_Template.xml.in LocustKass_FreeSpace_Templa
 configure_file( LocustKass_Cavity_Template.xml.in LocustKass_Cavity_Template.xml )
 configure_file( LocustKass_EGun_Template.xml.in LocustKass_EGun_Template.xml )
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
+configure_file( LocustCavityEqCircuitTest.json.in LocustCavityEqCircuitTest.json )
 configure_file( LocustCavityTemplate.json.in LocustCavityTemplate.json )
 configure_file( LocustEGunTemplate.json.in LocustEGunTemplate.json )
 configure_file( LocustFreeSpaceTemplate.json.in LocustFreeSpaceTemplate.json )
@@ -33,6 +34,7 @@ set (EXAMPLE_CONFIGFILES
 	FreeSpaceGeometry_V00_00_11_1GHz.xml
 	FreeSpaceGeometry_V00_00_10.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityEqCircuitTest.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustEGunTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json

@@ -14,7 +14,7 @@
         "central-frequency": 25.9e9,
         "voltage-check": "true",
         "lo-frequency": 25.8741e9,               
-        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/WR42_centerline_TF.txt",
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/WEGA_Impedance_Center.txt",
         "tf-receiver-bin-width": 0.01e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_EGun_Template.xml"        
     },
@@ -36,8 +36,8 @@
 
     "digitizer":
     {
-    	"v-range":  5.0e-05,
-    	"v-offset": -2.5e-05
+    	"v-range":  5.0e-06,
+    	"v-offset": -2.5e-06
     }
 
 }
