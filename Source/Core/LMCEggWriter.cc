@@ -189,14 +189,15 @@ namespace locust
 
         if( aSignal->GetState() != Signal::kDigital )
         {
-            LERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
-            return false;
-        }
+            //LERROR( lmclog, "Signal is not digitized (state = " << aSignal->GetState() << "); no record was written" );
+            //return false;
+            ::memcpy( f_record->GetData(), (double*) aSignal->SignalTimeComplex(), f_record_n_bytes );
+        } else {
+ 
+			if( aSignal->GetDigitalIsSigned() ) ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalS() ), f_record_n_bytes );
+			else ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalUS() ), f_record_n_bytes );
 
-
-
-        if( aSignal->GetDigitalIsSigned() ) ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalS() ), f_record_n_bytes );
-        else ::memcpy( f_record->GetData(), reinterpret_cast< const monarch3::byte_type* >( aSignal->SignalDigitalUS() ), f_record_n_bytes );
+		}
 
         ++f_record_id;
         f_record_time += f_record_length;
