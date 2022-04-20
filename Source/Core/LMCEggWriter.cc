@@ -106,17 +106,28 @@ namespace locust
         header->SetRunDuration( a_rlc->GetDuration() );
 
         unsigned t_data_type_size = 1;
-        bool t_signed_vals = false;
+        //bool t_signed_vals = false;
+        uint32_t t_data_format = 0;
         unsigned t_bit_depth = 8;
         bool t_bits_right_aligned = false;
         unsigned n_channels = a_rlc->GetNChannels();
-        if( a_digitizer != NULL )
+        double t_v_range = 1.0;
+        double t_v_offset = 0.0;
+        double t_dac_gain = t_v_range/(1<<t_bit_depth);
+        if( a_digitizer )
         {
             t_data_type_size = a_digitizer->DigitizerParams().data_type_size;
-            t_signed_vals = a_digitizer->GetADCValuesSigned();
+            t_data_format = a_digitizer->GetADCValuesSigned();
             t_bit_depth = a_digitizer->DigitizerParams().bit_depth;
             t_bits_right_aligned = a_digitizer->DigitizerParams().bits_right_aligned;
-        }
+            t_v_range = a_digitizer->DigitizerParams().v_range;
+            t_v_offset = a_digitizer->DigitizerParams().v_offset;
+            t_dac_gain = a_digitizer->DigitizerParams().dac_gain;
+        } else {
+			LDEBUG( lmclog, "Running without digitizer, data saved in float format");
+			t_data_format = 2;
+			t_data_type_size = sizeof(double);
+		}
 
         std::vector< unsigned > t_chan_vec;
         uint32_t t_stream_id;
@@ -130,10 +141,10 @@ namespace locust
 
         for( std::vector< unsigned >::const_iterator it = t_chan_vec.begin(); it != t_chan_vec.end(); ++it )
         {
-            header->GetChannelHeaders()[ *it ].SetVoltageOffset( a_digitizer->DigitizerParams().v_offset );
-            header->GetChannelHeaders()[ *it ].SetVoltageRange( a_digitizer->DigitizerParams().v_range );
+            header->GetChannelHeaders()[ *it ].SetVoltageOffset( t_v_offset );
+            header->GetChannelHeaders()[ *it ].SetVoltageRange( t_v_range );
 //            header->GetChannelHeaders()[ *it ].SetDACGain( 1. );
-            header->GetChannelHeaders()[ *it ].SetDACGain( a_digitizer->DigitizerParams().dac_gain );
+            header->GetChannelHeaders()[ *it ].SetDACGain( t_dac_gain );
         }
 
         f_monarch->WriteHeader();
@@ -144,7 +155,8 @@ namespace locust
         f_record_id = 0;
         f_record_time = 0;
         f_record_length = ( double )a_rlc->GetRecordSize() / ( 1.e-3 * a_rlc->GetAcquisitionRate() ); // in ns
-        f_record_n_bytes = n_channels * a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
+        //f_record_n_bytes = n_channels * a_digitizer->DigitizerParams().data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
+        f_record_n_bytes = n_channels * t_data_type_size * a_rlc->GetRecordSize() * a_rlc->GetSampleSize();
 
         f_state = kPrepared;
 
