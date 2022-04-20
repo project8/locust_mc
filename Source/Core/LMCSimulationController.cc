@@ -131,7 +131,7 @@ namespace locust
                 return false;
             }
             
-            if( aSignal->GetState() == Signal::kDigital )
+            if( simulatedSignal->GetState() == Signal::kDigital )
             {
 
 				if( simulatedSignal->GetDigitalIsSigned() )

@@ -134,7 +134,7 @@ namespace locust
 
             t_stream_id = header->AddStream( "locust_mc", n_channels, 1,
                 a_rlc->GetAcquisitionRate(), a_rlc->GetRecordSize(), a_rlc->GetSampleSize(),
-                t_data_type_size, t_signed_vals,
+                t_data_type_size, t_data_format,
                 t_bit_depth, t_bits_right_aligned,
                 &t_chan_vec );
 
