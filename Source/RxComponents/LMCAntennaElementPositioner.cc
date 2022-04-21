@@ -103,7 +103,7 @@ namespace locust
 
 	void AntennaElementPositioner::PlaceElement(Receiver &modelElement, double elementRadius, double theta, double zPosition)
 	{
-        if(manualPlacement)
+        if(fManualPlacement)
             PlaceAtConfigured(modelElement);
         else
             PlaceAtPosition(modelElement, elementRadius, theta, zPosition);
