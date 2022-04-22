@@ -63,9 +63,13 @@ namespace locust
             fNormalDirectionZ = aParam["normal-z"]().as_double();
         } 
         
-        if(fPolarizationDirectionX==fPolarizationDirectionY==fPolarizationDirectionZ==0.0)
+        if(fPolarizationDirectionX==fPolarizationDirectionY
+			&& fPolarizationDirectionX==fPolarizationDirectionZ
+			&& fPolarizationDirectionX==0.0)
+		{
             fPolarizationDirectionY=-1.0;
-            
+        } 
+           
         if(fNormalDirectionX==fNormalDirectionY==fNormalDirectionZ==0.0)
         {
             if(fCenterPositionX==fCenterPositionY==fCenterPositionZ==0.0) 
