@@ -124,7 +124,7 @@ namespace locust
             t_v_offset = a_digitizer->DigitizerParams().v_offset;
             t_dac_gain = a_digitizer->DigitizerParams().dac_gain;
         } else {
-			LDEBUG( lmclog, "Running without digitizer, data saved in float format");
+			LWARN( lmclog, "Running without digitizer, data saved in float format");
 			t_data_format = 2;
 			t_data_type_size = sizeof(double);
 		}
