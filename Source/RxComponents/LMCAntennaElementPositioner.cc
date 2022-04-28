@@ -70,9 +70,13 @@ namespace locust
             fPolarizationDirectionY=-1.0;
         } 
            
-        if(fNormalDirectionX==fNormalDirectionY==fNormalDirectionZ==0.0)
+        if(fNormalDirectionX==fNormalDirectionY
+			&& fNormalDirectionX==fNormalDirectionZ
+			&& fNormalDirectionX==0.0)
         {
-            if(fCenterPositionX==fCenterPositionY==fCenterPositionZ==0.0) 
+            if(fCenterPositionX==fCenterPositionY
+				&& fCenterPositionX==fCenterPositionZ
+				&& fCenterPositionX==0.0) 
             {
                 fNormalDirectionX = 1.0;
             } else
