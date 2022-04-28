@@ -127,7 +127,10 @@ namespace locust
 
 	void AntennaElementPositioner::PlaceAtConfigured(Receiver &modelElement)
 	{
-        LDEBUG(lmclog, "Placing element manually");
+        
+        LWARN( lmclog, "Manually placing antenna element at (" << fCenterPositionX << "," << fCenterPositionY << "," << fCenterPositionZ << ")");
+        LWARN( lmclog, "Manually setting antenna normal (" << fNormalDirectionX << "," << fNormalDirectionY << "," << fNormalDirectionZ << ")");
+        LWARN( lmclog, "Manually setting antenna polarization (" << fPolarizationDirectionX << "," << fPolarizationDirectionY << "," << fPolarizationDirectionZ << ")");
         
         modelElement.SetCenterPosition({fCenterPositionX , fCenterPositionY , fCenterPositionZ });
 		modelElement.SetPolarizationDirection({fPolarizationDirectionX, fPolarizationDirectionY, fPolarizationDirectionZ});
