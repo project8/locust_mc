@@ -476,137 +476,7 @@ namespace locust
 
 
 
-    double CavitySignalGenerator::GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized)
-    {
-    	double tThetaParticle = tKassParticleXP[1];
-    	double tEy = aTE_E_normalized.back();
-     	double tEmag = fabs(tEy);
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
-    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
 
-
-    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-    	if (fIntermediateFile)
-    	{
-        	char buffer[60];
-    		int a = sprintf(buffer, "output/dotProducts.txt");
-    		const char *fpname = buffer;
-    		FILE *fp = fopen(fpname, "a");
-    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
-    		fclose(fp);
-
-    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
-    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
-    	}
-
-    	return unitJdotE;
-    }
-
-    double CavitySignalGenerator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized)
-    {
-    	double tThetaParticle = tKassParticleXP[1];
-    	double tEtheta = 0.;
-    	double tEr = 0.;
-    	if (!isnan(anE_normalized.back()))
-    	{
-    		tEtheta = anE_normalized.back();
-    	}
-    	if (!isnan(anE_normalized.front()))
-    	{
-    		tEr = anE_normalized.front();
-    	}
-    	double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
-    	double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
-    	double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
-    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
-
-
-    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-    	if (fIntermediateFile)
-    	{
-        	char buffer[60];
-    		int a = sprintf(buffer, "output/dotProducts.txt");
-    		const char *fpname = buffer;
-    		FILE *fp = fopen(fpname, "a");
-    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
-    		fclose(fp);
-
-    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
-    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
-    	}
-
-    	return unitJdotE;
-    }
-
-    std::vector<double> CavitySignalGenerator::GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
-     {
-    	// The l index is inert in the waveguide.
-     	double tX = tKassParticleXP[0] * cos(tKassParticleXP[1]);
-     	double tY = tKassParticleXP[0] * sin(tKassParticleXP[1]);
-     	double fcyc = tKassParticleXP[7];
-     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(m,n,tX,tY,fcyc);
- 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
-
- 		auto it = tTE_E_electron.begin();
- 		while (it != tTE_E_electron.end())
- 		{
- 			if (!isnan(*it))
- 				(*it) *= normFactor;
- 			*it++;
- 		}
-     	return tTE_E_electron;  // return normalized field.
-     }
-
-
-    std::vector<double> CavitySignalGenerator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tLocation, bool tElectric)
-     {
-     	double tR = tLocation[0];
-     	double tZ = tLocation[2];
-     	std::vector<double> tField;
-     	double normFactor = 0.;
-
-     	if (fTE)
-     	{
-     		if (tElectric)  // Get the electric field, usually at the electron.
-     		{
-     			tField = fInterface->fField->TE_E(l,m,n,tR,0.,tZ,1);
-     		}
-     		else  // Get the magnetic field, nominally at e.g. a readout probe location.
-     		{
-     			tField = fInterface->fField->TE_H(l,m,n,tR,0.,tZ,1);
-     		}
-     		normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
-     	}
-     	else
-     	{
-     		if (tElectric)
-     		{
-     			tField = fInterface->fField->TM_E(l,m,n,tR,0.,tZ,1);
-     		}
-     		else
-     		{
-     			tField = fInterface->fField->TM_H(l,m,n,tR,0.,tZ,1);
-     		}
-     		normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
-     	}
-
-
- 		auto it = tField.begin();
-
- 		while (it != tField.end())
- 		{
- 			if (!isnan(*it))
- 				(*it) *= normFactor;
- 			*it++;
- 		}
-
-     	return tField;  // return normalized field.
-     }
 
 
     double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
@@ -651,15 +521,15 @@ namespace locust
     					if (!fE_Gun)
     					{
     						unitConversion = 1.;  // mks units in Collin amplitudes.
-    						tE_normalized = GetCavityNormalizedModeField(l,m,n,tKassParticleXP, true);
-    						dotProductFactor = GetCavityDotProductFactor(tKassParticleXP, tE_normalized);  // unit velocity \dot unit theta
+    						tE_normalized = fFieldCalculator->GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
+    						dotProductFactor = fFieldCalculator->GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
     					else
     					{
     				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
     				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						tE_normalized = GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
-    						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized);  // unit velocity \dot unit theta
+    						tE_normalized = fFieldCalculator->GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
+    						dotProductFactor = fFieldCalculator->GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
 
     					double modeAmplitude = 0.;
@@ -687,7 +557,7 @@ namespace locust
     						}
     						excitationAmplitude = modeAmplitude * dotProductFactor * collinAmplitude * cavityFIRSample;
     						std::vector<double> tProbeLocation = {fInterface->fR*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
-    						tEFieldAtProbe = GetCavityNormalizedModeField(l,m,n,tProbeLocation,true).back();
+    						tEFieldAtProbe = fFieldCalculator->GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
     					}
     					else
     					{
