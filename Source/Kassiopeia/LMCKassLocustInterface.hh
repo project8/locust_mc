@@ -73,9 +73,7 @@ namespace locust
         std::vector<std::deque<double>> eCurrentBuffer;
         Field* fField;
         std::vector<std::deque<double>> ElementFIRBuffer;
-        std::vector<std::deque<double>> ElementFIRBufferCopy;
         std::vector<std::deque<double>> FIRfrequencyBuffer;
-        std::vector<std::deque<double>> FIRfrequencyBufferCopy;
     	double dotProductFactor;
     	double modeAmplitude;
     	double CavityFIRSample;
