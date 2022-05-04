@@ -315,7 +315,7 @@ namespace locust
         	}
     	}
 
-
+    	fFieldCalculator = new FieldCalculator();
 
         if( aParam.has( "e-gun" ) )
         {
@@ -608,51 +608,6 @@ namespace locust
      	return tField;  // return normalized field.
      }
 
-    double CavitySignalGenerator::GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> aLocalFIRfrequencyBuffer, std::vector<std::deque<double>> aLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter)
-    {
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
-    	double orbitPhase = tKassParticleXP[6];  // radians
-    	double fieldFrequency = tKassParticleXP[7];  // rad/s
-    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-    	double convolution = 0.0;
-
-		// populate FIR filter with frequency for just this sample interval:
-		for (int i=0; i < nFilterBinsRequired; i++)
-		{
-			aLocalFIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
-			aLocalFIRfrequencyBuffer[0].pop_front();
-		}
-		std::deque<double>::iterator it = aLocalFIRfrequencyBuffer[0].begin();
-		while (it != aLocalFIRfrequencyBuffer[0].end())
-		{
-			orbitPhase += (*it)*dtFilter;
-
-			if (*it != 0.)
-			{
-				aLocalElementFIRBuffer[0].push_back(cos(orbitPhase));
-			}
-			else
-			{
-				aLocalElementFIRBuffer[0].push_back(0.);
-			}
-			aLocalElementFIRBuffer[0].pop_front();
-
-			*it++;
-		}
-
-		if ( !fBypassTF )
-		{
-			convolution = fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(aLocalElementFIRBuffer[0]);
-		}
-		else
-		{
-			convolution = 1.0;
-		}
-
-		return LMCConst::Q()*vMag*convolution;
-
-    }
 
     double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
     {
@@ -678,7 +633,7 @@ namespace locust
         double dt = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld);
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true);
         double dotProductFactor = 0.;
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
@@ -707,10 +662,6 @@ namespace locust
     						dotProductFactor = GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized);  // unit velocity \dot unit theta
     					}
 
-    					// fix-me:  We may need more precise nFilterBinsRequired.
-    					std::vector<std::deque<double>> tLocalFIRfrequencyBuffer = fInterface->FIRfrequencyBufferCopy;  // copy from Kass buffer.
-    					std::vector<std::deque<double>> tLocalElementFIRBuffer = fInterface->ElementFIRBufferCopy;
-
     					double modeAmplitude = 0.;
     					if ( (!isnan(tE_normalized.back())) && (!isnan(tE_normalized.front())) )
     					{
@@ -721,7 +672,7 @@ namespace locust
     						modeAmplitude = tE_normalized.back();
     					}
     			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
-    					double cavityFIRSample = GetCavityFIRSample(tKassParticleXP, tLocalFIRfrequencyBuffer, tLocalElementFIRBuffer, fInterface->nFilterBinsRequired, fInterface->dtFilter);
+    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF);
 
     					if (!fE_Gun)
     					{
@@ -756,8 +707,6 @@ namespace locust
 //    						excitationAmplitude = sqrt(0.4*tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
 
     					}
-    					std::vector<std::deque<double>>().swap(tLocalFIRfrequencyBuffer);  // release memory
-    					std::vector<std::deque<double>>().swap(tLocalElementFIRBuffer);
 
     					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
     					{
@@ -955,9 +904,7 @@ namespace locust
     {
     	FieldBuffer aFieldBuffer;
     	fInterface->ElementFIRBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-    	fInterface->ElementFIRBufferCopy = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
     	fInterface->FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-    	fInterface->FIRfrequencyBufferCopy = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
     }
 
 

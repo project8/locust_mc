@@ -16,6 +16,7 @@
 #include "LMCEquivalentCircuit.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
+#include "LMCFieldCalculator.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
 #include "LMCRectangularWaveguide.hh" // : LMCField
@@ -109,7 +110,6 @@ namespace locust
             std::vector<double> GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized);
             double GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
-            double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
 
 
             bool DoGenerate( Signal* aSignal );
@@ -119,6 +119,7 @@ namespace locust
 
             PowerCombiner* fPowerCombiner;
             EquivalentCircuit* fEquivalentCircuit;
+            FieldCalculator* fFieldCalculator;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;
