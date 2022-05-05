@@ -115,7 +115,6 @@ namespace locust
 
             PowerCombiner* fPowerCombiner;
             EquivalentCircuit* fEquivalentCircuit;
-            FieldCalculator* fFieldCalculator;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;

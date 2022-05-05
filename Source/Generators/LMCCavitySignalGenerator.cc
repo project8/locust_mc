@@ -315,8 +315,6 @@ namespace locust
         	}
     	}
 
-    	fFieldCalculator = new FieldCalculator();
-
         if( aParam.has( "e-gun" ) )
         {
         	fE_Gun = aParam["e-gun"]().as_bool();
@@ -508,6 +506,7 @@ namespace locust
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         double tEFieldAtProbe = 0.;
+        FieldCalculator aFieldCalculator;
 
     	for (int l=0; l<fNModes; l++)
     	{
@@ -521,15 +520,16 @@ namespace locust
     					if (!fE_Gun)
     					{
     						unitConversion = 1.;  // mks units in Collin amplitudes.
-    						tE_normalized = fFieldCalculator->GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
-    						dotProductFactor = fFieldCalculator->GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
+    						tE_normalized = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
+    						dotProductFactor = aFieldCalculator.GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
     					else
     					{
     				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
-    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						tE_normalized = fFieldCalculator->GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
-    						dotProductFactor = fFieldCalculator->GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
+//    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    				        unitConversion = 1.; // If using direct Kassiopeia power budget.
+    				        tE_normalized = aFieldCalculator.GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
+    						dotProductFactor = aFieldCalculator.GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
 
     					double modeAmplitude = 0.;
@@ -542,7 +542,7 @@ namespace locust
     						modeAmplitude = tE_normalized.back();
     					}
     			    	double tDopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
-    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF);
+    					double cavityFIRSample = aFieldCalculator.GetCavityFIRSample(tKassParticleXP, fBypassTF);
 
     					if (!fE_Gun)
     					{
@@ -557,10 +557,12 @@ namespace locust
     						}
     						excitationAmplitude = modeAmplitude * dotProductFactor * collinAmplitude * cavityFIRSample;
     						std::vector<double> tProbeLocation = {fInterface->fR*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
-    						tEFieldAtProbe = fFieldCalculator->GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
+    						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
     					}
     					else
     					{
+
+    						/*
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
 
     						if (!fBypassTF)
@@ -573,8 +575,10 @@ namespace locust
     							excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
     									fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
     						}
+    						*/
 
-//    						excitationAmplitude = sqrt(0.4*tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
+    						// Use direct Kassiopeia power budget:
+    						excitationAmplitude = sqrt(0.4*tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
 
     					}
 
