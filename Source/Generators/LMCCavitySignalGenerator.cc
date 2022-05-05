@@ -359,6 +359,16 @@ namespace locust
             fInterface->fL = aParam["cavity-length"]().as_double();
         }
 
+        if( aParam.has( "center-to-short" ) ) // for use in e-gun
+        {
+            fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
+        }
+
+        if( aParam.has( "center-to-antenna" ) ) // for use in e-gun
+        {
+            fInterface->fCENTER_TO_ANTENNA = aParam["center-to-antenna"]().as_double();
+        }
+
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
