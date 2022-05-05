@@ -536,8 +536,8 @@ namespace locust
     					else
     					{
     				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
-//    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    				        unitConversion = 1.; // If using direct Kassiopeia power budget.
+    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+//    				        unitConversion = 1.; // If using direct Kassiopeia power budget.
     				        tE_normalized = aFieldCalculator.GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
     						dotProductFactor = aFieldCalculator.GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
@@ -571,12 +571,11 @@ namespace locust
     					}
     					else
     					{
-
-    						/*
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
 
     						if (!fBypassTF)
     						{
+    							dotProductFactor = 0.63;  // temporary override.
     							excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
     									cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						}
@@ -585,10 +584,10 @@ namespace locust
     							excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
     									fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
     						}
-    						*/
+
 
     						// Use direct Kassiopeia power budget:
-    						excitationAmplitude = sqrt(0.4*tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
+//    						excitationAmplitude = 0.63*sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
 
     					}
 
