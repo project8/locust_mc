@@ -42,7 +42,7 @@ namespace locust
     double FieldCalculator::GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
     {
         double SpeedOfLight = LMCConst::C(); // m/s
-        double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / 10.668e-3; // a in m
+        double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / fInterface->fX; // a in m
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*LMCConst::Pi()*fcyc), 2.) , 0.5);
         //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
@@ -71,7 +71,7 @@ namespace locust
 
     double FieldCalculator::GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
     {
-        double dim1_wr42 = 10.668e-3; // a in m
+        double dim1_wr42 = fInterface->fX; // a in m
         double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
         double coupling = 0.63*sin(LMCConst::Pi()*x/dim1_wr42);  // avg over cyclotron orbit.
         return coupling*coupling;
@@ -139,27 +139,14 @@ namespace locust
       return DampingFactorTM01;
     }
 
-    double FieldCalculator::GetDampingFactorCavity()
+    double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
-
-//    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,aFinalParticle); // lmn 011 for now.
-//    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle, tTE_E_normalized);  // unit velocity \dot unit theta
-//    	fInterface->modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
-
-    	if (fInterface->fParticleHistory.size() > 20)
-    	{
-    		std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, false);
-    		fInterface->CavityFIRSample = GetCavityFIRSample(tKassParticleXP, false);
-    	}
-
-    	double DampingFactorCavity = 1.0; // TO-DO:  Insert power correction factor here.
-    	return DampingFactorCavity;
+    	return GetDampingFactorPhase1(aFinalParticle);
     }
 
 
     double FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
     {
-
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double orbitPhase = tKassParticleXP[6];  // radians
@@ -173,6 +160,7 @@ namespace locust
 			fInterface->FIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
 			fInterface->FIRfrequencyBuffer[0].pop_front();
 		}
+
 		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
 		while (it != fInterface->FIRfrequencyBuffer[0].end())
 		{

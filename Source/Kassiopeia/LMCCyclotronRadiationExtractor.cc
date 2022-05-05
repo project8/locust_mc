@@ -91,7 +91,7 @@ namespace locust
         }
         if(fInterface->fProject8Phase==4)
         {
-            DeltaE = aFieldCalculator.GetDampingFactorCavity()*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            DeltaE = aFieldCalculator.GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
 
