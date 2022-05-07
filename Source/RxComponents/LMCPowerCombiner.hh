@@ -41,7 +41,9 @@ namespace locust
             virtual Receiver* ChooseElement();
         	bool AddOneVoltageToStripSum(Signal* aSignal, double excitationAmplitude, double phi_LO, unsigned z_index, unsigned sampleIndex);
         	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double BFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex) {return true;};
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double BFieldAtProbe, double dopplerFrequencyAntenna, double dopplerFrequencyShort, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, double eventTime) {return true;};
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex) {return true;};
+            virtual bool InitializeVoltagePhases(std::vector<double> tKassParticleXP, double aDopplerFrequencyAntenna, double aDopplerFrequencyShort, double aCenterToAntenna, double aCenterToShort, double aDimX) {return true;};
         	virtual void SayHello();
         	virtual void Initialize() {};
 
