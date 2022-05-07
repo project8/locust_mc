@@ -77,7 +77,7 @@ namespace locust
     	return tIntegral;
     }
 
-    double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP, bool towardAntenna)
     {
     	// fix me (placeholder)
     	return 0.;

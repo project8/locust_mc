@@ -96,11 +96,20 @@ namespace locust
     }
 
 
-    double RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    double RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP, bool towardAntenna)
     {
+    	double zVelocity = 0.;
+		if (towardAntenna)
+		{
+			zVelocity = tKassParticleXP[5];
+		}
+		else
+		{
+			zVelocity = -tKassParticleXP[5];
+		}
+
     	double fcyc = tKassParticleXP[7];
     	double groupVelocity = GetGroupVelocity(m,n,fcyc);
-    	double zVelocity = tKassParticleXP[5];
         double gammaZ = 1.0 / pow(1.0-pow(zVelocity/groupVelocity,2.),0.5);
         double fPrime = fcyc * gammaZ * (1.+zVelocity/groupVelocity);
     	return fPrime;
