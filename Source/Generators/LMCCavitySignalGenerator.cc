@@ -242,12 +242,12 @@ namespace locust
     				FILE *fp_H = fopen(fpnameH, "w");
     				for (unsigned i=0; i<fInterface->fField->GetNPixels()+1; i++)
     				{
-    					double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fR;
-    					double x = (double)i/fInterface->fField->GetNPixels()*fInterface->fX - fInterface->fX/2.;
+    					double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fField->GetDimR();
+    					double x = (double)i/fInterface->fField->GetNPixels()*fInterface->fField->GetDimX() - fInterface->fField->GetDimX()/2.;
     					for (unsigned j=0; j<fInterface->fField->GetNPixels()+1; j++)
     					{
     						double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
-        					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fY - fInterface->fY/2.;
+        					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fField->GetDimY() - fInterface->fField->GetDimY()/2.;
     						std::vector<double> tE;
     						std::vector<double> tH;
     						if (!fE_Gun)
@@ -359,12 +359,12 @@ namespace locust
 
         if( aParam.has( "cavity-radius" ) )
         {
-            fInterface->fR = aParam["cavity-radius"]().as_double();
+            fInterface->fField->SetDimR( aParam["cavity-radius"]().as_double() );
         }
 
         if( aParam.has( "cavity-length" ) )
         {
-            fInterface->fL = aParam["cavity-length"]().as_double();
+            fInterface->fField->SetDimL( aParam["cavity-length"]().as_double() );
         }
 
         if( aParam.has( "center-to-short" ) ) // for use in e-gun
@@ -502,9 +502,9 @@ namespace locust
     	// power that is moving toward the antenna.
     	// After Pozar p. 114:
     	double k = fcyc / LMCConst::C();
-    	double k1 = LMCConst::Pi() / fInterface->fX;
+    	double k1 = LMCConst::Pi() / fInterface->fField->GetDimX();
     	double beta = sqrt( k*k - k1*k1 );
-    	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fX,3.) * fInterface->fY * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
+    	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fField->GetDimX(),3.) * fInterface->fField->GetDimY() * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
     	// sqrt of propagating power gives amplitude of E
     	return sqrt(areaIntegral);
     }
@@ -578,7 +578,7 @@ namespace locust
     						}
         			    	dopplerFrequencyCavity = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
     						excitationAmplitude = modeAmplitude * dotProductFactor * collinAmplitude * cavityFIRSample;
-    						std::vector<double> tProbeLocation = {fInterface->fR*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
+    						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
     						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
     					}
     					else
@@ -620,7 +620,7 @@ namespace locust
     							}
     							else
     							{
-    							    fPowerCombiner->InitializeVoltagePhases(tKassParticleXP, dopplerFrequencyAntenna, dopplerFrequencyShort, fInterface->fCENTER_TO_ANTENNA, fInterface->fCENTER_TO_SHORT, fInterface->fX);
+    							    fPowerCombiner->InitializeVoltagePhases(tKassParticleXP, dopplerFrequencyAntenna, dopplerFrequencyShort, fInterface->fCENTER_TO_ANTENNA, fInterface->fCENTER_TO_SHORT, fInterface->fField->GetDimX());
     								fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyAntenna, dopplerFrequencyShort, dt, fphiLO, totalScalingFactor, sampleIndex, fInterface->fTOld);
     							}
     						}

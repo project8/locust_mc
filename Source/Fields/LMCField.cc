@@ -13,7 +13,11 @@ namespace locust
     LOGGER( lmclog, "Field" );
     Field::Field():
 		fnPixels( 100 ),
-    	fCentralFrequency(0.)
+    	fCentralFrequency(0.),
+		fR( 0.05 ),
+		fL( 0.2 ),
+		fX( 0.010668 ),
+		fY( 0.004318 )
     {}
     Field::~Field() {}
 
@@ -75,6 +79,47 @@ namespace locust
     {
     	fnPixels = aNumberOfPixels;
     }
+
+    double Field::GetDimX() const
+    {
+    	return fX;
+    }
+
+    void Field::SetDimX( double aDim )
+    {
+    	fX = aDim;
+    }
+
+    double Field::GetDimY() const
+    {
+    	return fY;
+    }
+
+    void Field::SetDimY( double aDim )
+    {
+    	fY = aDim;
+    }
+
+    double Field::GetDimR() const
+    {
+    	return fR;
+    }
+
+    void Field::SetDimR( double aDim )
+    {
+    	fR = aDim;
+    }
+
+    double Field::GetDimL() const
+    {
+    	return fL;
+    }
+
+    void Field::SetDimL( double aDim )
+    {
+    	fL = aDim;
+    }
+
 
 
 

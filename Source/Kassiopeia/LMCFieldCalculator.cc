@@ -42,7 +42,7 @@ namespace locust
     double FieldCalculator::GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
     {
         double SpeedOfLight = LMCConst::C(); // m/s
-        double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / fInterface->fX; // a in m
+        double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / fInterface->fField->GetDimX(); // a in m
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*LMCConst::Pi()*fcyc), 2.) , 0.5);
         //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
@@ -71,7 +71,7 @@ namespace locust
 
     double FieldCalculator::GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
     {
-        double dim1_wr42 = fInterface->fX; // a in m
+        double dim1_wr42 = fInterface->fField->GetDimX(); // a in m
         double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
         double coupling = 0.63*sin(LMCConst::Pi()*x/dim1_wr42);  // avg over cyclotron orbit.
         return coupling*coupling;

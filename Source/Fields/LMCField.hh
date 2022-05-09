@@ -65,12 +65,27 @@ namespace locust
             void SetCentralFrequency( double aCentralFrequency );
             int GetNPixels();
             void SetNPixels( int aNumberOfPixels );
+            double GetDimX() const;
+            void SetDimX( double aDim );
+            double GetDimY() const;
+            void SetDimY( double aDim );
+            double GetDimR() const;
+            void SetDimR( double aDim );
+            double GetDimL() const;
+            void SetDimL( double aDim );
+
+
 
         private:
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTE;  // 3D vector [n-modes][n-modes][n-modes].
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTM;  // 3D vector [n-modes][n-modes][n-modes].
             double fCentralFrequency;
             int fnPixels;
+            double fR;  // Cylindrical cavity dimenions.
+            double fL;
+            double fX;  // Rectangular waveguide dimensions.
+            double fY;
+
 
 
     };
