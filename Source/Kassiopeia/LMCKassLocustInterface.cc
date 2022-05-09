@@ -48,7 +48,8 @@ namespace locust
 			fField(),
 	    	dotProductFactor( 0. ),
 	    	modeAmplitude( 0. ),
-			CavityFIRSample( 0. )
+			CavityFIRSample( 0. ),
+			fBackReaction( false )
 
     {}
 

@@ -77,6 +77,7 @@ namespace locust
     	double dotProductFactor;
     	double modeAmplitude;
     	double CavityFIRSample;
+    	bool fBackReaction;
 
 
     };

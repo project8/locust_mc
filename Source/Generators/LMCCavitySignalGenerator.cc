@@ -324,6 +324,14 @@ namespace locust
         {
             fInterface->fField = new RectangularWaveguide;
     		fPowerCombiner = new WaveguideModes;
+    		if ( aParam.has( "back-reaction" ) )
+    		{
+    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+    		}
+    		else
+    		{
+    			fInterface->fBackReaction = true;
+    		}
         }
         else
         {
