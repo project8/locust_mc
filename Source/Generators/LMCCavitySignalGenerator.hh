@@ -57,6 +57,10 @@ namespace locust
      - "equivalentR": Resistance from equivalent RLC circuit in Ohms
      - "equivalentL": Inductance from equivalent RLC circuit in Henries
      - "equivalentC": Capacitance from equivalent RLC circuit in Farads
+     - "e-gun": Select e-gun configuration instead of cavity [false].
+     - "center-to-short": distance [0.05 m] from center of e-gun waveguide to reflecting short.
+     - "center-to-antenna": distance [0.05 m] from center of e-gun waveguide to antenna.
+     - "back-reaction": optional back reaction in waveguide [true].
 
     */
 
