@@ -23,8 +23,8 @@ namespace locust
 
     	std::vector<double> aField;
     	double r, theta, zPozar, zKass = 0.;
-    	double dR = fInterface->fR/GetNPixels();
-    	double dZ = fInterface->fL/GetNPixels();
+    	double dR = GetDimR()/GetNPixels();
+    	double dZ = GetDimL()/GetNPixels();
     	double dTheta = 2.*LMCConst::Pi()/GetNPixels();
     	double tVolume = 0.;
     	double tIntegral = 0.;
@@ -36,7 +36,7 @@ namespace locust
     	    		r = (double)i*dR;
     	    		theta = (double)j*dTheta;
     	    		zPozar = (double)k*dZ;
-    	    		zKass = zPozar - fInterface->fL/2.;
+    	    		zKass = zPozar - GetDimL()/2.;
 
     	    		if (teMode)
     	    		{
@@ -77,7 +77,7 @@ namespace locust
     	return tIntegral;
     }
 
-    double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP, bool towardAntenna)
     {
     	// fix me (placeholder)
     	return 0.;
@@ -89,8 +89,8 @@ namespace locust
     {
     	double Z_TE = 1.0;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / fInterface->fR;
-    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k1 = x_lm / GetDimR();
+    	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double k0 = fcyc / LMCConst::C();
     	double A = 1.;
@@ -115,8 +115,8 @@ namespace locust
     {
     	double Z_TM = 1.0;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / fInterface->fR;
-    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k1 = x_lm / GetDimR();
+    	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double k0 = fcyc / LMCConst::C();
     	double A = 1.;
@@ -141,13 +141,13 @@ namespace locust
     std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
 
-    	double z = zKass + fInterface->fL/2.;
+    	double z = zKass + GetDimL()/2.;
 
     	// from Pozar
     	std::vector<double> TE_E;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / fInterface->fR;
-    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k1 = x_lm / GetDimR();
+    	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
@@ -174,13 +174,13 @@ namespace locust
     std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
 
-    	double z = zKass + fInterface->fL/2.;
+    	double z = zKass + GetDimL()/2.;
 
     	// from Pozar
     	std::vector<double> TE_H;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / fInterface->fR;
-    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k1 = x_lm / GetDimR();
+    	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);
@@ -207,13 +207,13 @@ namespace locust
 
     std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
-    	double z = zKass + fInterface->fL/2.;
+    	double z = zKass + GetDimL()/2.;
 
     	// from Pozar
     	std::vector<double> TM_E;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / fInterface->fR;
-    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k1 = x_lm / GetDimR();
+    	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
@@ -241,13 +241,13 @@ namespace locust
 
     std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
     {
-    	double z = zKass + fInterface->fL/2.;
+    	double z = zKass + GetDimL()/2.;
 
     	// from Pozar
     	std::vector<double> TM_H;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / fInterface->fR;
-    	double k3 = n * LMCConst::Pi() / fInterface->fL;
+    	double k1 = x_lm / GetDimR();
+    	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r);

@@ -23,8 +23,8 @@ namespace locust
 
     	std::vector<double> aField;
     	double xPozar, yPozar, xKass, yKass = 0.;
-    	double dX = fInterface->fX/GetNPixels();
-    	double dY = fInterface->fY/GetNPixels();
+    	double dX = GetDimX()/GetNPixels();
+    	double dY = GetDimY()/GetNPixels();
     	double tArea = 0.;
     	double tIntegral = 0.;
 
@@ -33,8 +33,8 @@ namespace locust
     		{
     	    	xPozar = (double)i*dX;
     	    	yPozar = (double)j*dY;
-   	    		xKass = xPozar - fInterface->fX/2.;
-   	    		yKass = yPozar - fInterface->fY/2.;
+   	    		xKass = xPozar - GetDimX()/2.;
+   	    		yKass = yPozar - GetDimY()/2.;
 
     	    	if (teMode)
     	    	{
@@ -82,13 +82,13 @@ namespace locust
     	if ((m<2)&&(n<1))  // most likely case
     	{
     		// rad/s
-    		CutOffFrequency = LMCConst::C() * LMCConst::Pi() / fInterface->fX;
+    		CutOffFrequency = LMCConst::C() * LMCConst::Pi() / GetDimX();
     	}
     	else  // general case
     	{
     		// rad/s
     		CutOffFrequency = LMCConst::C() *
-    				sqrt(pow(m*LMCConst::Pi()/fInterface->fX,2.) + sqrt(pow(n*LMCConst::Pi()/fInterface->fY,2.)));
+    				sqrt(pow(m*LMCConst::Pi()/GetDimX(),2.) + sqrt(pow(n*LMCConst::Pi()/GetDimY(),2.)));
     	}
         double GroupVelocity = LMCConst::C() * pow( 1. - pow(CutOffFrequency/fcyc, 2.) , 0.5);
         //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
@@ -96,11 +96,20 @@ namespace locust
     }
 
 
-    double RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    double RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP, bool towardAntenna)
     {
+    	double zVelocity = 0.;
+		if (towardAntenna)
+		{
+			zVelocity = tKassParticleXP[5];
+		}
+		else
+		{
+			zVelocity = -tKassParticleXP[5];
+		}
+
     	double fcyc = tKassParticleXP[7];
     	double groupVelocity = GetGroupVelocity(m,n,fcyc);
-    	double zVelocity = tKassParticleXP[5];
         double gammaZ = 1.0 / pow(1.0-pow(zVelocity/groupVelocity,2.),0.5);
         double fPrime = fcyc * gammaZ * (1.+zVelocity/groupVelocity);
     	return fPrime;
@@ -109,8 +118,8 @@ namespace locust
 
     double RectangularWaveguide::Z_TE(int l, int m, int n, double fcyc) const
     {
-    	double k1 = m * LMCConst::Pi() / fInterface->fX;
-    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double k1 = m * LMCConst::Pi() / GetDimX();
+    	double k2 = n * LMCConst::Pi() / GetDimY();
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );
     	double k = fcyc / LMCConst::C();
@@ -122,8 +131,8 @@ namespace locust
 
     double RectangularWaveguide::Z_TM(int l, int m, int n, double fcyc) const
     {
-    	double k1 = m * LMCConst::Pi() / fInterface->fX;
-    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double k1 = m * LMCConst::Pi() / GetDimX();
+    	double k2 = n * LMCConst::Pi() / GetDimY();
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );
     	double k = fcyc / LMCConst::C();
@@ -137,17 +146,17 @@ namespace locust
     std::vector<double> RectangularWaveguide::TE_E(int m, int n, double xKass, double yKass, double fcyc) const
     {
 
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + GetDimX()/2.;
+    	double y = yKass + GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TE_E;
-    	double k1 = m * LMCConst::Pi() / fInterface->fX;
-    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double k1 = m * LMCConst::Pi() / GetDimX();
+    	double k2 = n * LMCConst::Pi() / GetDimY();
     	double kc = pow(k1*k1+k2*k2,0.5);
 
-    	double tEx = fcyc*LMCConst::MuNull()*n*LMCConst::Pi()/kc/kc/fInterface->fY * cos(k1*x) * sin(k2*y);
-    	double tEy = -fcyc*LMCConst::MuNull()*m*LMCConst::Pi()/kc/kc/fInterface->fX * sin(k1*x) * cos(k2*y);
+    	double tEx = fcyc*LMCConst::MuNull()*n*LMCConst::Pi()/kc/kc/GetDimY() * cos(k1*x) * sin(k2*y);
+    	double tEy = -fcyc*LMCConst::MuNull()*m*LMCConst::Pi()/kc/kc/GetDimX() * sin(k1*x) * cos(k2*y);
     	TE_E.push_back(tEx);
     	TE_E.push_back(tEy);
         return TE_E;
@@ -155,19 +164,19 @@ namespace locust
 
     std::vector<double> RectangularWaveguide::TE_H(int m, int n, double xKass, double yKass, double fcyc) const
     {
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + GetDimX()/2.;
+    	double y = yKass + GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TE_H;
-    	double k1 = m * LMCConst::Pi() / fInterface->fX;
-    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double k1 = m * LMCConst::Pi() / GetDimX();
+    	double k2 = n * LMCConst::Pi() / GetDimY();
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double k = fcyc * sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
     	double beta = sqrt(k*k - kc*kc);
 
-    	double tHx = beta*m*LMCConst::Pi()/kc/kc/fInterface->fX * sin(k1*x) * cos(k2*y);
-    	double tHy = beta*n*LMCConst::Pi()/kc/kc/fInterface->fY * cos(k1*x) * sin(k2*y);
+    	double tHx = beta*m*LMCConst::Pi()/kc/kc/GetDimX() * sin(k1*x) * cos(k2*y);
+    	double tHy = beta*n*LMCConst::Pi()/kc/kc/GetDimY() * cos(k1*x) * sin(k2*y);
 
     	TE_H.push_back(tHx);
     	TE_H.push_back(tHy);
@@ -177,19 +186,19 @@ namespace locust
 
     std::vector<double> RectangularWaveguide::TM_E(int m, int n, double xKass, double yKass, double fcyc) const
     {
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + GetDimX()/2.;
+    	double y = yKass + GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TM_E;
-    	double k1 = m * LMCConst::Pi() / fInterface->fX;
-    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double k1 = m * LMCConst::Pi() / GetDimX();
+    	double k2 = n * LMCConst::Pi() / GetDimY();
     	double kc = pow(k1*k1+k2*k2,0.5);
     	double k = fcyc * sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
     	double beta = sqrt(k*k - kc*kc);
 
-    	double tEx = beta*m*LMCConst::Pi()/kc/kc/fInterface->fX * cos(k1*x) * sin(k2*y);
-    	double tEy = beta*n*LMCConst::Pi()/kc/kc/fInterface->fY * sin(k1*x) * cos(k2*y);
+    	double tEx = beta*m*LMCConst::Pi()/kc/kc/GetDimX() * cos(k1*x) * sin(k2*y);
+    	double tEy = beta*n*LMCConst::Pi()/kc/kc/GetDimY() * sin(k1*x) * cos(k2*y);
     	TM_E.push_back(tEx);
     	TM_E.push_back(tEy);
         return TM_E;
@@ -197,17 +206,17 @@ namespace locust
 
     std::vector<double> RectangularWaveguide::TM_H(int m, int n, double xKass, double yKass, double fcyc) const
     {
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + GetDimX()/2.;
+    	double y = yKass + GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TM_H;
-    	double k1 = m * LMCConst::Pi() / fInterface->fX;
-    	double k2 = n * LMCConst::Pi() / fInterface->fY;
+    	double k1 = m * LMCConst::Pi() / GetDimX();
+    	double k2 = n * LMCConst::Pi() / GetDimY();
     	double kc = pow(k1*k1+k2*k2,0.5);
 
-    	double tHx = fcyc*LMCConst::EpsNull()*n*LMCConst::Pi()/kc/kc/fInterface->fY * sin(k1*x) * cos(k2*y);
-    	double tHy = fcyc*LMCConst::EpsNull()*m*LMCConst::Pi()/kc/kc/fInterface->fX * cos(k1*x) * sin(k2*y);
+    	double tHx = fcyc*LMCConst::EpsNull()*n*LMCConst::Pi()/kc/kc/GetDimY() * sin(k1*x) * cos(k2*y);
+    	double tHy = fcyc*LMCConst::EpsNull()*m*LMCConst::Pi()/kc/kc/GetDimX() * cos(k1*x) * sin(k2*y);
     	TM_H.push_back(tHx);
     	TM_H.push_back(tHy);
         return TM_H;

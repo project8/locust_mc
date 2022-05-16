@@ -27,8 +27,8 @@ namespace locust
 
     	std::vector<double> aField;
     	double xPozar, yPozar, xKass, yKass = 0.;
-    	double dX = fInterface->fX/GetNPixels();
-    	double dY = fInterface->fY/GetNPixels();
+    	double dX = fInterface->fField->GetDimX()/GetNPixels();
+    	double dY = fInterface->fField->GetDimY()/GetNPixels();
     	double tArea = 0.;
     	double tIntegral = 0.;
 
@@ -37,8 +37,8 @@ namespace locust
     		{
     	    	xPozar = (double)i*dX;
     	    	yPozar = (double)j*dY;
-   	    		xKass = xPozar - fInterface->fX/2.;
-   	    		yKass = yPozar - fInterface->fY/2.;
+   	    		xKass = xPozar - fInterface->fField->GetDimX()/2.;
+   	    		yKass = yPozar - fInterface->fField->GetDimY()/2.;
 
     	    	if (teMode)
     	    	{
@@ -82,8 +82,8 @@ namespace locust
     std::vector<double> HFSSFieldMap::TE_E(int m, int n, double xKass, double yKass) const
     {
 
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + fInterface->fField->GetDimX()/2.;
+    	double y = yKass + fInterface->fField->GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TE_E;
@@ -92,8 +92,8 @@ namespace locust
 
     std::vector<double> HFSSFieldMap::TE_H(int m, int n, double xKass, double yKass) const
     {
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + fInterface->fField->GetDimX()/2.;
+    	double y = yKass + fInterface->fField->GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TE_H;
@@ -102,8 +102,8 @@ namespace locust
 
     std::vector<double> HFSSFieldMap::TM_E(int m, int n, double xKass, double yKass) const
     {
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + fInterface->fField->GetDimX()/2.;
+    	double y = yKass + fInterface->fField->GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TM_E;
@@ -112,8 +112,8 @@ namespace locust
 
     std::vector<double> HFSSFieldMap::TM_H(int m, int n, double xKass, double yKass) const
     {
-    	double x = xKass + fInterface->fX/2.;
-    	double y = yKass + fInterface->fY/2.;
+    	double x = xKass + fInterface->fField->GetDimX()/2.;
+    	double y = yKass + fInterface->fField->GetDimY()/2.;
 
     	// from Pozar
     	std::vector<double> TM_H;

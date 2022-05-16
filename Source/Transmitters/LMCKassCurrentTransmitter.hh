@@ -42,7 +42,7 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
-        std::vector<double> ExtractParticleXP(double TOld);
+        std::vector<double> ExtractParticleXP(double TOld, bool Interpolate);
 
 
     private:

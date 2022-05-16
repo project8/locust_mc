@@ -16,6 +16,7 @@
 #include "LMCEquivalentCircuit.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
+#include "LMCFieldCalculator.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
 #include "LMCRectangularWaveguide.hh" // : LMCField
@@ -56,6 +57,10 @@ namespace locust
      - "equivalentR": Resistance from equivalent RLC circuit in Ohms
      - "equivalentL": Inductance from equivalent RLC circuit in Henries
      - "equivalentC": Capacitance from equivalent RLC circuit in Farads
+     - "e-gun": Select e-gun configuration instead of cavity [false].
+     - "center-to-short": distance [0.05 m] from center of e-gun waveguide to reflecting short.
+     - "center-to-antenna": distance [0.05 m] from center of e-gun waveguide to antenna.
+     - "back-reaction": optional back reaction in waveguide [true].
 
     */
 
@@ -105,11 +110,6 @@ namespace locust
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
             void InitializeBuffers(unsigned filterbuffersize);
-            std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tLocation, bool tElectric);
-            std::vector<double> GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
-            double GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized);
-            double GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized);
-            double GetCavityFIRSample(std::vector<double> tKassParticleXP, std::vector<std::deque<double>> tLocalFIRfrequencyBuffer, std::vector<std::deque<double>> tLocalElementFIRBuffer,int nFilterBinsRequired, double dtFilter);
 
 
             bool DoGenerate( Signal* aSignal );
