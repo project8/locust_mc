@@ -28,33 +28,33 @@ public:
 
     constexpr static double Q()
     {
-        return 1.60217653E-19;
+        return 1.602176634E-19;  // updated from https://pdg.lbl.gov/2021
     } //!< elementary charge  in C(>0)
 
     constexpr static double Hbar()
     {
-        return 1.05457168E-34;
+        return 1.054571817E-34; // updated from https://pdg.lbl.gov/2021
     }//!< hbar in J s-1
 
     constexpr static double HbarC_eV()
     {
-        return 197.326968E-9;
+    	return 197.3269804; // updated from https://pdg.lbl.gov/2021
     }//!<hbar c in m eV.
 
     constexpr static double kB()
     {
-        return 1.3806505E-23;
+        return 1.380649E-23; // updated from https://pdg.lbl.gov/2021
     }//!< Boltzmann constant J/K
 
     constexpr static double kB_eV()
     {
-        return 8.617343E-5;
+        return 8.617333262E-5; // updated from https://pdg.lbl.gov/2021
     }//!< Boltzmann constant eV/K
 
     //EM coupling constants
     constexpr static double EpsNull()
     {
-        return 8.854187817E-12;
+        return 8.8541878128E-12; // updated from https://pdg.lbl.gov/2021
     } //!< epsilon0, Constant of Newtons force.
 
     constexpr static double FourPiEps()
@@ -70,12 +70,12 @@ public:
     //masses
     constexpr static double M_el_kg()
     {
-        return 9.1093826E-31;
+        return 9.1093837015E-31; // updated from https://pdg.lbl.gov/2021
     } //!< electron mass in kg
 
     constexpr static double M_el_eV()
     {
-        return 510.998918E3;
+        return 510.998950E3; // updated from https://pdg.lbl.gov/2021
     } //!< electron mass in ev/c^2
 
     constexpr static double a0()
@@ -85,7 +85,7 @@ public:
 
     constexpr static double E_Rydberg()
     {
-        return 13.605693009;
+        return 13.605693122994; // updated from https://pdg.lbl.gov/2021
     } //!< hydrogen ionization energy in eV
 
 };
