@@ -62,6 +62,8 @@ namespace locust
             void SetSpline(Particle);
 
         private:
+            void CalcAcceleration();
+        
             double fTime; //Time of node given from kassiopeia
             double fTimeDisplacement;//Allows us to interpolate particle locally around node
             double fTimeStep;//Time Step to next node
