@@ -6,6 +6,8 @@ if( locust_mc_ENABLE_TESTING )
     
     set( programs
         test_new_app_with_options
+        testFFT
+        testMockEGun
     )    
     
     pbuilder_executables( programs lib_dependencies )
