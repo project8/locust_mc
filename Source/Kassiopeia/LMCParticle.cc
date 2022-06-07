@@ -140,6 +140,11 @@ namespace locust
     {
         return fLarmorPower;
     }
+    
+    void Particle::CalcLarmorPower()
+    {
+		fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (LMCConst::FourPiEps() * pow( LMCConst::C() , 3.) );
+	}
 
     void Particle::SetKinematicProperties()
     {
@@ -148,10 +153,9 @@ namespace locust
         fGamma = 1. / sqrt(( 1. - tBeta ) * ( 1. + tBeta ));
         
         CalcAcceleration();
+        CalcLarmorPower();
         
 		fAcceleration = fNewAcceleration;
-
-        fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (LMCConst::FourPiEps() * pow( LMCConst::C() , 3.) );
 
         fVelocityParallel=fVelocity.Dot(fMagneticField.Unit());
         LMCThreeVector vPerp = fVelocity - fVelocityParallel * fMagneticField.Unit();
@@ -175,6 +179,25 @@ namespace locust
 
         return;
     }
+    
+    void Particle::CalcNewPosition(double tCyclotronFrequency)
+    {
+		fNewPosition = fGuidingCenterPosition 
+						+ fVelocityParallel * fMagneticField.Unit() * fTimeDisplacement 
+						+ fCyclotronRadius * ( cos( tCyclotronFrequency * fTimeDisplacement) * fAlpha 
+						+ sin( tCyclotronFrequency * fTimeDisplacement) * fBeta) 
+						+ fSplineC * pow( fTimeDisplacement / fTimeStep , 3. ) 
+						+ fSplineD * pow( fTimeDisplacement / fTimeStep, 4. );
+	}
+	
+	void Particle::CalcNewVelocity(double tCyclotronFrequency)
+	{
+		fNewVelocity = fVelocityParallel * fMagneticField.Unit() 
+						+ fCyclotronRadius * fCyclotronFrequency *( - sin(tCyclotronFrequency * fTimeDisplacement) * fAlpha 
+						+ cos( tCyclotronFrequency * fTimeDisplacement ) * fBeta ) 
+						+ 3. * fSplineC * pow( fTimeDisplacement / fTimeStep, 2. ) / fTimeStep 
+						+ 4. * fSplineD * pow( fTimeDisplacement / fTimeStep, 3. ) / fTimeStep;
+	}
 
     void Particle::Interpolate(double tNew)
     {
@@ -183,10 +206,8 @@ namespace locust
         double tCyclotronFrequency = fCyclotronFrequency;
         if(fCharge<0) tCyclotronFrequency *= -1.;
 
-        fNewPosition = fGuidingCenterPosition + fVelocityParallel * fMagneticField.Unit() * fTimeDisplacement + fCyclotronRadius * ( cos( tCyclotronFrequency * fTimeDisplacement) * fAlpha + sin( tCyclotronFrequency * fTimeDisplacement) * fBeta) + fSplineC * pow( fTimeDisplacement / fTimeStep , 3. ) + fSplineD * pow( fTimeDisplacement / fTimeStep, 4. );
-
-        fNewVelocity = fVelocityParallel * fMagneticField.Unit() + fCyclotronRadius * fCyclotronFrequency *( - sin(tCyclotronFrequency * fTimeDisplacement) * fAlpha + cos( tCyclotronFrequency * fTimeDisplacement ) * fBeta ) + 3. * fSplineC * pow( fTimeDisplacement / fTimeStep, 2. ) / fTimeStep + 4. * fSplineD * pow( fTimeDisplacement / fTimeStep, 3. ) / fTimeStep;
-
+        CalcNewPosition(tCyclotronFrequency);
+        CalcNewVelocity(tCyclotronFrequency);
         CalcAcceleration();
 
         return;
