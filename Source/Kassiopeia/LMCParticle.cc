@@ -143,7 +143,13 @@ namespace locust
     
     void Particle::CalcLarmorPower()
     {
-		fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (LMCConst::FourPiEps() * pow( LMCConst::C() , 3.) );
+		//fLarmorPower = 2. / 3. * pow(fCharge , 2.) * fAcceleration.MagnitudeSquared() / (LMCConst::FourPiEps() * pow( LMCConst::C() , 3.) );
+		double c3 = LMCConst::C()*LMCConst::C()*LMCConst::C();
+		double gamma2 = fGamma*fGamma;
+		double gamma4 = gamma2*gamma2;
+		
+		//see Jackson 3rd edition 14.46
+		fLarmorPower = 2./3. * fCharge*fCharge * fAcceleration.MagnitudeSquared() / (LMCConst::FourPiEps() *  c3) * gamma4;
 	}
 
     void Particle::SetKinematicProperties()
