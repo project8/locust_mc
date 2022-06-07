@@ -4,7 +4,21 @@
  *  Created on: Jun 7, 2022
  *      Author: P. L. Slocum
  *
- *  Output examples:
+ *  This unit test calculates total detected power around a point source with total emitted power 1.e-15 W.
+ *  As a separate functionality, it also accepts power [Watts] detected at an antenna with an effective
+ *  aperture of 1.e-5 m^2, and derives the expected E-field amplitudes at that antenna.
+ *
+ *  For example, for a detected power of 2.e-19 Watts at the antenna, the command:
+ *
+ *  bin/testMockFreeField -i 2.e-19
+ *
+ *  produces the output below, showing that the E-field amplitude expected at the antenna is 2.74e-6 V/m.
+ *
+ *  2022-06-07 16:57:45 [ PROG] (tid 140283443030976) MockFreeField.cc(90): power of original data is: 1e-15 Watts
+ *  2022-06-07 16:57:45 [ PROG] (tid 140283443030976) MockFreeField.cc(108): power of transformed data is: 1e-15 Watts
+ *  2022-06-07 16:57:45 [ PROG] (tid 140283443030976) MockFreeField.cc(112): Hooray, energy is conserved!
+ *  2022-06-07 16:57:45 [ PROG] (tid 140283443030976) MockFreeField.cc(114): E-field amplitude should be: 2.74492e-06
+ *
  *
  */
 

@@ -4,7 +4,17 @@
  *  Created on: Jun 6, 2022
  *      Author: P. L. Slocum
  *
- *  Output examples:
+ *  This unit test runs a complex FFT on a complex signal.  It compares power in the signal before
+ *  and after the FFT.
+ *
+ *  For example, the command:
+ *
+ *  > bin/testFFT
+ *
+ *  produces the output below:
+ *
+ *  2022-06-07 17:13:26 [ PROG] (tid 140294184725440) ation/testFFT.cc(59): power of original data time series is: 1000
+ *  2022-06-07 17:13:26 [ PROG] (tid 140294184725440) ation/testFFT.cc(77): power of transform is: 1000
  *
  */
 

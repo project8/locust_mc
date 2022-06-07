@@ -1,12 +1,28 @@
 /*
- * testFFT.cc
+ * testMockEGun.cc
  *
  *  Created on: Jun 7, 2022
  *      Author: P. L. Slocum
  *
  *  Output examples:
  *
+ *  This unit test calculates power detected in a rectangular waveguide in which a
+ *  26 GHz electron is undergoing cyclotron motion.  Total power emitted by the electron
+ *  is 1.e-15 W.  One-way power detected at one end of the waveguide is reduced by half,
+ *  and again by 0.4 due to average dot product with the mode field.
+ *
+ *  For example, the command:
+ *
+ *  > bin/testMockEGun
+ *
+ *  produces the output below:
+ *
+ *  2022-06-07 17:08:54 [ PROG] (tid 140543355190208) /testMockEGun.cc(63): power of original data time series is: 2e-16
+ *  2022-06-07 17:08:54 [ PROG] (tid 140543355190208) /testMockEGun.cc(81): power of transformed data is: 2e-16
+ *
+ *  This output aligns with our typical e-gun simulation results.
  */
+
 
 #include "application.hh"
 #include "logger.hh"
@@ -15,7 +31,7 @@
 
 using namespace scarab;
 
-LOGGER( testlog, "testFFT" );
+LOGGER( testlog, "testMockEGun" );
 
 class test_app : public main_app
 {
