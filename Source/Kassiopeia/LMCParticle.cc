@@ -65,12 +65,7 @@ namespace locust
     {
         return aInterpolated ? fNewPosition : fPosition;
     }
-    
-    void Particle::CalcAcceleration()
-    {
-		fNewAcceleration = fCharge/(fGamma*fMass)*fNewVelocity.Cross(fMagneticField);
-	}
-
+   
     void Particle::SetVelocityVector(double Vx, double Vy, double Vz)
     {
         fVelocity.SetComponents(Vx,Vy,Vz);
@@ -158,7 +153,7 @@ namespace locust
         double tBeta = fVelocity.Magnitude() / LMCConst::C();
         fGamma = 1. / sqrt(( 1. - tBeta ) * ( 1. + tBeta ));
         
-        CalcAcceleration();
+        CalcNewAcceleration();
         CalcLarmorPower();
         
 		fAcceleration = fNewAcceleration;
@@ -204,6 +199,11 @@ namespace locust
 						+ 3. * fSplineC * pow( fTimeDisplacement / fTimeStep, 2. ) / fTimeStep 
 						+ 4. * fSplineD * pow( fTimeDisplacement / fTimeStep, 3. ) / fTimeStep;
 	}
+	
+	void Particle::CalcNewAcceleration()
+    {
+		fNewAcceleration = fCharge/(fGamma*fMass)*fNewVelocity.Cross(fMagneticField);
+	}
 
     void Particle::Interpolate(double tNew)
     {
@@ -214,7 +214,7 @@ namespace locust
 
         CalcNewPosition(tCyclotronFrequency);
         CalcNewVelocity(tCyclotronFrequency);
-        CalcAcceleration();
+        CalcNewAcceleration();
 
         return;
     }
