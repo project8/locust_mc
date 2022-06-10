@@ -610,7 +610,7 @@ namespace locust
     						double totalScalingFactor = sqrt(50.) * unitConversion;
     						if (!fE_Gun)
     						{
-    							fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyCavity, dt, fphiLO, totalScalingFactor, sampleIndex);
+    							fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyCavity, dt, fphiLO, totalScalingFactor, sampleIndex);
     						}
     						else
     						{

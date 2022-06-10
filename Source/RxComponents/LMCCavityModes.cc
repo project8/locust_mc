@@ -68,7 +68,6 @@ namespace locust
 
 	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
 	{
-
 		SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
 		fOrbitPhase += particleXP[7] * dt;
 		double phaseLag = GetVoltagePhase() - fOrbitPhase;
