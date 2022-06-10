@@ -79,9 +79,14 @@ namespace locust
 
     double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP, bool towardAntenna)
     {
-    	// fix me (placeholder)
-    	return 0.;
-//    	return tKassParticleXP[7];  // fcyc
+    	double vz = tKassParticleXP[5];
+    	double term1 = fInterface->fBesselNKPrimeZeros[l][m] / GetDimR();
+    	double term2 = n * LMCConst::Pi() / GetDimL();
+    	double lambda = 1. / pow( 1. / 4. / LMCConst::Pi() / LMCConst::Pi() * ( term1*term1 + term2*term2 ), 0.5);
+    	double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fInterface->fBesselNKPrimeZeros[l][m];
+    	double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
+    	double dopplerShift = vz / vp;
+    	return ( 1. + dopplerShift ) * tKassParticleXP[7];
     }
 
 
