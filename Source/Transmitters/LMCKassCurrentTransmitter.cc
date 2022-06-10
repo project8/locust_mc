@@ -96,12 +96,22 @@ namespace locust
 
 
 
-    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld)
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate)
     {
 
-        int currentIndex = FindNode(TOld);
-        locust::Particle tParticle = fInterface->fParticleHistory[currentIndex];
-        tParticle.Interpolate(TOld);
+    	locust::Particle tParticle;
+
+    	if (!Interpolate)
+    	{
+    		tParticle = fInterface->fParticleHistory.back();
+    	}
+    	else
+    	{
+    		int currentIndex = FindNode(TOld);
+    		tParticle = fInterface->fParticleHistory[currentIndex];
+    		tParticle.Interpolate(TOld);
+    	}
+
 
         double tposX = tParticle.GetPosition(true).X();
         double tposY = tParticle.GetPosition(true).Y();
@@ -122,6 +132,7 @@ namespace locust
         particleXP[6] = calcOrbitPhase(tvX, tvY);
         particleXP[7] = tParticle.GetCyclotronFrequency();
         particleXP[8] = tParticle.GetLarmorPower();
+
 
     	return particleXP;
     }
