@@ -49,8 +49,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=${locust_mc_BUILD_TYPE} --Dlocust_mc_ENABLE_EXECUTABLES=${locust_mc_ENABLE_EXECUTABLES} --Dlocust_mc_ENABLE_TESTING=${locust_mc_ENABLE_TESTING} --
-Dlocust_mc_BUILD_WITH_KASSIOPEIA=${locust_mc_BUILD_WITH_KASSIOPEIA} ..
+          cmake -DCMAKE_BUILD_TYPE=${locust_mc_BUILD_TYPE} -Dlocust_mc_ENABLE_EXECUTABLES=${locust_mc_ENABLE_EXECUTABLES} -Dlocust_mc_ENABLE_TESTING=${locust_mc_ENABLE_TESTING} -Dlocust_mc_BUILD_WITH_KASSIOPEIA=${locust_mc_BUILD_WITH_KASSIOPEIA} ..
 
       - name: CMake Build
         run: |
