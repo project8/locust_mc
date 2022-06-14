@@ -21,6 +21,7 @@ jobs:
     steps:
 
       - name: Checkout the repo 
+        fetchDepth: 0
         uses: actions/checkout@v2
         with:
           submodules: recursive
