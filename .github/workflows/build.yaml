@@ -3,7 +3,7 @@ name: Build and Test Locust
 on:
   pull_request:
   push:
-    branches: [feature/Testing]
+    branches: [featureTesting]
     tags: ['*']
 
 
