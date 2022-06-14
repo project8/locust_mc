@@ -29,7 +29,7 @@ jobs:
     steps:
 
       - name: Checkout reposistory
-        uses: actions/checkout@featureTesting
+        uses: actions/checkout@master
         with:
           submodules: recursive
 
@@ -72,7 +72,7 @@ jobs:
           Source/Testing/RunTests
 
 # For debugging
-#      - name: Setup tmate session
-#        if: ${{ ! success() }}
-#        uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        if: ${{ ! success() }}
+        uses: mxschmitt/action-tmate@v3
 
