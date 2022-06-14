@@ -1,6 +1,11 @@
 name: Build and Test Locust
 
-on: [push]
+on:
+  pull_request:
+  push:
+    branches: [feature/Testing]
+    tags: ['*']
+
 
 env:
   locust_mc_BUILD_WITH_KASSIOPEIA: OFF
@@ -24,7 +29,7 @@ jobs:
     steps:
 
       - name: Checkout reposistory
-        uses: actions/checkout@feature/Testing
+        uses: actions/checkout@featureTesting
         with:
           submodules: recursive
 
@@ -66,4 +71,8 @@ jobs:
           cd build
           Source/Testing/RunTests
 
+# For debugging
+#      - name: Setup tmate session
+#        if: ${{ ! success() }}
+#        uses: mxschmitt/action-tmate@v3
 
