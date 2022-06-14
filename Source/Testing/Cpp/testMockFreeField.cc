@@ -28,6 +28,7 @@
 #include <math.h>
 #include "LMCConst.hh"
 
+
 using namespace scarab;
 
 LOGGER( testlog, "testMockFreeField" );

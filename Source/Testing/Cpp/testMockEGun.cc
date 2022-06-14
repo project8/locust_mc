@@ -28,6 +28,7 @@
 #include "logger.hh"
 #include <fftw3.h>
 #include <math.h>
+#include "catch.hpp"
 
 using namespace scarab;
 
@@ -47,15 +48,13 @@ class test_app : public main_app
 
 };
 
-int main( int argc, char **argv )
+double GetPower()
 {
 
 	double larmorPower = 1.e-15;
 	double halfPower = 0.5; // Fraction that propagates in one direction in the waveguide.
 	double dotProductFactor = 0.4; // Average loss due to dot product between velocity and TE01 in rectangular waveguide.
 
-    test_app the_main;
-    CLI11_PARSE( the_main, argc, argv );
 
 	fftw_plan plan;
 	fftw_complex *data;
@@ -76,8 +75,6 @@ int main( int argc, char **argv )
 	    pdata += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
 
-	LPROG(testlog, "power of original data time series is: " << pdata/N0);
-
 	/* compute transform, in-place */
 	fftw_execute(plan);
 
@@ -93,27 +90,19 @@ int main( int argc, char **argv )
 	    ptransform += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
 
+	fftw_destroy_plan(plan);
 
-	  LPROG(testlog, "power of transformed data is: " << ptransform/N0);
+    return ptransform/N0;
 
-	  if (fabs(pdata-ptransform) < 1.e-4*pdata)
-	  {
-		  LPROG(testlog, "Hooray, energy is conserved! ");
-		  LPROG(testlog, "Press return to continue ... ");
-		  getchar();
-	  }
-	  else
-	  {
-		  LERROR(testlog, "Something went wrong, energy is not being conserved.");
-		  LERROR(testlog, "power of original data time series is: " << pdata);
-		  LERROR(testlog, "but power of transform is: " << ptransform);
-		  LPROG(testlog, "Press return to continue ... ");
-		  getchar();
-	  }
-
-
-	  fftw_destroy_plan(plan);
-
-
-    return 0;
 }
+
+
+TEST_CASE( "Larmor power fraction. (pass)", "[single-file]" )
+{
+	double expectedPower = 2.e-16;
+	double threshold = 1.e-4;
+    REQUIRE( fabs(GetPower() - 2.e-16) <= threshold*expectedPower );
+}
+
+
+
