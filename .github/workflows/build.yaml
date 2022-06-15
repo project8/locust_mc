@@ -28,7 +28,7 @@ jobs:
       - name: Build and test
         run: |
           docker build \
-            --target locust_mc_done \
+            --target locust_done \
             --build-arg img_repo=${BASE_IMAGE_REPO} \
             --build-arg img_tag=${BASE_IMAGE_TAG} \
             --build-arg build_type=${locust_mc_BUILD_TYPE} \
