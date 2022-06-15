@@ -61,7 +61,8 @@ jobs:
           brew install \
             boost \
             rapidjson \
-            yaml-cpp
+            yaml-cpp \
+            hdf5
 
 
       - name: Linux Dependencies
@@ -71,7 +72,8 @@ jobs:
           sudo apt-get install -yq \
             libboost-all-dev \
             libyaml-cpp-dev \
-            rapidjson-dev
+            rapidjson-dev \
+            libhdf5-dev
           
 
       - name: Configure CMake
