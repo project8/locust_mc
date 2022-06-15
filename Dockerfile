@@ -31,6 +31,7 @@ COPY monarch /tmp_source/monarch
 COPY Scarab /tmp_source/Scarab
 COPY Source /tmp_source/Source
 COPY Config /tmp_source/Config
+RUN true
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
 RUN true
 COPY .git /tmp_source/.git
