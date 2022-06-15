@@ -62,7 +62,8 @@ jobs:
             boost \
             rapidjson \
             yaml-cpp \
-            hdf5
+            hdf5 \
+            fftw
 
 
       - name: Linux Dependencies
@@ -73,7 +74,8 @@ jobs:
             libboost-all-dev \
             libyaml-cpp-dev \
             rapidjson-dev \
-            libhdf5-dev
+            libhdf5-dev \
+            libfftw3-dev
           
 
       - name: Configure CMake
