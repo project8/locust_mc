@@ -23,7 +23,6 @@ jobs:
       - name: Checkout the repo 
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           submodules: recursive
 
       - name: Build and test
