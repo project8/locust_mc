@@ -32,7 +32,9 @@ COPY Scarab /tmp_source/Scarab
 COPY Source /tmp_source/Source
 COPY Config /tmp_source/Config
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
+RUN true
 COPY .git /tmp_source/.git
+RUN true
 
 # repeat the cmake command to get the change of install prefix to set correctly (a package_builder known issue)
 RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
@@ -44,13 +46,13 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D SET_INSTALL_PREFIX_TO_DEFAULT=FALSE \
           -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE .. &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D SET_INSTALL_PREFIX_TO_DEFAULT=FALSE \
           -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA=FALSE .. &&\
     make -j3 install &&\
     /bin/true
 
