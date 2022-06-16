@@ -204,15 +204,6 @@ if (locust_mc_ENABLE_EXECUTABLES )
     add_subdirectory( Source/Applications )
 endif (locust_mc_ENABLE_EXECUTABLES )
 
-###############
-# validation #
-###############
-
-if (locust_mc_ENABLE_TESTING )        
-#    add_subdirectory( Source/Applications/Validation )
-    add_subdirectory( Source/Testing )        
-endif (locust_mc_ENABLE_TESTING )
-
 
 ################
 # Config files #

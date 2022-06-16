@@ -281,6 +281,34 @@ if (locust_mc_BUILD_WITH_ROOT)
 endif(locust_mc_BUILD_WITH_ROOT)
 
 
+###############
+# validation #
+###############
+
+if (locust_mc_ENABLE_TESTING )        
+    set( testing_SOURCES
+        Applications/Testing/Cpp/010-TestCase.cpp  
+        Applications/Testing/Cpp/testFFT.cc  
+        Applications/Testing/Cpp/testMockEGun.cc  
+#        Applications/Testing/Cpp/testMockFreeField.cc
+    )
+         
+    set( lib_dependencies 
+        LocustMC
+    )
+        
+    add_library( Catch INTERFACE )
+    target_include_directories( Catch INTERFACE ${Scarab_LOCATION}/testing/catch )
+    
+    add_executable( RunTests ${testing_SOURCES} )
+    target_link_libraries( RunTests ${lib_dependencies} )
+       
+    
+endif (locust_mc_ENABLE_TESTING )
+
+
+
+
 pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )
 
 pbuilder_install_headers( ${LOCUST_MC_HEADER_FILES} )
