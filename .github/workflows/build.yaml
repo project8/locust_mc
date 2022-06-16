@@ -28,11 +28,9 @@ jobs:
         run: |
           docker build \
             --target locust_done \
-            --build-arg img_repo=${BASE_IMAGE_REPO} \
-            --build-arg img_tag=${BASE_IMAGE_TAG} \
             --build-arg build_type=${locust_mc_BUILD_TYPE} \
             --build-arg build_tests_exe=${locust_mc_ENABLE_TESTING} \
-            --build-arg locust_mc_tag=${locust_mc_TAG} \
+            --build-arg locust_tag=${locust_mc_TAG} \
             --tag project8/locust_mc:${locust_mc_TAG} \
             .
           docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/Source/Testing/RunTests
@@ -42,7 +40,7 @@ jobs:
 
 
 # For debugging
-      - name: Setup tmate session
-        if: ${{ ! success() }}
-        uses: mxschmitt/action-tmate@v3
+#      - name: Setup tmate session
+#        if: ${{ ! success() }}
+#        uses: mxschmitt/action-tmate@v3
 
