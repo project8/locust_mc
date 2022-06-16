@@ -30,10 +30,14 @@ jobs:
             --target locust_done \
             --build-arg build_type=${locust_mc_BUILD_TYPE} \
             --build-arg build_tests_exe=${locust_mc_ENABLE_TESTING} \
+            --build-arg locust_build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA} \
             --build-arg locust_tag=${locust_mc_TAG} \
             --tag project8/locust_mc:${locust_mc_TAG} \
-            .
-          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/Source/Testing/RunTests
+
+          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/bin/testCatch            .
+          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/bin/testFFT
+          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/bin/testMockEGun
+
 
 
 
