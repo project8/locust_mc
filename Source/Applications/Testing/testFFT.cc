@@ -1,5 +1,5 @@
 // testCatchLocust
-#define CATCH_CONFIG_MAIN
+//#define CATCH_CONFIG_MAIN
 
 
 #include "application.hh"

@@ -23,7 +23,7 @@
  *  This output aligns with our typical e-gun simulation results.
  */
 
-#define CATCH_CONFIG_MAIN
+//#define CATCH_CONFIG_MAIN
 
 #include "application.hh"
 #include "logger.hh"
