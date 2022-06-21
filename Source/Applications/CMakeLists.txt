@@ -17,3 +17,5 @@ if( locust_mc_ENABLE_EXECUTABLES )
     pbuilder_executables( programs lib_dependencies )
 
 endif( locust_mc_ENABLE_EXECUTABLES )
+
+add_subdirectory( Testing )

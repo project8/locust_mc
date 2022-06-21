@@ -8,8 +8,13 @@
 #ifndef LOCUST_LMCKASSLOCUSTINTERFACE_HH_
 #define LOCUST_LMCKASSLOCUSTINTERFACE_HH_
 
-#include "LMCParticle.hh"
 
+#include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
+#include "LMCTransmitter.hh"
+#include "LMCField.hh"
+#include "LMCParticle.hh"
+#include "LMCFieldBuffer.hh"
 #include "singleton.hh"
 
 #include <condition_variable>
@@ -55,16 +60,34 @@ namespace locust
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
 
+        // Cavity and e-gun variables:
+        TFReceiverHandler fTFReceiverHandler;
+        Transmitter* fTransmitter;
+        std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
+        int nFilterBinsRequired;
+        double dtFilter;
+        std::vector<std::deque<double>> eCurrentBuffer;
+        Field* fField;
+        std::vector<std::deque<double>> ElementFIRBuffer;
+        std::vector<std::deque<double>> FIRfrequencyBuffer;
+    	double dotProductFactor;
+    	double modeAmplitude;
+    	double CavityFIRSample;
+    	bool fBackReaction;
+
+
     };
+
 
     typedef std::shared_ptr< KassLocustInterface > kl_interface_ptr_t;
 
     class KLInterfaceBootstrapper : public scarab::singleton< KLInterfaceBootstrapper >
     {
         public:
-            kl_interface_ptr_t GetInterface() const;
 
+            kl_interface_ptr_t GetInterface() const;
             void SetInterface( kl_interface_ptr_t aInterface );
+
 
         protected:
             friend class scarab::singleton< KLInterfaceBootstrapper >;

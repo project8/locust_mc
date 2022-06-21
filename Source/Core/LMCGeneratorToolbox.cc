@@ -48,7 +48,7 @@ namespace locust
 
         if (!(aNode.has("generators")&&aNode["generators"].is_array()))
         	{
-            LERROR( lmclog, "generators array is either not present or not an array." );
+            LWARN( lmclog, "Generators array is either not present, not an array, or is configured with Scarab v2 instead of v1, which is fine." );
             return false;
         	}
 

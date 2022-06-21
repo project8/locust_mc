@@ -13,7 +13,6 @@
 #include "param.hh"
 #include "LMCThreeVector.hh"
 #include "LMCLienardWiechert.hh"
-#include "LMCGlobalsDeclaration.hh"
 
 namespace locust
 {
@@ -49,7 +48,6 @@ namespace locust
     private:
 
     	LienardWiechert fFieldSolver;
-        //LMCThreeVector fIncidentKVector;  // vector pointing from antenna to requested point of interest.
 
 
     };
