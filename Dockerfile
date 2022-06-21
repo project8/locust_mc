@@ -2,8 +2,12 @@ FROM project8/p8compute_dependencies:v0.9.0 as locust_common
 
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
-
-ENV LOCUST_TAG=v2.2.0
+ARG build_tests_exe=FALSE
+ENV LOCUST_BUILD_TESTS_EXE=$build_tests_exe
+ARG locust_build_with_kassiopeia=TRUE
+ENV LOCUST_BUILD_WITH_KASSIOPEIA=$locust_build_with_kassiopeia
+ARG locust_tag=v2.2.0
+ENV LOCUST_TAG=$locust_tag
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
@@ -28,8 +32,11 @@ COPY monarch /tmp_source/monarch
 COPY Scarab /tmp_source/Scarab
 COPY Source /tmp_source/Source
 COPY Config /tmp_source/Config
+RUN true
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
+RUN true
 COPY .git /tmp_source/.git
+RUN true
 
 # repeat the cmake command to get the change of install prefix to set correctly (a package_builder known issue)
 RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
@@ -40,12 +47,14 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D SET_INSTALL_PREFIX_TO_DEFAULT=FALSE \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
+          -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
+          -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA .. &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D SET_INSTALL_PREFIX_TO_DEFAULT=FALSE \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA=TRUE .. &&\
+          -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
+          -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA .. &&\
     make -j3 install &&\
     /bin/true
 
