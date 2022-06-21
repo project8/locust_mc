@@ -6,7 +6,8 @@ set( LOCUST_MC_DATA_FILES
     CoupledeDipoleTF.txt                 
     PatchTFLocust_wide.txt
     UncoupledMagDipoleTF.txt
-    PatchTFLocust_cropped.txt            
+    PatchTFLocust_cropped.txt
+    cavityTF.txt            
     WEGA_Impedance_Center.txt
     TF_Template.txt
 )
