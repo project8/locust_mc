@@ -91,8 +91,11 @@ namespace locust
         }
         if(fInterface->fProject8Phase==4)
         {
-            DeltaE = aFieldCalculator.GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-            aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+        	if (fInterface->fBackReaction)
+        	{
+        		DeltaE = aFieldCalculator.GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+        		aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+        	}
         }
 
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.

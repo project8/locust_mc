@@ -481,7 +481,8 @@ namespace locust
                 tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
 
                 if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
-
+                
+                PopBuffers(channelIndex, elementIndex);
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
  	            double VoltageFIRSample = GetFIRSample(nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize + fFIRzeroBuffer))
@@ -491,7 +492,6 @@ namespace locust
             	}
 
             	fPowerCombiner->AddOneVoltageToStripSum(aSignal, VoltageFIRSample, fphiLO, elementIndex, IndexBuffer[channelIndex*fNElementsPerStrip+elementIndex].front());
-                PopBuffers(channelIndex, elementIndex);
 
                 ++tTotalElementIndex;
 

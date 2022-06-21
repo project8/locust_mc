@@ -38,16 +38,14 @@ namespace locust
 			fTransmitter(),
 	        fBesselNKZeros( 0 ),
 			fBesselNKPrimeZeros( 0 ),
-			fR( 0.1 ),
-			fL( 0.2 ),
-			fnPixels( 100 ),
 	        nFilterBinsRequired( 0 ),
 	        dtFilter( 0 ),
 	        eCurrentBuffer( 0 ),
 			fField(),
 	    	dotProductFactor( 0. ),
 	    	modeAmplitude( 0. ),
-			CavityFIRSample( 0. )
+			CavityFIRSample( 0. ),
+			fBackReaction( false )
 
     {}
 

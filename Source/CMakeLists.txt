@@ -44,13 +44,15 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCTurnstileAntenna.hh
     
     Transforms/LMCHilbertTransform.hh
-    Transforms/LMCComplexFFT.hh    
+    Transforms/LMCComplexFFT.hh 
+    Transforms/LMCWindowFunctions.hh   
 
     RxComponents/LMCPowerCombinerInterface.hh
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
     RxComponents/LMCCavityModes.hh
+    RxComponents/LMCWaveguideModes.hh
     RxComponents/LMCSinglePatch.hh
     RxComponents/LMCCorporateFeed.hh
     RxComponents/LMCsMatrix.hh
@@ -64,6 +66,8 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCSinglePatchPositioner.hh
     RxComponents/LMCPlanarArrayPositioner.hh
+    RxComponents/LMCEquivalentCircuit.hh
+    RxComponents/LMCWaveguide.hh
 
 )
 
@@ -112,12 +116,14 @@ set( LOCUST_MC_SOURCE_FILES
    	Transmitters/LMCTurnstileAntenna.cc
     
     Transforms/LMCHilbertTransform.cc
-    Transforms/LMCComplexFFT.cc    
+    Transforms/LMCComplexFFT.cc
+    Transforms/LMCWindowFunctions.cc    
     
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCVoltageDivider.cc
     RxComponents/LMCSlottedWaveguide.cc
     RxComponents/LMCCavityModes.cc
+    RxComponents/LMCWaveguideModes.cc
     RxComponents/LMCSinglePatch.cc
     RxComponents/LMCCorporateFeed.cc
     RxComponents/LMCsMatrix.cc
@@ -130,6 +136,8 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCAntennaElementPositioner.cc
     RxComponents/LMCSinglePatchPositioner.cc
     RxComponents/LMCPlanarArrayPositioner.cc
+    RxComponents/LMCEquivalentCircuit.cc
+    RxComponents/LMCWaveguide.cc
 
 
 )
@@ -164,6 +172,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         
         Fields/LMCField.hh
         Fields/LMCCylindricalCavity.hh
+        Fields/LMCRectangularWaveguide.hh
+        Fields/LMCHFSSFieldMap.hh
     )
 
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
@@ -192,6 +202,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         
         Fields/LMCField.cc
         Fields/LMCCylindricalCavity.cc
+        Fields/LMCRectangularWaveguide.cc
+        Fields/LMCHFSSFieldMap.cc
     )
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 

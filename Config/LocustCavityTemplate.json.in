@@ -10,10 +10,13 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
+        "e-gun": false,
         "voltage-check": "true",
+        "shift-n-bins": 6000,
+        "zero-padding-size": 1000,
         "lo-frequency": 0.98e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
-        "tf-receiver-bin-width": 0.0005e9,
+        "tf-receiver-bin-width": 0.00005e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
     },
 
@@ -34,8 +37,8 @@
 
     "digitizer":
     {
-    	"v-range":  40.0,
-    	"v-offset": -20.0
+    	"v-range":  10.0e-11,
+    	"v-offset": -5.0e-11
     }
 
 }

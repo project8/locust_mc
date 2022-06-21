@@ -60,24 +60,20 @@ namespace locust
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
 
-        // Cavity variables:
+        // Cavity and e-gun variables:
         TFReceiverHandler fTFReceiverHandler;
         Transmitter* fTransmitter;
         std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
-        double fR;
-        double fL;
-        int fnPixels;
         int nFilterBinsRequired;
         double dtFilter;
         std::vector<std::deque<double>> eCurrentBuffer;
         Field* fField;
         std::vector<std::deque<double>> ElementFIRBuffer;
-        std::vector<std::deque<double>> ElementFIRBufferCopy;
         std::vector<std::deque<double>> FIRfrequencyBuffer;
-        std::vector<std::deque<double>> FIRfrequencyBufferCopy;
     	double dotProductFactor;
     	double modeAmplitude;
     	double CavityFIRSample;
+    	bool fBackReaction;
 
 
     };

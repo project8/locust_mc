@@ -22,8 +22,6 @@ namespace locust
     fSize(0),
     fTotalWindowSize(0),
     fZeroPaddingSize(100000),
-    fWindowFunctionType(1),
-    fWindowFunction(NULL),
     fInputArray(NULL),
     fOutputArray(NULL),
     fNShiftBins(2000),
@@ -39,7 +37,6 @@ namespace locust
             fftw_free(fInputArray);
             fInputArray = NULL;
         }
-        
         if (fOutputArray != NULL)
         {
             fftw_free(fOutputArray);
@@ -65,15 +62,14 @@ namespace locust
         {
             fZeroPaddingSize=aParam["zero-padding-size"]().as_int();
         }
-        if(aParam.has("window-function-type"))
-        {
-            fWindowFunctionType=aParam["window-function-type"]().as_int();
-        }
         if( aParam.has( "shift-n-bins" ) )
         {
             fNShiftBins=aParam["shift-n-bins"]().as_int();
         }
-        
+        if(!fWindowFunction.Configure(aParam))
+        {
+            LERROR(lmclog,"Error configuring Window Function class");
+        }
         if(fTransformFlag.compare("MEASURE"))
         {
             fTransform=Transform::measure;
@@ -86,90 +82,9 @@ namespace locust
         {
             return false;
         }
+
         IsInitialized=true;
         return true;
-    }
-    
-    bool ComplexFFT::GenerateWindowFunction()
-    {
-        if(fWindowFunctionType==0)
-	{
-            for (int i = 0; i < fTotalWindowSize; ++i)
-            {
-	        fWindowFunction.push_back(0.0);
-	    }
-            for (int i = 0; i < fTotalWindowSize; ++i)
-            {
-		if(i>fPreFilterBins && i<=fPreFilterBins+fSize)
-		{
-	            fWindowFunction[i]=1.0;
-		}
-		else
-		{
-		    fWindowFunction[i]=0.0;
-		}
-	    }
-	}
-        else if(fWindowFunctionType==1)
-	{
-	    //Tukey window is defined as 
-	    //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-1))); if 0<=n<alpha*N/2
-	    //w[n]= 1; alpha*N/2<=n<=N(1-alpha/2)
-	    //w[n]=0.5*(1+cos(pi(2n/(alpha*N)-2/alpha+1))) if N(1-alpha/2)<n<=N
-	    double tukeyWindowAlpha = 0.5;
-	    int firstWindowFirstBin = fPreFilterBins;
-	    int midWindowFirstBin = fPreFilterBins+tukeyWindowAlpha*fSize/2.0;
-	    int midWindowFinalBin = fPreFilterBins+fSize-tukeyWindowAlpha*fSize/2.0;
-	    int finalWindowFinalBin = fPreFilterBins+fSize;
-	    //std::cout<< "firstWindowFirstBin: "<<firstWindowFirstBin<<std::endl;
-	    //std::cout<< "midWindowFirstBin: "<<midWindowFirstBin<<std::endl;
-	    //std::cout<< "midWindowFinalBin: "<<midWindowFinalBin<<std::endl;
-	    //std::cout<< "finalWindowFinalBin: "<<finalWindowFinalBin<<std::endl;
-            for (int i = 0; i < fTotalWindowSize; ++i)
-            {
-	        fWindowFunction.push_back(0.0);
-	    }
-
-            for (int i = 0; i < fTotalWindowSize; ++i)
-            {
-		if(i>fPreFilterBins && i<midWindowFirstBin)
-		{
-	            fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1)));
-		}
-		else if(i>=midWindowFirstBin && i<=midWindowFinalBin)
-		{
-		    fWindowFunction[i]=1.0;
-		}
-		else if(i>midWindowFinalBin && i<=finalWindowFinalBin)
-		{
-		    fWindowFunction[i]=0.5*(1+std::cos(LMCConst::Pi()*(2*i/(tukeyWindowAlpha*fSize)-1.0/tukeyWindowAlpha+1)));
-		}
-	    }
-	}	
-	else
-	{
-	    return false;
-	}
-	return true;
-    }
-
-    bool ComplexFFT::MakeFilterCausal(fftw_complex* in)
-    {
-	std::vector<double> vectorToTransformReal;
-	std::vector<double> vectorToTransformImag;
-        for (int i = 0; i < fTotalWindowSize; ++i)
-        {
-	    vectorToTransformReal.push_back(in[i][0]);
-	    vectorToTransformImag.push_back(in[i][1]);
-	}
-	std::rotate(vectorToTransformReal.rbegin(),vectorToTransformReal.rbegin()+fNShiftBins,vectorToTransformReal.rend());
-	std::rotate(vectorToTransformImag.rbegin(),vectorToTransformImag.rbegin()+fNShiftBins,vectorToTransformImag.rend());
-        for (int i = 0; i < fTotalWindowSize; ++i)
-        {
-	    in[i][0]=vectorToTransformReal.at(i);
-	    in[i][1]=vectorToTransformReal.at(i);
-	}
-	return true;
     }
 
     bool ComplexFFT::ForwardFFT(int size, fftw_complex* in, fftw_complex* out)
@@ -194,38 +109,60 @@ namespace locust
     }
 
 
-    bool ComplexFFT::SetupIFFT(int size, double intialBinValue, double freqResolution)
+    bool ComplexFFT::SetupIFFTWindow(int size, double intialBinValue, double freqResolution, std::string windowname, double windowparam)
     {
         fSize=size;	
-	fFreqResolution=freqResolution;
-	fPreFilterBins=(int)(intialBinValue*1.0/freqResolution);
-	fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
-	fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
-	if(GenerateWindowFunction()==false)
-	{
-	    LERROR(lmclog,"Error generating window function");
-	    exit(-1);
-	}
-	return true;
+        fFreqResolution=freqResolution;
+        fPreFilterBins=(int)(intialBinValue*1.0/freqResolution);
+        fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
+        fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
+
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+
+        fWindowFunction.SetupWindow(windowname, windowparam);
+        if(!fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize))
+        {
+            LERROR(lmclog,"Error generating window function");
+            exit(-1);
+        }
+        return true;
+    }
+
+    bool ComplexFFT::SetupFFTWindow(int size, std::string windowname, double windowparam)
+    {
+        fSize=size; 
+        fPreFilterBins=0;
+        fTotalWindowSize=size;
+
+        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
+
+        fWindowFunction.SetupWindow(windowname, windowparam);
+        if(!fWindowFunction.GenerateWindowFunction(fTotalWindowSize, fPreFilterBins, fSize))
+        {
+            LERROR(lmclog,"Error generating window function");
+            exit(-1);
+        }
+        return true;
     }
 
     bool ComplexFFT::GenerateFIR(int size, fftw_complex* in, fftw_complex* out)
     {
-        fInputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
-        fOutputArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTotalWindowSize);
         if(!IsInitialized) return false;
+
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
-	    if(i>fPreFilterBins && i<fSize+fPreFilterBins)
-	    {
-              fInputArray[i][0]=fWindowFunction.at(i)*in[i-fPreFilterBins][0];
-              fInputArray[i][1]=fWindowFunction.at(i)*in[i-fPreFilterBins][1];
-	    }
-	    else
-	    {
-	      fInputArray[i][0]=0.0;
-	      fInputArray[i][1]=0.0;
-	    }
+            if(i>fPreFilterBins && i<fSize+fPreFilterBins)
+            {
+                fInputArray[i][0]=in[i-fPreFilterBins][0];
+                fInputArray[i][1]=in[i-fPreFilterBins][1];
+            }
+            else
+            {   
+                fInputArray[i][0]=0.0;
+                fInputArray[i][1]=0.0;
+            }
         }
 
         ReverseFFT(fTotalWindowSize, fInputArray, fOutputArray);
@@ -235,15 +172,52 @@ namespace locust
         	LERROR(lmclog,"Couldn't make FIR filter causal");
         	exit(-1);
         }
-        for (int i = 0; i < 2*fSize+fNShiftBins; ++i)
+        
+        for (int i = 0; i < fSize+2*fNShiftBins; ++i)
         {
-        	out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
+            out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
         }
-        for (int i = 0; i < fSize+2*fNShiftBins; ++i){
-        	}
         return true;
     }
-    
+
+    bool ComplexFFT::ApplyWindowFunction(int size, fftw_complex* in)
+    {
+        if(!fWindowFunction.IsWindowGenerated())
+        {
+            LERROR(lmclog,"Error applying window function, it has not been generated");
+            exit(-1); 
+        }
+        const std::vector<double>* aWindowFunction=fWindowFunction.GetWindowFunction();
+        double windowfactor = 0.0;
+        for (int i = 0; i < size; ++i)
+        { 
+            windowfactor = aWindowFunction->at(i+fPreFilterBins);
+            in[i][0]*=windowfactor;
+            in[i][1]*=windowfactor;
+        }
+
+        return true;
+    }
+
+    bool ComplexFFT::MakeFilterCausal(fftw_complex* in)
+    {
+        std::vector<double> vectorToTransformReal;
+        std::vector<double> vectorToTransformImag;
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+            vectorToTransformReal.push_back(in[i][0]);
+            vectorToTransformImag.push_back(in[i][1]);
+        }
+        std::rotate(vectorToTransformReal.rbegin(),vectorToTransformReal.rbegin()+fNShiftBins,vectorToTransformReal.rend());
+        std::rotate(vectorToTransformImag.rbegin(),vectorToTransformImag.rbegin()+fNShiftBins,vectorToTransformImag.rend());
+        for (int i = 0; i < fTotalWindowSize; ++i)
+        {
+            in[i][0]=vectorToTransformReal.at(i);
+            in[i][1]=vectorToTransformReal.at(i);
+        }
+        return true;
+    }
+
     double ComplexFFT::GetTimeResolution()
     {
         return fTimeResolution;

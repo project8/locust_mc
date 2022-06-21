@@ -23,12 +23,10 @@ namespace locust
             famplifierLoss( 0.66 ),
             fendPatchLoss( 1.0 ),
             fjunctionResistance( 0.3 ),
-            fnCavityProbes( 0 ),
-            fCavityProbeImpedance( 50.0 ),
-            fCavityProbeZ( 0. ),
-            fCavityProbeTheta( 0. ),
-			fvoltageCheck( false )
-
+			fvoltageCheck( false ),
+			fNCavityModes( 0 ),
+			fCavityProbeZ( 0. ),
+			fCavityProbeRFrac( 0.5 )
     {}
     PowerCombiner::~PowerCombiner() {}
 
@@ -87,18 +85,7 @@ namespace locust
 	}
 
 
-	bool PowerCombiner::AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex)
-	{
 
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * VoltageFIRSample * totalScalingFactor * cavityProbeImpedance * cos(phi_LO);
-
-//		printf("signal is %g\n", aSignal->LongSignalTimeComplex()[sampleIndex][0]); getchar();
-
-		if ( (fvoltageCheck==true) && (sampleIndex%100 < 1) )
-			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
-		return true;
-	}
 
 
 
@@ -111,16 +98,6 @@ namespace locust
     void PowerCombiner::SetNElementsPerStrip( int aNumberOfElements )
     {
     	fnElementsPerStrip = aNumberOfElements;
-    }
-
-    int PowerCombiner::GetNCavityProbes()
-    {
-    	return fnCavityProbes;
-    }
-
-    void PowerCombiner::SetNCavityProbes( int aNumberOfProbes )
-    {
-    	fnCavityProbes = aNumberOfProbes;
     }
 
     double PowerCombiner::GetJunctionLoss()
@@ -171,58 +148,47 @@ namespace locust
     {
     	fdampingFactors[z_index] = aDampingFactor;
     }
-
-    double PowerCombiner::GetCavityProbeImpedance()
+    bool PowerCombiner::GetVoltageCheck()
     {
-    	return fCavityProbeImpedance;
+    	return fvoltageCheck;
     }
-    void PowerCombiner::SetCavityProbeImpedance( double anImpedance )
+    int PowerCombiner::GetNCavityModes()
     {
-    	fCavityProbeImpedance = anImpedance;
+        return fNCavityModes;
     }
-
-    bool PowerCombiner::SetCavityProbeLocations(int nCavityProbes, double cavityLength)
+    void PowerCombiner::SetNCavityModes( int aNumberOfModes )
     {
-
-    	SetNCavityProbes(nCavityProbes);
-    	std::vector<double> probeZ;
-    	probeZ.resize(nCavityProbes);
-
-    	std::vector<double> probeTheta;
-    	probeTheta.resize(nCavityProbes);
-
-    	double probeSpacing = cavityLength / ((double)nCavityProbes + 1.);
-
-		for (unsigned index=0; index<probeZ.size(); index++)
-		{
-			probeZ[index] = -cavityLength/2. + (index+1)*probeSpacing;
-			probeTheta[index] = 0.0;
-		}
-
-    	SetCavityProbeZ(probeZ);
-    	SetCavityProbeTheta(probeTheta);
-
-    	return true;
+     	fNCavityModes = aNumberOfModes;
     }
 
-
-
-    std::vector<double> PowerCombiner::GetCavityProbeZ()
+    double PowerCombiner::GetCavityProbeZ()
     {
     	return fCavityProbeZ;
     }
-    void PowerCombiner::SetCavityProbeZ ( std::vector<double> aVector )
+    void PowerCombiner::SetCavityProbeZ ( double aZ )
     {
-    	fCavityProbeZ = aVector;
+    	fCavityProbeZ = aZ;
     }
-    std::vector<double> PowerCombiner::GetCavityProbeTheta()
+
+    double PowerCombiner::GetCavityProbeRFrac()
     {
-    	return fCavityProbeTheta;
+    	return fCavityProbeRFrac;
     }
-    void PowerCombiner::SetCavityProbeTheta ( std::vector<double> aVector )
+    void PowerCombiner::SetCavityProbeRFrac ( double aFraction )
     {
-    	fCavityProbeTheta = aVector;
+    	fCavityProbeRFrac = aFraction;
     }
+
+    double PowerCombiner::GetVoltagePhase()
+    {
+    	return fVoltagePhase;
+    }
+    void PowerCombiner::SetVoltagePhase ( double aPhase )
+    {
+    	fVoltagePhase = aPhase;
+    }
+
+
 
 
 

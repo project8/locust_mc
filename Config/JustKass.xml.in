@@ -25,9 +25,7 @@
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
 
 
-<geometry>
-    <include name="[config_path]/WaveguideGeometry.xml"/>
-</geometry>
+<include name="[config_path]/WaveguideGeometry.xml"/>
     
 
 
@@ -35,35 +33,6 @@
  
 <kassiopeia>
 
-    <!-- fields -->
-
-
-    <ksfield_electromagnet
-        name="field_electromagnet"
-        file="Project8Magnets.kbd"
-        system="world/project8"
-        spaces="world/project8/@magnet_tag"
-    >
-        <zonal_harmonic_field_solver
-            number_of_bifurcations="-1"
-            convergence_ratio=".99"
-            convergence_parameter="1.e-15"
-            proximity_to_sourcepoint="1.e-12"
-            number_of_central_coefficients="500"
-            use_fractional_central_sourcepoint_spacing="true"
-            central_sourcepoint_fractional_distance="1e-2"
-            central_sourcepoint_spacing="2.e-5"
-            number_of_remote_coefficients="200"
-            remote_sourcepoint_start="-1.e-1"
-            remote_sourcepoint_end="1.e-1"
-        />
-    </ksfield_electromagnet>
-
-
-    <ksfield_magnetic_constant
-        name="field_magnetic_main"
-        field="[fieldX] [fieldY]  [fieldZ]"
-    />
 
     <!-- generators -->
 
@@ -370,7 +339,7 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.0e-6"/>
+    <ksterm_max_time name="term_max_time" time="1.0e-4"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="25000."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
@@ -492,8 +461,7 @@
         run="1"
         seed="[seed]"
         events="10"
-        magnetic_field="field_electromagnet"
-        magnetic_field="field_magnetic_main"
+        magnetic_field="total_magnetic_field"
         space="space_world"
         generator="[generator]"
         trajectory="[trajectory]"
