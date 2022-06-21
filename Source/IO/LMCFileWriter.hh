@@ -40,7 +40,7 @@ namespace locust
         virtual bool Configure( const scarab::param_node& aNode );
 
     	public:
-        virtual double GetTestVar() {};
+        virtual double GetTestVar() {return 0.;};
         virtual void SetTestVar(double aValue) {};
         virtual void WriteEvent(Event* anEvent) {};
         virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName ) {};
