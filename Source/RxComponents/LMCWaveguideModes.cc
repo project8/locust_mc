@@ -64,6 +64,12 @@ namespace locust
 
 		double voltageValue = excitationAmplitude * (cos(fVoltagePhaseAntenna) + cos(fVoltagePhaseShort));
 
+		if ( !GetWaveguideShortIsPresent() ) // no short:
+		{
+			// override default case, omitting reflected signal:
+			voltageValue = excitationAmplitude * cos(fVoltagePhaseAntenna);
+		}
+
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 

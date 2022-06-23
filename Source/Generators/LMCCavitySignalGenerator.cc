@@ -38,6 +38,7 @@ namespace locust
 		fModeMaps( false ),
 		fTE( true ),
 		fIntermediateFile( false ),
+		fUseDirectKassPower( false ),
 		fInterface( new KassLocustInterface() )
     {
         fRequiredSignalState = Signal::kFreq;
@@ -324,13 +325,28 @@ namespace locust
         {
             fInterface->fField = new RectangularWaveguide;
     		fPowerCombiner = new WaveguideModes;
-    		if ( aParam.has( "back-reaction" ) )
+
+    		if ( aParam.has( "waveguide-short" ) )
     		{
-    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+    			fPowerCombiner->SetWaveguideShortIsPresent(aParam["waveguide-short"]().as_bool());
     		}
     		else
     		{
-    			fInterface->fBackReaction = true;
+    			// This is the same as the default case in LMCPowerCombiner:
+    			fPowerCombiner->SetWaveguideShortIsPresent( true );
+    		}
+
+			// Allow back reaction only if short is present:
+    		if ( fPowerCombiner->GetWaveguideShortIsPresent() )
+    		{
+                if ( aParam.has( "back-reaction" ) )
+            	{
+    	        	fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+    		    }
+    		    else
+    		    {
+    			    fInterface->fBackReaction = true;
+    		    }
     		}
         }
         else
@@ -412,6 +428,10 @@ namespace locust
         if( aParam.has( "intermediate-file" ) )
         {
         	fIntermediateFile = aParam["intermediate-file"]().as_bool();
+        }
+        if( aParam.has( "direct-kass-power" ) )
+        {
+        	fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -589,12 +609,15 @@ namespace locust
     						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
     								cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
-    						// Optional cross-check:  Use analytic impedance Z_TE.
-//    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
-//    								fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
-
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
-//    						excitationAmplitude = 0.63*sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
+    						if (fUseDirectKassPower)
+    						{
+    							// override one-way signal amplitude with direct Kass power:
+    							unitConversion = 1.0;
+    							fPowerCombiner->SetWaveguideShortIsPresent(false);
+    							fInterface->fBackReaction = false;
+        						excitationAmplitude = 0.63*sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
+    						}
 
     						dopplerFrequencyAntenna = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
         					dopplerFrequencyShort = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 0);

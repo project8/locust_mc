@@ -68,6 +68,8 @@ namespace locust
             void SetCavityProbeZ ( double aZ );
             double GetCavityProbeRFrac();
             void SetCavityProbeRFrac ( double aFraction );
+            bool GetWaveguideShortIsPresent();
+            void SetWaveguideShortIsPresent ( bool aValue );
 
 
 
@@ -83,6 +85,7 @@ namespace locust
             int fNCavityModes;
             double fCavityProbeZ;
             double fCavityProbeRFrac;
+            bool fWaveguideShortIsPresent;
 
 
 

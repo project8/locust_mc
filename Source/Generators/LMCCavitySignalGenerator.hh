@@ -60,8 +60,10 @@ namespace locust
      - "e-gun": Select e-gun configuration instead of cavity [false].
      - "center-to-short": distance [0.05 m] from center of e-gun waveguide to reflecting short.
      - "center-to-antenna": distance [0.05 m] from center of e-gun waveguide to antenna.
-     - "back-reaction": optional back reaction in waveguide [true].
-
+     - "waveguide-short":  optional presence/absence of reflecting short [true].
+     - "back-reaction": optional waveguide back reaction in e-gun.  default to [true] if waveguide-short is present.
+     - "direct-kass-power":  In e-gun, overrides calculated waveguide signal amplitudes and replaces
+     	 them with sqrt(KassPower).  This is for cross-checking the more detailed signal calculations.
     */
 
     class CavitySignalGenerator : public Generator
@@ -101,6 +103,7 @@ namespace locust
             bool fModeMaps;
             bool fTE; // (if false, use TM modes.)
             bool fIntermediateFile;
+            bool fUseDirectKassPower;
 
 
 
