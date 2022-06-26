@@ -17,7 +17,8 @@
 
 
 
-<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/>
+<!-- <include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/> -->
+<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/EGunGeometry_V00_00_01.xml"/>
 
     
 
@@ -335,7 +336,8 @@
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
     <ksterm_max_z name="term_max_z" z=".07"/>
-
+    <ksterm_death name="term_waveguide_jacket_death"/>
+    
     
     <!-- modifiers -->
     <cycl_rad_extr name="rad_extr" P8Phase="4" /> 
@@ -415,6 +417,11 @@
 
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+
+        <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
+            <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
+        </geo_surface>
+
 
 
 
