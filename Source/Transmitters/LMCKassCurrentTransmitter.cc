@@ -81,6 +81,17 @@ namespace locust
     }
 
 
+    double KassCurrentTransmitter::GetGuidingCenterVy()
+    {
+    	std::deque<locust::Particle>::iterator it = fInterface->fParticleHistory.end()-2;
+    	int index = std::distance( fInterface->fParticleHistory.begin(), it );
+    	locust::Particle tParticleSecondToLast = fInterface->fParticleHistory[index];
+    	locust::Particle tParticleLast = fInterface->fParticleHistory.back();
+    	double tDisplacement = tParticleLast.GetGuidingCenterPosition().Y() - tParticleSecondToLast.GetGuidingCenterPosition().Y();
+    	double tTimeInterval = tParticleLast.GetTime() - tParticleSecondToLast.GetTime();
+    	double tGuidingCenterVy = tDisplacement / tTimeInterval;
+    	return tGuidingCenterVy;
+    }
 
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
@@ -96,7 +107,7 @@ namespace locust
 
 
 
-    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate)
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, bool Rotate)
     {
 
     	locust::Particle tParticle;
@@ -111,7 +122,6 @@ namespace locust
     		tParticle = fInterface->fParticleHistory[currentIndex];
     		tParticle.Interpolate(TOld);
     	}
-
 
         double tposX = tParticle.GetPosition(true).X();
         double tposY = tParticle.GetPosition(true).Y();
@@ -133,6 +143,16 @@ namespace locust
         particleXP[7] = tParticle.GetCyclotronFrequency();
         particleXP[8] = tParticle.GetLarmorPower();
 
+
+        if (Rotate)  // e.g. for EGun.
+        {
+            particleXP[0] = pow( tposZ*tposZ + tposX*tposX, 0.5);
+            particleXP[1] = calcTheta(tposZ, tposX);
+            particleXP[2] = tposY;  // z->y
+            particleXP[3] = tvZ;    // x->z
+            particleXP[4] = tvX;    // y->x
+            particleXP[5] = GetGuidingCenterVy();    // z->y, waveguide axis.
+        }
 
     	return particleXP;
     }
