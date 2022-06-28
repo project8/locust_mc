@@ -53,6 +53,8 @@ namespace locust
             double GetKineticEnergy() const;
             double GetCharge() const;
             double GetLarmorPower() const;
+            LMCThreeVector GetGuidingCenterPosition() const;
+
 
             double CalculateVoltage(const LMCThreeVector&) const;
             LMCThreeVector CalculateElectricField(const LMCThreeVector&) const;
