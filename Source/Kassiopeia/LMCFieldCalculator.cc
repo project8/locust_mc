@@ -149,15 +149,16 @@ namespace locust
     {
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
+    	double tVz = tKassParticleXP[5];
     	double orbitPhase = tKassParticleXP[6];  // radians
-    	double fieldFrequency = tKassParticleXP[7];  // rad/s
-    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+    	double cycFrequency = tKassParticleXP[7];  // rad/s
+    	double vMag = pow(tVx*tVx + tVy*tVy + tVz*tVz,0.5);
     	double convolution = 0.0;
 
 		// populate FIR filter with frequency for just this sample interval:
 		for (int i=0; i < fInterface->nFilterBinsRequired; i++)
 		{
-			fInterface->FIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
+			fInterface->FIRfrequencyBuffer[0].push_back(cycFrequency);  // rad/s
 			fInterface->FIRfrequencyBuffer[0].pop_front();
 		}
 
