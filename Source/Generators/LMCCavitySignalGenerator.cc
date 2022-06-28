@@ -539,7 +539,7 @@ namespace locust
         double dt = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true);
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fE_Gun);
         double dotProductFactor = 0.;
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
@@ -613,10 +613,8 @@ namespace locust
     						if (fUseDirectKassPower)
     						{
     							// override one-way signal amplitude with direct Kass power:
-    							unitConversion = 1.0;
-    							fPowerCombiner->SetWaveguideShortIsPresent(false);
-    							fInterface->fBackReaction = false;
-        						excitationAmplitude = 0.63*sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
+    							unitConversion = 1.0;  // Kass power is already in Watts.
+        						excitationAmplitude = dotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
     						dopplerFrequencyAntenna = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
