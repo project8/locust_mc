@@ -180,6 +180,15 @@ namespace locust
     	fCavityProbeRFrac = aFraction;
     }
 
+    double PowerCombiner::GetVoltagePhase()
+    {
+    	return fVoltagePhase;
+    }
+    void PowerCombiner::SetVoltagePhase ( double aPhase )
+    {
+        fVoltagePhase = aPhase;
+    }
+
     bool PowerCombiner::GetWaveguideShortIsPresent()
     {
     	return fWaveguideShortIsPresent;
