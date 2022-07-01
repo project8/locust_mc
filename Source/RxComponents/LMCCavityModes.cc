@@ -16,7 +16,8 @@ namespace locust
 
     CavityModes::CavityModes():
 		fOrbitPhase( 0. ),
-		fProbeGain( 1.0 )
+		fProbeGain( 1.0 ),
+		fVoltagePhase( 0. )
     {
     }
 
@@ -128,6 +129,15 @@ namespace locust
 
 		return true;
 	}
+
+    double CavityModes::GetVoltagePhase()
+    {
+    	return fVoltagePhase;
+    }
+    void CavityModes::SetVoltagePhase ( double aPhase )
+    {
+        fVoltagePhase = aPhase;
+    }
 
     double CavityModes::GetCavityProbeGain()
     {
