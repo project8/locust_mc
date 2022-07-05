@@ -22,6 +22,7 @@ namespace locust
     LOGGER( lmclog, "KassCurrentTransmitter" );
 
     KassCurrentTransmitter::KassCurrentTransmitter():
+    fOrbitPhase( 0. ),
     fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -107,7 +108,7 @@ namespace locust
 
 
 
-    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, bool Rotate)
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, double dt, bool Interpolate, bool Rotate)
     {
 
     	locust::Particle tParticle;
@@ -132,14 +133,14 @@ namespace locust
 
         std::vector<double> particleXP;
     	particleXP.resize(8);
-
+    	fOrbitPhase += dt*tParticle.GetCyclotronFrequency();
         particleXP[0] = pow( tposX*tposX + tposY*tposY, 0.5);
         particleXP[1] = calcTheta(tposX, tposY);
         particleXP[2] = tposZ;
         particleXP[3] = tvX;
         particleXP[4] = tvY;
         particleXP[5] = tvZ;
-        particleXP[6] = calcOrbitPhase(tvX, tvY);
+        particleXP[6] = fOrbitPhase;
         particleXP[7] = tParticle.GetCyclotronFrequency();
         particleXP[8] = tParticle.GetLarmorPower();
 
@@ -149,13 +150,15 @@ namespace locust
             particleXP[0] = pow( tposZ*tposZ + tposX*tposX, 0.5);
             particleXP[1] = calcTheta(tposZ, tposX);
             particleXP[2] = tposY;  // z->y
-            particleXP[3] = tvZ;    // x->z
+            particleXP[3] = tvY;    // x->z
             particleXP[4] = tvX;    // y->x
             particleXP[5] = GetGuidingCenterVy();    // z->y, waveguide axis.
         }
 
     	return particleXP;
     }
+
+
 
 
 } /* namespace locust */
