@@ -531,6 +531,7 @@ namespace locust
 
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
     {
+
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
         const unsigned nChannels = fNChannels;
@@ -539,14 +540,12 @@ namespace locust
         double dt = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fE_Gun);
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, dt, true, fE_Gun);
         double dotProductFactor = 0.;
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         double tEFieldAtProbe = 0.;
-        double dopplerFrequencyCavity = 0.;
-        double dopplerFrequencyAntenna = 0.;
-        double dopplerFrequencyShort = 0.;
+        std::vector<double> dopplerFrequency;
 
         FieldCalculator aFieldCalculator;
 
@@ -561,12 +560,14 @@ namespace locust
     			    	std::vector<double> tE_normalized;
     					if (!fE_Gun)
     					{
+    						dopplerFrequency.resize(1);
     						unitConversion = 1.;  // mks units in Collin amplitudes.
     						tE_normalized = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
     						dotProductFactor = aFieldCalculator.GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
     					else
     					{
+    						dopplerFrequency.resize(2);
     				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
     				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
 //    				        unitConversion = 1.; // If using direct Kassiopeia power budget.
@@ -596,7 +597,7 @@ namespace locust
     						{
     							collinAmplitude = fInterface->fField->Z_TM(l,m,n,tKassParticleXP[7]);
     						}
-        			    	dopplerFrequencyCavity = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
+        			    	dopplerFrequency[0] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
     						excitationAmplitude = modeAmplitude * dotProductFactor * collinAmplitude * cavityFIRSample;
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
     						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
@@ -617,8 +618,8 @@ namespace locust
         						excitationAmplitude = dotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
-    						dopplerFrequencyAntenna = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
-        					dopplerFrequencyShort = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 0);
+    						dopplerFrequency[0] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
+        					dopplerFrequency[1] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 0);
 
     					}
 
@@ -631,18 +632,18 @@ namespace locust
     						double totalScalingFactor = sqrt(50.) * unitConversion;
     						if (!fE_Gun)
     						{
-    							fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyCavity, dt, fphiLO, totalScalingFactor, sampleIndex);
+    	   						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
     						}
     						else
     						{
     							if (fInterface->fTOld > 0.)
     							{
-    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyAntenna, dopplerFrequencyShort, dt, fphiLO, totalScalingFactor, sampleIndex, fInterface->fTOld);
+    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
     							}
     							else
     							{
-    							    fPowerCombiner->InitializeVoltagePhases(tKassParticleXP, dopplerFrequencyAntenna, dopplerFrequencyShort, fInterface->fCENTER_TO_ANTENNA, fInterface->fCENTER_TO_SHORT, fInterface->fField->GetDimX());
-    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyAntenna, dopplerFrequencyShort, dt, fphiLO, totalScalingFactor, sampleIndex, fInterface->fTOld);
+    							    fPowerCombiner->InitializeVoltagePhases(tKassParticleXP, dopplerFrequency, fInterface->fCENTER_TO_ANTENNA, fInterface->fCENTER_TO_SHORT, fInterface->fField->GetDimX());
+    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
     							}
     						}
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
