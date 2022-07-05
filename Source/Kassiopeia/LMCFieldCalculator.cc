@@ -149,10 +149,9 @@ namespace locust
     {
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
-    	double tVz = tKassParticleXP[5];
     	double orbitPhase = tKassParticleXP[6];  // radians
     	double cycFrequency = tKassParticleXP[7];  // rad/s
-    	double vMag = pow(tVx*tVx + tVy*tVy + tVz*tVz,0.5);
+    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
     	double convolution = 0.0;
 
 		// populate FIR filter with frequency for just this sample interval:
