@@ -33,11 +33,16 @@ namespace locust
             WaveguideModes();
             virtual ~WaveguideModes();
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequencyAntenna, double dopplerFrequencyShort, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, double eventTime);
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex);
+            double GetVoltagePhaseAntenna();
+            void SetVoltagePhaseAntenna( double aPhase );
+            double GetVoltagePhaseShort();
+            void SetVoltagePhaseShort( double aPhase );
+
 
 
         private:
-            bool InitializeVoltagePhases(std::vector<double> tKassParticleXP, double aDopplerFrequencyAntenna, double aDopplerFrequencyShort, double aCenterToAntenna, double aCenterToShort, double aDimX);
+            bool InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency, double aCenterToAntenna, double aCenterToShort, double aDimX);
             double GroupVelocity(double fcyc, double aDimX);
             double fVoltagePhaseAntenna;
             double fVoltagePhaseShort;
