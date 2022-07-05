@@ -1,8 +1,8 @@
  <external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
-<!--  <external_define name="trajectory" value="traj_adiabaticsynchrotron"/> -->
- <external_define name="trajectory" value="traj_exactsynchrotron"/>
+ <external_define name="trajectory" value="traj_adiabaticsynchrotron"/>
+<!-- <external_define name="trajectory" value="traj_exactsynchrotron"/> -->
 <!-- <external_define name="trajectory" value="traj_magnetic"/> -->
 <external_define name="cyclotrons" value="1"/>
 <external_define name="alignment" value="0."/>
@@ -17,8 +17,8 @@
 
 
 
-<!-- <include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/> -->
-<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/EGunGeometry_V00_00_01.xml"/>
+<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/>
+<!-- <include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/EGunGeometry_V00_00_01.xml"/> -->
 
     
 
@@ -241,15 +241,6 @@
     </kstraj_trajectory_exact>
 -->
 
-
-    <kstraj_trajectory_exact name="traj_exactsynchrotron">
-        <integrator_rk8/>
-        <term_propagation/>
-        <term_synchrotron/>
-        <control_cyclotron name="control_cyclotron_1_16" fraction="{1. / 32.}"/>
-    </kstraj_trajectory_exact>
-
-
     <kstraj_control_cyclotron name="control_cyclotron_1_16" fraction="{1. / 16.}"/>
     <kstraj_control_cyclotron name="control_cyclotron_1_64" fraction="{1. / 64.}"/>
 
@@ -342,7 +333,7 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-4"/>
+    <ksterm_max_time name="term_max_time" time="0.5e-6"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
@@ -429,6 +420,7 @@
 
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
+
 
         <geo_surface name="waveguide jacket death" surfaces="world/project8/rectangularwaveguide/jacket">
             <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
