@@ -42,7 +42,7 @@ namespace locust
 
         virtual bool IsKassiopeia();
 
-        std::vector<double> ExtractParticleXP(double TOld, bool Interpolate);
+        std::vector<double> ExtractParticleXP(double TOld, double dt, bool Interpolate, bool Rotate);
 
 
     private:
@@ -52,6 +52,9 @@ namespace locust
         double quadrantOrbitCorrection(double phase, double vx);
         double quadrantPositionCorrection(double phase, double x);
         int FindNode(double tNew) const;
+        double GetGuidingCenterVy();
+        double fOrbitPhase;
+
 
         kl_interface_ptr_t fInterface;
 

@@ -104,6 +104,10 @@ namespace locust
             if (fInterface->fTOld == 0.)
             {
             	fInterface->nFilterBinsRequired = 1 + (int)((aFinalParticle.GetTime() - anInitialParticle.GetTime()) / fInterface->dtFilter);
+            	if (fInterface->nFilterBinsRequired < 40)
+            		{  // avoid very small nFilterBinsRequired if using exact trajectory.
+            		    fInterface->nFilterBinsRequired = 40;
+            		}
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             }
             double t_poststep = aFinalParticle.GetTime();

@@ -15,8 +15,9 @@ namespace locust
 	LOGGER( lmclog, "CavityModes" );
 
     CavityModes::CavityModes():
-    	fOrbitPhase( 0. ),
-		fProbeGain( 1.0 )
+		fOrbitPhase( 0. ),
+		fProbeGain( 1.0 ),
+		fVoltagePhase( 0. )
     {
     }
 
@@ -65,16 +66,16 @@ namespace locust
     	return true;
     }
 
-
-	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
+	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
 	{
-		SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
-		fOrbitPhase += particleXP[7] * dt;
-		double phaseLag = GetVoltagePhase() - fOrbitPhase;
+		double dopplerFrequency = cavityDopplerFrequency[0];
+        SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
+        fOrbitPhase += particleXP[7] * dt;
+        double phaseLag = GetVoltagePhase() - fOrbitPhase;
+        double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
 
-		double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO - phaseLag);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO - phaseLag);
+        aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO - phaseLag);
+        aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO - phaseLag);
 
 		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
@@ -129,6 +130,15 @@ namespace locust
 
 		return true;
 	}
+
+    double CavityModes::GetVoltagePhase()
+    {
+    	return fVoltagePhase;
+    }
+    void CavityModes::SetVoltagePhase ( double aPhase )
+    {
+        fVoltagePhase = aPhase;
+    }
 
     double CavityModes::GetCavityProbeGain()
     {

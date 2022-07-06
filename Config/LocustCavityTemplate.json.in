@@ -37,8 +37,8 @@
 
     "digitizer":
     {
-    	"v-range":  10.0e-9,
-    	"v-offset": -5.0e-9
+    	"v-range":  10.0e-11,
+    	"v-offset": -5.0e-11
     }
 
 }
