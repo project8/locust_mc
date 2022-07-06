@@ -132,15 +132,15 @@ namespace locust
     fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex);
     fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
     fResolution=fComplexFFT.GetTimeResolution();
-    FILE * fFIRout = fopen("output/FIR.txt", "w");
-    fprintf(fFIRout,"#FIR used to process simulation (index,coefficient)\n");
+//    FILE * fFIRout = fopen("output/FIR.txt", "w");
+//    fprintf(fFIRout,"#FIR used to process simulation (index,coefficient)\n");
     for (int i = 0; i < fFIRNBins; i++)
     {
         fFilter.push_back(fFIRComplex[i][0]);
-	fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
+//		fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
     }
 
-    fclose(fFIRout);
+//    fclose(fFIRout);
     LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
     return true;
     }
