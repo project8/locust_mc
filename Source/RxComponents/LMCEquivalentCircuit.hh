@@ -7,6 +7,7 @@
 
 #ifndef LMCEQUIVALENTCIRCUIT_HH_
 #define LMCEQUIVALENTCIRCUIT_HH_
+#include "LMCAnalyticResponseFunction.hh"
 #include "param.hh"
 #include "LMCException.hh"
 #include "LMCConst.hh"
@@ -19,7 +20,7 @@
 
 namespace locust
 {
-    class EquivalentCircuit
+    class EquivalentCircuit : public AnalyticResponseFunction
     {
 
         public:
