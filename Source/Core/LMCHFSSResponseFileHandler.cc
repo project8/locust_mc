@@ -96,7 +96,8 @@ namespace locust
     {
         return true;
     }
-  
+
+
     bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray, bool GeneratedTF)
     {
         if(fTFNBins<=0)
@@ -211,6 +212,30 @@ namespace locust
 	fIsFIRCreated=true;
         return true;
     }
+
+    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(std::vector<std::pair<double,double>> gfArray)
+    {
+        if(fIsFIRCreated)
+        {
+            return true;
+        }
+
+        fFIRNBins = gfArray.size();
+        fResolution = gfArray[0].first;
+
+//        FILE * fFIRout = fopen("output/FIR.txt", "w");
+//        fprintf(fFIRout,"#FIR used to process simulation (index,coefficient)\n");
+            for (int i = 0; i < fFIRNBins; i++)
+            {
+                fFilter.push_back(gfArray[i].second);
+//        		fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
+            }
+//            fclose(fFIRout);
+            LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
+
+    	return true;
+    }
+
 
     bool TFFileHandlerCore::ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray)
     {
