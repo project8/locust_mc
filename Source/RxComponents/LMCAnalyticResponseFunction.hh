@@ -9,7 +9,6 @@
 #define LMCANALYTICRESPONSEFUNCTION_HH_
 #include "param.hh"
 #include "LMCComplexFFT.hh"
-#include "LMCKassLocustInterface.hh"
 
 
 namespace locust
