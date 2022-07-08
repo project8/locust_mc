@@ -14,7 +14,6 @@
 #include "LMCSignal.hh"
 #include "LMCPatchAntenna.hh"
 #include "LMCSlotAntenna.hh"
-#include "LMCComplexFFT.hh"
 #include <vector>
 
 
@@ -27,10 +26,7 @@ namespace locust
     		EquivalentCircuit();
     		virtual ~EquivalentCircuit();
     		virtual bool Configure( const scarab::param_node& aNode );
-    		void GenerateTransferFunction();
-    		std::vector<std::complex<double>> tfArray;
-    		double initialFreq;
-    		bool fGeneratingTF;
+    		virtual void GenerateTransferFunction();
 
         private:
     		int nbins;

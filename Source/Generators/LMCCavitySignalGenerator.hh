@@ -13,7 +13,8 @@
 #include "LMCGenerator.hh"
 #include "LMCCavityModes.hh" // : LMCPowerCombiner
 #include "LMCWaveguideModes.hh" // : LMCPowerCombiner
-#include "LMCEquivalentCircuit.hh"
+#include "LMCEquivalentCircuit.hh" // : LMCAnalyticResponseFunction
+#include "LMCDampedHarmonicOscillator.hh" // : LMCAnalyticResponseFunction
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
 #include "LMCFieldCalculator.hh"
@@ -121,7 +122,7 @@ namespace locust
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
-            EquivalentCircuit* fEquivalentCircuit;
+            AnalyticResponseFunction* fAnalyticResponseFunction;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;

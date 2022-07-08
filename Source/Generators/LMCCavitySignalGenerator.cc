@@ -41,7 +41,6 @@ namespace locust
 		fUseDirectKassPower( false ),
 		fInterface( new KassLocustInterface() )
     {
-        fRequiredSignalState = Signal::kFreq;
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
@@ -292,18 +291,10 @@ namespace locust
     	}
 
 
-//   Optional implementation of equivalent circuit, selected by specifying any of
-//	 equivalentR, equivalentL, equivalentC in config file.
-    	fEquivalentCircuit = new EquivalentCircuit();
-    	if (!fEquivalentCircuit->Configure( aParam ))
+    	fAnalyticResponseFunction = new EquivalentCircuit();
+    	if(fAnalyticResponseFunction->GetGeneratingTF())
     	{
-    		LERROR(lmclog,"Error configuring LMCEquivalentCircuit.");
-    		exit(-1);
-    	}
-
-    	if(fEquivalentCircuit->fGeneratingTF)
-    	{
-    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
+    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
     		{
     			return false;
     		}

@@ -15,7 +15,10 @@ namespace locust
 	LOGGER( lmclog, "AnalyticResponseFunction" );
 
 
-    AnalyticResponseFunction::AnalyticResponseFunction()
+    AnalyticResponseFunction::AnalyticResponseFunction():
+	    fGeneratingTF( false ),
+		fInitialFreq( 0. ),
+		fTFarray(0 )
     {}
     AnalyticResponseFunction::~AnalyticResponseFunction() {}
 
@@ -24,6 +27,36 @@ namespace locust
     {
         return true;
     }
+
+    void AnalyticResponseFunction::SetGeneratingTF( bool aFlag )
+    {
+    	fGeneratingTF = aFlag;
+    }
+    bool AnalyticResponseFunction::GetGeneratingTF()
+    {
+    	return fGeneratingTF;
+    }
+    void AnalyticResponseFunction::SetInitialFreq( double aFreq )
+    {
+    	fInitialFreq = aFreq;
+    }
+    double AnalyticResponseFunction::GetInitialFreq()
+    {
+    	return fInitialFreq;
+    }
+    void AnalyticResponseFunction::SetTFarray( std::vector<std::complex<double>> aTFarray )
+    {
+    	fTFarray = aTFarray;
+    }
+    std::vector<std::complex<double>> AnalyticResponseFunction::GetTFarray()
+    {
+    	return fTFarray;
+    }
+
+
+
+
+
 
 
 
