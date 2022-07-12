@@ -14,7 +14,7 @@ namespace locust
 	LOGGER( lmclog, "DampedHarmonicOscillator" );
 
     DampedHarmonicOscillator::DampedHarmonicOscillator():
-    		fMaxNBins( 4000 ),
+    		fMaxNBins( 20000 ),
 			fTimeResolution( 1.e-12 ),
 			fCavityFrequency( 1.0e9 ),
 			fCavityQ( 1000 ),
@@ -26,6 +26,11 @@ namespace locust
 
     bool DampedHarmonicOscillator::Configure( const scarab::param_node& aParam )
     {
+    	if( !AnalyticResponseFunction::Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring AnalyticResponseFunction class from DampedHarmonicOscillator subclass");
+    	}
+
     	if( aParam.has( "dho-max-nbins" ) )
     	{
     		fMaxNBins = aParam["dho-max-nbins"]().as_int();
@@ -43,8 +48,8 @@ namespace locust
     		fCavityQ = aParam["dho-cavity-Q"]().as_double();
     	}
 
-    	Initialize();
-    	return true;
+    	if ( !Initialize() ) return false;
+    	else return true;
     }
 
     bool DampedHarmonicOscillator::Initialize()
@@ -54,8 +59,10 @@ namespace locust
     	fBFactor = fCavityDampingFactor * fCavityOmega;
     	fCavityOmegaPrime = sqrt( fCavityOmega*fCavityOmega - fBFactor*fBFactor );
 
-    	return true;
+    	if (!GenerateGreensFunction()) return false;
+    	else return true;
     }
+
 
     double DampedHarmonicOscillator::ExpDecayTerm(double t)
     {
@@ -69,22 +76,30 @@ namespace locust
     	return GreensFunctionValue;
     }
 
-    void DampedHarmonicOscillator::GenerateFIR()
+    bool DampedHarmonicOscillator::GenerateGreensFunction()
     {
 
+        std::vector<std::pair<double,double>> tGFArray;
+
     	int sizeCounter = 0;
-    	gfArray[0].first = fTimeResolution;
+
     	for (unsigned i=0; i<fMaxNBins; i++)
     	{
     		double tValue = i * fTimeResolution;
-    		gfArray[i].second = GreensFunction( tValue );
+    		tGFArray.push_back(std::make_pair(fTimeResolution,GreensFunction(tValue)));
     		sizeCounter += 1;
     		if ( ExpDecayTerm(tValue) < fThresholdFactor * ExpDecayTerm(0.) )
     		{
     			break;
     		}
     	}
-    	gfArray.resize( sizeCounter );
+
+    	tGFArray.resize( sizeCounter );
+    	SetGFarray( tGFArray );
+
+
+    	if ( tGFArray.size() < 1 ) return false;
+    	else return true;
 
     }
 

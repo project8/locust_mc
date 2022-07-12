@@ -29,23 +29,23 @@ namespace locust
             virtual ~AnalyticResponseFunction();
 
             virtual bool Configure( const scarab::param_node& aNode );
-            virtual void GenerateTransferFunction() {};
-            virtual void GenerateFIR() {};
+            virtual bool GenerateTransferFunction() {return true;};
+            virtual bool GenerateGreensFunction() {return true;};
             void SetGeneratingTF( bool aFlag );
             bool GetGeneratingTF();
             void SetInitialFreq( double aFreq );
             double GetInitialFreq();
             void SetTFarray( std::vector<std::complex<double>> aTFarray );
             std::vector<std::complex<double>> GetTFarray();
-
-
+            void SetGFarray( std::vector<std::pair<double,double>> aGFarray );
+            std::vector<std::pair<double,double>> GetGFarray();
 
 
         private:
-
-    		bool fGeneratingTF;
-    		std::vector<std::complex<double>> fTFarray;
-    		double fInitialFreq;
+            bool fGeneratingTF;
+            std::vector<std::complex<double>> fTFarray;
+            std::vector<std::pair<double,double>> fGFarray;
+            double fInitialFreq;
 
 
 

@@ -3,10 +3,23 @@
  *
  *  Created on: Jul 6, 2022
  *      Author: pslocum
+ *
+This class calculates an analytic Green's function from a model of a damped harmonic
+oscillator.  To use the model in the context of the LMCCavitySignalGenerator, the
+following default syntax can be used:
+
+LocustSim -c config/LocustCavityTemplate.json
+
+To print out the resulting FIR to a text file "output/FIR.txt", use this parameter:
+
+"cavity-signal.print-fir-debug"=true
+ *
+ *
+ *
  */
 
-#ifndef LMCEQUIVALENTCIRCUIT_HH_
-#define LMCEQUIVALENTCIRCUIT_HH_
+#ifndef LMCDAMPEDHARMONICOSCILLATOR_HH_
+#define LMCDAMPEDHARMONICOSCILLATOR_HH_
 #include "LMCAnalyticResponseFunction.hh"
 #include "LMCConst.hh"
 #include "param.hh"
@@ -22,11 +35,10 @@ namespace locust
     		DampedHarmonicOscillator();
     		virtual ~DampedHarmonicOscillator();
     		virtual bool Configure( const scarab::param_node& aNode );
-            virtual void GenerateFIR();
+            virtual bool GenerateGreensFunction();
             bool Initialize();
             double GreensFunction(double t);
             double ExpDecayTerm(double t);
-            std::vector<std::pair<double,double>> gfArray;
 
 
         private:
@@ -39,10 +51,6 @@ namespace locust
             int fMaxNBins;
             double fTimeResolution;
             double fThresholdFactor;
-
-
-
-
 
     };
 

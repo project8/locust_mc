@@ -39,17 +39,14 @@ namespace locust
     	if( aParam.has( "equivalentR" ) )
     	{
     		fEquivalentR = aParam["equivalentR"]().as_double();
-    		SetGeneratingTF( true );
     	}
     	if( aParam.has( "equivalentL" ) )
     	{
     		fEquivalentL = aParam["equivalentL"]().as_double();
-    		SetGeneratingTF( true );
     	}
     	if( aParam.has( "equivalentC" ) )
     	{
     		fEquivalentC = aParam["equivalentC"]().as_double();
-    		SetGeneratingTF( true );
     	}
     	if( aParam.has( "TFBins" ) )
     	{
@@ -60,12 +57,12 @@ namespace locust
     		fFreqRangeCenter = aParam["FreqRangeCenter"]().as_double();
     	}
 
-    	if (GetGeneratingTF()) GenerateTransferFunction();
-		
-    	return true;
+    	if (!GenerateTransferFunction()) return false;
+    	else return true;
+
     }
 
-    void EquivalentCircuit::GenerateTransferFunction()
+    bool EquivalentCircuit::GenerateTransferFunction()
     {
     	double freq_min = (1.-0.1)*fFreqRangeCenter;
     	double freq_max = (1.+0.1)*fFreqRangeCenter;
@@ -92,14 +89,22 @@ namespace locust
     		V_re[counts] = VoutByVin * cos(phase);
     		V_im[counts] = VoutByVin * sin(phase);
     		double f_GHz = freq[counts] * 1.0e-9;
-            //fprintf(fTFout,"%16g%16.8g%16.8g\n", f_GHz,V_re[counts], V_im[counts]);
-    		//fprintf(fTFout,"%e,%e,%e,%e,%e\n", freq[counts], VoutByVin,phase,V_re[counts], V_im[counts]);
+//            fprintf(fTFout,"%16g%16.8g%16.8g\n", f_GHz,V_re[counts], V_im[counts]);
+//    		fprintf(fTFout,"%e,%e,%e,%e,%e\n", freq[counts], VoutByVin,phase,V_re[counts], V_im[counts]);
     		const std::complex<double> temp(V_re[counts], V_im[counts]);
     		tTFarray.push_back(temp);
     	}
     	SetInitialFreq( freq[0] );
     	SetTFarray( tTFarray );
 //    	fclose(fTFout);
+    	if (tTFarray.size() < 1)
+    	{
+    		return false;
+    	}
+    	else
+    	{
+    	    return true;
+    	}
     }
 
 

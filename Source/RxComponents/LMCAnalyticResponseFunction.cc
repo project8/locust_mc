@@ -52,6 +52,14 @@ namespace locust
     {
     	return fTFarray;
     }
+    void AnalyticResponseFunction::SetGFarray( std::vector<std::pair<double,double>> aGFarray )
+    {
+    	fGFarray = aGFarray;
+    }
+    std::vector<std::pair<double,double>> AnalyticResponseFunction::GetGFarray()
+    {
+    	return fGFarray;
+    }
 
 
 
