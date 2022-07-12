@@ -39,9 +39,9 @@ namespace locust
     bool HFSSResponseFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
 
-    	if (aParam["print-fir-debug"]().as_bool())
+        if( aParam.has( "print-fir-debug" ) )
     	{
-    	    fPrintFIR = true;
+    	    fPrintFIR = aParam["print-fir-debug"]().as_bool();
     	}
 
         return true;

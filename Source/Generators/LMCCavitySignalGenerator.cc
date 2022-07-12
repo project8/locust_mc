@@ -290,22 +290,53 @@ namespace locust
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
 
-
-    	fAnalyticResponseFunction = new EquivalentCircuit();
-    	if(fAnalyticResponseFunction->GetGeneratingTF())
-    	{
-    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
-    		{
-    			return false;
-    		}
-    	}
-    	else
-    	{
-        	if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
+        if( aParam.has( "tf-receiver-filename" ) )
+        {
+            if (!fInterface->fTFReceiverHandler.ReadHFSSFile())  // Read external file
+            {
+        	    LERROR(lmclog,"FIR has not been generated.");
+                exit(-1);
+            }
+        }
+        else // Generate analytic response function
+        {
+        	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
         	{
-            	return false;
+    	        fAnalyticResponseFunction = new EquivalentCircuit();
+                if ( !fAnalyticResponseFunction->Configure(aParam) )
+                {
+    		        LWARN(lmclog,"EquivalentCircuit was not configured.");
+    		        return false;
+                }
+                else
+                {
+        		    if (!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
+        		    {
+                	    LWARN(lmclog,"TF->FIR was not generated correctly.");
+            		    return false;
+        		    }
+        	    }
         	}
-    	}
+        	else // default = DampedHarmonicOscillator
+        	    {
+
+        	        fAnalyticResponseFunction = new DampedHarmonicOscillator();
+
+                    if ( !fAnalyticResponseFunction->Configure(aParam) )
+                    {
+        		        LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
+        		        return false;
+                    }
+
+        		    if (!fInterface->fTFReceiverHandler.ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+        		    {
+                	    LWARN(lmclog,"GF->FIR was not generated.");
+            		    return false;
+        		    }
+
+        	    }
+            } // aParam.has( "tf-receiver-filename" )
+
 
         if( aParam.has( "e-gun" ) )
         {
