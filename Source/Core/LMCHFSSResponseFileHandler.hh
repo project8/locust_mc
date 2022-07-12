@@ -15,6 +15,7 @@ namespace locust
      @details
      Available configuration options:
      - "hfss-filetype": string -- The type of file being handler. Currently only Transfer function and Finite Impulse Response
+     - "print-fir-debug": bool -- Print text file of FIR coefficients.
      */
     
     class HFSSResponseFileHandlerCore
@@ -29,6 +30,7 @@ namespace locust
         virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
+        void PrintFIR( std::vector<double> );
 
         
     protected:
@@ -45,6 +47,8 @@ namespace locust
         bool fIsFIRCreated;
         std::string fWindowName;
         double fWindowParam;
+        bool fPrintFIR;
+
 
         //Member functions
         bool ends_with(const std::string &, const std::string &);

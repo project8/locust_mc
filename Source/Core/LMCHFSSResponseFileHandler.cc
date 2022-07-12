@@ -27,7 +27,8 @@ namespace locust
     fHFSSFiletype(""),
     fIsFIRCreated(false),
     fWindowName("tukey"),
-    fWindowParam(0.5)
+    fWindowParam(0.5),
+    fPrintFIR ( false )
     {
     }
     
@@ -37,6 +38,11 @@ namespace locust
     
     bool HFSSResponseFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
+
+    	if (aParam["print-fir-debug"]().as_bool())
+    	{
+    	    fPrintFIR = true;
+    	}
 
         return true;
     }
@@ -133,15 +139,13 @@ namespace locust
     fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex);
     fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
     fResolution=fComplexFFT.GetTimeResolution();
-//    FILE * fFIRout = fopen("output/FIR.txt", "w");
-//    fprintf(fFIRout,"#FIR used to process simulation (index,coefficient)\n");
     for (int i = 0; i < fFIRNBins; i++)
     {
         fFilter.push_back(fFIRComplex[i][0]);
-//		fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
     }
 
-//    fclose(fFIRout);
+    if (fPrintFIR) PrintFIR( fFilter );
+
     LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
     return true;
     }
@@ -209,7 +213,7 @@ namespace locust
         if(!ConvertTFtoFIR(tfArray,false)){ //bool determines if TF was generated dynamically
             return false;
         }
-	fIsFIRCreated=true;
+        fIsFIRCreated=true;
         return true;
     }
 
@@ -223,14 +227,13 @@ namespace locust
         fFIRNBins = gfArray.size();
         fResolution = gfArray[0].first;
 
-//        FILE * fFIRout = fopen("output/FIR.txt", "w");
-//        fprintf(fFIRout,"#FIR used to process simulation (index,coefficient)\n");
             for (int i = 0; i < fFIRNBins; i++)
             {
                 fFilter.push_back(gfArray[i].second);
-//        		fprintf(fFIRout,"%d,%e\n", i, fFIRComplex[i][0]);
             }
-//            fclose(fFIRout);
+
+            if (fPrintFIR) PrintFIR( fFilter );
+
             LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
     	return true;
@@ -248,15 +251,26 @@ namespace locust
         }
         fTFNBins=0;
 
-	fTFNBins=tfArray.size();
-	fInitialTFIndex = initialFreq;
-	if(!ConvertTFtoFIR(tfArray, true)){ //bool determines if TF was generated dynamically
+	    fTFNBins=tfArray.size();
+	    fInitialTFIndex = initialFreq;
+	    if(!ConvertTFtoFIR(tfArray, true)){ //bool determines if TF was generated dynamically
             return false;
         }
         fIsFIRCreated=true;
         return true;
     }    
     
+    void HFSSResponseFileHandlerCore::PrintFIR( std::vector<double> aFilter )
+    {
+        LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
+        FILE * fFIRout = fopen("output/FIR.txt", "w");
+        for (int i = 0; i < fFIRNBins; i++)
+        {
+    		fprintf(fFIRout,"%g\n", aFilter[i]);
+        }
+        fclose(fFIRout);
+    }
+
     FIRFileHandlerCore::FIRFileHandlerCore():HFSSResponseFileHandlerCore()
     {
     }
@@ -306,7 +320,7 @@ namespace locust
         }
         fclose(firFile);
         LDEBUG( lmclog, "Finished reading FIR file");
-	fIsFIRCreated=true;
+        fIsFIRCreated=true;
         return true;
     }
     
