@@ -95,6 +95,7 @@ namespace locust
     	}
 
     	tGFArray.resize( sizeCounter );
+    	std::reverse( tGFArray.begin(), tGFArray.end() );
     	SetGFarray( tGFArray );
 
 
