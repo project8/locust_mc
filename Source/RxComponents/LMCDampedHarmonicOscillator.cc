@@ -16,7 +16,7 @@ namespace locust
     DampedHarmonicOscillator::DampedHarmonicOscillator():
     		fMaxNBins( 20000 ),
 			fTimeResolution( 1.e-10 ),
-			fCavityFrequency( 1.0e9 ),
+			fCavityFrequency( 1.067e9 ),
 			fCavityQ( 1000 ),
 			fThresholdFactor ( 0.25 ),
 			fCavityDampingFactor( 0. ),
