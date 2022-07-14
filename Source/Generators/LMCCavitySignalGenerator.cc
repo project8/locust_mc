@@ -41,7 +41,6 @@ namespace locust
 		fUseDirectKassPower( false ),
 		fInterface( new KassLocustInterface() )
     {
-        fRequiredSignalState = Signal::kFreq;
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
@@ -291,30 +290,53 @@ namespace locust
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
 
-
-//   Optional implementation of equivalent circuit, selected by specifying any of
-//	 equivalentR, equivalentL, equivalentC in config file.
-    	fEquivalentCircuit = new EquivalentCircuit();
-    	if (!fEquivalentCircuit->Configure( aParam ))
-    	{
-    		LERROR(lmclog,"Error configuring LMCEquivalentCircuit.");
-    		exit(-1);
-    	}
-
-    	if(fEquivalentCircuit->fGeneratingTF)
-    	{
-    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
-    		{
-    			return false;
-    		}
-    	}
-    	else
-    	{
-        	if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
+        if( aParam.has( "tf-receiver-filename" ) )
+        {
+            if (!fInterface->fTFReceiverHandler.ReadHFSSFile())  // Read external file
+            {
+        	    LERROR(lmclog,"FIR has not been generated.");
+                exit(-1);
+            }
+        }
+        else // Generate analytic response function
+        {
+        	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
         	{
-            	return false;
+    	        fAnalyticResponseFunction = new EquivalentCircuit();
+                if ( !fAnalyticResponseFunction->Configure(aParam) )
+                {
+    		        LWARN(lmclog,"EquivalentCircuit was not configured.");
+    		        return false;
+                }
+                else
+                {
+        		    if (!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
+        		    {
+                	    LWARN(lmclog,"TF->FIR was not generated correctly.");
+            		    return false;
+        		    }
+        	    }
         	}
-    	}
+        	else // default = DampedHarmonicOscillator
+        	    {
+
+        	        fAnalyticResponseFunction = new DampedHarmonicOscillator();
+
+                    if ( !fAnalyticResponseFunction->Configure(aParam) )
+                    {
+        		        LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
+        		        return false;
+                    }
+
+        		    if (!fInterface->fTFReceiverHandler.ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+        		    {
+                	    LWARN(lmclog,"GF->FIR was not generated.");
+            		    return false;
+        		    }
+
+        	    }
+            } // aParam.has( "tf-receiver-filename" )
+
 
         if( aParam.has( "e-gun" ) )
         {

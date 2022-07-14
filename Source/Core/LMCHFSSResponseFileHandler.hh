@@ -15,6 +15,7 @@ namespace locust
      @details
      Available configuration options:
      - "hfss-filetype": string -- The type of file being handler. Currently only Transfer function and Finite Impulse Response
+     - "print-fir-debug": bool -- Print text file of FIR coefficients.
      */
     
     class HFSSResponseFileHandlerCore
@@ -29,6 +30,8 @@ namespace locust
         virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
+        void PrintFIR( std::vector<double> );
+
         
     protected:
         
@@ -44,6 +47,8 @@ namespace locust
         bool fIsFIRCreated;
         std::string fWindowName;
         double fWindowParam;
+        bool fPrintFIR;
+
 
         //Member functions
         bool ends_with(const std::string &, const std::string &);
@@ -58,6 +63,7 @@ namespace locust
     {
         return fResolution;
     }
+
     
     /*!
      @class TFFileHandlerCore
@@ -75,7 +81,9 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
         bool ReadHFSSFile() override;
-	bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
+        bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
+        bool ConvertAnalyticGFtoFIR(std::vector<std::pair<double,double>> gfArray);
+
     
     private:
         //Member variables
@@ -84,6 +92,7 @@ namespace locust
         
         // Member functions
         bool ConvertTFtoFIR(std::vector<std::complex<double>> &, bool GeneratedTF);
+
     protected:
         //Member variables
         double fInitialTFIndex;
