@@ -563,7 +563,7 @@ namespace locust
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, dt, true, fE_Gun);
-        double dotProductFactor = 0.;
+        double dotProductFactor = 1.;
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         double tEFieldAtProbe = 0.;
@@ -585,16 +585,13 @@ namespace locust
     						dopplerFrequency.resize(1);
     						unitConversion = 1.;  // mks units in Collin amplitudes.
     						tE_normalized = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
-    						dotProductFactor = aFieldCalculator.GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
     					else
     					{
     						dopplerFrequency.resize(2);
     				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
     				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-//    				        unitConversion = 1.; // If using direct Kassiopeia power budget.
     				        tE_normalized = aFieldCalculator.GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
-    						dotProductFactor = aFieldCalculator.GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
     					}
 
     					double modeAmplitude = 0.;
@@ -620,16 +617,14 @@ namespace locust
     							collinAmplitude = fInterface->fField->Z_TM(l,m,n,tKassParticleXP[7]);
     						}
         			    	dopplerFrequency[0] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
-    						excitationAmplitude = modeAmplitude * dotProductFactor * collinAmplitude * cavityFIRSample;
+    						excitationAmplitude = modeAmplitude * collinAmplitude * cavityFIRSample;
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
     						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
     					}
     					else
     					{
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-
-    						dotProductFactor = 0.63;  // temporary override.
-    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    						excitationAmplitude = modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) *
     								cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
@@ -637,6 +632,7 @@ namespace locust
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
+    							dotProductFactor = 0.63; // average value in TE01 rectangular waveguide
         						excitationAmplitude = dotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
