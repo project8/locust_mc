@@ -17,7 +17,6 @@ namespace locust
     WaveguideModes::WaveguideModes():
 		fVoltagePhaseAntenna( 0. ),
 		fVoltagePhaseShort( 0. )
-
     {
     }
 
@@ -74,13 +73,13 @@ namespace locust
 
 		if ( GetWaveguideShortIsPresent() ) // with short:
 		{
-			voltageValue *= ( cos(fVoltagePhaseAntenna) + cos(fVoltagePhaseShort) );
-    		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
+			voltageValue *= ( cos(GetVoltagePhaseAntenna()) + cos(GetVoltagePhaseShort()) );
+			aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 	    	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 		}
 		else // without short:
 		{
-			voltageValue *= ( cos(fVoltagePhaseAntenna) );
+			voltageValue *= cos(GetVoltagePhaseAntenna());
     		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 	    	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 		}
