@@ -14,8 +14,8 @@ namespace locust
     Field::Field():
 		fnPixels( 100 ),
     	fCentralFrequency(0.),
-		fR( 0.05 ),
-		fL( 0.2 ),
+		fR( 0.18 ),
+		fL( 3.0 ),
 		fX( 0.010668 ),
 		fY( 0.004318 )
     {}
