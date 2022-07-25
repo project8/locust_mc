@@ -164,6 +164,7 @@ namespace locust
 		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
 		while (it != fInterface->FIRfrequencyBuffer[0].end())
 		{
+			// to-do:  Consider:  Replace dtFilter with z(t)/vp.
 			orbitPhase += (*it)*fInterface->dtFilter;
 
 			if (*it != 0.)
@@ -181,7 +182,7 @@ namespace locust
 
 		if ( !BypassTF )
 		{
-			convolution = fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
+			convolution = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fInterface->ElementFIRBuffer[0]);
 		}
 		else
 		{

@@ -75,6 +75,28 @@ namespace locust
         return convolution;
     }
     
+    double HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer)
+    {
+        double convolutionMag = 0.0;
+        double convolutionValueReal = 0.0;
+        double convolutionValueImag = 0.0;
+
+        if(fFIRNBins<=0)
+        {
+            LERROR(lmclog,"Number of bins in the filter should be positive");
+        }
+        int firBinNumber=0;
+        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
+        {
+        	convolutionValueReal += *(it)*fFilterComplex[firBinNumber][0];
+        	convolutionValueImag += *(it)*fFilterComplex[firBinNumber][1];
+        	firBinNumber++;
+        }
+
+        return pow( convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
+    }
+
+
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
     fFIRComplex(NULL),
@@ -143,6 +165,7 @@ namespace locust
     {
         fFilter.push_back(fFIRComplex[i][0]);
     }
+    fFilterComplex = fFIRComplex;
 
     if (fPrintFIR) PrintFIR( fFilter );
 
