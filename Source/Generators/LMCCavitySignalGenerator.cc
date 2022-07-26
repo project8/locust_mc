@@ -582,35 +582,18 @@ namespace locust
     				if (ModeSelect(l, m, n, fE_Gun))
     				{
     			    	std::vector<double> tE_normalized;
-    					if (!fE_Gun)
-    					{
-    						tE_normalized = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
-    						fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + aFieldCalculator.GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
-    					}
-    					else
-    					{
-    				        tE_normalized = aFieldCalculator.GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
-    				        fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + aFieldCalculator.GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
-    					}
-
-    					double modeAmplitude = 0.;
-    					if ( (!isnan(tE_normalized.back())) && (!isnan(tE_normalized.front())) )
-    					{
-    						modeAmplitude = pow(tE_normalized.back()*tE_normalized.back() + tE_normalized.front()*tE_normalized.front(), 0.5);  // normalized E at electron
-    					}
-    					else if ( !isnan(tE_normalized.back()) )
-    					{
-    						modeAmplitude = tE_normalized.back();
-    					}
+						tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
     					double cavityFIRSample = aFieldCalculator.GetCavityFIRSample(tKassParticleXP, fBypassTF);
     			    	dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+						fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
+    					double modeAmplitude = tE_normalized.back();
 
     					if (!fE_Gun)
     					{
     						unitConversion = 1.;  // mks units in Collin amplitudes.
     						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample;
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
-    						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
+    						tEFieldAtProbe = fInterface->fField->GetNormalizedModeField(l,m,n,tProbeLocation).back();
     					}
     					else
     					{

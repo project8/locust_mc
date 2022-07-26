@@ -46,6 +46,8 @@ namespace locust
             double Z_TM(int l, int m, int n, double fcyc) const;
             double Integrate(int l, int m, int n, bool teMode, bool eField);
             std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
+            std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
 
 
         private:

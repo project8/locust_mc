@@ -278,6 +278,73 @@ namespace locust
     }
 
 
+    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+       {
+       	double tR = tKassParticleXP[0];
+       	double tZ = tKassParticleXP[2];
+       	std::vector<double> tField;
+
+       	tField = this->TE_E(l,m,n,tR,0.,tZ,1);
+       	double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
+
+   		auto it = tField.begin();
+   		while (it != tField.end())
+   		{
+   			if (!isnan(*it))
+   			{
+   				(*it) *= normFactor;
+   			}
+   			else
+   			{
+   				(*it) = 0.;
+   			}
+   			*it++;
+   		}
+
+       	return tField;  // return normalized field.
+       }
+
+    double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile)
+    {
+    	double tThetaParticle = tKassParticleXP[1];
+    	double tEtheta = 0.;
+    	double tEr = 0.;
+    	if (!isnan(anE_normalized.back()))
+    	{
+    		tEtheta = anE_normalized.back();
+    	}
+    	if (!isnan(anE_normalized.front()))
+    	{
+    		tEr = anE_normalized.front();
+    	}
+    	double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
+    	double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
+    	double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+    	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
+
+
+    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
+    	if (IntermediateFile)
+    	{
+        	char buffer[60];
+    		int a = sprintf(buffer, "output/dotProducts.txt");
+    		const char *fpname = buffer;
+    		FILE *fp = fopen(fpname, "a");
+    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
+    		fclose(fp);
+
+    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
+    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
+    	}
+
+    	return unitJdotE;
+    }
+
+
+
 
 
 } /* namespace locust */
