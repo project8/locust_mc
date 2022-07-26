@@ -29,17 +29,18 @@ namespace locust
 		fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
-		fNPreEventSamples( 150000 ),
-		fThreadCheckTime(100),
-		fKassNeverStarted( false ),
-		fSkippedSamples( false ),
-		fBypassTF( false ),
-		fNormCheck( false ),
-		fModeMaps( false ),
-		fTE( true ),
-		fIntermediateFile( false ),
-		fUseDirectKassPower( false ),
-		fInterface( new KassLocustInterface() )
+        fAvgDotProductFactor(0.),
+        fNPreEventSamples( 150000 ),
+        fThreadCheckTime(100),
+        fKassNeverStarted( false ),
+        fSkippedSamples( false ),
+        fBypassTF( false ),
+        fNormCheck( false ),
+        fModeMaps( false ),
+        fTE( true ),
+        fIntermediateFile( false ),
+        fUseDirectKassPower( false ),
+        fInterface( new KassLocustInterface() )
     {
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
@@ -561,6 +562,7 @@ namespace locust
         //Receiver Properties
         double dt = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
+        double tThisEventNSamples = fInterface->fTOld / dt;
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, dt, true, fE_Gun);
         double dotProductFactor = 1.;
@@ -585,6 +587,7 @@ namespace locust
     						dopplerFrequency.resize(1);
     						unitConversion = 1.;  // mks units in Collin amplitudes.
     						tE_normalized = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
+    						fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + aFieldCalculator.GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					}
     					else
     					{
@@ -592,6 +595,7 @@ namespace locust
     				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
     				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     				        tE_normalized = aFieldCalculator.GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
+    				        fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + aFieldCalculator.GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					}
 
     					double modeAmplitude = 0.;
@@ -607,24 +611,15 @@ namespace locust
 
     					if (!fE_Gun)
     					{
-    						double collinAmplitude = 0.;
-    						if (fTE)
-    						{
-    							collinAmplitude = fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]);
-    						}
-    						else
-    						{
-    							collinAmplitude = fInterface->fField->Z_TM(l,m,n,tKassParticleXP[7]);
-    						}
         			    	dopplerFrequency[0] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
-    						excitationAmplitude = modeAmplitude * collinAmplitude * cavityFIRSample;
+    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample;
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
     						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
     					}
     					else
     					{
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-    						excitationAmplitude = modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) *
+    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) *
     								cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
@@ -632,8 +627,7 @@ namespace locust
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
-    							dotProductFactor = 0.63; // average value in TE01 rectangular waveguide
-        						excitationAmplitude = dotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+        						excitationAmplitude = fAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
     						dopplerFrequency[0] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
