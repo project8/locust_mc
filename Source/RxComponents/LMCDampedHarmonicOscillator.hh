@@ -37,7 +37,7 @@ namespace locust
     		virtual bool Configure( const scarab::param_node& aNode );
             virtual bool GenerateGreensFunction();
             bool Initialize();
-            double GreensFunction(double t);
+            std::pair<double,double> GreensFunction(double t);
             double ExpDecayTerm(double t);
 
 

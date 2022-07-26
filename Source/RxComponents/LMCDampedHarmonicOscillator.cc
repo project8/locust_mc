@@ -70,16 +70,17 @@ namespace locust
     	return ExpDecayTerm;
     }
 
-    double DampedHarmonicOscillator::GreensFunction(double t)
+    std::pair<double,double> DampedHarmonicOscillator::GreensFunction(double t)
     {
-    	double GreensFunctionValue = ExpDecayTerm(t) * sin( fCavityOmegaPrime * t) / fCavityOmegaPrime;
-    	return GreensFunctionValue;
+    	double GreensFunctionValueReal = ExpDecayTerm(t) * sin( fCavityOmegaPrime * t) / fCavityOmegaPrime;
+    	double GreensFunctionValueImag = -ExpDecayTerm(t) * cos( fCavityOmegaPrime * t) / fCavityOmegaPrime;
+    	return std::make_pair(GreensFunctionValueReal,GreensFunctionValueImag);
     }
 
     bool DampedHarmonicOscillator::GenerateGreensFunction()
     {
 
-        std::vector<std::pair<double,double>> tGFArray;
+        std::vector<std::pair<double,std::pair<double,double> > > tGFArray;
 
     	int sizeCounter = 0;
 
@@ -97,7 +98,6 @@ namespace locust
     	tGFArray.resize( sizeCounter );
     	std::reverse( tGFArray.begin(), tGFArray.end() );
     	SetGFarray( tGFArray );
-
 
     	if ( tGFArray.size() < 1 ) return false;
     	else return true;
