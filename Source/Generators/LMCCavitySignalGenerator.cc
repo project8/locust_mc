@@ -584,16 +584,11 @@ namespace locust
     			    	std::vector<double> tE_normalized;
     					if (!fE_Gun)
     					{
-    						dopplerFrequency.resize(1);
-    						unitConversion = 1.;  // mks units in Collin amplitudes.
     						tE_normalized = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
     						fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + aFieldCalculator.GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					}
     					else
     					{
-    						dopplerFrequency.resize(2);
-    				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
-    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     				        tE_normalized = aFieldCalculator.GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
     				        fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + aFieldCalculator.GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					}
@@ -608,16 +603,19 @@ namespace locust
     						modeAmplitude = tE_normalized.back();
     					}
     					double cavityFIRSample = aFieldCalculator.GetCavityFIRSample(tKassParticleXP, fBypassTF);
+    			    	dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
     					if (!fE_Gun)
     					{
-        			    	dopplerFrequency[0] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
+    						unitConversion = 1.;  // mks units in Collin amplitudes.
     						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample;
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
     						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
     					}
     					else
     					{
+    				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
+    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
     						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) *
     								cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
@@ -629,9 +627,6 @@ namespace locust
     							unitConversion = 1.0;  // Kass power is already in Watts.
         						excitationAmplitude = fAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
-
-    						dopplerFrequency[0] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
-        					dopplerFrequency[1] = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 0);
 
     					}
 

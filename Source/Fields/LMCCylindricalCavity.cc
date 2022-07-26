@@ -77,8 +77,9 @@ namespace locust
     	return tIntegral;
     }
 
-    double CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP, bool towardAntenna)
+    std::vector<double> CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
     {
+    	std::vector<double> freqPrime;
     	double vz = tKassParticleXP[5];
     	double term1 = fInterface->fBesselNKPrimeZeros[l][m] / GetDimR();
     	double term2 = n * LMCConst::Pi() / GetDimL();
@@ -86,7 +87,8 @@ namespace locust
     	double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fInterface->fBesselNKPrimeZeros[l][m];
     	double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
     	double dopplerShift = vz / vp;
-    	return ( 1. + dopplerShift ) * tKassParticleXP[7];
+    	freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
+    	return freqPrime;
     }
 
 
