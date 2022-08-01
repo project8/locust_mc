@@ -9,10 +9,9 @@
 #define LMCRECTANGULARWAVEGUIDE_HH_
 
 #include "param.hh"
-
+#include "LMCKassLocustInterface.hh"
 #include "logger.hh"
 #include "LMCField.hh"
-#include "LMCKassLocustInterface.hh"
 
 #include <vector>
 
