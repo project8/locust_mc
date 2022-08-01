@@ -8,6 +8,7 @@
 #ifndef LMCWAVEGUIDEMODES_HH_
 #define LMCWAVEGUIDEMODES_HH_
 
+#include "LMCKassLocustInterface.hh"
 #include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
@@ -33,7 +34,7 @@ namespace locust
             WaveguideModes();
             virtual ~WaveguideModes();
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex);
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle);
             double GetVoltagePhaseAntenna();
             void SetVoltagePhaseAntenna( double aPhase );
             double GetVoltagePhaseShort();
@@ -42,10 +43,11 @@ namespace locust
 
 
         private:
-            bool InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency, double aCenterToAntenna, double aCenterToShort, double aDimX);
+            bool InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency);
             double GroupVelocity(double fcyc, double aDimX);
             double fVoltagePhaseAntenna;
             double fVoltagePhaseShort;
+            kl_interface_ptr_t fInterface;
 
 
 

@@ -622,19 +622,11 @@ namespace locust
     						double totalScalingFactor = sqrt(50.) * unitConversion;
     						if (!fE_Gun)
     						{
-    	   						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
+    	   						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, true );
     						}
     						else
     						{
-    							if (fInterface->fTOld > 0.)
-    							{
-    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
-    							}
-    							else
-    							{
-    							    fPowerCombiner->InitializeVoltagePhases(tKassParticleXP, dopplerFrequency, fInterface->fCENTER_TO_ANTENNA, fInterface->fCENTER_TO_SHORT, fInterface->fField->GetDimX());
-    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex);
-    							}
+    							fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, (fInterface->fTOld > 0.) );
     						}
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}

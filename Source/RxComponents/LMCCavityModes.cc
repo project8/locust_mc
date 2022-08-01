@@ -66,7 +66,7 @@ namespace locust
     	return true;
     }
 
-	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
+	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle)
 	{
 		double dopplerFrequency = cavityDopplerFrequency[0];
         SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
