@@ -16,8 +16,8 @@ namespace locust
 
     WaveguideModes::WaveguideModes():
 		fVoltagePhaseAntenna( 0. ),
-		fVoltagePhaseShort( 0. )
-
+		fVoltagePhaseShort( 0. ),
+	    fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
@@ -46,10 +46,14 @@ namespace locust
     	return groupVelocity;
     }
 
-    bool WaveguideModes::InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency, double aCenterToAntenna, double aCenterToShort, double aDimX)
+    bool WaveguideModes::InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency)
     {
     	double fcyc = tKassParticleXP[7]/2./LMCConst::Pi(); // cycles/sec
     	double tPositionZ = tKassParticleXP[2];
+    	double aCenterToAntenna = fInterface->fCENTER_TO_ANTENNA;
+    	double aCenterToShort = fInterface->fCENTER_TO_SHORT;
+    	double aDimX = fInterface->fField->GetDimX();
+
 
         double tVoltagePhaseAntenna = 2.*LMCConst::Pi()*(aCenterToAntenna - tPositionZ) / (GroupVelocity(fcyc, aDimX) / dopplerFrequency[0]);
         SetVoltagePhaseAntenna( tVoltagePhaseAntenna );
@@ -61,11 +65,16 @@ namespace locust
     	return true;
     }
 
-	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex)
+	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle)
 	{
 
-		double dopplerFrequencyAntenna = dopplerFrequency[0];
-		double dopplerFrequencyShort = dopplerFrequency[1];
+		double dopplerFrequencyAntenna = dopplerFrequency.front();
+		double dopplerFrequencyShort = dopplerFrequency.back();
+
+		if (initParticle)
+		{
+			InitializeVoltagePhases(particleXP, dopplerFrequency);
+		}
 
 		SetVoltagePhaseAntenna( GetVoltagePhaseAntenna() + dopplerFrequencyAntenna * dt);
 		SetVoltagePhaseShort( GetVoltagePhaseShort() + dopplerFrequencyShort * dt);
@@ -74,13 +83,13 @@ namespace locust
 
 		if ( GetWaveguideShortIsPresent() ) // with short:
 		{
-			voltageValue *= ( cos(fVoltagePhaseAntenna) + cos(fVoltagePhaseShort) );
-    		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
+			voltageValue *= ( cos(GetVoltagePhaseAntenna()) + cos(GetVoltagePhaseShort()) );
+			aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 	    	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 		}
 		else // without short:
 		{
-			voltageValue *= ( cos(fVoltagePhaseAntenna) );
+			voltageValue *= cos(GetVoltagePhaseAntenna());
     		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 	    	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 		}

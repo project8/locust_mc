@@ -132,7 +132,7 @@ namespace locust
 		double tvZ = tParticle.GetVelocity(true).Z();
 
         std::vector<double> particleXP;
-    	particleXP.resize(8);
+    	particleXP.resize(9);
     	fOrbitPhase += dt*tParticle.GetCyclotronFrequency();
         particleXP[0] = pow( tposX*tposX + tposY*tposY, 0.5);
         particleXP[1] = calcTheta(tposX, tposY);

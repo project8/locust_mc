@@ -37,14 +37,14 @@ namespace locust
             double GetInitialFreq();
             void SetTFarray( std::vector<std::complex<double>> aTFarray );
             std::vector<std::complex<double>> GetTFarray();
-            void SetGFarray( std::vector<std::pair<double,double>> aGFarray );
-            std::vector<std::pair<double,double>> GetGFarray();
+            void SetGFarray( std::vector<std::pair<double,std::pair<double,double> > > aGFarray );
+            std::vector<std::pair<double,std::pair<double,double> > > GetGFarray();
 
 
         private:
             bool fGeneratingTF;
             std::vector<std::complex<double>> fTFarray;
-            std::vector<std::pair<double,double>> fGFarray;
+            std::vector<std::pair<double,std::pair<double,double> > > fGFarray;
             double fInitialFreq;
 
 

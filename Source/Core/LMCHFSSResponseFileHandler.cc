@@ -75,6 +75,28 @@ namespace locust
         return convolution;
     }
     
+    double HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer)
+    {
+        double convolutionMag = 0.0;
+        double convolutionValueReal = 0.0;
+        double convolutionValueImag = 0.0;
+
+        if(fFIRNBins<=0)
+        {
+            LERROR(lmclog,"Number of bins in the filter should be positive");
+        }
+        int firBinNumber=0;
+        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
+        {
+        	convolutionValueReal += *(it)*fFilterComplex[firBinNumber][0];
+        	convolutionValueImag += *(it)*fFilterComplex[firBinNumber][1];
+        	firBinNumber++;
+        }
+
+        return pow( convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
+    }
+
+
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
     fFIRComplex(NULL),
@@ -143,6 +165,7 @@ namespace locust
     {
         fFilter.push_back(fFIRComplex[i][0]);
     }
+    fFilterComplex = fFIRComplex;
 
     if (fPrintFIR) PrintFIR( fFilter );
 
@@ -217,9 +240,10 @@ namespace locust
         return true;
     }
 
-    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(std::vector<std::pair<double,double>> gfArray)
+    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(std::vector<std::pair<double,std::pair<double,double> > > gfArray)
     {
-        if(fIsFIRCreated)
+
+    	if(fIsFIRCreated)
         {
             return true;
         }
@@ -227,14 +251,17 @@ namespace locust
         fFIRNBins = gfArray.size();
         fResolution = gfArray[0].first;
 
-            for (int i = 0; i < fFIRNBins; i++)
-            {
-                fFilter.push_back(gfArray[i].second);
-            }
+        fFilterComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
 
-            if (fPrintFIR) PrintFIR( fFilter );
+        for (int i = 0; i < fFIRNBins; i++)
+        {
+        	fFilterComplex[i][0] = gfArray[i].second.first;
+        	fFilterComplex[i][1] = gfArray[i].second.second;
+        }
 
-            LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
+        if (fPrintFIR) PrintFIR( fFilterComplex );
+
+        LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
     	return true;
     }
@@ -267,6 +294,17 @@ namespace locust
         for (int i = 0; i < fFIRNBins; i++)
         {
     		fprintf(fFIRout,"%g\n", aFilter[i]);
+        }
+        fclose(fFIRout);
+    }
+
+    void HFSSResponseFileHandlerCore::PrintFIR( fftw_complex* aFilter )
+    {
+        LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
+        FILE * fFIRout = fopen("output/FIR.txt", "w");
+        for (int i = 0; i < fFIRNBins; i++)
+        {
+    		fprintf(fFIRout,"%g %g\n", aFilter[i][0], aFilter[i][1]);
         }
         fclose(fFIRout);
     }

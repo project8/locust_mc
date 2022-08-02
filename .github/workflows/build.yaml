@@ -1,6 +1,9 @@
 name: Build and Test Locust
 
-on: [push]
+on:
+  push:
+    branches: [master]
+    tags: ['*']
 
 env:
   locust_mc_BUILD_WITH_KASSIOPEIA: OFF
