@@ -622,7 +622,7 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-	   						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, true );
+	   						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 

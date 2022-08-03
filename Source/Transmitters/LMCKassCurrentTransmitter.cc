@@ -84,14 +84,20 @@ namespace locust
 
     double KassCurrentTransmitter::GetGuidingCenterVy()
     {
-    	std::deque<locust::Particle>::iterator it = fInterface->fParticleHistory.end()-2;
-    	int index = std::distance( fInterface->fParticleHistory.begin(), it );
-    	locust::Particle tParticleSecondToLast = fInterface->fParticleHistory[index];
-    	locust::Particle tParticleLast = fInterface->fParticleHistory.back();
-    	double tDisplacement = tParticleLast.GetGuidingCenterPosition().Y() - tParticleSecondToLast.GetGuidingCenterPosition().Y();
-    	double tTimeInterval = tParticleLast.GetTime() - tParticleSecondToLast.GetTime();
-    	double tGuidingCenterVy = tDisplacement / tTimeInterval;
-    	return tGuidingCenterVy;
+    	int dSize = fInterface->fParticleHistory.size();
+    	if (dSize > 1)
+    	{
+    		locust::Particle tParticleSecondToLast = fInterface->fParticleHistory.at(dSize-2);
+    		locust::Particle tParticleLast = fInterface->fParticleHistory.back();
+    		double tDisplacement = tParticleLast.GetGuidingCenterPosition().Y() - tParticleSecondToLast.GetGuidingCenterPosition().Y();
+    		double tTimeInterval = tParticleLast.GetTime() - tParticleSecondToLast.GetTime();
+    		double tGuidingCenterVy = tDisplacement / tTimeInterval;
+    		return tGuidingCenterVy;
+    	}
+    	else
+    	{
+    		return 0.;
+    	}
     }
 
 
