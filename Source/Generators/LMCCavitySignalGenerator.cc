@@ -613,6 +613,8 @@ namespace locust
 
     					}
 
+    					if (!( fabs(excitationAmplitude) > 0. )) return false;
+
     					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
@@ -620,14 +622,7 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-    						if (!fE_Gun)
-    						{
-    	   						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, true );
-    						}
-    						else
-    						{
-    							fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, (fInterface->fTOld > 0.) );
-    						}
+	   						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, true );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
@@ -748,7 +743,7 @@ namespace locust
                     		}
                     		else
                     		{
-                    			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
+                    			LERROR(lmclog,"The cavity did not respond correctly.  Exiting.\n");
                     			fSkippedSamples = true;
                                 tLock.unlock();
                     			break;
