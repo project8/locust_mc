@@ -25,7 +25,6 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0.),
-		fE_Gun( false ),
 		fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
@@ -160,7 +159,7 @@ namespace locust
     void CavitySignalGenerator::CheckNormalization()
     {
 
-    	if (!fE_Gun)
+    	if (!fInterface->fE_Gun)
     		printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
     	else
     		printf("\n |E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used.\n\n");
@@ -251,7 +250,7 @@ namespace locust
         					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fField->GetDimY() - fInterface->fField->GetDimY()/2.;
     						std::vector<double> tE;
     						std::vector<double> tH;
-    						if (!fE_Gun)
+    						if (!fInterface->fE_Gun)
     						{
     							if (fTE)
     							{
@@ -341,10 +340,10 @@ namespace locust
 
         if( aParam.has( "e-gun" ) )
         {
-        	fE_Gun = aParam["e-gun"]().as_bool();
+        	fInterface->fE_Gun = aParam["e-gun"]().as_bool();
         }
 
-        if (fE_Gun)
+        if (fInterface->fE_Gun)
         {
             fInterface->fField = new RectangularWaveguide;
     		fPowerCombiner = new WaveguideModes;
@@ -376,6 +375,10 @@ namespace locust
         {
             fInterface->fField = new CylindricalCavity;
     		fPowerCombiner = new CavityModes;
+            if ( aParam.has( "back-reaction" ) )
+            {
+            	fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+            }
         }
 
         if( aParam.has( "n-modes" ) )
@@ -564,8 +567,7 @@ namespace locust
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
         double tThisEventNSamples = fInterface->fTOld / dt;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, dt, true, fE_Gun);
-        double dotProductFactor = 1.;
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, dt, true, fInterface->fE_Gun);
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         double tEFieldAtProbe = 0.;
@@ -579,7 +581,7 @@ namespace locust
     		{
     			for (int n=0; n<fNModes; n++)
     			{
-    				if (ModeSelect(l, m, n, fE_Gun))
+    				if (ModeSelect(l, m, n, fInterface->fE_Gun))
     				{
     			    	std::vector<double> tE_normalized;
 						tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
@@ -588,10 +590,11 @@ namespace locust
 						fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					double modeAmplitude = tE_normalized.back();
 
-    					if (!fE_Gun)
+    					if (!fInterface->fE_Gun)
     					{
-    						unitConversion = 1.;  // mks units in Collin amplitudes.
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample;
+    				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
+    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]);
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
     						tEFieldAtProbe = fInterface->fField->GetNormalizedModeField(l,m,n,tProbeLocation).back();
     					}

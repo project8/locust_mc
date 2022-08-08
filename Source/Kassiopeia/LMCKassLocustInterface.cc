@@ -40,12 +40,12 @@ namespace locust
 			fBesselNKPrimeZeros( 0 ),
 	        nFilterBinsRequired( 0 ),
 	        dtFilter( 0 ),
-	        eCurrentBuffer( 0 ),
 			fField(),
 	    	dotProductFactor( 0. ),
 	    	modeAmplitude( 0. ),
 			CavityFIRSample( 0. ),
-			fBackReaction( false )
+			fBackReaction( true ),
+            fE_Gun( false )
 
     {}
 

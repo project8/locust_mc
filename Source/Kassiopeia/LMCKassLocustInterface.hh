@@ -66,7 +66,6 @@ namespace locust
         std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
         int nFilterBinsRequired;
         double dtFilter;
-        std::vector<std::deque<double>> eCurrentBuffer;
         Field* fField;
         std::vector<std::deque<double>> ElementFIRBuffer;
         std::vector<std::deque<double>> FIRfrequencyBuffer;
@@ -74,6 +73,7 @@ namespace locust
     	double modeAmplitude;
     	double CavityFIRSample;
     	bool fBackReaction;
+        bool fE_Gun;
 
 
     };
