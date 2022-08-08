@@ -51,6 +51,7 @@ namespace locust
             int fMaxNBins;
             double fTimeResolution;
             double fThresholdFactor;
+            double fHannekePowerFactor;
 
     };
 
