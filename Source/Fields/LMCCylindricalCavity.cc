@@ -111,9 +111,11 @@ namespace locust
 
     	if ( k*k-k0*k0 != 0. )
     	{
+    		// Red Jackson waveguide impedance Eq. 8.32
+    		Z_TE = LMCConst::MuNull() * fcyc / LMCConst::C() / k;
     		// after Collin Foundations of M.E. Eq. 7.132
 //    		Z_TE *= fcyc * LMCConst::MuNull() / (k0*k0 - k*k);  // neglect Q term.
-    		Z_TE *= fcyc * LMCConst::MuNull() * sqrt( real*real + imag*imag ); // mag
+//    		Z_TE *= fcyc * LMCConst::MuNull() * sqrt( real*real + imag*imag ); // mag
     	}
     	return Z_TE;
     }
@@ -137,9 +139,11 @@ namespace locust
 
     	if ( k*k-k0*k0 != 0. )
     	{
+    		// Red Jackson waveguide impedance Eq. 8.32
+    		Z_TM = 1. / ( LMCConst::EpsNull() * fcyc / LMCConst::C() / k );
     		// after Collin Foundations of M.E. Eq. 7.132
 //    		Z_TM *= fcyc * LMCConst::MuNull() / (k0*k0 - k*k);  // neglect Q term.
-    		Z_TM *= fcyc * LMCConst::MuNull() * sqrt( real*real + imag*imag ); // mag
+//    		Z_TM *= fcyc * LMCConst::MuNull() * sqrt( real*real + imag*imag ); // mag
     	}
 
     	return Z_TM;
