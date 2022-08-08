@@ -89,12 +89,21 @@ namespace locust
             DeltaE = aFieldCalculator.GetDampingFactorPhase2(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
+
         if(fInterface->fProject8Phase==4)
         {
         	if (fInterface->fBackReaction)
         	{
-        		DeltaE = aFieldCalculator.GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-        		aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+        		if (fInterface->fE_Gun)
+        		{
+        			DeltaE = aFieldCalculator.GetDampingFactorPhase1(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+        		}
+        		else
+        		{
+//        			double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
+//        			DeltaE = aFieldCalculator.GetDampingFactorCavity(aFinalParticle, dt)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+        		}
+//        		aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         	}
         }
 
@@ -104,10 +113,6 @@ namespace locust
             if (fInterface->fTOld == 0.)
             {
             	fInterface->nFilterBinsRequired = 1 + (int)((aFinalParticle.GetTime() - anInitialParticle.GetTime()) / fInterface->dtFilter);
-            	if (fInterface->nFilterBinsRequired < 40)
-            		{  // avoid very small nFilterBinsRequired if using exact trajectory.
-            		    fInterface->nFilterBinsRequired = 40;
-            		}
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             }
             double t_poststep = aFinalParticle.GetTime();
