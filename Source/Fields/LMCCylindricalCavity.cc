@@ -94,58 +94,48 @@ namespace locust
 
     double CylindricalCavity::Z_TE(int l, int m, int n, double fcyc) const
     {
+    	/*
     	double Z_TE = 1.0;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
     	double k1 = x_lm / GetDimR();
     	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double k0 = fcyc / LMCConst::C();
-    	double A = 1.;
-    	double B = k*k;
-    	double C = k0*k0;
-    	double Q = 1.;  // Q for suppressed modes.
-    	if ((l==0)&&(m==1)&&(n==1)) Q = 1000.; // Q for lmn = 011.
-    	double denom = (Q*B - Q*C - C) * (Q*B - Q*C - C) + C*C;
-    	double real = (Q*A * (Q*B - Q*C - C)) / denom;
-    	double imag = -Q*A*C / denom;
 
     	if ( k*k-k0*k0 != 0. )
     	{
-    		// Red Jackson waveguide impedance Eq. 8.32
+    		// Red Jackson wave impedance Eq. 8.32
     		Z_TE = LMCConst::MuNull() * fcyc / LMCConst::C() / k;
-    		// after Collin Foundations of M.E. Eq. 7.132
-//    		Z_TE *= fcyc * LMCConst::MuNull() / (k0*k0 - k*k);  // neglect Q term.
-//    		Z_TE *= fcyc * LMCConst::MuNull() * sqrt( real*real + imag*imag ); // mag
     	}
+    	*/
+
+    	// Bypass all realistic impedance calculations for now, and return a constant.
+    	// This allows us to implement a power model elsewhere in the code without having
+    	// a duplicate resonant impedance from this function.
+    	double Z_TE = 500.; // ohms
     	return Z_TE;
+
     }
 
     double CylindricalCavity::Z_TM(int l, int m, int n, double fcyc) const
     {
+    	/*
     	double Z_TM = 1.0;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
     	double k1 = x_lm / GetDimR();
     	double k3 = n * LMCConst::Pi() / GetDimL();
     	double k = pow(k1*k1+k3*k3,0.5);
     	double k0 = fcyc / LMCConst::C();
-    	double A = 1.;
-    	double B = k*k;
-    	double C = k0*k0;
-    	double Q = 1.;  // Q for suppressed modes.
-    	if ((l==0)&&(m==1)&&(n==1)) Q = 1000.; // Q for lmn = 011.
-    	double denom = (Q*B - Q*C - C) * (Q*B - Q*C - C) + C*C;
-    	double real = (Q*A * (Q*B - Q*C - C)) / denom;
-    	double imag = -Q*A*C / denom;
 
     	if ( k*k-k0*k0 != 0. )
     	{
     		// Red Jackson waveguide impedance Eq. 8.32
-    		Z_TM = 1. / ( LMCConst::EpsNull() * fcyc / LMCConst::C() / k );
-    		// after Collin Foundations of M.E. Eq. 7.132
-//    		Z_TM *= fcyc * LMCConst::MuNull() / (k0*k0 - k*k);  // neglect Q term.
-//    		Z_TM *= fcyc * LMCConst::MuNull() * sqrt( real*real + imag*imag ); // mag
+    		Z_TM = 1. / ( LMCConst::EpsNull() * fcyc / LMCConst::C() / k ); // cgs units
     	}
+    	*/
 
+    	// See comments in Z_TE, above ^
+    	double Z_TM = 500.; //ohms
     	return Z_TM;
     }
 
