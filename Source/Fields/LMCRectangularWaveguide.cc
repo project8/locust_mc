@@ -123,7 +123,7 @@ namespace locust
     	double beta = sqrt(k*k - kc*kc);
 
     	double Z_TE = k*eta/beta;  // This is 448 ohms for TE10 at 25.9 GHz.
-    	return 2. * LMCConst::Pi() * Z_TE / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
+    	return Z_TE;
     }
 
     double RectangularWaveguide::Z_TM(int l, int m, int n, double fcyc) const
@@ -136,7 +136,7 @@ namespace locust
     	double beta = sqrt(k*k - kc*kc);
 
     	double Z_TM = beta*eta/k;
-    	return 2. * LMCConst::Pi() * Z_TM / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
+    	return Z_TM;
     }
 
 
