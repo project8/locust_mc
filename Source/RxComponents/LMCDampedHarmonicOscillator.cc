@@ -20,7 +20,8 @@ namespace locust
 			fCavityQ( 1000 ),
 			fThresholdFactor ( 0.25 ),
 			fCavityDampingFactor( 0. ),
-			fBFactor( 0. )
+			fBFactor( 0. ),
+			fHannekePowerFactor( 1. )
     {}
     DampedHarmonicOscillator::~DampedHarmonicOscillator() {}
 
@@ -72,8 +73,13 @@ namespace locust
 
     std::pair<double,double> DampedHarmonicOscillator::GreensFunction(double t)
     {
-    	double GreensFunctionValueReal = ExpDecayTerm(t) * sin( fCavityOmegaPrime * t) / fCavityOmegaPrime;
-    	double GreensFunctionValueImag = -ExpDecayTerm(t) * cos( fCavityOmegaPrime * t) / fCavityOmegaPrime;
+    	//double GreensFunctionValueReal = ExpDecayTerm(t) * sin( fCavityOmegaPrime * t) / fCavityOmegaPrime;
+    	//double GreensFunctionValueImag = -ExpDecayTerm(t) * cos( fCavityOmegaPrime * t) / fCavityOmegaPrime;
+
+    	// Modify Green's function for nominal gain of unity, keeping phase information unchanged.
+    	// Power model could possibly be implemented as in here:
+    	double GreensFunctionValueReal = fHannekePowerFactor * ExpDecayTerm(t) * sin( fCavityOmegaPrime * t);
+    	double GreensFunctionValueImag = -fHannekePowerFactor * ExpDecayTerm(t) * cos( fCavityOmegaPrime * t);
     	return std::make_pair(GreensFunctionValueReal,GreensFunctionValueImag);
     }
 

@@ -17,8 +17,8 @@
 
 
 
-<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/>
-<!-- <include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/EGunGeometry_V00_00_01.xml"/> -->
+<!-- <include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/> -->
+<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/EGunGeometry_V00_00_02.xml"/>
 
     
 
@@ -434,7 +434,7 @@
 
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
-<!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> --> 
+<!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> -->
 
 
 

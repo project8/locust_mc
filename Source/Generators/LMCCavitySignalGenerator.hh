@@ -89,7 +89,6 @@ namespace locust
 
 
         private:
-            bool fE_Gun;
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.

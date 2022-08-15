@@ -13,7 +13,7 @@
         "e-gun": true,
         "central-frequency": 25.9e9,
         "voltage-check": "true",
-        "lo-frequency": 25.8741e9,               
+        "lo-frequency": 25.977e9,               
         "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/WEGA_Impedance_Center.txt",
         "tf-receiver-bin-width": 0.01e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_EGun_Template.xml"        
