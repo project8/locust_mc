@@ -5,6 +5,7 @@
 #include "KSStepModifier.h"
 #include "KSTrajectory.h"
 
+#include "LMCFieldCalculator.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCParticle.hh"
 
@@ -40,6 +41,7 @@ namespace locust
         private:
             std::deque<locust::Particle> fNewParticleHistory;
             double fPitchAngle;
+            FieldCalculator aFieldCalculator;
             kl_interface_ptr_t fInterface;
     };
 
