@@ -75,7 +75,7 @@ namespace locust
         return convolution;
     }
     
-    double HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer)
+    std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer)
     {
         double convolutionMag = 0.0;
         double convolutionValueReal = 0.0;
@@ -86,6 +86,7 @@ namespace locust
             LERROR(lmclog,"Number of bins in the filter should be positive");
         }
         int firBinNumber=0;
+
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
         {
         	convolutionValueReal += *(it)*fFilterComplex[firBinNumber][0];
@@ -93,7 +94,12 @@ namespace locust
         	firBinNumber++;
         }
 
-        return pow( convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
+        std::pair<double,double> complexConvolution;
+        double complexPhase = atan(convolutionValueImag/convolutionValueReal);
+        double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
+
+        return std::make_pair(complexMag, complexPhase);
+        return complexConvolution;
     }
 
 
