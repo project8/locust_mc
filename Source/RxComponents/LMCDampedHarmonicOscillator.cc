@@ -21,7 +21,7 @@ namespace locust
 			fThresholdFactor ( 0.25 ),
 			fCavityDampingFactor( 0. ),
 			fBFactor( 0. ),
-			fHannekePowerFactor( 1. )
+			fHannekePowerFactor( 5. )
     {}
     DampedHarmonicOscillator::~DampedHarmonicOscillator() {}
 
@@ -64,6 +64,14 @@ namespace locust
     	else return true;
     }
 
+    void DampedHarmonicOscillator::SetCavityQ( double aQ )
+    {
+    	fCavityQ = aQ;
+    }
+    double DampedHarmonicOscillator::GetCavityQ()
+    {
+    	return fCavityQ;
+    }
 
     double DampedHarmonicOscillator::ExpDecayTerm(double t)
     {

@@ -39,6 +39,9 @@ namespace locust
             std::vector<std::complex<double>> GetTFarray();
             void SetGFarray( std::vector<std::pair<double,std::pair<double,double> > > aGFarray );
             std::vector<std::pair<double,std::pair<double,double> > > GetGFarray();
+            virtual void SetCavityQ( double aQ ) {};
+            virtual double GetCavityQ() {return 1.;};
+
 
 
         private:
