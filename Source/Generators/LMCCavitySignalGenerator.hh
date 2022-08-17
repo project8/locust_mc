@@ -113,7 +113,6 @@ namespace locust
             void WakeBeforeEvent();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
-            void InitializeBuffers(unsigned filterbuffersize);
 
 
             bool DoGenerate( Signal* aSignal );
@@ -122,7 +121,7 @@ namespace locust
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
-            AnalyticResponseFunction* fAnalyticResponseFunction;
+            FieldCalculator* fFieldCalculator;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;

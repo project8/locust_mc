@@ -302,15 +302,15 @@ namespace locust
         {
         	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
         	{
-        		fAnalyticResponseFunction = new EquivalentCircuit();
-        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		fInterface->fAnalyticResponseFunction = new EquivalentCircuit();
+        		if ( !fInterface->fAnalyticResponseFunction->Configure(aParam) )
         		{
         			LWARN(lmclog,"EquivalentCircuit was not configured.");
         			return false;
         		}
         		else
         		{
-        			if (!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
+        			if (!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fInterface->fAnalyticResponseFunction->GetInitialFreq(),fInterface->fAnalyticResponseFunction->GetTFarray()))
         			{
         				LWARN(lmclog,"TF->FIR was not generated correctly.");
         				return false;
@@ -319,13 +319,13 @@ namespace locust
         	}
         	else
         	{
-        		fAnalyticResponseFunction = new DampedHarmonicOscillator();
-        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		fInterface->fAnalyticResponseFunction = new DampedHarmonicOscillator();
+        		if ( !fInterface->fAnalyticResponseFunction->Configure(aParam) )
         		{
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
         			return false;
         		}
-        		if (!fInterface->fTFReceiverHandler.ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+        		if (!fInterface->fTFReceiverHandler.ConvertAnalyticGFtoFIR(fInterface->fAnalyticResponseFunction->GetGFarray()))
         		{
         			LWARN(lmclog,"GF->FIR was not generated.");
         			return false;
@@ -560,13 +560,12 @@ namespace locust
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
         double tThisEventNSamples = fInterface->fTOld / dt;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, dt, true, fInterface->fE_Gun);
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fInterface->fE_Gun);
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         double tEFieldAtProbe = 0.;
         std::vector<double> dopplerFrequency;
 
-        FieldCalculator aFieldCalculator;
 
     	for (int l=0; l<fNModes; l++)
     	{
@@ -578,24 +577,25 @@ namespace locust
     				{
     					std::vector<double> tE_normalized;
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
-    					double cavityFIRSample = aFieldCalculator.GetCavityFIRSample(tKassParticleXP, fBypassTF);
+    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					double modeAmplitude = tE_normalized.back();
 
     					if (!fInterface->fE_Gun)
     					{
-    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
-    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment
+    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
     						tEFieldAtProbe = fInterface->fField->GetNormalizedModeField(l,m,n,tProbeLocation).back();
     					}
     					else
     					{
-    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
+    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
+    						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
     						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
@@ -607,8 +607,6 @@ namespace locust
     						}
 
     					}
-
-    					if (!( fabs(excitationAmplitude) > 0. )) return false;
 
     					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
     					{
@@ -685,11 +683,12 @@ namespace locust
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-
         int PreEventCounter = 0;
         int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
-        InitializeBuffers(nFilterBins);
-
+        double dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
+        fFieldCalculator = new FieldCalculator();
+        fFieldCalculator->SetNFilterBinsRequired(std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins ));
+        fFieldCalculator->SetFilterSize( nFilterBins );
 
         if (fInterface->fTransmitter->IsKassiopeia())
         {
@@ -732,7 +731,7 @@ namespace locust
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveMode(aSignal, fInterface->nFilterBinsRequired, fInterface->dtFilter, index))
+                    		if (DriveMode(aSignal, fFieldCalculator->GetNFilterBinsRequired(), fInterface->dtFilter, index))
                     		{
                     			PreEventCounter = 0; // reset
                     		}
@@ -800,17 +799,6 @@ namespace locust
 
     	return true;
     }
-
-
-    void CavitySignalGenerator::InitializeBuffers(unsigned filterbuffersize)
-    {
-    	FieldBuffer aFieldBuffer;
-    	fInterface->ElementFIRBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-    	fInterface->FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-    }
-
-
-
 
 
 } /* namespace locust */
