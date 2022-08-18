@@ -13,11 +13,13 @@ namespace locust
 {
 
     FieldCalculator::FieldCalculator() :
-            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+    		fNFilterBinsRequired(0),
+			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-            fInterface( aCopy.fInterface )
+    		fNFilterBinsRequired(0),
+			fInterface( aCopy.fInterface )
     {
     }
     FieldCalculator* FieldCalculator::Clone() const
@@ -26,6 +28,23 @@ namespace locust
     }
     FieldCalculator::~FieldCalculator()
     {
+    }
+
+
+    void FieldCalculator::SetNFilterBinsRequired( int aNumberOfBins )
+    {
+    	fNFilterBinsRequired = aNumberOfBins;
+    }
+
+    int FieldCalculator::GetNFilterBinsRequired()
+    {
+    	return fNFilterBinsRequired;
+    }
+
+    void FieldCalculator::SetFilterSize( int aFilterSize )
+    {
+    	fFIRBuffer.resize( aFilterSize );
+    	fFrequencyBuffer.resize( aFilterSize );
     }
 
 
@@ -139,57 +158,113 @@ namespace locust
       return DampingFactorTM01;
     }
 
-    double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetCouplingFactorTE011Cavity(Kassiopeia::KSParticle& aFinalParticle)
     {
-    	return GetDampingFactorPhase1(aFinalParticle);
+    	int l = 0;
+    	int m = 1;
+    	int n = 1;
+    	double dimR = fInterface->fField->GetDimR(); // m
+    	double x = aFinalParticle.GetPosition().GetX();
+    	double y = aFinalParticle.GetPosition().GetY();
+    	double z = aFinalParticle.GetPosition().GetZ();
+    	double r = pow( x*x + y*y, 0.5 );
+    	double norm = fInterface->fField->TE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
+    	double tAvgDotProductFactor = 0.63;  // TO-DO:  this should be calculated and not just overridden like this.
+    	double coupling = tAvgDotProductFactor * fInterface->fField->TE_E(l,m,n,r,0.,z,false).back()/norm;
+    	return coupling*coupling;
+    }
+
+    double FieldCalculator::GetTE011FieldCavity(Kassiopeia::KSParticle& aFinalParticle)
+    {
+    	int l = 0;
+    	int m = 1;
+    	int n = 1;
+
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, false);
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+
+        std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
+        double dhoNorm = vMag * LMCConst::Q() * fInterface->fAnalyticResponseFunction->GetCavityQ();
+        double dhoMag = complexConvolution.first / dhoNorm;
+        double dhoPhase = complexConvolution.second;
+
+        // first term represents the new field driven by the electron.
+        // second term represents the field driven by the electron previously.
+        // "dhoMag" scales from ~0 (off-resonance) to DampedHarmonicOscillator::fHannekePowerFactor (on-resonance).
+        // The electron should radiate maximally if on resonance.
+        double fieldCavity = cos(0.) + dhoMag*cos(dhoPhase);
+
+        return fieldCavity;
     }
 
 
-    double FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
+    double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
+    	double TE011FieldFromCavity = GetTE011FieldCavity(aFinalParticle);
+    	double A011squ = GetCouplingFactorTE011Cavity(aFinalParticle);
+    	double DampingFactorTE011Cavity = 1. - A011squ + A011squ*TE011FieldFromCavity*TE011FieldFromCavity;  // = P'/P
+    	if ( fabs(DampingFactorTE011Cavity) > 0. )
+    	{
+    		return DampingFactorTE011Cavity;
+    	}
+    	else
+    	{
+    		return 1.0;
+    	}
+    }
+
+
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
+    {
+    	double convolutionMag = 0.0;
+    	double convolutionPhase = 0.0;
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
-    	double orbitPhase = tKassParticleXP[6];  // radians
-    	double cycFrequency = tKassParticleXP[7];  // rad/s
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-    	double convolution = 0.0;
 
-		// populate FIR filter with frequency for just this sample interval:
-		for (int i=0; i < fInterface->nFilterBinsRequired; i++)
-		{
-			fInterface->FIRfrequencyBuffer[0].push_back(cycFrequency);  // rad/s
-			fInterface->FIRfrequencyBuffer[0].pop_front();
-		}
+    	if ( !BypassTF )
+    	{
+    		double orbitPhase = tKassParticleXP[6];  // radians
+    		double cycFrequency = tKassParticleXP[7];  // rad/s
 
-		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
-		while (it != fInterface->FIRfrequencyBuffer[0].end())
-		{
-			// to-do:  Consider:  Replace dtFilter with z(t)/vp.
-			orbitPhase += (*it)*fInterface->dtFilter;
+    		// populate FIR filter with frequency for just this sample interval:
+    		for (int i=0; i < fNFilterBinsRequired; i++)
+    		{
+    			fFrequencyBuffer.push_back(cycFrequency);  // rad/s
+    			fFrequencyBuffer.pop_front();
+    		}
 
-			if (*it != 0.)
-			{
-				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
-			}
-			else
-			{
-				fInterface->ElementFIRBuffer[0].push_back(0.);
-			}
-			fInterface->ElementFIRBuffer[0].pop_front();
+    		std::deque<double>::iterator it = fFrequencyBuffer.begin();
+    		while (it != fFrequencyBuffer.end())
+    		{
+    			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
+    			orbitPhase += (*it)*fInterface->dtFilter;
 
-			*it++;
-		}
+    			if (*it != 0.)
+    			{
+    				fFIRBuffer.push_back(cos(orbitPhase));
+    			}
+    			else
+    			{
+    				fFIRBuffer.push_back(0.);
+    			}
+    			fFIRBuffer.pop_front();
 
-		if ( !BypassTF )
-		{
-			convolution = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fInterface->ElementFIRBuffer[0]);
-		}
-		else
-		{
-			convolution = 1.0;
-		}
+    			*it++;
+    		}
 
-		return LMCConst::Q()*vMag*convolution;
+    		convolutionMag = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fFIRBuffer).first;
+    		convolutionPhase = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fFIRBuffer).second;
+    	}
+    	else
+    	{
+    		convolutionMag = 1.0;
+    		convolutionPhase = 0.;
+    	}
+
+    	return std::make_pair(convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
 
     }
 
