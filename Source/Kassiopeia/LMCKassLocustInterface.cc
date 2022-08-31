@@ -44,7 +44,7 @@ namespace locust
 			dotProductFactor( 0. ),
 			modeAmplitude( 0. ),
 			CavityFIRSample( 0. ),
-			fBackReaction( true ),
+			fBackReaction( false ),
 			fE_Gun( false )
 
     {}
