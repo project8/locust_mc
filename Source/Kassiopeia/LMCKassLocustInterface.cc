@@ -36,16 +36,16 @@ namespace locust
             fCENTER_TO_ANTENNA( 0.05 ),
 			fTFReceiverHandler(),
 			fTransmitter(),
-	        fBesselNKZeros( 0 ),
+			fAnalyticResponseFunction(),
+			fBesselNKZeros( 0 ),
 			fBesselNKPrimeZeros( 0 ),
-	        nFilterBinsRequired( 0 ),
-	        dtFilter( 0 ),
+			dtFilter( 0 ),
 			fField(),
-	    	dotProductFactor( 0. ),
-	    	modeAmplitude( 0. ),
+			dotProductFactor( 0. ),
+			modeAmplitude( 0. ),
 			CavityFIRSample( 0. ),
-			fBackReaction( true ),
-            fE_Gun( false )
+			fBackReaction( false ),
+			fE_Gun( false )
 
     {}
 

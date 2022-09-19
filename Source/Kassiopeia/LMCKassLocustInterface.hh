@@ -12,6 +12,7 @@
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 #include "LMCTransmitter.hh"
+#include "LMCAnalyticResponseFunction.hh"
 #include "LMCField.hh"
 #include "LMCParticle.hh"
 #include "LMCFieldBuffer.hh"
@@ -63,16 +64,14 @@ namespace locust
         // Cavity and e-gun variables:
         TFReceiverHandler fTFReceiverHandler;
         Transmitter* fTransmitter;
+        AnalyticResponseFunction* fAnalyticResponseFunction;
         std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
-        int nFilterBinsRequired;
         double dtFilter;
         Field* fField;
-        std::vector<std::deque<double>> ElementFIRBuffer;
-        std::vector<std::deque<double>> FIRfrequencyBuffer;
-    	double dotProductFactor;
-    	double modeAmplitude;
-    	double CavityFIRSample;
-    	bool fBackReaction;
+        double dotProductFactor;
+        double modeAmplitude;
+        double CavityFIRSample;
+        bool fBackReaction;
         bool fE_Gun;
 
 

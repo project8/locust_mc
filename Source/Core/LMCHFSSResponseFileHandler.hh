@@ -28,7 +28,7 @@ namespace locust
         virtual bool Configure( const scarab::param_node& aNode);
         virtual bool ReadHFSSFile();
         virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
-        virtual double ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
+        virtual std::pair<double,double> ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
         void PrintFIR( std::vector<double> );

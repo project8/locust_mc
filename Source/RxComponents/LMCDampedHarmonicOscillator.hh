@@ -39,6 +39,8 @@ namespace locust
             bool Initialize();
             std::pair<double,double> GreensFunction(double t);
             double ExpDecayTerm(double t);
+            virtual void SetCavityQ( double aQ );
+            virtual double GetCavityQ();
 
 
         private:

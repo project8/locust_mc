@@ -11,7 +11,7 @@
     {
         "transmitter": "kass-current",
         "e-gun": false,
-        "voltage-check": "true",
+        "voltage-check": "false",
         "lo-frequency": 1.03e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"
     },

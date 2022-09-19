@@ -19,7 +19,9 @@
 
 <!-- <include name="[config_path]/FreeSpaceGeometry_V00_00_11_1GHz.xml"/> -->
 <!-- central frequency for trap FreeSpaceGeometry_V00_00_11_1GHz.xml is xx Hz -->
-<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/CavityGeometry_V00_00_00.xml"/>
+
+<!-- Path to the CavityGeometry_V00_00_00.xml file is in your local clone of hexbug. -->
+<include name="/hexbug/Phase3/Trap/CavityGeometry_V00_00_00.xml"/>
 <!-- central frequency for trap CavityGeometry_V00_00_00.xml is 1.06758e+09 Hz -->
 
    
