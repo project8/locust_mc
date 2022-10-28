@@ -21,7 +21,8 @@
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
 #include "LMCRectangularWaveguide.hh" // : LMCField
-#include "LMCFieldBuffer.hh"
+#include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
 #include <vector>
 #include <sstream>
 #include <string>
@@ -90,15 +91,16 @@ namespace locust
 
         private:
             double fLO_Frequency;
+            double fDeltaT;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
-            double fArrayRadius;
             std::string gxml_filename;
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
             double fAvgDotProductFactor;
+            double fdtFilter;
             bool fBypassTF;
             bool fNormCheck;
             bool fModeMaps;
@@ -108,11 +110,12 @@ namespace locust
 
 
 
+
             void ReadBesselZeroes(std::string filename, bool prime);
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();
-            bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
+            bool DriveMode(Signal* aSignal, unsigned index);
 
 
             bool DoGenerate( Signal* aSignal );
@@ -122,6 +125,8 @@ namespace locust
 
             PowerCombiner* fPowerCombiner;
             FieldCalculator* fFieldCalculator;
+            TFReceiverHandler* fTFReceiverHandler;
+            AnalyticResponseFunction* fAnalyticResponseFunction;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;

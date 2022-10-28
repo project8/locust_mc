@@ -24,7 +24,8 @@ namespace locust
     CavitySignalGenerator::CavitySignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
-        fLO_Frequency( 0.),
+        fLO_Frequency( 0. ),
+		fDeltaT( 0. ),
         fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
@@ -173,7 +174,7 @@ namespace locust
     				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n] / LMCConst::EpsNull();
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+    					printf("TE%d%d%d E %.4Lf H %.4Lf\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
         		    		LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
     				}
     				else
@@ -195,7 +196,7 @@ namespace locust
     				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n] / LMCConst::EpsNull();
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
+    					printf("TM%d%d%d E %.4Lf H %.4Lf\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
     				}
     				else
@@ -262,13 +263,13 @@ namespace locust
     								tE = fInterface->fField->TM_E(l,m,n,r,theta,0.0,0);
     								tH = fInterface->fField->TM_H(l,m,n,r,theta,0.0,0);
     							}
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
-    							fprintf(fp_H, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tH.front()*normFactor, tH.back()*normFactor);
+    							fprintf(fp_E, "%10.4Lf %10.4Lf %10.4Lf %10.4Lf\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
+    							fprintf(fp_H, "%10.4Lf %10.4Lf %10.4Lf %10.4Lf\n", r, theta, tH.front()*normFactor, tH.back()*normFactor);
     						}
     						else
     						{
     							tE = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
+    							fprintf(fp_E, "%10.4Lf %10.4Lf %10.4Lf %10.4Lf\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
     						}
     					}
     				}
@@ -285,14 +286,15 @@ namespace locust
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
-    	if(!fInterface->fTFReceiverHandler.Configure(aParam))
+    	fTFReceiverHandler = new TFReceiverHandler;
+    	if(!fTFReceiverHandler->Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
 
         if( aParam.has( "tf-receiver-filename" ) )
         {
-            if (!fInterface->fTFReceiverHandler.ReadHFSSFile())  // Read external file
+            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
             {
             	LERROR(lmclog,"FIR has not been generated.");
             	exit(-1);
@@ -302,15 +304,15 @@ namespace locust
         {
         	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
         	{
-        		fInterface->fAnalyticResponseFunction = new EquivalentCircuit();
-        		if ( !fInterface->fAnalyticResponseFunction->Configure(aParam) )
+        		fAnalyticResponseFunction = new EquivalentCircuit();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) )
         		{
         			LWARN(lmclog,"EquivalentCircuit was not configured.");
         			return false;
         		}
         		else
         		{
-        			if (!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fInterface->fAnalyticResponseFunction->GetInitialFreq(),fInterface->fAnalyticResponseFunction->GetTFarray()))
+        			if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
         			{
         				LWARN(lmclog,"TF->FIR was not generated correctly.");
         				return false;
@@ -319,13 +321,13 @@ namespace locust
         	}
         	else
         	{
-        		fInterface->fAnalyticResponseFunction = new DampedHarmonicOscillator();
-        		if ( !fInterface->fAnalyticResponseFunction->Configure(aParam) )
+        		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) )
         		{
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
         			return false;
         		}
-        		if (!fInterface->fTFReceiverHandler.ConvertAnalyticGFtoFIR(fInterface->fAnalyticResponseFunction->GetGFarray()))
+        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
         		{
         			LWARN(lmclog,"GF->FIR was not generated.");
         			return false;
@@ -484,8 +486,16 @@ namespace locust
         }
 
 
+        fFieldCalculator = new FieldCalculator();
+        if(!fFieldCalculator->Configure(aParam))
+        {
+            LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
+        }
+        fInterface->fConfigureKass = new ConfigureKass();
+        fInterface->fConfigureKass->SetParameters( aParam );
 
-        fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
+
+        fdtFilter = fTFReceiverHandler->GetFilterResolution();
 
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
@@ -548,7 +558,7 @@ namespace locust
     	return sqrt(areaIntegral);
     }
 
-    bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
+    bool CavitySignalGenerator::DriveMode(Signal* aSignal, unsigned index)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -556,11 +566,11 @@ namespace locust
         const unsigned nChannels = fNChannels;
 
         //Receiver Properties
-        double dt = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
-        double tThisEventNSamples = fInterface->fTOld / dt;
+        fDeltaT = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * fDeltaT;
+        double tThisEventNSamples = fInterface->fTOld / fDeltaT;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fInterface->fE_Gun);
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fE_Gun);
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         double tEFieldAtProbe = 0.;
@@ -581,6 +591,7 @@ namespace locust
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					double modeAmplitude = tE_normalized.back();
+
 
     					if (!fInterface->fE_Gun)
     					{
@@ -615,7 +626,7 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, dt, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
@@ -624,7 +635,7 @@ namespace locust
     		} // m
     	} // l
 
-    	fInterface->fTOld += dt;
+    	fInterface->fTOld += fDeltaT;
 
     	return true;
     }
@@ -644,7 +655,7 @@ namespace locust
         return;
     }
 
-    bool CavitySignalGenerator::ReceivedKassReady()
+     bool CavitySignalGenerator::ReceivedKassReady()
     {
 
     	std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -684,11 +695,8 @@ namespace locust
     {
 
         int PreEventCounter = 0;
-        int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
-        double dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
-        fFieldCalculator = new FieldCalculator();
-        fFieldCalculator->SetNFilterBinsRequired(std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins ));
-        fFieldCalculator->SetFilterSize( nFilterBins );
+        fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
+        fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSize() );
 
         if (fInterface->fTransmitter->IsKassiopeia())
         {
@@ -697,6 +705,7 @@ namespace locust
 
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
+
                 if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
                 	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
@@ -724,14 +733,25 @@ namespace locust
 
                 if (fInterface->fEventInProgress)  // fEventInProgress
                 {
+
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
+
+
+
                     if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                     {
-                        tLock.lock();
-                        fInterface->fDigitizerCondition.wait( tLock );
+
+                        fInterface->fDigitizerIsWaiting = true;
+
+                    	SendLocustReadySignal();
+                    	tLock.lock();
+
+                    	fInterface->fDigitizerCondition.wait( tLock );
+
+
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveMode(aSignal, fFieldCalculator->GetNFilterBinsRequired(), fInterface->dtFilter, index))
+                    		if (DriveMode(aSignal, index))
                     		{
                     			PreEventCounter = 0; // reset
                     		}
@@ -743,7 +763,10 @@ namespace locust
                     			break;
                     		}
                         }
+
                         tLock.unlock();
+
+
                 	}
                  	else  // diagnose Kass
                  	{
@@ -773,7 +796,9 @@ namespace locust
                  		}
                  	} // diagnose Kass
 
+
                 } // if fEventInProgress
+
             }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
@@ -799,6 +824,7 @@ namespace locust
 
     	return true;
     }
+
 
 
 } /* namespace locust */
