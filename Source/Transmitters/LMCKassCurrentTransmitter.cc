@@ -114,13 +114,12 @@ namespace locust
 
 
 
-    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, bool EGun)
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, double dt, bool EGun)
     {
 
     	locust::Particle tParticle;
     	std::vector<double> particleXP;
     	particleXP.resize(9);
-
 
     	int pSize = fInterface->fParticleHistory.size();
     	if ( pSize > 0 )
@@ -143,8 +142,8 @@ namespace locust
             double tvY = tParticle.GetVelocity(true).Y();
             double tvZ = tParticle.GetVelocity(true).Z();
 
-//    	    fOrbitPhase += dt*tParticle.GetCyclotronFrequency();  // accumulate phase semi-analytically.
-    	    fOrbitPhase = calcOrbitPhase(tvX, tvY); // or calculate it from Kass kinematics.
+//            fOrbitPhase += dt*tParticle.GetCyclotronFrequency();  // accumulate phase semi-analytically.
+    	    fOrbitPhase = calcOrbitPhase(tvX, tvY); // or use Kass kinematics
 
             particleXP[0] = pow( tposX*tposX + tposY*tposY, 0.5);
             particleXP[1] = calcTheta(tposX, tposY);
