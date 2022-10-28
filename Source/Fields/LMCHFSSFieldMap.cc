@@ -67,7 +67,7 @@ namespace locust
     	    	auto it = aField.begin();
     	    	while (it != aField.end())
     	    	{
-		    		if (!isnan(*it))
+		    		if (!std::isnan(*it))
 		    			aFieldMagSq += (*it)*(*it);
     	    		*it++;
     	    	}

@@ -174,7 +174,7 @@ namespace locust
     				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n] / LMCConst::EpsNull();
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TE%d%d%d E %.4Lf H %.4Lf\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
+    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
         		    		LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
     				}
     				else
@@ -196,7 +196,7 @@ namespace locust
     				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n] / LMCConst::EpsNull();
     				if (!isnan(normFactor)&&(isfinite(normFactor)))
     				{
-    					printf("TM%d%d%d E %.4Lf H %.4Lf\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
+    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
     		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
     				}
     				else
@@ -263,13 +263,13 @@ namespace locust
     								tE = fInterface->fField->TM_E(l,m,n,r,theta,0.0,0);
     								tH = fInterface->fField->TM_H(l,m,n,r,theta,0.0,0);
     							}
-    							fprintf(fp_E, "%10.4Lf %10.4Lf %10.4Lf %10.4Lf\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
-    							fprintf(fp_H, "%10.4Lf %10.4Lf %10.4Lf %10.4Lf\n", r, theta, tH.front()*normFactor, tH.back()*normFactor);
+    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
+    							fprintf(fp_H, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tH.front()*normFactor, tH.back()*normFactor);
     						}
     						else
     						{
     							tE = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
-    							fprintf(fp_E, "%10.4Lf %10.4Lf %10.4Lf %10.4Lf\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
+    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
     						}
     					}
     				}
@@ -741,9 +741,7 @@ namespace locust
                     if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                     {
 
-                        fInterface->fDigitizerIsWaiting = true;
 
-                    	SendLocustReadySignal();
                     	tLock.lock();
 
                     	fInterface->fDigitizerCondition.wait( tLock );
