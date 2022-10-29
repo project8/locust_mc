@@ -17,11 +17,13 @@ namespace locust
 
     FieldCalculator::FieldCalculator() :
     		fNFilterBinsRequired(0),
+			fTFReceiverHandler( NULL ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
     		fNFilterBinsRequired(0),
+			fTFReceiverHandler( NULL ),
 			fInterface( aCopy.fInterface )
     {
     }
@@ -35,11 +37,14 @@ namespace locust
 
     bool FieldCalculator::ConfigureByInterface()
     {
-    	const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
-    	if (!this->Configure( *aParam ))
+    	if (fInterface->fConfigureKass)
     	{
-    		LERROR(lmclog,"Error configuring FieldInterface class");
-    		exit(-1);
+    	    const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+    	    if (!this->Configure( *aParam ))
+    	    {
+    		    LERROR(lmclog,"Error configuring FieldInterface class");
+    		    exit(-1);
+    	    }
     	}
         return true;
     }
@@ -103,7 +108,10 @@ namespace locust
 
     void FieldCalculator::SetNFilterBinsRequired( double dt )
     {
-    	fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolution());
+    	if (fTFReceiverHandler)
+    	{
+    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolution());
+    	}
     }
 
     int FieldCalculator::GetNFilterBinsRequired()

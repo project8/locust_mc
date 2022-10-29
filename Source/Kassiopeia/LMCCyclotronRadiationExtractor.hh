@@ -8,8 +8,6 @@
 #include "LMCFieldCalculator.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCParticle.hh"
-#include "LMCConfigureKass.hh"
-#include "param.hh"
 
 
 #include <deque>

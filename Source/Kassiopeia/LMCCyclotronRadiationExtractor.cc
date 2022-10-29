@@ -1,6 +1,5 @@
 #include "LMCCyclotronRadiationExtractor.hh"
 #include "KSModifiersMessage.h"
-#include "logger.hh"
 
 
 namespace locust
@@ -10,6 +9,7 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor() :
             fNewParticleHistory(),
+			fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
@@ -18,6 +18,7 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
             fNewParticleHistory(),
+			fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
             fInterface( aCopy.fInterface )
     {
@@ -37,11 +38,12 @@ namespace locust
     	fFieldCalculator = new FieldCalculator();
     	if(!fFieldCalculator->ConfigureByInterface())
     	{
-    	   LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
+    	   LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
     	   exit(-1);
     	}
     	return true;
     }
+
 
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
@@ -119,9 +121,11 @@ namespace locust
         		{
         			DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
         		}
-//        		aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+        		aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         	}
         }
+
+
 
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
@@ -129,10 +133,9 @@ namespace locust
             {
             	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-
-            	fFieldCalculator->SetNFilterBinsRequired( dt );
-
+                fFieldCalculator->SetNFilterBinsRequired( dt );
             }
+
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
