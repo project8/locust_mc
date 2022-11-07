@@ -68,7 +68,6 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCAnalyticResponseFunction.hh
     RxComponents/LMCEquivalentCircuit.hh
     RxComponents/LMCDampedHarmonicOscillator.hh
-    RxComponents/LMCWaveguide.hh
 
 )
 
@@ -139,7 +138,6 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCAnalyticResponseFunction.cc
     RxComponents/LMCEquivalentCircuit.cc
     RxComponents/LMCDampedHarmonicOscillator.cc
-    RxComponents/LMCWaveguide.cc
 
 
 )
