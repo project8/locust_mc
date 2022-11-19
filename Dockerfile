@@ -1,14 +1,32 @@
-FROM project8/p8compute_dependencies:v0.9.0 as locust_common
+ARG final_img_repo=ghcr.io/project8/luna_base
+ARG final_img_tag=v1.3.0
+
+ARG img_repo=ghcr.io/project8/luna_base
+ARG img_tag=v1.3.0-dev
+
+########################
+FROM ${final_img_repo}:${final_img_tag} AS final_base
+
+########################
+FROM ${img_repo}:${img_tag} AS base
 
 ARG build_type=Release
 ENV LOCUST_BUILD_TYPE=$build_type
 ARG build_tests_exe=FALSE
 ENV LOCUST_BUILD_TESTS_EXE=$build_tests_exe
-ARG locust_build_with_kassiopeia=TRUE
-ENV LOCUST_BUILD_WITH_KASSIOPEIA=$locust_build_with_kassiopeia
-ARG locust_tag=v2.2.0
-ENV LOCUST_TAG=$locust_tag
-ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/$LOCUST_TAG
+
+ARG locust_tag=beta
+ENV LOCUST_TAG=${locust_tag}
+ARG build_with_kassiopeia=TRUE
+ENV LOCUST_BUILD_WITH_KASSIOPEIA=$build_with_kassiopeia
+ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/${LOCUST_TAG}
+
+ARG CC_VAL=gcc
+ENV CC=${CC_VAL}
+ARG CXX_VAL=g++
+ENV CXX=${CXX_VAL}
+
+SHELL ["/bin/bash", "-c"]
 
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
     chmod -R 777 $LOCUST_BUILD_PREFIX/.. &&\
@@ -23,7 +41,7 @@ RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
     /bin/true
 
 ########################
-FROM locust_common as locust_done
+FROM base AS build
 
 COPY Config /tmp_source/Config
 COPY Data /tmp_source/Data
@@ -32,11 +50,8 @@ COPY monarch /tmp_source/monarch
 COPY Scarab /tmp_source/Scarab
 COPY Source /tmp_source/Source
 COPY Config /tmp_source/Config
-RUN true
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
-RUN true
 COPY .git /tmp_source/.git
-RUN true
 
 # repeat the cmake command to get the change of install prefix to set correctly (a package_builder known issue)
 RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
@@ -46,20 +61,13 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D SET_INSTALL_PREFIX_TO_DEFAULT=FALSE \
           -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
           -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA .. &&\
-    cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
-          -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
-          -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D SET_INSTALL_PREFIX_TO_DEFAULT=FALSE \
-          -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA .. &&\
-    make -j3 install &&\
+    cmake .. &&\
+    make -j install &&\
     /bin/true
 
-
 ########################
-FROM locust_common
+FROM final_base
 
-COPY --from=locust_done $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX
+COPY --from=build $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX

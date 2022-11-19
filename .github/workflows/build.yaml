@@ -1,46 +1,133 @@
 name: Build and Test Locust
 
 on:
+  pull_request:
   push:
-    branches: [master]
+    branches: [main, develop]
     tags: ['*']
+  workflow_dispatch:
 
 env:
+  REGISTRY: ghcr.io
+  LUNA_BASE_VER: v1.3.0
   locust_mc_BUILD_WITH_KASSIOPEIA: OFF
   locust_mc_ENABLE_EXECUTABLES: ON
-  locust_mc_ENABLE_TESTING: ON
-  locust_mc_BUILD_TYPE: Debug
-  locust_mc_TAG: test
+#  locust_mc_ENABLE_TESTING: ON
+#  locust_mc_BUILD_TYPE: Debug
+#  locust_mc_TAG: test
 
 jobs:
 
+  docker-build-and-publish:
 
-  docker_build:
-    name: Build and Test in Docker
+    name: Build and push the docker images
 
-    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build: [Dev, Prod]
+        fail-fast: [false]
+        include:
+          - build: Dev
+            tag-suffix: '-dev'
+            build-type: Debug
+            build-tests: true
+          - build: Prod
+            tag-suffix: ''
+            build-type: Release
+            build-tests: false
 
+    runs-on: ubuntu-latest
     steps:
-
-      - name: Checkout the repo 
+    
+      - name: Check out the repo
         uses: actions/checkout@v2
         with:
           submodules: recursive
+          
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+          flavor: |
+            latest=auto
+            suffix=${{ matrix.tag-suffix }},onlatest=true
+          tags: |
+            type=semver,pattern={{raw}}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
-      - name: Build and test
-        run: |
-          docker build \
-            --target locust_done \
-            --build-arg build_type=${locust_mc_BUILD_TYPE} \
-            --build-arg build_tests_exe=${locust_mc_ENABLE_TESTING} \
-            --build-arg locust_build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA} \
-            --build-arg locust_tag=${locust_mc_TAG} \
-            --tag project8/locust_mc:${locust_mc_TAG} \
-            .  
-          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/Source/Applications/Testing/RunTests
+      - name: Get previous tag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        id: tag_name
+        with:
+          fallback: beta
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        
+      - name: Set up Docker Buildx
+        id: setup_buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          buildkitd-flags: --debug
 
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build to Test
+        id: build-to-test
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: true
+          build-args: |
+            img_repo=ghcr.io/project8/luna_base
+            img_tag=${{ env.LUNA_BASE_VER }}-dev
+            final_img_repo=ghcr.io/project8/luna_base
+            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
+            locust_tag=${{ steps.tag_name.outputs.tag }}
+            build_type=${{ matrix.build-type }}
+            build_tests_exe=${{ matrix.build-tests }}
+            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
+          tags: test${{ matrix.tag-suffix }}
+          platforms: linux/amd64
+
+      - name: Run Tests
+        run: docker run ${{ steps.build-to-test.outputs.imageid }} /tmp_source/build/Source/Applications/Testing/RunTests
+
+      - name: Build to Push
+        id: build-to-push
+        if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          load: false
+          build-args: |
+            img_repo=ghcr.io/project8/luna_base
+            img_tag=${{ env.LUNA_BASE_VER }}-dev
+            final_img_repo=ghcr.io/project8/luna_base
+            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
+            locust_tag=${{ steps.tag_name.outputs.tag }}
+            build_type=${{ matrix.build-type }}
+            build_tests_exe=${{ matrix.build-tests }}
+            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          platforms: linux/amd64
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
+    
 
 
 
