@@ -1,5 +1,6 @@
 
 #include "LMCFieldCalculator.hh"
+#include "logger.hh"
 #include "KSParticleFactory.h"
 #include <algorithm>
 
@@ -12,13 +13,17 @@ using namespace Kassiopeia;
 namespace locust
 {
 
+    LOGGER( lmclog, "FieldCalculator" );
+
     FieldCalculator::FieldCalculator() :
     		fNFilterBinsRequired(0),
+			fTFReceiverHandler( NULL ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
     		fNFilterBinsRequired(0),
+			fTFReceiverHandler( NULL ),
 			fInterface( aCopy.fInterface )
     {
     }
@@ -30,10 +35,83 @@ namespace locust
     {
     }
 
-
-    void FieldCalculator::SetNFilterBinsRequired( int aNumberOfBins )
+    bool FieldCalculator::ConfigureByInterface()
     {
-    	fNFilterBinsRequired = aNumberOfBins;
+    	if (fInterface->fConfigureKass)
+    	{
+    	    const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+    	    if (!this->Configure( *aParam ))
+    	    {
+    		    LERROR(lmclog,"Error configuring FieldInterface class");
+    		    exit(-1);
+    	    }
+    	}
+        return true;
+    }
+
+    bool FieldCalculator::Configure( const scarab::param_node& aParam )
+     {
+
+    	fTFReceiverHandler = new TFReceiverHandler;
+    	if(!fTFReceiverHandler->Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    	}
+
+        if( aParam.has( "tf-receiver-filename" ) )
+        {
+            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
+            {
+            	LERROR(lmclog,"FIR has not been generated.");
+            	exit(-1);
+            }
+        }
+        else // Generate analytic response function
+        {
+        	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
+        	{
+        		fAnalyticResponseFunction = new EquivalentCircuit();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		{
+        			LWARN(lmclog,"EquivalentCircuit was not configured.");
+        			return false;
+        		}
+        		else
+        		{
+        			if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
+        			{
+        				LWARN(lmclog,"TF->FIR was not generated correctly.");
+        				return false;
+        			}
+        		}
+        	}
+        	else
+        	{
+        		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		{
+        			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
+        			return false;
+        		}
+        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+        		{
+        			LWARN(lmclog,"GF->FIR was not generated.");
+        			return false;
+        		}
+        	}
+        } // aParam.has( "tf-receiver-filename" )
+
+        SetFilterSize( fTFReceiverHandler->GetFilterSize());
+
+        return true;
+     }
+
+    void FieldCalculator::SetNFilterBinsRequired( double dt )
+    {
+    	if (fTFReceiverHandler)
+    	{
+    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolution());
+    	}
     }
 
     int FieldCalculator::GetNFilterBinsRequired()
@@ -45,6 +123,11 @@ namespace locust
     {
     	fFIRBuffer.resize( aFilterSize );
     	fFrequencyBuffer.resize( aFilterSize );
+    }
+
+    int FieldCalculator::GetFilterSize()
+    {
+    	return fFIRBuffer.size();
     }
 
 
@@ -180,13 +263,13 @@ namespace locust
     	int m = 1;
     	int n = 1;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, false);
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, 0., false);
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
 
         std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
-        double dhoNorm = vMag * LMCConst::Q() * fInterface->fAnalyticResponseFunction->GetCavityQ();
+        double dhoNorm = vMag * LMCConst::Q() * fAnalyticResponseFunction->GetCavityQ();
         double dhoMag = complexConvolution.first / dhoNorm;
         double dhoPhase = complexConvolution.second;
 
@@ -240,7 +323,7 @@ namespace locust
     		while (it != fFrequencyBuffer.end())
     		{
     			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
-    			orbitPhase += (*it)*fInterface->dtFilter;
+    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolution();
 
     			if (*it != 0.)
     			{
@@ -255,8 +338,11 @@ namespace locust
     			*it++;
     		}
 
-    		convolutionMag = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fFIRBuffer).first;
-    		convolutionPhase = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fFIRBuffer).second;
+            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilter(fFIRBuffer);
+
+    		convolutionMag = convolution.first;
+    		convolutionPhase = convolution.second;
+
     	}
     	else
     	{
