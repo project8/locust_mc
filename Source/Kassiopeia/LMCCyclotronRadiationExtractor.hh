@@ -9,6 +9,7 @@
 #include "LMCKassLocustInterface.hh"
 #include "LMCParticle.hh"
 
+
 #include <deque>
 
 namespace locust
@@ -24,6 +25,8 @@ namespace locust
             CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aCopy );
             CyclotronRadiationExtractor* Clone() const;
             virtual ~CyclotronRadiationExtractor();
+            bool Configure();
+
 
             //**********
             // modifier
@@ -35,13 +38,15 @@ namespace locust
 
             locust::Particle ExtractKassiopeiaParticle( Kassiopeia::KSParticle &anInitialParticle, Kassiopeia::KSParticle &aFinalParticle);
 
+
             void SetTrajectory( Kassiopeia::KSTrajectory* aTrajectory );
             void SetP8Phase( int P8Phase );
+
 
         private:
             std::deque<locust::Particle> fNewParticleHistory;
             double fPitchAngle;
-            FieldCalculator aFieldCalculator;
+            FieldCalculator* fFieldCalculator;
             kl_interface_ptr_t fInterface;
     };
 
