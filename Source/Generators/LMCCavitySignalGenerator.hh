@@ -13,7 +13,8 @@
 #include "LMCGenerator.hh"
 #include "LMCCavityModes.hh" // : LMCPowerCombiner
 #include "LMCWaveguideModes.hh" // : LMCPowerCombiner
-#include "LMCEquivalentCircuit.hh"
+#include "LMCEquivalentCircuit.hh" // : LMCAnalyticResponseFunction
+#include "LMCDampedHarmonicOscillator.hh" // : LMCAnalyticResponseFunction
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
 #include "LMCFieldCalculator.hh"
@@ -60,8 +61,10 @@ namespace locust
      - "e-gun": Select e-gun configuration instead of cavity [false].
      - "center-to-short": distance [0.05 m] from center of e-gun waveguide to reflecting short.
      - "center-to-antenna": distance [0.05 m] from center of e-gun waveguide to antenna.
-     - "back-reaction": optional back reaction in waveguide [true].
-
+     - "waveguide-short":  optional presence/absence of reflecting short [true].
+     - "back-reaction": optional waveguide back reaction in e-gun.  default to [true] if waveguide-short is present.
+     - "direct-kass-power":  In e-gun, overrides calculated waveguide signal amplitudes and replaces
+     	 them with sqrt(KassPower).  This is for cross-checking the more detailed signal calculations.
     */
 
     class CavitySignalGenerator : public Generator
@@ -86,7 +89,6 @@ namespace locust
 
 
         private:
-            bool fE_Gun;
             double fLO_Frequency;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
@@ -96,11 +98,13 @@ namespace locust
             bool fKassNeverStarted;
             bool fSkippedSamples;
             double fphiLO; // voltage phase of LO in radians;
+            double fAvgDotProductFactor;
             bool fBypassTF;
             bool fNormCheck;
             bool fModeMaps;
             bool fTE; // (if false, use TM modes.)
             bool fIntermediateFile;
+            bool fUseDirectKassPower;
 
 
 
@@ -109,7 +113,6 @@ namespace locust
             void WakeBeforeEvent();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
-            void InitializeBuffers(unsigned filterbuffersize);
 
 
             bool DoGenerate( Signal* aSignal );
@@ -118,7 +121,7 @@ namespace locust
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
-            EquivalentCircuit* fEquivalentCircuit;
+            FieldCalculator* fFieldCalculator;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;

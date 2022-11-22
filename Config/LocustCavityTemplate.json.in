@@ -11,13 +11,9 @@
     {
         "transmitter": "kass-current",
         "e-gun": false,
-        "voltage-check": "true",
-        "shift-n-bins": 6000,
-        "zero-padding-size": 1000,
-        "lo-frequency": 0.98e9,               
-        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/cavityTF.txt",
-        "tf-receiver-bin-width": 0.00005e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"        
+        "voltage-check": "false",
+        "lo-frequency": 1.03e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"
     },
 
     "simulation":
@@ -25,7 +21,7 @@
         "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
         "record-size": 81920,
-        "acquisition-rate": 210,
+        "acquisition-rate": 220,
         "n-channels": 1
     },
   
@@ -37,8 +33,8 @@
 
     "digitizer":
     {
-    	"v-range":  10.0e-9,
-    	"v-offset": -5.0e-9
+    	"v-range":  10.0e-7,
+    	"v-offset": -5.0e-7
     }
 
 }

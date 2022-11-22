@@ -26,7 +26,8 @@ namespace locust
 			fvoltageCheck( false ),
 			fNCavityModes( 0 ),
 			fCavityProbeZ( 0. ),
-			fCavityProbeRFrac( 0.5 )
+			fCavityProbeRFrac( 0.5 ),
+			fWaveguideShortIsPresent( true )
     {}
     PowerCombiner::~PowerCombiner() {}
 
@@ -177,6 +178,15 @@ namespace locust
     void PowerCombiner::SetCavityProbeRFrac ( double aFraction )
     {
     	fCavityProbeRFrac = aFraction;
+    }
+
+    bool PowerCombiner::GetWaveguideShortIsPresent()
+    {
+    	return fWaveguideShortIsPresent;
+    }
+    void PowerCombiner::SetWaveguideShortIsPresent ( bool aValue )
+    {
+    	fWaveguideShortIsPresent = aValue;
     }
 
 

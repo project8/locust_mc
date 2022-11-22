@@ -14,7 +14,10 @@ namespace locust
 
 	LOGGER( lmclog, "WaveguideModes" );
 
-    WaveguideModes::WaveguideModes()
+    WaveguideModes::WaveguideModes():
+		fVoltagePhaseAntenna( 0. ),
+		fVoltagePhaseShort( 0. ),
+	    fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
@@ -43,36 +46,78 @@ namespace locust
     	return groupVelocity;
     }
 
-    bool WaveguideModes::InitializeVoltagePhases(std::vector<double> tKassParticleXP, double aDopplerFrequencyAntenna, double aDopplerFrequencyShort, double aCenterToAntenna, double aCenterToShort, double aDimX)
+    bool WaveguideModes::InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency)
     {
     	double fcyc = tKassParticleXP[7]/2./LMCConst::Pi(); // cycles/sec
     	double tPositionZ = tKassParticleXP[2];
+    	double aCenterToAntenna = fInterface->fCENTER_TO_ANTENNA;
+    	double aCenterToShort = fInterface->fCENTER_TO_SHORT;
+    	double aDimX = fInterface->fField->GetDimX();
 
-        fVoltagePhaseAntenna = 2.*LMCConst::Pi()*(aCenterToAntenna - tPositionZ) / (GroupVelocity(fcyc, aDimX) / aDopplerFrequencyAntenna);
 
-        fVoltagePhaseShort = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(aCenterToShort + aCenterToAntenna) /
-                (GroupVelocity(fcyc, aDimX) / aDopplerFrequencyShort);  // phase of reflected field at antenna.
+        double tVoltagePhaseAntenna = 2.*LMCConst::Pi()*(aCenterToAntenna - tPositionZ) / (GroupVelocity(fcyc, aDimX) / dopplerFrequency[0]);
+        SetVoltagePhaseAntenna( tVoltagePhaseAntenna );
+
+        double tVoltagePhaseShort = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(aCenterToShort + aCenterToAntenna) /
+                (GroupVelocity(fcyc, aDimX) / dopplerFrequency[1]);  // phase of reflected field at antenna.
+        SetVoltagePhaseShort( tVoltagePhaseShort );
 
     	return true;
     }
 
-	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, double excitationAmplitude, double EFieldAtProbe, double dopplerFrequencyAntenna, double dopplerFrequencyShort, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, double eventTime)
+	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle)
 	{
 
-		fVoltagePhaseAntenna += dopplerFrequencyAntenna * dt;
-		fVoltagePhaseShort += dopplerFrequencyShort * dt;
+		double dopplerFrequencyAntenna = dopplerFrequency.front();
+		double dopplerFrequencyShort = dopplerFrequency.back();
 
-		double voltageValue = excitationAmplitude * (cos(fVoltagePhaseAntenna) + cos(fVoltagePhaseShort));
+		if (initParticle)
+		{
+			InitializeVoltagePhases(particleXP, dopplerFrequency);
+		}
 
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
+		SetVoltagePhaseAntenna( GetVoltagePhaseAntenna() + dopplerFrequencyAntenna * dt);
+		SetVoltagePhaseShort( GetVoltagePhaseShort() + dopplerFrequencyShort * dt);
 
+		double voltageValue = excitationAmplitude;
 
-		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
+		if ( GetWaveguideShortIsPresent() ) // with short:
+		{
+			voltageValue *= ( cos(GetVoltagePhaseAntenna()) + cos(GetVoltagePhaseShort()) );
+			aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
+	    	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
+		}
+		else // without short:
+		{
+			voltageValue *= cos(GetVoltagePhaseAntenna());
+    		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
+	    	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
+		}
+
+		if ( GetVoltageCheck() && (sampleIndex%1000 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 
 		return true;
 	}
+
+    double WaveguideModes::GetVoltagePhaseAntenna()
+    {
+    	return fVoltagePhaseAntenna;
+    }
+    void WaveguideModes::SetVoltagePhaseAntenna ( double aPhase )
+    {
+        fVoltagePhaseAntenna = aPhase;
+    }
+
+    double WaveguideModes::GetVoltagePhaseShort()
+    {
+    	return fVoltagePhaseShort;
+    }
+    void WaveguideModes::SetVoltagePhaseShort ( double aPhase )
+    {
+        fVoltagePhaseShort = aPhase;
+    }
+
 
 
 } /* namespace locust */

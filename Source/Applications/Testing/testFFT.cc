@@ -65,7 +65,7 @@ double GetPower(bool bTime)
 
     if (bTime)
     {
-    	LPROG(testlog, "fft power of original data time series is: " << pdata);
+    	LPROG(testlog, "power of original data time series is: " << pdata);
     	return pdata;
     }
     else

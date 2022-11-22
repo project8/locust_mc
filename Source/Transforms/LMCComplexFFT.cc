@@ -176,6 +176,7 @@ namespace locust
         for (int i = 0; i < fSize+2*fNShiftBins; ++i)
         {
             out[i][0]=fOutputArray[i][0]*2/fTotalWindowSize;
+            out[i][1]=fOutputArray[i][1]*2/fTotalWindowSize;
         }
         return true;
     }
@@ -213,7 +214,7 @@ namespace locust
         for (int i = 0; i < fTotalWindowSize; ++i)
         {
             in[i][0]=vectorToTransformReal.at(i);
-            in[i][1]=vectorToTransformReal.at(i);
+            in[i][1]=vectorToTransformImag.at(i);
         }
         return true;
     }

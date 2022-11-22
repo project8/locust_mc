@@ -63,6 +63,13 @@ namespace locust
     
     bool TFReceiverHandler::Configure(const scarab::param_node& aParam)
     {
+
+
+    	if( !HFSSResponseFileHandlerCore::Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring HFSSResponseFileHandler class from TFReceiverHandler subclass");
+    	}
+
         if(!fComplexFFT.Configure(aParam))
         {
             LERROR(lmclog,"Error configuring ComplexFFT class");

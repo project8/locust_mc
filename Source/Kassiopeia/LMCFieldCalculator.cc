@@ -13,11 +13,13 @@ namespace locust
 {
 
     FieldCalculator::FieldCalculator() :
-            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+    		fNFilterBinsRequired(0),
+			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-            fInterface( aCopy.fInterface )
+    		fNFilterBinsRequired(0),
+			fInterface( aCopy.fInterface )
     {
     }
     FieldCalculator* FieldCalculator::Clone() const
@@ -26,6 +28,23 @@ namespace locust
     }
     FieldCalculator::~FieldCalculator()
     {
+    }
+
+
+    void FieldCalculator::SetNFilterBinsRequired( int aNumberOfBins )
+    {
+    	fNFilterBinsRequired = aNumberOfBins;
+    }
+
+    int FieldCalculator::GetNFilterBinsRequired()
+    {
+    	return fNFilterBinsRequired;
+    }
+
+    void FieldCalculator::SetFilterSize( int aFilterSize )
+    {
+    	fFIRBuffer.resize( aFilterSize );
+    	fFrequencyBuffer.resize( aFilterSize );
     }
 
 
@@ -139,196 +158,115 @@ namespace locust
       return DampingFactorTM01;
     }
 
+    double FieldCalculator::GetCouplingFactorTE011Cavity(Kassiopeia::KSParticle& aFinalParticle)
+    {
+    	int l = 0;
+    	int m = 1;
+    	int n = 1;
+    	double dimR = fInterface->fField->GetDimR(); // m
+    	double x = aFinalParticle.GetPosition().GetX();
+    	double y = aFinalParticle.GetPosition().GetY();
+    	double z = aFinalParticle.GetPosition().GetZ();
+    	double r = pow( x*x + y*y, 0.5 );
+    	double norm = fInterface->fField->TE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
+    	double tAvgDotProductFactor = 0.63;  // TO-DO:  this should be calculated and not just overridden like this.
+    	double coupling = tAvgDotProductFactor * fInterface->fField->TE_E(l,m,n,r,0.,z,false).back()/norm;
+    	return coupling*coupling;
+    }
+
+    double FieldCalculator::GetTE011FieldCavity(Kassiopeia::KSParticle& aFinalParticle)
+    {
+    	int l = 0;
+    	int m = 1;
+    	int n = 1;
+
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, false);
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+
+        std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
+        double dhoNorm = vMag * LMCConst::Q() * fInterface->fAnalyticResponseFunction->GetCavityQ();
+        double dhoMag = complexConvolution.first / dhoNorm;
+        double dhoPhase = complexConvolution.second;
+
+        // first term represents the new field driven by the electron.
+        // second term represents the field driven by the electron previously.
+        // "dhoMag" scales from ~0 (off-resonance) to DampedHarmonicOscillator::fHannekePowerFactor (on-resonance).
+        // The electron should radiate maximally if on resonance.
+        double fieldCavity = cos(0.) + dhoMag*cos(dhoPhase);
+
+        return fieldCavity;
+    }
+
+
     double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
-    	return GetDampingFactorPhase1(aFinalParticle);
+    	double TE011FieldFromCavity = GetTE011FieldCavity(aFinalParticle);
+    	double A011squ = GetCouplingFactorTE011Cavity(aFinalParticle);
+    	double DampingFactorTE011Cavity = 1. - A011squ + A011squ*TE011FieldFromCavity*TE011FieldFromCavity;  // = P'/P
+    	if ( fabs(DampingFactorTE011Cavity) > 0. )
+    	{
+    		return DampingFactorTE011Cavity;
+    	}
+    	else
+    	{
+    		return 1.0;
+    	}
     }
 
 
-    double FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
     {
+    	double convolutionMag = 0.0;
+    	double convolutionPhase = 0.0;
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
-    	double orbitPhase = tKassParticleXP[6];  // radians
-    	double fieldFrequency = tKassParticleXP[7];  // rad/s
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-    	double convolution = 0.0;
 
-		// populate FIR filter with frequency for just this sample interval:
-		for (int i=0; i < fInterface->nFilterBinsRequired; i++)
-		{
-			fInterface->FIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
-			fInterface->FIRfrequencyBuffer[0].pop_front();
-		}
+    	if ( !BypassTF )
+    	{
+    		double orbitPhase = tKassParticleXP[6];  // radians
+    		double cycFrequency = tKassParticleXP[7];  // rad/s
 
-		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
-		while (it != fInterface->FIRfrequencyBuffer[0].end())
-		{
-			orbitPhase += (*it)*fInterface->dtFilter;
+    		// populate FIR filter with frequency for just this sample interval:
+    		for (int i=0; i < fNFilterBinsRequired; i++)
+    		{
+    			fFrequencyBuffer.push_back(cycFrequency);  // rad/s
+    			fFrequencyBuffer.pop_front();
+    		}
 
-			if (*it != 0.)
-			{
-				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
-			}
-			else
-			{
-				fInterface->ElementFIRBuffer[0].push_back(0.);
-			}
-			fInterface->ElementFIRBuffer[0].pop_front();
+    		std::deque<double>::iterator it = fFrequencyBuffer.begin();
+    		while (it != fFrequencyBuffer.end())
+    		{
+    			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
+    			orbitPhase += (*it)*fInterface->dtFilter;
 
-			*it++;
-		}
+    			if (*it != 0.)
+    			{
+    				fFIRBuffer.push_back(cos(orbitPhase));
+    			}
+    			else
+    			{
+    				fFIRBuffer.push_back(0.);
+    			}
+    			fFIRBuffer.pop_front();
 
-		if ( !BypassTF )
-		{
-			convolution = fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
-		}
-		else
-		{
-			convolution = 1.0;
-		}
+    			*it++;
+    		}
 
-		return LMCConst::Q()*vMag*convolution;
+    		convolutionMag = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fFIRBuffer).first;
+    		convolutionPhase = fInterface->fTFReceiverHandler.ConvolveWithComplexFIRFilter(fFIRBuffer).second;
+    	}
+    	else
+    	{
+    		convolutionMag = 1.0;
+    		convolutionPhase = 0.;
+    	}
+
+    	return std::make_pair(convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
 
     }
-
-
-    std::vector<double> FieldCalculator::GetCavityNormalizedModeField(int l, int m, int n, std::vector<double> tLocation, bool TE, bool Electric)
-      {
-      	double tR = tLocation[0];
-      	double tZ = tLocation[2];
-      	std::vector<double> tField;
-      	double normFactor = 0.;
-
-      	if (TE)
-      	{
-      		if (Electric)  // Get the electric field, usually at the electron.
-      		{
-      			tField = fInterface->fField->TE_E(l,m,n,tR,0.,tZ,1);
-      		}
-      		else  // Get the magnetic field, nominally at e.g. a readout probe location.
-      		{
-      			tField = fInterface->fField->TE_H(l,m,n,tR,0.,tZ,1);
-      		}
-      		normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
-      	}
-      	else
-      	{
-      		if (Electric)
-      		{
-      			tField = fInterface->fField->TM_E(l,m,n,tR,0.,tZ,1);
-      		}
-      		else
-      		{
-      			tField = fInterface->fField->TM_H(l,m,n,tR,0.,tZ,1);
-      		}
-      		normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
-      	}
-
-
-  		auto it = tField.begin();
-
-  		while (it != tField.end())
-  		{
-  			if (!isnan(*it))
-  				(*it) *= normFactor;
-  			*it++;
-  		}
-
-      	return tField;  // return normalized field.
-      }
-
-
-
-    std::vector<double> FieldCalculator::GetWaveguideNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
-     {
-    	// The l index is inert in the waveguide.
-     	double tX = tKassParticleXP[0] * cos(tKassParticleXP[1]);
-     	double tY = tKassParticleXP[0] * sin(tKassParticleXP[1]);
-     	double fcyc = tKassParticleXP[7];
-     	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(m,n,tX,tY,fcyc);
- 		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
-
- 		auto it = tTE_E_electron.begin();
- 		while (it != tTE_E_electron.end())
- 		{
- 			if (!isnan(*it))
- 				(*it) *= normFactor;
- 			*it++;
- 		}
-     	return tTE_E_electron;  // return normalized field.
-     }
-
-
-    double FieldCalculator::GetCavityDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile)
-    {
-    	double tThetaParticle = tKassParticleXP[1];
-    	double tEtheta = 0.;
-    	double tEr = 0.;
-    	if (!isnan(anE_normalized.back()))
-    	{
-    		tEtheta = anE_normalized.back();
-    	}
-    	if (!isnan(anE_normalized.front()))
-    	{
-    		tEr = anE_normalized.front();
-    	}
-    	double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
-    	double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
-    	double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
-    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
-
-
-    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-    	if (IntermediateFile)
-    	{
-        	char buffer[60];
-    		int a = sprintf(buffer, "output/dotProducts.txt");
-    		const char *fpname = buffer;
-    		FILE *fp = fopen(fpname, "a");
-    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
-    		fclose(fp);
-
-    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
-    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
-    	}
-
-    	return unitJdotE;
-    }
-
-
-    double FieldCalculator::GetWaveguideDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile)
-    {
-    	double tThetaParticle = tKassParticleXP[1];
-    	double tEy = aTE_E_normalized.back();
-     	double tEmag = fabs(tEy);
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
-    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
-
-
-    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-    	if (IntermediateFile)
-    	{
-        	char buffer[60];
-    		int a = sprintf(buffer, "output/dotProducts.txt");
-    		const char *fpname = buffer;
-    		FILE *fp = fopen(fpname, "a");
-    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
-    		fclose(fp);
-
-    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
-    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
-    	}
-
-    	return unitJdotE;
-    }
-
-
 
 
 
