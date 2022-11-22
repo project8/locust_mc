@@ -9,6 +9,7 @@
         testFFT.cc      
         testMockEGun.cc
         testMockFreeField.cc
+        testLMCTestSignal.cc
     )
      
     set( lib_dependencies 
