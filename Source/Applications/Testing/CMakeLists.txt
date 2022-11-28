@@ -10,6 +10,7 @@
         testMockEGun.cc
         testMockFreeField.cc
         testLMCTestSignal.cc
+        testLMCPlaneWaveFIR.cc
     )
      
     set( lib_dependencies 
