@@ -55,10 +55,10 @@ public:
 	bool Configure()
 	{
 		fTFReceiverHandler = new TFReceiverHandler();
-        fRF_frequency = 25.9e9;
-        fLO_frequency = 25.85e9;
+        fRF_frequency = 25.9e9; // Hz
+        fLO_frequency = 25.85e9; // Hz
         fAcquisitionRate = 201.e6; // Hz
-        fAmplitude = 5.e-6;
+        fAmplitude = 5.e-6; // volts
         fPhaseLagLO = 0.;
 		return true;
 	}
@@ -71,7 +71,7 @@ public:
         double LO_phase = 0.;
         double voltage_phase = 0.;
         double phaseLagRF = 2.*LMCConst::Pi() * timeStamp/(1./fRF_frequency);
-        fPhaseLagLO += 2.*LMCConst::Pi() * fLO_frequency * timeStamp;
+        fPhaseLagLO += 2.*LMCConst::Pi() * fLO_frequency * 1./fAcquisitionRate;
 
         for( unsigned index = 0; index < N0; ++index )
         {
@@ -134,14 +134,13 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
     aSignal->Initialize( N0 , 1 );
 
     double firGainMax = 0.;
-    for (unsigned rfStep=0; rfStep<25; rfStep++)
+    for (unsigned rfStep=0; rfStep<25; rfStep++) // frequency sweep
     {
         aTestLMCPlaneWaveFIR.fRF_frequency = 20.9e9 + 0.5e9*rfStep;
 
 	    double convolutionMag = 0.;
-        for (unsigned i=0; i<1000; i++)
+        for (unsigned i=0; i<1000; i++)  // time stamps
         {
-
            /* populate time series and convolve it with the FIR filter */
         	double timeStamp = i/aTestLMCPlaneWaveFIR.fAcquisitionRate;
             aTestLMCPlaneWaveFIR.PopulateSignal(aSignal, N0, timeStamp);
@@ -150,7 +149,8 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
             {
         	    convolutionMag = convolution;
             }
-        }
+        } // i
+        // https://www.antenna-theory.com/definitions/antennafactor.php
         double firGain = 10.*log10(pow(1./(aTestLMCPlaneWaveFIR.fAmplitude/convolutionMag/9.73*(3.e8/aTestLMCPlaneWaveFIR.fRF_frequency)),2.));
         if (firGain > firGainMax) firGainMax = firGain;
         printf("firGain at frequency %g is %g dB\n", aTestLMCPlaneWaveFIR.fRF_frequency, firGain);
