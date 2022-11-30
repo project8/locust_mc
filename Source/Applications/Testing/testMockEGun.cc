@@ -35,19 +35,6 @@ using namespace scarab;
 
 LOGGER( testlog, "testMockEGun" );
 
-class test_app : public main_app
-{
-    public:
-        test_app() :
-            main_app()
-        {
-        }
-
-        virtual ~test_app() {}
-
-    private:
-
-};
 
 double GetPower()
 {
@@ -75,6 +62,7 @@ double GetPower()
 	    // power in time series:
 	    pdata += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
+	LPROG(testlog, "E-gun data time series sum is: " << pdata/N0);
 
 	/* compute transform, in-place */
 	fftw_execute(plan);
@@ -91,6 +79,7 @@ double GetPower()
 	    ptransform += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
 
+	LPROG(testlog, "E-gun transformed data sum is: " << ptransform/N0);
 	fftw_destroy_plan(plan);
 
     return ptransform/N0;
@@ -102,7 +91,7 @@ TEST_CASE( "Larmor power fraction. (pass)", "[single-file]" )
 {
 	double expectedPower = 2.e-16;
 	double threshold = 1.e-4;
-    REQUIRE( fabs(GetPower() - 2.e-16) <= threshold*expectedPower );
+    REQUIRE( fabs(GetPower() - expectedPower) <= threshold*expectedPower );
 }
 
 
