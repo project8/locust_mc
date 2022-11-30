@@ -36,20 +36,6 @@ using namespace scarab;
 LOGGER( testlog, "testMockEGun" );
 
 
-class test_app : public main_app
-{
-    public:
-        test_app() :
-            main_app()
-        {
-        }
-
-        virtual ~test_app() {}
-
-    private:
-
-};
-
 double GetPower()
 {
 

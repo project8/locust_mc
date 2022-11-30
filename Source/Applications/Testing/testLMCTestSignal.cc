@@ -11,19 +11,6 @@ using namespace locust;
 
 LOGGER( testlog, "testLMCTestSignal" );
 
-class test_app : public main_app
-{
-    public:
-        test_app() :
-            main_app()
-        {
-        }
-
-        virtual ~test_app() {}
-
-    private:
-
-};
 
 class testLMCTestSignal
 {

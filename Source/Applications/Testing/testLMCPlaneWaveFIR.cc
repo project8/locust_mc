@@ -13,20 +13,6 @@ using namespace locust;
 
 LOGGER( testlog, "testLMCPlaneWaveFIR" );
 
-class test_app : public main_app
-{
-    public:
-        test_app() :
-            main_app()
-        {
-        }
-
-        virtual ~test_app() {}
-
-    private:
-
-};
-
 class testLMCPlaneWaveFIR
 {
 public:
@@ -134,27 +120,30 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
     aSignal->Initialize( N0 , 1 );
 
     double firGainMax = 0.;
-    for (unsigned rfStep=0; rfStep<25; rfStep++) // frequency sweep
+    for (unsigned iHarmonic=1; iHarmonic<3; iHarmonic++)
     {
-        aTestLMCPlaneWaveFIR.fRF_frequency = 20.9e9 + 0.5e9*rfStep;
-
-	    double convolutionMag = 0.;
-        for (unsigned i=0; i<1000; i++)  // time stamps
+        for (unsigned rfStep=0; rfStep<25; rfStep++) // frequency sweep
         {
-           /* populate time series and convolve it with the FIR filter */
-        	double timeStamp = i/aTestLMCPlaneWaveFIR.fAcquisitionRate;
-            aTestLMCPlaneWaveFIR.PopulateSignal(aSignal, N0, timeStamp);
-            double convolution = aTestLMCPlaneWaveFIR.fTFReceiverHandler->ConvolveWithFIRFilter(aTestLMCPlaneWaveFIR.SignalToDeque(aSignal));
-            if (fabs(convolution) > convolutionMag)
+            aTestLMCPlaneWaveFIR.fRF_frequency = iHarmonic*20.9e9 + 0.5e9*rfStep;
+
+	        double convolutionMag = 0.;
+            for (unsigned i=0; i<1000; i++)  // time stamps
             {
-        	    convolutionMag = convolution;
-            }
-        } // i
-        // https://www.antenna-theory.com/definitions/antennafactor.php
-        double firGain = 10.*log10(pow(1./(aTestLMCPlaneWaveFIR.fAmplitude/convolutionMag/9.73*(3.e8/aTestLMCPlaneWaveFIR.fRF_frequency)),2.));
-        if (firGain > firGainMax) firGainMax = firGain;
-        printf("firGain at frequency %g is %g dB\n", aTestLMCPlaneWaveFIR.fRF_frequency, firGain);
-    } // rfStep
+               /* populate time series and convolve it with the FIR filter */
+        	    double timeStamp = i/aTestLMCPlaneWaveFIR.fAcquisitionRate;
+                aTestLMCPlaneWaveFIR.PopulateSignal(aSignal, N0, timeStamp);
+                double convolution = aTestLMCPlaneWaveFIR.fTFReceiverHandler->ConvolveWithFIRFilter(aTestLMCPlaneWaveFIR.SignalToDeque(aSignal));
+                if (fabs(convolution) > convolutionMag)
+                {
+        	        convolutionMag = convolution;
+                }
+            } // i
+            // https://www.antenna-theory.com/definitions/antennafactor.php
+            double firGain = 10.*log10(pow(1./(aTestLMCPlaneWaveFIR.fAmplitude/convolutionMag/9.73*(3.e8/aTestLMCPlaneWaveFIR.fRF_frequency)),2.));
+            if (firGain > firGainMax) firGainMax = firGain;
+            printf("firGain at frequency %g is %g dB\n", aTestLMCPlaneWaveFIR.fRF_frequency, firGain);
+        } // rfStep
+    }
 
     delete aSignal;
 
