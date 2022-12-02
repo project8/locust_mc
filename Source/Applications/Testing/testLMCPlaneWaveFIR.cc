@@ -41,6 +41,17 @@ public:
 	bool Configure()
 	{
 		fTFReceiverHandler = new TFReceiverHandler();
+		if ( !fTFReceiverHandler->Configure(*GetParams()) )
+		{
+			LWARN(testlog,"TFReceiverHandler was not configured correctly.");
+		    return false;
+		}
+		if ( !fTFReceiverHandler->ReadHFSSFile() )
+	    {
+			LWARN(testlog,"TF file was not read correctly.");
+			return false;
+	    }
+
         fRF_frequency = 25.9e9; // Hz
         fLO_frequency = 25.85e9; // Hz
         fAcquisitionRate = 201.e6; // Hz
@@ -101,17 +112,11 @@ public:
 TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file]" )
 {
 	testLMCPlaneWaveFIR aTestLMCPlaneWaveFIR;
-	aTestLMCPlaneWaveFIR.Configure();
-	aTestLMCPlaneWaveFIR.fTFReceiverHandler->Configure(*aTestLMCPlaneWaveFIR.GetParams());
-
-	if(!aTestLMCPlaneWaveFIR.fTFReceiverHandler->ReadHFSSFile())
-    {
-		REQUIRE( 0 == 1); // fail file read test
-    }
-	else
-    {
-		REQUIRE( 0 == 0); // pass file read test
-    }
+	if ( !aTestLMCPlaneWaveFIR.Configure() )
+	{
+		LWARN(testlog,"testLMCPlaneWaveFIR was not configured correctly.");
+	    REQUIRE( 0 > 1 );
+	}
 
     /* initialize time series */
     Signal* aSignal = new Signal();
@@ -141,7 +146,8 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
             // https://www.antenna-theory.com/definitions/antennafactor.php
             double firGain = 10.*log10(pow(1./(aTestLMCPlaneWaveFIR.fAmplitude/convolutionMag/9.73*(3.e8/aTestLMCPlaneWaveFIR.fRF_frequency)),2.));
             if (firGain > firGainMax) firGainMax = firGain;
-            printf("firGain at frequency %g is %g dB\n", aTestLMCPlaneWaveFIR.fRF_frequency, firGain);
+			LPROG( testlog, "FIR gain at frequency " << aTestLMCPlaneWaveFIR.fRF_frequency << " is " << firGain << " dB" );
+//            printf("firGain at frequency %g is %g dB\n", aTestLMCPlaneWaveFIR.fRF_frequency, firGain);
         } // rfStep
     }
 
