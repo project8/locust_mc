@@ -34,26 +34,6 @@ using namespace scarab;
 LOGGER( testlog, "testMockFreeField" );
 
 
-
-class test_app : public main_app
-{
-    public:
-        test_app() :
-            main_app(),
-			fAdjustedIncidentPower(0.)
-        {
-            add_option("-i,--incident-power", fAdjustedIncidentPower, "Set the power incident at the antenna (Watts)" );
-        }
-
-        virtual ~test_app() {}
-
-    private:
-        double fAdjustedIncidentPower;
-
-
-};
-
-
 class PowerHandler
 {
     public:
@@ -89,10 +69,11 @@ class PowerHandler
 
 
 
+
 TEST_CASE( "Mock free space Larmor power. (pass)", "[single-file]" )
 {
 
-    PowerHandler aPowerHandler;
+	PowerHandler aPowerHandler;
 
 	double radius = aPowerHandler.GetRadius(); // meters
 	double PoyntingVector = aPowerHandler.GetLarmorPower() / (4.*locust::LMCConst::Pi()*radius*radius);

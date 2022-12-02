@@ -1,9 +1,45 @@
 // testCatch.cc
 
 // Let Catch provide main():
-#define CATCH_CONFIG_MAIN
+//#define CATCH_CONFIG_MAIN
 
+#define CATCH_CONFIG_RUNNER
+
+#include "application.hh"
+#include "logger.hh"
 #include "catch.hpp"
+
+
+
+using namespace scarab;
+
+class test_app : public main_app
+{
+    public:
+        test_app() :
+            main_app(),
+			fAdjustedIncidentPower(0.)
+        {
+            add_option("-i,--incident-power", fAdjustedIncidentPower, "Set the power incident at the antenna (Watts)" );
+        }
+
+        virtual ~test_app() {}
+
+    private:
+        double fAdjustedIncidentPower;
+};
+
+int main(int argc, char *argv[])
+{
+
+	test_app the_main;
+	CLI11_PARSE( the_main, argc, argv );
+
+	Catch::Session session; // There must be exactly one instance
+
+	return session.run();
+}
+
 
 int Factorial( int number ) {
    return number <= 1 ? number : Factorial( number - 1 ) * number;  // fail
@@ -21,6 +57,7 @@ TEST_CASE( "Factorials of 1 and higher are computed (pass)", "[single-file]" ) {
     REQUIRE( Factorial(3) == 6 );
     REQUIRE( Factorial(10) == 3628800 );
 }
+
 
 // Compile & run:
 // - g++ -std=c++11 -Wall -I$(CATCH_SINGLE_INCLUDE) -o 010-TestCase 010-TestCase.cpp && 010-TestCase --success
