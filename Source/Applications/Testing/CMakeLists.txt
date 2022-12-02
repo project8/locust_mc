@@ -11,6 +11,7 @@
         testMockFreeField.cc
         testLMCTestSignal.cc
         testLMCPlaneWaveFIR.cc
+        testLMCCavity.cc        
     )
      
     set( lib_dependencies 
@@ -37,5 +38,8 @@
         
     add_executable( testLMCPlaneWaveFIR testLMCPlaneWaveFIR.cc testCatch.cc)
     target_link_libraries( testLMCPlaneWaveFIR ${lib_dependencies})
-
+    
+    add_executable( testLMCCavity testLMCCavity.cc testCatch.cc)
+    target_link_libraries( testLMCCavity ${lib_dependencies})
+    
     
