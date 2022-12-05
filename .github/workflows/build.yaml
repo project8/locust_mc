@@ -1,4 +1,4 @@
-name: Build and Test Locust Dec. 5
+name: Build and Test Locust
 
 on:
   pull_request:
@@ -80,25 +80,36 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build to Test
-        id: build-to-test
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: Dockerfile
-          push: false
-          load: true
-          build-args: |
-            img_repo=ghcr.io/project8/luna_base
-            img_tag=${{ env.LUNA_BASE_VER }}-dev
-            final_img_repo=ghcr.io/project8/luna_base
-            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
-            locust_tag=${{ steps.tag_name.outputs.tag }}
-            build_type=${{ matrix.build-type }}
-            build_tests_exe=${{ matrix.build-tests }}
-            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
-          tags: test${{ matrix.tag-suffix }}
-          platforms: linux/amd64
+      - name: Build To Test
+        run: |
+          docker build \
+            --target locust_done \
+            --build-arg build_type=${locust_mc_BUILD_TYPE} \
+            --build-arg build_tests_exe=${locust_mc_ENABLE_TESTING} \
+            --build-arg locust_build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA} \
+            --build-arg locust_tag=${locust_mc_TAG} \
+            --tag project8/locust_mc:${locust_mc_TAG} \
+            .  
+
+#      - name: Build to Test
+#        id: build-to-test
+#        uses: docker/build-push-action@v3
+#        with:
+#          context: .
+#          file: Dockerfile
+#          push: false
+#          load: true
+#          build-args: |
+#            img_repo=ghcr.io/project8/luna_base
+#            img_tag=${{ env.LUNA_BASE_VER }}-dev
+#            final_img_repo=ghcr.io/project8/luna_base
+#            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
+#            locust_tag=${{ steps.tag_name.outputs.tag }}
+#            build_type=${{ matrix.build-type }}
+#            build_tests_exe=${{ matrix.build-tests }}
+#            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
+#          tags: test${{ matrix.tag-suffix }}
+#          platforms: linux/amd64
 
       - name: Run Tests
         run: docker run ${{ steps.build-to-test.outputs.imageid }} /tmp_source/build/Source/Applications/Testing/RunTests
