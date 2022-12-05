@@ -37,14 +37,7 @@ jobs:
             build-tests: false
 
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
     steps:
-    
-    # For debugging
-      - name: Setup tmate session
-        if: ${{ ! success() }}
-        uses: mxschmitt/action-tmate@v3
     
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -150,7 +143,7 @@ jobs:
 
 
 # For debugging
-#      - name: Setup tmate session
-#        if: ${{ ! success() }}
-#        uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        if: ${{ ! success() }}
+        uses: mxschmitt/action-tmate@v3
 
