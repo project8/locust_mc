@@ -80,18 +80,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build To Test
-        run: |
-          docker build \
-            --target locust_done \
-            --build-arg build_type=${locust_mc_BUILD_TYPE} \
-            --build-arg build_tests_exe=${locust_mc_ENABLE_TESTING} \
-            --build-arg locust_build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA} \
-            --build-arg locust_tag=${locust_mc_TAG} \
-            --tag project8/locust_mc:${locust_mc_TAG} \
-            .
-          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/Source/Applications/Testing/RunTests
-
 
 #      - name: Build to Test
 #        id: build-to-test
@@ -113,33 +101,33 @@ jobs:
 #          tags: test${{ matrix.tag-suffix }}
 #          platforms: linux/amd64
 
-      - name: Run Tests
-        run: docker run ${{ steps.build-to-test.outputs.imageid }} /tmp_source/build/Source/Applications/Testing/RunTests
+#      - name: Run Tests
+#        run: docker run ${{ steps.build-to-test.outputs.imageid }} /tmp_source/build/Source/Applications/Testing/RunTests
 
-      - name: Build to Push
-        id: build-to-push
-        if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          load: false
-          build-args: |
-            img_repo=ghcr.io/project8/luna_base
-            img_tag=${{ env.LUNA_BASE_VER }}-dev
-            final_img_repo=ghcr.io/project8/luna_base
-            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
-            locust_tag=${{ steps.tag_name.outputs.tag }}
-            build_type=${{ matrix.build-type }}
-            build_tests_exe=${{ matrix.build-tests }}
-            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          platforms: linux/amd64
+#      - name: Build to Push
+#        id: build-to-push
+#        if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
+#        uses: docker/build-push-action@v3
+#        with:
+#          context: .
+#          file: Dockerfile
+#          push: true
+#          load: false
+#          build-args: |
+#            img_repo=ghcr.io/project8/luna_base
+#            img_tag=${{ env.LUNA_BASE_VER }}-dev
+#            final_img_repo=ghcr.io/project8/luna_base
+#            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
+#            locust_tag=${{ steps.tag_name.outputs.tag }}
+#            build_type=${{ matrix.build-type }}
+#            build_tests_exe=${{ matrix.build-tests }}
+#            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
+#          tags: ${{ steps.docker_meta.outputs.tags }}
+#          platforms: linux/amd64
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
+#      - name: Release
+#        uses: softprops/action-gh-release@v1
+#        if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
     
 
 
