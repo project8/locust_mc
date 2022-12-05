@@ -89,7 +89,9 @@ jobs:
             --build-arg locust_build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA} \
             --build-arg locust_tag=${locust_mc_TAG} \
             --tag project8/locust_mc:${locust_mc_TAG} \
-            .  
+            .
+          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/Source/Applications/Testing/RunTests
+
 
 #      - name: Build to Test
 #        id: build-to-test
