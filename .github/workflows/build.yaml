@@ -1,9 +1,9 @@
-name: Build and Test Locust, initial attempt Dec. 4
+name: Build and Test Locust, attempt number 2, Dec. 4
 
 on:
   pull_request:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feature/luna_base]
     tags: ['*']
   workflow_dispatch:
 
