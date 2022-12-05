@@ -134,6 +134,6 @@ jobs:
 
 # For debugging
       - name: Setup tmate session
-        if: ${{ ! success() }}
+        if: ${{ success() }}
         uses: mxschmitt/action-tmate@v3
 
