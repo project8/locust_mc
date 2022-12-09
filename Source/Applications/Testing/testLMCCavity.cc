@@ -1,6 +1,8 @@
 #include "LMCSignal.hh"
 #include "LMCTFFileHandler.hh"
 #include "LMCFIRFileHandler.hh"
+#include "LMCAnalyticResponseFunction.hh"
+#include "LMCDampedHarmonicOscillator.hh"
 #include "application.hh"
 #include "logger.hh"
 #include "LMCConst.hh"
@@ -9,11 +11,10 @@
 #include "catch.hpp"
 #include "LMCTestParameterHandler.hh"
 
-
 using namespace scarab;
 using namespace locust;
 
-LOGGER( testlog, "testLMCPlaneWaveFIR" );
+LOGGER( testlog, "testLMCCavity" );
 
 class test_app : public main_app
 {
@@ -29,27 +30,27 @@ class test_app : public main_app
 
         double GetTestParameter()
         {
-            return fTestParameter;
+        	return fTestParameter;
         }
-
 
     private:
         double fTestParameter;
 };
 
 
-class testLMCPlaneWaveFIR
+class testLMCCavity
 {
 public:
 
-	testLMCPlaneWaveFIR():
+	testLMCCavity():
         fRF_frequency(0.),
         fLO_frequency(0.),
         fAmplitude(0.),
         fAcquisitionRate(0.),
 		fFilterRate(0.),
 		fPhaseLagLO(0.),
-		fTFReceiverHandler( 0 )
+		fTFReceiverHandler( 0 ),
+		fAnalyticResponseFunction( 0 )
     {
     }
 
@@ -71,14 +72,21 @@ public:
 			LWARN(testlog,"TFReceiverHandler was not configured correctly.");
 		    return false;
 		}
-		if ( !fTFReceiverHandler->ReadHFSSFile() )
-	    {
-			LWARN(testlog,"TF file was not read correctly.");
-			return false;
-	    }
 
-        fRF_frequency = 25.9e9; // Hz
-        fLO_frequency = 25.85e9; // Hz
+		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+		if ( !fAnalyticResponseFunction->Configure(*GetParams()) )
+		{
+			LWARN(testlog,"DampedHarmonicOscillator was not configured.");
+			return false;
+		}
+		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()) )
+		{
+			LWARN(testlog,"GF->FIR was not generated.");
+			return false;
+		}
+
+        fRF_frequency = 0.9e9; // Hz
+        fLO_frequency = 0.05e9; // Hz
         fAcquisitionRate = 201.e6; // Hz
         fAmplitude = 5.e-6; // volts
         fPhaseLagLO = 0.;
@@ -104,7 +112,8 @@ public:
             aSignal->LongSignalTimeComplex()[index][0] = fAmplitude*cos(voltage_phase-LO_phase);
             aSignal->LongSignalTimeComplex()[index][1] = fAmplitude*cos(-LMCConst::Pi()/2. + voltage_phase-LO_phase);
         }
-//        printf("signal[0][0] is %g with phaseLagRF %g and LOPhase %g at time stamp %g\n", aSignal->LongSignalTimeComplex()[0][0], phaseLagRF, fPhaseLagLO, timeStamp);
+//        printf("fAmplitude is %g, signal[0][0] is %g with phaseLagRF %g and LOPhase %g at time stamp %g\n", fAmplitude, aSignal->LongSignalTimeComplex()[0][0], phaseLagRF, fPhaseLagLO, timeStamp);
+//        getchar();
         return true;
 	}
 
@@ -120,6 +129,7 @@ public:
 
 
     TFReceiverHandler* fTFReceiverHandler;
+    AnalyticResponseFunction* fAnalyticResponseFunction;
 
     double fRF_frequency;
     double fLO_frequency;
@@ -132,7 +142,8 @@ public:
 
 };
 
-int parsePlaneWaveFIR(test_app& the_main)
+
+int parseCavity(test_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
@@ -140,55 +151,50 @@ int parsePlaneWaveFIR(test_app& the_main)
 }
 
 
-
-TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file]" )
+TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]" )
 {
 	test_app the_main;
-	parsePlaneWaveFIR(the_main);
+	parseCavity(the_main);
+	LPROG( testlog, "fTestParameter is " << the_main.GetTestParameter() );
 
-	testLMCPlaneWaveFIR aTestLMCPlaneWaveFIR;
-	if ( !aTestLMCPlaneWaveFIR.Configure() )
+	testLMCCavity aTestLMCCavity;
+	if (!aTestLMCCavity.Configure())
 	{
-		LWARN(testlog,"testLMCPlaneWaveFIR was not configured correctly.");
+		LWARN(testlog,"testLMCCavity was not configured correctly.");
 	    REQUIRE( 0 > 1 );
 	}
 
     /* initialize time series */
     Signal* aSignal = new Signal();
-    int N0 = aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterSize();
-    aTestLMCPlaneWaveFIR.fFilterRate = (1./aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterResolution());
+    int N0 = aTestLMCCavity.fTFReceiverHandler->GetFilterSize();
+    aTestLMCCavity.fFilterRate = (1./aTestLMCCavity.fTFReceiverHandler->GetFilterResolution());
     aSignal->Initialize( N0 , 1 );
 
     double firGainMax = 0.;
-    for (unsigned iHarmonic=1; iHarmonic<3; iHarmonic++)
-    {
-        for (unsigned rfStep=0; rfStep<25; rfStep++) // frequency sweep
+
+        for (unsigned rfStep=0; rfStep<30; rfStep++) // frequency sweep
         {
-            aTestLMCPlaneWaveFIR.fRF_frequency = iHarmonic*20.9e9 + 0.5e9*rfStep;
+            aTestLMCCavity.fRF_frequency = 1.0e9 + 0.005e9*rfStep;
 
 	        double convolutionMag = 0.;
             for (unsigned i=0; i<1000; i++)  // time stamps
             {
-               /* populate time series and convolve it with the FIR filter */
-        	    double timeStamp = i/aTestLMCPlaneWaveFIR.fAcquisitionRate;
-                aTestLMCPlaneWaveFIR.PopulateSignal(aSignal, N0, timeStamp);
-                double convolution = aTestLMCPlaneWaveFIR.fTFReceiverHandler->ConvolveWithFIRFilter(aTestLMCPlaneWaveFIR.SignalToDeque(aSignal));
-                if (fabs(convolution) > convolutionMag)
+                // populate time series and convolve it with the FIR filter
+        	    double timeStamp = i/aTestLMCCavity.fAcquisitionRate;
+                aTestLMCCavity.PopulateSignal(aSignal, N0, timeStamp);
+            	std::pair<double,double> convolutionPair = aTestLMCCavity.fTFReceiverHandler->ConvolveWithComplexFIRFilter(aTestLMCCavity.SignalToDeque(aSignal));
+                if (fabs(convolutionPair.first) > convolutionMag)
                 {
-        	        convolutionMag = convolution;
+        	        convolutionMag = convolutionPair.first;
                 }
             } // i
-            // https://www.antenna-theory.com/definitions/antennafactor.php
-            double firGain = 10.*log10(pow(1./(aTestLMCPlaneWaveFIR.fAmplitude/convolutionMag/9.73*(3.e8/aTestLMCPlaneWaveFIR.fRF_frequency)),2.));
-            if (firGain > firGainMax) firGainMax = firGain;
-			LPROG( testlog, "FIR gain at frequency " << aTestLMCPlaneWaveFIR.fRF_frequency << " is " << firGain << " dB" );
-//            printf("firGain at frequency %g is %g dB\n", aTestLMCPlaneWaveFIR.fRF_frequency, firGain);
+            double firGain = convolutionMag;
+			LPROG( testlog, "Cavity GF gain at frequency " << aTestLMCCavity.fRF_frequency << " is " << firGain );
         } // rfStep
-    }
 
     delete aSignal;
 
-    REQUIRE( firGainMax > 0. );
+    REQUIRE( 1 > 0. ); // to-do:  get this defined.
 }
 
 
