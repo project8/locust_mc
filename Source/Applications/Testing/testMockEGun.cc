@@ -30,6 +30,8 @@
 #include <fftw3.h>
 #include <math.h>
 #include "catch.hpp"
+#include "LMCTestParameterHandler.hh"
+
 
 using namespace scarab;
 
@@ -39,15 +41,23 @@ class test_app : public main_app
 {
     public:
         test_app() :
-            main_app()
+            main_app(),
+			fTestParameter(0.)
         {
+            add_option("-t,--test-parameter", fTestParameter, "Set a test parameter." );
         }
 
         virtual ~test_app() {}
 
-    private:
+        double GetTestParameter()
+        {
+        	return fTestParameter;
+        }
 
+    private:
+        double fTestParameter;
 };
+
 
 double GetPower()
 {
@@ -75,6 +85,7 @@ double GetPower()
 	    // power in time series:
 	    pdata += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
+	LPROG(testlog, "E-gun data time series sum is: " << pdata/N0);
 
 	/* compute transform, in-place */
 	fftw_execute(plan);
@@ -91,18 +102,28 @@ double GetPower()
 	    ptransform += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
 
+	LPROG(testlog, "E-gun transformed data sum is: " << ptransform/N0);
 	fftw_destroy_plan(plan);
 
     return ptransform/N0;
 
 }
 
+int parseEGun(test_app& the_main)
+{
+	TestParameterHandler* p1 = TestParameterHandler::getInstance();
+    CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
+	return 0;
+}
+
 
 TEST_CASE( "Larmor power fraction. (pass)", "[single-file]" )
 {
+	test_app the_main;
+	parseEGun(the_main);
 	double expectedPower = 2.e-16;
 	double threshold = 1.e-4;
-    REQUIRE( fabs(GetPower() - 2.e-16) <= threshold*expectedPower );
+    REQUIRE( fabs(GetPower() - expectedPower) <= threshold*expectedPower );
 }
 
 
