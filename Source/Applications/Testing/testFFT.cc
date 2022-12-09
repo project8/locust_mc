@@ -7,6 +7,8 @@
 #include <fftw3.h>
 #include <math.h>
 #include "catch.hpp"
+#include "LMCTestParameterHandler.hh"
+
 
 using namespace scarab;
 
@@ -16,14 +18,16 @@ class test_app : public main_app
 {
     public:
         test_app() :
-            main_app()
+            main_app(),
+			fTestParameter(0.)
         {
+            add_option("-i,--incident-power", fTestParameter, "Set a test parameter." );
         }
 
         virtual ~test_app() {}
 
     private:
-
+        double fTestParameter;
 };
 
 
@@ -76,10 +80,19 @@ double GetPower(bool bTime)
 
 }
 
+int parseFFT()
+{
+	test_app the_main;
+	TestParameterHandler* p1 = TestParameterHandler::getInstance();
+    CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
+	return 0;
+}
+
 
 
 TEST_CASE( "Power before FFT = power after FFT (pass)", "[single-file]" )
 {
+	parseFFT();
 	double threshold = 1.e-4;
     REQUIRE( fabs(GetPower(1)-GetPower(0)) < threshold );
 }

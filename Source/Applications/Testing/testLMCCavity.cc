@@ -9,11 +9,29 @@
 #include <fftw3.h>
 #include <math.h>
 #include "catch.hpp"
+#include "LMCTestParameterHandler.hh"
 
 using namespace scarab;
 using namespace locust;
 
 LOGGER( testlog, "testLMCCavity" );
+
+class test_app : public main_app
+{
+    public:
+        test_app() :
+            main_app(),
+			fTestParameter(0.)
+        {
+            add_option("-i,--incident-power", fTestParameter, "Set a test parameter." );
+        }
+
+        virtual ~test_app() {}
+
+    private:
+        double fTestParameter;
+};
+
 
 class testLMCCavity
 {
@@ -120,9 +138,19 @@ public:
 };
 
 
+int parseCavity()
+{
+	test_app the_main;
+	TestParameterHandler* p1 = TestParameterHandler::getInstance();
+    CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
+	return 0;
+}
+
 
 TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]" )
 {
+	parseCavity();
+
 	testLMCCavity aTestLMCCavity;
 	if (!aTestLMCCavity.Configure())
 	{

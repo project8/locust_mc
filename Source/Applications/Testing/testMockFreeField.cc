@@ -28,10 +28,28 @@
 #include <math.h>
 #include "catch.hpp"
 #include "LMCConst.hh"
+#include "LMCTestParameterHandler.hh"
+
 
 using namespace scarab;
 
 LOGGER( testlog, "testMockFreeField" );
+
+class test_app : public main_app
+{
+    public:
+        test_app() :
+            main_app(),
+			fTestParameter(0.)
+        {
+            add_option("-i,--incident-power", fTestParameter, "Set a test parameter." );
+        }
+
+        virtual ~test_app() {}
+
+    private:
+        double fTestParameter;
+};
 
 
 class PowerHandler
@@ -43,10 +61,6 @@ class PowerHandler
         fRadius( 0.1 ), // m
         fEffectiveAperture( 1.e-5 ) // m^2.
     {
-    	// TO-DO:  Parameter acceptance and usage is not working here.
-    	// That might not be important for unit tests, which are typically automated.
-    	// test_app the_main;
-    	// CLI11_PARSE( the_main, argc, argv );
     }
 
         void SetLarmorPower( double aPower ) { fLarmorPower = aPower; }
@@ -67,12 +81,20 @@ class PowerHandler
 
 };
 
+int parseFreeField()
+{
+	test_app the_main;
+	TestParameterHandler* p1 = TestParameterHandler::getInstance();
+    CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
+	return 0;
+}
 
 
 
 TEST_CASE( "Mock free space Larmor power. (pass)", "[single-file]" )
 {
 
+	parseFreeField();
 	PowerHandler aPowerHandler;
 
 	double radius = aPowerHandler.GetRadius(); // meters

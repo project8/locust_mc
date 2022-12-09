@@ -8,32 +8,27 @@
 #include "application.hh"
 #include "logger.hh"
 #include "catch.hpp"
+#include "LMCTestParameterHandler.hh"
 
 
+// Define the static Singleton pointer
+TestParameterHandler* TestParameterHandler::inst_ = NULL;
 
-using namespace scarab;
-
-class test_app : public main_app
+TestParameterHandler* TestParameterHandler::getInstance()
 {
-    public:
-        test_app() :
-            main_app(),
-			fAdjustedIncidentPower(0.)
-        {
-            add_option("-i,--incident-power", fAdjustedIncidentPower, "Set the power incident at the antenna (Watts)" );
-        }
+    if (inst_ == NULL)
+    {
+    	inst_ = new TestParameterHandler();
+    }
+   return(inst_);
+}
 
-        virtual ~test_app() {}
 
-    private:
-        double fAdjustedIncidentPower;
-};
 
 int main(int argc, char *argv[])
 {
-
-	test_app the_main;
-	CLI11_PARSE( the_main, argc, argv );
+	TestParameterHandler* p1 = TestParameterHandler::getInstance();
+	p1->SetArgs(argc, argv);
 
 	Catch::Session session; // There must be exactly one instance
 
