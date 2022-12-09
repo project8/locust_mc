@@ -17,6 +17,7 @@ set_option( USE_CPP11 TRUE )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
+set( locus_mc_KASS_NPROC "4" CACHE STRING "Number of processors to use for the Kassiopeia build")
 
 # make the data install directory available as a preprocessor macro
 add_definitions( -DPB_DATA_INSTALL_DIR=${DATA_INSTALL_DIR} )
@@ -76,7 +77,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         BUILD_ALWAYS      1
         BUILD_COMMAND     make
         INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
-        INSTALL_COMMAND   make -j3 install
+        INSTALL_COMMAND   make -j${locus_mc_KASS_NPROC} install
     )
 
     # Finally we use find_package() to learn about the Kassiopeia build targets.

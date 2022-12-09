@@ -43,6 +43,8 @@ RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
 ########################
 FROM base AS build
 
+ARG nproc=4
+
 COPY Config /tmp_source/Config
 COPY Data /tmp_source/Data
 COPY kassiopeia /tmp_source/kassiopeia
@@ -62,9 +64,11 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA .. &&\
+          -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA \
+          -D locust_mc_KASS_NPROC=$nproc \
+          .. &&\
     cmake .. &&\
-    make -j install &&\
+    make -j$nproc install &&\
     /bin/true
 
 ########################
