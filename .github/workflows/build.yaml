@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   LUNA_BASE_VER: v1.3.0
-  locust_mc_BUILD_WITH_KASSIOPEIA: OFF
+  locust_mc_BUILD_WITH_KASSIOPEIA: ON
   locust_mc_ENABLE_EXECUTABLES: ON
   narg: 2
 #  locust_mc_ENABLE_TESTING: ON
@@ -103,6 +103,7 @@ jobs:
           platforms: linux/amd64
 
       - name: Run Tests
+        if: ${{ matrix.build-tests == true }}
         run: docker run ${{ steps.build-to-test.outputs.imageid }} /tmp_source/build/Source/Applications/Testing/RunTests
 
       - name: Build to Push
@@ -135,7 +136,7 @@ jobs:
 
 
 # For debugging
-#      - name: Setup tmate session
-#        if: ${{ ! success() }}
-#        uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+        if: ${{ ! success() }}
+        uses: mxschmitt/action-tmate@v3
 
