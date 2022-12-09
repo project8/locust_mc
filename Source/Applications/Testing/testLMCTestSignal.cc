@@ -20,10 +20,16 @@ class test_app : public main_app
             main_app(),
 			fTestParameter(0.)
         {
-            add_option("-i,--incident-power", fTestParameter, "Set a test parameter." );
+            add_option("-t,--test-parameter", fTestParameter, "Set a test parameter.");
         }
 
         virtual ~test_app() {}
+
+        double GetTestParameter()
+        {
+            return fTestParameter;
+        }
+
 
     private:
         double fTestParameter;

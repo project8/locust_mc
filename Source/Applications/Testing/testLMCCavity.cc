@@ -23,10 +23,15 @@ class test_app : public main_app
             main_app(),
 			fTestParameter(0.)
         {
-            add_option("-i,--incident-power", fTestParameter, "Set a test parameter." );
+            add_option("-t,--test-parameter", fTestParameter, "Set a test parameter." );
         }
 
         virtual ~test_app() {}
+
+        double GetTestParameter()
+        {
+        	return fTestParameter;
+        }
 
     private:
         double fTestParameter;
@@ -138,9 +143,8 @@ public:
 };
 
 
-int parseCavity()
+int parseCavity(test_app& the_main)
 {
-	test_app the_main;
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
 	return 0;
@@ -149,7 +153,9 @@ int parseCavity()
 
 TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]" )
 {
-	parseCavity();
+	test_app the_main;
+	parseCavity(the_main);
+	LPROG( testlog, "fTestParameter is " << the_main.GetTestParameter() );
 
 	testLMCCavity aTestLMCCavity;
 	if (!aTestLMCCavity.Configure())

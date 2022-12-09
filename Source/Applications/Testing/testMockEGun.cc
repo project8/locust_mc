@@ -44,10 +44,15 @@ class test_app : public main_app
             main_app(),
 			fTestParameter(0.)
         {
-            add_option("-i,--incident-power", fTestParameter, "Set a test parameter." );
+            add_option("-t,--test-parameter", fTestParameter, "Set a test parameter." );
         }
 
         virtual ~test_app() {}
+
+        double GetTestParameter()
+        {
+        	return fTestParameter;
+        }
 
     private:
         double fTestParameter;
@@ -104,9 +109,8 @@ double GetPower()
 
 }
 
-int parseEGun()
+int parseEGun(test_app& the_main)
 {
-	test_app the_main;
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
 	return 0;
@@ -115,7 +119,8 @@ int parseEGun()
 
 TEST_CASE( "Larmor power fraction. (pass)", "[single-file]" )
 {
-	parseEGun();
+	test_app the_main;
+	parseEGun(the_main);
 	double expectedPower = 2.e-16;
 	double threshold = 1.e-4;
     REQUIRE( fabs(GetPower() - expectedPower) <= threshold*expectedPower );
