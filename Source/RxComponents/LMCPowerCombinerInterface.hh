@@ -16,7 +16,6 @@
 #include "LMCsMatrix.hh"
 #include "LMCUnitCell.hh"
 #include "LMCSeriesFeed.hh"
-#include "LMCWaveguide.hh"
 
 
 
