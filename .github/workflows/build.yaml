@@ -104,7 +104,7 @@ jobs:
 
       - name: Run Tests
         if: ${{ matrix.build-tests == true }}
-        run: docker run ${{ steps.build-to-test.outputs.imageid }} /tmp_source/build/Source/Applications/Testing/RunTests
+        run: docker run ${{ steps.build-to-test.outputs.imageid }} "source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh; /tmp_source/build/Source/Applications/Testing/RunTests"
 
       - name: Build to Push
         id: build-to-push
