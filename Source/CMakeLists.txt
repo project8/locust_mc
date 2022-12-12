@@ -52,7 +52,6 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
     RxComponents/LMCCavityModes.hh
-    RxComponents/LMCWaveguideModes.hh
     RxComponents/LMCSinglePatch.hh
     RxComponents/LMCCorporateFeed.hh
     RxComponents/LMCsMatrix.hh
@@ -69,7 +68,6 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCAnalyticResponseFunction.hh
     RxComponents/LMCEquivalentCircuit.hh
     RxComponents/LMCDampedHarmonicOscillator.hh
-    RxComponents/LMCWaveguide.hh
 
 )
 
@@ -125,7 +123,6 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCVoltageDivider.cc
     RxComponents/LMCSlottedWaveguide.cc
     RxComponents/LMCCavityModes.cc
-    RxComponents/LMCWaveguideModes.cc
     RxComponents/LMCSinglePatch.cc
     RxComponents/LMCCorporateFeed.cc
     RxComponents/LMCsMatrix.cc
@@ -141,7 +138,6 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCAnalyticResponseFunction.cc
     RxComponents/LMCEquivalentCircuit.cc
     RxComponents/LMCDampedHarmonicOscillator.cc
-    RxComponents/LMCWaveguide.cc
 
 
 )
@@ -160,12 +156,15 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Transmitters/LMCKassTransmitter.hh
         Transmitters/LMCKassCurrentTransmitter.hh
         
+        RxComponents/LMCWaveguideModes.hh        
+        
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
         Kassiopeia/LMCLienardWiechert.hh
         Kassiopeia/LMCParticle.hh
+        Kassiopeia/LMCConfigureKass.hh
         Kassiopeia/LMCFieldCalculator.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
@@ -189,12 +188,15 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Transmitters/LMCKassTransmitter.cc
         Transmitters/LMCKassCurrentTransmitter.cc
         
+        RxComponents/LMCWaveguideModes.cc        
+        
         # Why is this here?
         Core/LMCHFSSReader.cc
 
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
         Kassiopeia/LMCParticle.cc
+        Kassiopeia/LMCConfigureKass.cc
         Kassiopeia/LMCLienardWiechert.cc
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCEventHold.cc
