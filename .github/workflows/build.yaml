@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   LUNA_BASE_VER: v1.3.0
-  locust_mc_BUILD_WITH_KASSIOPEIA: ON
+  locust_mc_BUILD_WITH_KASSIOPEIA: OFF
   locust_mc_ENABLE_EXECUTABLES: ON
   narg: 2
 #  locust_mc_ENABLE_TESTING: ON
