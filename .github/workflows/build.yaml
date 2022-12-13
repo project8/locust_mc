@@ -104,8 +104,12 @@ jobs:
           platforms: linux/amd64
 
       - name: Run Tests
+
+        run: echo '#!/bin/bash/' > job.sh
+        run: echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh
+        run: echo /tmp_source/build/Source/Applications/Testing/RunTests >> job.sh
         if: ${{ matrix.build-tests == true }}
-        run: docker run ${{ steps.build-to-test.outputs.imageid }} "source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh; /tmp_source/build/Source/Applications/Testing/RunTests"
+        run: docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
 
       - name: Build to Push
         id: build-to-push

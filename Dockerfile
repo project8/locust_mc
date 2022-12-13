@@ -17,7 +17,7 @@ ENV LOCUST_BUILD_TESTS_EXE=$build_tests_exe
 
 ARG locust_tag=beta
 ENV LOCUST_TAG=${locust_tag}
-ARG build_with_kassiopeia=FALSE
+ARG build_with_kassiopeia=TRUE
 ENV LOCUST_BUILD_WITH_KASSIOPEIA=$build_with_kassiopeia
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/${LOCUST_TAG}
 
