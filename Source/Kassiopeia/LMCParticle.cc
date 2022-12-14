@@ -136,6 +136,11 @@ namespace locust
         return fLarmorPower;
     }
 
+    LMCThreeVector Particle::GetGuidingCenterPosition() const
+    {
+    	return fGuidingCenterPosition;
+    }
+
     void Particle::SetKinematicProperties()
     {
         fAcceleration = fCharge/fMass*fNewVelocity.Cross(fMagneticField);

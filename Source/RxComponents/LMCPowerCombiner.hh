@@ -39,8 +39,9 @@ namespace locust
         	virtual bool SetSMatrixParameters() {return true;};
         	virtual bool IsSinglePatch();
             virtual Receiver* ChooseElement();
-        	bool AddOneVoltageToStripSum(Signal* aSignal, double VoltageFIRSample, double phi_LO, unsigned z_index, unsigned sampleIndex);
-        	bool AddOneModeToCavityProbe(Signal* aSignal, double VoltageFIRSample, double phi_LO, double totalScalingFactor, double cavityProbeImpedance, unsigned sampleIndex);
+        	bool AddOneVoltageToStripSum(Signal* aSignal, double excitationAmplitude, double phi_LO, unsigned z_index, unsigned sampleIndex);
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle) {return true;};
+        	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex) {return true;};
         	virtual void SayHello();
         	virtual void Initialize() {};
 
@@ -58,17 +59,19 @@ namespace locust
             void SetJunctionResistance( double aJunctionResistance );
             double GetDampingFactor( int z_index );
             void SetDampingFactor (int z_index, double aDampingFactor );
-            std::vector<double> GetCavityProbeZ();
-            void SetCavityProbeZ ( std::vector<double> aVector );
-            std::vector<double> GetCavityProbeTheta();
-            void SetCavityProbeTheta ( std::vector<double> aVector );
-            int GetNCavityProbes();
-            void SetNCavityProbes( int aNumberOfProbes );
+            bool GetVoltageCheck();
             void SetNCavityModes( int aNumberOfModes );
-            double GetCavityProbeInductance();
-            void SetCavityProbeInductance( double anInductance );
-            bool SetCavityProbeLocations(int nCavityProbes, double cavityLength);
-        	bool AddOneSampleToRollingAvg(int l, int m, int n, double VoltageFIRSample, double totalScalingFactor, unsigned sampleIndex);
+            int GetNCavityModes();
+            double GetCavityProbeZ();
+            void SetCavityProbeZ ( double aZ );
+            double GetCavityProbeRFrac();
+            void SetCavityProbeRFrac ( double aFraction );
+            double GetVoltagePhase();
+            void SetVoltagePhase( double aPhase );
+
+            bool GetWaveguideShortIsPresent();
+            void SetWaveguideShortIsPresent ( bool aValue );
+
 
 
         private:
@@ -80,13 +83,11 @@ namespace locust
             double fendPatchLoss;
             double fjunctionResistance;
             bool fvoltageCheck;
-            int fnCavityProbes;
             int fNCavityModes;
-            double fCavityProbeInductance;
-            std::vector<double> fCavityProbeZ;
-            std::vector<double> fCavityProbeTheta;
-            std::vector<std::vector<std::vector<double>>> fRollingAvg;
-            std::vector<std::vector<std::vector<int>>> fCounter;
+            double fCavityProbeZ;
+            double fCavityProbeRFrac;
+            bool fWaveguideShortIsPresent;
+
 
 
 };

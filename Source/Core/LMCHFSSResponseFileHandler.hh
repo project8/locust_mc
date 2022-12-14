@@ -15,6 +15,7 @@ namespace locust
      @details
      Available configuration options:
      - "hfss-filetype": string -- The type of file being handler. Currently only Transfer function and Finite Impulse Response
+     - "print-fir-debug": bool -- Print text file of FIR coefficients.
      */
     
     class HFSSResponseFileHandlerCore
@@ -27,14 +28,19 @@ namespace locust
         virtual bool Configure( const scarab::param_node& aNode);
         virtual bool ReadHFSSFile();
         virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
+        virtual std::pair<double,double> ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
+        void PrintFIR( std::vector<double> );
+        void PrintFIR( fftw_complex* aFilter );
+
         
     protected:
         
         // Member variables
         std::string fHFSSFilename;
         std::vector<double> fFilter;
+        fftw_complex* fFilterComplex;
         int fTFNBins;
         int fFIRNBins;
         double fResolution;
@@ -42,7 +48,11 @@ namespace locust
         bool fHFSSFiletype;
         ComplexFFT fComplexFFT;
         bool fIsFIRCreated;
-        
+        std::string fWindowName;
+        double fWindowParam;
+        bool fPrintFIR;
+
+
         //Member functions
         bool ends_with(const std::string &, const std::string &);
     };
@@ -56,6 +66,7 @@ namespace locust
     {
         return fResolution;
     }
+
     
     /*!
      @class TFFileHandlerCore
@@ -73,7 +84,9 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
         bool ReadHFSSFile() override;
-	bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
+        bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
+        bool ConvertAnalyticGFtoFIR(std::vector<std::pair<double,std::pair<double,double> > > gfArray);
+
     
     private:
         //Member variables
@@ -82,10 +95,11 @@ namespace locust
         
         // Member functions
         bool ConvertTFtoFIR(std::vector<std::complex<double>> &, bool GeneratedTF);
+
     protected:
         //Member variables
         double fInitialTFIndex;
-	double fTFBinWidth;
+        double fTFBinWidth;
     };
     
     /*!

@@ -1,5 +1,6 @@
 
 #include "LMCFieldCalculator.hh"
+#include "logger.hh"
 #include "KSParticleFactory.h"
 #include <algorithm>
 
@@ -12,12 +13,18 @@ using namespace Kassiopeia;
 namespace locust
 {
 
+    LOGGER( lmclog, "FieldCalculator" );
+
     FieldCalculator::FieldCalculator() :
-            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+    		fNFilterBinsRequired(0),
+			fTFReceiverHandler( NULL ),
+			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-            fInterface( aCopy.fInterface )
+    		fNFilterBinsRequired(0),
+			fTFReceiverHandler( NULL ),
+			fInterface( aCopy.fInterface )
     {
     }
     FieldCalculator* FieldCalculator::Clone() const
@@ -26,6 +33,101 @@ namespace locust
     }
     FieldCalculator::~FieldCalculator()
     {
+    }
+
+    bool FieldCalculator::ConfigureByInterface()
+    {
+    	if (fInterface->fConfigureKass)
+    	{
+    	    const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+    	    if (!this->Configure( *aParam ))
+    	    {
+    		    LERROR(lmclog,"Error configuring FieldInterface class");
+    		    exit(-1);
+    	    }
+    	}
+        return true;
+    }
+
+    bool FieldCalculator::Configure( const scarab::param_node& aParam )
+     {
+
+    	fTFReceiverHandler = new TFReceiverHandler;
+    	if(!fTFReceiverHandler->Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    	}
+
+        if( aParam.has( "tf-receiver-filename" ) )
+        {
+            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
+            {
+            	LERROR(lmclog,"FIR has not been generated.");
+            	exit(-1);
+            }
+        }
+        else // Generate analytic response function
+        {
+        	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
+        	{
+        		fAnalyticResponseFunction = new EquivalentCircuit();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		{
+        			LWARN(lmclog,"EquivalentCircuit was not configured.");
+        			return false;
+        		}
+        		else
+        		{
+        			if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
+        			{
+        				LWARN(lmclog,"TF->FIR was not generated correctly.");
+        				return false;
+        			}
+        		}
+        	}
+        	else
+        	{
+        		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		{
+        			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
+        			return false;
+        		}
+        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+        		{
+        			LWARN(lmclog,"GF->FIR was not generated.");
+        			return false;
+        		}
+        	}
+        } // aParam.has( "tf-receiver-filename" )
+
+        SetFilterSize( fTFReceiverHandler->GetFilterSize());
+
+        return true;
+     }
+
+    void FieldCalculator::SetNFilterBinsRequired( double dt )
+    {
+    	if (fTFReceiverHandler)
+    	{
+    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolution());
+    	}
+    }
+
+    int FieldCalculator::GetNFilterBinsRequired()
+    {
+    	return fNFilterBinsRequired;
+    }
+
+    void FieldCalculator::SetFilterSize( int aFilterSize )
+    {
+    	fFIRBuffer.resize( aFilterSize );
+    	fFrequencyBuffer.resize( aFilterSize );
+    }
+
+    int FieldCalculator::GetFilterSize()
+    {
+    	return fFIRBuffer.size();
     }
 
 
@@ -42,7 +144,7 @@ namespace locust
     double FieldCalculator::GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
     {
         double SpeedOfLight = LMCConst::C(); // m/s
-        double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / 10.668e-3; // a in m
+        double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / fInterface->fField->GetDimX(); // a in m
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*LMCConst::Pi()*fcyc), 2.) , 0.5);
         //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
@@ -71,7 +173,7 @@ namespace locust
 
     double FieldCalculator::GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle)  // Phase 1
     {
-        double dim1_wr42 = 10.668e-3; // a in m
+        double dim1_wr42 = fInterface->fField->GetDimX(); // a in m
         double x = aFinalParticle.GetPosition().GetX() + dim1_wr42/2.;
         double coupling = 0.63*sin(LMCConst::Pi()*x/dim1_wr42);  // avg over cyclotron orbit.
         return coupling*coupling;
@@ -139,143 +241,120 @@ namespace locust
       return DampingFactorTM01;
     }
 
+    double FieldCalculator::GetCouplingFactorTE011Cavity(Kassiopeia::KSParticle& aFinalParticle)
+    {
+    	int l = 0;
+    	int m = 1;
+    	int n = 1;
+    	double dimR = fInterface->fField->GetDimR(); // m
+    	double x = aFinalParticle.GetPosition().GetX();
+    	double y = aFinalParticle.GetPosition().GetY();
+    	double z = aFinalParticle.GetPosition().GetZ();
+    	double r = pow( x*x + y*y, 0.5 );
+    	double norm = fInterface->fField->TE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
+    	double tAvgDotProductFactor = 0.63;  // TO-DO:  this should be calculated and not just overridden like this.
+    	double coupling = tAvgDotProductFactor * fInterface->fField->TE_E(l,m,n,r,0.,z,false).back()/norm;
+    	return coupling*coupling;
+    }
+
+    double FieldCalculator::GetTE011FieldCavity(Kassiopeia::KSParticle& aFinalParticle)
+    {
+    	int l = 0;
+    	int m = 1;
+    	int n = 1;
+
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, 0., false);
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+
+        std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
+        double dhoNorm = vMag * LMCConst::Q() * fAnalyticResponseFunction->GetCavityQ();
+        double dhoMag = complexConvolution.first / dhoNorm;
+        double dhoPhase = complexConvolution.second;
+
+        // first term represents the new field driven by the electron.
+        // second term represents the field driven by the electron previously.
+        // "dhoMag" scales from ~0 (off-resonance) to DampedHarmonicOscillator::fHannekePowerFactor (on-resonance).
+        // The electron should radiate maximally if on resonance.
+        double fieldCavity = cos(0.) + dhoMag*cos(dhoPhase);
+
+        return fieldCavity;
+    }
+
+
     double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
-
-//    	std::vector<double> tTE_E_normalized = GetCavityNormalizedModeField(0,1,1,aFinalParticle); // lmn 011 for now.
-//    	fInterface->dotProductFactor = GetCavityDotProductFactor(aFinalParticle, tTE_E_normalized);  // unit velocity \dot unit theta
-//    	fInterface->dotProductFactor = 0.5;  // TO-DO:  Check dotProductFactor - should it be an instantaneous dot product?
-//    	fInterface->modeAmplitude = tTE_E_normalized.back();  // absolute E_theta at electron
-
-    	fInterface->CavityFIRSample = GetCavityFIRSample(aFinalParticle, fInterface->nFilterBinsRequired, fInterface->dtFilter);
-
-    	double DampingFactorCavity = 1.0; // TO-DO:  Insert power correction factor here.
-    	return DampingFactorCavity;
+    	double TE011FieldFromCavity = GetTE011FieldCavity(aFinalParticle);
+    	double A011squ = GetCouplingFactorTE011Cavity(aFinalParticle);
+    	double DampingFactorTE011Cavity = 1. - A011squ + A011squ*TE011FieldFromCavity*TE011FieldFromCavity;  // = P'/P
+    	if ( fabs(DampingFactorTE011Cavity) > 0. )
+    	{
+    		return DampingFactorTE011Cavity;
+    	}
+    	else
+    	{
+    		return 1.0;
+    	}
     }
 
-    double FieldCalculator::GetCavityFIRSample(Kassiopeia::KSParticle& aFinalParticle, int nFilterBinsRequired, double dtFilter)
+
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
     {
-    	double tVx = aFinalParticle.GetVelocity().X();
-    	double tVy = aFinalParticle.GetVelocity().Y();
-    	double orbitPhase = calcOrbitPhase(tVx, tVy);  // radians
-    	double fieldFrequency = 2.*LMCConst::Pi() * aFinalParticle.GetCyclotronFrequency();  // rad/s
+    	double convolutionMag = 0.0;
+    	double convolutionPhase = 0.0;
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-    	double convolution = 0.0;
 
-		// populate FIR filter with frequency for just this sample interval:
-		for (int i=0; i < nFilterBinsRequired; i++)
-		{
-			fInterface->FIRfrequencyBuffer[0].push_back(fieldFrequency);  // rad/s
-			fInterface->FIRfrequencyBuffer[0].pop_front();
-		}
+    	if ( !BypassTF )
+    	{
+    		double orbitPhase = tKassParticleXP[6];  // radians
+    		double cycFrequency = tKassParticleXP[7];  // rad/s
 
-		// populate entire FIR filter with current, using frequencies from recent previous samples:
-		std::deque<double>::iterator it = fInterface->FIRfrequencyBuffer[0].begin();
-		while (it != fInterface->FIRfrequencyBuffer[0].end())
-		{
-			orbitPhase += (*it)*dtFilter;
-			if (*it != 0.)
-			{
-				fInterface->ElementFIRBuffer[0].push_back(cos(orbitPhase));
-			}
-			else
-			{
-				fInterface->ElementFIRBuffer[0].push_back(0.);
-			}
-			fInterface->ElementFIRBuffer[0].pop_front();
-			*it++;
-		}
+    		// populate FIR filter with frequency for just this sample interval:
+    		for (int i=0; i < fNFilterBinsRequired; i++)
+    		{
+    			fFrequencyBuffer.push_back(cycFrequency);  // rad/s
+    			fFrequencyBuffer.pop_front();
+    		}
 
-		convolution=fInterface->fTFReceiverHandler.ConvolveWithFIRFilter(fInterface->ElementFIRBuffer[0]);
+    		std::deque<double>::iterator it = fFrequencyBuffer.begin();
+    		while (it != fFrequencyBuffer.end())
+    		{
+    			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
+    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolution();
 
-		// Make copies of the buffers to keep the contents arranged sequentially in Locust:
-		fInterface->ElementFIRBufferCopy[0] = fInterface->ElementFIRBuffer[0];
-		fInterface->FIRfrequencyBufferCopy[0] = fInterface->FIRfrequencyBuffer[0];
+    			if (*it != 0.)
+    			{
+    				fFIRBuffer.push_back(cos(orbitPhase));
+    			}
+    			else
+    			{
+    				fFIRBuffer.push_back(0.);
+    			}
+    			fFIRBuffer.pop_front();
 
-		convolution *= LMCConst::Q()*vMag;
-		return convolution;
+    			*it++;
+    		}
+
+            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilter(fFIRBuffer);
+
+    		convolutionMag = convolution.first;
+    		convolutionPhase = convolution.second;
+
+    	}
+    	else
+    	{
+    		convolutionMag = 1.0;
+    		convolutionPhase = 0.;
+    	}
+
+    	return std::make_pair(convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
 
     }
 
 
-    double FieldCalculator::quadrantOrbitCorrection(double phase, double vx)
-    {
-    	double phaseCorrection = 0.;
-    	if (((phase < 0.)&&(vx < 0.)) || ((phase > 0.)&&(vx > 0.)))
-    		phaseCorrection = LMCConst::Pi();
-
-    	return phaseCorrection;
-    }
-
-
-    double FieldCalculator::quadrantPositionCorrection(double phase, double x)
-    {
-    	double phaseCorrection = 0.;
-    	if (((phase < 0.)&&(x < 0.)) || ((phase > 0.)&&(x < 0.)))
-    		phaseCorrection = LMCConst::Pi();
-
-    	return phaseCorrection;
-    }
-
-
-    double FieldCalculator::calcOrbitPhase(double vx, double vy)
-    {
-    	double phase = 0.;
-    	if (fabs(vy) > 0.)
-    		phase = atan(-vx/vy);
-    	phase += quadrantOrbitCorrection(phase, vx);
-//    	printf("phase is %g\n", phase*180./LMCConst::Pi()); getchar();
-    	return phase;
-    }
-
-    double FieldCalculator::calcTheta(double x, double y)
-    {
-    	double phase = 0.;
-    	if (fabs(x) > 0.)
-    		phase = atan(y/x);
-    	phase += quadrantPositionCorrection(phase, x);
-    	return phase;
-    }
-
-
-
-    double FieldCalculator::GetCavityDotProductFactor(Kassiopeia::KSParticle& aFinalParticle, std::vector<double> aTE_E_normalized)
-    {
-    	double tX = aFinalParticle.GetPosition().X();
-    	double tY = aFinalParticle.GetPosition().Y();
-    	double tThetaParticle = calcTheta(tX, tY);
-
-    	double tEtheta = aTE_E_normalized.back();
-    	double tEx = -sin(tThetaParticle) * tEtheta;
-    	double tEy = cos(tThetaParticle) * tEtheta;
-    	double tEmag = tEtheta;
-    	double tVx = aFinalParticle.GetVelocity().X();
-    	double tVy = aFinalParticle.GetVelocity().Y();
-    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	return fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;  // fabs ( unit J \cdot unit E )
-    }
-
-
-
-    std::vector<double> FieldCalculator::GetCavityNormalizedModeField(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle)
-    {
-    	double tX = aFinalParticle.GetPosition().X();
-    	double tY = aFinalParticle.GetPosition().Y();
-    	double tZ = aFinalParticle.GetPosition().Z();
-    	double tR = sqrt(tX*tX + tY*tY);
-    	double fcyc = aFinalParticle.GetCyclotronFrequency();  // TO_DO Is this in radians or Hz?
-    	std::vector<double> tTE_E_electron = fInterface->fField->TE_E(l,m,n,tR,0.,tZ, fcyc);
-		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];  // select mode 0,1,1
-
-		auto it = tTE_E_electron.begin();
-		while (it != tTE_E_electron.end())
-		{
-			if (!isnan(*it))
-				(*it) *= normFactor;
-			*it++;
-		}
-    	return tTE_E_electron;  // return normalized field.
-    }
 
 
 

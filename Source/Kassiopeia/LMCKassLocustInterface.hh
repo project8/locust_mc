@@ -9,12 +9,10 @@
 #define LOCUST_LMCKASSLOCUSTINTERFACE_HH_
 
 
-#include "LMCFIRFileHandler.hh"
-#include "LMCTFFileHandler.hh"
 #include "LMCTransmitter.hh"
 #include "LMCField.hh"
 #include "LMCParticle.hh"
-#include "LMCFieldBuffer.hh"
+#include "LMCConfigureKass.hh"
 #include "singleton.hh"
 
 #include <condition_variable>
@@ -55,31 +53,20 @@ namespace locust
         std::condition_variable fDigitizerCondition;
         std::condition_variable fKassReadyCondition;
 
+
+
         // TODO: remove these in some way to avoid the Project 8-specificity
         int fProject8Phase; // 1, 2, or 3, defined with the step modifier instance in the xml file.
         double fCENTER_TO_SHORT;
         double fCENTER_TO_ANTENNA;
 
         // Cavity and e-gun variables:
-        TFReceiverHandler fTFReceiverHandler;
         Transmitter* fTransmitter;
         std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
-        double fR;  // Cylindrical cavity dimenions.
-        double fL;
-        double fX;  // Rectangular waveguide dimensions.
-        double fY;
-        int fnPixels;
-        int nFilterBinsRequired;
-        double dtFilter;
-        std::vector<std::deque<double>> eCurrentBuffer;
         Field* fField;
-        std::vector<std::deque<double>> ElementFIRBuffer;
-        std::vector<std::deque<double>> ElementFIRBufferCopy;
-        std::vector<std::deque<double>> FIRfrequencyBuffer;
-        std::vector<std::deque<double>> FIRfrequencyBufferCopy;
-    	double dotProductFactor;
-    	double modeAmplitude;
-    	double CavityFIRSample;
+        ConfigureKass* fConfigureKass;
+        bool fBackReaction;
+        bool fE_Gun;
 
 
     };

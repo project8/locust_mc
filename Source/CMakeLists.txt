@@ -10,9 +10,9 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCSimulationController.hh
     Core/LMCThreeVector.hh
     Core/LMCVisitor.hh
-	Core/LMCHFSSResponseFileHandler.hh
-	Core/LMCFIRFileHandler.hh
-	Core/LMCTFFileHandler.hh	
+    Core/LMCHFSSResponseFileHandler.hh
+    Core/LMCFIRFileHandler.hh
+    Core/LMCTFFileHandler.hh	
 
     Distributions/LMCBaseDistribution.hh
     Distributions/LMCDiracDistribution.hh
@@ -36,7 +36,7 @@ set( LOCUST_MC_HEADER_FILES
 
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCTransmitterInterface.hh
-   	Transmitters/LMCTransmitter.hh
+    Transmitters/LMCTransmitter.hh
     Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
     Transmitters/LMCTransmitterHardware.hh
@@ -44,7 +44,8 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCTurnstileAntenna.hh
     
     Transforms/LMCHilbertTransform.hh
-    Transforms/LMCComplexFFT.hh    
+    Transforms/LMCComplexFFT.hh 
+    Transforms/LMCWindowFunctions.hh   
 
     RxComponents/LMCPowerCombinerInterface.hh
     RxComponents/LMCPowerCombiner.hh
@@ -64,8 +65,9 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCAntennaElementPositioner.hh
     RxComponents/LMCSinglePatchPositioner.hh
     RxComponents/LMCPlanarArrayPositioner.hh
+    RxComponents/LMCAnalyticResponseFunction.hh
     RxComponents/LMCEquivalentCircuit.hh
-    RxComponents/LMCWaveguide.hh
+    RxComponents/LMCDampedHarmonicOscillator.hh
 
 )
 
@@ -80,7 +82,7 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCSimulationController.cc
     Core/LMCThreeVector.cc
     Core/LMCVisitor.cc
-	Core/LMCHFSSResponseFileHandler.cc
+    Core/LMCHFSSResponseFileHandler.cc
     Core/LMCFIRFileHandler.cc
     Core/LMCTFFileHandler.cc
 
@@ -105,16 +107,17 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCButterworthLPFGenerator.cc
     
 
-	Transmitters/LMCTransmitter.cc
-   	Transmitters/LMCAntennaSignalTransmitter.cc
+    Transmitters/LMCTransmitter.cc
+    Transmitters/LMCAntennaSignalTransmitter.cc
     Transmitters/LMCPlaneWaveTransmitter.cc
-   	Transmitters/LMCFieldBuffer.cc
-   	Transmitters/LMCTransmitterHardware.cc
-   	Transmitters/LMCDipoleAntenna.cc
-   	Transmitters/LMCTurnstileAntenna.cc
+    Transmitters/LMCFieldBuffer.cc
+    Transmitters/LMCTransmitterHardware.cc
+    Transmitters/LMCDipoleAntenna.cc
+    Transmitters/LMCTurnstileAntenna.cc
     
     Transforms/LMCHilbertTransform.cc
-    Transforms/LMCComplexFFT.cc    
+    Transforms/LMCComplexFFT.cc
+    Transforms/LMCWindowFunctions.cc    
     
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCVoltageDivider.cc
@@ -132,8 +135,9 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCAntennaElementPositioner.cc
     RxComponents/LMCSinglePatchPositioner.cc
     RxComponents/LMCPlanarArrayPositioner.cc
+    RxComponents/LMCAnalyticResponseFunction.cc
     RxComponents/LMCEquivalentCircuit.cc
-    RxComponents/LMCWaveguide.cc
+    RxComponents/LMCDampedHarmonicOscillator.cc
 
 
 )
@@ -145,12 +149,14 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
-	    Generators/LMCArraySignalGenerator.hh
-	    Generators/LMCCavitySignalGenerator.hh
+        Generators/LMCArraySignalGenerator.hh
+        Generators/LMCCavitySignalGenerator.hh
 
 
         Transmitters/LMCKassTransmitter.hh
         Transmitters/LMCKassCurrentTransmitter.hh
+        
+        RxComponents/LMCWaveguideModes.hh        
         
         Core/LMCHFSSReader.hh
 
@@ -158,6 +164,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
         Kassiopeia/LMCLienardWiechert.hh
         Kassiopeia/LMCParticle.hh
+        Kassiopeia/LMCConfigureKass.hh
         Kassiopeia/LMCFieldCalculator.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
@@ -175,11 +182,13 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
-	    Generators/LMCArraySignalGenerator.cc   
-	    Generators/LMCCavitySignalGenerator.cc   
+        Generators/LMCArraySignalGenerator.cc   
+        Generators/LMCCavitySignalGenerator.cc   
         
         Transmitters/LMCKassTransmitter.cc
         Transmitters/LMCKassCurrentTransmitter.cc
+        
+        RxComponents/LMCWaveguideModes.cc        
         
         # Why is this here?
         Core/LMCHFSSReader.cc
@@ -187,6 +196,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
         Kassiopeia/LMCParticle.cc
+        Kassiopeia/LMCConfigureKass.cc
         Kassiopeia/LMCLienardWiechert.cc
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCEventHold.cc
@@ -214,7 +224,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Core/LMCRunParameters.hh
         Generators/LMCFakeTrackSignalGenerator.hh    
         Generators/LMCFakeFreeSpaceSignalGenerator.hh
-	    IO/LMCFileWriter.hh
+        IO/LMCFileWriter.hh
     	IO/LMCRootTreeWriter.hh
     	IO/LMCRootHistoWriter.hh
     	IO/LMCRootGraphWriter.hh
@@ -226,7 +236,7 @@ if (locust_mc_BUILD_WITH_ROOT)
         Core/LMCRunParameters.cc
         Generators/LMCFakeTrackSignalGenerator.cc   
         Generators/LMCFakeFreeSpaceSignalGenerator.cc
-	    IO/LMCFileWriter.cc
+        IO/LMCFileWriter.cc
     	IO/LMCRootTreeWriter.cc
     	IO/LMCRootHistoWriter.cc
     	IO/LMCRootGraphWriter.cc
@@ -275,6 +285,8 @@ if (locust_mc_BUILD_WITH_ROOT)
     pbuilder_install_files (${LIB_INSTALL_DIR} ${DICT_PCMFILES})
         
 endif(locust_mc_BUILD_WITH_ROOT)
+
+
 
 
 pbuilder_library( LocustMC LOCUST_MC_SOURCE_FILES "" )

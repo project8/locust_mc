@@ -40,6 +40,14 @@ namespace locust
         {
             fNSkips=aParam["tf-transmitter-nskips"]().as_int();
         }
+        if(aParam.has("tf-window-type"))
+        {
+            fWindowName = aParam["tf-window-type"]().as_string();
+        }
+        if(aParam.has("tf-window-parameter"))
+        {
+            fWindowParam = aParam["tf-window-parameter"]().as_double();
+        }
         fHFSSFiletype="tf";
         return true;
     }
@@ -55,6 +63,13 @@ namespace locust
     
     bool TFReceiverHandler::Configure(const scarab::param_node& aParam)
     {
+
+
+    	if( !HFSSResponseFileHandlerCore::Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring HFSSResponseFileHandler class from TFReceiverHandler subclass");
+    	}
+
         if(!fComplexFFT.Configure(aParam))
         {
             LERROR(lmclog,"Error configuring ComplexFFT class");
@@ -63,6 +78,7 @@ namespace locust
         {
             fHFSSFilename=aParam["tf-receiver-filename"]().as_string();
         }
+        
         if( aParam.has( "tf-receiver-bin-width" ) )
         {
             fTFBinWidth=aParam["tf-receiver-bin-width"]().as_double();
@@ -70,6 +86,14 @@ namespace locust
         if( aParam.has( "tf-receiver-nskips" ) )
         {
             fNSkips=aParam["tf-receiver-nskips"]().as_int();
+        }
+        if(aParam.has("tf-window-type"))
+        {
+            fWindowName = aParam["tf-window-type"]().as_string();
+        }
+        if(aParam.has("tf-window-parameter"))
+        {
+            fWindowParam = aParam["tf-window-parameter"]().as_double();
         }
         fHFSSFiletype="tf";
         return true;

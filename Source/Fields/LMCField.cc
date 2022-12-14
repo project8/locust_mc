@@ -12,7 +12,12 @@ namespace locust
 {
     LOGGER( lmclog, "Field" );
     Field::Field():
-    	fCentralFrequency(0.)
+		fnPixels( 100 ),
+    	fCentralFrequency(0.),
+		fR( 0.18 ),
+		fL( 3.0 ),
+		fX( 0.010668 ),
+		fY( 0.004318 )
     {}
     Field::~Field() {}
 
@@ -21,8 +26,13 @@ namespace locust
 
     	if( aParam.has( "central-frequency" ) )
         	{
-            	fCentralFrequency= aParam["central-frequency"]().as_double();
+            	fCentralFrequency= 2.*LMCConst::Pi()*aParam["central-frequency"]().as_double();
         	}
+
+       	if( aParam.has( "n-pixels" ) )
+            {
+                SetNPixels(aParam["n-pixels"]().as_int());
+            }
 
     	return true;
 
@@ -59,6 +69,57 @@ namespace locust
     {
     	fCentralFrequency = aCentralFrequency;
     }
+
+    int Field::GetNPixels()
+    {
+    	return fnPixels;
+    }
+
+    void Field::SetNPixels( int aNumberOfPixels )
+    {
+    	fnPixels = aNumberOfPixels;
+    }
+
+    double Field::GetDimX() const
+    {
+    	return fX;
+    }
+
+    void Field::SetDimX( double aDim )
+    {
+    	fX = aDim;
+    }
+
+    double Field::GetDimY() const
+    {
+    	return fY;
+    }
+
+    void Field::SetDimY( double aDim )
+    {
+    	fY = aDim;
+    }
+
+    double Field::GetDimR() const
+    {
+    	return fR;
+    }
+
+    void Field::SetDimR( double aDim )
+    {
+    	fR = aDim;
+    }
+
+    double Field::GetDimL() const
+    {
+    	return fL;
+    }
+
+    void Field::SetDimL( double aDim )
+    {
+    	fL = aDim;
+    }
+
 
 
 

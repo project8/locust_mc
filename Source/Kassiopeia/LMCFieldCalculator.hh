@@ -2,6 +2,11 @@
 #define LMCFIELDCALCULATOR_HH_
 
 #include "LMCKassLocustInterface.hh"
+#include "LMCEquivalentCircuit.hh" // : LMCAnalyticResponseFunction
+#include "LMCDampedHarmonicOscillator.hh" // : LMCAnalyticResponseFunction
+#include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
+
 
 #include "KSSpaceInteraction.h"
 #include "KSList.h"
@@ -23,6 +28,9 @@ namespace locust
             FieldCalculator( const FieldCalculator& aCopy );
             FieldCalculator* Clone() const;
             ~FieldCalculator();
+            bool Configure( const scarab::param_node& aParam );
+            bool ConfigureByInterface();
+
 
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
@@ -31,17 +39,25 @@ namespace locust
             double GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTE011Cavity(Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-            double GetCavityDotProductFactor(Kassiopeia::KSParticle& aFinalParticle, std::vector<double> aTE_E_normalized);
-            std::vector<double> GetCavityNormalizedModeField(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
-            double GetCavityFIRSample(Kassiopeia::KSParticle& aFinalParticle, int nFilterBinsRequired, double dtFilter);
-            double calcOrbitPhase(double vx, double vy);
-            double calcTheta(double x, double y);
-            double quadrantOrbitCorrection(double phase, double vx);
-            double quadrantPositionCorrection(double phase, double x);
+            double GetTE011FieldCavity(Kassiopeia::KSParticle& aFinalParticle);
+            std::pair<double,double> GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF);
+            void SetNFilterBinsRequired( double dt );
+            int GetNFilterBinsRequired();
+            void SetFilterSize( int aFilterSize );
+            int GetFilterSize();
+
 
             kl_interface_ptr_t fInterface;
+
+        private:
+            TFReceiverHandler* fTFReceiverHandler;
+            AnalyticResponseFunction* fAnalyticResponseFunction;
+            std::deque<double> fFIRBuffer;
+            std::deque<double> fFrequencyBuffer;
+            int fNFilterBinsRequired;
     };
 
 }
