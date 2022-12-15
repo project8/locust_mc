@@ -35,9 +35,6 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
-	set(CMAKE_CXX_STANDARD 14)
-	find_package(PkgConfig REQUIRED) 
-
     # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
     # In other words, the configuration and build environments need to be kept separate.
     # However, Locust needs to build against Kassiopeia.
@@ -90,27 +87,11 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         INSTALL_COMMAND   make -j3 install
     )
 
-
-#   Use PkgConfig to find *.pc files and import Kassiopeia targets.
-
-	set(ENV{PKG_CONFIG_PATH} "/home/penny/locust_mc/cbuild/kassiopeia/Kommon")
-	pkg_search_module(Kommon REQUIRED IMPORTED_TARGET kommon)
-	set(ENV{PKG_CONFIG_PATH} "/home/penny/locust_mc/cbuild/kassiopeia/KGeoBag")
-	pkg_search_module(KGeoBag REQUIRED IMPORTED_TARGET kgeobag)
-	set(ENV{PKG_CONFIG_PATH} "/home/penny/locust_mc/cbuild/kassiopeia/KEMField")
-	pkg_search_module(KEMField REQUIRED IMPORTED_TARGET kemfield)
-	set(ENV{PKG_CONFIG_PATH} "/home/penny/locust_mc/cbuild/kassiopeia/Kassiopeia")
-	pkg_search_module(Kassiopeia REQUIRED IMPORTED_TARGET kassiopeia)
-	
-    
-    message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, Kommon found is ${Kommon_FOUND}") # found here.
-    message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, KGeoBag found is ${KGeoBag_FOUND}") # found here.
-    message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, KEMField found is ${KEMField_FOUND}") # found here.
-    message(STATUS "%%%%%%%%%%%%%%%%%%% Locust check 3, Kassiopeia found is ${Kassiopeia_FOUND}") # found here.
-    message(STATUS "Kommon libraries are ${Kommon_LDFLAGS}" )
-#    message(STATUS "Kommon include dirs are ${Kommon_INCLUDE_DIRS}" )
-    message(STATUS "Locust check3.1" )
-    
+    # Finally we use find_package() to learn about the Kassiopeia build targets.
+    find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
+    find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
+    find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
+    find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )   
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -137,7 +118,6 @@ if (GSL_FOUND)
 else (GSL_FOUND)
     message(FATAL "GSL not found")
 endif (GSL_FOUND)
-
 
 # FFTW
 find_package(FFTW REQUIRED)
@@ -198,17 +178,32 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
 	
 	
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
+            
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-		if (NOT TARGET ${LIBRARY}) 
-			message(STATUS "check 8 library is ${LIBRARY}" )
+		if (NOT TARGET ${LIBRARY})
 			add_library( ${LIBRARY} SHARED IMPORTED )
     	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
 			get_target_property( LOCATION_CHECK ${LIBRARY} IMPORTED_LOCATION )
-			message(STATUS "library location is ${LOCATION_CHECK}" )
         	add_dependencies( ${LIBRARY} KassiopeiaExt )
-        endif()
+        endif()        
     endforeach()
-             	
+    
+
+    LIST(FILTER Kommon_LDFLAGS EXCLUDE REGEX "vtk")
+    LIST(FILTER Kommon_LDFLAGS EXCLUDE REGEX "BindingsHeaders")
+    LIST(FILTER KGeoBag_LDFLAGS EXCLUDE REGEX "KGeoBagBindingsHeaders")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KFMArray")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMLinearAlgebraCore")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMLinearAlgebraPreconditioner")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMLinearAlgebraVisitors")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMBoundaryIntegralsCore")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KFMInterfaceBoundaryIntegral")    
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMFieldSolverCore")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMIntegratingSolver")
+    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMFieldBindingsHeaders")
+    LIST(FILTER Kassiopeia_LDFLAGS EXCLUDE REGEX "KassiopeiaBindingsHeaders")
+    
+    
                        
     pbuilder_add_ext_libraries(
         ${Kommon_LDFLAGS}
