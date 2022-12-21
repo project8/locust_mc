@@ -109,7 +109,7 @@ jobs:
             build_type=${{ matrix.build-type }}
             narg=${{ env.NARG }}
           tags: ${{ steps.docker_meta.outputs.tags }}
-          platforms: [linux/amd64]
+          platforms: linux/amd64
 
 
 # For debugging
