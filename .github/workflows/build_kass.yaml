@@ -108,8 +108,8 @@ jobs:
             img_tag=${{ env.LUNA_BASE_VER }}-dev
             build_type=${{ matrix.build-type }}
             narg=${{ env.NARG }}
-        tags: ${{ steps.docker_meta.outputs.tags }}
-        platform: linux/amd64
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          platforms: [linux/amd64]
 
 
 # For debugging
