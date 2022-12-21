@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   LUNA_BASE_VER: v1.3.0
-  BUILD_IMAGE: kassiopeia
+  BUILD_IMAGE: locust_kass
 #  locust_mc_BUILD_WITH_KASSIOPEIA: ON
 #  locust_mc_ENABLE_EXECUTABLES: ON
   narg: 2
@@ -52,7 +52,7 @@ jobs:
         run: |
           export KASS_VER=$(./Scripts/extract_kass_version.sh ./kassiopeia/CMakeLists.txt)
           echo "Kassiopeia version is ${KASS_VER}"
-          echo "$(curl --head --fail -H \"Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}\" https://ghcr.io/v2/kassiopeia/manifests/${KAS_VER})"
+          echo "$(curl --head --fail -H \"Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}\" https://ghcr.io/v2/project8/${{ env.BUILD_IMAGE }}/manifests/${KAS_VER})"
           echo "KASS_VER=${KASS_VER}}" >> $GITHUB_OUTPUT
           
       - name: Docker meta
@@ -88,21 +88,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-#      - name: Build Kassiopeia
-#        id: build-kass
-#        uses: docker/build-push-action@v3
-#        with:
-#          context: .
-#          file: Dockerfile.kass
-#          push: true
-#          load: false
-#          build-args: |
-#            img_repo=ghcr.io/project8/luna_base
-#            img_tag=${{ env.LUNA_BASE_VER }}-dev
-#            build_type=${{ matrix.build-type }}
-#            narg=${{ env.NARG }}
-#        tags: ${{ steps.get-kass-version.outputs.KASS_VER }}
-#        platform: linux/amd64
+      - name: print things
+        run: |
+          echo "docker_meta.outputs.tags: ${{ steps.docker_meta.outputs.tags }}"
+          echo "${{ env.LUNA_BASE_VER }}"
+          echo "${{ matrix.build-type }}"
+          echo "${{ env.NARG }}"
+
+      - name: Build Kassiopeia
+        id: build-kass
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile.kass
+          push: true
+          load: false
+          build-args: |
+            img_repo=ghcr.io/project8/luna_base
+            img_tag=${{ env.LUNA_BASE_VER }}-dev
+            build_type=${{ matrix.build-type }}
+            narg=${{ env.NARG }}
+        tags: ${{ steps.docker_meta.outputs.tags }}
+        platform: linux/amd64
 
 
 # For debugging
