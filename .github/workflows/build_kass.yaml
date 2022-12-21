@@ -20,9 +20,38 @@ env:
 
 jobs:
 
+  check-kass-version:
+
+    name: Check Kassiopeia Version
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      kass-ver: ${{ steps.get-kass-version.outputs.kass-ver }}
+      do-kass-build: ${{ steps.get-kass-version.outputs.do-kass-build }}
+
+    steps:
+
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Get Kassiopeia version
+        id: get-kass-version
+        run: |
+          export KASS_VER=$(./Scripts/extract_kass_version.sh ./kassiopeia/CMakeLists.txt)
+          echo "Kassiopeia version is ${KASS_VER}"
+          echo "$(curl --head --fail -H \"Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}\" https://ghcr.io/v2/project8/${{ env.BUILD_IMAGE }}/manifests/${KAS_VER})"
+          echo "kass-ver=${KASS_VER}}" >> $GITHUB_OUTPUT
+          echo "do-kass-build=false" >> $GITHUB_OUTPUT
+
   docker-build-and-publish:
 
     name: Build and push the docker images
+
+    needs: check-kass-version
+    if: needs.check-kass-version.outputs.do-kass-build == 'true'
 
     strategy:
       matrix:
@@ -47,14 +76,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Get Kassiopeia version
-        id: get-kass-version
-        run: |
-          export KASS_VER=$(./Scripts/extract_kass_version.sh ./kassiopeia/CMakeLists.txt)
-          echo "Kassiopeia version is ${KASS_VER}"
-          echo "$(curl --head --fail -H \"Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}\" https://ghcr.io/v2/project8/${{ env.BUILD_IMAGE }}/manifests/${KAS_VER})"
-          echo "KASS_VER=${KASS_VER}}" >> $GITHUB_OUTPUT
-          
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v4
@@ -64,13 +85,7 @@ jobs:
             latest=auto
             suffix=${{ matrix.tag-suffix }},onlatest=true
           tags: |
-            type=raw,value=${{ steps.get-kass-version.outputs.KASS_VER }}
-
-      - name: Get previous tag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        id: tag_name
-        with:
-          fallback: beta
+            type=raw,value=${{ needs.check-kass-version.outputs.kass-ver }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
