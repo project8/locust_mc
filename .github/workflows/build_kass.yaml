@@ -64,10 +64,7 @@ jobs:
             latest=auto
             suffix=${{ matrix.tag-suffix }},onlatest=true
           tags: |
-            type=semver,pattern={{raw}}
-            type=ref,event=branch
-            type=ref,event=pr
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=${{ steps.get-kass-version.outputs.KASS_VER }}
 
       - name: Get previous tag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
@@ -91,21 +88,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Kassiopeia
-        id: build-kass
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: Dockerfile.kass
-          push: true
-          load: false
-          build-args: |
-            img_repo=ghcr.io/project8/luna_base
-            img_tag=${{ env.LUNA_BASE_VER }}-dev
-            build_type=${{ matrix.build-type }}
-            narg=${{ env.NARG }}
-        tags: ${{ steps.get-kass-version.outputs.KASS_VER }}
-        platform: linux/amd64
+#      - name: Build Kassiopeia
+#        id: build-kass
+#        uses: docker/build-push-action@v3
+#        with:
+#          context: .
+#          file: Dockerfile.kass
+#          push: true
+#          load: false
+#          build-args: |
+#            img_repo=ghcr.io/project8/luna_base
+#            img_tag=${{ env.LUNA_BASE_VER }}-dev
+#            build_type=${{ matrix.build-type }}
+#            narg=${{ env.NARG }}
+#        tags: ${{ steps.get-kass-version.outputs.KASS_VER }}
+#        platform: linux/amd64
 
 
 # For debugging
