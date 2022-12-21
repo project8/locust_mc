@@ -52,7 +52,7 @@ jobs:
         run: |
           export KASS_VER=$(./Scripts/extract_kass_version.sh ./kassiopeia/CMakeLists.txt)
           echo "Kassiopeia version is ${KASS_VER}"
-          echo $(curl --head --fail -H "Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}" https://ghcr.io/v2/kassiopeia/manifests/${KAS_VER})
+          echo "$(curl --head --fail -H \"Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}\" https://ghcr.io/v2/kassiopeia/manifests/${KAS_VER})"
           echo "KASS_VER=${KASS_VER}}" >> $GITHUB_OUTPUT
           
       - name: Docker meta
