@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   LUNA_BASE_VER: v1.3.0
-  BUILD_IMAGE: locust_kass
+  BUILD_IMAGE: locust_mc/test
 #  locust_mc_BUILD_WITH_KASSIOPEIA: ON
 #  locust_mc_ENABLE_EXECUTABLES: ON
   narg: 2
@@ -44,7 +44,7 @@ jobs:
           echo "Kassiopeia version is ${KASS_VER}"
           echo "$(curl --head --fail -H \"Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}\" https://ghcr.io/v2/project8/${{ env.BUILD_IMAGE }}/manifests/${KAS_VER})"
           echo "kass-ver=${KASS_VER}}" >> $GITHUB_OUTPUT
-          echo "do-kass-build=false" >> $GITHUB_OUTPUT
+          echo "do-kass-build=true" >> $GITHUB_OUTPUT
 
   docker-build-and-publish:
 
@@ -106,16 +106,18 @@ jobs:
       - name: print things
         run: |
           echo "docker_meta.outputs.tags: ${{ steps.docker_meta.outputs.tags }}"
-          echo "${{ env.LUNA_BASE_VER }}"
-          echo "${{ matrix.build-type }}"
-          echo "${{ env.NARG }}"
+          echo "luna base version: ${{ env.LUNA_BASE_VER }}"
+          echo "build-type: ${{ matrix.build-type }}"
+          echo "narg: ${{ env.NARG }}"
+          echo "kass ver: ${{ needs.check-kass-version.outputs.kass-ver }}"
+          echo "do kass build: ${{ needs.check-kass-version.outputs.do-kass-build }}"
 
       - name: Build Kassiopeia
         id: build-kass
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: Dockerfile.kass
+          file: Dockerfile.test
           push: true
           load: false
           build-args: |
