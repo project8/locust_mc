@@ -1,7 +1,7 @@
 name: Build and Test Locust
 
 on:
-  pull_request:
+#  pull_request:
   push:
     branches: [main, develop, feature/luna_base]
     tags: ['*']
@@ -81,6 +81,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build Kassiopeia
+        id: build-kass
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile.kass
+          push: true
+          load: false
+          build-args: |
+            img_repo=ghcr.io/project8/luna_base
+            img_tag=${{ env.LUNA_BASE_VER }}-dev
+            build_type=${{ matrix.build-type }}
+            narg=${{ env.NARG }}
+        tags: ${{ env.KASSIOPEIA_VERSION }}
+        platform: linux/amd64
 
       - name: Build to Test
         id: build-to-test

@@ -1,0 +1,136 @@
+name: Build and Test Locust
+
+on:
+  pull_request:
+#  push:
+#    branches: [main, develop]
+#    tags: ['*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  LUNA_BASE_VER: v1.3.0
+  BUILD_IMAGE: locust_mc/test
+#  locust_mc_BUILD_WITH_KASSIOPEIA: ON
+#  locust_mc_ENABLE_EXECUTABLES: ON
+  narg: 2
+#  locust_mc_ENABLE_TESTING: ON
+#  locust_mc_BUILD_TYPE: Debug
+#  locust_mc_TAG: test
+
+jobs:
+
+  check-kass-version:
+
+    name: Check Kassiopeia Version
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      kass-ver: ${{ steps.get-kass-version.outputs.kass-ver }}
+      do-kass-build: ${{ steps.get-kass-version.outputs.do-kass-build }}
+
+    steps:
+
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Get Kassiopeia version
+        id: get-kass-version
+        run: |
+          export KASS_VER=$(./Scripts/extract_kass_version.sh ./kassiopeia/CMakeLists.txt)
+          echo "Kassiopeia version is ${KASS_VER}"
+          echo "$(curl --head --fail -H \"Authorization: Bearer ${{ secrets.REPO_ACCESS_TOKEN }}\" https://ghcr.io/v2/project8/${{ env.BUILD_IMAGE }}/manifests/${KAS_VER})"
+          echo "kass-ver=${KASS_VER}}" >> $GITHUB_OUTPUT
+          echo "do-kass-build=true" >> $GITHUB_OUTPUT
+
+  docker-build-and-publish:
+
+    name: Build and push the docker images
+
+    needs: check-kass-version
+    if: needs.check-kass-version.outputs.do-kass-build == 'true'
+
+    strategy:
+      matrix:
+        build: [Dev, Prod]
+        fail-fast: [false]
+        include:
+          - build: Dev
+            tag-suffix: '-dev'
+            build-type: Debug
+            build-tests: true
+          - build: Prod
+            tag-suffix: ''
+            build-type: Release
+            build-tests: false
+
+    runs-on: ubuntu-latest
+
+    steps:
+    
+      - name: Check out the repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BUILD_IMAGE }}
+          flavor: |
+            latest=auto
+            suffix=${{ matrix.tag-suffix }},onlatest=true
+          tags: |
+            type=raw,value=${{ needs.check-kass-version.outputs.kass-ver }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        
+      - name: Set up Docker Buildx
+        id: setup_buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          buildkitd-flags: --debug
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: print things
+        run: |
+          echo "docker_meta.outputs.tags: ${{ steps.docker_meta.outputs.tags }}"
+          echo "luna base version: ${{ env.LUNA_BASE_VER }}"
+          echo "build-type: ${{ matrix.build-type }}"
+          echo "narg: ${{ env.NARG }}"
+          echo "kass ver: ${{ needs.check-kass-version.outputs.kass-ver }}"
+          echo "do kass build: ${{ needs.check-kass-version.outputs.do-kass-build }}"
+
+      - name: Build Kassiopeia
+        id: build-kass
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile.test
+          push: true
+          load: false
+          build-args: |
+            img_repo=ghcr.io/project8/luna_base
+            img_tag=${{ env.LUNA_BASE_VER }}-dev
+            build_type=${{ matrix.build-type }}
+            narg=${{ env.NARG }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          platforms: linux/amd64
+
+
+# For debugging
+#      - name: Setup tmate session
+#        if: ${{ ! success() }}
+#        uses: mxschmitt/action-tmate@v3
+
