@@ -55,22 +55,14 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       -D BUILD_KEMFIELD:BOOL=TRUE 
                       -D BUILD_KGEOBAG:BOOL=TRUE 
                       -D BUILD_KOMMON:BOOL=TRUE 
-                      -D KASPER_USE_VTK:BOOL=FALSE
                       ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
-    execute_process( 
-        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
-                      -D CMAKE_INSTALL_LIBDIR:STRING=lib
-                      -D BUILD_KASSIOPEIA:BOOL=TRUE 
-                      -D BUILD_KEMFIELD:BOOL=TRUE 
-                      -D BUILD_KGEOBAG:BOOL=TRUE 
-                      -D BUILD_KOMMON:BOOL=TRUE 
-                      -D KASPER_USE_VTK:BOOL=FALSE
-                      ${PROJECT_SOURCE_DIR}/kassiopeia
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    )
-        
+    #execute_process( 
+    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    #)
+
     # Second we use the ExternalProject module to build and install Kassiopeia.
     # This takes place during the build phase of Locust.
     # Note that we disable the configure stage of the ExternalProject because we already took care of the configure stage above.
@@ -91,10 +83,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
     find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
     find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
-    find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )   
+    find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
-
 
 
 #####################
@@ -118,6 +109,7 @@ if (GSL_FOUND)
 else (GSL_FOUND)
     message(FATAL "GSL not found")
 endif (GSL_FOUND)
+
 
 # FFTW
 find_package(FFTW REQUIRED)
@@ -178,38 +170,20 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
 	
 	
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
-            
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-		if (NOT TARGET ${LIBRARY})
+		if (NOT TARGET ${LIBRARY}) 
 			add_library( ${LIBRARY} SHARED IMPORTED )
     	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-			get_target_property( LOCATION_CHECK ${LIBRARY} IMPORTED_LOCATION )
         	add_dependencies( ${LIBRARY} KassiopeiaExt )
-        endif()        
+        endif()
     endforeach()
-    
-
-    LIST(FILTER Kommon_LDFLAGS EXCLUDE REGEX "vtk")
-    LIST(FILTER Kommon_LDFLAGS EXCLUDE REGEX "BindingsHeaders")
-    LIST(FILTER KGeoBag_LDFLAGS EXCLUDE REGEX "KGeoBagBindingsHeaders")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KFMArray")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMLinearAlgebraCore")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMLinearAlgebraPreconditioner")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMLinearAlgebraVisitors")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMBoundaryIntegralsCore")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KFMInterfaceBoundaryIntegral")    
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMFieldSolverCore")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMIntegratingSolver")
-    LIST(FILTER KEMField_LDFLAGS EXCLUDE REGEX "KEMFieldBindingsHeaders")
-    LIST(FILTER Kassiopeia_LDFLAGS EXCLUDE REGEX "KassiopeiaBindingsHeaders")
-    
-    
-                       
+      
+              
     pbuilder_add_ext_libraries(
-        ${Kommon_LDFLAGS}
-        ${KGeoBag_LDFLAGS}
-        ${KEMField_LDFLAGS}
-        ${Kassiopeia_LDFLAGS}
+        ${Kommon_LIBRARIES}
+        ${KGeoBag_LIBRARIES}
+        ${KEMField_LIBRARIES}
+        ${Kassiopeia_LIBRARIES}
     )
 
 endif( locust_mc_BUILD_WITH_KASSIOPEIA )
@@ -242,5 +216,4 @@ add_subdirectory( Config )
 ################
 
 install( DIRECTORY DESTINATION ${CMAKE_INSTALL_PREFIX}/output )
-
 
