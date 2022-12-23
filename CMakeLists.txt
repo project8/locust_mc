@@ -37,10 +37,10 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     if (locust_mc_PREBUILT_KASS_PREFIX)
-        find_package( Kommon REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
-        find_package( KGeoBag REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
-        find_package( KEMField REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
-        find_package( Kassiopeia REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
+        find_package( Kommon REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX}/lib/cmake/Kommon )
+        find_package( KGeoBag REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX}/lib/cmake/KGeoBag )
+        find_package( KEMField REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX}/lib/cmake/KEMField )
+        find_package( Kassiopeia REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX}/lib/cmake/Kassiopeia )
     else (locust_mc_PREBUILT_KASS_PREFIX)
 
         # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
