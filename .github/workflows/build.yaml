@@ -11,6 +11,8 @@ env:
   REGISTRY: ghcr.io
   BASE_IMG_REPO: project8/kassiopeia_builder
   BASE_IMG_TAG: v3.7.7
+  FINAL_BASE_IMG_REPO: project8/luna_base
+  FINAL-BASE_IMG_TAG: v1.3.0
   locust_mc_BUILD_WITH_KASSIOPEIA: ON
   locust_mc_ENABLE_EXECUTABLES: ON
   narg: 2
@@ -60,11 +62,11 @@ jobs:
             type=ref,event=pr
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
-#      - name: Get previous tag
-#        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-#        id: tag_name
-#        with:
-#          fallback: beta
+      - name: Get previous tag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        id: tag_name
+        with:
+          fallback: beta
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -93,8 +95,8 @@ jobs:
           build-args: |
             img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
             img_tag=${{ env.BASE_IMG_TAG }}-dev
-            final_img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
-            final_img_tag=${{ env.BASE_IMG_TAG }}${{ matrix.tag-suffix }}
+            final_img_repo=${{ env.REGISTRY }}/${{ env.FINAL_BASE_IMG_REPO }}
+            final_img_tag=${{ env.FINAL_BASE_IMG_TAG }}${{ matrix.tag-suffix }}
             locust_tag=${{ steps.tag_name.outputs.tag }}
             build_type=${{ matrix.build-type }}
             build_tests_exe=${{ matrix.build-tests }}
@@ -117,15 +119,14 @@ jobs:
           push: true
           load: false
           build-args: |
-            img_repo=ghcr.io/project8/luna_base
-            img_tag=${{ env.LUNA_BASE_VER }}-dev
-            final_img_repo=ghcr.io/project8/luna_base
-            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
+            img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
+            img_tag=${{ env.BASE_IMG_TAG }}-dev
+            final_img_repo=${{ env.REGISTRY }}/${{ env.FINAL_BASE_IMG_REPO }}
+            final_img_tag=${{ env.FINAL_BASE_IMG_TAG }}${{ matrix.tag-suffix }}
             locust_tag=${{ steps.tag_name.outputs.tag }}
             build_type=${{ matrix.build-type }}
             build_tests_exe=${{ matrix.build-tests }}
-            build_with_kassiopeia=${{ env.locust_mc_BUILD_WITH_KASSIOPEIA }}
-            prebuilt_kass_prefix=/usr/local/p8/kassiopeia
+            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
             narg=${{ env.NARG }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           platforms: linux/amd64

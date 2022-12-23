@@ -1,8 +1,9 @@
-ARG final_img_repo=ghcr.io/project8/kassiopeia_builder
-ARG final_img_tag=v3.7.7
+ARG final_img_repo=ghcr.io/project8/luna_base
+ARG final_img_tag=v1.3.0
 
 ARG img_repo=ghcr.io/project8/kassiopeia_builder
-ARG img_tag=v3.7.7-dev
+ARG kass_ver=v3.7.7
+ARG img_tag=${kass_ver)-dev
 
 ########################
 FROM ${final_img_repo}:${final_img_tag} AS final_base
@@ -19,9 +20,11 @@ ARG locust_tag=beta
 ENV LOCUST_TAG=${locust_tag}
 ARG build_with_kassiopeia=TRUE
 ENV LOCUST_BUILD_WITH_KASSIOPEIA=$build_with_kassiopeia
-ARG prebuilt_kass_prefix=/usr/local/p8/kassiopeia
+ARG prebuilt_kass_prefix=/usr/local/p8/kassiopeia/${kass_ver}
 ENV LOCUST_PREBUILT_KASS_PREFIX=$prebuilt_kass_prefix
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/${LOCUST_TAG}
+
+ARG kass_build_prefix=${KASS_BUILD_PREFIX}
 
 ARG CC_VAL=gcc
 ENV CC=${CC_VAL}
@@ -33,7 +36,7 @@ SHELL ["/bin/bash", "-c"]
 RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
     chmod -R 777 $LOCUST_BUILD_PREFIX/.. &&\
     cd $LOCUST_BUILD_PREFIX &&\
-    echo "source ${COMMON_BUILD_PREFIX}/setup.sh" > setup.sh &&\
+    echo "source ${KASS_BUILD_PREFIX}/setup.sh" > setup.sh &&\
     echo "export LOCUST_TAG=${LOCUST_TAG}" >> setup.sh &&\
     echo "export LOCUST_BUILD_PREFIX=${LOCUST_BUILD_PREFIX}" >> setup.sh &&\
     echo 'ln -sfT $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX/../current' >> setup.sh &&\
@@ -77,4 +80,7 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
 ########################
 FROM final_base
 
+ARG kass_build_prefix
+
+COPY --from=build $kass_build_prefix $kass_build_prefix
 COPY --from=build $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX
