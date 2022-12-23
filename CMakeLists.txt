@@ -140,6 +140,18 @@ else (ROOT_FOUND)
 endif (ROOT_FOUND)
 include_directories (${ROOT_INCLUDE_DIR})
 
+# Boost (1.46 required for filesystem version 3)
+list (APPEND Boost_COMPONENTS date_time filesystem program_options system thread)
+# python optional
+if (Katydid_USE_PYTHON)
+    list(APPEND Boost_COMPONENTS python)
+endif (Katydid_USE_PYTHON)
+#find_package (Boost 1.46.0 REQUIRED COMPONENTS date_time filesystem program_options system thread)
+find_package (Boost 1.46.0 REQUIRED COMPONENTS ${Boost_COMPONENTS})
+# make sure dynamic linking is assumed for all boost libraries
+add_definitions (-DBOOST_ALL_DYN_LINK)
+include_directories (${Boost_INCLUDE_DIRS})
+pbuilder_add_ext_libraries (${Boost_LIBRARIES})
 
 ###########
 # library #
