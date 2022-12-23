@@ -1,7 +1,7 @@
 name: Build and Test Locust
 
 on:
-#  pull_request:
+  pull_request:
   push:
     branches: [main, develop, feature/luna_base]
     tags: ['*']
@@ -9,8 +9,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  LUNA_BASE_VER: v1.3.0
-  locust_mc_BUILD_WITH_KASSIOPEIA: OFF
+  BASE_IMG_REPO: project8/kassiopeia_builder
+  BASE_IMG_TAG: v3.7.7
+  locust_mc_BUILD_WITH_KASSIOPEIA: ON
   locust_mc_ENABLE_EXECUTABLES: ON
   narg: 2
 #  locust_mc_ENABLE_TESTING: ON
@@ -59,11 +60,11 @@ jobs:
             type=ref,event=pr
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
-      - name: Get previous tag
-        uses: "WyriHaximus/github-action-get-previous-tag@v1"
-        id: tag_name
-        with:
-          fallback: beta
+#      - name: Get previous tag
+#        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+#        id: tag_name
+#        with:
+#          fallback: beta
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -81,22 +82,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Kassiopeia
-        id: build-kass
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: Dockerfile.kass
-          push: true
-          load: false
-          build-args: |
-            img_repo=ghcr.io/project8/luna_base
-            img_tag=${{ env.LUNA_BASE_VER }}-dev
-            build_type=${{ matrix.build-type }}
-            narg=${{ env.NARG }}
-        tags: ${{ env.KASSIOPEIA_VERSION }}
-        platform: linux/amd64
-
       - name: Build to Test
         id: build-to-test
         uses: docker/build-push-action@v3
@@ -106,10 +91,10 @@ jobs:
           push: false
           load: true
           build-args: |
-            img_repo=ghcr.io/project8/luna_base
-            img_tag=${{ env.LUNA_BASE_VER }}-dev
-            final_img_repo=ghcr.io/project8/luna_base
-            final_img_tag=${{ env.LUNA_BASE_VER }}${{ matrix.tag-suffix }}
+            img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
+            img_tag=${{ env.BASE_IMG_TAG }}-dev
+            final_img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
+            final_img_tag=${{ env.BASE_IMG_TAG }}${{ matrix.tag-suffix }}
             locust_tag=${{ steps.tag_name.outputs.tag }}
             build_type=${{ matrix.build-type }}
             build_tests_exe=${{ matrix.build-tests }}
@@ -140,7 +125,8 @@ jobs:
             locust_tag=${{ steps.tag_name.outputs.tag }}
             build_type=${{ matrix.build-type }}
             build_tests_exe=${{ matrix.build-tests }}
-            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
+            build_with_kassiopeia=${{ env.locust_mc_BUILD_WITH_KASSIOPEIA }}
+            prebuilt_kass_prefix=/usr/local/p8/kassiopeia
             narg=${{ env.NARG }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           platforms: linux/amd64

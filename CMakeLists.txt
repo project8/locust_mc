@@ -16,6 +16,7 @@ pbuilder_prepare_project()
 set_option( USE_CPP11 TRUE )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
+set( locust_mc_PREBUILT_KASS_PREFIX "" CACHE PATH "Prefix directory for a pre-built Kassiopeia -- Leave empty to build with Locust")
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 set( locus_mc_KASS_NPROC "4" CACHE STRING "Number of processors to use for the Kassiopeia build")
 
@@ -35,57 +36,63 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
+    if (locust_mc_PREBUILT_KASS_PREFIX)
+        find_package( Kommon REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
+        find_package( KGeoBag REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
+        find_package( KEMField REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
+        find_package( Kassiopeia REQUIRED CONFIG HINTS ${locust_mc_PREBUILT_KASS_PREFIX} )
+    else (locust_mc_PREBUILT_KASS_PREFIX)
 
-    # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
-    # In other words, the configuration and build environments need to be kept separate.
-    # However, Locust needs to build against Kassiopeia.
-    # When Kassiopeia is run from within Locust it knows about the Kassiopeia-derived Locust classes.
+        # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
+        # In other words, the configuration and build environments need to be kept separate.
+        # However, Locust needs to build against Kassiopeia.
+        # When Kassiopeia is run from within Locust it knows about the Kassiopeia-derived Locust classes.
 
-    # First we run the configure stage of Kassiopeia during the configure (cmake) process of Locust.
-    # This build takes place in its own build directory, but it installs in the same place as Locust.
-    # We run cmake twice so that we get all of the variables setup correctly.
-    # We do this here instead of below in the ExternalProject so that Locust can learn about the Kassiopeia targets at the configure stage.
-    execute_process( 
-        COMMAND mkdir kassiopeia
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    )
-    execute_process( 
-        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
-                      -D CMAKE_INSTALL_LIBDIR:STRING=lib
-                      -D BUILD_KASSIOPEIA:BOOL=TRUE 
-                      -D BUILD_KEMFIELD:BOOL=TRUE 
-                      -D BUILD_KGEOBAG:BOOL=TRUE 
-                      -D BUILD_KOMMON:BOOL=TRUE 
-                      ${PROJECT_SOURCE_DIR}/kassiopeia
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    )
-    #execute_process( 
-    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    #)
+        # First we run the configure stage of Kassiopeia during the configure (cmake) process of Locust.
+        # This build takes place in its own build directory, but it installs in the same place as Locust.
+        # We run cmake twice so that we get all of the variables setup correctly.
+        # We do this here instead of below in the ExternalProject so that Locust can learn about the Kassiopeia targets at the configure stage.
+        execute_process( 
+            COMMAND mkdir kassiopeia
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        )
+        execute_process( 
+            COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
+                        -D CMAKE_INSTALL_LIBDIR:STRING=lib
+                        -D BUILD_KASSIOPEIA:BOOL=TRUE 
+                        -D BUILD_KEMFIELD:BOOL=TRUE 
+                        -D BUILD_KGEOBAG:BOOL=TRUE 
+                        -D BUILD_KOMMON:BOOL=TRUE 
+                        ${PROJECT_SOURCE_DIR}/kassiopeia
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+        )
+        #execute_process( 
+        #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
+        #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+        #)
 
-    # Second we use the ExternalProject module to build and install Kassiopeia.
-    # This takes place during the build phase of Locust.
-    # Note that we disable the configure stage of the ExternalProject because we already took care of the configure stage above.
-    include(ExternalProject)
-    
-    ExternalProject_Add( KassiopeiaExt
-        PREFIX            ${CMAKE_INSTALL_PREFIX}
-        SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
-        BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
-        CONFIGURE_COMMAND ""
-        BUILD_ALWAYS      1
-        BUILD_COMMAND     make
-        INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
-        INSTALL_COMMAND   make -j${locus_mc_KASS_NPROC} install
-    )
+        # Second we use the ExternalProject module to build and install Kassiopeia.
+        # This takes place during the build phase of Locust.
+        # Note that we disable the configure stage of the ExternalProject because we already took care of the configure stage above.
+        include(ExternalProject)
+        
+        ExternalProject_Add( KassiopeiaExt
+            PREFIX            ${CMAKE_INSTALL_PREFIX}
+            SOURCE_DIR        ${PROJECT_SOURCE_DIR}/kassiopeia
+            BINARY_DIR        ${PROJECT_BINARY_DIR}/kassiopeia
+            CONFIGURE_COMMAND ""
+            BUILD_ALWAYS      1
+            BUILD_COMMAND     make
+            INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
+            INSTALL_COMMAND   make -j${locus_mc_KASS_NPROC} install
+        )
 
-    # Finally we use find_package() to learn about the Kassiopeia build targets.
-    find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
-    find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
-    find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
-    find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
-
+        # Finally we use find_package() to learn about the Kassiopeia build targets.
+        find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
+        find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
+        find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
+        find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
+    endif (locust_mc_PREBUILT_KASS_PREFIX)
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
@@ -140,6 +147,18 @@ else (ROOT_FOUND)
 endif (ROOT_FOUND)
 include_directories (${ROOT_INCLUDE_DIR})
 
+# Boost (1.46 required for filesystem version 3)
+list (APPEND Boost_COMPONENTS date_time filesystem program_options system thread)
+# python optional
+if (Katydid_USE_PYTHON)
+    list(APPEND Boost_COMPONENTS python)
+endif (Katydid_USE_PYTHON)
+#find_package (Boost 1.46.0 REQUIRED COMPONENTS date_time filesystem program_options system thread)
+find_package (Boost 1.46.0 REQUIRED COMPONENTS ${Boost_COMPONENTS})
+# make sure dynamic linking is assumed for all boost libraries
+add_definitions (-DBOOST_ALL_DYN_LINK)
+include_directories (${Boost_INCLUDE_DIRS})
+pbuilder_add_ext_libraries (${Boost_LIBRARIES})
 
 ###########
 # library #
