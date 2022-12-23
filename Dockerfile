@@ -1,8 +1,8 @@
-ARG final_img_repo=ghcr.io/project8/luna_base
-ARG final_img_tag=v1.3.0
+ARG final_img_repo=ghcr.io/project8/kassiopeia_builder
+ARG final_img_tag=v3.7.7
 
-ARG img_repo=ghcr.io/project8/luna_base
-ARG img_tag=v1.3.0-dev
+ARG img_repo=ghcr.io/project8/kassiopeia_builder
+ARG img_tag=v3.7.7-dev
 
 ########################
 FROM ${final_img_repo}:${final_img_tag} AS final_base
@@ -19,6 +19,8 @@ ARG locust_tag=beta
 ENV LOCUST_TAG=${locust_tag}
 ARG build_with_kassiopeia=TRUE
 ENV LOCUST_BUILD_WITH_KASSIOPEIA=$build_with_kassiopeia
+ARG prebuilt_kass_prefix=/usr/local/p8/kassiopeia
+ENV LOCUST_PREBUILT_KASS_PREFIX=$prebuilt_kass_prefix
 ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/${LOCUST_TAG}
 
 ARG CC_VAL=gcc
@@ -45,19 +47,19 @@ FROM base AS build
 
 ARG nproc=4
 
-COPY Config /tmp_source/Config
-COPY Data /tmp_source/Data
-COPY kassiopeia /tmp_source/kassiopeia
-COPY monarch /tmp_source/monarch
-COPY Scarab /tmp_source/Scarab
-COPY Source /tmp_source/Source
-COPY Config /tmp_source/Config
-COPY CMakeLists.txt /tmp_source/CMakeLists.txt
-COPY .git /tmp_source/.git
+COPY Config /tmp_loc_source/Config
+COPY Data /tmp_loc_source/Data
+COPY kassiopeia /tmp_loc_source/kassiopeia
+COPY monarch /tmp_loc_source/monarch
+COPY Scarab /tmp_loc_source/Scarab
+COPY Source /tmp_loc_source/Source
+COPY Config /tmp_loc_source/Config
+COPY CMakeLists.txt /tmp_loc_source/CMakeLists.txt
+COPY .git /tmp_loc_source/.git
 
 # repeat the cmake command to get the change of install prefix to set correctly (a package_builder known issue)
 RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
-    cd /tmp_source &&\
+    cd /tmp_loc_source &&\
     mkdir build &&\
     cd build &&\
     cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
@@ -65,6 +67,7 @@ RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
           -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
           -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
           -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA \
+          -D locust_mc_PREBUILT_KASS_PREFIX:PATH=$LOCUST_PREBUILT_KASS_PREFIX \
           -D locust_mc_KASS_NPROC=$nproc \
           .. &&\
     cmake .. &&\
