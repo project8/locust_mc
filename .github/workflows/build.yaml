@@ -108,9 +108,9 @@ jobs:
       - name: Run Tests
 
         # Alternate lines from pls testing:
-        if: false.
+#        if: false.
 #        if: ${{ matrix.build-tests == true }}
-        run: echo '#!/bin/bash' > job.sh && echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh && echo /tmp_source/build/Source/Applications/Testing/RunTests >> job.sh && chmod +x job.sh && docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
+#        run: echo '#!/bin/bash' > job.sh && echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh && echo /tmp_source/build/Source/Applications/Testing/RunTests >> job.sh && chmod +x job.sh && docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
         # End alternate lines from pls testing.
         
         # Disabled for now because tests aren't installed
