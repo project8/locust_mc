@@ -90,8 +90,8 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: false
-          load: true
+          push: true
+          load: false
           build-args: |
             img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
             img_tag=${{ env.BASE_IMG_TAG }}-dev
@@ -113,7 +113,8 @@ jobs:
 
       - name: Build to Push
         id: build-to-push
-        if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
+        if: false
+        #if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
         uses: docker/build-push-action@v3
         with:
           context: .
