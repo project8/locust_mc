@@ -12,7 +12,7 @@ env:
   BASE_IMG_REPO: project8/kassiopeia_builder
   BASE_IMG_TAG: v3.7.7
   FINAL_BASE_IMG_REPO: project8/luna_base
-  FINAL_BASE_IMG_TAG: v1.3.0
+  FINAL_BASE_IMG_TAG: v1.3.1
   locust_mc_BUILD_WITH_KASSIOPEIA: ON
   locust_mc_ENABLE_EXECUTABLES: ON
   NARG: 2
@@ -107,12 +107,22 @@ jobs:
 
       - name: Run Tests
 
-        if: ${{ matrix.build-tests == true }}
+        # Alternate lines from pls testing:
+        if: false.
+#        if: ${{ matrix.build-tests == true }}
         run: echo '#!/bin/bash' > job.sh && echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh && echo /tmp_source/build/Source/Applications/Testing/RunTests >> job.sh && chmod +x job.sh && docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
+        # End alternate lines from pls testing.
+        
+        # Disabled for now because tests aren't installed
+        if: false
+#        if: ${{ matrix.build-tests == true }}
+        run: docker run ${{ steps.build-to-test.outputs.imageid }} "source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh; /tmp_source/build/Source/Applications/Testing/RunTests"
+
 
       - name: Build to Push
         id: build-to-push
-        if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
+        if: true
+        #if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -120,8 +130,8 @@ jobs:
           push: true
           load: false
           build-args: |
-            img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
-            img_tag=${{ env.BASE_IMG_TAG }}-dev
+            build_img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
+            build_img_tag=${{ env.BASE_IMG_TAG }}-dev
             final_img_repo=${{ env.REGISTRY }}/${{ env.FINAL_BASE_IMG_REPO }}
             final_img_tag=${{ env.FINAL_BASE_IMG_TAG }}${{ matrix.tag-suffix }}
             locust_tag=${{ steps.tag_name.outputs.tag }}
