@@ -1,54 +1,33 @@
 ARG final_img_repo=ghcr.io/project8/luna_base
-ARG final_img_tag=v1.3.0
+ARG final_img_tag=v1.3.1
 
-ARG img_repo=ghcr.io/project8/kassiopeia_builder
-ARG kass_ver=v3.7.7
-ARG img_tag=${kass_ver)-dev
-
-########################
-FROM ${final_img_repo}:${final_img_tag} AS final_base
+ARG build_img_repo=ghcr.io/project8/kassiopeia_builder
+ARG build_img_tag=v3.7.7-dev
 
 ########################
-FROM ${img_repo}:${img_tag} AS base
+FROM ${build_img_repo}:${build_img_tag} AS build
 
 ARG build_type=Release
-ENV LOCUST_BUILD_TYPE=$build_type
 ARG build_tests_exe=FALSE
-ENV LOCUST_BUILD_TESTS_EXE=$build_tests_exe
-
 ARG locust_tag=beta
-ENV LOCUST_TAG=${locust_tag}
+ARG locust_subdir=locust
 ARG build_with_kassiopeia=TRUE
-ENV LOCUST_BUILD_WITH_KASSIOPEIA=$build_with_kassiopeia
-ARG prebuilt_kass_prefix=/usr/local/p8/kassiopeia/${kass_ver}
-ENV LOCUST_PREBUILT_KASS_PREFIX=$prebuilt_kass_prefix
-ENV LOCUST_BUILD_PREFIX=/usr/local/p8/locust/${LOCUST_TAG}
-
-ARG kass_build_prefix=${KASS_BUILD_PREFIX}
-
-ARG CC_VAL=gcc
-ENV CC=${CC_VAL}
-ARG CXX_VAL=g++
-ENV CXX=${CXX_VAL}
-
-SHELL ["/bin/bash", "-c"]
-
-RUN mkdir -p $LOCUST_BUILD_PREFIX &&\
-    chmod -R 777 $LOCUST_BUILD_PREFIX/.. &&\
-    cd $LOCUST_BUILD_PREFIX &&\
-    echo "source ${KASS_BUILD_PREFIX}/setup.sh" > setup.sh &&\
-    echo "export LOCUST_TAG=${LOCUST_TAG}" >> setup.sh &&\
-    echo "export LOCUST_BUILD_PREFIX=${LOCUST_BUILD_PREFIX}" >> setup.sh &&\
-    echo 'ln -sfT $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX/../current' >> setup.sh &&\
-    echo 'export PATH=$LOCUST_BUILD_PREFIX/bin:$PATH' >> setup.sh &&\
-    echo 'export LD_LIBRARY_PATH=$LOCUST_BUILD_PREFIX/lib:$LD_LIBRARY_PATH' >> setup.sh &&\
-    echo 'export LD_LIBRARY_PATH=$LOCUST_BUILD_PREFIX/lib64:$LD_LIBRARY_PATH' >> setup.sh &&\
-    /bin/true
-
-########################
-FROM base AS build
-
 ARG nproc=4
+
+ENV LOCUST_PREFIX=${P8_ROOT}/${locust_subdir}/${locust_tag}
+
+RUN source ${P8_ROOT}/kassiopeia/current/setup.sh &&\
+    mkdir -p $LOCUST_PREFIX &&\
+    chmod -R 777 $LOCUST_PREFIX/.. &&\
+    cd $LOCUST_PREFIX &&\
+    echo "source ${KASS_PREFIX}/setup.sh" > setup.sh &&\
+    echo "export LOCUST_TAG=${locust_tag}" >> setup.sh &&\
+    echo "export LOCUST_PREFIX=${LOCUST_PREFIX}" >> setup.sh &&\
+    echo 'ln -sfT $LOCUST_PREFIX $LOCUST_PREFIX/../current' >> setup.sh &&\
+    echo 'export PATH=$LOCUST_PREFIX/bin:$PATH' >> setup.sh &&\
+    echo 'export LD_LIBRARY_PATH=$LOCUST_PREFIX/lib:$LD_LIBRARY_PATH' >> setup.sh &&\
+    echo 'export LD_LIBRARY_PATH=$LOCUST_PREFIX/lib64:$LD_LIBRARY_PATH' >> setup.sh &&\
+    /bin/true
 
 COPY Config /tmp_loc_source/Config
 COPY Data /tmp_loc_source/Data
@@ -61,26 +40,26 @@ COPY CMakeLists.txt /tmp_loc_source/CMakeLists.txt
 COPY .git /tmp_loc_source/.git
 
 # repeat the cmake command to get the change of install prefix to set correctly (a package_builder known issue)
-RUN source $LOCUST_BUILD_PREFIX/setup.sh &&\
+RUN source $LOCUST_PREFIX/setup.sh &&\
     cd /tmp_loc_source &&\
     mkdir build &&\
     cd build &&\
-    cmake -D CMAKE_BUILD_TYPE=$LOCUST_BUILD_TYPE \
-          -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_BUILD_PREFIX \
-          -D DATA_INSTALL_DIR=$LOCUST_BUILD_PREFIX/data \
-          -D locust_mc_ENABLE_TESTING:BOOL=$LOCUST_BUILD_TESTS_EXE \
-          -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$LOCUST_BUILD_WITH_KASSIOPEIA \
-          -D locust_mc_PREBUILT_KASS_PREFIX:PATH=$LOCUST_PREBUILT_KASS_PREFIX \
+    cmake .. &&\
+    cat CMakeCache.txt &&\
+    cmake -D CMAKE_BUILD_TYPE=$build_type \
+          -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_PREFIX \
+          -D DATA_INSTALL_DIR=$LOCUST_PREFIX/data \
+          -D locust_mc_ENABLE_TESTING:BOOL=$build_tests_exe \
+          -D locust_mc_BUILD_WITH_KASSIOPEIA:BOOL=$build_with_kassiopeia \
+          -D locust_mc_PREBUILT_KASS_PREFIX:PATH=$KASS_PREFIX \
           -D locust_mc_KASS_NPROC=$nproc \
           .. &&\
-    cmake .. &&\
+    cat CMakeCache.txt &&\
     make -j$nproc install &&\
     /bin/true
 
 ########################
-FROM final_base
+#FROM final_base
+FROM ${final_img_repo}:${final_img_tag}
 
-ARG kass_build_prefix
-
-COPY --from=build $kass_build_prefix $kass_build_prefix
-COPY --from=build $LOCUST_BUILD_PREFIX $LOCUST_BUILD_PREFIX
+COPY --from=build $P8_ROOT $P8_ROOT
