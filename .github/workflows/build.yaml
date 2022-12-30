@@ -38,7 +38,7 @@ jobs:
           - build: Prod
             tag-suffix: ''
             build-type: Release
-            build-tests: false
+            build-tests: true
 
     runs-on: ubuntu-latest
     steps:
@@ -108,15 +108,15 @@ jobs:
       - name: Run Tests
 
         # Alternate lines from pls testing:
-#        if: false.
-#        if: ${{ matrix.build-tests == true }}
-#        run: echo '#!/bin/bash' > job.sh && echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh && echo /tmp_source/build/Source/Applications/Testing/RunTests >> job.sh && chmod +x job.sh && docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
+#        if: false
+        if: ${{ matrix.build-tests == true }}
+        run: echo '#!/bin/bash' > job.sh && echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh && echo /tmp_source/build/Source/Applications/Testing/RunTests >> job.sh && chmod +x job.sh && docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
         # End alternate lines from pls testing.
         
         # Disabled for now because tests aren't installed
-        if: false
+#        if: false
 #        if: ${{ matrix.build-tests == true }}
-        run: docker run ${{ steps.build-to-test.outputs.imageid }} "source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh; /tmp_source/build/Source/Applications/Testing/RunTests"
+#        run: docker run ${{ steps.build-to-test.outputs.imageid }} "source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh; /tmp_source/build/Source/Applications/Testing/RunTests"
 
 
       - name: Build to Push
