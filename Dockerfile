@@ -45,7 +45,6 @@ RUN source $LOCUST_PREFIX/setup.sh &&\
     mkdir build &&\
     cd build &&\
     cmake .. &&\
-    cat CMakeCache.txt &&\
     cmake -D CMAKE_BUILD_TYPE=$build_type \
           -D CMAKE_INSTALL_PREFIX:PATH=$LOCUST_PREFIX \
           -D DATA_INSTALL_DIR=$LOCUST_PREFIX/data \
@@ -54,7 +53,6 @@ RUN source $LOCUST_PREFIX/setup.sh &&\
           -D locust_mc_PREBUILT_KASS_PREFIX:PATH=$KASS_PREFIX \
           -D locust_mc_KASS_NPROC=$nproc \
           .. &&\
-    cat CMakeCache.txt &&\
     make -j$nproc install &&\
     /bin/true
 
