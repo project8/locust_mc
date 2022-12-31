@@ -34,7 +34,7 @@ jobs:
             --build-arg locust_tag=${locust_mc_TAG} \
             --tag project8/locust_mc:${locust_mc_TAG} \
             .  
-          docker run project8/locust_mc:${locust_mc_TAG} /usr/local/p8/locust/v2.2.0/RunTests
+          docker run project8/locust_mc:${locust_mc_TAG} /usr/local/p8/locust/v2.2.0/bin/RunTests
 
 
 
