@@ -1,5 +1,3 @@
-if( locust_mc_ENABLE_EXECUTABLES )
-
     set( lib_dependencies 
         LocustMC
     )
@@ -14,8 +12,9 @@ if( locust_mc_ENABLE_EXECUTABLES )
         )
     endif( locust_mc_BUILD_WITH_KASSIOPEIA )
     
-    pbuilder_executables( programs lib_dependencies )
-
-endif( locust_mc_ENABLE_EXECUTABLES )
-
-add_subdirectory( Testing )
+    pbuilder_executables( programs lib_dependencies )    
+    
+    if (locust_mc_ENABLE_TESTING)
+        add_subdirectory( Testing )    
+    endif (locust_mc_ENABLE_TESTING)
+    
