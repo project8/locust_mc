@@ -1,7 +1,5 @@
-#    set( CPP_DIR Cpp )
-    
     include_directories( BEFORE 
-    ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}
     )    
 
     set( testing_SOURCES
@@ -13,17 +11,12 @@
         testLMCPlaneWaveFIR.cc
         testLMCCavity.cc        
     )
-
-#    set( testing_HEADERS
-#        LMCTestParameterHandler.hh
-#    ) 
      
     set( lib_dependencies 
         LocustMC
     )     
      
     add_library( Catch INTERFACE )
-#    pbuilder_install_headers( ${testing_HEADERS} )
     
     target_include_directories( Catch INTERFACE ${Scarab_LOCATION}/testing/catch )
 
@@ -46,6 +39,13 @@
     target_link_libraries( testLMCPlaneWaveFIR ${lib_dependencies})
     
     add_executable( testLMCCavity testLMCCavity.cc testCatch.cc)
-    target_link_libraries( testLMCCavity ${lib_dependencies})
+    target_link_libraries( testLMCCavity ${lib_dependencies})    
+            
+    set( programs
+        RunTests
+    )    
+       
+    pbuilder_executables( programs lib_dependencies )
+    install( TARGETS RunTests testFFT testMockEGun testMockFreeField testLMCTestSignal testLMCPlaneWaveFIR testLMCCavity DESTINATION ${PROJECT_BINARY_DIRECTORY} )
     
     
