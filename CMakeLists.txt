@@ -55,13 +55,22 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       -D BUILD_KEMFIELD:BOOL=TRUE 
                       -D BUILD_KGEOBAG:BOOL=TRUE 
                       -D BUILD_KOMMON:BOOL=TRUE 
+                      -D KASPER_USE_VTK:BOOL=TRUE
+                      -D CMAKE_CXX_STANDARD:STRING=14
                       ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
-    #execute_process( 
-    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    #)
+    execute_process( 
+        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
+                      -D BUILD_KASSIOPEIA:BOOL=TRUE 
+                      -D BUILD_KEMFIELD:BOOL=TRUE 
+                      -D BUILD_KGEOBAG:BOOL=TRUE 
+                      -D BUILD_KOMMON:BOOL=TRUE 
+                      -D KASPER_USE_VTK:BOOL=TRUE
+                      -D CMAKE_CXX_STANDARD:STRING=14
+                      ${PROJECT_SOURCE_DIR}/kassiopeia
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    )
 
     # Second we use the ExternalProject module to build and install Kassiopeia.
     # This takes place during the build phase of Locust.
@@ -79,12 +88,24 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         INSTALL_COMMAND   make -j3 install
     )
 
-    # Finally we use find_package() to learn about the Kassiopeia build targets.
-    find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
-    find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
-    find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
-    find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
-
+    # Finally we use pkg_search_module() to learn about the Kassiopeia build targets.
+  
+    include(FindPkgConfig)  
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kommon")     
+    pkg_search_module (Kommon REQUIRED kommon)
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag")         
+    pkg_search_module (KGeoBag REQUIRED kgeobag)
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/KEMField")     
+    pkg_search_module (KEMField REQUIRED kemfield)
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia")         
+    pkg_search_module (Kassiopeia REQUIRED kassiopeia)
+    
+    message (STATUS "Kommon_LIBRARIES is ${Kommon_LIBRARIES}")
+    message (STATUS "KGeoBag_LIBRARIES is ${KGeoBag_LIBRARIES}")
+    message (STATUS "KEMField_LIBRARIES is ${KEMField_LIBRARIES}")
+    message (STATUS "Kassiopeia_LIBRARIES is ${Kassiopeia_LIBRARIES}")
+    
+        
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
