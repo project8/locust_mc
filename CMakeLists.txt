@@ -43,7 +43,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
     # First we run the configure stage of Kassiopeia during the configure (cmake) process of Locust.
     # This build takes place in its own build directory, but it installs in the same place as Locust.
     # We run cmake twice so that we get all of the variables setup correctly.
-    # We do this here instead of below in the ExternalProject so that Locust can learn about the Kassiopeia targets at the configure stage.
+    # We do this here instead of below in the ExternalProject so that Locust can learn about the Kassiopeia targets at the configure stage.    
+    
     execute_process( 
         COMMAND mkdir kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -55,13 +56,24 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       -D BUILD_KEMFIELD:BOOL=TRUE 
                       -D BUILD_KGEOBAG:BOOL=TRUE 
                       -D BUILD_KOMMON:BOOL=TRUE 
+                      -D KASPER_USE_VTK:BOOL=TRUE
+                      -D CMAKE_CXX_STANDARD:STRING=14
+                      -D KConst_REFERENCE_EPOCH:STRING=2006
                       ${PROJECT_SOURCE_DIR}/kassiopeia
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
     )
-    #execute_process( 
-    #    COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} -D BUILD_KASSIOPEIA:BOOL=TRUE -D BUILD_KEMFIELD:BOOL=TRUE -D BUILD_KGEOBAG:BOOL=TRUE -D BUILD_KOMMON:BOOL=TRUE ${PROJECT_SOURCE_DIR}/kassiopeia
-    #    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
-    #)
+    execute_process( 
+        COMMAND cmake -D CMAKE_INSTALL_PREFIX:STRING=${CMAKE_INSTALL_PREFIX} 
+                      -D BUILD_KASSIOPEIA:BOOL=TRUE 
+                      -D BUILD_KEMFIELD:BOOL=TRUE 
+                      -D BUILD_KGEOBAG:BOOL=TRUE 
+                      -D BUILD_KOMMON:BOOL=TRUE 
+                      -D KASPER_USE_VTK:BOOL=TRUE
+                      -D CMAKE_CXX_STANDARD:STRING=14
+                      -D KConst_REFERENCE_EPOCH:STRING=2006
+                      ${PROJECT_SOURCE_DIR}/kassiopeia
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
+    )
 
     # Second we use the ExternalProject module to build and install Kassiopeia.
     # This takes place during the build phase of Locust.
@@ -79,12 +91,24 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         INSTALL_COMMAND   make -j3 install
     )
 
-    # Finally we use find_package() to learn about the Kassiopeia build targets.
-    find_package( Kommon REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kommon )
-    find_package( KGeoBag REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag )
-    find_package( KEMField REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/KEMField )
-    find_package( Kassiopeia REQUIRED CONFIG HINTS ${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia )
-
+    # Finally we use pkg_search_module() to learn about the Kassiopeia build targets.
+  
+    include(FindPkgConfig)  
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kommon")     
+    pkg_search_module (Kommon REQUIRED kommon)
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/KGeoBag")         
+    pkg_search_module (KGeoBag REQUIRED kgeobag)
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/KEMField")     
+    pkg_search_module (KEMField REQUIRED kemfield)
+    set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia")         
+    pkg_search_module (Kassiopeia REQUIRED kassiopeia)
+    
+    message (STATUS "Kommon_LIBRARIES is ${Kommon_LIBRARIES}")
+    message (STATUS "KGeoBag_LIBRARIES is ${KGeoBag_LIBRARIES}")
+    message (STATUS "KEMField_LIBRARIES is ${KEMField_LIBRARIES}")
+    message (STATUS "Kassiopeia_LIBRARIES is ${Kassiopeia_LIBRARIES}")
+    
+        
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
 
@@ -122,6 +146,7 @@ endif (NOT FFTW_THREADS_FOUND)
     message (STATUS "FFTW configured to use up to ${FFTW_NTHREADS} threads.")
 message (STATUS "FFTW_LIBRARIES is ${FFTW_LIBRARIES}")
 include_directories (${FFTW_INCLUDE_DIR})
+
 
 # ROOT
 if (locust_mc_BUILD_WITH_ROOT)
@@ -173,17 +198,23 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
 		if (NOT TARGET ${LIBRARY}) 
 			add_library( ${LIBRARY} SHARED IMPORTED )
-    	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+			message(STATUS "library is ${LIBRARY}")
+			#  Comment out this next line as it is not needed (on Ubuntu 20):
+#    	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
         	add_dependencies( ${LIBRARY} KassiopeiaExt )
         endif()
     endforeach()
-      
-              
+
+    # Even though Kass has already built its libraries with the required VTK libraries, Locust
+    # is still unsuccessfully asking for more VTK libraries.  They are not needed, and so are 
+    # being unrequested here:
+    LIST(FILTER Kommon_LDFLAGS EXCLUDE REGEX "vtk")
+                   
     pbuilder_add_ext_libraries(
-        ${Kommon_LIBRARIES}
-        ${KGeoBag_LIBRARIES}
-        ${KEMField_LIBRARIES}
-        ${Kassiopeia_LIBRARIES}
+        ${Kommon_LDFLAGS}
+        ${KGeoBag_LDFLAGS}
+        ${KEMField_LDFLAGS}
+        ${Kassiopeia_LDFLAGS}
     )
 
 endif( locust_mc_BUILD_WITH_KASSIOPEIA )
