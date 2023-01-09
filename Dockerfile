@@ -2,7 +2,7 @@ ARG final_img_repo=ghcr.io/project8/luna_base
 ARG final_img_tag=v1.3.1
 
 ARG build_img_repo=ghcr.io/project8/kassiopeia_builder
-ARG build_img_tag=v3.7.7-dev
+ARG build_img_tag=v3.8.2-dev
 
 ########################
 FROM ${build_img_repo}:${build_img_tag} AS build
