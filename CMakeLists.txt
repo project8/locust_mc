@@ -36,7 +36,7 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
-    if (locust_mc_PREBUILT_KASS_PREFIX)
+    if (NOT locust_mc_PREBUILT_KASS_PREFIX)
 #        include(FindPkgConfig)  
 #        set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kommon")     
 #        pkg_search_module (Kommon REQUIRED kommon)
@@ -46,7 +46,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 #        pkg_search_module (KEMField REQUIRED kemfield)
 #        set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia")         
 #        pkg_search_module (Kassiopeia REQUIRED kassiopeia)    
-    else (locust_mc_PREBUILT_KASS_PREFIX)
+#    else (locust_mc_PREBUILT_KASS_PREFIX)
 
         # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
         # In other words, the configuration and build environments need to be kept separate.
