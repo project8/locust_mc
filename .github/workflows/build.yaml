@@ -105,7 +105,7 @@ jobs:
           tags: test${{ matrix.tag-suffix }}
           platforms: linux/amd64
 
-#      - name: Run Tests
+      - name: Run Tests
 
         # Alternate lines from pls testing:
         if: ${{ matrix.build-tests == true }}
