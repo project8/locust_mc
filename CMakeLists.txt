@@ -14,6 +14,7 @@ include( PackageBuilder )
 pbuilder_prepare_project()
 
 set_option( USE_CPP11 TRUE )
+set( CMAKE_CXX_STANDARD 14 )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 set( locust_mc_PREBUILT_KASS_PREFIX "" CACHE PATH "Prefix directory for a pre-built Kassiopeia -- Leave empty to build with Locust")
@@ -38,13 +39,10 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     if (locust_mc_PREBUILT_KASS_PREFIX)
         include(FindPkgConfig)  
-        set(ENV{PKG_CONFIG_PATH} "${locust_mc_PREBUILT_KASS_PREFIX}/lib/pkgconfig/Kommon")     
+        set(ENV{PKG_CONFIG_PATH} "${locust_mc_PREBUILT_KASS_PREFIX}/lib/pkgconfig")     
         pkg_search_module (Kommon REQUIRED kommon)
-        set(ENV{PKG_CONFIG_PATH} "${locust_mc_PREBUILT_KASS_PREFIX}/lib/pkgconfig/KGeoBag")         
         pkg_search_module (KGeoBag REQUIRED kgeobag)
-        set(ENV{PKG_CONFIG_PATH} "${locust_mc_PREBUILT_KASS_PREFIX}/lib/pkgconfig/KEMField")     
         pkg_search_module (KEMField REQUIRED kemfield)
-        set(ENV{PKG_CONFIG_PATH} "${locust_mc_PREBUILT_KASS_PREFIX}/lib/pkgconfig/Kassiopeia")         
         pkg_search_module (Kassiopeia REQUIRED kassiopeia)     
     else (locust_mc_PREBUILT_KASS_PREFIX)
 
