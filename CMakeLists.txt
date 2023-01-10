@@ -37,14 +37,29 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
-    if (locust_mc_PREBUILT_KASS_PREFIX)
+#    if (locust_mc_PREBUILT_KASS_PREFIX)
+    if (TRUE)
         include(FindPkgConfig)  
         set(ENV{PKG_CONFIG_PATH} "${locust_mc_PREBUILT_KASS_PREFIX}/lib/pkgconfig")     
         pkg_search_module (Kommon REQUIRED kommon)
         pkg_search_module (KGeoBag REQUIRED kgeobag)
         pkg_search_module (KEMField REQUIRED kemfield)
-        pkg_search_module (Kassiopeia REQUIRED kassiopeia)     
-    else (locust_mc_PREBUILT_KASS_PREFIX)
+        pkg_search_module (Kassiopeia REQUIRED kassiopeia)
+        message(STATUS "&&&&&&&&&&&&&&&&&&&&&&7 Kommon_FOUND is ${Kommon_FOUND}")
+        message(STATUS "FFFFFFFFFFFFFFFFFFFF LD_LIBRARY_PATH is ${LD_LIBRARY_PATH}")
+        set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
+        foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
+		if (NOT TARGET ${LIBRARY}) 
+			add_library( ${LIBRARY} SHARED IMPORTED )
+            set_target_properties(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+            get_target_property( WHEREISIT ${LIBRARY} LOCATION )
+            message(STATUS "prebuilt target ${LIBRARY} sits at ${WHEREISIT}")
+        endif()
+        endforeach()
+        
+#    else (locust_mc_PREBUILT_KASS_PREFIX)
+    else(TRUE)
+    
 
         # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
         # In other words, the configuration and build environments need to be kept separate.
@@ -118,12 +133,14 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia")         
         pkg_search_module (Kassiopeia REQUIRED kassiopeia)
     
+        message (STATUS "debug coming here:  ****88**************************" )
         message (STATUS "Kommon_LIBRARIES is ${Kommon_LIBRARIES}")
         message (STATUS "KGeoBag_LIBRARIES is ${KGeoBag_LIBRARIES}")
         message (STATUS "KEMField_LIBRARIES is ${KEMField_LIBRARIES}")
         message (STATUS "Kassiopeia_LIBRARIES is ${Kassiopeia_LIBRARIES}")
             
-    endif (locust_mc_PREBUILT_KASS_PREFIX)
+#    endif (locust_mc_PREBUILT_KASS_PREFIX)
+    endif(TRUE)
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -228,9 +245,15 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
 			add_library( ${LIBRARY} SHARED IMPORTED )
 			message(STATUS "library is ${LIBRARY}")
 			#  Comment out this next line as it is not needed (on Ubuntu 20):
-#    	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+    	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+    	    get_target_property( WHEREISIT ${LIBRARY} IMPORTED_LOCATION )    	    
+    	    message(STATUS "target ${LIBRARY} sits at ${WHEREISIT}")    	    
         	add_dependencies( ${LIBRARY} KassiopeiaExt )
-        endif()
+        else (NOT TARGET ${LIBRARY})
+            message(STATUS "target ${LIBRARY} is already all set, apparently.")
+            get_target_property( WHEREISIT ${LIBRARY} IMPORTED_LOCATION )
+            message(STATUS "target ${LIBRARY} sits at ${WHEREISIT}")
+        endif(NOT TARGET ${LIBRARY})
     endforeach()
 
     # Even though Kass has already built its libraries with the required VTK libraries, Locust
