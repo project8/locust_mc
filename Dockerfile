@@ -8,7 +8,7 @@ ARG build_img_tag=v3.8.2-dev
 FROM ${build_img_repo}:${build_img_tag} AS build
 
 ARG build_type=Release
-ARG build_tests_exe=FALSE
+ARG build_tests_exe=TRUE
 ARG locust_tag=beta
 ARG locust_subdir=locust
 ARG build_with_kassiopeia=TRUE
