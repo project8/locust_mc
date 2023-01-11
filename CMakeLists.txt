@@ -18,6 +18,9 @@ set( CMAKE_CXX_STANDARD 14 )
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 set( locust_mc_PREBUILT_KASS_PREFIX "" CACHE PATH "Prefix directory for a pre-built Kassiopeia -- Leave empty to build with Locust")
+
+#  Note:  If locust_mc_BUILD_WITH_ROOT=TRUE, there is this Clang CPP mismatch warning during compilation and execution:
+#  ERROR in cling::CIFactory::createCI(): cannot extract standard library include paths!
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 set( locus_mc_KASS_NPROC "4" CACHE STRING "Number of processors to use for the Kassiopeia build")
 
@@ -37,28 +40,21 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
 
 
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
-#    if (locust_mc_PREBUILT_KASS_PREFIX)
-    if (TRUE)
+    if (locust_mc_PREBUILT_KASS_PREFIX)
         include(FindPkgConfig)  
         set(ENV{PKG_CONFIG_PATH} "${locust_mc_PREBUILT_KASS_PREFIX}/lib/pkgconfig")     
         pkg_search_module (Kommon REQUIRED kommon)
         pkg_search_module (KGeoBag REQUIRED kgeobag)
         pkg_search_module (KEMField REQUIRED kemfield)
         pkg_search_module (Kassiopeia REQUIRED kassiopeia)
-        message(STATUS "&&&&&&&&&&&&&&&&&&&&&&7 Kommon_FOUND is ${Kommon_FOUND}")
-        message(STATUS "FFFFFFFFFFFFFFFFFFFF LD_LIBRARY_PATH is ${LD_LIBRARY_PATH}")
         set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
         foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-		if (NOT TARGET ${LIBRARY}) 
-			add_library( ${LIBRARY} SHARED IMPORTED )
-            set_target_properties(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-            get_target_property( WHEREISIT ${LIBRARY} LOCATION )
-            message(STATUS "prebuilt target ${LIBRARY} sits at ${WHEREISIT}")
-        endif()
-        endforeach()
-        
-#    else (locust_mc_PREBUILT_KASS_PREFIX)
-    else(TRUE)
+            if (NOT TARGET ${LIBRARY}) 
+	        add_library( ${LIBRARY} SHARED IMPORTED )
+                set_target_properties(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
+            endif()
+        endforeach()        
+    else (locust_mc_PREBUILT_KASS_PREFIX)    
     
 
         # Kassiopeia needs to be built independently from, but as a submodule and dependency of, Locust.  
@@ -133,14 +129,12 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia")         
         pkg_search_module (Kassiopeia REQUIRED kassiopeia)
     
-        message (STATUS "debug coming here:  ****88**************************" )
         message (STATUS "Kommon_LIBRARIES is ${Kommon_LIBRARIES}")
         message (STATUS "KGeoBag_LIBRARIES is ${KGeoBag_LIBRARIES}")
         message (STATUS "KEMField_LIBRARIES is ${KEMField_LIBRARIES}")
         message (STATUS "Kassiopeia_LIBRARIES is ${Kassiopeia_LIBRARIES}")
             
-#    endif (locust_mc_PREBUILT_KASS_PREFIX)
-    endif(TRUE)
+    endif (locust_mc_PREBUILT_KASS_PREFIX)    
 
 endif (locust_mc_BUILD_WITH_KASSIOPEIA)
 
@@ -235,24 +229,16 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     # To do this we create an imported library for each Kassiopeia library
     # We then add a dependency of KassiopeiaExt to each imported library target
     # LocustMC library will link to those imported libraries, and therefore depend on KassiopeiaExt
-	# Also, as of Kassiopeia v3.7.7, guard against trying to add copies of the same target twice.  It is not
-	# clear why this is necessary, but without it the config crashes.
-	
-	
+    # Also, as of Kassiopeia v3.7.7, guard against trying to add copies of the same target twice.  It is not
+    # clear why this is necessary, but without it the config crashes.
+
+
     set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
     foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-		if (NOT TARGET ${LIBRARY}) 
-			add_library( ${LIBRARY} SHARED IMPORTED )
-			message(STATUS "library is ${LIBRARY}")
-			#  Comment out this next line as it is not needed (on Ubuntu 20):
+        if (NOT TARGET ${LIBRARY})
+	    add_library( ${LIBRARY} SHARED IMPORTED )
     	    set_target_properties( ${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-    	    get_target_property( WHEREISIT ${LIBRARY} IMPORTED_LOCATION )    	    
-    	    message(STATUS "target ${LIBRARY} sits at ${WHEREISIT}")    	    
-        	add_dependencies( ${LIBRARY} KassiopeiaExt )
-        else (NOT TARGET ${LIBRARY})
-            message(STATUS "target ${LIBRARY} is already all set, apparently.")
-            get_target_property( WHEREISIT ${LIBRARY} IMPORTED_LOCATION )
-            message(STATUS "target ${LIBRARY} sits at ${WHEREISIT}")
+            add_dependencies( ${LIBRARY} KassiopeiaExt )
         endif(NOT TARGET ${LIBRARY})
     endforeach()
 
@@ -260,7 +246,7 @@ if( locust_mc_BUILD_WITH_KASSIOPEIA )
     # is still unsuccessfully asking for more VTK libraries.  They are not needed, and so are 
     # being unrequested here:
     LIST(FILTER Kommon_LDFLAGS EXCLUDE REGEX "vtk")
-                   
+
     pbuilder_add_ext_libraries(
         ${Kommon_LDFLAGS}
         ${KGeoBag_LDFLAGS}

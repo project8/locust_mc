@@ -57,7 +57,9 @@ RUN source $LOCUST_PREFIX/setup.sh &&\
     /bin/true
 
 ########################
+# Status:  Below lines are commented out for now.  If commented back in there are 
+# problems with missing libraries.  
 #FROM final_base
-FROM ${final_img_repo}:${final_img_tag}
+#FROM ${final_img_repo}:${final_img_tag}
 
-COPY --from=build $P8_ROOT $P8_ROOT
+#COPY --from=build $P8_ROOT $P8_ROOT
