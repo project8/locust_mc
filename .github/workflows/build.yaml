@@ -12,7 +12,7 @@ env:
   BASE_IMG_REPO: project8/kassiopeia_builder
   BASE_IMG_TAG: v3.8.2
   FINAL_BASE_IMG_REPO: project8/luna_base
-  FINAL_BASE_IMG_TAG: v1.3.3.alpha.0
+  FINAL_BASE_IMG_TAG: v1.3.3
   locust_mc_BUILD_WITH_KASSIOPEIA: ON
   locust_mc_ENABLE_EXECUTABLES: ON
   NARG: 2
