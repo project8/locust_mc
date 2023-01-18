@@ -1,5 +1,5 @@
 ARG final_img_repo=ghcr.io/project8/luna_base
-ARG final_img_tag=v1.3.3.alpha.0
+ARG final_img_tag=v1.3.3-alpha.0
 
 ARG build_img_repo=ghcr.io/project8/kassiopeia_builder
 ARG build_img_tag=v3.8.2-dev
