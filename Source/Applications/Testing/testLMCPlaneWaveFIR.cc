@@ -132,11 +132,11 @@ public:
 
 };
 
-int parsePlaneWaveFIR(test_app& the_main)
+bool parsePlaneWaveFIR(test_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
-	return 0;
+	return true;
 }
 
 
@@ -144,7 +144,7 @@ int parsePlaneWaveFIR(test_app& the_main)
 TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file]" )
 {
 	test_app the_main;
-	parsePlaneWaveFIR(the_main);
+	if (!parsePlaneWaveFIR(the_main)) exit(-1);
 
 	testLMCPlaneWaveFIR aTestLMCPlaneWaveFIR;
 	if ( !aTestLMCPlaneWaveFIR.Configure() )

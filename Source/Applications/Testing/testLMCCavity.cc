@@ -84,11 +84,6 @@ public:
 
 	const scarab::param_node* GetParams()
 	{
-		testCavity_app the_main;
-	    std::string tDataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-	    std::string filepath = tDataDir + "/PatchTFLocust.txt";
-	    param_0->add( "tf-receiver-filename", filepath.c_str() );
-	    param_0->add( "tf-receiver-bin-width", 0.01e9 );
 	    return param_0;
 	}
 
@@ -159,18 +154,18 @@ public:
 };
 
 
-int parseCavity(testCavity_app& the_main)
+bool parseCavity(testCavity_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
-    CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
-	return 0;
+	CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
+	return true;
 }
 
 
 TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]" )
 {
 	testCavity_app the_main;
-	parseCavity(the_main);
+	if (!parseCavity(the_main)) exit(-1);
 
 	testLMCCavity aTestLMCCavity;
 	aTestLMCCavity.AddParam( "dho-time-resolution", the_main.GetDHOTimeResolution() );

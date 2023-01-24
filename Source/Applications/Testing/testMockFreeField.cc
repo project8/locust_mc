@@ -86,11 +86,11 @@ class PowerHandler
 
 };
 
-int parseFreeField(test_app& the_main)
+bool parseFreeField(test_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
-	return 0;
+	return true;
 }
 
 
@@ -98,7 +98,7 @@ int parseFreeField(test_app& the_main)
 TEST_CASE( "Mock free space Larmor power. (pass)", "[single-file]" )
 {
 	test_app the_main;
-	parseFreeField(the_main);
+	if (!parseFreeField(the_main)) exit(-1);
 	PowerHandler aPowerHandler;
 
 	double radius = aPowerHandler.GetRadius(); // meters

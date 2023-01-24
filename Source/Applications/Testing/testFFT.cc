@@ -86,11 +86,11 @@ double GetPower(bool bTime)
 
 }
 
-int parseFFT(test_app& the_main)
+bool parseFFT(test_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
-	return 0;
+	return true;
 }
 
 
@@ -98,7 +98,7 @@ int parseFFT(test_app& the_main)
 TEST_CASE( "Power before FFT = power after FFT (pass)", "[single-file]" )
 {
 	test_app the_main;
-	parseFFT(the_main);
+	if (!parseFFT(the_main)) exit(-1);
 	double threshold = 1.e-4;
     REQUIRE( fabs(GetPower(1)-GetPower(0)) < threshold );
 }
