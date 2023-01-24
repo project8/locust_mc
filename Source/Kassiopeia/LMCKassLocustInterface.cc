@@ -38,7 +38,7 @@ namespace locust
             fBesselNKZeros( 0 ),
             fBesselNKPrimeZeros( 0 ),
             fField(),
-			fConfigureKass( NULL ),
+            fConfigureKass( NULL ),
             fBackReaction( false ),
             fE_Gun( false )
 

@@ -109,18 +109,18 @@ double GetPower()
 
 }
 
-int parseEGun(test_app& the_main)
+bool parseEGun(test_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
-	return 0;
+	return true;
 }
 
 
 TEST_CASE( "Larmor power fraction. (pass)", "[single-file]" )
 {
 	test_app the_main;
-	parseEGun(the_main);
+	if (!parseEGun(the_main)) exit(-1);
 	double expectedPower = 2.e-16;
 	double threshold = 1.e-4;
     REQUIRE( fabs(GetPower() - expectedPower) <= threshold*expectedPower );
