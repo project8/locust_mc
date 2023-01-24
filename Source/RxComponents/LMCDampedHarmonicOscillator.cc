@@ -40,6 +40,10 @@ namespace locust
     	{
     		fTimeResolution = aParam["dho-time-resolution"]().as_double();
     	}
+    	if( aParam.has( "dho-threshold-factor" ) )
+    	{
+    		fThresholdFactor = aParam["dho-threshold-factor"]().as_double();
+    	}
     	if( aParam.has( "dho-cavity-frequency" ) )
     	{
     		fCavityFrequency = aParam["dho-cavity-frequency"]().as_double();

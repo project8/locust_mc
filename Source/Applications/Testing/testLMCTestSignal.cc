@@ -139,12 +139,12 @@ public:
 
 };
 
-int parseTestSignal()
+bool parseTestSignal()
 {
 	test_app the_main;
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
     CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
-	return 0;
+	return true;
 }
 
 
@@ -153,7 +153,7 @@ int parseTestSignal()
 
 TEST_CASE( "LMCTestSignal with default parameter values (pass)", "[single-file]" )
 {
-	parseTestSignal();
+	if (!parseTestSignal()) exit(-1);
 	testLMCTestSignal aTestLMCTestSignal;
     Signal* aSignal = new Signal();
     int N0 = 1000;
