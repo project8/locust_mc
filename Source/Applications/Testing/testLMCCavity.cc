@@ -68,10 +68,10 @@ class testCavity_app : public main_app
 			fCavityFrequency(1.067e9),
 			fCavityQ(1000.)
         {
-            add_option("-r,--dho-time-resolution", fDHOTimeResolution, "Time resolution used in Green's function (s).");
-            add_option("-m,--dho-threshold-factor", fDHOThresholdFactor, "Minimum fractional threshold of Green's function used to calculate FIR.");
-            add_option("-f,--dho-cavity-frequency", fCavityFrequency, "Cavity resonant frequency (Hz).");
-            add_option("-q,--dho-cavity-Q", fCavityQ, "Cavity Q.");
+            add_option("-r,--dho-time-resolution", fDHOTimeResolution, "[1.e-8] Time resolution used in Green's function (s).");
+            add_option("-m,--dho-threshold-factor", fDHOThresholdFactor, "[0.01] Minimum fractional threshold of Green's function used to calculate FIR.");
+            add_option("-f,--dho-cavity-frequency", fCavityFrequency, "[1.067e9] Cavity resonant frequency (Hz).");
+            add_option("-q,--dho-cavity-Q", fCavityQ, "[1000] Cavity Q.");
         }
 
         virtual ~testCavity_app() {}
@@ -263,9 +263,16 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 
     delete aSignal;
 
+    LPROG( testlog, "\nSummary:");
+	LPROG( testlog, "dho-threshold-factor is " << the_main.GetDHOThresholdFactor() );
+	LPROG( testlog, "dho-time-resolution is " << the_main.GetDHOTimeResolution() );
+	LPROG( testlog, "dho-cavity-frequency is " << the_main.GetCavityFrequency() );
+	LPROG( testlog, "dho-cavity-Q is " << the_main.GetCavityQ() );
+
+
     LPROG( testlog, "Estimated Q is " << qInferred );
     LPROG( testlog, "Expected Q is " << the_main.GetCavityQ() );
-    REQUIRE( qInferred > 0. );
+    REQUIRE( fabs( 1. - qInferred / the_main.GetCavityQ() ) < 0.05 );  // Required 5% agreement.
 }
 
 
