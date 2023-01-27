@@ -9,7 +9,8 @@
         testMockFreeField.cc
         testLMCTestSignal.cc
         testLMCPlaneWaveFIR.cc
-        testLMCCavity.cc        
+        testLMCCavity.cc    
+        testAliasingHF.cc    
     )
      
     set( lib_dependencies 
@@ -41,11 +42,14 @@
     add_executable( testLMCCavity testLMCCavity.cc testCatch.cc)
     target_link_libraries( testLMCCavity ${lib_dependencies})    
             
+    add_executable( testAliasingHF testAliasingHF.cc testCatch.cc)
+    target_link_libraries( testAliasingHF ${lib_dependencies})    
+            
     set( programs
         RunTests
     )    
        
     pbuilder_executables( programs lib_dependencies )
-    install( TARGETS RunTests testFFT testMockEGun testMockFreeField testLMCTestSignal testLMCPlaneWaveFIR testLMCCavity DESTINATION ${PROJECT_BINARY_DIRECTORY} )
+    install( TARGETS RunTests testFFT testMockEGun testMockFreeField testLMCTestSignal testLMCPlaneWaveFIR testLMCCavity testAliasingHF DESTINATION ${PROJECT_BINARY_DIRECTORY} )
     
     
