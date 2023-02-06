@@ -15,8 +15,8 @@ include( PackageBuilder )
 pbuilder_prepare_project()
 
 set_option( USE_CPP11 TRUE )
-set( CMAKE_CXX_STANDARD 14 )
-#set( CMAKE_CXX_STANDARD 17 )
+#set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
