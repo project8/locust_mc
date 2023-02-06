@@ -8,6 +8,7 @@ cmake_minimum_required( VERSION 3.1 )
 cmake_policy( SET CMP0048 NEW ) # version in project()
 project( locust_mc VERSION 2.2.0)
 
+
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
 include( PackageBuilder )
 
@@ -15,6 +16,8 @@ pbuilder_prepare_project()
 
 set_option( USE_CPP11 TRUE )
 set( CMAKE_CXX_STANDARD 14 )
+#set( CMAKE_CXX_STANDARD 17 )
+
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 set( locust_mc_PREBUILT_KASS_PREFIX "" CACHE PATH "Prefix directory for a pre-built Kassiopeia -- Leave empty to build with Locust")
@@ -197,10 +200,7 @@ list (APPEND Boost_COMPONENTS date_time filesystem program_options system thread
 if (Katydid_USE_PYTHON)
     list(APPEND Boost_COMPONENTS python)
 endif (Katydid_USE_PYTHON)
-#find_package (Boost 1.46.0 REQUIRED COMPONENTS date_time filesystem program_options system thread)
 find_package (Boost 1.46.0 REQUIRED COMPONENTS ${Boost_COMPONENTS})
-# make sure dynamic linking is assumed for all boost libraries
-add_definitions (-DBOOST_ALL_DYN_LINK)
 include_directories (${Boost_INCLUDE_DIRS})
 pbuilder_add_ext_libraries (${Boost_LIBRARIES})
 
