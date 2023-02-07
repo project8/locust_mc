@@ -227,6 +227,11 @@ add_subdirectory( Data )
 add_subdirectory( Data/TransferFunctions )
 add_subdirectory( Data/Math )
 
+#  Check root build.
+if (locust_mc_BUILD_WITH_ROOT)
+    add_subdirectory( Source/IO )        
+endif(locust_mc_BUILD_WITH_ROOT)
+
 ###############
 # executables #
 ###############
