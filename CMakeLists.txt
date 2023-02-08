@@ -14,10 +14,12 @@ include( PackageBuilder )
 
 pbuilder_prepare_project()
 
-set_option( USE_CPP11 TRUE )
-#set( CMAKE_CXX_STANDARD 14 )
-set( CMAKE_CXX_STANDARD 17 )
-
+option( USE_CPP17 "Flag for building with C++17" ON )
+if( USE_CPP17 )
+    add_definitions( -DUSE_CPP17 )
+    add_definitions( -DUSE_CPP11 )
+    set( CMAKE_CXX_STANDARD 17 )
+endif()
 
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 set( locust_mc_PREBUILT_KASS_PREFIX "" CACHE PATH "Prefix directory for a pre-built Kassiopeia -- Leave empty to build with Locust")
@@ -171,7 +173,7 @@ include_directories (${FFTW_INCLUDE_DIR})
 
 # ROOT
 if (locust_mc_BUILD_WITH_ROOT)
-    find_package (ROOT 6.00 COMPONENTS Gui Spectrum TMVA)
+    find_package (ROOT 6.00 REQUIRED)
 else (locust_mc_BUILD_WITH_ROOT)
     set (ROOT_FOUND FALSE)
 endif (locust_mc_BUILD_WITH_ROOT)
