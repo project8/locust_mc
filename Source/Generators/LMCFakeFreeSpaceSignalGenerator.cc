@@ -43,7 +43,7 @@ namespace locust
             fStartRadialPhase( 0. ),
             fCurrentRadialPhase( 0. ),
             fRandomEngine( 0 ),
-            fRootFilename( "LocustEvent.root" ),
+            fRootFilename( "output/LocustEvent.root" ),
             fSlope( 0. ),
             fTrackLength( 0. ),
             fStartTime( 0. ),

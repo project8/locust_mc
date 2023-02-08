@@ -31,7 +31,7 @@ namespace locust
 		fMixingProduct( false ),
     	fWriteRootHisto( false ),
 		fWriteRootGraph( false ),
-		fRootFilename( "LocustTestSignal.root")
+		fRootFilename( "output/LocustTestSignal.root")
     {
         fRequiredSignalState = Signal::kTime;
     }

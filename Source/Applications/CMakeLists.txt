@@ -1,6 +1,13 @@
     set( lib_dependencies 
-        LocustMC
+        LocustMC        
     )
+    
+    if( locust_mc_BUILD_WITH_ROOT ) 
+        set( lib_dependencies ${lib_dependencies}
+            LocustIO
+        )
+    endif( locust_mc_BUILD_WITH_ROOT )
+            
     
     set( programs
         LocustSim
