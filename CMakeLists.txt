@@ -22,8 +22,6 @@ set( CMAKE_CXX_STANDARD 17 )
 option( locust_mc_BUILD_WITH_KASSIOPEIA "Option to build with Kassiopeia" FALSE )
 set( locust_mc_PREBUILT_KASS_PREFIX "" CACHE PATH "Prefix directory for a pre-built Kassiopeia -- Leave empty to build with Locust")
 
-#  Note:  If locust_mc_BUILD_WITH_ROOT=TRUE, there is this Clang CPP mismatch warning during compilation and execution:
-#  ERROR in cling::CIFactory::createCI(): cannot extract standard library include paths!
 option( locust_mc_BUILD_WITH_ROOT "Option to build with ROOT" TRUE )
 set( locus_mc_KASS_NPROC "4" CACHE STRING "Number of processors to use for the Kassiopeia build")
 
@@ -50,13 +48,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         pkg_search_module (KGeoBag REQUIRED kgeobag)
         pkg_search_module (KEMField REQUIRED kemfield)
         pkg_search_module (Kassiopeia REQUIRED kassiopeia)
-#        set( All_Kassiopeia_LIBRARIES ${Kommon_LIBRARIES} ${KGeoBag_LIBRARIES} ${KEMField_LIBRARIES} ${Kassiopeia_LIBRARIES} )
-#        foreach( LIBRARY IN LISTS All_Kassiopeia_LIBRARIES )
-#            if (NOT TARGET ${LIBRARY}) 
-#	        add_library( ${LIBRARY} SHARED IMPORTED )
-#                set_target_properties(${LIBRARY} PROPERTIES IMPORTED_LOCATION "${LIB_INSTALL_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}${LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-#            endif()
-#        endforeach()        
     else (locust_mc_PREBUILT_KASS_PREFIX)    
     
 
@@ -132,10 +123,10 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         set(ENV{PKG_CONFIG_PATH} "${PROJECT_BINARY_DIR}/kassiopeia/Kassiopeia")         
         pkg_search_module (Kassiopeia REQUIRED kassiopeia)
     
-        message (STATUS "Kommon_LIBRARIES is ${Kommon_LIBRARIES}")
-        message (STATUS "KGeoBag_LIBRARIES is ${KGeoBag_LIBRARIES}")
-        message (STATUS "KEMField_LIBRARIES is ${KEMField_LIBRARIES}")
-        message (STATUS "Kassiopeia_LIBRARIES is ${Kassiopeia_LIBRARIES}")
+#        message (STATUS "Kommon_LIBRARIES is ${Kommon_LIBRARIES}")
+#        message (STATUS "KGeoBag_LIBRARIES is ${KGeoBag_LIBRARIES}")
+#        message (STATUS "KEMField_LIBRARIES is ${KEMField_LIBRARIES}")
+#        message (STATUS "Kassiopeia_LIBRARIES is ${Kassiopeia_LIBRARIES}")
             
     endif (locust_mc_PREBUILT_KASS_PREFIX)    
 
@@ -196,10 +187,6 @@ include_directories (${ROOT_INCLUDE_DIR})
 
 # Boost (1.46 required for filesystem version 3)
 list (APPEND Boost_COMPONENTS date_time filesystem program_options system thread)
-# python optional
-if (Katydid_USE_PYTHON)
-    list(APPEND Boost_COMPONENTS python)
-endif (Katydid_USE_PYTHON)
 find_package (Boost 1.46.0 REQUIRED COMPONENTS ${Boost_COMPONENTS})
 include_directories (${Boost_INCLUDE_DIRS})
 pbuilder_add_ext_libraries (${Boost_LIBRARIES})
