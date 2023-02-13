@@ -565,6 +565,8 @@ namespace locust
     	double qExpected = fAnalyticResponseFunction->GetCavityQ();
     	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
     	{
+        	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
+        			"with the unit test as in bin/testLMCCavity [-h]");
     		return false;
     	}
     	else
@@ -887,7 +889,7 @@ namespace locust
             {
             	throw std::runtime_error("There appears to be problematic HF aliasing in the window.  "
             			"See output above regarding \"Aliased frequency [] is below Nyquist frequency.\"  "
-            			"Please try the unit test \"bin/testAliasingHF -h\" to optimize tuning.  Or, to override "
+            			"Please try the unit test \"bin/testAliasingHF [-h]\" to optimize tuning.  Or, to override "
             			"this error please use this command line flag \"cavity-signal.override-aliasing\"=true ");
             	return false;
             }
