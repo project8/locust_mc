@@ -23,6 +23,8 @@
 #include "LMCRectangularWaveguide.hh" // : LMCField
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
+#include "LMCCavityUtility.hh"
+#include "LMCAliasingUtility.hh"
 #include <vector>
 #include <sstream>
 #include <string>
@@ -76,6 +78,8 @@ namespace locust
             virtual ~CavitySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
+            bool CrossCheckCavityConfig();
+            bool CrossCheckAliasing(Signal* aSignal, double dopplerFrequency );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
@@ -97,7 +101,9 @@ namespace locust
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             std::string gxml_filename;
             bool fKassNeverStarted;
-            bool fSkippedSamples;
+            bool fAliasedFrequencies;
+            bool fOverrideAliasing;
+            bool fOverrideStepsize;
             double fphiLO; // voltage phase of LO in radians;
             double fAvgDotProductFactor;
             double fdtFilter;
@@ -107,6 +113,7 @@ namespace locust
             bool fTE; // (if false, use TM modes.)
             bool fIntermediateFile;
             bool fUseDirectKassPower;
+            bool fAliasingIsChecked;
 
 
 

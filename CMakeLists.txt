@@ -36,6 +36,7 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/RxComponents/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Transforms/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Core/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/Utilities/    
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/IO/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Distributions/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Fields/

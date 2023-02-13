@@ -13,6 +13,10 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCHFSSResponseFileHandler.hh
     Core/LMCFIRFileHandler.hh
     Core/LMCTFFileHandler.hh	
+    
+    Utilities/LMCUtility.hh
+    Utilities/LMCCavityUtility.hh
+    Utilities/LMCAliasingUtility.hh
 
     Distributions/LMCBaseDistribution.hh
     Distributions/LMCDiracDistribution.hh
@@ -85,6 +89,10 @@ set( LOCUST_MC_SOURCE_FILES
     Core/LMCHFSSResponseFileHandler.cc
     Core/LMCFIRFileHandler.cc
     Core/LMCTFFileHandler.cc
+    
+    Utilities/LMCUtility.cc
+    Utilities/LMCCavityUtility.cc
+    Utilities/LMCAliasingUtility.cc
 
     Distributions/LMCBaseDistribution.cc
     Distributions/LMCDiracDistribution.cc

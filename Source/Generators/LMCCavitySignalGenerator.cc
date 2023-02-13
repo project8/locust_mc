@@ -33,13 +33,16 @@ namespace locust
         fNPreEventSamples( 150000 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
-        fSkippedSamples( false ),
+        fAliasedFrequencies( false ),
+        fOverrideAliasing( false ),
+        fOverrideStepsize( false ),
         fBypassTF( false ),
         fNormCheck( false ),
         fModeMaps( false ),
         fTE( true ),
         fIntermediateFile( false ),
         fUseDirectKassPower( false ),
+        fAliasingIsChecked( false ),
         fInterface( new KassLocustInterface() )
     {
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
@@ -290,6 +293,8 @@ namespace locust
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    		exit(-1);
+    		return false;
     	}
 
         if( aParam.has( "tf-receiver-filename" ) )
@@ -298,6 +303,7 @@ namespace locust
             {
             	LERROR(lmclog,"FIR has not been generated.");
             	exit(-1);
+            	return false;
             }
         }
         else // Generate analytic response function
@@ -308,6 +314,7 @@ namespace locust
         		if ( !fAnalyticResponseFunction->Configure(aParam) )
         		{
         			LWARN(lmclog,"EquivalentCircuit was not configured.");
+        			exit(-1);
         			return false;
         		}
         		else
@@ -315,6 +322,7 @@ namespace locust
         			if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
         			{
         				LWARN(lmclog,"TF->FIR was not generated correctly.");
+        				exit(-1);
         				return false;
         			}
         		}
@@ -322,19 +330,21 @@ namespace locust
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
-        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		if ( !fAnalyticResponseFunction->Configure(aParam) ||
+        				(!CrossCheckCavityConfig()) )
         		{
-        			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
+        			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
+        			exit(-1);
         			return false;
         		}
         		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
         		{
-        			LWARN(lmclog,"GF->FIR was not generated.");
+        			LERROR(lmclog,"GF->FIR was not generated.");
+        			exit(-1);
         			return false;
         		}
         	}
         } // aParam.has( "tf-receiver-filename" )
-
 
         if( aParam.has( "e-gun" ) )
         {
@@ -374,6 +384,20 @@ namespace locust
         	if ( aParam.has( "back-reaction" ) )
         	{
         		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+                if( aParam.has( "override-stepsize" ) )
+                {
+                    fOverrideStepsize = aParam["override-stepsize"]().as_bool();
+                }
+        		if (( !fInterface->fBackReaction ) && (fOverrideStepsize == false))
+        		{
+        			LERROR(lmclog,"If \"back-reaction\"=false, please check that the Kass "
+        					"stepsize is 0.135 orbits or smaller.  Otherwise there can be "
+        					"skipped digitizer samples when running in a multi-core cluster "
+        					"environment.  This is a to-do item to be fixed with a planned 2-step trigger. "
+        					"To override this message, use this command-line flag:  \"cavity-signal.override-stepsize\"=true");
+        			exit(-1);
+        			return false;
+        		}
         	}
         }
         if( aParam.has( "n-modes" ) )
@@ -386,12 +410,14 @@ namespace locust
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
 			exit(-1);
+			return false;
 		}
 
         if (!fInterface->fField->Configure(aParam))
         {
         	LERROR(lmclog,"Error configuring LMCField.");
         	exit(-1);
+        	return false;
         }
 
         if( aParam.has( "cavity-radius" ) )
@@ -424,9 +450,9 @@ namespace locust
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
         }
 
-        if( aParam.has( "thread-check-time" ) )
+        if( aParam.has( "override-aliasing" ) )
         {
-            fThreadCheckTime = aParam["thread-check-time"]().as_int();
+            fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
 
         if( aParam.has( "bypass-tf" ) )
@@ -508,6 +534,46 @@ namespace locust
 
         return true;
     }
+
+    bool CavitySignalGenerator::CrossCheckAliasing( Signal* aSignal, double dopplerFrequency )
+    {
+    	LPROG(lmclog,"Running some cross-checks ...");
+
+    	AliasingUtility anAliasingUtility;
+    	double fs = fAcquisitionRate;
+    	double dr = aSignal->DecimationFactor();
+
+    	if (!anAliasingUtility.CheckAliasing( dopplerFrequency, fLO_Frequency, fs, dr ))
+    	{
+    		return false;
+    	}
+    	else
+    	{
+    		return true;
+    	}
+    }
+
+    bool CavitySignalGenerator::CrossCheckCavityConfig()
+	{
+
+    	LPROG(lmclog,"Running some cavity cross-checks ...");
+
+    	CavityUtility aCavityUtility;
+    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution();
+    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor();
+    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency();
+    	double qExpected = fAnalyticResponseFunction->GetCavityQ();
+    	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+    	{
+        	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
+        			"with the unit test as in bin/testLMCCavity [-h]");
+    		return false;
+    	}
+    	else
+    	{
+    		return true;
+    	}
+	}
 
     void CavitySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
@@ -636,6 +702,18 @@ namespace locust
     	} // l
 
     	fInterface->fTOld += fDeltaT;
+    	if (!fAliasingIsChecked)
+    	{
+    		if (!fOverrideAliasing)
+    		{
+    		    if (!CrossCheckAliasing( aSignal, dopplerFrequency[0] / 2. / LMCConst::Pi() ))
+    		    {
+    			    LERROR(lmclog,"There is an aliased HF frequency in the window.\n");
+    			    return false;
+    		    }
+    		}
+    		fAliasingIsChecked = true;
+    	}
 
     	return true;
     }
@@ -714,9 +792,7 @@ namespace locust
                 		printf("breaking\n");
                 		break;
                 	}
-
                 	LPROG( lmclog, "LMC ReceivedKassReady" );
-
                 }
 
                 if (fInterface->fPreEventInProgress)  // Locust keeps sampling until Kass event.
@@ -755,8 +831,7 @@ namespace locust
                     		}
                     		else
                     		{
-                    			LERROR(lmclog,"The cavity did not respond correctly.  Exiting.\n");
-                    			fSkippedSamples = true;
+                    			fAliasedFrequencies = true;
                     			tLock.unlock();
                     			break;
                     		}
@@ -807,12 +882,15 @@ namespace locust
 
             if (fKassNeverStarted == true)
             {
-            	throw 2;
+            	throw std::runtime_error("Kassiopeia did not start.");
             	return false;
             }
-            if (fSkippedSamples == true)
+            if (fAliasedFrequencies == true)
             {
-            	throw 3;
+            	throw std::runtime_error("There appears to be problematic HF aliasing in the window.  "
+            			"See output above regarding \"Aliased frequency [] is below Nyquist frequency.\"  "
+            			"Please try the unit test \"bin/testAliasingHF [-h]\" to optimize tuning.  Or, to override "
+            			"this error please use this command line flag \"cavity-signal.override-aliasing\"=true ");
             	return false;
             }
 

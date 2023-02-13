@@ -38,19 +38,19 @@ namespace locust
     	}
     	if( aParam.has( "dho-time-resolution" ) )
     	{
-    		fTimeResolution = aParam["dho-time-resolution"]().as_double();
+    		SetDHOTimeResolution( aParam["dho-time-resolution"]().as_double() );
     	}
     	if( aParam.has( "dho-threshold-factor" ) )
     	{
-    		fThresholdFactor = aParam["dho-threshold-factor"]().as_double();
+    		SetDHOThresholdFactor( aParam["dho-threshold-factor"]().as_double() );
     	}
     	if( aParam.has( "dho-cavity-frequency" ) )
     	{
-    		fCavityFrequency = aParam["dho-cavity-frequency"]().as_double();
+    		SetCavityFrequency( aParam["dho-cavity-frequency"]().as_double() );
     	}
     	if( aParam.has( "dho-cavity-Q" ) )
     	{
-    		fCavityQ = aParam["dho-cavity-Q"]().as_double();
+    		SetCavityQ( aParam["dho-cavity-Q"]().as_double() );
     	}
 
     	if ( !Initialize() ) return false;
@@ -76,6 +76,32 @@ namespace locust
     {
     	return fCavityQ;
     }
+    void DampedHarmonicOscillator::SetCavityFrequency( double aFrequency )
+    {
+    	fCavityFrequency = aFrequency;
+    }
+    double DampedHarmonicOscillator::GetCavityFrequency()
+    {
+    	return fCavityFrequency;
+    }
+    void DampedHarmonicOscillator::SetDHOTimeResolution( double aTimeResolution )
+    {
+    	fTimeResolution = aTimeResolution;
+    }
+    double DampedHarmonicOscillator::GetDHOTimeResolution()
+    {
+    	return fTimeResolution;
+    }
+    void DampedHarmonicOscillator::SetDHOThresholdFactor( double aThresholdFactor )
+    {
+    	fThresholdFactor = aThresholdFactor;
+    }
+    double DampedHarmonicOscillator::GetDHOThresholdFactor()
+    {
+    	return fThresholdFactor;
+    }
+
+
 
     double DampedHarmonicOscillator::ExpDecayTerm(double t)
     {

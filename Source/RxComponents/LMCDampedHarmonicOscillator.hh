@@ -41,6 +41,12 @@ namespace locust
             double ExpDecayTerm(double t);
             virtual void SetCavityQ( double aQ );
             virtual double GetCavityQ();
+            virtual void SetCavityFrequency( double aFrequency );
+            virtual double GetCavityFrequency();
+            virtual void SetDHOTimeResolution( double aTimeResolution );
+            virtual double GetDHOTimeResolution();
+            virtual void SetDHOThresholdFactor( double aThresholdFactor );
+            virtual double GetDHOThresholdFactor();
 
 
         private:

@@ -37,6 +37,7 @@
 #include "logger.hh"
 #include "catch.hpp"
 #include "LMCTestParameterHandler.hh"
+#include "LMCAliasingUtility.hh"
 
 using namespace scarab;
 using namespace locust;
@@ -153,50 +154,12 @@ TEST_CASE( "testAliasingHF with default parameter values (pass)", "[single-file]
 
 	int sign = 1; // start with upper sideband.
 	double LO = the_main.GetLocalOscillator();
-	double fs = 1.e6 * the_main.GetAcquisitionRate() * the_main.GetDecimationRate();
+	double fs = the_main.GetAcquisitionRate(); // MHz
 	double RF = the_main.GetRFFrequency();
+	double dr = the_main.GetDecimationRate();
 
-    LPROG( testlog, "\nSummary:");
-	LPROG( testlog, "Presently hard-wired decimation rate is 10." );
-	LPROG( testlog, "acquisition-rate is " << the_main.GetAcquisitionRate() );
-	LPROG( testlog, "lo-frequency is " << the_main.GetLocalOscillator() );
-	LPROG( testlog, "rf-frequency is " << the_main.GetRFFrequency() );
-
-
-	bool bPass = true;
-
-	for (int j=0; j<2; j++)  // choose upper or lower mixing sideband
-	{
-	    if (j==1) sign = -1;
-	    for (int i=0; i<3; i++)
-	    {
-	    double freq = i*RF - sign*LO;
-	    int nwin = (round)(freq/fs);
-
-	    double alias = sign*(freq - nwin*fs);
-	    if (j==0)
-	    {
-	    	printf("%5d*RF - LO = %10.4g and alias is %2d*(%10.4g - %4d*%g)=%10.4g Hz\n", i, freq, sign, freq, nwin, fs, alias);
-	    	if ((i!=1) && (fabs(alias) < the_main.GetAcquisitionRate()*1.e6/2.))
-	    	{
-	    		LERROR( testlog, "Aliased frequency " << fabs(alias) << " is below Nyquist frequency " << the_main.GetAcquisitionRate()*1.e6/2. );
-	    		bPass = false;
-	    	}
-	    }
-	    if (j==1)
-	    {
-	    	printf("%5d*RF + LO = %10.4g and alias is %2d*(%10.4g - %4d*%g)=%10.4g Hz\n", i, freq, sign, freq, nwin, fs, alias);
-	    	if (fabs(alias) < the_main.GetAcquisitionRate()*1.e6/2.)
-	    	{
-	    		LERROR( testlog, "Aliased frequency " << fabs(alias) << " is below Nyquist frequency " << the_main.GetAcquisitionRate()*1.e6/2. );
-	    		bPass = false;
-	    	}
-	    }
-
-	    } // i
-	} // j
-
-
+	AliasingUtility anAliasingUtility;
+	bool bPass = anAliasingUtility.CheckAliasing( RF, LO, fs, dr );
     REQUIRE( bPass );
 }
 
