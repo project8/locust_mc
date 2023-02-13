@@ -41,6 +41,12 @@ namespace locust
             std::vector<std::pair<double,std::pair<double,double> > > GetGFarray();
             virtual void SetCavityQ( double aQ ) {};
             virtual double GetCavityQ() {return 1.;};
+            virtual void SetCavityFrequency( double aFrequency ) {};
+            virtual double GetCavityFrequency() {return 0.;};
+            virtual void SetDHOTimeResolution( double aTimeResolution ) {};
+            virtual double GetDHOTimeResolution() {return 0.;};
+            virtual void SetDHOThresholdFactor( double aThresholdFactor ) {};
+            virtual double GetDHOThresholdFactor() {return 0.;};
 
 
 
