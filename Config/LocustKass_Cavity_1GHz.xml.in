@@ -21,7 +21,7 @@
 <!-- central frequency for trap FreeSpaceGeometry_V00_00_11_1GHz.xml is xx Hz -->
 
 <!-- Path to the CavityGeometry_V00_00_00.xml file is in your local clone of hexbug. -->
-<include name="/hexbug/Phase3/Trap/CavityGeometry_V00_00_00.xml"/>
+<include name="[config_path]/CavityGeometry_V00_00_00.xml"/>
 <!-- central frequency for trap CavityGeometry_V00_00_00.xml is 1.06758e+09 Hz -->
 
    
@@ -292,7 +292,7 @@
         <term_gyration/>
         <term_drift/>
 <!--        <control_cyclotron name="control_cyclotron_arbitrary" fraction="0.0156250"/> -->
-   <control_cyclotron name="control_cyclotron_arbitrary" fraction="0.135"/>
+   <control_cyclotron name="control_cyclotron_arbitrary" fraction="1.135"/>
     </kstraj_trajectory_adiabatic>
 
     <kstraj_trajectory_magnetic name="traj_magnetic">

@@ -10,10 +10,15 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
-        "e-gun": false,
+        "back-reaction": "true",
+        "dho-cavity-frequency": 1.067e9,
+        "dho-time-resolution": 1.0e-8,
+        "dho-threshold-factor": 0.01,
+        "event-spacing-samples": 10,
+        "e-gun": false,        
         "voltage-check": "false",
-        "lo-frequency": 1.03e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_Template.xml"
+        "lo-frequency": 1.065e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_1GHz.xml"
     },
 
     "simulation":
@@ -21,7 +26,7 @@
         "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
         "record-size": 81920,
-        "acquisition-rate": 220,
+        "acquisition-rate": 21,
         "n-channels": 1
     },
   
@@ -33,8 +38,8 @@
 
     "digitizer":
     {
-    	"v-range":  10.0e-7,
-    	"v-offset": -5.0e-7
+        "v-range":  4e-08,
+        "v-offset": -2e-08
     }
 
 }
