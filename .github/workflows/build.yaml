@@ -1,48 +1,156 @@
 name: Build and Test Locust
 
-on: [push]
+on:
+  pull_request:
+  push:
+    branches: [main, develop, feature/luna_base]
+    tags: ['*']
+  workflow_dispatch:
 
 env:
-  locust_mc_BUILD_WITH_KASSIOPEIA: OFF
+  REGISTRY: ghcr.io
+  BASE_IMG_REPO: project8/kassiopeia_builder
+  BASE_IMG_TAG: v3.8.2
+  FINAL_BASE_IMG_REPO: project8/luna_base
+  FINAL_BASE_IMG_TAG: v1.3.3
+  locust_mc_BUILD_WITH_KASSIOPEIA: ON
   locust_mc_ENABLE_EXECUTABLES: ON
-  locust_mc_ENABLE_TESTING: ON
-  locust_mc_BUILD_TYPE: Debug
-  locust_mc_TAG: test
+  NARG: 2
+#  locust_mc_ENABLE_TESTING: ON
+#  locust_mc_BUILD_TYPE: Debug
+#  locust_mc_TAG: test
 
 jobs:
 
+  docker-build-and-publish:
 
-  docker_build:
-    name: Build and Test in Docker
+    name: Build and push the docker images
 
-    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build: [Dev, Prod]
+        fail-fast: [false]
+        include:
+          - build: Dev
+            tag-suffix: '-dev'
+            build-type: Debug
+            build-tests: true
+          - build: Prod
+            tag-suffix: ''
+            build-type: Release
+            build-tests: true
 
+    runs-on: ubuntu-latest
     steps:
-
-      - name: Checkout the repo 
-        uses: actions/checkout@v2
+    
+      - name: Check out the repo
+        uses: actions/checkout@v3
         with:
           submodules: recursive
+          
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+          flavor: |
+            latest=auto
+            suffix=${{ matrix.tag-suffix }},onlatest=true
+          tags: |
+            type=semver,pattern={{raw}}
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
-      - name: Build and test
-        run: |
-          docker build \
-            --target locust_done \
-            --build-arg build_type=${locust_mc_BUILD_TYPE} \
-            --build-arg build_tests_exe=${locust_mc_ENABLE_TESTING} \
-            --build-arg locust_build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA} \
-            --build-arg locust_tag=${locust_mc_TAG} \
-            --tag project8/locust_mc:${locust_mc_TAG} \
-            .  
-          docker run project8/locust_mc:${locust_mc_TAG} /tmp_source/build/Source/Applications/Testing/RunTests
+      - name: Get previous tag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        id: tag_name
+        with:
+          fallback: beta
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        
+      - name: Set up Docker Buildx
+        id: setup_buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          buildkitd-flags: --debug
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build to Test
+        id: build-to-test
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          load: true
+          build-args: |
+            img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
+            img_tag=${{ env.BASE_IMG_TAG }}-dev
+            final_img_repo=${{ env.REGISTRY }}/${{ env.FINAL_BASE_IMG_REPO }}
+            final_img_tag=${{ env.FINAL_BASE_IMG_TAG }}${{ matrix.tag-suffix }}
+            locust_tag=${{ steps.tag_name.outputs.tag }}
+            build_type=${{ matrix.build-type }}
+            build_tests_exe=${{ matrix.build-tests }}
+            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
+            narg=${{ env.NARG }}
+          tags: test${{ matrix.tag-suffix }}
+          platforms: linux/amd64
+
+      - name: Run Tests
+
+        # Alternate lines from pls testing:
+        if: ${{ matrix.build-tests == true }}
+        run: echo '#!/bin/bash' > job.sh && echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh && echo /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/bin/RunTests >> job.sh && chmod +x job.sh && docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
+        # End alternate lines from pls testing.
+        
+        # Disabled for now because tests aren't installed
+#        if: false
+#        if: ${{ matrix.build-tests == true }}
+#        run: docker run ${{ steps.build-to-test.outputs.imageid }} "source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh; /tmp_loc_source/build/Source/Applications/Testing/RunTests"
 
 
+      - name: Build to Push
+        id: build-to-push
+        if: true
+        #if: ${{ github.event_name == 'push' && ( contains(github.ref, 'refs/tags/') || github.ref == 'refs/heads/develop' ) }}
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          load: false
+          build-args: |
+            build_img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
+            build_img_tag=${{ env.BASE_IMG_TAG }}-dev
+            final_img_repo=${{ env.REGISTRY }}/${{ env.FINAL_BASE_IMG_REPO }}
+            final_img_tag=${{ env.FINAL_BASE_IMG_TAG }}${{ matrix.tag-suffix }}
+            locust_tag=${{ steps.tag_name.outputs.tag }}
+            build_type=${{ matrix.build-type }}
+            build_tests_exe=${{ matrix.build-tests }}
+            build_with_kassiopeia=${locust_mc_BUILD_WITH_KASSIOPEIA}
+            narg=${{ env.NARG }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
+          platforms: linux/amd64
 
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags/') }}
+    
 
 
 
 # For debugging
-#      - name: Setup tmate session
-#        if: ${{ ! success() }}
-#        uses: mxschmitt/action-tmate@v3
+      - name: Setup tmate session
+
+        if: ${{ ! success() }}
+        uses: mxschmitt/action-tmate@v3
 
