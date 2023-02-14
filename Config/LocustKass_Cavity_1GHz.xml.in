@@ -134,7 +134,7 @@
             <energy_fix value="18600."/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.0" value_max="0.0"/>
+            <x_uniform value_min="0.09" value_max="0.09"/>
             <y_uniform value_min="0." value_max="0.0"/>
             <z_uniform value_min="0." value_max="0."/>
         </position_rectangular_composite>
