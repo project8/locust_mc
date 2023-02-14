@@ -144,7 +144,7 @@ namespace locust
                 {
                 	qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
                 }
-    			LDEBUG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
+    			LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
             } // rfStep
 
         delete aSignal;
