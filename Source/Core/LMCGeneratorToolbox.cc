@@ -45,16 +45,33 @@ namespace locust
         // TODO: this line will throw an exception if "generators" is not present or it's not an array
         // TODO: this should either check that those are the case and return false if not, or
         // TODO: catch the exception and then return false
+        // DONE: Since both Scarab v1 and v2 are still being supported, we are returning false
+        // DONE: if v1 fails, then we are trying v2, and then throwing an exception if it still
+        // DONE: fails.  In the latter case, Scarab presently throws the exception before
+        // DONE: Locust does it.
+        // TODO: Probably upgrade to Scarab v3.
 
         if (!(aNode.has("generators")&&aNode["generators"].is_array()))
-        	{
-            LWARN( lmclog, "Generators array is either not present, not an array, or is configured with Scarab v2 instead of v1, which is fine." );
+        {
+            LPROG( lmclog, "Trying to parse parameters." );
+            // Return false if the parsing failed, for example if trying v1 parsing
+            // on a v2 config, or if there is no config, or some other problem.
             return false;
-        	}
+        }
 
         const scarab::param_array& generatorList = aNode["generators"].as_array();
-
-
+        if (!(aNode.has("generators")&&aNode["generators"].is_array()))
+        {
+        	// This exception is not presently thrown, due to Scarab throwing
+        	// an exception first.
+        	throw std::runtime_error("Parsing either v1 and v2 has not worked.");
+            return false;
+        }
+        else
+        {
+        	// Everything is working:
+        	LPROG( lmclog, "Parsing parameters now.");
+        }
 
 
         Generator* lastGenerator = nullptr;
