@@ -10,6 +10,8 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
+        "cavity-radius": 0.007,
+        "cavity-length": 0.1,           
         "back-reaction": "true",
         "dho-cavity-frequency": 25.9e9,
         "dho-time-resolution": 1.0e-9,
@@ -38,8 +40,8 @@
 
     "digitizer":
     {
-        "v-range":  2e-10,
-        "v-offset": -1e-10
+        "v-range":  6.0,
+        "v-offset": -3.0
     }
 
 }

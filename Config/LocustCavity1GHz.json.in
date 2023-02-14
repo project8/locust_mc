@@ -10,6 +10,8 @@
     "cavity-signal":
     {
         "transmitter": "kass-current",
+        "cavity-radius": 0.18,
+        "cavity-length": 3.0,           
         "back-reaction": "true",
         "dho-cavity-frequency": 1.067e9,
         "dho-time-resolution": 1.0e-8,
