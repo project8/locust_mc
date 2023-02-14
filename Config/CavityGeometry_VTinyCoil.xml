@@ -116,6 +116,7 @@
 
 
 <!-- VTK appearance -->
+<!--
 <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/coil_000/#"/>
 <appearance name="app_magnet" color="0 255 96 96" arc="72" surfaces="world/project8/coil_001/#"/>
-
+-->
