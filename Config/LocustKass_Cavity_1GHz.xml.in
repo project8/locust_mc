@@ -17,7 +17,12 @@
 
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
 
-<include name="[config_path]/FreeSpaceGeometry_V00_00_11_1GHz.xml"/>
+<!-- <include name="[config_path]/FreeSpaceGeometry_V00_00_11_1GHz.xml"/> -->
+<!-- central frequency for trap FreeSpaceGeometry_V00_00_11_1GHz.xml is xx Hz -->
+
+<!-- Path to the CavityGeometry_V00_00_00.xml file is in your local clone of hexbug. -->
+<include name="[config_path]/CavityGeometry_V00_00_00.xml"/>
+<!-- central frequency for trap CavityGeometry_V00_00_00.xml is 1.06758e+09 Hz -->
 
    
  
@@ -129,13 +134,13 @@
             <energy_fix value="18600."/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.0" value_max="0.0"/>
+            <x_uniform value_min="0.09" value_max="0.09"/>
             <y_uniform value_min="0." value_max="0.0"/>
             <z_uniform value_min="0." value_max="0."/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90." value_max="90."/> 
+        <theta_uniform value_min="90.0" value_max="90.0"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -287,7 +292,7 @@
         <term_gyration/>
         <term_drift/>
 <!--        <control_cyclotron name="control_cyclotron_arbitrary" fraction="0.0156250"/> -->
-   <control_cyclotron name="control_cyclotron_arbitrary" fraction="0.135"/>
+   <control_cyclotron name="control_cyclotron_arbitrary" fraction="1.135"/>
     </kstraj_trajectory_adiabatic>
 
     <kstraj_trajectory_magnetic name="traj_magnetic">
@@ -329,12 +334,12 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="0.5e-4"/>
+    <ksterm_max_time name="term_max_time" time="0.5e-3"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
-    <ksterm_min_z name="term_min_z" z="-.07"/>
-    <ksterm_max_z name="term_max_z" z=".07"/>
+    <ksterm_min_z name="term_min_z" z="-4.0"/>
+    <ksterm_max_z name="term_max_z" z="4.0"/>
 
     
     <!-- modifiers -->

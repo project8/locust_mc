@@ -1,3 +1,5 @@
+
+
  <external_define name="generator" value="gen_uniform"/>
 <!-- <external_define name="generator" value="gen_krypton"/> -->
 <!-- <external_define name="generator" value="gen_bfieldlines" />  -->
@@ -15,17 +17,20 @@
 
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
 
+<!-- <include name="[config_path]/FreeSpaceGeometry_V00_00_11_1GHz.xml"/> -->
+<!-- central frequency for trap FreeSpaceGeometry_V00_00_11_1GHz.xml is xx Hz -->
 
+<!-- Path to the CavityGeometry_V00_00_00.xml file is in your local clone of hexbug. -->
+<include name="[config_path]/CavityGeometry_VTinyCoil.xml"/>
+<!-- central frequency for trap CavityGeometry_V00_00_00.xml is 1.06758e+09 Hz -->
 
-<include name="/home/penny/p8tutorial/hexbug/Phase3/Trap/FreeSpaceGeometry_V00_00_10.xml"/>
-
-    
-
-
+   
  
 <kassiopeia>
 
+
     <!-- generators -->
+
 
     <ksgen_generator_composite name="gen_bfieldlines">
         <energy_composite>
@@ -129,13 +134,13 @@
             <energy_fix value="18600."/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
-            <x_uniform value_min="0.0" value_max="0.0"/>
+            <x_uniform value_min="0.004" value_max="0.004"/>
             <y_uniform value_min="0." value_max="0.0"/>
             <z_uniform value_min="0." value_max="0."/>
         </position_rectangular_composite>
         <direction_spherical_composite space="world/project8">
 <!--            <theta_spherical angle_min="89.9" angle_max="90"/>  -->
-        <theta_uniform value_min="90." value_max="90."/> 
+        <theta_uniform value_min="90.0" value_max="90.0"/> 
             <phi_uniform value_min="0." value_max="0."/>
         </direction_spherical_composite>
         <time_composite>
@@ -333,8 +338,8 @@
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
     <ksterm_min_energy name="term_min_energy" energy="0."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
-    <ksterm_min_z name="term_min_z" z="-.07"/>
-    <ksterm_max_z name="term_max_z" z=".07"/>
+    <ksterm_min_z name="term_min_z" z="-4.0"/>
+    <ksterm_max_z name="term_max_z" z="4.0"/>
 
     
     <!-- modifiers -->

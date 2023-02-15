@@ -97,7 +97,7 @@ namespace locust
                     LERROR(lmclog,"Digitizer range limit.\n");
                     printf("Analog data at index %d / %d channel %d / %d is %g\n", index, signalSize,  ch, nchannels, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
                     printf("Digitized data at index %d channel %d is %d\n", index, ch, digitizedData[2*ch*signalSize + index*2 ]);
-                	throw 1;
+                	throw std::runtime_error("The digitizer range limit has been exceeded.");
                 	return false;
                 }
 
@@ -130,7 +130,7 @@ namespace locust
                         LERROR(lmclog,"Digitizer range limit.\n");
                         printf("Analog data at index %d / %d channel %d / %d is %g\n", index, signalSize, ch, nchannels, aSignal->SignalTimeComplex()[ch*signalSize + index ][0]);
                         printf("Digitized data at index %d channel %d is %d\n", index, ch, digitizedData[2*ch*signalSize + index*2 ]);
-                    	throw 1;
+                    	throw std::runtime_error("The digitizer range limit has been exceeded.");
                     	return false;
                     }
 

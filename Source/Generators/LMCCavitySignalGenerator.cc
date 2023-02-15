@@ -24,23 +24,27 @@ namespace locust
     CavitySignalGenerator::CavitySignalGenerator( const std::string& aName ) :
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
-        fLO_Frequency( 0.),
-		fE_Gun( false ),
-		fNModes( 2 ),
+        fLO_Frequency( 0. ),
+		fDeltaT( 0. ),
+        fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
-		fNPreEventSamples( 150000 ),
-		fThreadCheckTime(100),
-		fKassNeverStarted( false ),
-		fSkippedSamples( false ),
-		fBypassTF( false ),
-		fNormCheck( false ),
-		fModeMaps( false ),
-		fTE( true ),
-		fIntermediateFile( false ),
-		fInterface( new KassLocustInterface() )
+        fAvgDotProductFactor(0.),
+        fNPreEventSamples( 150000 ),
+        fThreadCheckTime(100),
+        fKassNeverStarted( false ),
+        fAliasedFrequencies( false ),
+        fOverrideAliasing( false ),
+        fOverrideStepsize( false ),
+        fBypassTF( false ),
+        fNormCheck( false ),
+        fModeMaps( false ),
+        fTE( true ),
+        fIntermediateFile( false ),
+        fUseDirectKassPower( false ),
+        fAliasingIsChecked( false ),
+        fInterface( new KassLocustInterface() )
     {
-        fRequiredSignalState = Signal::kFreq;
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
@@ -159,7 +163,7 @@ namespace locust
     void CavitySignalGenerator::CheckNormalization()
     {
 
-    	if (!fE_Gun)
+    	if (!fInterface->fE_Gun)
     		printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
     	else
     		printf("\n |E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used.\n\n");
@@ -250,7 +254,7 @@ namespace locust
         					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fField->GetDimY() - fInterface->fField->GetDimY()/2.;
     						std::vector<double> tE;
     						std::vector<double> tH;
-    						if (!fE_Gun)
+    						if (!fInterface->fE_Gun)
     						{
     							if (fTE)
     							{
@@ -285,76 +289,135 @@ namespace locust
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
-    	if(!fInterface->fTFReceiverHandler.Configure(aParam))
+    	fTFReceiverHandler = new TFReceiverHandler;
+    	if(!fTFReceiverHandler->Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
-    	}
-
-
-//   Optional implementation of equivalent circuit, selected by specifying any of
-//	 equivalentR, equivalentL, equivalentC in config file.
-    	fEquivalentCircuit = new EquivalentCircuit();
-    	if (!fEquivalentCircuit->Configure( aParam ))
-    	{
-    		LERROR(lmclog,"Error configuring LMCEquivalentCircuit.");
     		exit(-1);
+    		return false;
     	}
 
-    	if(fEquivalentCircuit->fGeneratingTF)
-    	{
-    		if(!fInterface->fTFReceiverHandler.ConvertAnalyticTFtoFIR(fEquivalentCircuit->initialFreq,fEquivalentCircuit->tfArray))
-    		{
-    			return false;
-    		}
-    	}
-    	else
-    	{
-        	if(!fInterface->fTFReceiverHandler.ReadHFSSFile())
-        	{
+        if( aParam.has( "tf-receiver-filename" ) )
+        {
+            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
+            {
+            	LERROR(lmclog,"FIR has not been generated.");
+            	exit(-1);
             	return false;
+            }
+        }
+        else // Generate analytic response function
+        {
+        	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
+        	{
+        		fAnalyticResponseFunction = new EquivalentCircuit();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		{
+        			LWARN(lmclog,"EquivalentCircuit was not configured.");
+        			exit(-1);
+        			return false;
+        		}
+        		else
+        		{
+        			if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
+        			{
+        				LWARN(lmclog,"TF->FIR was not generated correctly.");
+        				exit(-1);
+        				return false;
+        			}
+        		}
         	}
-    	}
+        	else
+        	{
+        		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+        		if ( !fAnalyticResponseFunction->Configure(aParam) ||
+        				(!CrossCheckCavityConfig()) )
+        		{
+        			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
+        			exit(-1);
+        			return false;
+        		}
+        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+        		{
+        			LERROR(lmclog,"GF->FIR was not generated.");
+        			exit(-1);
+        			return false;
+        		}
+        	}
+        } // aParam.has( "tf-receiver-filename" )
 
         if( aParam.has( "e-gun" ) )
         {
-        	fE_Gun = aParam["e-gun"]().as_bool();
+        	fInterface->fE_Gun = aParam["e-gun"]().as_bool();
         }
 
-        if (fE_Gun)
+        if (fInterface->fE_Gun)
         {
-            fInterface->fField = new RectangularWaveguide;
-    		fPowerCombiner = new WaveguideModes;
-    		if ( aParam.has( "back-reaction" ) )
-    		{
-    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-    		}
-    		else
-    		{
-    			fInterface->fBackReaction = true;
-    		}
+        	fInterface->fField = new RectangularWaveguide;
+        	fPowerCombiner = new WaveguideModes;
+        	if ( aParam.has( "waveguide-short" ) )
+        	{
+        		fPowerCombiner->SetWaveguideShortIsPresent(aParam["waveguide-short"]().as_bool());
+        	}
+        	else
+        	{
+        		// This is the same as the default case in LMCPowerCombiner
+        		fPowerCombiner->SetWaveguideShortIsPresent( true );
+        	}
+        	// Allow back reaction only if short is present:
+        	if ( fPowerCombiner->GetWaveguideShortIsPresent() )
+        	{
+        		if ( aParam.has( "back-reaction" ) )
+        		{
+        			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+        		}
+        		else
+        		{
+        			fInterface->fBackReaction = true;
+        		}
+        	}
         }
         else
         {
-            fInterface->fField = new CylindricalCavity;
-    		fPowerCombiner = new CavityModes;
+        	fInterface->fField = new CylindricalCavity;
+        	fPowerCombiner = new CavityModes;
+        	if ( aParam.has( "back-reaction" ) )
+        	{
+        		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+                if( aParam.has( "override-stepsize" ) )
+                {
+                    fOverrideStepsize = aParam["override-stepsize"]().as_bool();
+                }
+        		if (( !fInterface->fBackReaction ) && (fOverrideStepsize == false))
+        		{
+        			LERROR(lmclog,"If \"back-reaction\"=false, please check that the Kass "
+        					"stepsize is 0.135 orbits or smaller.  Otherwise there can be "
+        					"skipped digitizer samples when running in a multi-core cluster "
+        					"environment.  This is a to-do item to be fixed with a planned 2-step trigger. "
+        					"To override this message, use this command-line flag:  \"cavity-signal.override-stepsize\"=true");
+        			exit(-1);
+        			return false;
+        		}
+        	}
         }
-
         if( aParam.has( "n-modes" ) )
         {
-            fNModes = aParam["n-modes"]().as_int();
+        	fNModes = aParam["n-modes"]().as_int();
         }
 
-		fPowerCombiner->SetNCavityModes(fNModes);
+        fPowerCombiner->SetNCavityModes(fNModes);
         if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
 			exit(-1);
+			return false;
 		}
 
         if (!fInterface->fField->Configure(aParam))
         {
         	LERROR(lmclog,"Error configuring LMCField.");
         	exit(-1);
+        	return false;
         }
 
         if( aParam.has( "cavity-radius" ) )
@@ -387,9 +450,9 @@ namespace locust
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
         }
 
-        if( aParam.has( "thread-check-time" ) )
+        if( aParam.has( "override-aliasing" ) )
         {
-            fThreadCheckTime = aParam["thread-check-time"]().as_int();
+            fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
 
         if( aParam.has( "bypass-tf" ) )
@@ -412,6 +475,10 @@ namespace locust
         if( aParam.has( "intermediate-file" ) )
         {
         	fIntermediateFile = aParam["intermediate-file"]().as_bool();
+        }
+        if( aParam.has( "direct-kass-power" ) )
+        {
+        	fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
         }
         if( aParam.has( "xml-filename" ) )
         {
@@ -440,13 +507,21 @@ namespace locust
         }
         else
         {
-    		LERROR(lmclog,"LMCCavitySignalGenerator has been configured without a transmitter.  Please choose transmitter:antenna or transmitter:planewave or transmitter:kassiopeia in the config file.");
+    		LERROR(lmclog,"LMCCavitySignalGenerator needs the kass-current transmitter.  Please choose transmitter:kass-current in the config file.");
             exit(-1);
         }
 
 
+        fFieldCalculator = new FieldCalculator();
+        if(!fFieldCalculator->Configure(aParam))
+        {
+            LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
+        }
+        fInterface->fConfigureKass = new ConfigureKass();
+        fInterface->fConfigureKass->SetParameters( aParam );
 
-        fInterface->dtFilter = fInterface->fTFReceiverHandler.GetFilterResolution();
+
+        fdtFilter = fTFReceiverHandler->GetFilterResolution();
 
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
@@ -459,6 +534,46 @@ namespace locust
 
         return true;
     }
+
+    bool CavitySignalGenerator::CrossCheckAliasing( Signal* aSignal, double dopplerFrequency )
+    {
+    	LPROG(lmclog,"Running some cross-checks ...");
+
+    	AliasingUtility anAliasingUtility;
+    	double fs = fAcquisitionRate;
+    	double dr = aSignal->DecimationFactor();
+
+    	if (!anAliasingUtility.CheckAliasing( dopplerFrequency, fLO_Frequency, fs, dr ))
+    	{
+    		return false;
+    	}
+    	else
+    	{
+    		return true;
+    	}
+    }
+
+    bool CavitySignalGenerator::CrossCheckCavityConfig()
+	{
+
+    	LPROG(lmclog,"Running some cavity cross-checks ...");
+
+    	CavityUtility aCavityUtility;
+    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution();
+    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor();
+    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency();
+    	double qExpected = fAnalyticResponseFunction->GetCavityQ();
+    	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+    	{
+        	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
+        			"with the unit test as in bin/testLMCCavity [-h]");
+    		return false;
+    	}
+    	else
+    	{
+    		return true;
+    	}
+	}
 
     void CavitySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
@@ -509,26 +624,24 @@ namespace locust
     	return sqrt(areaIntegral);
     }
 
-    bool CavitySignalGenerator::DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index)
+    bool CavitySignalGenerator::DriveMode(Signal* aSignal, unsigned index)
     {
+
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
         const unsigned nChannels = fNChannels;
 
         //Receiver Properties
-        double dt = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * dt;
+        fDeltaT = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
+        fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * fDeltaT;
+        double tThisEventNSamples = fInterface->fTOld / fDeltaT;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true);
-        double dotProductFactor = 0.;
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fE_Gun);
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         double tEFieldAtProbe = 0.;
-        double dopplerFrequencyCavity = 0.;
-        double dopplerFrequencyAntenna = 0.;
-        double dopplerFrequencyShort = 0.;
+        std::vector<double> dopplerFrequency;
 
-        FieldCalculator aFieldCalculator;
 
     	for (int l=0; l<fNModes; l++)
     	{
@@ -536,68 +649,39 @@ namespace locust
     		{
     			for (int n=0; n<fNModes; n++)
     			{
-    				if (ModeSelect(l, m, n, fE_Gun))
+    				if (ModeSelect(l, m, n, fInterface->fE_Gun))
     				{
-    			    	std::vector<double> tE_normalized;
-    					if (!fE_Gun)
-    					{
-    						unitConversion = 1.;  // mks units in Collin amplitudes.
-    						tE_normalized = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tKassParticleXP, fTE, true);
-    						dotProductFactor = aFieldCalculator.GetCavityDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
-    					}
-    					else
-    					{
-    				        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for A_lambda coefficient cgs->si
-    				        unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-//    				        unitConversion = 1.; // If using direct Kassiopeia power budget.
-    				        tE_normalized = aFieldCalculator.GetWaveguideNormalizedModeField(l,m,n,tKassParticleXP);
-    						dotProductFactor = aFieldCalculator.GetWaveguideDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile);  // unit velocity \dot unit theta
-    					}
+    					std::vector<double> tE_normalized;
+    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
+    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
+    					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+    					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
+    					double modeAmplitude = tE_normalized.back();
 
-    					double modeAmplitude = 0.;
-    					if ( (!isnan(tE_normalized.back())) && (!isnan(tE_normalized.front())) )
-    					{
-    						modeAmplitude = pow(tE_normalized.back()*tE_normalized.back() + tE_normalized.front()*tE_normalized.front(), 0.5);  // normalized E at electron
-    					}
-    					else if ( !isnan(tE_normalized.back()) )
-    					{
-    						modeAmplitude = tE_normalized.back();
-    					}
-    					double cavityFIRSample = aFieldCalculator.GetCavityFIRSample(tKassParticleXP, fBypassTF);
 
-    					if (!fE_Gun)
+    					if (!fInterface->fE_Gun)
     					{
-    						double collinAmplitude = 0.;
-    						if (fTE)
-    						{
-    							collinAmplitude = fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]);
-    						}
-    						else
-    						{
-    							collinAmplitude = fInterface->fField->Z_TM(l,m,n,tKassParticleXP[7]);
-    						}
-        			    	dopplerFrequencyCavity = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
-    						excitationAmplitude = modeAmplitude * dotProductFactor * collinAmplitude * cavityFIRSample;
+    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
+    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
-    						tEFieldAtProbe = aFieldCalculator.GetCavityNormalizedModeField(l,m,n,tProbeLocation,fTE,true).back();
+    						tEFieldAtProbe = fInterface->fField->GetNormalizedModeField(l,m,n,tProbeLocation).back();
     					}
     					else
     					{
-    						// Calculate propagating E-field with J \dot E and integrated Poynting vector:
-
-    						dotProductFactor = 0.63;  // temporary override.
-    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
-    								cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-
-    						// Optional cross-check:  Use analytic impedance Z_TE.
-//    						excitationAmplitude = modeAmplitude * dotProductFactor * ScaleEPoyntingVector(tKassParticleXP[7]) *
-//    								fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * cavityFIRSample;
+    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
+    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
-//    						excitationAmplitude = 0.63*sqrt(tKassParticleXP[8]/2.);  // optional:  unitConversion =1., sqrt( modeFraction*LarmorPower/2 )
-
-    						dopplerFrequencyAntenna = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 1);
-        					dopplerFrequencyShort = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP, 0);
+    						if (fUseDirectKassPower)
+    						{
+    							// override one-way signal amplitude with direct Kass power:
+    							unitConversion = 1.0;  // Kass power is already in Watts.
+        						excitationAmplitude = fAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+    						}
 
     					}
 
@@ -608,22 +692,7 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-    						if (!fE_Gun)
-    						{
-    							fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyCavity, dt, fphiLO, totalScalingFactor, sampleIndex);
-    						}
-    						else
-    						{
-    							if (fInterface->fTOld > 0.)
-    							{
-    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyAntenna, dopplerFrequencyShort, dt, fphiLO, totalScalingFactor, sampleIndex, fInterface->fTOld);
-    							}
-    							else
-    							{
-    							    fPowerCombiner->InitializeVoltagePhases(tKassParticleXP, dopplerFrequencyAntenna, dopplerFrequencyShort, fInterface->fCENTER_TO_ANTENNA, fInterface->fCENTER_TO_SHORT, fInterface->fField->GetDimX());
-    								fPowerCombiner->AddOneModeToCavityProbe(aSignal, excitationAmplitude, tEFieldAtProbe, dopplerFrequencyAntenna, dopplerFrequencyShort, dt, fphiLO, totalScalingFactor, sampleIndex, fInterface->fTOld);
-    							}
-    						}
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
@@ -632,7 +701,19 @@ namespace locust
     		} // m
     	} // l
 
-    	fInterface->fTOld += dt;
+    	fInterface->fTOld += fDeltaT;
+    	if (!fAliasingIsChecked)
+    	{
+    		if (!fOverrideAliasing)
+    		{
+    		    if (!CrossCheckAliasing( aSignal, dopplerFrequency[0] / 2. / LMCConst::Pi() ))
+    		    {
+    			    LERROR(lmclog,"There is an aliased HF frequency in the window.\n");
+    			    return false;
+    		    }
+    		}
+    		fAliasingIsChecked = true;
+    	}
 
     	return true;
     }
@@ -652,7 +733,7 @@ namespace locust
         return;
     }
 
-    bool CavitySignalGenerator::ReceivedKassReady()
+     bool CavitySignalGenerator::ReceivedKassReady()
     {
 
     	std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -691,19 +772,18 @@ namespace locust
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
 
-
         int PreEventCounter = 0;
-        int nFilterBins = fInterface->fTFReceiverHandler.GetFilterSize();
-        InitializeBuffers(nFilterBins);
-
+        fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
+        fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSize() );
 
         if (fInterface->fTransmitter->IsKassiopeia())
         {
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        	std::thread tKassiopeia (&CavitySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
+            std::thread tKassiopeia (&CavitySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
+
                 if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
                 	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
@@ -712,9 +792,7 @@ namespace locust
                 		printf("breaking\n");
                 		break;
                 	}
-
                 	LPROG( lmclog, "LMC ReceivedKassReady" );
-
                 }
 
                 if (fInterface->fPreEventInProgress)  // Locust keeps sampling until Kass event.
@@ -731,72 +809,88 @@ namespace locust
 
                 if (fInterface->fEventInProgress)  // fEventInProgress
                 {
+
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
-                	if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
-                	{
-                        tLock.lock();
-                        fInterface->fDigitizerCondition.wait( tLock );
+
+
+
+                    if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+                    {
+
+
+                    	tLock.lock();
+
+                    	fInterface->fDigitizerCondition.wait( tLock );
+
+
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveMode(aSignal, fInterface->nFilterBinsRequired, fInterface->dtFilter, index))
+                    		if (DriveMode(aSignal, index))
                     		{
-                                PreEventCounter = 0; // reset
+                    			PreEventCounter = 0; // reset
                     		}
                     		else
                     		{
-                    			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
-                    			fSkippedSamples = true;
-                                tLock.unlock();
+                    			fAliasedFrequencies = true;
+                    			tLock.unlock();
                     			break;
                     		}
                         }
+
                         tLock.unlock();
+
+
                 	}
                  	else  // diagnose Kass
                  	{
-                         tLock.lock();
-                         std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
-                         if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
-                         {
-                         	tLock.unlock();
-                         }
-                         else  // Kass event has not started.
-                         {
-                          	if ( fInterface->fEventInProgress )
-                          	{
-                          		if ( index < fNPreEventSamples+1 ) // Kass never started at all.
-                          		{
-                         			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                             		fKassNeverStarted = true;
-                          		}
-                             	tLock.unlock(); // Kass either started or not, but is now finished.
-                             	break;
-                          	}
-                          	else  // Kass started an event and quickly terminated it.
-                          	{
-                         		LWARN(lmclog, "Kass event terminated quickly.\n");
-                         		tLock.unlock();
-                          	}
-                         }
+                 		tLock.lock();
+                 		std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
+                 		if (!fInterface->fKassEventReady)   // Kass event did start.  Continue but skip this sample.
+                 		{
+                 			tLock.unlock();
+                 		}
+                 		else    // Kass event has not started.
+                 		{
+                 			if ( fInterface->fEventInProgress )
+                 			{
+                 				if ( index < fNPreEventSamples+1 )  // Kass never started at all.
+                 				{
+                 					LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
+                 					fKassNeverStarted = true;
+                 				}
+                 				tLock.unlock();   // Kass either started or not, but is now finished.
+                 				break;
+                 			}
+                 			else
+                 			{
+                 				LWARN(lmclog, "Kass event terminated quickly.\n");
+                 				tLock.unlock();
+                 			}
+                 		}
                  	} // diagnose Kass
 
+
                 } // if fEventInProgress
+
             }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
             LPROG( lmclog, "Finished signal loop." );
-			fInterface->fWaitBeforeEvent = false;
+            fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
 
             if (fKassNeverStarted == true)
             {
-            	throw 2;
+            	throw std::runtime_error("Kassiopeia did not start.");
             	return false;
             }
-            if (fSkippedSamples == true)
+            if (fAliasedFrequencies == true)
             {
-            	throw 3;
+            	throw std::runtime_error("There appears to be problematic HF aliasing in the window.  "
+            			"See output above regarding \"Aliased frequency [] is below Nyquist frequency.\"  "
+            			"Please try the unit test \"bin/testAliasingHF [-h]\" to optimize tuning.  Or, to override "
+            			"this error please use this command line flag \"cavity-signal.override-aliasing\"=true ");
             	return false;
             }
 
@@ -806,16 +900,6 @@ namespace locust
 
     	return true;
     }
-
-
-    void CavitySignalGenerator::InitializeBuffers(unsigned filterbuffersize)
-    {
-    	FieldBuffer aFieldBuffer;
-    	fInterface->ElementFIRBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-    	fInterface->FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(1, 1, filterbuffersize);
-    }
-
-
 
 
 

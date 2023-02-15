@@ -13,14 +13,18 @@
 #include "LMCGenerator.hh"
 #include "LMCCavityModes.hh" // : LMCPowerCombiner
 #include "LMCWaveguideModes.hh" // : LMCPowerCombiner
-#include "LMCEquivalentCircuit.hh"
+#include "LMCEquivalentCircuit.hh" // : LMCAnalyticResponseFunction
+#include "LMCDampedHarmonicOscillator.hh" // : LMCAnalyticResponseFunction
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
 #include "LMCFieldCalculator.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
 #include "LMCRectangularWaveguide.hh" // : LMCField
-#include "LMCFieldBuffer.hh"
+#include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
+#include "LMCCavityUtility.hh"
+#include "LMCAliasingUtility.hh"
 #include <vector>
 #include <sstream>
 #include <string>
@@ -60,8 +64,10 @@ namespace locust
      - "e-gun": Select e-gun configuration instead of cavity [false].
      - "center-to-short": distance [0.05 m] from center of e-gun waveguide to reflecting short.
      - "center-to-antenna": distance [0.05 m] from center of e-gun waveguide to antenna.
-     - "back-reaction": optional back reaction in waveguide [true].
-
+     - "waveguide-short":  optional presence/absence of reflecting short [true].
+     - "back-reaction": optional waveguide back reaction in e-gun.  default to [true] if waveguide-short is present.
+     - "direct-kass-power":  In e-gun, overrides calculated waveguide signal amplitudes and replaces
+     	 them with sqrt(KassPower).  This is for cross-checking the more detailed signal calculations.
     */
 
     class CavitySignalGenerator : public Generator
@@ -72,6 +78,8 @@ namespace locust
             virtual ~CavitySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
+            bool CrossCheckCavityConfig();
+            bool CrossCheckAliasing(Signal* aSignal, double dopplerFrequency );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
@@ -86,21 +94,27 @@ namespace locust
 
 
         private:
-            bool fE_Gun;
             double fLO_Frequency;
+            double fDeltaT;
             int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
-            double fArrayRadius;
             std::string gxml_filename;
             bool fKassNeverStarted;
-            bool fSkippedSamples;
+            bool fAliasedFrequencies;
+            bool fOverrideAliasing;
+            bool fOverrideStepsize;
             double fphiLO; // voltage phase of LO in radians;
+            double fAvgDotProductFactor;
+            double fdtFilter;
             bool fBypassTF;
             bool fNormCheck;
             bool fModeMaps;
             bool fTE; // (if false, use TM modes.)
             bool fIntermediateFile;
+            bool fUseDirectKassPower;
+            bool fAliasingIsChecked;
+
 
 
 
@@ -108,8 +122,7 @@ namespace locust
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();
-            bool DriveMode(Signal* aSignal, int nFilterBinsRequired, double dtFilter, unsigned index);
-            void InitializeBuffers(unsigned filterbuffersize);
+            bool DriveMode(Signal* aSignal, unsigned index);
 
 
             bool DoGenerate( Signal* aSignal );
@@ -118,7 +131,9 @@ namespace locust
             bool (CavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
-            EquivalentCircuit* fEquivalentCircuit;
+            FieldCalculator* fFieldCalculator;
+            TFReceiverHandler* fTFReceiverHandler;
+            AnalyticResponseFunction* fAnalyticResponseFunction;
 
             kl_interface_ptr_t fInterface;
             FILE *fp;

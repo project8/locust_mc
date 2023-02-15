@@ -10,8 +10,6 @@ File Conventions
 
 *  .json files are generally locust configuration files. Locust uses an ordered list of generators (i.e. kass-signal, lpf-fft), which either generate signals, or apply transformations, such as filtering, to these signals. These files specify both the list of generators used and the parameters of these generators, in standard JSON format.  This directory also contains one JSON file for use with Katydid.
 
-*  .and files are HFSS input files. If using the hfss-signal generator, this file is used as input in locust to generate an .nfd file, which is another HFSS configuration file, describing the electron fields. Both the .and and .nfd files are compatible with up to HFSS version 18.1. An issue should be raised on github if future versions are not back-compatible to the current file format.
-
 Examples
 --------------------
 * Test signal:  A sinusoidal voltage signal drives the LMCTestSignalGenerator.  Configurable parameters are "rf-frequency", "lo-frequency", and [voltage] "amplitude".  Katydid signal processing results in a signal at 50 MHz above DC, with total power=amplitude^2.  A system impedance of 50 ohms is applied explicitly in Locust and in Katydid.  To run this example, enter

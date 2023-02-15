@@ -51,6 +51,7 @@ int main( int argc, char** argv )
 
 
         PrintHelpMessage();
+        if ( argc < 2) return -1;
         main_app the_main; // Scarab v2
         scarab::configurator configurator( argc, argv );  // Scarab v1
 
@@ -58,13 +59,14 @@ int main( int argc, char** argv )
         GeneratorToolbox toolbox;
         if( ! toolbox.Configure( configurator.config() ) )
         {
-            LWARN( lmclog, "Unable to configure the v1 generator toolbox" );
+            LWARN( lmclog, "Unable to configure the v1 generator toolbox.  Trying v2 .." );
             tScarabV1 = false;
         	CLI11_PARSE( the_main, argc, argv ); // Scarab v2
         	the_main.pre_callback(); // Scarab v2
         	if( ! toolbox.Configure( the_main.master_config().as_node() ))
         	{
         		LERROR( lmclog, "Unable to configure the v2 generator toolbox" );
+            	throw std::runtime_error("Parsing either v1 or v2 has not worked.");
         		return -1;
         	}
         }

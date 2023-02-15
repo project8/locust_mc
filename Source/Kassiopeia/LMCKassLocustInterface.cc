@@ -34,18 +34,13 @@ namespace locust
             fProject8Phase( 0 ),
             fCENTER_TO_SHORT( 0.05 ),
             fCENTER_TO_ANTENNA( 0.05 ),
-			fTFReceiverHandler(),
-			fTransmitter(),
-	        fBesselNKZeros( 0 ),
-			fBesselNKPrimeZeros( 0 ),
-	        nFilterBinsRequired( 0 ),
-	        dtFilter( 0 ),
-	        eCurrentBuffer( 0 ),
-			fField(),
-	    	dotProductFactor( 0. ),
-	    	modeAmplitude( 0. ),
-			CavityFIRSample( 0. ),
-			fBackReaction( false )
+            fTransmitter(),
+            fBesselNKZeros( 0 ),
+            fBesselNKPrimeZeros( 0 ),
+            fField(),
+            fConfigureKass( NULL ),
+            fBackReaction( false ),
+            fE_Gun( false )
 
     {}
 

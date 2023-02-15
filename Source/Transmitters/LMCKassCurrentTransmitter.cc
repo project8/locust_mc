@@ -22,6 +22,7 @@ namespace locust
     LOGGER( lmclog, "KassCurrentTransmitter" );
 
     KassCurrentTransmitter::KassCurrentTransmitter():
+    fOrbitPhase( 0. ),
     fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -81,6 +82,23 @@ namespace locust
     }
 
 
+    double KassCurrentTransmitter::GetGuidingCenterVy()
+    {
+    	int dSize = fInterface->fParticleHistory.size();
+    	if (dSize > 1)
+    	{
+    		locust::Particle tParticleSecondToLast = fInterface->fParticleHistory.at(dSize-2);
+    		locust::Particle tParticleLast = fInterface->fParticleHistory.back();
+    		double tDisplacement = tParticleLast.GetGuidingCenterPosition().Y() - tParticleSecondToLast.GetGuidingCenterPosition().Y();
+    		double tTimeInterval = tParticleLast.GetTime() - tParticleSecondToLast.GetTime();
+    		double tGuidingCenterVy = tDisplacement / tTimeInterval;
+    		return tGuidingCenterVy;
+    	}
+    	else
+    	{
+    		return 0.;
+    	}
+    }
 
 
     //Return index of fParticleHistory particle closest to the time we are evaluating
@@ -96,46 +114,63 @@ namespace locust
 
 
 
-    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate)
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, double dt, bool EGun)
     {
 
     	locust::Particle tParticle;
+    	std::vector<double> particleXP;
+    	particleXP.resize(9);
 
-    	if (!Interpolate)
+    	int pSize = fInterface->fParticleHistory.size();
+    	if ( pSize > 0 )
     	{
-    		tParticle = fInterface->fParticleHistory.back();
+    	    if (!Interpolate)
+    	    {
+    		    tParticle = fInterface->fParticleHistory.back();
+    	    }
+    	    else
+    	    {
+    		    int currentIndex = FindNode(TOld);
+    		    tParticle = fInterface->fParticleHistory[currentIndex];
+    		    tParticle.Interpolate(TOld);
+    	    }
+
+            double tposX = tParticle.GetPosition(true).X();
+            double tposY = tParticle.GetPosition(true).Y();
+            double tposZ = tParticle.GetPosition(true).Z();
+            double tvX = tParticle.GetVelocity(true).X();
+            double tvY = tParticle.GetVelocity(true).Y();
+            double tvZ = tParticle.GetVelocity(true).Z();
+
+//            fOrbitPhase += dt*tParticle.GetCyclotronFrequency();  // accumulate phase semi-analytically.
+    	    fOrbitPhase = calcOrbitPhase(tvX, tvY); // or use Kass kinematics
+
+            particleXP[0] = pow( tposX*tposX + tposY*tposY, 0.5);
+            particleXP[1] = calcTheta(tposX, tposY);
+            particleXP[2] = tposZ;
+            particleXP[3] = tvX;
+            particleXP[4] = tvY;
+            particleXP[5] = tvZ;
+            particleXP[6] = fOrbitPhase;
+            particleXP[7] = tParticle.GetCyclotronFrequency();
+            particleXP[8] = tParticle.GetLarmorPower();
+
+            if (EGun)  // rotate from Kass to Locust coordinate system.
+            {
+                particleXP[0] = pow( tposZ*tposZ + tposX*tposX, 0.5);
+                particleXP[1] = calcTheta(tposZ, tposX);
+                particleXP[2] = tposY;  // z->y
+                particleXP[3] = tvY;    // x->z
+                particleXP[4] = tvX;    // y->x
+                particleXP[5] = GetGuidingCenterVy();    // z->y, waveguide axis.
+            }
+
     	}
-    	else
-    	{
-    		int currentIndex = FindNode(TOld);
-    		tParticle = fInterface->fParticleHistory[currentIndex];
-    		tParticle.Interpolate(TOld);
-    	}
-
-
-        double tposX = tParticle.GetPosition(true).X();
-        double tposY = tParticle.GetPosition(true).Y();
-        double tposZ = tParticle.GetPosition(true).Z();
-		double tvX = tParticle.GetVelocity(true).X();
-		double tvY = tParticle.GetVelocity(true).Y();
-		double tvZ = tParticle.GetVelocity(true).Z();
-
-        std::vector<double> particleXP;
-    	particleXP.resize(8);
-
-        particleXP[0] = pow( tposX*tposX + tposY*tposY, 0.5);
-        particleXP[1] = calcTheta(tposX, tposY);
-        particleXP[2] = tposZ;
-        particleXP[3] = tvX;
-        particleXP[4] = tvY;
-        particleXP[5] = tvZ;
-        particleXP[6] = calcOrbitPhase(tvX, tvY);
-        particleXP[7] = tParticle.GetCyclotronFrequency();
-        particleXP[8] = tParticle.GetLarmorPower();
-
 
     	return particleXP;
     }
+
+
 
 
 } /* namespace locust */

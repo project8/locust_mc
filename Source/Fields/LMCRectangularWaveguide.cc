@@ -63,7 +63,7 @@ namespace locust
     	    	auto it = aField.begin();
     	    	while (it != aField.end())
     	    	{
-		    		if (!isnan(*it))
+		    		if (!std::isnan(*it))
 		    			aFieldMagSq += (*it)*(*it);
     	    		*it++;
     	    	}
@@ -96,23 +96,20 @@ namespace locust
     }
 
 
-    double RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP, bool towardAntenna)
+    std::vector<double> RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
     {
-    	double zVelocity = 0.;
-		if (towardAntenna)
-		{
-			zVelocity = tKassParticleXP[5];
-		}
-		else
-		{
-			zVelocity = -tKassParticleXP[5];
-		}
-
+    	std::vector<double> freqPrime;
     	double fcyc = tKassParticleXP[7];
     	double groupVelocity = GetGroupVelocity(m,n,fcyc);
-        double gammaZ = 1.0 / pow(1.0-pow(zVelocity/groupVelocity,2.),0.5);
-        double fPrime = fcyc * gammaZ * (1.+zVelocity/groupVelocity);
-    	return fPrime;
+    	double zVelocity = 0.;
+
+    	for (unsigned towardAntenna=0; towardAntenna<2; towardAntenna++)
+    	{
+			zVelocity = ( 1. - towardAntenna*2. ) * tKassParticleXP[5];
+            double gammaZ = 1.0 / pow(1.0-pow(zVelocity/groupVelocity,2.),0.5);
+            freqPrime.push_back(fcyc * gammaZ * (1.+zVelocity/groupVelocity) );
+    	}
+    	return freqPrime;
     }
 
 
@@ -126,7 +123,7 @@ namespace locust
     	double beta = sqrt(k*k - kc*kc);
 
     	double Z_TE = k*eta/beta;  // This is 448 ohms for TE10 at 25.9 GHz.
-    	return 2. * LMCConst::Pi() * Z_TE / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
+    	return Z_TE;
     }
 
     double RectangularWaveguide::Z_TM(int l, int m, int n, double fcyc) const
@@ -139,7 +136,7 @@ namespace locust
     	double beta = sqrt(k*k - kc*kc);
 
     	double Z_TM = beta*eta/k;
-    	return 2. * LMCConst::Pi() * Z_TM / LMCConst::C() / 1.e2; // Jackson Eq. 8.140, 1.e2 is m/s -> cm/s
+    	return Z_TM;
     }
 
 
@@ -220,6 +217,60 @@ namespace locust
     	TM_H.push_back(tHx);
     	TM_H.push_back(tHy);
         return TM_H;
+    }
+
+    std::vector<double> RectangularWaveguide::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+      {
+     	// The l index is inert in the waveguide.
+      	double tX = tKassParticleXP[0] * cos(tKassParticleXP[1]);
+      	double tY = tKassParticleXP[0] * sin(tKassParticleXP[1]);
+      	double fcyc = tKassParticleXP[7];
+      	std::vector<double> tTE_E_electron = this->TE_E(m,n,tX,tY,fcyc);
+  		double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
+
+  		auto it = tTE_E_electron.begin();
+  		while (it != tTE_E_electron.end())
+  		{
+  			if (!std::isnan(*it))
+  			{
+  				(*it) *= normFactor;
+  			}
+  			else
+  			{
+  				(*it) = 0.;
+  			}
+  			*it++;
+  		}
+      	return tTE_E_electron;  // return normalized field.
+      }
+
+
+    double RectangularWaveguide::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile)
+    {
+    	double tThetaParticle = tKassParticleXP[1];
+    	double tEy = aTE_E_normalized.back();
+     	double tEmag = fabs(tEy);
+    	double tVx = tKassParticleXP[3];
+    	double tVy = tKassParticleXP[4];
+    	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+    	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
+
+
+    	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
+    	if (IntermediateFile)
+    	{
+        	char buffer[60];
+    		int a = sprintf(buffer, "output/dotProducts.txt");
+    		const char *fpname = buffer;
+    		FILE *fp = fopen(fpname, "a");
+    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
+    		fclose(fp);
+
+    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
+    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
+    	}
+
+    	return unitJdotE;
     }
 
 

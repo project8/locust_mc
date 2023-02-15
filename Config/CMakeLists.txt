@@ -5,12 +5,11 @@ configure_file( JustKass.xml.in JustKass.xml )
 configure_file( JustKassFieldMap.xml.in JustKassFieldMap.xml )
 configure_file( LocustKass_Waveguide_Template.xml.in LocustKass_Waveguide_Template.xml )
 configure_file( LocustKass_FreeSpace_Template.xml.in LocustKass_FreeSpace_Template.xml )
-configure_file( LocustKass_Cavity_Template.xml.in LocustKass_Cavity_Template.xml )
-configure_file( LocustKass_EGun_Template.xml.in LocustKass_EGun_Template.xml )
+configure_file( LocustKass_Cavity_CCA.xml.in LocustKass_Cavity_CCA.xml )
+configure_file( LocustKass_Cavity_1GHz.xml.in LocustKass_Cavity_1GHz.xml )
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
-configure_file( LocustCavityEqCircuitTest.json.in LocustCavityEqCircuitTest.json )
-configure_file( LocustCavityTemplate.json.in LocustCavityTemplate.json )
-configure_file( LocustEGunTemplate.json.in LocustEGunTemplate.json )
+configure_file( LocustCavityCCA.json.in LocustCavityCCA.json )
+configure_file( LocustCavity1GHz.json.in LocustCavity1GHz.json )
 configure_file( LocustFreeSpaceTemplate.json.in LocustFreeSpaceTemplate.json )
 configure_file( LocustPlaneWaveTemplate.json.in LocustPlaneWaveTemplate.json )
 configure_file( LocustFakeTrack.json.in LocustFakeTrack.json )
@@ -27,16 +26,15 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/JustKassFieldMap.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Waveguide_Template.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_FreeSpace_Template.xml 
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_Template.xml 
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_EGun_Template.xml 
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_CCA.xml 
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_1GHz.xml     
     WaveguideGeometry.xml
     FreeSpaceGeometry.xml
-	FreeSpaceGeometry_V00_00_11_1GHz.xml
-	FreeSpaceGeometry_V00_00_10.xml
+	CavityGeometry_V00_00_00.xml
+	CavityGeometry_VTinyCoil.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityEqCircuitTest.json
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityTemplate.json
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustEGunTemplate.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavity1GHz.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustPlaneWaveTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFakeTrack.json
