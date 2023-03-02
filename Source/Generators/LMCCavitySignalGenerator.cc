@@ -252,28 +252,32 @@ namespace locust
     					{
     						double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
         					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fField->GetDimY() - fInterface->fField->GetDimY()/2.;
-    						std::vector<double> tE;
-    						std::vector<double> tH;
-    						if (!fInterface->fE_Gun)
-    						{
-    							if (fTE)
-    							{
-    								tE = fInterface->fField->TE_E(l,m,n,r,theta,0.0,0);
-    								tH = fInterface->fField->TE_H(l,m,n,r,theta,0.0,0);
-    							}
-    							else
-    							{
-    								tE = fInterface->fField->TM_E(l,m,n,r,theta,0.0,0);
-    								tH = fInterface->fField->TM_H(l,m,n,r,theta,0.0,0);
-    							}
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
-    							fprintf(fp_H, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tH.front()*normFactor, tH.back()*normFactor);
-    						}
-    						else
-    						{
-    							tE = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
-    						}
+        					for (unsigned k=0; k<fInterface->fField->GetNPixels()+1; k++)
+        					{
+            				    double z = (double)k/fInterface->fField->GetNPixels()*fInterface->fField->GetDimL() - fInterface->fField->GetDimL()/2.;
+    						    std::vector<double> tE;
+    						    std::vector<double> tH;
+    						    if (!fInterface->fE_Gun)
+    						    {
+    							    if (fTE)
+    							    {
+    								    tE = fInterface->fField->TE_E(l,m,n,r,theta,z,0);
+    								    tH = fInterface->fField->TE_H(l,m,n,r,theta,z,0);
+    							    }
+    							    else
+    							    {
+    								    tE = fInterface->fField->TM_E(l,m,n,r,theta,z,0);
+    								    tH = fInterface->fField->TM_H(l,m,n,r,theta,z,0);
+    							    }
+    							    fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g %10.4g\n", r, theta, z, tE.front()*normFactor, tE.back()*normFactor);
+    							    fprintf(fp_H, "%10.4g %10.4g %10.4g %10.4g %10.4g\n", r, theta, z, tH.front()*normFactor, tH.back()*normFactor);
+    						    }
+    						    else
+    						    {
+    							    tE = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
+    							    fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
+    						    }
+        					}
     					}
     				}
     				fclose (fp_E);
@@ -412,7 +416,6 @@ namespace locust
 			exit(-1);
 			return false;
 		}
-
         if (!fInterface->fField->Configure(aParam))
         {
         	LERROR(lmclog,"Error configuring LMCField.");
@@ -420,15 +423,6 @@ namespace locust
         	return false;
         }
 
-        if( aParam.has( "cavity-radius" ) )
-        {
-            fInterface->fField->SetDimR( aParam["cavity-radius"]().as_double() );
-        }
-
-        if( aParam.has( "cavity-length" ) )
-        {
-            fInterface->fField->SetDimL( aParam["cavity-length"]().as_double() );
-        }
 
         if( aParam.has( "center-to-short" ) ) // for use in e-gun
         {
