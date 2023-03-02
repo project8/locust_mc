@@ -25,14 +25,21 @@ namespace locust
     {
 
     	if( aParam.has( "central-frequency" ) )
-        	{
-            	fCentralFrequency= 2.*LMCConst::Pi()*aParam["central-frequency"]().as_double();
-        	}
-
-       	if( aParam.has( "n-pixels" ) )
-            {
-                SetNPixels(aParam["n-pixels"]().as_int());
-            }
+    	{
+    		fCentralFrequency= 2.*LMCConst::Pi()*aParam["central-frequency"]().as_double();
+    	}
+    	if( aParam.has( "n-pixels" ) )
+    	{
+    		SetNPixels(aParam["n-pixels"]().as_int());
+    	}
+        if( aParam.has( "cavity-radius" ) )
+        {
+            SetDimR( aParam["cavity-radius"]().as_double() );
+        }
+        if( aParam.has( "cavity-length" ) )
+        {
+        	SetDimL( aParam["cavity-length"]().as_double() );
+        }
 
     	return true;
 
@@ -58,7 +65,6 @@ namespace locust
     {
     	fModeNormFactorTM = aNormFactor;
     }
-
 
     double Field::GetCentralFrequency()
     {

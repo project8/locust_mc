@@ -33,25 +33,23 @@ namespace locust
             Field();
             virtual ~Field();
 
-            bool Configure( const scarab::param_node& aNode );
+            virtual bool Configure( const scarab::param_node& aParam );
 
-
-            // size of field vectors will be number of components in field value at (r,theta,z)
 
             // cylindrical cavity
             virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
             virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
             virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
             virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
-            virtual double Z_TM(int l, int m, int n, double fcyc) const {return {0.};};
-            virtual double Z_TE(int l, int m, int n, double fcyc) const {return {0.};};
-
 
             // rectangular waveguide
             virtual std::vector<double> TE_E(int m, int n, double x, double y, double fcyc) const {return {0.};};
             virtual std::vector<double> TE_H(int m, int n, double x, double y, double fcyc) const {return {0.};};
             virtual std::vector<double> TM_E(int m, int n, double x, double y, double fcyc) const {return {0.};};
             virtual std::vector<double> TM_H(int m, int n, double x, double y, double fcyc) const {return {0.};};
+
+            virtual double Z_TM(int l, int m, int n, double fcyc) const {return {0.};};
+            virtual double Z_TE(int l, int m, int n, double fcyc) const {return {0.};};
 
 
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
