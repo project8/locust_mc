@@ -29,6 +29,45 @@ namespace locust
  */
 
 
+    class FieldCore
+	{
+
+    	public:
+
+    	    FieldCore():
+    	        fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+    	    {};
+    	    virtual ~FieldCore(){};
+            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
+            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
+            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
+            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
+
+    	private:
+            kl_interface_ptr_t fInterface;
+
+
+	};
+
+    class PozarCylindrical: public FieldCore
+    {
+        public:
+    	    PozarCylindrical():
+    	        fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+            {};
+    	    virtual ~PozarCylindrical(){};
+            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+
+        private:
+            kl_interface_ptr_t fInterface;
+
+    };
+
+
+
     class CylindricalCavity : public Field
     {
 
@@ -36,12 +75,8 @@ namespace locust
             CylindricalCavity();
             virtual ~CylindricalCavity();
 
-            virtual bool Configure( const scarab::param_node& ) {return true;};
+            virtual bool Configure( const scarab::param_node& aParam);
 
-            std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
-            std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
-            std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
-            std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
             double Z_TE(int l, int m, int n, double fcyc) const;
             double Z_TM(int l, int m, int n, double fcyc) const;
             double Integrate(int l, int m, int n, bool teMode, bool eField);
@@ -49,12 +84,12 @@ namespace locust
             std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
 
-
         private:
             kl_interface_ptr_t fInterface;
-
+            FieldCore* fFieldCore;
 
     };
+
 
 
 }; /* namespace locust */

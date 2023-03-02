@@ -10,12 +10,35 @@
 
 namespace locust
 {
+
     LOGGER( lmclog, "CylindricalCavity" );
     CylindricalCavity::CylindricalCavity():
     fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     CylindricalCavity::~CylindricalCavity() {}
+
+
+    bool CylindricalCavity::Configure( const scarab::param_node& aParam)
+    {
+
+    	if( !Field::Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring Field class from CylindricalCavity subclass");
+    		return false;
+    	}
+
+/*
+        if( aParam.has( "modemap-filename" ) )
+        {
+
+        }
+*/
+
+        fFieldCore = new PozarCylindrical();
+
+    	return true;
+    }
 
 
     double CylindricalCavity::Integrate(int l, int m, int n, bool teMode, bool eField)
@@ -42,22 +65,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = TE_E(l, m, n, r, theta, zKass,1);
+    	    		    	aField = fFieldCore->TE_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
     	    			}
     	    			else
     	    			{
-    	    				aField = TE_H(l, m, n, r, theta, zKass,1);
+    	    				aField = fFieldCore->TE_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = TM_E(l, m, n, r, theta, zKass,1);
+    	    				aField = fFieldCore->TM_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
     	    			}
     	    			else
     	    			{
-    	    				aField = TM_H(l, m, n, r, theta, zKass,1);
+    	    				aField = fFieldCore->TM_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
     	    			}
     	    		}
 
@@ -71,9 +94,8 @@ namespace locust
     	    		}
 
     				tIntegral += aFieldMagSq*r*dR*dTheta*dZ;
-//    		    	tVolume += r*dR*dTheta*dZ;  // sanity check volume integral.
+    		    	tVolume += r*dR*dTheta*dZ;  // sanity check volume integral.
     			}
-//    	printf("tVolume is %g\n", tVolume); getchar();
     	return tIntegral;
     }
 
@@ -139,16 +161,18 @@ namespace locust
     	return Z_TM;
     }
 
-    std::vector<double> CylindricalCavity::TE_E(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
+    std::vector<double> PozarCylindrical::TE_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
     {
 
-    	double z = zKass + GetDimL()/2.;
+
+    	double z = zKass + L/2.;
 
     	// from Pozar
     	std::vector<double> TE_E;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / GetDimR();
-    	double k3 = n * LMCConst::Pi() / GetDimL();
+
+    	double k1 = x_lm / R;
+    	double k3 = n * LMCConst::Pi() / L;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
@@ -169,19 +193,20 @@ namespace locust
 
     	TE_E.push_back(tEr);
     	TE_E.push_back(tEtheta);
+
         return TE_E;
     }
 
-    std::vector<double> CylindricalCavity::TE_H(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
+    std::vector<double> PozarCylindrical::TE_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
     {
 
-    	double z = zKass + GetDimL()/2.;
+    	double z = zKass + L/2.;
 
     	// from Pozar
     	std::vector<double> TE_H;
     	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / GetDimR();
-    	double k3 = n * LMCConst::Pi() / GetDimL();
+    	double k1 = x_lm / R;
+    	double k3 = n * LMCConst::Pi() / L;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
@@ -206,15 +231,15 @@ namespace locust
     	return TE_H; // r, z, theta
     }
 
-    std::vector<double> CylindricalCavity::TM_E(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
+    std::vector<double> PozarCylindrical::TM_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
     {
-    	double z = zKass + GetDimL()/2.;
+    	double z = zKass + L/2.;
 
     	// from Pozar
     	std::vector<double> TM_E;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / GetDimR();
-    	double k3 = n * LMCConst::Pi() / GetDimL();
+    	double k1 = x_lm / R;
+    	double k3 = n * LMCConst::Pi() / L;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
@@ -240,15 +265,15 @@ namespace locust
     	return TM_E; // r, z, theta
     }
 
-    std::vector<double> CylindricalCavity::TM_H(int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta) const
+    std::vector<double> PozarCylindrical::TM_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
     {
-    	double z = zKass + GetDimL()/2.;
+    	double z = zKass + L/2.;
 
     	// from Pozar
     	std::vector<double> TM_H;
     	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / GetDimR();
-    	double k3 = n * LMCConst::Pi() / GetDimL();
+    	double k1 = x_lm / R;
+    	double k3 = n * LMCConst::Pi() / L;
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
@@ -278,7 +303,7 @@ namespace locust
        	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
 
-       	tField = this->TE_E(l,m,n,tR,0.,tZ,1);
+       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,0.,tZ,1);
        	double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
 
    		auto it = tField.begin();
