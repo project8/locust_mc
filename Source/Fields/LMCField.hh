@@ -12,6 +12,7 @@
 #include "logger.hh"
 #include "LMCConst.hh"
 
+
 #include <vector>
 
 namespace locust
@@ -25,6 +26,29 @@ namespace locust
  No input parameters
  */
 
+class FieldCore
+{
+
+	public:
+
+	    FieldCore(){}
+	    virtual ~FieldCore(){};
+
+	    // Cylindrical cavity:
+        virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+        virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+        virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+        virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+
+        // Rectangular waveguide:
+        virtual std::vector<double> TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+        virtual std::vector<double> TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+        virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+        virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+
+
+};
+
 
     class Field
     {
@@ -35,19 +59,6 @@ namespace locust
 
             virtual bool Configure( const scarab::param_node& aParam );
 
-
-            // cylindrical cavity
-            virtual std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
-            virtual std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
-            virtual std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
-            virtual std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const {return {0.};};
-
-            // rectangular waveguide
-            virtual std::vector<double> TE_E(int m, int n, double x, double y, double fcyc) const {return {0.};};
-            virtual std::vector<double> TE_H(int m, int n, double x, double y, double fcyc) const {return {0.};};
-            virtual std::vector<double> TM_E(int m, int n, double x, double y, double fcyc) const {return {0.};};
-            virtual std::vector<double> TM_H(int m, int n, double x, double y, double fcyc) const {return {0.};};
-
             virtual double Z_TM(int l, int m, int n, double fcyc) const {return {0.};};
             virtual double Z_TE(int l, int m, int n, double fcyc) const {return {0.};};
 
@@ -56,6 +67,7 @@ namespace locust
 
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
+            virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) {return {0.};};
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
