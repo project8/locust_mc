@@ -296,6 +296,10 @@ namespace locust
         return TM_H;
     }
 
+    std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta)
+    {
+    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,0.,z,1);
+    }
 
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
        {

@@ -29,25 +29,6 @@ namespace locust
  */
 
 
-    class FieldCore
-	{
-
-    	public:
-
-    	    FieldCore():
-    	        fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
-    	    {};
-    	    virtual ~FieldCore(){};
-            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
-            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
-            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
-            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){std::vector<double> x; return x;};
-
-    	private:
-            kl_interface_ptr_t fInterface;
-
-
-	};
 
     class PozarCylindrical: public FieldCore
     {
@@ -82,6 +63,8 @@ namespace locust
             double Integrate(int l, int m, int n, bool teMode, bool eField);
             std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
             std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+
             double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
 
         private:
