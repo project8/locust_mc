@@ -26,28 +26,36 @@ namespace locust
  No input parameters
  */
 
-class FieldCore
-{
+    class FieldCore
+    {
 
-	public:
+	    public:
 
-	    FieldCore(){}
-	    virtual ~FieldCore(){};
+    	    FieldCore();
+    	    virtual ~FieldCore();
 
-	    // Cylindrical cavity:
-        virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
-        virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
-        virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
-        virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+	        // Cylindrical cavity:
+            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
+            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta){return {0.};};
 
-        // Rectangular waveguide:
-        virtual std::vector<double> TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
-        virtual std::vector<double> TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
-        virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
-        virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+            // Rectangular waveguide:
+            virtual std::vector<double> TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+            virtual std::vector<double> TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+            virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+            virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
+
+            void ReadBesselZeroes(std::string filename, bool prime);
+
+            double GetBesselNKZeros(int l, int m);
+            double GetBesselNKPrimeZeros(int l, int m);
+
+        private:
+            std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
 
 
-};
+    };
 
 
     class Field
@@ -73,10 +81,18 @@ class FieldCore
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
             void SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor);
+            virtual void CheckNormalization(int nModes){};
+            std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
+            virtual void PrintModeMaps(int nModes, bool bTE){};
+
+
+
             double GetCentralFrequency();
             void SetCentralFrequency( double aCentralFrequency );
             int GetNPixels();
             void SetNPixels( int aNumberOfPixels );
+            int GetNModes();
+            void SetNModes( int aNumberOfModes );
             double GetDimX() const;
             void SetDimX( double aDim );
             double GetDimY() const;
@@ -89,6 +105,7 @@ class FieldCore
 
 
         private:
+            int fNModes;
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTE;  // 3D vector [n-modes][n-modes][n-modes].
             std::vector<std::vector<std::vector<double>>> fModeNormFactorTM;  // 3D vector [n-modes][n-modes][n-modes].
             double fCentralFrequency;
