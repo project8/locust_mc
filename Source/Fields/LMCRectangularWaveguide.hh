@@ -29,19 +29,15 @@ namespace locust
     class PozarRectangular: public FieldCore
     {
         public:
-	        PozarRectangular():
-	            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
-            {};
-	        virtual ~PozarRectangular(){};
-            virtual std::vector<double> TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc) const;
-            virtual std::vector<double> TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc) const;
-            virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc) const;
-            virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc) const;
+	        PozarRectangular();
+	        virtual ~PozarRectangular();
+            virtual std::vector<double> TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc);
+            virtual std::vector<double> TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc);
+            virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc);
+            virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc);
 
-        private:
-            kl_interface_ptr_t fInterface;
 
-};
+    };
 
 
 
@@ -59,7 +55,10 @@ namespace locust
             double Integrate(int l, int m, int n, bool teMode, bool eField);
             std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
             std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
             double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile);
+            virtual void PrintModeMaps(int nModes, bool bTE);
+            virtual void CheckNormalization(int nModes);
 
 
 
