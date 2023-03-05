@@ -340,6 +340,7 @@
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
     <ksterm_min_z name="term_min_z" z="-4.0"/>
     <ksterm_max_z name="term_max_z" z="4.0"/>
+    <ksterm_max_r name="term_max_r" r="0.18"/>
 
     
     <!-- modifiers -->
@@ -421,6 +422,7 @@
         <command parent="root_terminator" field="add_terminator" child="term_max_z"/>
         <command parent="root_terminator" field="add_terminator" child="term_min_z"/>
 
+        <command parent="root_terminator" field="add_terminator" child="term_max_r"/>
 
 
         <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
