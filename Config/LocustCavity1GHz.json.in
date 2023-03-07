@@ -14,7 +14,7 @@
         "cavity-length": 3.0,           
         "back-reaction": "true",
         "dho-cavity-frequency": 1.067e9,
-        "dho-time-resolution": 1.0e-8,
+        "dho-time-resolution": 1.0e-9,
         "dho-threshold-factor": 0.01,
         "event-spacing-samples": 10,
         "e-gun": false,        
@@ -40,8 +40,8 @@
 
     "digitizer":
     {
-        "v-range":  4e-08,
-        "v-offset": -2e-08
+        "v-range":  5.0e-07,
+        "v-offset": -2.5e-07
     }
 
 }
