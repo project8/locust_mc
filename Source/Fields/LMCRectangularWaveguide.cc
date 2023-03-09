@@ -17,12 +17,13 @@ namespace locust
     }
     RectangularWaveguide::~RectangularWaveguide() {}
 
-    PozarRectangular::PozarRectangular() {}
-    PozarRectangular::~PozarRectangular() {}
-
 
     bool RectangularWaveguide::Configure( const scarab::param_node& aParam)
     {
+
+    	LWARN( lmclog, "The rectanguar waveguide simulation is not fully supported with a suitable trap right now ... " );
+    	LWARN( lmclog, "Press return to continue ... " );
+    	getchar();
 
     	if( !Field::Configure(aParam))
     	{
@@ -51,8 +52,6 @@ namespace locust
         {
         	PrintModeMaps(GetNModes(),1);
         }
-
-
 
         return true;
 

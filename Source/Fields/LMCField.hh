@@ -47,7 +47,6 @@ namespace locust
             virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
 
             void ReadBesselZeroes(std::string filename, bool prime);
-
             double GetBesselNKZeros(int l, int m);
             double GetBesselNKPrimeZeros(int l, int m);
 
@@ -69,24 +68,20 @@ namespace locust
 
             virtual double Z_TM(int l, int m, int n, double fcyc) const {return {0.};};
             virtual double Z_TE(int l, int m, int n, double fcyc) const {return {0.};};
-
-
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
-
-            virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
-            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
-            virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) {return {0.};};
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
+            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
+            virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE) {return {{{0.}}};};
+            virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) {return {0.};};
+            virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
+            virtual void CheckNormalization(int nModes){};
+            virtual void PrintModeMaps(int nModes, bool bTE){};
+
+
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
             void SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor);
-            virtual void CheckNormalization(int nModes){};
-            std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
-            virtual void PrintModeMaps(int nModes, bool bTE){};
-
-
-
             double GetCentralFrequency();
             void SetCentralFrequency( double aCentralFrequency );
             int GetNPixels();

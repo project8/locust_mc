@@ -109,47 +109,6 @@ namespace locust
      }
 
 
-
-     std::vector<std::vector<std::vector<double>>> Field::CalculateNormFactors(int nModes, bool bTE)
-     {
-
-        LPROG( lmclog, "Calculating mode normalization factors ... " );
-
-     	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
-     	aModeNormFactor.resize(nModes);
-
-     	for (unsigned m=0; m<nModes; m++)
-     	{
-     		aModeNormFactor[m].resize(nModes);
-         	for (unsigned n=0; n<nModes; n++)
-         	{
-         		aModeNormFactor[m][n].resize(nModes);
-         	}
-     	}
-
-
-     	for (unsigned l=0; l<nModes; l++)
-     	{
-         	for (unsigned m=0; m<nModes; m++)
-         	{
-             	for (unsigned n=0; n<nModes; n++)
-             	{
-             		if (bTE)
-             		{
-             			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,1,1);
-             		}
-             		else
-             		{
-             			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,0,1);
-             		}
-             	}
-         	}
-     	}
-
-     	return aModeNormFactor;
-     }
-
-
     double Field::GetCentralFrequency()
     {
     	return fCentralFrequency;

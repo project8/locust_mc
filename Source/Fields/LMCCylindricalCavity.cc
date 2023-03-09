@@ -16,9 +16,6 @@ namespace locust
 
     CylindricalCavity::~CylindricalCavity() {}
 
-    PozarCylindrical::PozarCylindrical() {}
-    PozarCylindrical::~PozarCylindrical() {}
-
 
 
     bool CylindricalCavity::Configure( const scarab::param_node& aParam)
@@ -39,7 +36,19 @@ namespace locust
         	SetDimL( aParam["cavity-length"]().as_double() );
         }
 
+
+        /*
+                if( aParam.has( "modemap-filename" ) )
+                {
+                    // TO-DO:  This is where we can plan to read in a mode map.                     *
+                    fFieldCore = new TBDModeMapClass();
+                }
+        */
+
         fFieldCore = new PozarCylindrical();
+
+
+        // TO-DO:  Move the next 3 lines to a parent class.
         scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
         fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
         fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
@@ -54,17 +63,48 @@ namespace locust
         	PrintModeMaps(GetNModes(),1);
         }
 
-
-/*
-        if( aParam.has( "modemap-filename" ) )
-        {
-
-        }
-*/
-
-
     	return true;
     }
+
+    std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
+    {
+
+       LPROG( lmclog, "Calculating mode normalization factors ... " );
+
+    	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
+    	aModeNormFactor.resize(nModes);
+
+    	for (unsigned m=0; m<nModes; m++)
+    	{
+    		aModeNormFactor[m].resize(nModes);
+        	for (unsigned n=0; n<nModes; n++)
+        	{
+        		aModeNormFactor[m][n].resize(nModes);
+        	}
+    	}
+
+
+    	for (unsigned l=0; l<nModes; l++)
+    	{
+        	for (unsigned m=0; m<nModes; m++)
+        	{
+            	for (unsigned n=0; n<nModes; n++)
+            	{
+            		if (bTE)
+            		{
+            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,1,1);
+            		}
+            		else
+            		{
+            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,0,1);
+            		}
+            	}
+        	}
+    	}
+
+    	return aModeNormFactor;
+    }
+
 
 
     double CylindricalCavity::Integrate(int l, int m, int n, bool teMode, bool eField)
@@ -413,7 +453,6 @@ namespace locust
     				{
     					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,1,1)*normFactor,
         		    		LMCConst::MuNull()*Integrate(l,m,n,1,0)*normFactor);
-    					getchar();
     				}
     				else
     				{
