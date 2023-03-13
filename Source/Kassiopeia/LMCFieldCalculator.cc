@@ -251,9 +251,9 @@ namespace locust
     	double y = aFinalParticle.GetPosition().GetY();
     	double z = aFinalParticle.GetPosition().GetZ();
     	double r = pow( x*x + y*y, 0.5 );
-    	double norm = fInterface->fField->TE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
+    	double norm = fInterface->fField->GetTE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
     	double tAvgDotProductFactor = 0.63;  // TO-DO:  this should be calculated and not just overridden like this.
-    	double coupling = tAvgDotProductFactor * fInterface->fField->TE_E(l,m,n,r,0.,z,false).back()/norm;
+    	double coupling = tAvgDotProductFactor * fInterface->fField->GetTE_E(l,m,n,r,0.,z,false).back()/norm;
     	return coupling*coupling;
     }
 

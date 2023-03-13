@@ -13,7 +13,6 @@
 #include "logger.hh"
 #include "LMCField.hh"
 #include <boost/math/special_functions/bessel.hpp>
-#include "LMCKassLocustInterface.hh"
 
 #include <vector>
 
@@ -29,6 +28,20 @@ namespace locust
  */
 
 
+
+    class PozarCylindrical: public FieldCore
+    {
+        public:
+    	    PozarCylindrical() {};
+    	    virtual ~PozarCylindrical() {};
+            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+
+    };
+
+
     class CylindricalCavity : public Field
     {
 
@@ -36,25 +49,24 @@ namespace locust
             CylindricalCavity();
             virtual ~CylindricalCavity();
 
-            virtual bool Configure( const scarab::param_node& ) {return true;};
+            virtual bool Configure( const scarab::param_node& aParam);
 
-            std::vector<double> TE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
-            std::vector<double> TE_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
-            std::vector<double> TM_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
-            std::vector<double> TM_H(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) const;
-            double Z_TE(int l, int m, int n, double fcyc) const;
-            double Z_TM(int l, int m, int n, double fcyc) const;
-            double Integrate(int l, int m, int n, bool teMode, bool eField);
-            std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
-            std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
-            double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
-
+            virtual double Z_TE(int l, int m, int n, double fcyc) const;
+            virtual double Z_TM(int l, int m, int n, double fcyc) const;
+            virtual double Integrate(int l, int m, int n, bool teMode, bool eField);
+            virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
+            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
+            virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta);
+            virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
+            virtual void CheckNormalization(int nModes);
+            virtual void PrintModeMaps(int nModes, bool bTE);
 
         private:
-            kl_interface_ptr_t fInterface;
-
+            FieldCore* fFieldCore;
 
     };
+
 
 
 }; /* namespace locust */
