@@ -32,8 +32,8 @@ namespace locust
             CavityModes();
             virtual ~CavityModes();
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle);
-        	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, std::vector<double> excitationAmplitude, std::vector<double> EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle);
+        	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, std::vector<double> excitationAmplitude, unsigned sampleIndex);
             double GetCavityProbeGain();
             void SetCavityProbeGain( double aGain );
             double GetVoltagePhase();

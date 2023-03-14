@@ -7,7 +7,9 @@
 
 #include "LMCPowerCombiner.hh"
 #include <iostream>
+#include <math.h>
 #include "logger.hh"
+
 
 namespace locust
 {
@@ -27,6 +29,7 @@ namespace locust
 			fNCavityModes( 0 ),
 			fCavityProbeZ( 0. ),
 			fCavityProbeRFrac( 0.5 ),
+			fCavityProbePhi( 0. ),
 			fWaveguideShortIsPresent( true )
     {}
     PowerCombiner::~PowerCombiner() {}
@@ -179,6 +182,23 @@ namespace locust
     {
     	fCavityProbeRFrac = aFraction;
     }
+
+    double PowerCombiner::GetCavityProbePhi()
+    {   
+        return fCavityProbePhi;
+    }   
+    void PowerCombiner::SetCavityProbePhi ( double aPhi )
+    {   
+	while(aPhi < 0.)
+	{
+	    aPhi += 2.*M_PI;
+	}
+	while(aPhi >= 2.*M_PI)
+	{
+	    aPhi -= 2.*M_PI;
+	}
+        fCavityProbePhi = aPhi;
+    }  
 
     bool PowerCombiner::GetWaveguideShortIsPresent()
     {

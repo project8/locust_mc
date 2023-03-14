@@ -272,13 +272,18 @@ namespace locust
     }
 
 
-    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+    std::vector<std::vector<double>> CylindricalCavity::GetNormalizedModeFields(int l, int m, int n, std::vector<double> tKassParticleXP)
        {
        	double tR = tKassParticleXP[0];
+	double tPhi = tKassParticleXP[1];
        	double tZ = tKassParticleXP[2];
+	std::vector<std::vector<double>> tFields;
        	std::vector<double> tField;
+	int nPolarizations = l + 1;
+	double dPhi = LMCConst::Pi() / (double)nPolarizations;
 
-       	tField = this->TE_E(l,m,n,tR,0.,tZ,1);
+       	tField = this->TE_E(l,m,n,tR,tPhi,tZ,0);
+//        tField = this->TE_E(l,m,n,tR,tPhi,tZ,1);
        	double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
 
    		auto it = tField.begin();
@@ -295,7 +300,31 @@ namespace locust
    			*it++;
    		}
 
-       	return tField;  // return normalized field.
+        tFields.push_back(tField);
+        for(int j = 1; j < nPolarizations; j++) //if mode has more than one polarization, add component from each polarization
+        {   
+                std::vector<double> nextField = this->TE_E(l,m,n,tR,tPhi+j*dPhi,tZ,0);
+
+                auto it = nextField.begin();
+                while (it != nextField.end())
+                {   
+                        if (!isnan(*it))
+                        {   
+                                (*it) *= normFactor;
+                        }   
+                        else
+                        {   
+                                (*it) = 0.; 
+                        }   
+                        *it++;
+                }   
+
+
+                tFields.push_back(nextField);
+        } 
+	//std::cout << "Field Components Polarization 0: " << tFields[0][0] << " " << tFields[0][1] << std::endl;
+        //std::cout << "Field Components Polarization 1: " << tFields[1][0] << " " << tFields[1][1] << std::endl;
+       	return tFields;  // return normalized field.
        }
 
     double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile)
@@ -318,7 +347,7 @@ namespace locust
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
     	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
-
+	//std::cout << "tEx, tEy, Emag, tVx, tVy, tVmag: " << tEx << ", " << tEy << ", " << tEmag << ", " << tVx << ", " << tVy << ", " << tVmag << std::endl;
 
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)

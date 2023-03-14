@@ -6,6 +6,7 @@
  */
 
 #include "LMCCavityModes.hh"
+#include <numeric>
 using std::string;
 
 
@@ -50,6 +51,11 @@ namespace locust
     		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
     	}
 
+	if ( aParam.has( "cavity-probe-phi" ) )
+	{
+		SetCavityProbePhi(aParam["cavity-probe-phi"]().as_double());
+	}
+
         fRollingAvg.resize(GetNCavityModes());
         fCounter.resize(GetNCavityModes());
         for (int i = 0; i < GetNCavityModes(); i++)
@@ -66,15 +72,21 @@ namespace locust
     	return true;
     }
 
-	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle)
+	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, std::vector<double> excitationAmplitude, std::vector<double> EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle)
 	{
+		int nModes = excitationAmplitude.size();
 		double dopplerFrequency = cavityDopplerFrequency[0];
-        SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
-        double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
-        voltageValue *= cos(GetVoltagePhase());
+        	SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
+		double voltageValue = 0;
+		for(int i=0; i<nModes; i++)
+		{
+        		voltageValue += excitationAmplitude[i] * EFieldAtProbe[i] * fProbeGain * cos(GetVoltagePhase());
+			//std::cout << "Excitation Amplitude and EFieldAtProbe 0 and Product:" << excitationAmplitude[0] << ", " << EFieldAtProbe[0] << ", " << excitationAmplitude[0] * EFieldAtProbe[0] << std::endl;
+                        //std::cout << "Excitation Amplitude and EFieldAtProbe 1 and Product:" << excitationAmplitude[1] << ", " << EFieldAtProbe[1] << ", " << excitationAmplitude[1] * EFieldAtProbe[1] << std::endl << std::endl;
+		}
 
-        aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
-        aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
+        	aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
+        	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 
 		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
@@ -82,11 +94,11 @@ namespace locust
 	}
 
 
-	bool CavityModes::AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
+	bool CavityModes::AddOneSampleToRollingAvg(int l, int m, int n, std::vector<double> excitationAmplitude, unsigned sampleIndex)
 	{
 
     	char buffer[60];
-		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, with optional resonance if !fBypassTF.
+		double amp = std::reduce(excitationAmplitude.begin(),excitationAmplitude.end());  // Kass electron current * J\cdot E, with optional resonance if !fBypassTF.
 
 		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
 		int a = sprintf(buffer, "output/modeEnergies.txt");

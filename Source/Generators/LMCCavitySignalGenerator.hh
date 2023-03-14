@@ -105,7 +105,7 @@ namespace locust
             bool fOverrideAliasing;
             bool fOverrideStepsize;
             double fphiLO; // voltage phase of LO in radians;
-            double fAvgDotProductFactor;
+	    std::vector< double > fAvgDotProductFactor;
             double fdtFilter;
             bool fBypassTF;
             bool fNormCheck;

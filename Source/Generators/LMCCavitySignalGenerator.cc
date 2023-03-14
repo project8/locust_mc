@@ -29,7 +29,7 @@ namespace locust
         fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
-        fAvgDotProductFactor(0.),
+        fAvgDotProductFactor({0.}),
         fNPreEventSamples( 150000 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
@@ -105,7 +105,8 @@ namespace locust
     	{
     		if (!fNormCheck)
     		{
-    			if ((l==0)&&(m==1)&&(n==1))
+                        //if ((l==0)&&(m==1)&&(n==1))
+    			if ((l==1)&&(m==1)&&(n==1))
     				return true;
     			else
     				return false;
@@ -626,7 +627,6 @@ namespace locust
 
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, unsigned index)
     {
-
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
         const unsigned nChannels = fNChannels;
@@ -638,53 +638,62 @@ namespace locust
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fE_Gun);
         double unitConversion = 1.;
-        double excitationAmplitude = 0.;
-        double tEFieldAtProbe = 0.;
+	std::vector<double> excitationAmplitude = {0.};
+	std::vector<double> tEFieldAtProbe = {0.};
         std::vector<double> dopplerFrequency;
 
 
     	for (int l=0; l<fNModes; l++)
     	{
+		fAvgDotProductFactor.resize(l+1,0.);
+		tEFieldAtProbe.resize(l+1,0.);
+		excitationAmplitude.resize(l+1,0.);
     		for (int m=1; m<fNModes; m++)
     		{
     			for (int n=0; n<fNModes; n++)
     			{
     				if (ModeSelect(l, m, n, fInterface->fE_Gun))
     				{
-    					std::vector<double> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
+					std::vector<std::vector<double>> tE_normalized;
+    					tE_normalized = fInterface->fField->GetNormalizedModeFields(l,m,n,tKassParticleXP);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
-    					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
-    					double modeAmplitude = tE_normalized.back();
+					std::vector<double> modeAmplitude(l+1,0.0);
+					for(int j=0; j<=l; j++)
+					{
+						fAvgDotProductFactor[j] = fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized[j], fIntermediateFile);
+	                                        //fAvgDotProductFactor[j] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[j] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized[j], fIntermediateFile) );  // unit velocity \dot unit theta
+						double modeSign = tE_normalized[j].front() / fabs(tE_normalized[j].front());
+						//modeAmplitude[j] = modeSign*sqrt( tE_normalized[j].back()*tE_normalized[j].back() + tE_normalized[j].front()*tE_normalized[j].front());
+						modeAmplitude[j] = tE_normalized[j].back();
 
-
-    					if (!fInterface->fE_Gun)
-    					{
-    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
-    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
-    						tEFieldAtProbe = fInterface->fField->GetNormalizedModeField(l,m,n,tProbeLocation).back();
-    					}
-    					else
-    					{
-    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
-    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-
-    						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
-    						if (fUseDirectKassPower)
+    						if (!fInterface->fE_Gun)
     						{
-    							// override one-way signal amplitude with direct Kass power:
-    							unitConversion = 1.0;  // Kass power is already in Watts.
-        						excitationAmplitude = fAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+    							// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+    							unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    							// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
+							//std::cout << "Phi, DotProductFactor, ModeAmplitude: " << tKassParticleXP[1] << " " << fAvgDotProductFactor[j] <<	" " << modeAmplitude[j] << std::endl;
+							excitationAmplitude[j] = fAvgDotProductFactor[j] * modeAmplitude[j] * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    							std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), fPowerCombiner->GetCavityProbePhi(), fPowerCombiner->GetCavityProbeZ()};
+    							tEFieldAtProbe[j] = fInterface->fField->GetNormalizedModeFields(l,m,n,tProbeLocation)[j].back();
     						}
+    						else
+    						{
+    							// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+    							unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+    							// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
+    							excitationAmplitude[j] = fAvgDotProductFactor[j] * modeAmplitude[j] * ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
-    					}
+    							// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
+    							if (fUseDirectKassPower)
+    							{
+    								// override one-way signal amplitude with direct Kass power:
+    								unitConversion = 1.0;  // Kass power is already in Watts.
+        							excitationAmplitude[j] = fAvgDotProductFactor[j]*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+    							}
 
+    						}
+					}
     					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
@@ -692,6 +701,8 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
+						//std::cout << std::endl<< "excitationAmplitude: " << excitationAmplitude[0] << ", " << excitationAmplitude[1] << std::endl;
+						//std::cout << "tEFieldAtProbe: " << tEFieldAtProbe[0] << ", " << tEFieldAtProbe[1] << std::endl;
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}

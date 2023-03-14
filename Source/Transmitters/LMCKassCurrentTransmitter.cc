@@ -155,6 +155,9 @@ namespace locust
             particleXP[7] = tParticle.GetCyclotronFrequency();
             particleXP[8] = tParticle.GetLarmorPower();
 
+	    //std::cout << "Position (x,y,z): " << tposX << " " << tposY << " " << tposZ << std::endl;
+            //std::cout << "Velocity (x,y,z): " << tvX << " " << tvY << " " << tvZ << std::endl << std::endl;
+
             if (EGun)  // rotate from Kass to Locust coordinate system.
             {
                 particleXP[0] = pow( tposZ*tposZ + tposX*tposX, 0.5);

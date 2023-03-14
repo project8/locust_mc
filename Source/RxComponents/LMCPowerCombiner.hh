@@ -41,8 +41,10 @@ namespace locust
             virtual Receiver* ChooseElement();
         	bool AddOneVoltageToStripSum(Signal* aSignal, double excitationAmplitude, double phi_LO, unsigned z_index, unsigned sampleIndex);
         	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle) {return true;};
-        	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex) {return true;};
-        	virtual void SayHello();
+                virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, std::vector<double> excitationAmplitude, std::vector<double> EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle) {return true;};
+		virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex) {return true;};
+		virtual bool AddOneSampleToRollingAvg(int l, int m, int n, std::vector<double> excitationAmplitude, unsigned sampleIndex) {return true;};
+		virtual void SayHello();
         	virtual void Initialize() {};
 
 
@@ -66,6 +68,8 @@ namespace locust
             void SetCavityProbeZ ( double aZ );
             double GetCavityProbeRFrac();
             void SetCavityProbeRFrac ( double aFraction );
+            double GetCavityProbePhi();
+            void SetCavityProbePhi( double aPhi );
             double GetVoltagePhase();
             void SetVoltagePhase( double aPhase );
 
@@ -86,6 +90,7 @@ namespace locust
             int fNCavityModes;
             double fCavityProbeZ;
             double fCavityProbeRFrac;
+	    double fCavityProbePhi;
             bool fWaveguideShortIsPresent;
 
 

@@ -58,7 +58,8 @@ namespace locust
 
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
-            virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
+	    virtual std::vector<std::vector<double>> GetNormalizedModeFields(int l, int m, int n, std::vector<double> tKassParticleXP) {return {{0.}};};
+	    virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
