@@ -81,8 +81,6 @@ namespace locust
 		for(int i=0; i<nModes; i++)
 		{
         		voltageValue += excitationAmplitude[i] * EFieldAtProbe[i] * fProbeGain * cos(GetVoltagePhase());
-			//std::cout << "Excitation Amplitude and EFieldAtProbe 0 and Product:" << excitationAmplitude[0] << ", " << EFieldAtProbe[0] << ", " << excitationAmplitude[0] * EFieldAtProbe[0] << std::endl;
-                        //std::cout << "Excitation Amplitude and EFieldAtProbe 1 and Product:" << excitationAmplitude[1] << ", " << EFieldAtProbe[1] << ", " << excitationAmplitude[1] * EFieldAtProbe[1] << std::endl << std::endl;
 		}
 
         	aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);

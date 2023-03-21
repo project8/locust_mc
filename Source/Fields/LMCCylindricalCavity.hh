@@ -55,7 +55,7 @@ namespace locust
             virtual double Z_TM(int l, int m, int n, double fcyc) const;
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField);
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
-            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            //virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
             virtual std::vector<std::vector<double>> GetNormalizedModeFields(int l, int m, int n, std::vector<double> tKassParticleXP);
             virtual std::vector<std::vector<double>> GetNormalizedModeFields(int l, int m, int n, std::vector<double> tKassParticleXP, bool avgOverTheta);
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);

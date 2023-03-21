@@ -134,7 +134,7 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = fFieldCore->TE_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
+    	    		    		aField = fFieldCore->TE_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
     	    			}
     	    			else
     	    			{
@@ -369,7 +369,7 @@ namespace locust
 
     std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta)
     {
-    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,0.,z,1);
+    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,1);
     }
 
     std::vector<std::vector<double>> CylindricalCavity::GetNormalizedModeFields(int l, int m, int n, std::vector<double> tKassParticleXP)
@@ -389,7 +389,6 @@ namespace locust
 
        	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi,tZ,avgOverTheta);
        	double normFactor = GetNormFactorsTE()[l][m][n];
-
    		auto it = tField.begin();
    		while (it != tField.end())
    		{
@@ -407,8 +406,7 @@ namespace locust
         tFields.push_back(tField);
         for(int j = 1; j < nPolarizations; j++) //if mode has more than one polarization, add component from each polarization
         {   
-                std::vector<double> nextField = this->TE_E(l,m,n,tR,tPhi+j*dPhi,tZ,0);
-
+                std::vector<double> nextField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi+j*dPhi,tZ,avgOverTheta);
                 auto it = nextField.begin();
                 while (it != nextField.end())
                 {   
@@ -449,8 +447,6 @@ namespace locust
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
 	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
-    	//double unitJdotE = (tEx*tVx + tEy*tVy)/tEmag/tVmag;
-	//std::cout << "tEx, tEy, Emag, tVx, tVy, tVmag: " << tEx << ", " << tEy << ", " << tEmag << ", " << tVx << ", " << tVy << ", " << tVmag << std::endl;
 
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)
