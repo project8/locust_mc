@@ -107,6 +107,7 @@ namespace locust
             double fphiLO; // voltage phase of LO in radians;
 	    std::vector< double > fAvgDotProductFactor;
             double fdtFilter;
+            bool fAvgOverTheta;
             bool fBypassTF;
             bool fNormCheck;
             bool fModeMaps;

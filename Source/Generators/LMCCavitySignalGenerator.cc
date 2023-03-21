@@ -37,6 +37,7 @@ namespace locust
         fOverrideAliasing( false ),
         fOverrideStepsize( false ),
         fBypassTF( false ),
+	fAvgOverTheta( false ),
         fNormCheck( false ),
         fModeMaps( false ),
         fTE( true ),
@@ -105,8 +106,8 @@ namespace locust
     	{
     		if (!fNormCheck)
     		{
-                        //if ((l==0)&&(m==1)&&(n==1))
-    			if ((l==1)&&(m==1)&&(n==1))
+                        if ((l==0)&&(m==1)&&(n==1))
+    			//if ((l==1)&&(m==1)&&(n==1))
     				return true;
     			else
     				return false;
@@ -456,6 +457,11 @@ namespace locust
             fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
 
+	if( aParam.has( "avg-over-theta" ) )
+	{
+	    fAvgOverTheta = aParam["avg-over-theta"]().as_bool();
+	}
+
         if( aParam.has( "bypass-tf" ) )
         {
         	fBypassTF = aParam["bypass-tf"]().as_bool();
@@ -655,16 +661,14 @@ namespace locust
     				if (ModeSelect(l, m, n, fInterface->fE_Gun))
     				{
 					std::vector<std::vector<double>> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeFields(l,m,n,tKassParticleXP);
+    					tE_normalized = fInterface->fField->GetNormalizedModeFields(l,m,n,tKassParticleXP,fAvgOverTheta);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 					std::vector<double> modeAmplitude(l+1,0.0);
 					for(int j=0; j<=l; j++)
 					{
-						fAvgDotProductFactor[j] = fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized[j], fIntermediateFile);
+						fAvgDotProductFactor[j] = 0.63;  //This could be updated, but is currently set at a fixed value (average from the TE011 mode) to prevent an artifact in combining polarizations in modes where the azimuthal index is greater than 0
 	                                        //fAvgDotProductFactor[j] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[j] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized[j], fIntermediateFile) );  // unit velocity \dot unit theta
-						double modeSign = tE_normalized[j].front() / fabs(tE_normalized[j].front());
-						//modeAmplitude[j] = modeSign*sqrt( tE_normalized[j].back()*tE_normalized[j].back() + tE_normalized[j].front()*tE_normalized[j].front());
 						modeAmplitude[j] = tE_normalized[j].back();
 
     						if (!fInterface->fE_Gun)
@@ -672,10 +676,9 @@ namespace locust
     							// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     							unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     							// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-							//std::cout << "Phi, DotProductFactor, ModeAmplitude: " << tKassParticleXP[1] << " " << fAvgDotProductFactor[j] <<	" " << modeAmplitude[j] << std::endl;
 							excitationAmplitude[j] = fAvgDotProductFactor[j] * modeAmplitude[j] * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     							std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), fPowerCombiner->GetCavityProbePhi(), fPowerCombiner->GetCavityProbeZ()};
-    							tEFieldAtProbe[j] = fInterface->fField->GetNormalizedModeFields(l,m,n,tProbeLocation)[j].back();
+    							tEFieldAtProbe[j] = fInterface->fField->GetNormalizedModeFields(l,m,n,tProbeLocation,fAvgOverTheta)[j].back();
     						}
     						else
     						{
@@ -701,8 +704,6 @@ namespace locust
     						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-						//std::cout << std::endl<< "excitationAmplitude: " << excitationAmplitude[0] << ", " << excitationAmplitude[1] << std::endl;
-						//std::cout << "tEFieldAtProbe: " << tEFieldAtProbe[0] << ", " << tEFieldAtProbe[1] << std::endl;
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}

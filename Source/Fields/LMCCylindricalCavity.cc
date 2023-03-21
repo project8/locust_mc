@@ -163,8 +163,8 @@ namespace locust
     	}
     	else
     	{
-        	tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * sin(k3*z);
-    		tEtheta = -k/k1 * eta * jPrime * (2./LMCConst::Pi()) * sin(k3*z);
+        	tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * (1./sqrt(2)) * sin(k3*z);
+    		tEtheta = -k/k1 * eta * jPrime * (1./sqrt(2)) * sin(k3*z);
     	}
 
     	TE_E.push_back(tEr);
@@ -196,8 +196,8 @@ namespace locust
     	}
     	else
     	{
-        	tHr = -k3/k1 * jPrime * (2./LMCConst::Pi()) * cos(k3*z);
-    		tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * cos(k3*z);
+        	tHr = -k3/k1 * jPrime * (1./sqrt(2)) * cos(k3*z);
+    		tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * (1./sqrt(2)) * cos(k3*z);
     	}
 
     	TE_H.push_back(tHr);  // r
@@ -230,8 +230,8 @@ namespace locust
     	}
     	else
     	{
-        	tEr = -k3/k1 * eta * jPrime * (2./LMCConst::Pi()) * cos(k3*z);
-    		tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * cos(k3*z);
+        	tEr = -k3/k1 * eta * jPrime * (1./sqrt(2)) * cos(k3*z);
+    		tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * (1./sqrt(2)) * cos(k3*z);
     	}
 
     	TM_E.push_back(tEr); // r
@@ -262,8 +262,8 @@ namespace locust
     	}
     	else
     	{
-        	tHr = -l * k/k1  * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * sin(k3*z);
-    		tHtheta = -k/k1 * jPrime * (2./LMCConst::Pi()) * sin(k3*z);
+        	tHr = -l * k/k1  * jl_of_k1r_by_k1r * (1./sqrt(2)) * sin(k3*z);
+    		tHtheta = -k/k1 * jPrime * (1./sqrt(2)) * sin(k3*z);
     	}
 
     	TM_H.push_back(tHr);  // r
@@ -273,6 +273,11 @@ namespace locust
 
 
     std::vector<std::vector<double>> CylindricalCavity::GetNormalizedModeFields(int l, int m, int n, std::vector<double> tKassParticleXP)
+	{	
+            return this->CylindricalCavity::GetNormalizedModeFields(l, m, n, tKassParticleXP, 0);
+	}
+
+    std::vector<std::vector<double>> CylindricalCavity::GetNormalizedModeFields(int l, int m, int n, std::vector<double> tKassParticleXP, bool avgOverTheta)
        {
        	double tR = tKassParticleXP[0];
 	double tPhi = tKassParticleXP[1];
@@ -282,8 +287,7 @@ namespace locust
 	int nPolarizations = l + 1;
 	double dPhi = LMCConst::Pi() / (double)nPolarizations;
 
-       	tField = this->TE_E(l,m,n,tR,tPhi,tZ,0);
-//        tField = this->TE_E(l,m,n,tR,tPhi,tZ,1);
+       	tField = this->TE_E(l,m,n,tR,tPhi,tZ,avgOverTheta);
        	double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
 
    		auto it = tField.begin();
@@ -322,8 +326,6 @@ namespace locust
 
                 tFields.push_back(nextField);
         } 
-	//std::cout << "Field Components Polarization 0: " << tFields[0][0] << " " << tFields[0][1] << std::endl;
-        //std::cout << "Field Components Polarization 1: " << tFields[1][0] << " " << tFields[1][1] << std::endl;
        	return tFields;  // return normalized field.
        }
 
@@ -346,7 +348,8 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
+	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
+    	//double unitJdotE = (tEx*tVx + tEy*tVy)/tEmag/tVmag;
 	//std::cout << "tEx, tEy, Emag, tVx, tVy, tVmag: " << tEx << ", " << tEy << ", " << tEmag << ", " << tVx << ", " << tVy << ", " << tVmag << std::endl;
 
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
