@@ -35,8 +35,6 @@ namespace locust
             fCENTER_TO_SHORT( 0.05 ),
             fCENTER_TO_ANTENNA( 0.05 ),
             fTransmitter(),
-            fBesselNKZeros( 0 ),
-            fBesselNKPrimeZeros( 0 ),
             fField(),
             fConfigureKass( NULL ),
             fBackReaction( false ),

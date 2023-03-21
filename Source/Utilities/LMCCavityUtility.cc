@@ -139,12 +139,13 @@ namespace locust
                 if (convolutionMag*convolutionMag > maxGain)
                 {
                 	maxGain = convolutionMag*convolutionMag;
+                	qInferred = 0.;
                 }
                 else if ((convolutionMag*convolutionMag < 0.5*maxGain) && (qInferred == 0.))
                 {
                 	qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
                 }
-    			LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
+                LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
             } // rfStep
 
         delete aSignal;

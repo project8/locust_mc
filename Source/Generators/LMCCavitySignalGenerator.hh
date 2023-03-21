@@ -88,7 +88,6 @@ namespace locust
             std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool TE);
             bool ModeSelect(int l, int m, int n, bool eGun);
             void CheckNormalization();
-            void PrintModeMaps();
             double ScaleEPoyntingVector(double fcyc);
 
 
@@ -110,7 +109,6 @@ namespace locust
             bool fAvgOverTheta;
             bool fBypassTF;
             bool fNormCheck;
-            bool fModeMaps;
             bool fTE; // (if false, use TM modes.)
             bool fIntermediateFile;
             bool fUseDirectKassPower;
@@ -119,7 +117,6 @@ namespace locust
 
 
 
-            void ReadBesselZeroes(std::string filename, bool prime);
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
             bool ReceivedKassReady();

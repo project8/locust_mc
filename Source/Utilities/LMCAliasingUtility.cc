@@ -79,6 +79,16 @@ namespace locust
     	LPROG( testlog, "lo-frequency is " << LO );
     	LPROG( testlog, "rf-frequency is " << RF );
 
+    	if (bPass)
+    	{
+    		LPROG(testlog,"1*RF-LO is in the measurement window; other harmonics are not in the window.");
+    		LPROG(testlog,"Aliasing checks have passed.");
+    	}
+    	else
+    	{
+    		LWARN(testlog,"There appears to be some HF aliasing.")
+    	}
+
 
     	return bPass;
     }
