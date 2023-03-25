@@ -510,6 +510,25 @@ namespace locust
         return;
     }
 
+    bool CavitySignalGenerator::TryWakeAgain()
+    {
+    	int count = 0;
+    	while (count < 10)
+    	{
+    		LPROG(lmclog,"Kass thread is unresponsive.  Trying again.\n");
+    		LPROG( lmclog, "LMC about to try WakeBeforeEvent() again" );
+    		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    		WakeBeforeEvent();  // trigger Kass event.
+    		if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+    		{
+    			return true;
+    		}
+    		count += 1;
+    	}
+ 		return false;
+    }
+
+
      bool CavitySignalGenerator::ReceivedKassReady()
     {
 
@@ -630,13 +649,24 @@ namespace locust
                  		{
                  			if ( fInterface->fEventInProgress )
                  			{
-                 				if ( index < fNPreEventSamples+1 )  // Kass never started at all.
+                 				if ( index < fNPreEventSamples+1 )  // Kass never started.
                  				{
-                 					LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                 					fKassNeverStarted = true;
+                 					if (TryWakeAgain())
+                 					{
+                 						tLock.unlock();
+                 					}
+                 					else
+                 					{
+                     					LPROG(lmclog,"Locust is stopping because Kass has either stopped reporting, or never started.\n");
+                     					tLock.unlock();
+                 						break;
+                 					}
                  				}
-                 				tLock.unlock();   // Kass either started or not, but is now finished.
-                 				break;
+                 				else
+                 				{
+                 					LPROG(lmclog,"Locust infers that Kass has completed all events.\n");
+                 					break;
+                 				}
                  			}
                  			else
                  			{

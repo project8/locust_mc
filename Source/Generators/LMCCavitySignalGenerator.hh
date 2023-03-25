@@ -118,6 +118,7 @@ namespace locust
 
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
+            bool TryWakeAgain();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, unsigned index);
 
