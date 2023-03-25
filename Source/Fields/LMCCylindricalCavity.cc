@@ -12,7 +12,11 @@ namespace locust
 {
 
     LOGGER( lmclog, "CylindricalCavity" );
-    CylindricalCavity::CylindricalCavity() {}
+    CylindricalCavity::CylindricalCavity():
+    	fProbeGain( 1.),
+		fCavityProbeZ( 0. ),
+		fCavityProbeRFrac( 0.5 )
+		{}
 
     CylindricalCavity::~CylindricalCavity() {}
 
@@ -35,6 +39,21 @@ namespace locust
         {
         	SetDimL( aParam["cavity-length"]().as_double() );
         }
+
+        if ( aParam.has( "cavity-probe-gain" ) )
+    	{
+    		SetCavityProbeGain(aParam["cavity-probe-gain"]().as_double());
+    	}
+
+    	if ( aParam.has( "cavity-probe-z" ) )
+    	{
+    		SetCavityProbeZ(aParam["cavity-probe-z"]().as_double());
+    	}
+
+    	if ( aParam.has( "cavity-probe-r-fraction" ) )
+    	{
+    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
+    	}
 
 
         /*
@@ -372,6 +391,15 @@ namespace locust
     	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,0.,z,1);
     }
 
+    double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool avgOverTheta)
+	{
+    	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
+    	double zProbe = this->GetCavityProbeZ();
+		std::vector<double> tProbeLocation = {rProbe, 0., zProbe};
+		double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation).back();
+    	return fProbeGain * tEFieldAtProbe;
+	}
+
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
        {
        	double tR = tKassParticleXP[0];
@@ -554,8 +582,30 @@ namespace locust
 
     }
 
-
-
+    double CylindricalCavity::GetCavityProbeGain()
+    {
+    	return fProbeGain;
+    }
+    void CylindricalCavity::SetCavityProbeGain( double aGain )
+    {
+    	fProbeGain = aGain;
+    }
+    double CylindricalCavity::GetCavityProbeZ()
+    {
+    	return fCavityProbeZ;
+    }
+    void CylindricalCavity::SetCavityProbeZ ( double aZ )
+    {
+    	fCavityProbeZ = aZ;
+    }
+    double CylindricalCavity::GetCavityProbeRFrac()
+    {
+    	return fCavityProbeRFrac;
+    }
+    void CylindricalCavity::SetCavityProbeRFrac ( double aFraction )
+    {
+    	fCavityProbeRFrac = aFraction;
+    }
 
 
 } /* namespace locust */
