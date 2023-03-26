@@ -79,7 +79,7 @@ namespace locust
         		    LERROR(lmclog,"Can't find the terminator \"term_max_rlocust\" in the Kass xml file, which"
         		    		"means that electrons will not be properly terminated at the walls of the "
         		    		"Locust cavity with radius = \"cavity-radius\". ");
-        		    return false;
+        		    exit(-1);
             	}
             }
         }
