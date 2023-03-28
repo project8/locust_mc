@@ -25,6 +25,10 @@ To print out the resulting FIR to a text file "output/FIR.txt", use this paramet
 #include "param.hh"
 #include "LMCException.hh"
 #include <math.h>
+#include "LMCFIRFileHandler.hh"
+#include "LMCTFFileHandler.hh"
+#include "LMCSignal.hh"
+
 
 namespace locust
 {
@@ -47,6 +51,10 @@ namespace locust
             virtual double GetDHOTimeResolution();
             virtual void SetDHOThresholdFactor( double aThresholdFactor );
             virtual double GetDHOThresholdFactor();
+            double NormFactor(double aDriveFrequency);
+            bool PopulateCalibrationSignal(Signal* aSignal, int N0, double aDriveFrequency);
+            std::deque<double> SignalToDeque(Signal* aSignal);
+
 
 
         private:
@@ -60,6 +68,8 @@ namespace locust
             double fTimeResolution;
             double fThresholdFactor;
             double fHannekePowerFactor;
+            TFReceiverHandler* fTFReceiverHandler;
+
 
     };
 
