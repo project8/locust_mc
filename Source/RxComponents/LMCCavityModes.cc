@@ -16,7 +16,6 @@ namespace locust
 
     CavityModes::CavityModes():
 		fOrbitPhase( 0. ),
-		fProbeGain( 1.0 ),
 		fVoltagePhase( 0. )
     {
     }
@@ -35,20 +34,6 @@ namespace locust
     		return false;
     	}
 
-    	if ( aParam.has( "cavity-probe-gain" ) )
-    	{
-    		SetCavityProbeGain(aParam["cavity-probe-gain"]().as_double());
-    	}
-
-    	if ( aParam.has( "cavity-probe-z" ) )
-    	{
-    		SetCavityProbeZ(aParam["cavity-probe-z"]().as_double());
-    	}
-
-    	if ( aParam.has( "cavity-probe-r-fraction" ) )
-    	{
-    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
-    	}
 
         fRollingAvg.resize(GetNCavityModes());
         fCounter.resize(GetNCavityModes());
@@ -70,7 +55,7 @@ namespace locust
 	{
 		double dopplerFrequency = cavityDopplerFrequency[0];
         SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
-        double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
+        double voltageValue = excitationAmplitude * EFieldAtProbe;
         voltageValue *= cos(GetVoltagePhase());
 
         aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
@@ -139,13 +124,5 @@ namespace locust
         fVoltagePhase = aPhase;
     }
 
-    double CavityModes::GetCavityProbeGain()
-    {
-    	return fProbeGain;
-    }
-    void CavityModes::SetCavityProbeGain( double aGain )
-    {
-    	fProbeGain = aGain;
-    }
 
 } /* namespace locust */

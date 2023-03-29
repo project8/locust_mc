@@ -76,6 +76,7 @@ namespace locust
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual void CheckNormalization(int nModes){};
             virtual void PrintModeMaps(int nModes, bool bTE){};
+            virtual double GetFieldAtProbe(int l, int m, int n, bool avgOverTheta){return 0.;};
 
 
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
@@ -109,6 +110,7 @@ namespace locust
             double fL;
             double fX;  // Rectangular waveguide dimensions.
             double fY;
+
 
 
 

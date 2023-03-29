@@ -443,8 +443,7 @@ namespace locust
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
-    						tEFieldAtProbe = fInterface->fField->GetNormalizedModeField(l,m,n,tProbeLocation).back();
+    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1);
     					}
     					else
     					{
@@ -510,6 +509,25 @@ namespace locust
         fInterface->fPreEventCondition.notify_one();
         return;
     }
+
+    bool CavitySignalGenerator::TryWakeAgain()
+    {
+    	int count = 0;
+    	while (count < 10)
+    	{
+    		LPROG(lmclog,"Kass thread is unresponsive.  Trying again.\n");
+    		LPROG( lmclog, "LMC about to try WakeBeforeEvent() again" );
+    		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    		WakeBeforeEvent();  // trigger Kass event.
+    		if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+    		{
+    			return true;
+    		}
+    		count += 1;
+    	}
+ 		return false;
+    }
+
 
      bool CavitySignalGenerator::ReceivedKassReady()
     {
@@ -631,13 +649,24 @@ namespace locust
                  		{
                  			if ( fInterface->fEventInProgress )
                  			{
-                 				if ( index < fNPreEventSamples+1 )  // Kass never started at all.
+                 				if ( index < fNPreEventSamples+1 )  // Kass never started.
                  				{
-                 					LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                 					fKassNeverStarted = true;
+                 					if (TryWakeAgain())
+                 					{
+                 						tLock.unlock();
+                 					}
+                 					else
+                 					{
+                     					LPROG(lmclog,"Locust is stopping because Kass has either stopped reporting, or never started.\n");
+                     					tLock.unlock();
+                 						break;
+                 					}
                  				}
-                 				tLock.unlock();   // Kass either started or not, but is now finished.
-                 				break;
+                 				else
+                 				{
+                 					LPROG(lmclog,"Locust infers that Kass has completed all events.\n");
+                 					break;
+                 				}
                  			}
                  			else
                  			{

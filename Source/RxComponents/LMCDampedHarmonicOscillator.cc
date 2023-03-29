@@ -21,7 +21,7 @@ namespace locust
 			fThresholdFactor ( 0.25 ),
 			fCavityDampingFactor( 0. ),
 			fBFactor( 0. ),
-			fHannekePowerFactor( 5. )
+			fHannekePowerFactor( 1. )
     {}
     DampedHarmonicOscillator::~DampedHarmonicOscillator() {}
 
@@ -51,6 +51,14 @@ namespace locust
     	if( aParam.has( "dho-cavity-Q" ) )
     	{
     		SetCavityQ( aParam["dho-cavity-Q"]().as_double() );
+    	}
+
+    	fTFReceiverHandler = new TFReceiverHandler;
+    	if(!fTFReceiverHandler->Configure(aParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    		exit(-1);
+    		return false;
     	}
 
     	if ( !Initialize() ) return false;
@@ -116,10 +124,72 @@ namespace locust
 
     	// Modify Green's function for nominal gain of unity, keeping phase information unchanged.
     	// Power model could possibly be implemented as in here:
-    	double GreensFunctionValueReal = fHannekePowerFactor * ExpDecayTerm(t) * sin( fCavityOmegaPrime * t);
-    	double GreensFunctionValueImag = -fHannekePowerFactor * ExpDecayTerm(t) * cos( fCavityOmegaPrime * t);
+
+    	double GreensFunctionValueReal = fTimeResolution * fHannekePowerFactor * ExpDecayTerm(t) * sin( fCavityOmegaPrime * t);
+    	double GreensFunctionValueImag = -1. * fTimeResolution * fHannekePowerFactor * ExpDecayTerm(t) * cos( fCavityOmegaPrime * t);
+
     	return std::make_pair(GreensFunctionValueReal,GreensFunctionValueImag);
     }
+
+
+    double DampedHarmonicOscillator::NormFactor(double aDriveFrequency)
+    {
+
+		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(GetGFarray()))
+		{
+			LERROR(lmclog,"GF->FIR was not generated in DHO::NormFactor.");
+			exit(-1);
+			return false;
+		}
+
+        /* initialize time series */
+        Signal* aSignal = new Signal();
+        int N0 = GetGFarray().size();
+        aSignal->Initialize( N0 , 1 );
+        double convolutionMag = 0.;
+
+        for (unsigned i=0; i<1000; i++)  // time stamps
+        {
+            // populate time series and convolve it with the FIR filter
+            PopulateCalibrationSignal(aSignal, N0, aDriveFrequency);
+        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilter(SignalToDeque(aSignal));
+            if (fabs(convolutionPair.first) > convolutionMag)
+            {
+    	        convolutionMag = convolutionPair.first;
+            }
+        } // i
+
+        delete aSignal;
+
+        return convolutionMag;
+
+    }
+
+	bool DampedHarmonicOscillator::PopulateCalibrationSignal(Signal* aSignal, int N0, double aDriveFrequency)
+	{
+
+        double voltage_phase = 0.;
+
+        for( unsigned index = 0; index < N0; ++index )
+        {
+            voltage_phase = 2.*LMCConst::Pi()*aDriveFrequency*(double)index*fTimeResolution;
+
+            aSignal->LongSignalTimeComplex()[index][0] = cos(voltage_phase);
+            aSignal->LongSignalTimeComplex()[index][1] = cos(-LMCConst::Pi()/2. + voltage_phase);
+        }
+        return true;
+	}
+
+	std::deque<double> DampedHarmonicOscillator::SignalToDeque(Signal* aSignal)
+	{
+	    std::deque<double> incidentSignal;
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSize(); i++)
+	    {
+	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
+	    }
+	    return incidentSignal;
+	}
+
 
     bool DampedHarmonicOscillator::GenerateGreensFunction()
     {
@@ -141,7 +211,16 @@ namespace locust
 
     	tGFArray.resize( sizeCounter );
     	std::reverse( tGFArray.begin(), tGFArray.end() );
-    	SetGFarray( tGFArray );
+    	SetGFarray( tGFArray ); // unnormalized.
+
+    	double aNormFactor = NormFactor(fCavityFrequency);
+    	for (unsigned i=0; i<sizeCounter; i++)
+    	{
+    		tGFArray[i].second.first /= aNormFactor;
+    		tGFArray[i].second.second /= aNormFactor;
+    	}
+
+    	SetGFarray(tGFArray); // now normalized.
 
     	if ( tGFArray.size() < 1 ) return false;
     	else return true;

@@ -12,7 +12,11 @@ namespace locust
 {
 
     LOGGER( lmclog, "CylindricalCavity" );
-    CylindricalCavity::CylindricalCavity() {}
+    CylindricalCavity::CylindricalCavity():
+    	fProbeGain( 1.),
+		fCavityProbeZ( 0. ),
+		fCavityProbeRFrac( 0.5 )
+		{}
 
     CylindricalCavity::~CylindricalCavity() {}
 
@@ -35,6 +39,21 @@ namespace locust
         {
         	SetDimL( aParam["cavity-length"]().as_double() );
         }
+
+        if ( aParam.has( "cavity-probe-gain" ) )
+    	{
+    		SetCavityProbeGain(aParam["cavity-probe-gain"]().as_double());
+    	}
+
+    	if ( aParam.has( "cavity-probe-z" ) )
+    	{
+    		SetCavityProbeZ(aParam["cavity-probe-z"]().as_double());
+    	}
+
+    	if ( aParam.has( "cavity-probe-r-fraction" ) )
+    	{
+    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
+    	}
 
 
         /*
@@ -134,22 +153,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = fFieldCore->TE_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
+    	    		    	aField = fFieldCore->TE_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TE_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
+    	    				aField = fFieldCore->TE_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = fFieldCore->TM_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
+    	    				aField = fFieldCore->TM_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TM_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,1);
+    	    				aField = fFieldCore->TM_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    		}
 
@@ -232,7 +251,7 @@ namespace locust
     	return Z_TM;
     }
 
-    std::vector<double> PozarCylindrical::TE_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
+    std::vector<double> PozarCylindrical::TE_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
     	double z = zKass + L/2.;
@@ -250,15 +269,19 @@ namespace locust
     	double tEr = 0.;
     	double tEtheta = 0.;
 
-    	if ((!avgOverTheta)||(l==0))
+    	if ((!includeOtherPols)||(l==0))
     	{
         	tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     		tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
     	}
     	else
     	{
-        	tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * sin(k3*z);
-    		tEtheta = -k/k1 * eta * jPrime * (2./LMCConst::Pi()) * sin(k3*z);
+    		LERROR(lmclog,"This superposition has not yet been implemented.");
+    		exit(-1);
+    		// Possible suggestion:
+    		// Here we can implement the superposition with other polarities of the same mode.
+    		// The superposition can be done either in this function itself, or with some kind
+    		// of new helper function in this class.
     	}
 
 
@@ -268,7 +291,7 @@ namespace locust
         return TE_E;
     }
 
-    std::vector<double> PozarCylindrical::TE_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
+    std::vector<double> PozarCylindrical::TE_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
     	double z = zKass + L/2.;
@@ -285,15 +308,19 @@ namespace locust
     	double tHr = 0.;
     	double tHtheta = 0.;
 
-    	if ((!avgOverTheta)||(l==0))
+    	if ((!includeOtherPols)||(l==0))
     	{
         	tHr = -k3/k1 * jPrime * cos(l*theta) * cos(k3*z);
     		tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
     	}
     	else
     	{
-        	tHr = -k3/k1 * jPrime * (2./LMCConst::Pi()) * cos(k3*z);
-    		tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * cos(k3*z);
+    		LERROR(lmclog,"This superposition has not yet been implemented.");
+    		exit(-1);
+    		// Possible suggestion:
+    		// Here we can implement the superposition with other polarities of the same mode.
+    		// The superposition can be done either in this function itself, or with some kind
+    		// of new helper function in this class.
     	}
 
     	TE_H.push_back(tHr);  // r
@@ -302,7 +329,7 @@ namespace locust
     	return TE_H; // r, z, theta
     }
 
-    std::vector<double> PozarCylindrical::TM_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
+    std::vector<double> PozarCylindrical::TM_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
     	double z = zKass + L/2.;
 
@@ -319,15 +346,19 @@ namespace locust
     	double tEr = 0.;
     	double tEtheta = 0.;
 
-    	if ((!avgOverTheta)||(l==0))
+    	if ((!includeOtherPols)||(l==0))
     	{
         	tEr = -k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z);
     		tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
     	}
     	else
     	{
-        	tEr = -k3/k1 * eta * jPrime * (2./LMCConst::Pi()) * cos(k3*z);
-    		tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * cos(k3*z);
+    		LERROR(lmclog,"This superposition has not yet been implemented.");
+    		exit(-1);
+    		// Possible suggestion:
+    		// Here we can implement the superposition with other polarities of the same mode.
+    		// The superposition can be done either in this function itself, or with some kind
+    		// of new helper function in this class.
     	}
 
     	TM_E.push_back(tEr); // r
@@ -336,7 +367,7 @@ namespace locust
     	return TM_E; // r, z, theta
     }
 
-    std::vector<double> PozarCylindrical::TM_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool avgOverTheta)
+    std::vector<double> PozarCylindrical::TM_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
     	double z = zKass + L/2.;
 
@@ -351,15 +382,19 @@ namespace locust
     	double tHr = 0.;
     	double tHtheta = 0.;
 
-    	if ((!avgOverTheta)||(l==0))
+    	if ((!includeOtherPols)||(l==0))
     	{
         	tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     		tHtheta = -k/k1 * jPrime * cos(l*theta) * sin(k3*z);
     	}
     	else
     	{
-        	tHr = -l * k/k1  * jl_of_k1r_by_k1r * (2./LMCConst::Pi()) * sin(k3*z);
-    		tHtheta = -k/k1 * jPrime * (2./LMCConst::Pi()) * sin(k3*z);
+    		LERROR(lmclog,"This superposition has not yet been implemented.");
+    		exit(-1);
+    		// Possible suggestion:
+    		// Here we can implement the superposition with other polarities of the same mode.
+    		// The superposition can be done either in this function itself, or with some kind
+    		// of new helper function in this class.
     	}
 
     	TM_H.push_back(tHr);  // r
@@ -367,10 +402,19 @@ namespace locust
         return TM_H;
     }
 
-    std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta)
+    std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,0.,z,1);
+    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,0.,z,0);
     }
+
+    double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols)
+	{
+    	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
+    	double zProbe = this->GetCavityProbeZ();
+		std::vector<double> tProbeLocation = {rProbe, 0., zProbe};
+		double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation).back();
+    	return fProbeGain * tEFieldAtProbe;
+	}
 
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
        {
@@ -378,7 +422,7 @@ namespace locust
        	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
 
-       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,0.,tZ,1);
+       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,0.,tZ,0);
        	double normFactor = GetNormFactorsTE()[l][m][n];
 
    		auto it = tField.begin();
@@ -554,8 +598,30 @@ namespace locust
 
     }
 
-
-
+    double CylindricalCavity::GetCavityProbeGain()
+    {
+    	return fProbeGain;
+    }
+    void CylindricalCavity::SetCavityProbeGain( double aGain )
+    {
+    	fProbeGain = aGain;
+    }
+    double CylindricalCavity::GetCavityProbeZ()
+    {
+    	return fCavityProbeZ;
+    }
+    void CylindricalCavity::SetCavityProbeZ ( double aZ )
+    {
+    	fCavityProbeZ = aZ;
+    }
+    double CylindricalCavity::GetCavityProbeRFrac()
+    {
+    	return fCavityProbeRFrac;
+    }
+    void CylindricalCavity::SetCavityProbeRFrac ( double aFraction )
+    {
+    	fCavityProbeRFrac = aFraction;
+    }
 
 
 } /* namespace locust */
