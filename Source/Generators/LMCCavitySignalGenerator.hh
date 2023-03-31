@@ -112,6 +112,7 @@ namespace locust
             bool fIntermediateFile;
             bool fUseDirectKassPower;
             bool fAliasingIsChecked;
+            bool fUnitTestRootFile;
 
 
 

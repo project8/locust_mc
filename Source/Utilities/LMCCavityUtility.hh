@@ -14,6 +14,9 @@
 #include "LMCAnalyticResponseFunction.hh"
 #include "LMCDampedHarmonicOscillator.hh"
 #include "LMCUtility.hh"
+#ifdef ROOT_FOUND
+    #include "LMCRootHistoWriter.hh"
+#endif
 
 namespace locust
 {
@@ -41,10 +44,13 @@ namespace locust
 
         bool Configure();
         bool CheckCavityQ( double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
-    	void AddParam(std::string aString, double aValue);
-    	std::deque<double> SignalToDeque(Signal* aSignal);
-    	bool PopulateSignal(Signal* aSignal, int N0);
-    	const scarab::param_node* GetParams();
+        void SetExpandFactor(double aFactor);
+    	void SetOutputFile(bool aFlag);
+        void AddParam(std::string aString, double aValue);
+        std::deque<double> SignalToDeque(Signal* aSignal);
+        bool WriteRootHisto(int npoints, double* freqArray, double* gainArray);
+        bool PopulateSignal(Signal* aSignal, int N0);
+        const scarab::param_node* GetParams();
 
 
     private:
@@ -55,6 +61,8 @@ namespace locust
 
         double fRF_frequency;
         double fFilterRate;
+        double fExpandFactor;
+        bool fWriteOutputFile;
 
 
     };

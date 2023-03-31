@@ -17,6 +17,8 @@ namespace locust
     CavityUtility::CavityUtility():
     		fRF_frequency(0.),
 			fFilterRate(0.),
+			fExpandFactor( 1.0 ),
+			fWriteOutputFile( false ),
 			fTFReceiverHandler( 0 ),
 			fAnalyticResponseFunction( 0 ),
 			fparam_0( new param_node() )
@@ -67,6 +69,15 @@ namespace locust
 	    return fparam_0;
 	}
 
+	void CavityUtility::SetExpandFactor(double aFactor)
+	{
+		fExpandFactor = aFactor;
+	}
+
+	void CavityUtility::SetOutputFile(bool aFlag)
+	{
+		fWriteOutputFile = aFlag;
+	}
 
 	bool CavityUtility::PopulateSignal(Signal* aSignal, int N0)
 	{
@@ -95,6 +106,23 @@ namespace locust
 	    return incidentSignal;
 	}
 
+	bool CavityUtility::WriteRootHisto(int npoints, double* freqArray, double* gainArray)
+	{
+	#ifdef ROOT_FOUND
+		FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
+		aRootHistoWriter->SetFilename("output/UnitTestOutput.root");
+		aRootHistoWriter->OpenFile("RECREATE");
+		TH1D* aHisto = new TH1D("cavityHisto", "Green's function; frequency (Hz); 10 log10(|A|^{2})", npoints, freqArray[0], freqArray[npoints-1]);
+		for (unsigned i=0; i<npoints; i++)
+		{
+			aHisto->SetBinContent(i+1, 10.*log10(gainArray[i]));
+		}
+		aRootHistoWriter->Write1DHisto(aHisto);
+		aRootHistoWriter->CloseFile();
+	#endif
+		return true;
+	}
+
 
     bool CavityUtility::CheckCavityQ( double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
     {
@@ -118,45 +146,52 @@ namespace locust
         double maxGain = 0.;
         double rfSpanSweep = 3. * dhoCavityFrequency / dhoCavityQ;
         double rfStepSize = 0.00005 * dhoCavityFrequency;
-        int nSteps = rfSpanSweep / rfStepSize;
+        int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
+        double* freqArray = new double[nSteps];
+        double* gainArray = new double[nSteps];
 
-            for (int rfStep=-nSteps/2; rfStep<nSteps/2; rfStep++) // frequency sweep
-            {
-                fRF_frequency = dhoCavityFrequency + rfStepSize * rfStep;
+        for (int i=0; i<nSteps; i++) // frequency sweep
+        {
+        	int rfStep = -nSteps/2/fExpandFactor + i;
+        	fRF_frequency = dhoCavityFrequency + rfStepSize * rfStep;
+        	double convolutionMag = 0.;
+        	for (unsigned i=0; i<1000; i++)
+        	{
+        		// populate time series and convolve it with the FIR filter
+        		PopulateSignal(aSignal, N0);
+        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilter(SignalToDeque(aSignal));
+        		if (fabs(convolutionPair.first) > convolutionMag)
+        		{
+        			convolutionMag = convolutionPair.first;
+        		}
+        	}
+        	freqArray[i] = fRF_frequency;
+        	gainArray[i] = convolutionMag*convolutionMag;
 
-    	        double convolutionMag = 0.;
-                for (unsigned i=0; i<1000; i++)  // time stamps
-                {
-                    // populate time series and convolve it with the FIR filter
-                    PopulateSignal(aSignal, N0);
-                	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilter(SignalToDeque(aSignal));
-                    if (fabs(convolutionPair.first) > convolutionMag)
-                    {
-            	        convolutionMag = convolutionPair.first;
-                    }
-                } // i
+        	if (convolutionMag*convolutionMag > maxGain)
+        	{
+        		maxGain = convolutionMag*convolutionMag;
+        		qInferred = 0.;
+        	}
+        	else if ((convolutionMag*convolutionMag < 0.5*maxGain) && (qInferred == 0.))
+        	{
+        		qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
+        	}
+        	LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
+        }
 
-                if (convolutionMag*convolutionMag > maxGain)
-                {
-                	maxGain = convolutionMag*convolutionMag;
-                	qInferred = 0.;
-                }
-                else if ((convolutionMag*convolutionMag < 0.5*maxGain) && (qInferred == 0.))
-                {
-                	qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
-                }
-                LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
-            } // rfStep
-
+#ifdef ROOT_FOUND
+        if (fWriteOutputFile) WriteRootHisto(nSteps, freqArray, gainArray);
+#endif
         delete aSignal;
+        delete freqArray;
+        delete gainArray;
 
         LPROG( testlog, "\nSummary:");
-    	LPROG( testlog, "dho-threshold-factor is " << dhoThresholdFactor );
-    	LPROG( testlog, "dho-time-resolution is " << dhoTimeResolution );
-    	LPROG( testlog, "dho-cavity-frequency is " << dhoCavityFrequency );
-    	LPROG( testlog, "dho-cavity-Q is " << dhoCavityQ );
-
-
+        LPROG( testlog, "dho-threshold-factor is " << dhoThresholdFactor );
+        LPROG( testlog, "dho-time-resolution is " << dhoTimeResolution );
+        LPROG( testlog, "dho-cavity-frequency is " << dhoCavityFrequency );
+        LPROG( testlog, "dho-cavity-Q is " << dhoCavityQ );
         LPROG( testlog, "Estimated Q is " << qInferred );
         LPROG( testlog, "Expected Q is " << dhoCavityQ );
 

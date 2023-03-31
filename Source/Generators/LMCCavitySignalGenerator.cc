@@ -42,6 +42,7 @@ namespace locust
         fIntermediateFile( false ),
         fUseDirectKassPower( false ),
         fAliasingIsChecked( false ),
+		fUnitTestRootFile( false ),
         fInterface( new KassLocustInterface() )
     {
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
@@ -265,6 +266,10 @@ namespace locust
         {
         	fIntermediateFile = aParam["intermediate-file"]().as_bool();
         }
+        if( aParam.has( "unit-test-root-file" ) )
+        {
+        	fUnitTestRootFile = aParam["unit-test-root-file"]().as_bool();
+        }
         if( aParam.has( "direct-kass-power" ) )
         {
         	fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
@@ -341,6 +346,7 @@ namespace locust
     	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor();
     	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency();
     	double qExpected = fAnalyticResponseFunction->GetCavityQ();
+    	aCavityUtility.SetOutputFile(fUnitTestRootFile);
     	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
     	{
         	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
