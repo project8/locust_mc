@@ -15,7 +15,8 @@ namespace locust
     CylindricalCavity::CylindricalCavity():
     	fProbeGain( 1.),
 		fCavityProbeZ( 0. ),
-		fCavityProbeRFrac( 0.5 )
+		fCavityProbeRFrac( 0.5 ),
+		fCavityVolume( 0. )
 		{}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -76,6 +77,7 @@ namespace locust
         SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
 
         CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
+        SetCavityVolume();
 
         if( aParam.has( "mode-maps" ) )
         {
@@ -83,6 +85,11 @@ namespace locust
         }
 
     	return true;
+    }
+
+    void CylindricalCavity::SetCavityVolume()
+    {
+    	fCavityVolume = LMCConst::Pi() * this->GetDimR() * this->GetDimR() * this->GetDimL();
     }
 
     std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
@@ -412,7 +419,12 @@ namespace locust
     	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
     	double zProbe = this->GetCavityProbeZ();
 		std::vector<double> tProbeLocation = {rProbe, 0., zProbe};
-		double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation).back();
+		// Factor of sqrt(fCavityVolume) is being applied to the pre-digitized E-fields
+		// to try to reduce dependence of detected power on cavity volume.  This
+		// is qualitatively consistent with the volume scaling expected from a cavity
+		// experiment, and will also support ongoing normalization studies without
+		// necessarily having to retune the digitizer frequently.
+		double tEFieldAtProbe = sqrt(fCavityVolume) * GetNormalizedModeField(l,m,n,tProbeLocation).back();
     	return fProbeGain * tEFieldAtProbe;
 	}
 

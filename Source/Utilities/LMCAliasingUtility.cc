@@ -45,7 +45,7 @@ namespace locust
     	for (int j=0; j<2; j++)  // choose upper or lower mixing sideband
     	{
     	    if (j==1) sign = -1;
-    	    for (int i=0; i<3; i++)
+    	    for (int i=0; i<3; i++) // first 3 harmonics
     	    {
     	    double freq = i*RF - sign*LO;
     	    int nwin = (round)(freq/fsFast);
@@ -54,18 +54,18 @@ namespace locust
     	    if (j==0)
     	    {
     	    	printf("%5d*RF - LO = %10.4g and alias is %2d*(%10.4g - %4d*%g)=%10.4g Hz\n", i, freq, sign, freq, nwin, fsFast, alias);
-    	    	if ((i!=1) && (fabs(alias) < nyquistFrequency))
+    	    	if ((i!=1) && (fabs(alias) < 2.*nyquistFrequency))
     	    	{
-    	    		LERROR( testlog, "Aliased frequency " << fabs(alias) << " is below Nyquist frequency " << nyquistFrequency );
+    	    		LERROR( testlog, "Aliased frequency " << fabs(alias) << " is below 2X Nyquist frequency " << 2.*nyquistFrequency );
     	    		bPass = false;
     	    	}
     	    }
     	    if (j==1)
     	    {
     	    	printf("%5d*RF + LO = %10.4g and alias is %2d*(%10.4g - %4d*%g)=%10.4g Hz\n", i, freq, sign, freq, nwin, fsFast, alias);
-    	    	if (fabs(alias) < nyquistFrequency)
+    	    	if (fabs(alias) < 2.*nyquistFrequency)
     	    	{
-    	    		LERROR( testlog, "Aliased frequency " << fabs(alias) << " is below Nyquist frequency " << nyquistFrequency );
+    	    		LERROR( testlog, "Aliased frequency " << fabs(alias) << " is below 2X Nyquist frequency " << 2.*nyquistFrequency );
     	    		bPass = false;
     	    	}
     	    }
@@ -86,7 +86,7 @@ namespace locust
     	}
     	else
     	{
-    		LWARN(testlog,"There appears to be some HF aliasing.")
+    		LWARN(testlog,"There appears to be some potential HF aliasing.")
     	}
 
 

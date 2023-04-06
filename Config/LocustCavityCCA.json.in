@@ -28,7 +28,7 @@
         "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
         "n-records": 1,
         "record-size": 81920,
-        "acquisition-rate": 300,
+        "acquisition-rate": 301,
         "n-channels": 1
     },
   
@@ -40,8 +40,8 @@
 
     "digitizer":
     {
-        "v-range":  0.2,
-        "v-offset": -0.1
+        "v-range":  10.0e-4,
+        "v-offset": -5.0e-4
     }
 
 }
