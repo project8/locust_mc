@@ -12,6 +12,7 @@
 
 #include "logger.hh"
 #include "LMCField.hh"
+#include "LMCPozarCylindricalCavity.hh"
 #include <boost/math/special_functions/bessel.hpp>
 
 #include <vector>
@@ -26,20 +27,6 @@ namespace locust
  Available configuration options:
  No input parameters
  */
-
-
-
-    class PozarCylindrical: public FieldCore
-    {
-        public:
-    	    PozarCylindrical() {};
-    	    virtual ~PozarCylindrical() {};
-            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-
-    };
 
 
     class CylindricalCavity : public Field
@@ -77,8 +64,6 @@ namespace locust
             double fCavityProbeRFrac;
             double fProbeGain;
             double fCavityVolume;
-
-
 
     };
 
