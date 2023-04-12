@@ -11,6 +11,9 @@
 #include "LMCField.hh"
 #include "LMCPozarRectangularWaveguide.hh"
 #include "LMCKassLocustInterface.hh"
+#ifdef ROOT_FOUND
+    #include "LMCRootHistoWriter.hh"
+#endif
 
 
 #include <vector>
@@ -44,7 +47,7 @@ namespace locust
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile);
             virtual void CheckNormalization(int nModes);
-            virtual void PrintModeMaps(int nModes, bool bTE);
+            virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);
             double GetGroupVelocity(int m, int n, double fcyc);
 
 

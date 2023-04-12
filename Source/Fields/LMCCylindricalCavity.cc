@@ -79,9 +79,10 @@ namespace locust
         CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
         SetCavityVolume();
 
-        if( aParam.has( "mode-maps" ) )
+        if( aParam.has( "plot-mode-maps" ) )
         {
-        	PrintModeMaps(GetNModes(),1);
+        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
+        	PrintModeMaps(GetNModes(),1, 0.);
         }
 
     	return true;
@@ -95,7 +96,7 @@ namespace locust
     std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
     {
 
-       LPROG( lmclog, "Calculating mode normalization factors ... " );
+       LPROG(lmclog, "Calculating mode normalization factors ... " );
 
     	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
     	aModeNormFactor.resize(nModes);
@@ -395,45 +396,51 @@ namespace locust
 
 
 
-    void CylindricalCavity::PrintModeMaps(int nModes, bool bTE)
+    void CylindricalCavity::PrintModeMaps(int nModes, bool bTE, double zSlice)
     {
+
+#ifdef ROOT_FOUND
+
+	    FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
+	    aRootHistoWriter->SetFilename("output/ModeMapOutput.root");
+	    aRootHistoWriter->OpenFile("RECREATE");
+
+    	int nbins = this->GetNPixels();
+    	char hbuffertheta[60]; char hbufferr[60]; int a;
+    	const char *hname_theta = hbuffertheta;
+    	const char *hname_r = hbufferr;
 
     	char bufferE[60];
     	char bufferH[60];
-    	unsigned modeCounter = 0;
 
     	for (int l=0; l<nModes; l++)
     		for (int m=1; m<nModes; m++)
     			for (int n=0; n<nModes; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
+    		    	a = sprintf(hbuffertheta, "TE%d%d%d_Etheta", l, m, n);
+    		    	a = sprintf(hbufferr, "TE%d%d%d_Er", l, m, n);
+    				TH2D* hTEtheta = new TH2D(hname_theta, hname_theta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+    				TH2D* hTEr = new TH2D(hname_r, hname_r, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+
     				double normFactor = 1.0;
-    				int a = 0;
     				if (bTE)
     				{
     					normFactor = GetNormFactorsTE()[l][m][n];
-        				a = sprintf(bufferE, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
-        				a = sprintf(bufferH, "output/ModeMapTE%d%d%d_H.txt", l, m, n);
     				}
     				else
     				{
     					normFactor = GetNormFactorsTM()[l][m][n];
-        				a = sprintf(bufferE, "output/ModeMapTM%d%d%d_E.txt", l, m, n);
-        				a = sprintf(bufferH, "output/ModeMapTM%d%d%d_H.txt", l, m, n);
     				}
-    				const char *fpnameE = bufferE;
-    				FILE *fp_E = fopen(fpnameE, "w");
-    				const char *fpnameH = bufferH;
-    				FILE *fp_H = fopen(fpnameH, "w");
-    				for (unsigned i=0; i<GetNPixels()+1; i++)
+    				for (unsigned i=0; i<GetNPixels(); i++)
     				{
-    					double r = (double)i/GetNPixels()*GetDimR();
-    					for (unsigned j=0; j<GetNPixels()+1; j++)
+    					double r = ((double)i+0.5)/(GetNPixels())*GetDimR();
+    					for (unsigned j=0; j<GetNPixels(); j++)
     					{
-    						double theta = (double)j/GetNPixels()*2.*LMCConst::Pi();
-        					for (unsigned k=0; k<GetNPixels()+1; k++)
+    						double theta = ((double)j+0.5)/(GetNPixels())*2.*LMCConst::Pi();
+        					for (unsigned k=0; k<1; k++)
         					{
-            				    double z = (double)k/GetNPixels()*GetDimL() - GetDimL()/2.;
+            				    double z = zSlice;
     						    std::vector<double> tE;
     						    std::vector<double> tH;
     							if (bTE)
@@ -446,17 +453,35 @@ namespace locust
     								tE = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     								tH = fFieldCore->TM_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     							}
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g %10.4g\n", r, theta, z, tE.front()*normFactor, tE.back()*normFactor);
-    							fprintf(fp_H, "%10.4g %10.4g %10.4g %10.4g %10.4g\n", r, theta, z, tH.front()*normFactor, tH.back()*normFactor);
+    						    if ((!std::isnan(tE.back())))
+    						    {
+    						        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE.back());
+    						    }
+    						    if ((!std::isnan(tE.front())))
+    						    {
+    						    	hTEr->Fill(theta-LMCConst::Pi(),r,tE.front());
+    						    }
+
         					}
     					}
     				}
-    				fclose (fp_E);
-    				fclose (fp_H);
-    				modeCounter += 1;
+    				aRootHistoWriter->Write2DHisto(hTEtheta);
+    				aRootHistoWriter->Write2DHisto(hTEr);
+    				delete hTEtheta; delete hTEr;
     			}
-    	printf("\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.\n");
+		aRootHistoWriter->CloseFile();
+    	LPROG(lmclog, "\n\nTo plot a mode map:\n"
+    			"> root file:output/ModeMapOutput.root\n"
+    			"# _file0->ls()\n"
+    			"# hTEtheta->SetLineColor(0)\n"
+    			"# hTEtheta->SetLineWidth(0)\n"
+    			"# TE011_Etheta->DrawCopy(\"pol lego2\")\n"
+    			"# TPad *p = (TPad*)c1->cd()\n"
+    			"# p->SetTheta(90.); p->SetPhi(0.)\n"
+    			"# p->Update()\n"
+    			"\n\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.");
     	getchar();
+#endif
 
     }
 
