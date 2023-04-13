@@ -12,9 +12,15 @@
 
 #include "logger.hh"
 #include "LMCField.hh"
+#include "LMCPozarCylindricalCavity.hh"
 #include <boost/math/special_functions/bessel.hpp>
 
 #include <vector>
+
+#ifdef ROOT_FOUND
+    #include "LMCRootHistoWriter.hh"
+#endif
+
 
 namespace locust
 {
@@ -26,20 +32,6 @@ namespace locust
  Available configuration options:
  No input parameters
  */
-
-
-
-    class PozarCylindrical: public FieldCore
-    {
-        public:
-    	    PozarCylindrical() {};
-    	    virtual ~PozarCylindrical() {};
-            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-
-    };
 
 
     class CylindricalCavity : public Field
@@ -60,7 +52,7 @@ namespace locust
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
             virtual void CheckNormalization(int nModes);
-            virtual void PrintModeMaps(int nModes, bool bTE);
+            virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);
             virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols);
             double GetCavityProbeZ();
             void SetCavityProbeZ ( double aZ );
@@ -77,8 +69,6 @@ namespace locust
             double fCavityProbeRFrac;
             double fProbeGain;
             double fCavityVolume;
-
-
 
     };
 

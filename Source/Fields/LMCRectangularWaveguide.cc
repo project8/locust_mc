@@ -41,16 +41,17 @@ namespace locust
             fInterface->fCENTER_TO_ANTENNA = aParam["center-to-antenna"]().as_double();
         }
 
-        fFieldCore = new PozarRectangular();
+        fFieldCore = new PozarRectangularWaveguide();
 
         SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
         SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
 
         CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
 
-        if( aParam.has( "mode-maps" ) )
+        if( aParam.has( "plot-mode-maps" ) )
         {
-        	PrintModeMaps(GetNModes(),1);
+        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
+        	PrintModeMaps(GetNModes(),1, 0.);
         }
 
         return true;
@@ -181,87 +182,6 @@ namespace locust
     	return Z_TM;
     }
 
-
-    std::vector<double> PozarRectangular::TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc)
-    {
-
-    	double x = xKass + dimX/2.;
-    	double y = yKass + dimY/2.;
-
-    	// from Pozar
-    	std::vector<double> TE_E;
-    	double k1 = m * LMCConst::Pi() / dimX;
-    	double k2 = n * LMCConst::Pi() / dimY;
-    	double kc = pow(k1*k1+k2*k2,0.5);
-
-    	double tEx = fcyc*LMCConst::MuNull()*n*LMCConst::Pi()/kc/kc/dimY * cos(k1*x) * sin(k2*y);
-    	double tEy = -fcyc*LMCConst::MuNull()*m*LMCConst::Pi()/kc/kc/dimX * sin(k1*x) * cos(k2*y);
-
-    	TE_E.push_back(tEx);
-    	TE_E.push_back(tEy);
-        return TE_E;
-    }
-
-
-    std::vector<double> PozarRectangular::TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc)
-    {
-    	double x = xKass + dimX/2.;
-    	double y = yKass + dimY/2.;
-
-    	// from Pozar
-    	std::vector<double> TE_H;
-    	double k1 = m * LMCConst::Pi() / dimX;
-    	double k2 = n * LMCConst::Pi() / dimY;
-    	double kc = pow(k1*k1+k2*k2,0.5);
-    	double k = fcyc * sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
-    	double beta = sqrt(k*k - kc*kc);
-
-    	double tHx = beta*m*LMCConst::Pi()/kc/kc/dimX * sin(k1*x) * cos(k2*y);
-    	double tHy = beta*n*LMCConst::Pi()/kc/kc/dimY * cos(k1*x) * sin(k2*y);
-
-    	TE_H.push_back(tHx);
-    	TE_H.push_back(tHy);
-        return TE_H;
-    }
-
-
-    std::vector<double> PozarRectangular::TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc)
-    {
-    	double x = xKass + dimX/2.;
-    	double y = yKass + dimY/2.;
-
-    	// from Pozar
-    	std::vector<double> TM_E;
-    	double k1 = m * LMCConst::Pi() / dimX;
-    	double k2 = n * LMCConst::Pi() / dimY;
-    	double kc = pow(k1*k1+k2*k2,0.5);
-    	double k = fcyc * sqrt(LMCConst::EpsNull()*LMCConst::MuNull());
-    	double beta = sqrt(k*k - kc*kc);
-
-    	double tEx = beta*m*LMCConst::Pi()/kc/kc/dimX * cos(k1*x) * sin(k2*y);
-    	double tEy = beta*n*LMCConst::Pi()/kc/kc/dimY * sin(k1*x) * cos(k2*y);
-    	TM_E.push_back(tEx);
-    	TM_E.push_back(tEy);
-        return TM_E;
-    }
-
-    std::vector<double> PozarRectangular::TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc)
-    {
-    	double x = xKass + dimX/2.;
-    	double y = yKass + dimY/2.;
-
-    	// from Pozar
-    	std::vector<double> TM_H;
-    	double k1 = m * LMCConst::Pi() / dimX;
-    	double k2 = n * LMCConst::Pi() / dimY;
-    	double kc = pow(k1*k1+k2*k2,0.5);
-
-    	double tHx = fcyc*LMCConst::EpsNull()*n*LMCConst::Pi()/kc/kc/dimY * sin(k1*x) * cos(k2*y);
-    	double tHy = fcyc*LMCConst::EpsNull()*m*LMCConst::Pi()/kc/kc/dimX * cos(k1*x) * sin(k2*y);
-    	TM_H.push_back(tHx);
-    	TM_H.push_back(tHy);
-        return TM_H;
-    }
 
     std::vector<double> RectangularWaveguide::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
     {
@@ -414,58 +334,76 @@ namespace locust
 
 
 
-    void RectangularWaveguide::PrintModeMaps(int nModes, bool bTE)
+    void RectangularWaveguide::PrintModeMaps(int nModes, bool bTE, double zSlice)
     {
 
-    	char bufferE[60];
-    	char bufferH[60];
-    	unsigned modeCounter = 0;
+#ifdef ROOT_FOUND
 
-    	for (int l=0; l<nModes; l++)
+	    FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
+	    aRootHistoWriter->SetFilename("output/ModeMapOutput.root");
+	    aRootHistoWriter->OpenFile("RECREATE");
+
+    	int nbins = this->GetNPixels();
+    	char hbufferx[60]; char hbuffery[60]; int a;
+    	char labelx[60]; char labely[60];
+
+    	for (int l=0; l<1; l++)
     		for (int m=1; m<nModes; m++)
     			for (int n=0; n<nModes; n++)
     			{
     				printf("l m n is %d %d %d\n", l, m, n);
+    		    	a = sprintf(hbuffery, "TE%d%d_Ey", m, n);
+    		    	const char *hname_y = hbuffery;
+    		    	a = sprintf(labely, "TE%d%d_Ey; x (m); y (m)", m, n);
+    		    	const char *haxis_y = labely;
+    		    	a = sprintf(hbufferx, "TE%d%d_Ex", m, n);
+    		    	const char *hname_x = hbufferx;
+    		    	a = sprintf(labelx, "TE%d%d_Ex; x (m); y (m)", m, n);
+    		    	const char *haxis_x = labelx;
+    		    	TH2D* hTEy = new TH2D(hname_y, haxis_y, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    	TH2D* hTEx = new TH2D(hname_x, haxis_x, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+
     				double normFactor = 1.0;
     				int a = 0;
     				if (bTE)
     				{
     					normFactor = GetNormFactorsTE()[l][m][n];
-        				a = sprintf(bufferE, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
-        				a = sprintf(bufferH, "output/ModeMapTE%d%d%d_H.txt", l, m, n);
     				}
     				else
     				{
     					normFactor = GetNormFactorsTM()[l][m][n];
-        				a = sprintf(bufferE, "output/ModeMapTM%d%d%d_E.txt", l, m, n);
-        				a = sprintf(bufferH, "output/ModeMapTM%d%d%d_H.txt", l, m, n);
     				}
-    				const char *fpnameE = bufferE;
-    				FILE *fp_E = fopen(fpnameE, "w");
-    				const char *fpnameH = bufferH;
-    				FILE *fp_H = fopen(fpnameH, "w");
-    				for (unsigned i=0; i<GetNPixels()+1; i++)
+    				for (unsigned i=0; i<GetNPixels(); i++)
     				{
-    					double x = (double)i/GetNPixels()*GetDimX() - GetDimX()/2.;
-    					for (unsigned j=0; j<GetNPixels()+1; j++)
+    					double x = ((double)i+0.5)/GetNPixels()*GetDimX() - GetDimX()/2.;
+    					for (unsigned j=0; j<GetNPixels(); j++)
     					{
-        					double y = (double)j/GetNPixels()*GetDimY() - GetDimY()/2.;
-        					for (unsigned k=0; k<GetNPixels()+1; k++)
+        					double y = ((double)j+0.5)/GetNPixels()*GetDimY() - GetDimY()/2.;
+        					for (unsigned k=0; k<1; k++)
         					{
-            				    double z = (double)k/GetNPixels()*GetDimL() - GetDimL()/2.;
+            				    double z = zSlice;
     						    std::vector<double> tE;
     						    std::vector<double> tH;
     							tE = fFieldCore->TE_E(GetDimX(),GetDimY(),m,n,x,y,GetCentralFrequency());
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
+    						    if (!std::isnan(tE.back())) hTEy->Fill(x,y,tE.back());
+    						    if (!std::isnan(tE.front())) hTEx->Fill(x,y,tE.front());
         					}
     					}
     				}
-    				fclose (fp_E);
-    				fclose (fp_H);
-    				modeCounter += 1;
+    				aRootHistoWriter->Write2DHisto(hTEy);
+    				aRootHistoWriter->Write2DHisto(hTEx);
+    				delete hTEy; delete hTEx;
     			}
-    	printf("\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.\n");
+
+		aRootHistoWriter->CloseFile();
+    	LPROG(lmclog, "\n\nTo plot a mode map:\n"
+    			"> root file:output/ModeMapOutput.root\n"
+    			"# _file0->ls()\n"
+    			"# TE10_Ey->DrawCopy(\"colz\")\n"
+    			"\n\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.");
     	getchar();
+
+#endif
 
     }
 
