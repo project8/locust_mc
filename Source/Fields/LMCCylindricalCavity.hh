@@ -47,18 +47,20 @@ namespace locust
             virtual double Z_TM(int l, int m, int n, double fcyc) const;
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField);
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
-            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP);
+            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols);
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
             virtual void CheckNormalization(int nModes);
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);
-            virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols);
+            virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP);
             double GetCavityProbeZ();
             void SetCavityProbeZ ( double aZ );
             double GetCavityProbeRFrac();
             void SetCavityProbeRFrac ( double aFraction );
             double GetCavityProbeGain();
+            void SetCavityProbePhi( double aPhi );
+            double GetCavityProbePhi();
             void SetCavityProbeGain( double aGain );
             void SetCavityVolume();
 
@@ -67,6 +69,7 @@ namespace locust
             FieldCore* fFieldCore;
             double fCavityProbeZ;
             double fCavityProbeRFrac;
+            double fCavityProbePhi;
             double fProbeGain;
             double fCavityVolume;
 

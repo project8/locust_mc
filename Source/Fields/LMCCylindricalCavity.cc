@@ -16,6 +16,7 @@ namespace locust
     	fProbeGain( 1.),
 		fCavityProbeZ( 0. ),
 		fCavityProbeRFrac( 0.5 ),
+		fCavityProbePhi( 0.0 ),
 		fCavityVolume( 0. )
 		{}
 
@@ -56,6 +57,10 @@ namespace locust
     		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
     	}
 
+     	if ( aParam.has( "cavity-probe-phi" ) )
+	{
+		SetCavityProbePhi(aParam["cavity-probe-phi"]().as_double());
+	}
 
         /*
                 if( aParam.has( "modemap-filename" ) )
@@ -262,32 +267,52 @@ namespace locust
 
     std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,0.,z,0);
+    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
-    double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols)
+    double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
 	{
     	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
+	double phiProbe = this->GetCavityProbePhi();
     	double zProbe = this->GetCavityProbeZ();
-		std::vector<double> tProbeLocation = {rProbe, 0., zProbe};
+
+	double phiEffective = phiProbe; 
+	if(l>0)
+	{
+		//If mode has phi dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
+		double phiElectron = tKassParticleXP[1];
+		phiEffective = phiProbe - phiElectron;
+	}	
+
+
+		std::vector<double> tProbeLocation = {rProbe, phiEffective, zProbe};
 		// Factor of sqrt(fCavityVolume) is being applied to the pre-digitized E-fields
 		// to try to reduce dependence of detected power on cavity volume.  This
 		// is qualitatively consistent with the volume scaling expected from a cavity
 		// experiment, and will also support ongoing normalization studies without
 		// necessarily having to retune the digitizer frequently.
-		double tEFieldAtProbe = sqrt(fCavityVolume) * GetNormalizedModeField(l,m,n,tProbeLocation).back();
+		double tEFieldAtProbe = sqrt(fCavityVolume) * GetNormalizedModeField(l,m,n,tProbeLocation,0).back(); //Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
     	return fProbeGain * tEFieldAtProbe;
 	}
 
-    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
        {
        	double tR = tKassParticleXP[0];
+	double tPhi = tKassParticleXP[1];
        	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
 
-       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,0.,tZ,0);
+       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi,tZ,0);
+	if((l>0) and includeOtherPols){
+		//Calculates a convenient phase shift for a second polarization of fields with azimuthal dependence, calculates that field, and combines two polarizations to get the total field for the mode
+		double dPhi = LMCConst::Pi() / 2.0 / (double)l;
+		std::vector<double> tPolarization; 
+		tPolarization = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi+dPhi,tZ,0);
+		tField[0] = tField[0]*sin((double)l*tPhi) + tPolarization[0]*cos((double)l*tPhi) ;
+		tField[1] = tField[1]*sin((double)l*(tPhi+dPhi)) + tPolarization[1]*cos((double)l*(tPhi+dPhi)) ;
+		//modifies both r and phi components of TE field before normalizing in the next loop. Scaled to have same amplitude as a single polarization
+	}
        	double normFactor = GetNormFactorsTE()[l][m][n];
-
    		auto it = tField.begin();
    		while (it != tField.end())
    		{
@@ -508,6 +533,14 @@ namespace locust
     void CylindricalCavity::SetCavityProbeRFrac ( double aFraction )
     {
     	fCavityProbeRFrac = aFraction;
+    }
+    double CylindricalCavity::GetCavityProbePhi()
+    {
+	return fCavityProbePhi;
+    }
+    void CylindricalCavity::SetCavityProbePhi ( double aPhi )
+    {
+	fCavityProbePhi = aPhi;
     }
 
 

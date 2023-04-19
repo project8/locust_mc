@@ -77,7 +77,7 @@ namespace locust
     	{
     		if (!fNormCheck)
     		{
-    			if ((l==0)&&(m==1)&&(n==1))
+    			if ((l==1)&&(m==1)&&(n==1))
     				return true;
     			else
     				return false;
@@ -436,7 +436,7 @@ namespace locust
     				if (ModeSelect(l, m, n, fInterface->fE_Gun))
     				{
     					std::vector<double> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
+    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
@@ -449,7 +449,7 @@ namespace locust
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1);
+    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP);
     					}
     					else
     					{
