@@ -102,7 +102,6 @@ namespace locust
             bool fKassNeverStarted;
             bool fAliasedFrequencies;
             bool fOverrideAliasing;
-            bool fOverrideStepsize;
             double fphiLO; // voltage phase of LO in radians;
             double fAvgDotProductFactor;
             double fdtFilter;

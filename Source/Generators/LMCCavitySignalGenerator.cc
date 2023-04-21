@@ -35,7 +35,6 @@ namespace locust
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
         fOverrideAliasing( false ),
-        fOverrideStepsize( false ),
         fBypassTF( false ),
         fNormCheck( false ),
         fTE( true ),
@@ -195,20 +194,6 @@ namespace locust
         	if ( aParam.has( "back-reaction" ) )
         	{
         		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-                if( aParam.has( "override-stepsize" ) )
-                {
-                    fOverrideStepsize = aParam["override-stepsize"]().as_bool();
-                }
-        		if (( !fInterface->fBackReaction ) && (fOverrideStepsize == false))
-        		{
-        			LERROR(lmclog,"If \"back-reaction\"=false, please check that the Kass "
-        					"stepsize is 0.135 orbits or smaller.  Otherwise there can be "
-        					"skipped digitizer samples when running in a multi-core cluster "
-        					"environment.  This is a to-do item to be fixed with a planned 2-step trigger. "
-        					"To override this message, use this command-line flag:  \"cavity-signal.override-stepsize\"=true");
-        			exit(-1);
-        			return false;
-        		}
         	}
         }
         if( aParam.has( "n-modes" ) )
