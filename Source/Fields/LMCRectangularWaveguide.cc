@@ -293,11 +293,11 @@ namespace locust
     		{
     			for (int n=0; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTE()[l][m][n] / LMCConst::EpsNull();
+    				double normFactor = GetNormFactorsTE()[l][m][n];
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
-    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,1,1)*normFactor,
-        		    		LMCConst::MuNull()*Integrate(l,m,n,1,0)*normFactor);
+    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
+        		    		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
     				}
     				else
     				{
@@ -315,11 +315,11 @@ namespace locust
     		{
     			for (int n=1; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTM()[l][m][n] / LMCConst::EpsNull();
+    				double normFactor = GetNormFactorsTM()[l][m][n];
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
-    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,0,1)*normFactor,
-    		    			LMCConst::MuNull()*Integrate(l,m,n,0,0)*normFactor);
+    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,0,1)*normFactor,
+    		    			LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,0,0)*normFactor);
     				}
     				else
     				{
