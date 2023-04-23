@@ -29,7 +29,6 @@
 #include <sstream>
 #include <string>
 #include "LMCException.hh"
-#include <algorithm>    // std::min
 
 
 
@@ -101,7 +100,7 @@ namespace locust
             bool fAliasedFrequencies;
             bool fOverrideAliasing;
             double fphiLO; // voltage phase of LO in radians;
-            double fAvgDotProductFactor;
+            std::vector<std::vector<std::vector<double>>> fAvgDotProductFactor;
             bool fBypassTF;
             bool fNormCheck;
             bool fIntermediateFile;
