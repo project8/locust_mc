@@ -119,11 +119,11 @@ namespace locust
             	{
             		if (bTE)
             		{
-            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,1,1);
+            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,1,1),0.5);
             		}
             		else
             		{
-            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,0,1);
+            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,0,1),0.5);
             		}
             	}
         	}
@@ -270,12 +270,7 @@ namespace locust
     	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
     	double zProbe = this->GetCavityProbeZ();
 		std::vector<double> tProbeLocation = {rProbe, 0., zProbe};
-		// Factor of sqrt(fCavityVolume) is being applied to the pre-digitized E-fields
-		// to try to reduce dependence of detected power on cavity volume.  This
-		// is qualitatively consistent with the volume scaling expected from a cavity
-		// experiment, and will also support ongoing normalization studies without
-		// necessarily having to retune the digitizer frequently.
-		double tEFieldAtProbe = sqrt(fCavityVolume) * GetNormalizedModeField(l,m,n,tProbeLocation).back();
+		double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation).back();
     	return fProbeGain * tEFieldAtProbe;
 	}
 
@@ -355,7 +350,7 @@ namespace locust
     		{
     			for (int n=0; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTE()[l][m][n];
+    				double normFactor = pow(GetNormFactorsTE()[l][m][n],2.);
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
     					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
@@ -377,7 +372,7 @@ namespace locust
     		{
     			for (int n=1; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTM()[l][m][n];
+    				double normFactor = pow(GetNormFactorsTM()[l][m][n],2.);
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
     					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,0,1)*normFactor,
