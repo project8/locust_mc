@@ -37,7 +37,6 @@ namespace locust
         fOverrideAliasing( false ),
         fBypassTF( false ),
         fNormCheck( false ),
-        fTE( true ),
         fIntermediateFile( false ),
         fUseDirectKassPower( false ),
         fAliasingIsChecked( false ),
@@ -153,8 +152,6 @@ namespace locust
         		}
         	}
         } // aParam.has( "tf-receiver-filename" )
-        fdtFilter = fTFReceiverHandler->GetFilterResolution();
-
 
         if( aParam.has( "e-gun" ) )
         {
@@ -242,10 +239,6 @@ namespace locust
         if( aParam.has( "norm-check" ) )
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
-        }
-        if( aParam.has( "te-modes" ) )
-        {
-        	fTE = aParam["te-modes"]().as_bool();
         }
         if( aParam.has( "intermediate-file" ) )
         {
@@ -377,22 +370,6 @@ namespace locust
 
 
 
-
-
-    double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
-    {
-    	// This function calculates the coefficients of the Poynting vector integral
-    	// in the TE10 mode in WR42.  It then returns the sqrt of the half of the propagating
-    	// power that is moving toward the antenna.
-    	// After Pozar p. 114:
-    	double k = fcyc / LMCConst::C();
-    	double k1 = LMCConst::Pi() / fInterface->fField->GetDimX();
-    	double beta = sqrt( k*k - k1*k1 );
-    	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fField->GetDimX(),3.) * fInterface->fField->GetDimY() * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
-    	// sqrt of propagating power gives amplitude of E
-    	return sqrt(areaIntegral);
-    }
-
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, unsigned index)
     {
 
@@ -441,7 +418,7 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
     						if (fUseDirectKassPower)
@@ -457,7 +434,7 @@ namespace locust
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-    						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
+    						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );

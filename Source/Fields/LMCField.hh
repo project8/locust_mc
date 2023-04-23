@@ -77,6 +77,7 @@ namespace locust
             virtual void CheckNormalization(int nModes){};
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice){};
             virtual double GetFieldAtProbe(int l, int m, int n, bool avgOverTheta){return 0.;};
+            virtual double ScaleEPoyntingVector(double fcyc){return 0.;};
 
 
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();

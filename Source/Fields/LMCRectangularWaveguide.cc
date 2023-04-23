@@ -155,6 +155,21 @@ namespace locust
     	return freqPrime;
     }
 
+    double RectangularWaveguide::ScaleEPoyntingVector(double fcyc)
+    {
+    	// This function calculates the coefficients of the Poynting vector integral
+    	// in the TE10 mode in WR42.  It then returns the sqrt of the half of the propagating
+    	// power that is moving toward the antenna.
+    	// After Pozar p. 114:
+    	double k = fcyc / LMCConst::C();
+    	double k1 = LMCConst::Pi() / GetDimX();
+    	double beta = sqrt( k*k - k1*k1 );
+    	double areaIntegral = fcyc * LMCConst::MuNull() * pow(GetDimX(),3.) * GetDimY() * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
+    	// sqrt of propagating power gives amplitude of E
+    	return sqrt(areaIntegral);
+    }
+
+
 
     double RectangularWaveguide::Z_TE(int l, int m, int n, double fcyc) const
     {

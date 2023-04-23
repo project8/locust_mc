@@ -49,6 +49,7 @@ namespace locust
             virtual void CheckNormalization(int nModes);
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);
             double GetGroupVelocity(int m, int n, double fcyc);
+            double ScaleEPoyntingVector(double fcyc);
 
 
 

@@ -85,10 +85,8 @@ namespace locust
               
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool TE);
             bool ModeSelect(int l, int m, int n, bool eGun);
             void CheckNormalization();
-            double ScaleEPoyntingVector(double fcyc);
 
 
 
@@ -104,10 +102,8 @@ namespace locust
             bool fOverrideAliasing;
             double fphiLO; // voltage phase of LO in radians;
             double fAvgDotProductFactor;
-            double fdtFilter;
             bool fBypassTF;
             bool fNormCheck;
-            bool fTE; // (if false, use TM modes.)
             bool fIntermediateFile;
             bool fUseDirectKassPower;
             bool fAliasingIsChecked;
