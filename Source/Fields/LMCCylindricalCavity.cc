@@ -16,7 +16,7 @@ namespace locust
     	fProbeGain( 1.),
 		fCavityProbeZ( 0. ),
 		fCavityProbeRFrac( 0.5 ),
-		fCavityProbePhi( 0.0 ),
+		fCavityProbeTheta( 0.0 ),
 		fCavityVolume( 0. )
 		{}
 
@@ -57,9 +57,9 @@ namespace locust
     		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
     	}
 
-     	if ( aParam.has( "cavity-probe-phi" ) )
+     	if ( aParam.has( "cavity-probe-theta" ) )
 	{
-		SetCavityProbePhi(aParam["cavity-probe-phi"]().as_double());
+		SetCavityProbeTheta(aParam["cavity-probe-theta"]().as_double());
 	}
 
         /*
@@ -273,19 +273,19 @@ namespace locust
     double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
 	{
     	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
-	double phiProbe = this->GetCavityProbePhi();
+	double thetaProbe = this->GetCavityProbeTheta();
     	double zProbe = this->GetCavityProbeZ();
 
-	double phiEffective = phiProbe; 
+	double thetaEffective = thetaProbe; 
 	if(l>0)
 	{
-		//If mode has phi dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
-		double phiElectron = tKassParticleXP[1];
-		phiEffective = phiProbe - phiElectron;
+		//If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
+		double thetaElectron = tKassParticleXP[1];
+		thetaEffective = thetaProbe - thetaElectron;
 	}	
 
 
-		std::vector<double> tProbeLocation = {rProbe, phiEffective, zProbe};
+		std::vector<double> tProbeLocation = {rProbe, thetaEffective, zProbe};
 		// Factor of sqrt(fCavityVolume) is being applied to the pre-digitized E-fields
 		// to try to reduce dependence of detected power on cavity volume.  This
 		// is qualitatively consistent with the volume scaling expected from a cavity
@@ -298,11 +298,11 @@ namespace locust
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
     {
     	double tR = tKassParticleXP[0];
-    	double tPhi = tKassParticleXP[1];
+    	double tTheta = tKassParticleXP[1];
     	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
 
-       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi,tZ,1);
+       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
        	double normFactor = GetNormFactorsTE()[l][m][n];
    		auto it = tField.begin();
    		while (it != tField.end())
@@ -493,7 +493,7 @@ namespace locust
     			"# hTEtheta->SetLineWidth(0)\n"
     			"# TE011_Etheta->DrawCopy(\"pol lego2\")\n"
     			"# TPad *p = (TPad*)c1->cd()\n"
-    			"# p->SetTheta(90.); p->SetPhi(0.)\n"
+    			"# p->SetTheta(90.); p->SetTheta(0.)\n"
     			"# p->Update()\n"
     			"\n\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.");
     	getchar();
@@ -525,13 +525,13 @@ namespace locust
     {
     	fCavityProbeRFrac = aFraction;
     }
-    double CylindricalCavity::GetCavityProbePhi()
+    double CylindricalCavity::GetCavityProbeTheta()
     {
-	return fCavityProbePhi;
+	return fCavityProbeTheta;
     }
-    void CylindricalCavity::SetCavityProbePhi ( double aPhi )
+    void CylindricalCavity::SetCavityProbeTheta ( double aTheta )
     {
-	fCavityProbePhi = aPhi;
+	fCavityProbeTheta = aTheta;
     }
 
 

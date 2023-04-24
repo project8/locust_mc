@@ -43,11 +43,11 @@ namespace locust
 
     	if ((includeOtherPols)&&(l>0))
     	{
-    		//modifies both r and phi components of TE field.
-    		double dPhi = LMCConst::Pi() / 2.0 / (double)l;
-    		std::vector<double> tPolarization{tEr, tEtheta};
+    		//modifies both r and theta components of TE field.
+    		double dTheta = LMCConst::Pi() / 2.0 / (double)l;
+    		std::vector<double> tPolarization = this->TE_E(R,L,l,m,n,r,theta+dTheta,zKass,0);
     		tEr = tEr*sin((double)l*theta) + tPolarization[0]*cos((double)l*theta) ;
-    		tEtheta = tEtheta*sin((double)l*(theta+dPhi)) + tPolarization[1]*cos((double)l*(theta+dPhi)) ;
+    		tEtheta = tEtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
     	}
 
     	TE_E.push_back(tEr);

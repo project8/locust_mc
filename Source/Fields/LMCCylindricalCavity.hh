@@ -59,8 +59,8 @@ namespace locust
             double GetCavityProbeRFrac();
             void SetCavityProbeRFrac ( double aFraction );
             double GetCavityProbeGain();
-            void SetCavityProbePhi( double aPhi );
-            double GetCavityProbePhi();
+            void SetCavityProbeTheta( double aTheta );
+            double GetCavityProbeTheta();
             void SetCavityProbeGain( double aGain );
             void SetCavityVolume();
 
@@ -69,7 +69,7 @@ namespace locust
             FieldCore* fFieldCore;
             double fCavityProbeZ;
             double fCavityProbeRFrac;
-            double fCavityProbePhi;
+            double fCavityProbeTheta;
             double fProbeGain;
             double fCavityVolume;
 
