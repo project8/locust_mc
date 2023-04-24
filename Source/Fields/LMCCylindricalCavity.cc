@@ -15,8 +15,7 @@ namespace locust
     CylindricalCavity::CylindricalCavity():
     	fProbeGain( 1.),
 		fCavityProbeZ( 0. ),
-		fCavityProbeRFrac( 0.5 ),
-		fCavityVolume( 0. )
+		fCavityProbeRFrac( 0.5 )
 		{}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -77,7 +76,6 @@ namespace locust
         SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
 
         CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
-        SetCavityVolume();
 
         if( aParam.has( "plot-mode-maps" ) )
         {
@@ -88,15 +86,10 @@ namespace locust
     	return true;
     }
 
-    void CylindricalCavity::SetCavityVolume()
-    {
-    	fCavityVolume = LMCConst::Pi() * this->GetDimR() * this->GetDimR() * this->GetDimL();
-    }
-
     std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
     {
 
-       LPROG(lmclog, "Calculating mode normalization factors ... " );
+        LPROG(lmclog, "Calculating mode normalization factors ... " );
 
     	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
     	aModeNormFactor.resize(nModes);
