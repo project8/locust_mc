@@ -109,20 +109,24 @@ namespace locust
             aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
         }
 
-        if(fInterface->fProject8Phase==4)
+        if(fInterface->fProject8Phase==4) // Cavity
         {
-        	if (fInterface->fBackReaction)
-        	{
-        		if (fInterface->fE_Gun)
-        		{
-        			DeltaE = fFieldCalculator->GetDampingFactorPhase1(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-        		}
-        		else
-        		{
-        			DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
-        		}
-        		aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
-        	}
+            if (fInterface->fE_Gun)
+            {
+            	DeltaE = fFieldCalculator->GetDampingFactorPhase1(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            }
+            else
+            {
+            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            }
+            if (fInterface->fBackReaction)
+            {
+            	aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+            }
+            else
+            {
+            	// Do not apply any power correction, even though it was calculated above.
+            }
         }
 
 

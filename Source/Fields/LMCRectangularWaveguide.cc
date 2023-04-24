@@ -155,6 +155,21 @@ namespace locust
     	return freqPrime;
     }
 
+    double RectangularWaveguide::ScaleEPoyntingVector(double fcyc)
+    {
+    	// This function calculates the coefficients of the Poynting vector integral
+    	// in the TE10 mode in WR42.  It then returns the sqrt of the half of the propagating
+    	// power that is moving toward the antenna.
+    	// After Pozar p. 114:
+    	double k = fcyc / LMCConst::C();
+    	double k1 = LMCConst::Pi() / GetDimX();
+    	double beta = sqrt( k*k - k1*k1 );
+    	double areaIntegral = fcyc * LMCConst::MuNull() * pow(GetDimX(),3.) * GetDimY() * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
+    	// sqrt of propagating power gives amplitude of E
+    	return sqrt(areaIntegral);
+    }
+
+
 
     double RectangularWaveguide::Z_TE(int l, int m, int n, double fcyc) const
     {
@@ -263,11 +278,11 @@ namespace locust
             	{
             		if (bTE)
             		{
-            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,1,1);
+            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,1,1),0.5);
             		}
             		else
             		{
-            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,0,1);
+            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,0,1),0.5);
             		}
 
             	}
@@ -293,11 +308,11 @@ namespace locust
     		{
     			for (int n=0; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTE()[l][m][n] / LMCConst::EpsNull();
+    				double normFactor = pow(GetNormFactorsTE()[l][m][n],2.);
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
-    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,1,1)*normFactor,
-        		    		LMCConst::MuNull()*Integrate(l,m,n,1,0)*normFactor);
+    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
+        		    		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
     				}
     				else
     				{
@@ -315,11 +330,11 @@ namespace locust
     		{
     			for (int n=1; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTM()[l][m][n] / LMCConst::EpsNull();
+    				double normFactor = pow(GetNormFactorsTM()[l][m][n],2.);
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
-    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,0,1)*normFactor,
-    		    			LMCConst::MuNull()*Integrate(l,m,n,0,0)*normFactor);
+    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,0,1)*normFactor,
+    		    			LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,0,0)*normFactor);
     				}
     				else
     				{

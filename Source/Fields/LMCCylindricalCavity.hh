@@ -60,7 +60,6 @@ namespace locust
             void SetCavityProbeRFrac ( double aFraction );
             double GetCavityProbeGain();
             void SetCavityProbeGain( double aGain );
-            void SetCavityVolume();
 
 
         private:
@@ -68,7 +67,6 @@ namespace locust
             double fCavityProbeZ;
             double fCavityProbeRFrac;
             double fProbeGain;
-            double fCavityVolume;
 
     };
 

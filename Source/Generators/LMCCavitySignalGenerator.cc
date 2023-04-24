@@ -35,10 +35,8 @@ namespace locust
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
         fOverrideAliasing( false ),
-        fOverrideStepsize( false ),
         fBypassTF( false ),
         fNormCheck( false ),
-        fTE( true ),
         fIntermediateFile( false ),
         fUseDirectKassPower( false ),
         fAliasingIsChecked( false ),
@@ -154,8 +152,6 @@ namespace locust
         		}
         	}
         } // aParam.has( "tf-receiver-filename" )
-        fdtFilter = fTFReceiverHandler->GetFilterResolution();
-
 
         if( aParam.has( "e-gun" ) )
         {
@@ -195,20 +191,6 @@ namespace locust
         	if ( aParam.has( "back-reaction" ) )
         	{
         		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-                if( aParam.has( "override-stepsize" ) )
-                {
-                    fOverrideStepsize = aParam["override-stepsize"]().as_bool();
-                }
-        		if (( !fInterface->fBackReaction ) && (fOverrideStepsize == false))
-        		{
-        			LERROR(lmclog,"If \"back-reaction\"=false, please check that the Kass "
-        					"stepsize is 0.135 orbits or smaller.  Otherwise there can be "
-        					"skipped digitizer samples when running in a multi-core cluster "
-        					"environment.  This is a to-do item to be fixed with a planned 2-step trigger. "
-        					"To override this message, use this command-line flag:  \"cavity-signal.override-stepsize\"=true");
-        			exit(-1);
-        			return false;
-        		}
         	}
         }
         if( aParam.has( "n-modes" ) )
@@ -224,7 +206,6 @@ namespace locust
 			return false;
 		}
 
-
         fInterface->fField->SetNModes(fNModes);
         if (!fInterface->fField->Configure(aParam))
         {
@@ -232,6 +213,17 @@ namespace locust
         	exit(-1);
         	return false;
         }
+
+    	fAvgDotProductFactor.resize(fNModes);
+    	for (unsigned m=0; m<fNModes; m++)
+    	{
+    		fAvgDotProductFactor[m].resize(fNModes);
+        	for (unsigned n=0; n<fNModes; n++)
+        	{
+        		fAvgDotProductFactor[m][n].resize(fNModes);
+        	}
+    	}
+
 
 
         if( aParam.has( "lo-frequency" ) )
@@ -257,10 +249,6 @@ namespace locust
         if( aParam.has( "norm-check" ) )
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
-        }
-        if( aParam.has( "te-modes" ) )
-        {
-        	fTE = aParam["te-modes"]().as_bool();
         }
         if( aParam.has( "intermediate-file" ) )
         {
@@ -313,7 +301,6 @@ namespace locust
         }
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( aParam );
-
 
         return true;
     }
@@ -392,22 +379,6 @@ namespace locust
 
 
 
-
-
-    double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
-    {
-    	// This function calculates the coefficients of the Poynting vector integral
-    	// in the TE10 mode in WR42.  It then returns the sqrt of the half of the propagating
-    	// power that is moving toward the antenna.
-    	// After Pozar p. 114:
-    	double k = fcyc / LMCConst::C();
-    	double k1 = LMCConst::Pi() / fInterface->fField->GetDimX();
-    	double beta = sqrt( k*k - k1*k1 );
-    	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fField->GetDimX(),3.) * fInterface->fField->GetDimY() * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
-    	// sqrt of propagating power gives amplitude of E
-    	return sqrt(areaIntegral);
-    }
-
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, unsigned index)
     {
 
@@ -439,7 +410,7 @@ namespace locust
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
-    					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
+    					fAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[l][m][n] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					double modeAmplitude = tE_normalized.back();
 
 
@@ -448,7 +419,7 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1);
     					}
     					else
@@ -456,14 +427,14 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
     						if (fUseDirectKassPower)
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
-        						excitationAmplitude = fAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+        						excitationAmplitude = fAvgDotProductFactor[l][m][n]*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
     					}
@@ -472,7 +443,7 @@ namespace locust
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-    						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
+    						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );

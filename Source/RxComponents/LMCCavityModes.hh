@@ -12,6 +12,10 @@
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
+#ifdef ROOT_FOUND
+    #include "LMCRootHistoWriter.hh"
+#endif
+
 
 namespace locust
 {
@@ -36,6 +40,7 @@ namespace locust
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
             double GetVoltagePhase();
             void SetVoltagePhase( double aPhase );
+        	bool WriteRootHisto();
 
 
 
@@ -44,6 +49,10 @@ namespace locust
             double fVoltagePhase;
             std::vector<std::vector<std::vector<double>>> fRollingAvg;
             std::vector<std::vector<std::vector<int>>> fCounter;
+            FILE *fp;
+#ifdef ROOT_FOUND
+            FileWriter* fRootHistoWriter;
+#endif
 
 
 
