@@ -296,22 +296,13 @@ namespace locust
 	}
 
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
-       {
-       	double tR = tKassParticleXP[0];
-	double tPhi = tKassParticleXP[1];
-       	double tZ = tKassParticleXP[2];
+    {
+    	double tR = tKassParticleXP[0];
+    	double tPhi = tKassParticleXP[1];
+    	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
 
-       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi,tZ,0);
-	if((l>0) and includeOtherPols){
-		//Calculates a convenient phase shift for a second polarization of fields with azimuthal dependence, calculates that field, and combines two polarizations to get the total field for the mode
-		double dPhi = LMCConst::Pi() / 2.0 / (double)l;
-		std::vector<double> tPolarization; 
-		tPolarization = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi+dPhi,tZ,0);
-		tField[0] = tField[0]*sin((double)l*tPhi) + tPolarization[0]*cos((double)l*tPhi) ;
-		tField[1] = tField[1]*sin((double)l*(tPhi+dPhi)) + tPolarization[1]*cos((double)l*(tPhi+dPhi)) ;
-		//modifies both r and phi components of TE field before normalizing in the next loop. Scaled to have same amplitude as a single polarization
-	}
+       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tPhi,tZ,1);
        	double normFactor = GetNormFactorsTE()[l][m][n];
    		auto it = tField.begin();
    		while (it != tField.end())
