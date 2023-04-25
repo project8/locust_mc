@@ -79,7 +79,7 @@ namespace locust
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice){};
             virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols){return 0.;};
             virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP){return 0.;};
-
+            virtual double ScaleEPoyntingVector(double fcyc){return 0.;};
 
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);

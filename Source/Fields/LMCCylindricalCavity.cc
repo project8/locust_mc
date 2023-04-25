@@ -16,9 +16,7 @@ namespace locust
     	fProbeGain( 1.),
 		fCavityProbeZ( 0. ),
 		fCavityProbeRFrac( 0.5 ),
-		fCavityProbeTheta( 0.0 ),
-		fCavityVolume( 0. )
-
+		fCavityProbeTheta( 0.0 )
 		{}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -268,24 +266,18 @@ namespace locust
     double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
     {
     	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
-      double thetaProbe = this->GetCavityProbeTheta();
+    	double thetaProbe = this->GetCavityProbeTheta();
     	double zProbe = this->GetCavityProbeZ();
-      double thetaEffective = thetaProbe; 
-      if(l>0)
-      {
-        //If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
-        double thetaElectron = tKassParticleXP[1];
-        thetaEffective = thetaProbe - thetaElectron;
-      }	
+    	double thetaEffective = thetaProbe;
+    	if (l>0)
+    	{
+    		//If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
+    		double thetaElectron = tKassParticleXP[1];
+    		thetaEffective = thetaProbe - thetaElectron;
+    	}
 
-
-      std::vector<double> tProbeLocation = {rProbe, thetaEffective, zProbe};
-      // Factor of sqrt(fCavityVolume) is being applied to the pre-digitized E-fields
-      // to try to reduce dependence of detected power on cavity volume.  This
-      // is qualitatively consistent with the volume scaling expected from a cavity
-      // experiment, and will also support ongoing normalization studies without
-      // necessarily having to retune the digitizer frequently.
-      double tEFieldAtProbe = sqrt(fCavityVolume) * GetNormalizedModeField(l,m,n,tProbeLocation,0).back(); //Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
+    	std::vector<double> tProbeLocation = {rProbe, thetaEffective, zProbe};
+    	double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation,0).back(); //Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
 
     	return fProbeGain * tEFieldAtProbe;
     }
@@ -484,11 +476,11 @@ namespace locust
     	LPROG(lmclog, "\n\nTo plot a mode map:\n"
     			"> root file:output/ModeMapOutput.root\n"
     			"# _file0->ls()\n"
-    			"# hTEtheta->SetLineColor(0)\n"
-    			"# hTEtheta->SetLineWidth(0)\n"
+    			"# TE011_Etheta->SetLineColor(0)\n"
+    			"# TE011_Etheta->SetLineWidth(0)\n"
     			"# TE011_Etheta->DrawCopy(\"pol lego2\")\n"
     			"# TPad *p = (TPad*)c1->cd()\n"
-    			"# p->SetTheta(90.); p->SetTheta(0.)\n"
+    			"# p->SetTheta(90.); p->SetPhi(0.)\n"
     			"# p->Update()\n"
     			"\n\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.");
     	getchar();
