@@ -267,10 +267,24 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-
         std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
-        double dhoNorm = vMag * LMCConst::Q() * fAnalyticResponseFunction->GetCavityQ();
-        double dhoMag = complexConvolution.first / dhoNorm;
+
+
+        // The excitation amplitude A_\lambda should be calculated the same way here
+        // as in the signal generator, but here it is normalized such that the
+        // E-field magnitude peaks at the Hanneke factor when the cyclotron frequency
+        // is on the mode resonance.
+
+        // Convolution with LMCDampedHarmonicOscillator resonance peaks at 1.0*fHannekePowerFactor,
+        // and GetCavityFIRSample returns that convolution scaled with vMag*Q.  Normalizing with
+        // vMag*Q as below, we have a dhoMag that peaks at 1.0*fHannekePowerFactor:
+
+        double dhoNorm = vMag * LMCConst::Q();
+        double dhoMag = 0.;
+        if (dhoNorm > 0.)
+        {
+        	dhoMag = complexConvolution.first / dhoNorm;
+        }
         double dhoPhase = complexConvolution.second;
 
         // first term represents the new field driven by the electron.
