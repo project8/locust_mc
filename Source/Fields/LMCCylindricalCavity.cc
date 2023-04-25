@@ -18,6 +18,7 @@ namespace locust
 		fCavityProbeRFrac( 0.5 ),
 		fCavityProbeTheta( 0.0 ),
 		fCavityVolume( 0. )
+
 		{}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -82,7 +83,6 @@ namespace locust
         SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
 
         CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
-        SetCavityVolume();
 
         if( aParam.has( "plot-mode-maps" ) )
         {
@@ -93,15 +93,10 @@ namespace locust
     	return true;
     }
 
-    void CylindricalCavity::SetCavityVolume()
-    {
-    	fCavityVolume = LMCConst::Pi() * this->GetDimR() * this->GetDimR() * this->GetDimL();
-    }
-
     std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
     {
 
-       LPROG(lmclog, "Calculating mode normalization factors ... " );
+        LPROG(lmclog, "Calculating mode normalization factors ... " );
 
     	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
     	aModeNormFactor.resize(nModes);
@@ -124,11 +119,11 @@ namespace locust
             	{
             		if (bTE)
             		{
-            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,1,1);
+            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,1,1),0.5);
             		}
             		else
             		{
-            			aModeNormFactor[l][m][n] = 1./Integrate(l,m,n,0,1);
+            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,0,1),0.5);
             		}
             	}
         	}
@@ -271,29 +266,29 @@ namespace locust
     }
 
     double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
-	{
+    {
     	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
-	double thetaProbe = this->GetCavityProbeTheta();
+      double thetaProbe = this->GetCavityProbeTheta();
     	double zProbe = this->GetCavityProbeZ();
+      double thetaEffective = thetaProbe; 
+      if(l>0)
+      {
+        //If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
+        double thetaElectron = tKassParticleXP[1];
+        thetaEffective = thetaProbe - thetaElectron;
+      }	
 
-	double thetaEffective = thetaProbe; 
-	if(l>0)
-	{
-		//If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
-		double thetaElectron = tKassParticleXP[1];
-		thetaEffective = thetaProbe - thetaElectron;
-	}	
 
+      std::vector<double> tProbeLocation = {rProbe, thetaEffective, zProbe};
+      // Factor of sqrt(fCavityVolume) is being applied to the pre-digitized E-fields
+      // to try to reduce dependence of detected power on cavity volume.  This
+      // is qualitatively consistent with the volume scaling expected from a cavity
+      // experiment, and will also support ongoing normalization studies without
+      // necessarily having to retune the digitizer frequently.
+      double tEFieldAtProbe = sqrt(fCavityVolume) * GetNormalizedModeField(l,m,n,tProbeLocation,0).back(); //Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
 
-		std::vector<double> tProbeLocation = {rProbe, thetaEffective, zProbe};
-		// Factor of sqrt(fCavityVolume) is being applied to the pre-digitized E-fields
-		// to try to reduce dependence of detected power on cavity volume.  This
-		// is qualitatively consistent with the volume scaling expected from a cavity
-		// experiment, and will also support ongoing normalization studies without
-		// necessarily having to retune the digitizer frequently.
-		double tEFieldAtProbe = sqrt(fCavityVolume) * GetNormalizedModeField(l,m,n,tProbeLocation,0).back(); //Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
     	return fProbeGain * tEFieldAtProbe;
-	}
+    }
 
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
     {
@@ -371,11 +366,11 @@ namespace locust
     		{
     			for (int n=0; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTE()[l][m][n] / LMCConst::EpsNull();
+    				double normFactor = pow(GetNormFactorsTE()[l][m][n],2.);
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
-    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,1,1)*normFactor,
-        		    		LMCConst::MuNull()*Integrate(l,m,n,1,0)*normFactor);
+    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
+        		    		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
     				}
     				else
     				{
@@ -393,11 +388,11 @@ namespace locust
     		{
     			for (int n=1; n<nModes; n++)
     			{
-    				double normFactor = GetNormFactorsTM()[l][m][n] / LMCConst::EpsNull();
+    				double normFactor = pow(GetNormFactorsTM()[l][m][n],2.);
     				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
     				{
-    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*Integrate(l,m,n,0,1)*normFactor,
-    		    			LMCConst::MuNull()*Integrate(l,m,n,0,0)*normFactor);
+    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,0,1)*normFactor,
+    		    			LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,0,0)*normFactor);
     				}
     				else
     				{

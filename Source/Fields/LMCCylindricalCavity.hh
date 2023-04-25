@@ -62,7 +62,6 @@ namespace locust
             void SetCavityProbeTheta( double aTheta );
             double GetCavityProbeTheta();
             void SetCavityProbeGain( double aGain );
-            void SetCavityVolume();
 
 
         private:
@@ -71,7 +70,6 @@ namespace locust
             double fCavityProbeRFrac;
             double fCavityProbeTheta;
             double fProbeGain;
-            double fCavityVolume;
 
     };
 

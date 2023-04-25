@@ -76,7 +76,7 @@ class testCavity_app : public main_app
             add_option("-f,--dho-cavity-frequency", fCavityFrequency, "[1.067e9] Cavity resonant frequency (Hz).");
             add_option("-q,--dho-cavity-Q", fCavityQ, "[1000] Cavity Q.");
             add_option("-x,--expand-sweep", fExpandSweep, "[1.0] Factor by which to expand range of frequency sweep.");
-            add_option("-w, --write-output", fUnitTestOutputFile, "[false] Write histo to Root file.");
+            add_option("-w, --write-output", fUnitTestOutputFile, "[0==false] Write histo to Root file.");
         }
 
         virtual ~testCavity_app() {}
