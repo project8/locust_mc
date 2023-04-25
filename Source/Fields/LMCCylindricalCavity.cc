@@ -15,7 +15,8 @@ namespace locust
     CylindricalCavity::CylindricalCavity():
     	fProbeGain( 1.),
 		fCavityProbeZ( 0. ),
-		fCavityProbeRFrac( 0.5 )
+		fCavityProbeRFrac( 0.5 ),
+		fCavityProbeTheta( 0.0 )
 		{}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -55,6 +56,10 @@ namespace locust
     		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
     	}
 
+     	if ( aParam.has( "cavity-probe-theta" ) )
+	{
+		SetCavityProbeTheta(aParam["cavity-probe-theta"]().as_double());
+	}
 
         /*
                 if( aParam.has( "modemap-filename" ) )
@@ -255,27 +260,37 @@ namespace locust
 
     std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,0.,z,0);
+    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
-    double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols)
-	{
+    double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
+    {
     	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
+    	double thetaProbe = this->GetCavityProbeTheta();
     	double zProbe = this->GetCavityProbeZ();
-		std::vector<double> tProbeLocation = {rProbe, 0., zProbe};
-		double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation).back();
-    	return fProbeGain * tEFieldAtProbe;
-	}
+    	double thetaEffective = thetaProbe;
+    	if (l>0)
+    	{
+    		//If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
+    		double thetaElectron = tKassParticleXP[1];
+    		thetaEffective = thetaProbe - thetaElectron;
+    	}
 
-    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
-       {
-       	double tR = tKassParticleXP[0];
-       	double tZ = tKassParticleXP[2];
+    	std::vector<double> tProbeLocation = {rProbe, thetaEffective, zProbe};
+    	double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation,0).back(); //Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
+
+    	return fProbeGain * tEFieldAtProbe;
+    }
+
+    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
+    {
+    	double tR = tKassParticleXP[0];
+    	double tTheta = tKassParticleXP[1];
+    	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
 
-       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,0.,tZ,0);
+       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
        	double normFactor = GetNormFactorsTE()[l][m][n];
-
    		auto it = tField.begin();
    		while (it != tField.end())
    		{
@@ -461,8 +476,8 @@ namespace locust
     	LPROG(lmclog, "\n\nTo plot a mode map:\n"
     			"> root file:output/ModeMapOutput.root\n"
     			"# _file0->ls()\n"
-    			"# hTEtheta->SetLineColor(0)\n"
-    			"# hTEtheta->SetLineWidth(0)\n"
+    			"# TE011_Etheta->SetLineColor(0)\n"
+    			"# TE011_Etheta->SetLineWidth(0)\n"
     			"# TE011_Etheta->DrawCopy(\"pol lego2\")\n"
     			"# TPad *p = (TPad*)c1->cd()\n"
     			"# p->SetTheta(90.); p->SetPhi(0.)\n"
@@ -496,6 +511,14 @@ namespace locust
     void CylindricalCavity::SetCavityProbeRFrac ( double aFraction )
     {
     	fCavityProbeRFrac = aFraction;
+    }
+    double CylindricalCavity::GetCavityProbeTheta()
+    {
+	return fCavityProbeTheta;
+    }
+    void CylindricalCavity::SetCavityProbeTheta ( double aTheta )
+    {
+	fCavityProbeTheta = aTheta;
     }
 
 

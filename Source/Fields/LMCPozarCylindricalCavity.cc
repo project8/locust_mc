@@ -38,21 +38,17 @@ namespace locust
     	double tEr = 0.;
     	double tEtheta = 0.;
 
-    	if ((!includeOtherPols)||(l==0))
-    	{
-        	tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
-    		tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
-    	}
-    	else
-    	{
-    		LERROR(lmclog,"This superposition has not yet been implemented.");
-    		exit(-1);
-    		// Possible suggestion:
-    		// Here we can implement the superposition with other polarities of the same mode.
-    		// The superposition can be done either in this function itself, or with some kind
-    		// of new helper function in this class.
-    	}
+    	tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
 
+    	if ((includeOtherPols)&&(l>0))
+    	{
+    		//modifies both r and theta components of TE field.
+    		double dTheta = LMCConst::Pi() / 2.0 / (double)l;
+    		std::vector<double> tPolarization = this->TE_E(R,L,l,m,n,r,theta+dTheta,zKass,0);
+    		tEr = tEr*sin((double)l*theta) + tPolarization[0]*cos((double)l*theta) ;
+    		tEtheta = tEtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
+    	}
 
     	TE_E.push_back(tEr);
     	TE_E.push_back(tEtheta);
