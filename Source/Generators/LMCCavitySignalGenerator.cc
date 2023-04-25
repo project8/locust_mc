@@ -440,8 +440,7 @@ namespace locust
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
-					double theta_sign = tE_normalized.back() / fabs(tE_normalized.back()); // retains sign of theta component to incorporate into modeAmplitude
-    					double modeAmplitude = theta_sign * sqrt( tE_normalized.front()*tE_normalized.front()  + tE_normalized.back()*tE_normalized.back());
+    					double modeAmplitude = sqrt( tE_normalized.front()*tE_normalized.front()  + tE_normalized.back()*tE_normalized.back());
 //                                        double modeAmplitude = tE_normalized.back();
 
     					if (!fInterface->fE_Gun)
