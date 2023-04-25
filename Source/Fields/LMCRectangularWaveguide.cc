@@ -414,6 +414,8 @@ namespace locust
     	LPROG(lmclog, "\n\nTo plot a mode map:\n"
     			"> root file:output/ModeMapOutput.root\n"
     			"# _file0->ls()\n"
+    			"# TE10_Ey->SetLineColor(0)\n"
+    			"# TE10_Ey->SetLineWidth(0)\n"
     			"# TE10_Ey->DrawCopy(\"colz\")\n"
     			"\n\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.");
     	getchar();
