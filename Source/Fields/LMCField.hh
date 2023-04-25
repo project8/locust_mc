@@ -73,12 +73,12 @@ namespace locust
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols) {return {0.};};
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE) {return {{{0.}}};};
-            virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool avgOverTheta) {return {0.};};
+            virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual void CheckNormalization(int nModes){};
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice){};
-            virtual double GetFieldAtProbe(int l, int m, int n, bool avgOverTheta){return 0.;};
-	    virtual double GetFieldAtProbe(int l, int m, int n, bool avgOverTheta, std::vector<double> tKassParticleXP){return 0.;};
+            virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols){return 0.;};
+	    virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP){return 0.;};
 
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
