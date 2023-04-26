@@ -12,6 +12,10 @@
 #include "param.hh"
 #include "logger.hh"
 #include <iostream>
+#ifdef ROOT_FOUND
+    #include "LMCRootHistoWriter.hh"
+#endif
+
 
 namespace locust
 {
@@ -34,19 +38,21 @@ namespace locust
             virtual bool Configure( const scarab::param_node& aNode );
         	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle);
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
-            double GetCavityProbeGain();
-            void SetCavityProbeGain( double aGain );
             double GetVoltagePhase();
             void SetVoltagePhase( double aPhase );
+        	bool WriteRootHisto();
 
 
 
         private:
-            double fProbeGain;
             double fOrbitPhase;
             double fVoltagePhase;
             std::vector<std::vector<std::vector<double>>> fRollingAvg;
             std::vector<std::vector<std::vector<int>>> fCounter;
+            FILE *fp;
+#ifdef ROOT_FOUND
+            FileWriter* fRootHistoWriter;
+#endif
 
 
 

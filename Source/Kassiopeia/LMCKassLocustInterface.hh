@@ -62,7 +62,6 @@ namespace locust
 
         // Cavity and e-gun variables:
         Transmitter* fTransmitter;
-        std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
         Field* fField;
         ConfigureKass* fConfigureKass;
         bool fBackReaction;

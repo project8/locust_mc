@@ -16,7 +16,6 @@ namespace locust
 
     CavityModes::CavityModes():
 		fOrbitPhase( 0. ),
-		fProbeGain( 1.0 ),
 		fVoltagePhase( 0. )
     {
     }
@@ -35,20 +34,19 @@ namespace locust
     		return false;
     	}
 
-    	if ( aParam.has( "cavity-probe-gain" ) )
-    	{
-    		SetCavityProbeGain(aParam["cavity-probe-gain"]().as_double());
-    	}
+        if( aParam.has( "norm-check" ) )
+        {
+    		fp = fopen("output/modeEnergies.txt", "w");
+    		fclose(fp);
 
-    	if ( aParam.has( "cavity-probe-z" ) )
-    	{
-    		SetCavityProbeZ(aParam["cavity-probe-z"]().as_double());
-    	}
+#ifdef ROOT_FOUND
+    		fRootHistoWriter = RootHistoWriter::get_instance();
+    		fRootHistoWriter->SetFilename("output/modeEnergies.root");
+    		fRootHistoWriter->OpenFile("RECREATE");
+    		fRootHistoWriter->CloseFile();
+#endif
+        }
 
-    	if ( aParam.has( "cavity-probe-r-fraction" ) )
-    	{
-    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
-    	}
 
         fRollingAvg.resize(GetNCavityModes());
         fCounter.resize(GetNCavityModes());
@@ -70,9 +68,10 @@ namespace locust
 	{
 		double dopplerFrequency = cavityDopplerFrequency[0];
         SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
-        double voltageValue = excitationAmplitude * EFieldAtProbe * fProbeGain;
+        double voltageValue = excitationAmplitude * EFieldAtProbe;
+	//std::cout << "Amp, FieldAtProbe, Product: " << excitationAmplitude << " " << EFieldAtProbe << " " << voltageValue << std::endl;
         voltageValue *= cos(GetVoltagePhase());
-
+	
         aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
         aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 
@@ -81,25 +80,53 @@ namespace locust
 		return true;
 	}
 
+	bool CavityModes::WriteRootHisto()
+	{
+#ifdef ROOT_FOUND
+		int nModes = GetNCavityModes()*100 + GetNCavityModes()*10 + GetNCavityModes();
+		fRootHistoWriter->OpenFile("UPDATE");
+		TH1D* aHisto = new TH1D("ModeEnergies", "Mode Energy Depositions; Mode l*100 + m*10 + n; log10(Energy[arb])", nModes, 0., nModes);
+		for (int iBin=0; iBin<nModes; iBin++)
+		{
+			// initialize histo:
+			aHisto->SetBinContent(iBin+1, -100.);
+		}
+
+		for (int iL=0; iL<GetNCavityModes(); iL++)
+		{
+			for (int iM=0; iM<GetNCavityModes(); iM++)
+			{
+				for (int iN=0; iN<GetNCavityModes(); iN++)
+				{
+					int binIndex = iL*100 + iM*10 + iN;
+					if (fRollingAvg[iL][iM][iN] > 0.)
+					{
+						aHisto->SetBinContent(binIndex+1, log10(fRollingAvg[iL][iM][iN]));
+					}
+				}
+			}
+		}
+
+		fRootHistoWriter->Write1DHisto(aHisto);
+		fRootHistoWriter->CloseFile();
+
+#endif
+		return true;
+	}
+
 
 	bool CavityModes::AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
 	{
 
-    	char buffer[60];
-		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, with optional resonance if !fBypassTF.
+		fp = fopen("output/modeEnergies.txt", "a");
+		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, convolved with resonance by default (fBypassTF=false).
 
 		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
-		int a = sprintf(buffer, "output/modeEnergies.txt");
-		const char *fpname = buffer;
-		FILE *fp = fopen(fpname, "a");
 
-		if ( (sampleIndex%1000 < 1) )
+		if ( (sampleIndex%1000 < 1) && (sampleIndex < 20000) )
 		{
-			printf("Writing to file:  sampleIndex is %d, fCounter is %d\n",
-					sampleIndex, fCounter[l][m][n]);
 
 			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
-
 
 			if ((l==GetNCavityModes()-1)&&(m==GetNCavityModes()-1)&&(n==GetNCavityModes()-1))
 			{
@@ -120,6 +147,14 @@ namespace locust
 
 				fprintf(fp, "\ntotal energy is %g\n\n\n", totalEnergy);
 
+#ifdef ROOT_FOUND
+				WriteRootHisto();
+#endif
+
+				LPROG( lmclog, "\n\n\nMode energies written to files output/modeEnergies.root and output/modeEnergies.txt: sampleIndex is " << sampleIndex);
+				LPROG( lmclog, "\n\n\nPress return to continue averaging and writing mode energies, or Cntrl-C to quit.");
+				getchar();
+
 			}
 
 		}
@@ -139,13 +174,5 @@ namespace locust
         fVoltagePhase = aPhase;
     }
 
-    double CavityModes::GetCavityProbeGain()
-    {
-    	return fProbeGain;
-    }
-    void CavityModes::SetCavityProbeGain( double aGain )
-    {
-    	fProbeGain = aGain;
-    }
 
 } /* namespace locust */

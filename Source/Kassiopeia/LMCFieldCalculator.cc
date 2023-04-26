@@ -251,9 +251,9 @@ namespace locust
     	double y = aFinalParticle.GetPosition().GetY();
     	double z = aFinalParticle.GetPosition().GetZ();
     	double r = pow( x*x + y*y, 0.5 );
-    	double norm = fInterface->fField->TE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
+    	double norm = fInterface->fField->GetTE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
     	double tAvgDotProductFactor = 0.63;  // TO-DO:  this should be calculated and not just overridden like this.
-    	double coupling = tAvgDotProductFactor * fInterface->fField->TE_E(l,m,n,r,0.,z,false).back()/norm;
+    	double coupling = tAvgDotProductFactor * fInterface->fField->GetTE_E(l,m,n,r,0.,z,false).back()/norm;
     	return coupling*coupling;
     }
 
@@ -267,10 +267,24 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-
         std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
-        double dhoNorm = vMag * LMCConst::Q() * fAnalyticResponseFunction->GetCavityQ();
-        double dhoMag = complexConvolution.first / dhoNorm;
+
+
+        // The excitation amplitude A_\lambda should be calculated the same way here
+        // as in the signal generator, but here it is normalized such that the
+        // E-field magnitude peaks at the Hanneke factor when the cyclotron frequency
+        // is on the mode resonance.
+
+        // Convolution with LMCDampedHarmonicOscillator resonance peaks at 1.0*fHannekePowerFactor,
+        // and GetCavityFIRSample returns that convolution scaled with vMag*Q.  Normalizing with
+        // vMag*Q as below, we have a dhoMag that peaks at 1.0*fHannekePowerFactor:
+
+        double dhoNorm = vMag * LMCConst::Q();
+        double dhoMag = 0.;
+        if (dhoNorm > 0.)
+        {
+        	dhoMag = complexConvolution.first / dhoNorm;
+        }
         double dhoPhase = complexConvolution.second;
 
         // first term represents the new field driven by the electron.

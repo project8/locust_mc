@@ -67,12 +67,16 @@ class testCavity_app : public main_app
 			fDHOTimeResolution(1.e-8),
 			fDHOThresholdFactor(0.01),
 			fCavityFrequency(1.067e9),
-			fCavityQ(1000.)
+			fCavityQ(1000.),
+			fExpandSweep(1.0),
+			fUnitTestOutputFile(false)
         {
             add_option("-r,--dho-time-resolution", fDHOTimeResolution, "[1.e-8] Time resolution used in Green's function (s).");
             add_option("-m,--dho-threshold-factor", fDHOThresholdFactor, "[0.01] Minimum fractional threshold of Green's function used to calculate FIR.");
             add_option("-f,--dho-cavity-frequency", fCavityFrequency, "[1.067e9] Cavity resonant frequency (Hz).");
             add_option("-q,--dho-cavity-Q", fCavityQ, "[1000] Cavity Q.");
+            add_option("-x,--expand-sweep", fExpandSweep, "[1.0] Factor by which to expand range of frequency sweep.");
+            add_option("-w, --write-output", fUnitTestOutputFile, "[0==false] Write histo to Root file.");
         }
 
         virtual ~testCavity_app() {}
@@ -93,6 +97,14 @@ class testCavity_app : public main_app
         {
         	return fCavityQ;
         }
+        double GetExpandSweep()
+        {
+        	return fExpandSweep;
+        }
+        bool UnitTestOutputFile()
+        {
+        	return fUnitTestOutputFile;
+        }
 
 
     private:
@@ -100,6 +112,8 @@ class testCavity_app : public main_app
         double fDHOThresholdFactor;
         double fCavityFrequency;
         double fCavityQ;
+        double fExpandSweep;
+        bool fUnitTestOutputFile;
 };
 
 
@@ -118,7 +132,9 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 
 	CavityUtility aCavityUtility;
 
-    bool checkCavityQ = aCavityUtility.CheckCavityQ( the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+	aCavityUtility.SetExpandFactor(the_main.GetExpandSweep());
+	aCavityUtility.SetOutputFile(the_main.UnitTestOutputFile());
+	bool checkCavityQ = aCavityUtility.CheckCavityQ( the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
 
 	REQUIRE( checkCavityQ );
 }

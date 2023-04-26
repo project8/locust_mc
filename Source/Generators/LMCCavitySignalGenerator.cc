@@ -35,14 +35,12 @@ namespace locust
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
         fOverrideAliasing( false ),
-        fOverrideStepsize( false ),
         fBypassTF( false ),
         fNormCheck( false ),
-        fModeMaps( false ),
-        fTE( true ),
         fIntermediateFile( false ),
         fUseDirectKassPower( false ),
         fAliasingIsChecked( false ),
+		fUnitTestRootFile( false ),
         fInterface( new KassLocustInterface() )
     {
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
@@ -52,34 +50,6 @@ namespace locust
     {
     }
 
-
-    void CavitySignalGenerator::ReadBesselZeroes(std::string filename, bool prime)
-    {
-        std::ifstream input( filename );
-        int n = 0; int k = 0; double zero = 0.;
-        for( std::string line; getline( input, line ); )
-        {
-            std::stringstream ss(line);
-            ss >> n;
-            ss >> k;
-            ss >> zero;
-            if (prime)
-            {
-            	fInterface->fBesselNKPrimeZeros.resize(n+1);
-            	fInterface->fBesselNKPrimeZeros[n].resize(k+1);
-            	fInterface->fBesselNKPrimeZeros[n][k] = zero;
-            }
-            else
-            {
-            	fInterface->fBesselNKZeros.resize(n+1);
-            	fInterface->fBesselNKZeros[n].resize(k+1);
-            	fInterface->fBesselNKZeros[n][k] = zero;
-            }
-
-//            printf("zero is %g and zero01 is %g\n\n", fInterface->fBesselNKPrimeZeros[n][k], fInterface->fBesselNKPrimeZeros[0][1]);
-        }
-
-    }
 
 
     bool CavitySignalGenerator::ModeSelect(int l, int m, int n, bool eGun)
@@ -120,169 +90,6 @@ namespace locust
     	}
     }
 
-    std::vector<std::vector<std::vector<double>>> CavitySignalGenerator::CalculateNormFactors(int nModes, bool TE)
-    {
-
-        LPROG( lmclog, "Calculating mode normalization factors ... " );
-
-    	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
-    	aModeNormFactor.resize(nModes);
-
-    	for (unsigned m=0; m<nModes; m++)
-    	{
-    		aModeNormFactor[m].resize(nModes);
-        	for (unsigned n=0; n<nModes; n++)
-        	{
-        		aModeNormFactor[m][n].resize(nModes);
-        	}
-    	}
-
-
-    	for (unsigned l=0; l<nModes; l++)
-    	{
-        	for (unsigned m=0; m<nModes; m++)
-        	{
-            	for (unsigned n=0; n<nModes; n++)
-            	{
-            		if (TE)
-            		{
-            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,1,1);
-            		}
-            		else
-            		{
-            			aModeNormFactor[l][m][n] = 1./fInterface->fField->Integrate(l,m,n,0,1);
-            		}
-            	}
-        	}
-    	}
-
-    	return aModeNormFactor;
-    }
-
-
-    void CavitySignalGenerator::CheckNormalization()
-    {
-
-    	if (!fInterface->fE_Gun)
-    		printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
-    	else
-    		printf("\n |E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used.\n\n");
-
-    	for (int l=0; l<fNModes; l++)
-    	{
-    		for (int m=1; m<fNModes; m++)
-    		{
-    			for (int n=0; n<fNModes; n++)
-    			{
-    				double normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n] / LMCConst::EpsNull();
-    				if (!isnan(normFactor)&&(isfinite(normFactor)))
-    				{
-    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,1,1)*normFactor,
-        		    		LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,1,0)*normFactor);
-    				}
-    				else
-    				{
-    					printf("TE%d%d%d is undefined.\n", l, m, n);
-    				}
-
-    			}
-    		}
-    	}
-
-
-    	for (int l=0; l<fNModes; l++)
-    	{
-    		for (int m=1; m<fNModes; m++)
-    		{
-    			for (int n=1; n<fNModes; n++)
-    			{
-    				double normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n] / LMCConst::EpsNull();
-    				if (!isnan(normFactor)&&(isfinite(normFactor)))
-    				{
-    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, LMCConst::EpsNull()*fInterface->fField->Integrate(l,m,n,0,1)*normFactor,
-    		    			LMCConst::MuNull()*fInterface->fField->Integrate(l,m,n,0,0)*normFactor);
-    				}
-    				else
-    				{
-    					printf("TM%d%d%d is undefined.\n", l, m, n);
-    				}
-    			}
-    		}
-    	}
-
-    	printf("\nThe modes normalized as above are available for use in the simulation.\n\n");
-    }
-
-
-
-    void CavitySignalGenerator::PrintModeMaps()
-    {
-    	char bufferE[60];
-    	char bufferH[60];
-    	unsigned modeCounter = 0;
-
-    	for (int l=0; l<fNModes; l++)
-    		for (int m=1; m<fNModes; m++)
-    			for (int n=0; n<fNModes; n++)
-    			{
-    				printf("l m n is %d %d %d\n", l, m, n);
-    				double normFactor = 1.0;
-    				int a = 0;
-    				if (fTE)
-    				{
-    					normFactor = fInterface->fField->GetNormFactorsTE()[l][m][n];
-        				a = sprintf(bufferE, "output/ModeMapTE%d%d%d_E.txt", l, m, n);
-        				a = sprintf(bufferH, "output/ModeMapTE%d%d%d_H.txt", l, m, n);
-    				}
-    				else
-    				{
-    					normFactor = fInterface->fField->GetNormFactorsTM()[l][m][n];
-        				a = sprintf(bufferE, "output/ModeMapTM%d%d%d_E.txt", l, m, n);
-        				a = sprintf(bufferH, "output/ModeMapTM%d%d%d_H.txt", l, m, n);
-    				}
-    				const char *fpnameE = bufferE;
-    				FILE *fp_E = fopen(fpnameE, "w");
-    				const char *fpnameH = bufferH;
-    				FILE *fp_H = fopen(fpnameH, "w");
-    				for (unsigned i=0; i<fInterface->fField->GetNPixels()+1; i++)
-    				{
-    					double r = (double)i/fInterface->fField->GetNPixels()*fInterface->fField->GetDimR();
-    					double x = (double)i/fInterface->fField->GetNPixels()*fInterface->fField->GetDimX() - fInterface->fField->GetDimX()/2.;
-    					for (unsigned j=0; j<fInterface->fField->GetNPixels()+1; j++)
-    					{
-    						double theta = (double)j/fInterface->fField->GetNPixels()*2.*LMCConst::Pi();
-        					double y = (double)j/fInterface->fField->GetNPixels()*fInterface->fField->GetDimY() - fInterface->fField->GetDimY()/2.;
-    						std::vector<double> tE;
-    						std::vector<double> tH;
-    						if (!fInterface->fE_Gun)
-    						{
-    							if (fTE)
-    							{
-    								tE = fInterface->fField->TE_E(l,m,n,r,theta,0.0,0);
-    								tH = fInterface->fField->TE_H(l,m,n,r,theta,0.0,0);
-    							}
-    							else
-    							{
-    								tE = fInterface->fField->TM_E(l,m,n,r,theta,0.0,0);
-    								tH = fInterface->fField->TM_H(l,m,n,r,theta,0.0,0);
-    							}
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tE.front()*normFactor, tE.back()*normFactor);
-    							fprintf(fp_H, "%10.4g %10.4g %10.4g %10.4g\n", r, theta, tH.front()*normFactor, tH.back()*normFactor);
-    						}
-    						else
-    						{
-    							tE = fInterface->fField->TE_E(m,n,x,y,fInterface->fField->GetCentralFrequency());
-    							fprintf(fp_E, "%10.4g %10.4g %10.4g %10.4g\n", x, y, tE.front()*normFactor, tE.back()*normFactor);
-    						}
-    					}
-    				}
-    				fclose (fp_E);
-    				fclose (fp_H);
-    				modeCounter += 1;
-    			}
-    	printf("\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.\n");
-    	getchar();
-    }
 
 
 
@@ -384,20 +191,6 @@ namespace locust
         	if ( aParam.has( "back-reaction" ) )
         	{
         		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-                if( aParam.has( "override-stepsize" ) )
-                {
-                    fOverrideStepsize = aParam["override-stepsize"]().as_bool();
-                }
-        		if (( !fInterface->fBackReaction ) && (fOverrideStepsize == false))
-        		{
-        			LERROR(lmclog,"If \"back-reaction\"=false, please check that the Kass "
-        					"stepsize is 0.135 orbits or smaller.  Otherwise there can be "
-        					"skipped digitizer samples when running in a multi-core cluster "
-        					"environment.  This is a to-do item to be fixed with a planned 2-step trigger. "
-        					"To override this message, use this command-line flag:  \"cavity-signal.override-stepsize\"=true");
-        			exit(-1);
-        			return false;
-        		}
         	}
         }
         if( aParam.has( "n-modes" ) )
@@ -413,6 +206,7 @@ namespace locust
 			return false;
 		}
 
+        fInterface->fField->SetNModes(fNModes);
         if (!fInterface->fField->Configure(aParam))
         {
         	LERROR(lmclog,"Error configuring LMCField.");
@@ -420,25 +214,17 @@ namespace locust
         	return false;
         }
 
-        if( aParam.has( "cavity-radius" ) )
-        {
-            fInterface->fField->SetDimR( aParam["cavity-radius"]().as_double() );
-        }
+    	fAvgDotProductFactor.resize(fNModes);
+    	for (unsigned m=0; m<fNModes; m++)
+    	{
+    		fAvgDotProductFactor[m].resize(fNModes);
+        	for (unsigned n=0; n<fNModes; n++)
+        	{
+        		fAvgDotProductFactor[m][n].resize(fNModes);
+        	}
+    	}
 
-        if( aParam.has( "cavity-length" ) )
-        {
-            fInterface->fField->SetDimL( aParam["cavity-length"]().as_double() );
-        }
 
-        if( aParam.has( "center-to-short" ) ) // for use in e-gun
-        {
-            fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
-        }
-
-        if( aParam.has( "center-to-antenna" ) ) // for use in e-gun
-        {
-            fInterface->fCENTER_TO_ANTENNA = aParam["center-to-antenna"]().as_double();
-        }
 
         if( aParam.has( "lo-frequency" ) )
         {
@@ -464,17 +250,13 @@ namespace locust
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
         }
-        if( aParam.has( "te-modes" ) )
-        {
-        	fTE = aParam["te-modes"]().as_bool();
-        }
-        if( aParam.has( "mode-maps" ) )
-        {
-        	fModeMaps = aParam["mode-maps"]().as_bool();
-        }
         if( aParam.has( "intermediate-file" ) )
         {
         	fIntermediateFile = aParam["intermediate-file"]().as_bool();
+        }
+        if( aParam.has( "unit-test-root-file" ) )
+        {
+        	fUnitTestRootFile = aParam["unit-test-root-file"]().as_bool();
         }
         if( aParam.has( "direct-kass-power" ) )
         {
@@ -520,18 +302,6 @@ namespace locust
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( aParam );
 
-
-        fdtFilter = fTFReceiverHandler->GetFilterResolution();
-
-        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-        ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
-
-        fInterface->fField->SetNormFactorsTE(CalculateNormFactors(fNModes,1));
-        fInterface->fField->SetNormFactorsTM(CalculateNormFactors(fNModes,0));
-        CheckNormalization();  // E fields integrate to 1.0 for both TE and TM modes.
-        if (fModeMaps) PrintModeMaps();  // Write to text files for plotting mode maps.
-
         return true;
     }
 
@@ -563,6 +333,7 @@ namespace locust
     	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor();
     	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency();
     	double qExpected = fAnalyticResponseFunction->GetCavityQ();
+    	aCavityUtility.SetOutputFile(fUnitTestRootFile);
     	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
     	{
         	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
@@ -608,22 +379,6 @@ namespace locust
 
 
 
-
-
-    double CavitySignalGenerator::ScaleEPoyntingVector(double fcyc)
-    {
-    	// This function calculates the coefficients of the Poynting vector integral
-    	// in the TE10 mode in WR42.  It then returns the sqrt of the half of the propagating
-    	// power that is moving toward the antenna.
-    	// After Pozar p. 114:
-    	double k = fcyc / LMCConst::C();
-    	double k1 = LMCConst::Pi() / fInterface->fField->GetDimX();
-    	double beta = sqrt( k*k - k1*k1 );
-    	double areaIntegral = fcyc * LMCConst::MuNull() * pow(fInterface->fField->GetDimX(),3.) * fInterface->fField->GetDimY() * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
-    	// sqrt of propagating power gives amplitude of E
-    	return sqrt(areaIntegral);
-    }
-
     bool CavitySignalGenerator::DriveMode(Signal* aSignal, unsigned index)
     {
 
@@ -652,11 +407,11 @@ namespace locust
     				if (ModeSelect(l, m, n, fInterface->fE_Gun))
     				{
     					std::vector<double> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP);
+    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
-    					fAvgDotProductFactor = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
-    					double modeAmplitude = tE_normalized.back();
+    					fAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[l][m][n] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
+    					double modeAmplitude = sqrt( tE_normalized.front()*tE_normalized.front()  + tE_normalized.back()*tE_normalized.back());
 
 
     					if (!fInterface->fE_Gun)
@@ -664,23 +419,22 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						std::vector<double> tProbeLocation = {fInterface->fField->GetDimR()*fPowerCombiner->GetCavityProbeRFrac(), 0., fPowerCombiner->GetCavityProbeZ()};
-    						tEFieldAtProbe = fInterface->fField->GetNormalizedModeField(l,m,n,tProbeLocation).back();
+    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP);
     					}
     					else
     					{
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = fAvgDotProductFactor * modeAmplitude * ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
     						if (fUseDirectKassPower)
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
-        						excitationAmplitude = fAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+        						excitationAmplitude = fAvgDotProductFactor[l][m][n]*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
     					}
@@ -689,7 +443,7 @@ namespace locust
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-    						// This scaling factor includes a 50 ohm impedance that applied in signal processing, as well
+    						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
@@ -732,6 +486,25 @@ namespace locust
         fInterface->fPreEventCondition.notify_one();
         return;
     }
+
+    bool CavitySignalGenerator::TryWakeAgain()
+    {
+    	int count = 0;
+    	while (count < 10)
+    	{
+    		LPROG(lmclog,"Kass thread is unresponsive.  Trying again.\n");
+    		LPROG( lmclog, "LMC about to try WakeBeforeEvent() again" );
+    		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    		WakeBeforeEvent();  // trigger Kass event.
+    		if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+    		{
+    			return true;
+    		}
+    		count += 1;
+    	}
+ 		return false;
+    }
+
 
      bool CavitySignalGenerator::ReceivedKassReady()
     {
@@ -853,13 +626,24 @@ namespace locust
                  		{
                  			if ( fInterface->fEventInProgress )
                  			{
-                 				if ( index < fNPreEventSamples+1 )  // Kass never started at all.
+                 				if ( index < fNPreEventSamples+1 )  // Kass never started.
                  				{
-                 					LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                 					fKassNeverStarted = true;
+                 					if (TryWakeAgain())
+                 					{
+                 						tLock.unlock();
+                 					}
+                 					else
+                 					{
+                     					LPROG(lmclog,"Locust is stopping because Kass has either stopped reporting, or never started.\n");
+                     					tLock.unlock();
+                 						break;
+                 					}
                  				}
-                 				tLock.unlock();   // Kass either started or not, but is now finished.
-                 				break;
+                 				else
+                 				{
+                 					LPROG(lmclog,"Locust infers that Kass has completed all events.\n");
+                 					break;
+                 				}
                  			}
                  			else
                  			{

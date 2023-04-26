@@ -10,6 +10,10 @@
 
 #include "KSRunModifier.h"
 #include "KSComponentTemplate.h"
+#include "KToolbox.h"
+#include "KSTermMaxR.h"
+
+
 
 #include "LMCKassLocustInterface.hh"
 
@@ -31,8 +35,17 @@ namespace locust
             virtual bool ExecutePreRunModification( Kassiopeia::KSRun& aRun );
             virtual bool ExecutePostRunModification( Kassiopeia::KSRun& aRun );
 
+            bool ConfigureByInterface();
+            bool Configure( const scarab::param_node& aParam );
+
+
         protected:
             kl_interface_ptr_t fInterface;
+
+        private:
+            katrin::KToolbox& fToolbox;
+
+
 
     };
 
