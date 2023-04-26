@@ -123,7 +123,7 @@ namespace locust
 
 		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
 
-		if ( (sampleIndex%1000 < 1) )
+		if ( (sampleIndex%1000 < 1) && (sampleIndex < 20000) )
 		{
 
 			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
