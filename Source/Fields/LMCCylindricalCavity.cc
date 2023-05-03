@@ -204,8 +204,12 @@ namespace locust
     	double lambda = 1. / pow( 1. / 4. / LMCConst::Pi() / LMCConst::Pi() * ( term1*term1 + term2*term2 ), 0.5);
     	double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
     	double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
-    	double dopplerShift = vz / vp;
-    	freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
+    	double dopplerShift = 0.;
+    	if ( fabs(vz) < std::numeric_limits<double>::infinity() )  // check for discontinuity at scattering interactions
+    	{
+    		dopplerShift = vz / vp;
+    	}
+		freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
     	return freqPrime;
     }
 
@@ -327,7 +331,11 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	double unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
+    	double unitJdotE = 0.;
+    	if ( (tEmag > 0.) && (tVmag > 0.) )
+    	{
+    		unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
+    	}
 
 
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.

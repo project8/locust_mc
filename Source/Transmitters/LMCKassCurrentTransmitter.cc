@@ -65,10 +65,16 @@ namespace locust
     double KassCurrentTransmitter::calcOrbitPhase(double vx, double vy)
     {
     	double phase = 0.;
-    	if (fabs(vy) > 0.)
+    	// Check for discontinuity at scattering interactions:
+    	if ((fabs(vy) > 0.) && (vx < std::numeric_limits<double>::infinity()) )
+    	{
     		phase = atan(-vx/vy);
+    	}
+    	else
+    	{
+        	//printf("phase is %g, vx is %g, vy is %g\n", phase*180./LMCConst::Pi(), vx, vy);
+    	}
     	phase += quadrantOrbitCorrection(phase, vx);
-//    	printf("phase is %g\n", phase*180./LMCConst::Pi()); getchar();
     	return phase;
     }
 
