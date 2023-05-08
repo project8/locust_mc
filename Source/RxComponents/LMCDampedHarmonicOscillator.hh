@@ -39,35 +39,36 @@ namespace locust
     		DampedHarmonicOscillator();
     		virtual ~DampedHarmonicOscillator();
     		virtual bool Configure( const scarab::param_node& aNode );
-            virtual bool GenerateGreensFunction();
+            virtual bool GenerateGreensFunction(int l, int m, int n);
             bool Initialize();
-            std::pair<double,double> GreensFunction(double t);
-            double ExpDecayTerm(double t);
-            virtual void SetCavityQ( double aQ );
-            virtual double GetCavityQ();
-            virtual void SetCavityFrequency( double aFrequency );
-            virtual double GetCavityFrequency();
-            virtual void SetDHOTimeResolution( double aTimeResolution );
-            virtual double GetDHOTimeResolution();
-            virtual void SetDHOThresholdFactor( double aThresholdFactor );
-            virtual double GetDHOThresholdFactor();
-            double NormFactor(double aDriveFrequency);
-            bool PopulateCalibrationSignal(Signal* aSignal, int N0, double aDriveFrequency);
+            std::pair<double,double> GreensFunction(int l, int m, int n, double t);
+            double ExpDecayTerm(int l, int m, int n, double t);
+            virtual void SetCavityQ( int l, int m, int n, double aQ );
+            virtual double GetCavityQ(int l, int m, int n);
+            virtual void SetCavityFrequency( int l, int m, int n, double aFrequency );
+            virtual double GetCavityFrequency(int l, int m, int n);
+            virtual void SetDHOTimeResolution(int l, int m, int n, double aTimeResolution );
+            virtual double GetDHOTimeResolution(int l, int m, int n);
+            virtual void SetDHOThresholdFactor(int l, int m, int n, double aThresholdFactor );
+            virtual double GetDHOThresholdFactor(int l, int m, int n);
+            double NormFactor(int l, int m, int n, double aDriveFrequency);
+            bool PopulateCalibrationSignal(int l, int m, int n, Signal* aSignal, int N0, double aDriveFrequency);
             std::deque<double> SignalToDeque(Signal* aSignal);
 
 
 
         private:
-            double fCavityFrequency; // Hz
-            double fCavityOmega; // radians/s
-            double fCavityQ;
-            double fCavityDampingFactor;
-            double fBFactor; // harmonic oscillator parameter
-            double fCavityOmegaPrime;  // damped resonant frequency
+            int fNModes;
+            std::vector<std::vector<std::vector<double>>> fCavityFrequency; // Hz
+            std::vector<std::vector<std::vector<double>>> fCavityOmega; // radians/s
+            std::vector<std::vector<std::vector<double>>> fCavityQ;
+            std::vector<std::vector<std::vector<double>>> fCavityDampingFactor;
+            std::vector<std::vector<std::vector<double>>> fBFactor; // harmonic oscillator parameter
+            std::vector<std::vector<std::vector<double>>> fCavityOmegaPrime;  // damped resonant frequency
             int fMaxNBins;
-            double fTimeResolution;
-            double fThresholdFactor;
-            double fHannekePowerFactor;
+            std::vector<std::vector<std::vector<double>>> fTimeResolution;
+            std::vector<std::vector<std::vector<double>>> fThresholdFactor;
+            std::vector<std::vector<std::vector<double>>> fHannekePowerFactor;
             TFReceiverHandler* fTFReceiverHandler;
 
 

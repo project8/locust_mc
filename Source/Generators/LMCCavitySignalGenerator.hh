@@ -77,7 +77,7 @@ namespace locust
             virtual ~CavitySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
-            bool CrossCheckCavityConfig();
+            bool CrossCheckCavityConfig(int l, int m, int n);
             bool CrossCheckAliasing(Signal* aSignal, double dopplerFrequency );
 
             void Accept( GeneratorVisitor* aVisitor ) const;

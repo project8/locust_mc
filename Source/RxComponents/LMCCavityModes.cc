@@ -69,7 +69,6 @@ namespace locust
 		double dopplerFrequency = cavityDopplerFrequency[0];
         SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
         double voltageValue = excitationAmplitude * EFieldAtProbe;
-	//std::cout << "Amp, FieldAtProbe, Product: " << excitationAmplitude << " " << EFieldAtProbe << " " << voltageValue << std::endl;
         voltageValue *= cos(GetVoltagePhase());
 	
         aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);

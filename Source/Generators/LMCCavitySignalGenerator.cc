@@ -95,7 +95,6 @@ namespace locust
 
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
-
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -103,6 +102,11 @@ namespace locust
     		exit(-1);
     		return false;
     	}
+
+        if( aParam.has( "n-modes" ) ) 
+        {   
+                fNModes = aParam["n-modes"]().as_int();
+        }   
 
         if( aParam.has( "tf-receiver-filename" ) )
         {
@@ -137,19 +141,32 @@ namespace locust
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
-        		if ( !fAnalyticResponseFunction->Configure(aParam) ||
-        				(!CrossCheckCavityConfig()) )
+        		for (unsigned l=0; l<fNModes; l++)
         		{
-        			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
-        			exit(-1);
-        			return false;
+                		for (unsigned m=0; m<fNModes; m++)
+                		{
+					for (unsigned n=0; n<fNModes; n++)
+                                 	{
+                        			if ( !fAnalyticResponseFunction->Configure(aParam) ||
+                                        			(!CrossCheckCavityConfig(l,m,n)) )
+                        			{   
+                                			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
+                                			exit(-1);
+                                			return false;
+                        			}  
+						if (ModeSelect(l, m, n, fInterface->fE_Gun)){
+						if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(l, m, n, fAnalyticResponseFunction->GetGFarray(l,m,n)))
+                        			{
+                                			LERROR(lmclog,"GF->FIR was not generated.");
+                                			exit(-1);
+                                			return false;
+                        			}
+						}
+					}
+                		}
         		}
-        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
-        		{
-        			LERROR(lmclog,"GF->FIR was not generated.");
-        			exit(-1);
-        			return false;
-        		}
+
+			
         	}
         } // aParam.has( "tf-receiver-filename" )
 
@@ -192,10 +209,6 @@ namespace locust
         	{
         		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
         	}
-        }
-        if( aParam.has( "n-modes" ) )
-        {
-        	fNModes = aParam["n-modes"]().as_int();
         }
 
         fPowerCombiner->SetNCavityModes(fNModes);
@@ -323,16 +336,16 @@ namespace locust
     	}
     }
 
-    bool CavitySignalGenerator::CrossCheckCavityConfig()
+    bool CavitySignalGenerator::CrossCheckCavityConfig(int l, int m, int n)
 	{
 
     	LPROG(lmclog,"Running some cavity cross-checks ...");
 
     	CavityUtility aCavityUtility;
-    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution();
-    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor();
-    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency();
-    	double qExpected = fAnalyticResponseFunction->GetCavityQ();
+    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(l,m,n);
+    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(l,m,n);
+    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(l,m,n);
+    	double qExpected = fAnalyticResponseFunction->GetCavityQ(l,m,n);
     	aCavityUtility.SetOutputFile(fUnitTestRootFile);
     	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
     	{
@@ -419,6 +432,7 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
+
     						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP);
     					}

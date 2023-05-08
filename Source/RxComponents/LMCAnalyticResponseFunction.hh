@@ -37,23 +37,23 @@ namespace locust
             double GetInitialFreq();
             void SetTFarray( std::vector<std::complex<double>> aTFarray );
             std::vector<std::complex<double>> GetTFarray();
-            void SetGFarray( std::vector<std::pair<double,std::pair<double,double> > > aGFarray );
-            std::vector<std::pair<double,std::pair<double,double> > > GetGFarray();
-            virtual void SetCavityQ( double aQ ) {};
-            virtual double GetCavityQ() {return 1.;};
-            virtual void SetCavityFrequency( double aFrequency ) {};
-            virtual double GetCavityFrequency() {return 0.;};
-            virtual void SetDHOTimeResolution( double aTimeResolution ) {};
-            virtual double GetDHOTimeResolution() {return 0.;};
-            virtual void SetDHOThresholdFactor( double aThresholdFactor ) {};
-            virtual double GetDHOThresholdFactor() {return 0.;};
+            void SetGFarray( int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray );
+            std::vector<std::pair<double,std::pair<double,double> > > GetGFarray(int l, int m, int n);
+            virtual void SetCavityQ(int l, int m, int n, double aQ ) {};
+            virtual double GetCavityQ(int l, int m, int n ) {return 1.;};
+            virtual void SetCavityFrequency(int l, int m, int n,  double aFrequency ) {};
+            virtual double GetCavityFrequency(int l, int m, int n ) {return 0.;};
+            virtual void SetDHOTimeResolution(int l, int m, int n, double aTimeResolution ) {};
+            virtual double GetDHOTimeResolution(int l, int m, int n) {return 0.;};
+            virtual void SetDHOThresholdFactor(int l, int m, int n, double aThresholdFactor ) {};
+            virtual double GetDHOThresholdFactor(int l, int m, int n) {return 0.;};
 
 
 
         private:
             bool fGeneratingTF;
             std::vector<std::complex<double>> fTFarray;
-            std::vector<std::pair<double,std::pair<double,double> > > fGFarray;
+            std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > fGFarray;
             double fInitialFreq;
 
 

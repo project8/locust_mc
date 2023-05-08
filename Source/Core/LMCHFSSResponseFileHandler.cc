@@ -87,21 +87,45 @@ namespace locust
         }
         int firBinNumber=0;
 
+	int inputBufferSize = inputBuffer.size();	
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
         {
         	convolutionValueReal += *(it)*fFilterComplex[firBinNumber][0];
         	convolutionValueImag += *(it)*fFilterComplex[firBinNumber][1];
         	firBinNumber++;
         }
-
         std::pair<double,double> complexConvolution;
         double complexPhase = atan(convolutionValueImag/convolutionValueReal);
         double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
-
         return std::make_pair(complexMag, complexPhase);
         return complexConvolution;
     }
 
+    std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilterArray(int l, int m, int n, std::deque<double> inputBuffer)
+    {   
+        double convolutionMag = 0.0;
+        double convolutionValueReal = 0.0;
+        double convolutionValueImag = 0.0;
+
+        if(fFIRNBins<=0)
+        {   
+            LERROR(lmclog,"Number of bins in the filter should be positive");
+        }   
+        int firBinNumber=0;
+
+        int inputBufferSize = inputBuffer.size();    
+        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
+        {   
+                convolutionValueReal += *(it)*fFilterComplexArray[l][m][n][firBinNumber][0];
+                convolutionValueImag += *(it)*fFilterComplexArray[l][m][n][firBinNumber][1];
+                firBinNumber++;
+        }   
+        std::pair<double,double> complexConvolution;
+        double complexPhase = atan(convolutionValueImag/convolutionValueReal);
+        double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
+        return std::make_pair(complexMag, complexPhase);
+        return complexConvolution;
+    }  
 
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
@@ -246,7 +270,7 @@ namespace locust
         return true;
     }
 
-    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(std::vector<std::pair<double,std::pair<double,double> > > gfArray)
+    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
     {
 
     	if(fIsFIRCreated)
@@ -257,16 +281,16 @@ namespace locust
         fFIRNBins = gfArray.size();
         fResolution = gfArray[0].first;
 
-        fFilterComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
+        fFilterComplexArray[l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
 
         for (int i = 0; i < fFIRNBins; i++)
         {
-        	fFilterComplex[i][0] = gfArray[i].second.first;
-        	fFilterComplex[i][1] = gfArray[i].second.second;
+        	fFilterComplexArray[l][m][n][i][0] = gfArray[i].second.first;
+        	fFilterComplexArray[l][m][n][i][1] = gfArray[i].second.second;
         }
 
-        if (fPrintFIR) PrintFIR( fFilterComplex );
-
+        if (fPrintFIR) PrintFIR( fFilterComplexArray[l][m][n] );
+	fIsFIRCreated=true;
         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
     	return true;

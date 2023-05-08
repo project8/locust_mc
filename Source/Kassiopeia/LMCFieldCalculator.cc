@@ -93,7 +93,7 @@ namespace locust
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
         			return false;
         		}
-        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(0,1,0,fAnalyticResponseFunction->GetGFarray(0,1,0)))
         		{
         			LWARN(lmclog,"GF->FIR was not generated.");
         			return false;
@@ -351,7 +351,6 @@ namespace locust
 
     			*it++;
     		}
-
             std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilter(fFIRBuffer);
 
     		convolutionMag = convolution.first;

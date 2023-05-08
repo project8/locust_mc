@@ -45,7 +45,7 @@ namespace locust
 			LWARN(testlog,"DampedHarmonicOscillator was not configured.");
 			return false;
 		}
-		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()) )
+		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(0,0,1,fAnalyticResponseFunction->GetGFarray(0,0,1)) ) //VALUES HARD CODED FOR FUNCTIONALITY BUT NEEDS TO BE UPDATED!!!!!
 		{
 			LWARN(testlog,"GF->FIR was not generated.");
 			return false;
