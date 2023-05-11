@@ -263,6 +263,7 @@ namespace locust
     	int m = 1;
     	int n = 1;
 
+    	// Extract particle at back of deque, by default if !Interpolate as in:
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, 0., false);
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
