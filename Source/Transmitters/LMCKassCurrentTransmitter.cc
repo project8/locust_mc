@@ -65,15 +65,11 @@ namespace locust
     double KassCurrentTransmitter::calcOrbitPhase(double vx, double vy)
     {
     	double phase = 0.;
-    	// Check for discontinuity at scattering interactions:
-    	if ((fabs(vy) > 0.) && (vx < std::numeric_limits<double>::infinity()) )
+        if ((fabs(vy) > 0.))
     	{
     		phase = atan(-vx/vy);
     	}
-    	else
-    	{
-        	//printf("phase is %g, vx is %g, vy is %g\n", phase*180./LMCConst::Pi(), vx, vy);
-    	}
+
     	phase += quadrantOrbitCorrection(phase, vx);
     	return phase;
     }
@@ -147,6 +143,14 @@ namespace locust
             double tvX = tParticle.GetVelocity(true).X();
             double tvY = tParticle.GetVelocity(true).Y();
             double tvZ = tParticle.GetVelocity(true).Z();
+
+        	if (!(std::isfinite(tvX)))  // Check for discontinuity at scattering interaction.
+        	{
+        		tvX = 0.;
+        		tvY = 0.;
+        		tvZ = 0.;
+        	}
+
 
 //            fOrbitPhase += dt*tParticle.GetCyclotronFrequency();  // accumulate phase semi-analytically.
     	    fOrbitPhase = calcOrbitPhase(tvX, tvY); // or use Kass kinematics

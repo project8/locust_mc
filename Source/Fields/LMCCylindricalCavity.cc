@@ -205,10 +205,7 @@ namespace locust
     	double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
     	double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
     	double dopplerShift = 0.;
-    	if ( fabs(vz) < std::numeric_limits<double>::infinity() )  // check for discontinuity at scattering interactions
-    	{
-    		dopplerShift = vz / vp;
-    	}
+    	if (vp > 0.) dopplerShift = vz / vp;
 		freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
     	return freqPrime;
     }
