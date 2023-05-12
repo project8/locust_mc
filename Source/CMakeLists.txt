@@ -170,6 +170,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.hh
+        Kassiopeia/LMCStepHold.hh
+        Kassiopeia/LMCStepHoldBuilder.hh        
         Kassiopeia/LMCLienardWiechert.hh
         Kassiopeia/LMCParticle.hh
         Kassiopeia/LMCConfigureKass.hh
@@ -204,6 +206,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
 
         Kassiopeia/LMCCyclotronRadiationExtractor.cc
         Kassiopeia/LMCCyclotronRadiationExtractorBuilder.cc
+        Kassiopeia/LMCStepHold.cc
+        Kassiopeia/LMCStepHoldBuilder.cc        
         Kassiopeia/LMCParticle.cc
         Kassiopeia/LMCConfigureKass.cc
         Kassiopeia/LMCLienardWiechert.cc

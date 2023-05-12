@@ -308,10 +308,19 @@
 
 	<!-- space interactions -->
 
+<!--
     <ksint_scattering name="int_scattering" split="true">
         <density_constant temperature="300." pressure="3.e-10"/>
         <calculator_constant cross_section="1.e-18"/>
     </ksint_scattering>
+-->
+
+    <ksint_scattering name="int_scattering" split="true">
+        <density_constant temperature="300." pressure="3.e-3"/>
+        <calculator_hydrogen name="calculator_hydrogen" elastic="true" excitation="true" ionisation="true"/>
+    </ksint_scattering>
+
+
 
     <!-- surface interactions -->
 
@@ -345,6 +354,7 @@
         
     <!-- modifiers -->
     <cycl_rad_extr name="rad_extr" P8Phase="4" /> 
+    <lmc_step_hold name="step_hold" /> 
     <mod_run_pause name="run_pause"/>
     <mod_event_hold name="event_hold"/>
 
@@ -431,6 +441,7 @@
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
 <!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> --> 
+        <command parent="root_space_interaction" field="add_space_interaction" child="int_scattering"/> 
 
 
 
@@ -466,6 +477,7 @@
         add_static_run_modifier="run_pause"
         add_static_event_modifier="event_hold"
         add_static_step_modifier="rad_extr"
+        add_static_step_modifier="step_hold"        
     />
 
 
