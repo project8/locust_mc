@@ -384,7 +384,6 @@ namespace locust
 
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
-        const unsigned nChannels = fNChannels;
 
         //Receiver Properties
         fDeltaT = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
@@ -439,7 +438,7 @@ namespace locust
 
     					}
 
-    					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
+    					for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)  // one channel per probe.
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
@@ -544,6 +543,12 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+ 		if (fNChannels > 2)
+ 		{
+    		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
+        	throw std::runtime_error("Only 1 or 2 channels is allowed.");
+        	return false;
+ 		}
 
         int PreEventCounter = 0;
         fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
