@@ -53,23 +53,23 @@ namespace locust
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
             virtual void CheckNormalization(int nModes);
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);
-            virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP);
-            double GetCavityProbeZ();
-            void SetCavityProbeZ ( double aZ );
-            double GetCavityProbeRFrac();
-            void SetCavityProbeRFrac ( double aFraction );
-            double GetCavityProbeGain();
-            void SetCavityProbeTheta( double aTheta );
-            double GetCavityProbeTheta();
-            void SetCavityProbeGain( double aGain );
+            virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP);
+            std::vector<double> GetCavityProbeZ();
+            void SetCavityProbeZ ( double aZ, unsigned index );
+            std::vector<double> GetCavityProbeRFrac();
+            void SetCavityProbeRFrac ( double aFraction, unsigned index );
+            std::vector<double> GetCavityProbeGain();
+            void SetCavityProbeTheta( double aTheta, unsigned index );
+            std::vector<double> GetCavityProbeTheta();
+            void SetCavityProbeGain( double aGain, unsigned index );
 
 
         private:
             FieldCore* fFieldCore;
-            double fCavityProbeZ;
-            double fCavityProbeRFrac;
-            double fCavityProbeTheta;
-            double fProbeGain;
+            std::vector<double> fCavityProbeZ;
+            std::vector<double> fCavityProbeRFrac;
+            std::vector<double> fCavityProbeTheta;
+            std::vector<double> fProbeGain;
 
     };
 
