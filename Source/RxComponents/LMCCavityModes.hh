@@ -36,17 +36,17 @@ namespace locust
             CavityModes();
             virtual ~CavityModes();
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle);
+        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle);
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
-            double GetVoltagePhase();
-            void SetVoltagePhase( double aPhase );
+            std::vector<double> GetVoltagePhase();
+            void SetVoltagePhase( double aPhase, unsigned aChannel );
         	bool WriteRootHisto();
 
 
 
         private:
             double fOrbitPhase;
-            double fVoltagePhase;
+            std::vector<double> fVoltagePhase;
             std::vector<std::vector<std::vector<double>>> fRollingAvg;
             std::vector<std::vector<std::vector<int>>> fCounter;
             FILE *fp;
