@@ -67,19 +67,14 @@ namespace locust
     {
 	if(fGFarray[l][m][n].size()!=aGFarray.size())
 	{
-    		for (unsigned index=0; index<aGFarray.size(); index++)
-    		{
-    			fGFarray[l][m][n].push_back(std::make_pair(aGFarray[index].first, aGFarray[index].second));
-    		}
+		fGFarray[l][m][n].resize(aGFarray.size());
 	}
-	else
-	{
-		for (unsigned index=0; index<aGFarray.size(); index++)
-                {   
-                        fGFarray[l][m][n][index] = std::make_pair(aGFarray[index].first, aGFarray[index].second);
-                }  
-	}
+	for (unsigned index=0; index<aGFarray.size(); index++)
+        {   
+        	fGFarray[l][m][n][index] = std::make_pair(aGFarray[index].first, aGFarray[index].second);
+        }  
     }
+
     std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray(int l, int m, int n)
     {
     	return fGFarray[l][m][n];

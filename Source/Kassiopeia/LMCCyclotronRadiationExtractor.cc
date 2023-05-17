@@ -117,7 +117,7 @@ namespace locust
             }
             else
             {
-            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            	DeltaE = fFieldCalculator->GetDampingFactorCavity(1, 1, 1, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy()); //Infrastructure needs to be generalized to other modes
             }
             if (fInterface->fBackReaction)
             {
@@ -137,6 +137,7 @@ namespace locust
             {
             	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
+		std::cout << "Setting NFilterBinsRequired in CyclotronRadiationExtractor" << std::endl;
                 fFieldCalculator->SetNFilterBinsRequired( dt );
             }
 

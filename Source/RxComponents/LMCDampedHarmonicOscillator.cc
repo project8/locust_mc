@@ -125,16 +125,13 @@ namespace locust
 				}
 			}
 		}
-		std::cout << "Baseline frequencies set" << std::endl;
     	}
 	if( aParam.has( "dho-cavity-frequency-TE011" ) ) 
         {
-		std::cout << "Setting TE011 frequency" << std::endl;
 		SetCavityFrequency( 0, 1, 1, aParam["dho-cavity-frequency-TE011"]().as_double() );	
 	}
         if( aParam.has( "dho-cavity-frequency-TE111" ) )
         {       
-		std::cout << "Setting TE111 frequency" << std::endl;
                 SetCavityFrequency( 1, 1, 1, aParam["dho-cavity-frequency-TE111"]().as_double() );
         }
     	if( aParam.has( "dho-cavity-Q" ) )
@@ -151,7 +148,7 @@ namespace locust
                                         SetCavityQ( l, m, n, aParam["dho-cavity-Q"]().as_double() );
                                 }   
                         }   
-                }   
+                }  
         }   
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
@@ -160,7 +157,6 @@ namespace locust
     		exit(-1);
     		return false;
     	}
-
     	if ( !Initialize() ) return false;
     	else return true;
     }
@@ -247,21 +243,19 @@ namespace locust
 
     	double GreensFunctionValueReal = fTimeResolution[l][m][n] * fHannekePowerFactor[l][m][n] * ExpDecayTerm(l, m, n, t) * sin( fCavityOmegaPrime[l][m][n] * t);
     	double GreensFunctionValueImag = -1. * fTimeResolution[l][m][n] * fHannekePowerFactor[l][m][n] * ExpDecayTerm(l, m, n, t) * cos( fCavityOmegaPrime[l][m][n] * t);
-
+	
     	return std::make_pair(GreensFunctionValueReal,GreensFunctionValueImag);
     }
 
 
     double DampedHarmonicOscillator::NormFactor(int l, int m, int n, double aDriveFrequency)
     {
-
 		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(l, m, n, GetGFarray(l, m, n)))
 		{
 			LERROR(lmclog,"GF->FIR was not generated in DHO::NormFactor.");
 			exit(-1);
 			return false;
 		}
-
         /* initialize time series */
         Signal* aSignal = new Signal();
         int N0 = GetGFarray(l, m, n).size();
@@ -273,7 +267,7 @@ namespace locust
         {
             // populate time series and convolve it with the FIR filter
             PopulateCalibrationSignal(l, m, n, aSignal, N0, aDriveFrequency);
-        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilter(SignalToDeque(aSignal));
+        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(l, m, n, SignalToDeque(aSignal));
             if (fabs(convolutionPair.first) > convolutionMag)
             {
     	        convolutionMag = convolutionPair.first;
@@ -281,7 +275,6 @@ namespace locust
         } //
 
         delete aSignal;
-
         return convolutionMag;
 
     }
@@ -328,7 +321,8 @@ namespace locust
     			break;
     		}
     	}
-    	tGFArray.resize( sizeCounter );
+	
+    	//tGFArray.resize( sizeCounter );
     	std::reverse( tGFArray.begin(), tGFArray.end() );
     	SetGFarray(l, m, n, tGFArray ); // unnormalized.
     	double aNormFactor = NormFactor(l, m, n, fCavityFrequency[l][m][n]);
@@ -338,7 +332,6 @@ namespace locust
     		tGFArray[i].second.second /= aNormFactor;
     	}
     	SetGFarray(l, m, n, tGFArray); // now normalized.
-
     	if ( tGFArray.size() < 1 ) return false;
     	else return true;
 

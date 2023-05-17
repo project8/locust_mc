@@ -41,9 +41,10 @@ namespace locust
         std::string fHFSSFilename;
         std::vector<double> fFilter;
         fftw_complex* fFilterComplex;
-	std::vector< std::vector < std::vector <fftw_complex*>>> fFilterComplexArray;
+	std::vector< std::vector < std::vector< fftw_complex*>>> fFilterComplexArray;
         int fTFNBins;
         int fFIRNBins;
+	int fNModes;
         double fResolution;
         int fNSkips;
         bool fHFSSFiletype;

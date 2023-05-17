@@ -36,14 +36,14 @@ namespace locust
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase1(Kassiopeia::KSParticle& aFinalParticle);
-            double GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
-            double GetCouplingFactorTE011Cavity(Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-            double GetTE011FieldCavity(Kassiopeia::KSParticle& aFinalParticle);
-            std::pair<double,double> GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF);
+            double GetFieldCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
+            std::pair<double,double> GetCavityFIRSample(int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
             void SetNFilterBinsRequired( double dt );
             int GetNFilterBinsRequired();
             void SetFilterSize( int aFilterSize );

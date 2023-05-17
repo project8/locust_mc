@@ -75,7 +75,8 @@ namespace locust
     	{
     		if (!fNormCheck)
     		{
-    			if ((l==0)&&(m==1)&&(n==1))
+    			//if ((l==0)&&(m==1)&&(n==1))
+                        if ((l==1)&&(m==1)&&(n==1))
     				return true;
     			else
     				return false;
@@ -347,7 +348,7 @@ namespace locust
     	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(l,m,n);
     	double qExpected = fAnalyticResponseFunction->GetCavityQ(l,m,n);
     	aCavityUtility.SetOutputFile(fUnitTestRootFile);
-    	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+    	if (!aCavityUtility.CheckCavityQ( l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
     	{
         	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
         			"with the unit test as in bin/testLMCCavity [-h]");
@@ -421,7 +422,9 @@ namespace locust
     				{
     					std::vector<double> tE_normalized;
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
-    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
+					std::cout << "Are all these non-zero?: " << std::endl;
+					std::cout << fAcquisitionRate << " " << aSignal->DecimationFactor() << std::endl;;
+    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(l,m,n,tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					fAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[l][m][n] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
     					double modeAmplitude = sqrt( tE_normalized.front()*tE_normalized.front()  + tE_normalized.back()*tE_normalized.back());
@@ -560,6 +563,7 @@ namespace locust
     {
 
         int PreEventCounter = 0;
+	std::cout << "Setting NFilterBinsRequired in DoGenerateTime" << std::endl;
         fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
         fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSize() );
 
@@ -596,14 +600,12 @@ namespace locust
 
                 if (fInterface->fEventInProgress)  // fEventInProgress
                 {
-
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
 
 
 
                     if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                     {
-
 
                     	tLock.lock();
 
@@ -612,6 +614,7 @@ namespace locust
 
                         if (fInterface->fEventInProgress)
                         {
+				std::cout << "About to Drive Mode" << std::endl;
                     		if (DriveMode(aSignal, index))
                     		{
                     			PreEventCounter = 0; // reset
@@ -667,9 +670,7 @@ namespace locust
                  		}
                  	} // diagnose Kass
 
-
                 } // if fEventInProgress
-
             }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;

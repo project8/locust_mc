@@ -93,7 +93,7 @@ namespace locust
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
         			return false;
         		}
-        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(0,1,0,fAnalyticResponseFunction->GetGFarray(0,1,0)))
+        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(0,1,1,fAnalyticResponseFunction->GetGFarray(0,1,1)))
         		{
         			LWARN(lmclog,"GF->FIR was not generated.");
         			return false;
@@ -111,6 +111,7 @@ namespace locust
     	if (fTFReceiverHandler)
     	{
     	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolution());
+	std::cout << "fNFilterBinsRequired set to " << fNFilterBinsRequired << std::endl;
     	}
     }
 
@@ -241,11 +242,8 @@ namespace locust
       return DampingFactorTM01;
     }
 
-    double FieldCalculator::GetCouplingFactorTE011Cavity(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetCouplingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle)
     {
-    	int l = 0;
-    	int m = 1;
-    	int n = 1;
     	double dimR = fInterface->fField->GetDimR(); // m
     	double x = aFinalParticle.GetPosition().GetX();
     	double y = aFinalParticle.GetPosition().GetY();
@@ -257,19 +255,16 @@ namespace locust
     	return coupling*coupling;
     }
 
-    double FieldCalculator::GetTE011FieldCavity(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetFieldCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle)
     {
-    	int l = 0;
-    	int m = 1;
-    	int n = 1;
-
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, 0., false);
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-        std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
-
-
+	std::cout << "About to convolve" << std::endl;
+        std::pair<double,double> complexConvolution = GetCavityFIRSample(l,m,n,tKassParticleXP, 0);
+	std::cout << "Convolved with elements: " << std::endl;
+	std::cout << complexConvolution.first << " " << complexConvolution.second << std::endl;
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator, but here it is normalized such that the
         // E-field magnitude peaks at the Hanneke factor when the cyclotron frequency
@@ -292,19 +287,18 @@ namespace locust
         // "dhoMag" scales from ~0 (off-resonance) to DampedHarmonicOscillator::fHannekePowerFactor (on-resonance).
         // The electron should radiate maximally if on resonance.
         double fieldCavity = cos(0.) + dhoMag*cos(dhoPhase);
-
         return fieldCavity;
     }
 
 
-    double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetDampingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle)
     {
-    	double TE011FieldFromCavity = GetTE011FieldCavity(aFinalParticle);
-    	double A011squ = GetCouplingFactorTE011Cavity(aFinalParticle);
-    	double DampingFactorTE011Cavity = 1. - A011squ + A011squ*TE011FieldFromCavity*TE011FieldFromCavity;  // = P'/P
-    	if ( fabs(DampingFactorTE011Cavity) > 0. )
+    	double FieldFromCavity = GetFieldCavity(l,m,n,aFinalParticle);
+    	double Asqu = GetCouplingFactorCavity(l,m,n,aFinalParticle);
+    	double DampingFactorCavity = 1. - Asqu + Asqu*FieldFromCavity*FieldFromCavity;  // = P'/P
+    	if ( fabs(DampingFactorCavity) > 0. )
     	{
-    		return DampingFactorTE011Cavity;
+    		return DampingFactorCavity;
     	}
     	else
     	{
@@ -313,7 +307,7 @@ namespace locust
     }
 
 
-    std::pair<double,double> FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF)
     {
     	double convolutionMag = 0.0;
     	double convolutionPhase = 0.0;
@@ -325,8 +319,9 @@ namespace locust
     	{
     		double orbitPhase = tKassParticleXP[6];  // radians
     		double cycFrequency = tKassParticleXP[7];  // rad/s
-
     		// populate FIR filter with frequency for just this sample interval:
+		std::cout << "fNFilterBinsRequired: " << std::endl;
+		std::cout << fNFilterBinsRequired << std::endl;
     		for (int i=0; i < fNFilterBinsRequired; i++)
     		{
     			fFrequencyBuffer.push_back(cycFrequency);  // rad/s
@@ -334,6 +329,7 @@ namespace locust
     		}
 
     		std::deque<double>::iterator it = fFrequencyBuffer.begin();
+		std::cout << "fFrequencyBuffer size: " << fFrequencyBuffer.size() << std::endl;
     		while (it != fFrequencyBuffer.end())
     		{
     			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
@@ -351,8 +347,8 @@ namespace locust
 
     			*it++;
     		}
-            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilter(fFIRBuffer);
-
+		std::cout << "fFIRBuffer size: " << fFIRBuffer.size() << std::endl;
+                std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(l,m,n,fFIRBuffer);
     		convolutionMag = convolution.first;
     		convolutionPhase = convolution.second;
 

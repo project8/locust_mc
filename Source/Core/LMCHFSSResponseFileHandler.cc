@@ -23,6 +23,7 @@ namespace locust
     fFIRNBins(2000),
     fResolution(1e-12),
     fNSkips(1),
+    fNModes(2),
     fComplexFFT(),
     fHFSSFiletype(""),
     fIsFIRCreated(false),
@@ -44,6 +45,19 @@ namespace locust
     	    fPrintFIR = aParam["print-fir-debug"]().as_bool();
     	}
 
+	if( aParam.has( "n-modes" ) )
+	{
+		fNModes = aParam["n-modes"]().as_int();
+	}
+        fFilterComplexArray.resize(fNModes);
+        for (unsigned l=0; l<fNModes; l++)
+        {   
+               	fFilterComplexArray[l].resize(fNModes);
+               	for (unsigned m=0; m<fNModes; m++)
+               	{   
+                       	fFilterComplexArray[l][m].resize(fNModes);
+               	}   
+        }  
         return true;
     }
     
@@ -114,17 +128,20 @@ namespace locust
         int firBinNumber=0;
 
         int inputBufferSize = inputBuffer.size();    
+	std::cout << "ConvolveWithComplexFIRFilterArray inputBufferSize: " << inputBufferSize << std::endl;
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
         {   
                 convolutionValueReal += *(it)*fFilterComplexArray[l][m][n][firBinNumber][0];
                 convolutionValueImag += *(it)*fFilterComplexArray[l][m][n][firBinNumber][1];
                 firBinNumber++;
-        }   
-        std::pair<double,double> complexConvolution;
+        } 
+	std::cout << "ConvolveWithComplexFIRFilterArray convolution completed with Real and Imag: " << std::endl; 
+	std::cout << convolutionValueReal << " " << convolutionValueImag << std::endl;
+        //std::pair<double,double> complexConvolution;
         double complexPhase = atan(convolutionValueImag/convolutionValueReal);
         double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
         return std::make_pair(complexMag, complexPhase);
-        return complexConvolution;
+        //return complexConvolution;
     }  
 
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
@@ -272,14 +289,15 @@ namespace locust
 
     bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
     {
-
-    	if(fIsFIRCreated)
-        {
-            return true;
-        }
+    	//if(fIsFIRCreated[l][m][n])
+        //{
+        //    return true;
+        //}
 
         fFIRNBins = gfArray.size();
         fResolution = gfArray[0].first;
+
+	std::cout << "Entering ConvertAnalyticGFtoFIR for mode " << l << " " << m << " " << n << std::endl;
 
         fFilterComplexArray[l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
 
