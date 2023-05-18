@@ -16,7 +16,7 @@ namespace locust
 
     CavityModes::CavityModes():
 		fOrbitPhase( 0. ),
-		fVoltagePhase( 0. )
+		fVoltagePhase( {0.} )
     {
     }
 
@@ -64,16 +64,15 @@ namespace locust
     	return true;
     }
 
-	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle)
+	bool CavityModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
 	{
-		double dopplerFrequency = cavityDopplerFrequency[0];
-        SetVoltagePhase( GetVoltagePhase() + dopplerFrequency * dt ) ;
-        double voltageValue = excitationAmplitude * EFieldAtProbe;
-	//std::cout << "Amp, FieldAtProbe, Product: " << excitationAmplitude << " " << EFieldAtProbe << " " << voltageValue << std::endl;
-        voltageValue *= cos(GetVoltagePhase());
-	
-        aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
-        aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
+		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
+		SetVoltagePhase( GetVoltagePhase(channelIndex) + dopplerFrequency * dt, channelIndex ) ;
+		double voltageValue = excitationAmplitude * EFieldAtProbe;
+		voltageValue *= cos(GetVoltagePhase(channelIndex));
+
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 
 		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
@@ -165,13 +164,14 @@ namespace locust
 		return true;
 	}
 
-    double CavityModes::GetVoltagePhase()
+    double CavityModes::GetVoltagePhase(unsigned aChannel)
     {
-    	return fVoltagePhase;
+    	return fVoltagePhase[aChannel];
     }
-    void CavityModes::SetVoltagePhase ( double aPhase )
+
+    void CavityModes::SetVoltagePhase ( double aPhase, unsigned aChannel )
     {
-        fVoltagePhase = aPhase;
+        fVoltagePhase[aChannel] = aPhase;
     }
 
 

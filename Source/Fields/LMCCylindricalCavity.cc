@@ -13,10 +13,10 @@ namespace locust
 
     LOGGER( lmclog, "CylindricalCavity" );
     CylindricalCavity::CylindricalCavity():
-    	fProbeGain( 1.),
-		fCavityProbeZ( 0. ),
-		fCavityProbeRFrac( 0.5 ),
-		fCavityProbeTheta( 0.0 )
+    	fProbeGain( {1., 1.}),
+		fCavityProbeZ( {0., 0.} ),
+		fCavityProbeRFrac( {0.5, 0.5} ),
+		fCavityProbeTheta( {0.0, 0.0} )
 		{}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -36,30 +36,52 @@ namespace locust
         {
             SetDimR( aParam["cavity-radius"]().as_double() );
         }
+
         if( aParam.has( "cavity-length" ) )
         {
         	SetDimL( aParam["cavity-length"]().as_double() );
         }
 
-        if ( aParam.has( "cavity-probe-gain" ) )
+        if ( aParam.has( "cavity-probe-gain0" ) )
     	{
-    		SetCavityProbeGain(aParam["cavity-probe-gain"]().as_double());
+    		SetCavityProbeGain(aParam["cavity-probe-gain0"]().as_double(), 0);
     	}
 
-    	if ( aParam.has( "cavity-probe-z" ) )
+        if ( aParam.has( "cavity-probe-gain1" ) )
     	{
-    		SetCavityProbeZ(aParam["cavity-probe-z"]().as_double());
+    		SetCavityProbeGain(aParam["cavity-probe-gain1"]().as_double(), 1);
     	}
 
-    	if ( aParam.has( "cavity-probe-r-fraction" ) )
+        if ( aParam.has( "cavity-probe-z0" ) )
     	{
-    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction"]().as_double());
+    		SetCavityProbeZ(aParam["cavity-probe-z0"]().as_double(), 0);
     	}
 
-     	if ( aParam.has( "cavity-probe-theta" ) )
-	{
-		SetCavityProbeTheta(aParam["cavity-probe-theta"]().as_double());
-	}
+        if ( aParam.has( "cavity-probe-z1" ) )
+    	{
+    		SetCavityProbeZ(aParam["cavity-probe-z1"]().as_double(), 1);
+    	}
+
+        if ( aParam.has( "cavity-probe-r-fraction0" ) )
+    	{
+    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction0"]().as_double(), 0);
+    	}
+
+        if ( aParam.has( "cavity-probe-r-fraction1" ) )
+    	{
+    		SetCavityProbeRFrac(aParam["cavity-probe-r-fraction1"]().as_double(), 1);
+    	}
+
+     	if ( aParam.has( "cavity-probe-theta0" ) )
+     	{
+     		SetCavityProbeTheta(aParam["cavity-probe-theta0"]().as_double(), 0);
+     	}
+
+     	if ( aParam.has( "cavity-probe-theta1" ) )
+     	{
+     		SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
+     	}
+
 
         /*
                 if( aParam.has( "modemap-filename" ) )
@@ -264,23 +286,40 @@ namespace locust
     	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
-    double CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
+    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
     {
-    	double rProbe = this->GetCavityProbeRFrac() * this->GetDimR();
-    	double thetaProbe = this->GetCavityProbeTheta();
-    	double zProbe = this->GetCavityProbeZ();
-    	double thetaEffective = thetaProbe;
+
+    	std::vector<double> rProbe;
+        rProbe.push_back(this->GetCavityProbeRFrac()[0] * this->GetDimR());
+        rProbe.push_back(this->GetCavityProbeRFrac()[1] * this->GetDimR());
+
+    	std::vector<double> thetaProbe = this->GetCavityProbeTheta();
+    	std::vector<double> zProbe = this->GetCavityProbeZ();
+    	std::vector<double> thetaEffective;
+
     	if (l>0)
     	{
     		//If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
     		double thetaElectron = tKassParticleXP[1];
-    		thetaEffective = thetaProbe - thetaElectron;
+    		thetaEffective.push_back(thetaProbe[0] - thetaElectron);
+    		thetaEffective.push_back(thetaProbe[1] - thetaElectron);
+    	}
+    	else
+    	{
+    		thetaEffective = thetaProbe;
     	}
 
-    	std::vector<double> tProbeLocation = {rProbe, thetaEffective, zProbe};
-    	double tEFieldAtProbe = GetNormalizedModeField(l,m,n,tProbeLocation,0).back(); //Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
+    	std::vector<std::vector<double>> tProbeLocation;
+    	tProbeLocation.push_back({rProbe[0], thetaEffective[0], zProbe[0]});
+    	tProbeLocation.push_back({rProbe[1], thetaEffective[1], zProbe[1]});
 
-    	return fProbeGain * tEFieldAtProbe;
+    	//Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
+    	std::vector<double> tEFieldAtProbe;
+    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[0],0).back());
+    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[1],0).back());
+
+    	return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1]};
+
     }
 
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
@@ -493,37 +532,37 @@ namespace locust
 
     }
 
-    double CylindricalCavity::GetCavityProbeGain()
+    std::vector<double> CylindricalCavity::GetCavityProbeGain()
     {
     	return fProbeGain;
     }
-    void CylindricalCavity::SetCavityProbeGain( double aGain )
+    void CylindricalCavity::SetCavityProbeGain( double aGain, unsigned index )
     {
-    	fProbeGain = aGain;
+    	fProbeGain[index] = aGain;
     }
-    double CylindricalCavity::GetCavityProbeZ()
+    std::vector<double> CylindricalCavity::GetCavityProbeZ()
     {
     	return fCavityProbeZ;
     }
-    void CylindricalCavity::SetCavityProbeZ ( double aZ )
+    void CylindricalCavity::SetCavityProbeZ ( double aZ, unsigned index )
     {
-    	fCavityProbeZ = aZ;
+    	fCavityProbeZ[index] = aZ;
     }
-    double CylindricalCavity::GetCavityProbeRFrac()
+    std::vector<double> CylindricalCavity::GetCavityProbeRFrac()
     {
     	return fCavityProbeRFrac;
     }
-    void CylindricalCavity::SetCavityProbeRFrac ( double aFraction )
+    void CylindricalCavity::SetCavityProbeRFrac ( double aFraction, unsigned index )
     {
-    	fCavityProbeRFrac = aFraction;
+    	fCavityProbeRFrac[index] = aFraction;
     }
-    double CylindricalCavity::GetCavityProbeTheta()
+    std::vector<double> CylindricalCavity::GetCavityProbeTheta()
     {
 	return fCavityProbeTheta;
     }
-    void CylindricalCavity::SetCavityProbeTheta ( double aTheta )
+    void CylindricalCavity::SetCavityProbeTheta ( double aTheta, unsigned index )
     {
-	fCavityProbeTheta = aTheta;
+	fCavityProbeTheta[index] = aTheta;
     }
 
 

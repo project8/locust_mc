@@ -384,7 +384,6 @@ namespace locust
 
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
-        const unsigned nChannels = fNChannels;
 
         //Receiver Properties
         fDeltaT = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
@@ -394,7 +393,7 @@ namespace locust
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fE_Gun);
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
-        double tEFieldAtProbe = 0.;
+        std::vector<double> tEFieldAtProbe;
         std::vector<double> dopplerFrequency;
 
 
@@ -439,14 +438,14 @@ namespace locust
 
     					}
 
-    					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
+    					for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)  // one channel per probe.
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
     						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
@@ -544,6 +543,12 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+ 		if (fNChannels > 2)
+ 		{
+    		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
+        	throw std::runtime_error("Only 1 or 2 channels is allowed.");
+        	return false;
+ 		}
 
         int PreEventCounter = 0;
         fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
