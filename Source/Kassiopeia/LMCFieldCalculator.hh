@@ -57,6 +57,8 @@ namespace locust
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
+//	    std::vector< std::vector< std::vector< std::deque<double> > > > fFIRBufferArray;
+//            std::vector< std::vector< std::vector< std::deque<double> > > > fFrequencyBufferArray;
             int fNFilterBinsRequired;
     };
 

@@ -93,7 +93,7 @@ namespace locust
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
         			return false;
         		}
-        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(0,1,1,fAnalyticResponseFunction->GetGFarray(0,1,1)))
+        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(1,1,1,fAnalyticResponseFunction->GetGFarray(1,1,1)))
         		{
         			LWARN(lmclog,"GF->FIR was not generated.");
         			return false;
@@ -111,7 +111,7 @@ namespace locust
     	if (fTFReceiverHandler)
     	{
     	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolution());
-	std::cout << "fNFilterBinsRequired set to " << fNFilterBinsRequired << std::endl;
+//	std::cout << "fNFilterBinsRequired set to " << fNFilterBinsRequired << std::endl;
     	}
     }
 
@@ -261,10 +261,10 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-	std::cout << "About to convolve" << std::endl;
+//	std::cout << "About to convolve" << std::endl;
         std::pair<double,double> complexConvolution = GetCavityFIRSample(l,m,n,tKassParticleXP, 0);
-	std::cout << "Convolved with elements: " << std::endl;
-	std::cout << complexConvolution.first << " " << complexConvolution.second << std::endl;
+//	std::cout << "Convolved with elements: " << std::endl;
+//	std::cout << complexConvolution.first << " " << complexConvolution.second << std::endl;
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator, but here it is normalized such that the
         // E-field magnitude peaks at the Hanneke factor when the cyclotron frequency
@@ -320,8 +320,8 @@ namespace locust
     		double orbitPhase = tKassParticleXP[6];  // radians
     		double cycFrequency = tKassParticleXP[7];  // rad/s
     		// populate FIR filter with frequency for just this sample interval:
-		std::cout << "fNFilterBinsRequired: " << std::endl;
-		std::cout << fNFilterBinsRequired << std::endl;
+//		std::cout << "fNFilterBinsRequired: " << std::endl;
+//		std::cout << fNFilterBinsRequired << std::endl;
     		for (int i=0; i < fNFilterBinsRequired; i++)
     		{
     			fFrequencyBuffer.push_back(cycFrequency);  // rad/s
@@ -329,7 +329,7 @@ namespace locust
     		}
 
     		std::deque<double>::iterator it = fFrequencyBuffer.begin();
-		std::cout << "fFrequencyBuffer size: " << fFrequencyBuffer.size() << std::endl;
+//		std::cout << "fFrequencyBuffer size: " << fFrequencyBuffer.size() << std::endl;
     		while (it != fFrequencyBuffer.end())
     		{
     			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
@@ -347,7 +347,7 @@ namespace locust
 
     			*it++;
     		}
-		std::cout << "fFIRBuffer size: " << fFIRBuffer.size() << std::endl;
+//		std::cout << "fFIRBuffer size: " << fFIRBuffer.size() << std::endl;
                 std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(l,m,n,fFIRBuffer);
     		convolutionMag = convolution.first;
     		convolutionPhase = convolution.second;

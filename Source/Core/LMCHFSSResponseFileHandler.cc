@@ -128,15 +128,18 @@ namespace locust
         int firBinNumber=0;
 
         int inputBufferSize = inputBuffer.size();    
-	std::cout << "ConvolveWithComplexFIRFilterArray inputBufferSize: " << inputBufferSize << std::endl;
+//	std::cout << "ConvolveWithComplexFIRFilterArray inputBufferSize: " << inputBufferSize << std::endl;
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
         {   
+//		std::cout << "firBinNumber: " << firBinNumber << std::endl;
+//		std::cout << "*(it): " << *(it) << std::endl;
+//		std::cout << "FilterComplexArray: " << fFilterComplexArray[l][m][n][firBinNumber][0] << std::endl;
                 convolutionValueReal += *(it)*fFilterComplexArray[l][m][n][firBinNumber][0];
                 convolutionValueImag += *(it)*fFilterComplexArray[l][m][n][firBinNumber][1];
                 firBinNumber++;
         } 
-	std::cout << "ConvolveWithComplexFIRFilterArray convolution completed with Real and Imag: " << std::endl; 
-	std::cout << convolutionValueReal << " " << convolutionValueImag << std::endl;
+//	std::cout << "ConvolveWithComplexFIRFilterArray convolution completed with Real and Imag: " << std::endl; 
+//	std::cout << convolutionValueReal << " " << convolutionValueImag << std::endl;
         //std::pair<double,double> complexConvolution;
         double complexPhase = atan(convolutionValueImag/convolutionValueReal);
         double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
@@ -289,15 +292,16 @@ namespace locust
 
     bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
     {
-    	//if(fIsFIRCreated[l][m][n])
-        //{
-        //    return true;
-        //}
-
+	/*
+    	if(fIsFIRCreated[l][m][n])
+        {
+            return true;
+        }
+*/
         fFIRNBins = gfArray.size();
         fResolution = gfArray[0].first;
 
-	std::cout << "Entering ConvertAnalyticGFtoFIR for mode " << l << " " << m << " " << n << std::endl;
+//	std::cout << "Entering ConvertAnalyticGFtoFIR for mode " << l << " " << m << " " << n << std::endl;
 
         fFilterComplexArray[l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
 
@@ -308,7 +312,7 @@ namespace locust
         }
 
         if (fPrintFIR) PrintFIR( fFilterComplexArray[l][m][n] );
-	fIsFIRCreated=true;
+//	fIsFIRCreated=true;
         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
     	return true;

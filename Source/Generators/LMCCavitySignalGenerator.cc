@@ -422,8 +422,8 @@ namespace locust
     				{
     					std::vector<double> tE_normalized;
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
-					std::cout << "Are all these non-zero?: " << std::endl;
-					std::cout << fAcquisitionRate << " " << aSignal->DecimationFactor() << std::endl;;
+//					std::cout << "Are all these non-zero?: " << std::endl;
+//					std::cout << fAcquisitionRate << " " << aSignal->DecimationFactor() << std::endl;;
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(l,m,n,tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					fAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[l][m][n] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
@@ -563,7 +563,7 @@ namespace locust
     {
 
         int PreEventCounter = 0;
-	std::cout << "Setting NFilterBinsRequired in DoGenerateTime" << std::endl;
+//	std::cout << "Setting NFilterBinsRequired in DoGenerateTime" << std::endl;
         fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
         fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSize() );
 
@@ -614,7 +614,7 @@ namespace locust
 
                         if (fInterface->fEventInProgress)
                         {
-				std::cout << "About to Drive Mode" << std::endl;
+//				std::cout << "About to Drive Mode" << std::endl;
                     		if (DriveMode(aSignal, index))
                     		{
                     			PreEventCounter = 0; // reset
