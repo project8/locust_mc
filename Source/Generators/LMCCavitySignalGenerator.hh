@@ -90,6 +90,7 @@ namespace locust
 
 
         private:
+            int fNelectrons;
             double fLO_Frequency;
             double fDeltaT;
             int fNModes;
