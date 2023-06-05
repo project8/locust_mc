@@ -50,12 +50,21 @@ namespace locust
 		fNModes = aParam["n-modes"]().as_int();
 	}
         fFilterComplexArray.resize(fNModes);
+	fFIRNBinsArray.resize(fNModes);
+	fResolutionArray.resize(fNModes);
+	fIsFIRCreatedArray.resize(fNModes);	
         for (unsigned l=0; l<fNModes; l++)
         {   
                	fFilterComplexArray[l].resize(fNModes);
+		fFIRNBinsArray[l].resize(fNModes);
+        	fResolutionArray[l].resize(fNModes);
+        	fIsFIRCreatedArray[l].resize(fNModes);  
                	for (unsigned m=0; m<fNModes; m++)
                	{   
                        	fFilterComplexArray[l][m].resize(fNModes);
+			fFIRNBinsArray[l][m].resize(fNModes);
+        		fResolutionArray[l][m].resize(fNModes);
+        		fIsFIRCreatedArray[l][m].resize(fNModes);  
                	}   
         }  
         return true;
@@ -121,7 +130,7 @@ namespace locust
         double convolutionValueReal = 0.0;
         double convolutionValueImag = 0.0;
 
-        if(fFIRNBins<=0)
+        if(fFIRNBinsArray[l][m][n]<=0)
         {   
             LERROR(lmclog,"Number of bins in the filter should be positive");
         }   
@@ -292,27 +301,27 @@ namespace locust
 
     bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
     {
-	/*
-    	if(fIsFIRCreated[l][m][n])
+	
+    	if(fIsFIRCreatedArray[l][m][n])
         {
             return true;
         }
-*/
-        fFIRNBins = gfArray.size();
-        fResolution = gfArray[0].first;
+
+        fFIRNBinsArray[l][m][n] = gfArray.size();
+        fResolutionArray[l][m][n] = gfArray[0].first;
 
 //	std::cout << "Entering ConvertAnalyticGFtoFIR for mode " << l << " " << m << " " << n << std::endl;
 
-        fFilterComplexArray[l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
+        fFilterComplexArray[l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[l][m][n]);
 
-        for (int i = 0; i < fFIRNBins; i++)
+        for (int i = 0; i < fFIRNBinsArray[l][m][n]; i++)
         {
         	fFilterComplexArray[l][m][n][i][0] = gfArray[i].second.first;
         	fFilterComplexArray[l][m][n][i][1] = gfArray[i].second.second;
         }
 
         if (fPrintFIR) PrintFIR( fFilterComplexArray[l][m][n] );
-//	fIsFIRCreated=true;
+	fIsFIRCreatedArray[l][m][n]=true;
         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
     	return true;

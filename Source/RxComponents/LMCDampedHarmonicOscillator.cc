@@ -68,6 +68,7 @@ namespace locust
 
     bool DampedHarmonicOscillator::Configure( const scarab::param_node& aParam )
     {
+	std::cout << "Entering DHO Config" << std::endl;
     	if( !AnalyticResponseFunction::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring AnalyticResponseFunction class from DampedHarmonicOscillator subclass");
@@ -152,6 +153,7 @@ namespace locust
                         }   
                 }  
         }   
+	std::cout << "json paramaters set" << std::endl;
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -159,6 +161,7 @@ namespace locust
     		exit(-1);
     		return false;
     	}
+	std::cout << "Receiver Handler configured" << std::endl;
     	if ( !Initialize() ) return false;
     	else return true;
     }

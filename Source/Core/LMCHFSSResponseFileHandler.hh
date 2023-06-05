@@ -31,7 +31,9 @@ namespace locust
         virtual std::pair<double,double> ConvolveWithComplexFIRFilterArray(int l, int m, int n, std::deque<double> inputBuffer);
         virtual std::pair<double,double> ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
         int GetFilterSize() const;//Number of entries in the filter
+	int GetFilterSizeArray(int l, int m, int n) const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
+	double GetFilterResolutionArray(int l, int m, int n) const;//Get the resolution of the filter
         void PrintFIR( std::vector<double> );
         void PrintFIR( fftw_complex* aFilter );
         
@@ -44,12 +46,15 @@ namespace locust
 	std::vector< std::vector < std::vector< fftw_complex*>>> fFilterComplexArray;
         int fTFNBins;
         int fFIRNBins;
+	std::vector < std::vector < std::vector < int >>> fFIRNBinsArray;
 	int fNModes;
         double fResolution;
+	std::vector < std::vector < std::vector < double >>> fResolutionArray;
         int fNSkips;
         bool fHFSSFiletype;
         ComplexFFT fComplexFFT;
         bool fIsFIRCreated;
+	std::vector < std::vector < std::vector < bool >>> fIsFIRCreatedArray;
         std::string fWindowName;
         double fWindowParam;
         bool fPrintFIR;
@@ -64,11 +69,20 @@ namespace locust
         return fFIRNBins;
     }
     
+    inline int HFSSResponseFileHandlerCore::GetFilterSizeArray(int l, int m, int n) const
+    {
+        return fFIRNBinsArray[l][m][n];
+    }
+
     inline double HFSSResponseFileHandlerCore::GetFilterResolution() const
     {
         return fResolution;
     }
 
+    inline double HFSSResponseFileHandlerCore::GetFilterResolutionArray(int l, int m, int n) const
+    {   
+        return fResolutionArray[l][m][n];
+    }   
     
     /*!
      @class TFFileHandlerCore

@@ -106,6 +106,16 @@ namespace locust
 	    return incidentSignal;
 	}
 
+        std::deque<double> CavityUtility::SignalToDequeArray(int l, int m, int n, Signal* aSignal)
+        {   
+            std::deque<double> incidentSignal;
+            for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(l,m,n); i++)
+            {   
+                incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
+            }   
+            return incidentSignal;
+        } 
+
 	bool CavityUtility::WriteRootHisto(int npoints, double* freqArray, double* gainArray)
 	{
 	#ifdef ROOT_FOUND
@@ -137,8 +147,8 @@ namespace locust
     	}
         /* initialize time series */
         Signal* aSignal = new Signal();
-        int N0 = fTFReceiverHandler->GetFilterSize();
-        fFilterRate = (1./fTFReceiverHandler->GetFilterResolution());
+        int N0 = fTFReceiverHandler->GetFilterSizeArray(l,m,n);
+        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(l,m,n));
         aSignal->Initialize( N0 , 1 );
 
         double qInferred = 0.;
@@ -148,18 +158,19 @@ namespace locust
         int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
         double* freqArray = new double[nSteps];
         double* gainArray = new double[nSteps];
-
         for (int i=0; i<nSteps; i++) // frequency sweep
         {
         	int rfStep = -nSteps/2/fExpandFactor + i;
         	fRF_frequency = dhoCavityFrequency + rfStepSize * rfStep;
         	double convolutionMag = 0.;
-        	for (unsigned i=0; i<1; i++)
+        	for (unsigned j=0; j<1; j++)
         	{
         		// populate time series and convolve it with the FIR filter
         		PopulateSignal(aSignal, N0);
-        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(l, m, n, SignalToDeque(aSignal));
-        		if (fabs(convolutionPair.first) > convolutionMag)
+			//std::cout << "filter array size: " << N0 << std::endl;
+        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(l, m, n, SignalToDequeArray(l,m,n,aSignal));
+			//std::cout << (fabs(convolutionPair.first)) << std::endl;
+    	    		if (fabs(convolutionPair.first) > convolutionMag)
         		{
         			convolutionMag = convolutionPair.first;
         		}

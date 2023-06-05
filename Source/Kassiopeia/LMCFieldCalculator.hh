@@ -31,7 +31,7 @@ namespace locust
             bool Configure( const scarab::param_node& aParam );
             bool ConfigureByInterface();
 
-
+            bool ReconvertAnalyticGFtoFIR(int l, int m, int n);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
@@ -48,7 +48,10 @@ namespace locust
             int GetNFilterBinsRequired();
             void SetFilterSize( int aFilterSize );
             int GetFilterSize();
-
+            void SetNFilterBinsRequiredArray(int l, int m, int n, double dt );
+            int GetNFilterBinsRequiredArray(int l, int m, int n);
+            void SetFilterSizeArray(int l, int m, int n, int aFilterSize );
+            int GetFilterSizeArray(int l, int m, int n);
 
             kl_interface_ptr_t fInterface;
 
@@ -57,9 +60,10 @@ namespace locust
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
-//	    std::vector< std::vector< std::vector< std::deque<double> > > > fFIRBufferArray;
-//            std::vector< std::vector< std::vector< std::deque<double> > > > fFrequencyBufferArray;
+            std::vector< std::vector< std::vector< std::deque<double> >>> fFIRBufferArray;
+            std::vector< std::vector< std::vector< std::deque<double> >>> fFrequencyBufferArray;
             int fNFilterBinsRequired;
+	    std::vector< std::vector< std::vector< int >>> fNFilterBinsRequiredArray;
     };
 
 }

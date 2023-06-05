@@ -424,6 +424,13 @@ namespace locust
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
 //					std::cout << "Are all these non-zero?: " << std::endl;
 //					std::cout << fAcquisitionRate << " " << aSignal->DecimationFactor() << std::endl;;
+//					std::cout << "Attempting to re-establish FIR for mode " << l << " " << m << " " << n << std::endl; 
+/*					if(!fFieldCalculator->ReconvertAnalyticGFtoFIR(l, m, n))
+					{
+						LERROR(lmclog,"Error reconfiguring FIR");
+                                                exit(-1);
+					}
+					std::cout << "ReconvertAnalyticGFtoFIR run" << std::endl;*/
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(l,m,n,tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					fAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[l][m][n] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta

@@ -48,6 +48,7 @@ namespace locust
     	void SetOutputFile(bool aFlag);
         void AddParam(std::string aString, double aValue);
         std::deque<double> SignalToDeque(Signal* aSignal);
+	std::deque<double> SignalToDequeArray(int l, int m, int n, Signal* aSignal);
         bool WriteRootHisto(int npoints, double* freqArray, double* gainArray);
         bool PopulateSignal(Signal* aSignal, int N0);
         const scarab::param_node* GetParams();
