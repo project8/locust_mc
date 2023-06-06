@@ -106,9 +106,10 @@ namespace locust
 
         if( aParam.has( "plot-mode-maps" ) )
         {
+        	double zSlice = 0.0;
+        	if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
         	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
-        	PrintModeMaps(GetNModes(),1, GetDimL()/2.); // TE
-        	PrintModeMaps(GetNModes(),0, GetDimL()/2.); // TM
+        	PrintModeMaps(GetNModes(),0, zSlice);
         }
 
     	return true;
@@ -443,25 +444,31 @@ namespace locust
     }
 
 
-
     void CylindricalCavity::PrintModeMaps(int nModes, bool bTE, double zSlice)
     {
 
 #ifdef ROOT_FOUND
 
 	    FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
-	    aRootHistoWriter->SetFilename("output/ModeMapOutput.root");
+	    char cBufferFileName[60];
+	    int n = sprintf(cBufferFileName, "output/ModeMapOutput_z%.2fm.root", zSlice);
+	    const char *cFileName = cBufferFileName;
+	    aRootHistoWriter->SetFilename(cFileName);
 	    aRootHistoWriter->OpenFile("RECREATE");
 
     	int nbins = this->GetNPixels();
-    	char hbuffertheta[60]; char hbufferr[60]; int a;
-    	const char *hname_theta = hbuffertheta;
-    	const char *hname_r = hbufferr;
+    	char hbufferEtheta[60]; char hbufferEr[60];
+    	char hbufferHtheta[60]; char hbufferHr[60];
+    	int a;
+    	const char *hname_Etheta = hbufferEtheta;
+    	const char *hname_Htheta = hbufferHtheta;
+    	const char *hname_Er = hbufferEr;
+    	const char *hname_Hr = hbufferHr;
 
     	char bufferE[60];
     	char bufferH[60];
 
-    	for (int bTE=0; bTE<2; bTE++) // TE and TM
+    	for (int bTE=0; bTE<2; bTE++) // TM and TE
     	{
         	for (int l=0; l<nModes; l++)
         		for (int m=1; m<nModes; m++)
@@ -470,16 +477,23 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbuffertheta, "TE%d%d%d_Etheta", l, m, n);
-    					    a = sprintf(hbufferr, "TE%d%d%d_Er", l, m, n);
+    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%.2f", l, m, n, zSlice);
+    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_z%.2f", l, m, n, zSlice);
+    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%.2f", l, m, n, zSlice);
+    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%.2f", l, m, n, zSlice);
     				    }
     				    else
         				{
-        					a = sprintf(hbuffertheta, "TM%d%d%d_Etheta", l, m, n);
-    	    				a = sprintf(hbufferr, "TM%d%d%d_Er", l, m, n);
+        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%.2f", l, m, n, zSlice);
+    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_z%.2f", l, m, n, zSlice);
+        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%.2f", l, m, n, zSlice);
+    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%.2f", l, m, n, zSlice);
     		    		}
-    			    	TH2D* hTEtheta = new TH2D(hname_theta, hname_theta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
-    			 	    TH2D* hTEr = new TH2D(hname_r, hname_r, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+
+    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+    			 	    TH2D* hTEr = new TH2D(hname_Er, hname_Er, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, hname_Htheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+    			 	    TH2D* hTHr = new TH2D(hname_Hr, hname_Hr, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
 
         				double normFactor = 1.0;
         				if (bTE)
@@ -519,13 +533,24 @@ namespace locust
     			    			    {
         						    	hTEr->Fill(theta-LMCConst::Pi(),r,tE.front());
         						    }
+    		    				    if ((!std::isnan(tH.back())))
+    			    			    {
+        						        hTHtheta->Fill(theta-LMCConst::Pi(),r,tH.back());
+    	    					    }
+    		    				    if ((!std::isnan(tH.front())))
+    			    			    {
+        						    	hTHr->Fill(theta-LMCConst::Pi(),r,tH.front());
+        						    }
 
             					}
         					}
         				}
     	    			aRootHistoWriter->Write2DHisto(hTEtheta);
         				aRootHistoWriter->Write2DHisto(hTEr);
+    	    			aRootHistoWriter->Write2DHisto(hTHtheta);
+        				aRootHistoWriter->Write2DHisto(hTHr);
         				delete hTEtheta; delete hTEr;
+        				delete hTHtheta; delete hTHr;
         			}
     	} // bTE
 		aRootHistoWriter->CloseFile();
