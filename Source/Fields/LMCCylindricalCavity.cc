@@ -106,8 +106,9 @@ namespace locust
 
         if( aParam.has( "plot-mode-maps" ) )
         {
-        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
-        	PrintModeMaps(GetNModes(),1, 0.);
+        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
+        	PrintModeMaps(GetNModes(),1, GetDimL()/2.); // TE
+        	PrintModeMaps(GetNModes(),0, GetDimL()/2.); // TM
         }
 
     	return true;
@@ -460,62 +461,73 @@ namespace locust
     	char bufferE[60];
     	char bufferH[60];
 
-    	for (int l=0; l<nModes; l++)
-    		for (int m=1; m<nModes; m++)
-    			for (int n=0; n<nModes; n++)
-    			{
-    				printf("l m n is %d %d %d\n", l, m, n);
-    		    	a = sprintf(hbuffertheta, "TE%d%d%d_Etheta", l, m, n);
-    		    	a = sprintf(hbufferr, "TE%d%d%d_Er", l, m, n);
-    				TH2D* hTEtheta = new TH2D(hname_theta, hname_theta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
-    				TH2D* hTEr = new TH2D(hname_r, hname_r, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+    	for (int bTE=0; bTE<2; bTE++) // TE and TM
+    	{
+        	for (int l=0; l<nModes; l++)
+        		for (int m=1; m<nModes; m++)
+    	    		for (int n=0; n<nModes; n++)
+    		    	{
+    			    	printf("l m n is %d %d %d\n", l, m, n);
+    		    		if (bTE)
+    			    	{
+    				    	a = sprintf(hbuffertheta, "TE%d%d%d_Etheta", l, m, n);
+    					    a = sprintf(hbufferr, "TE%d%d%d_Er", l, m, n);
+    				    }
+    				    else
+        				{
+        					a = sprintf(hbuffertheta, "TM%d%d%d_Etheta", l, m, n);
+    	    				a = sprintf(hbufferr, "TM%d%d%d_Er", l, m, n);
+    		    		}
+    			    	TH2D* hTEtheta = new TH2D(hname_theta, hname_theta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+    			 	    TH2D* hTEr = new TH2D(hname_r, hname_r, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
 
-    				double normFactor = 1.0;
-    				if (bTE)
-    				{
-    					normFactor = GetNormFactorsTE()[l][m][n];
-    				}
-    				else
-    				{
-    					normFactor = GetNormFactorsTM()[l][m][n];
-    				}
-    				for (unsigned i=0; i<GetNPixels(); i++)
-    				{
-    					double r = ((double)i+0.5)/(GetNPixels())*GetDimR();
-    					for (unsigned j=0; j<GetNPixels(); j++)
-    					{
-    						double theta = ((double)j+0.5)/(GetNPixels())*2.*LMCConst::Pi();
-        					for (unsigned k=0; k<1; k++)
+        				double normFactor = 1.0;
+        				if (bTE)
+    	    			{
+    		    			normFactor = GetNormFactorsTE()[l][m][n];
+    			    	}
+    	    			else
+    		    		{
+    			    		normFactor = GetNormFactorsTM()[l][m][n];
+        				}
+    	    			for (unsigned i=0; i<GetNPixels(); i++)
+    		    		{
+    			    		double r = ((double)i+0.5)/(GetNPixels())*GetDimR();
+    				    	for (unsigned j=0; j<GetNPixels(); j++)
         					{
-            				    double z = zSlice;
-    						    std::vector<double> tE;
-    						    std::vector<double> tH;
-    							if (bTE)
-    							{
-    								tE = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-    								tH = fFieldCore->TE_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-    							}
-    							else
-    							{
-    								tE = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-    								tH = fFieldCore->TM_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-    							}
-    						    if ((!std::isnan(tE.back())))
-    						    {
-    						        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE.back());
-    						    }
-    						    if ((!std::isnan(tE.front())))
-    						    {
-    						    	hTEr->Fill(theta-LMCConst::Pi(),r,tE.front());
-    						    }
+        						double theta = ((double)j+0.5)/(GetNPixels())*2.*LMCConst::Pi();
+            					for (unsigned k=0; k<1; k++)
+        	    				{
+            	    			    double z = zSlice;
+    				    		    std::vector<double> tE;
+    					    	    std::vector<double> tH;
+        							if (bTE)
+    	    						{
+    		    						tE = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    			    					tH = fFieldCore->TE_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    				    			}
+        							else
+    	    						{
+    		    						tE = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+        								tH = fFieldCore->TM_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    	    						}
+    		    				    if ((!std::isnan(tE.back())))
+    			    			    {
+        						        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE.back());
+    	    					    }
+    		    				    if ((!std::isnan(tE.front())))
+    			    			    {
+        						    	hTEr->Fill(theta-LMCConst::Pi(),r,tE.front());
+        						    }
 
+            					}
         					}
-    					}
-    				}
-    				aRootHistoWriter->Write2DHisto(hTEtheta);
-    				aRootHistoWriter->Write2DHisto(hTEr);
-    				delete hTEtheta; delete hTEr;
-    			}
+        				}
+    	    			aRootHistoWriter->Write2DHisto(hTEtheta);
+        				aRootHistoWriter->Write2DHisto(hTEr);
+        				delete hTEtheta; delete hTEr;
+        			}
+    	} // bTE
 		aRootHistoWriter->CloseFile();
     	LPROG(lmclog, "\n\nTo plot a mode map:\n"
     			"> root file:output/ModeMapOutput.root\n"
