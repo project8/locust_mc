@@ -28,7 +28,6 @@ namespace locust
 		fDeltaT( 0. ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
-        fAvgDotProductFactor(0.),
         fNPreEventSamples( 150000 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
@@ -172,18 +171,6 @@ namespace locust
         	exit(-1);
         	return false;
         }
-
-    	fAvgDotProductFactor.resize(fInterface->fField->GetNModes());
-    	for (unsigned m=0; m<fInterface->fField->GetNModes(); m++)
-    	{
-    		fAvgDotProductFactor[m].resize(fInterface->fField->GetNModes());
-        	for (unsigned n=0; n<fInterface->fField->GetNModes(); n++)
-        	{
-        		fAvgDotProductFactor[m][n].resize(fInterface->fField->GetNModes());
-        	}
-    	}
-
-
 
         if( aParam.has( "lo-frequency" ) )
         {
@@ -368,7 +355,7 @@ namespace locust
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
-    					fAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[l][m][n] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
+    					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
     					double modeAmplitude = sqrt( tE_normalized.front()*tE_normalized.front()  + tE_normalized.back()*tE_normalized.back());
 
 
@@ -377,7 +364,7 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP);
     					}
     					else
@@ -385,14 +372,14 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
     						if (fUseDirectKassPower)
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
-        						excitationAmplitude = fAvgDotProductFactor[l][m][n]*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+        						excitationAmplitude = tAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
     					}

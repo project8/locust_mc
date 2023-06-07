@@ -98,7 +98,6 @@ namespace locust
             bool fAliasedFrequencies;
             bool fOverrideAliasing;
             double fphiLO; // voltage phase of LO in radians;
-            std::vector<std::vector<std::vector<double>>> fAvgDotProductFactor;
             bool fBypassTF;
             bool fNormCheck;
             bool fIntermediateFile;

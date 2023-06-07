@@ -14,6 +14,7 @@ namespace locust
     Field::Field():
         fnPixels( 100 ),
         fCentralFrequency(1.63e11),
+		fAvgDotProductFactor( 0. ),
         fNModes( 2 ),
         fR( 0.18 ),
         fL( 3.0 ),
@@ -45,6 +46,18 @@ namespace locust
     		SetNPixels(aParam["n-pixels"]().as_int());
     	}
 
+    	fAvgDotProductFactor.resize(fNModes);
+    	for (unsigned m=0; m<fNModes; m++)
+    	{
+    		fAvgDotProductFactor[m].resize(fNModes);
+        	for (unsigned n=0; n<fNModes; n++)
+        	{
+        		fAvgDotProductFactor[m][n].resize(fNModes);
+        	}
+    	}
+
+
+
     	return true;
 
     }
@@ -68,6 +81,16 @@ namespace locust
     void Field::SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor)
     {
     	fModeNormFactorTM = aNormFactor;
+    }
+
+    std::vector<std::vector<std::vector<double>>> Field::GetAvgDotProductFactor()
+    {
+    	return fAvgDotProductFactor;
+    }
+
+    void Field::SetAvgDotProductFactor(std::vector<std::vector<std::vector<double>>> aFactor)
+    {
+    	fAvgDotProductFactor = aFactor;
     }
 
      double FieldCore::GetBesselNKZeros(int l, int m)

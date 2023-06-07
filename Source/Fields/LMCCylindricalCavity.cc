@@ -355,6 +355,15 @@ namespace locust
        	return tField;  // return normalized field.
        }
 
+	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+	{
+		std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
+		tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
+		SetAvgDotProductFactor(tAvgDotProductFactor);
+		return tAvgDotProductFactor[l][m][n];
+	}
+
+
     double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile)
     {
     	double tThetaParticle = tKassParticleXP[1];
