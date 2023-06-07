@@ -288,6 +288,11 @@ namespace locust
     	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
+    std::vector<double> CylindricalCavity::GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
+    {
+    	return fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    }
+
     std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
     {
 
