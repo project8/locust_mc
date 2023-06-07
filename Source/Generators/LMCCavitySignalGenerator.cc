@@ -26,7 +26,6 @@ namespace locust
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0. ),
 		fDeltaT( 0. ),
-        fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
         fAvgDotProductFactor(0.),
@@ -50,45 +49,6 @@ namespace locust
     {
     }
 
-
-
-    bool CavitySignalGenerator::ModeSelect(int l, int m, int n, bool eGun)
-    {
-    	if (eGun)
-    	{
-    		if (!fNormCheck)
-    		{
-    			if ((l==0)&&(m==1)&&(n==0))
-    				return true;
-    			else
-    				return false;
-    		}
-    		else
-    		{
-    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
-    				return true;
-    			else
-    				return false;
-    		}
-    	}
-    	else
-    	{
-    		if (!fNormCheck)
-    		{
-    			if ((l==0)&&(m==1)&&(n==1))
-    				return true;
-    			else
-    				return false;
-    		}
-    		else
-    		{
-    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
-    				return true;
-    			else
-    				return false;
-    		}
-    	}
-    }
 
 
 
@@ -195,10 +155,10 @@ namespace locust
         }
         if( aParam.has( "n-modes" ) )
         {
-        	fNModes = aParam["n-modes"]().as_int();
+            fInterface->fField->SetNModes(aParam["n-modes"]().as_int());
         }
 
-        fPowerCombiner->SetNCavityModes(fNModes);
+        fPowerCombiner->SetNCavityModes(fInterface->fField->GetNModes());
         if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
@@ -206,7 +166,6 @@ namespace locust
 			return false;
 		}
 
-        fInterface->fField->SetNModes(fNModes);
         if (!fInterface->fField->Configure(aParam))
         {
         	LERROR(lmclog,"Error configuring LMCField.");
@@ -214,13 +173,13 @@ namespace locust
         	return false;
         }
 
-    	fAvgDotProductFactor.resize(fNModes);
-    	for (unsigned m=0; m<fNModes; m++)
+    	fAvgDotProductFactor.resize(fInterface->fField->GetNModes());
+    	for (unsigned m=0; m<fInterface->fField->GetNModes(); m++)
     	{
-    		fAvgDotProductFactor[m].resize(fNModes);
-        	for (unsigned n=0; n<fNModes; n++)
+    		fAvgDotProductFactor[m].resize(fInterface->fField->GetNModes());
+        	for (unsigned n=0; n<fInterface->fField->GetNModes(); n++)
         	{
-        		fAvgDotProductFactor[m][n].resize(fNModes);
+        		fAvgDotProductFactor[m][n].resize(fInterface->fField->GetNModes());
         	}
     	}
 
@@ -397,13 +356,13 @@ namespace locust
         std::vector<double> dopplerFrequency;
 
 
-    	for (int l=0; l<fNModes; l++)
+    	for (int l=0; l<fInterface->fField->GetNModes(); l++)
     	{
-    		for (int m=1; m<fNModes; m++)
+    		for (int m=1; m<fInterface->fField->GetNModes(); m++)
     		{
-    			for (int n=0; n<fNModes; n++)
+    			for (int n=0; n<fInterface->fField->GetNModes(); n++)
     			{
-    				if (ModeSelect(l, m, n, fInterface->fE_Gun))
+    				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fE_Gun, fNormCheck))
     				{
     					std::vector<double> tE_normalized;
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);

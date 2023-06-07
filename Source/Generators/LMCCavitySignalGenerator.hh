@@ -84,7 +84,6 @@ namespace locust
               
             Signal::State GetDomain() const;
             void SetDomain( Signal::State aDomain );
-            bool ModeSelect(int l, int m, int n, bool eGun);
             void CheckNormalization();
 
 
@@ -92,7 +91,6 @@ namespace locust
         private:
             double fLO_Frequency;
             double fDeltaT;
-            int fNModes;
             int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             std::string gxml_filename;
