@@ -284,7 +284,7 @@ namespace locust
 
     double FieldCalculator::GetCouplingFactorTElmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
     {
-    	double tAvgDotProductFactor = 0.63;  // TO-DO:  this should be calculated and not just overridden like this.
+    	double tAvgDotProductFactor = fInterface->fField->GetAvgDotProductFactor()[l][m][n];
     	double norm = 0.;
     	double coupling = 0.;
     	double dimR = fInterface->fField->GetDimR(); // m
