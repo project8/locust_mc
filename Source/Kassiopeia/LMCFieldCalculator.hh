@@ -31,7 +31,8 @@ namespace locust
             bool Configure( const scarab::param_node& aParam );
             bool ConfigureByInterface();
 
-            bool ReconvertAnalyticGFtoFIR(int l, int m, int n);
+
+            bool ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
@@ -39,11 +40,11 @@ namespace locust
             double GetDampingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
-            double GetCouplingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
+            double GetCouplingFactorTElmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-            double GetFieldCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
-            std::pair<double,double> GetCavityFIRSample(int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
+            double GetTElmnFieldCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
+            std::pair<double,double> GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF);
             void SetNFilterBinsRequired( double dt );
             int GetNFilterBinsRequired();
             void SetFilterSize( int aFilterSize );

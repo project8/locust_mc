@@ -26,10 +26,8 @@ namespace locust
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0. ),
 		fDeltaT( 0. ),
-        fNModes( 2 ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
-        fAvgDotProductFactor(0.),
         fNPreEventSamples( 150000 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
@@ -50,46 +48,6 @@ namespace locust
     {
     }
 
-
-
-    bool CavitySignalGenerator::ModeSelect(int l, int m, int n, bool eGun)
-    {
-    	if (eGun)
-    	{
-    		if (!fNormCheck)
-    		{
-    			if ((l==0)&&(m==1)&&(n==0))
-    				return true;
-    			else
-    				return false;
-    		}
-    		else
-    		{
-    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
-    				return true;
-    			else
-    				return false;
-    		}
-    	}
-    	else
-    	{
-    		if (!fNormCheck)
-    		{
-    			//if ((l==0)&&(m==1)&&(n==1))
-                        if ((l==1)&&(m==1)&&(n==1))
-    				return true;
-    			else
-    				return false;
-    		}
-    		else
-    		{
-    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
-    				return true;
-    			else
-    				return false;
-    		}
-    	}
-    }
 
 
 
@@ -211,8 +169,12 @@ namespace locust
         		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
         	}
         }
+        if( aParam.has( "n-modes" ) )
+        {
+            fInterface->fField->SetNModes(aParam["n-modes"]().as_int());
+        }
 
-        fPowerCombiner->SetNCavityModes(fNModes);
+        fPowerCombiner->SetNCavityModes(fInterface->fField->GetNModes());
         if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
@@ -220,25 +182,12 @@ namespace locust
 			return false;
 		}
 
-        fInterface->fField->SetNModes(fNModes);
         if (!fInterface->fField->Configure(aParam))
         {
         	LERROR(lmclog,"Error configuring LMCField.");
         	exit(-1);
         	return false;
         }
-
-    	fAvgDotProductFactor.resize(fNModes);
-    	for (unsigned m=0; m<fNModes; m++)
-    	{
-    		fAvgDotProductFactor[m].resize(fNModes);
-        	for (unsigned n=0; n<fNModes; n++)
-        	{
-        		fAvgDotProductFactor[m][n].resize(fNModes);
-        	}
-    	}
-
-
 
         if( aParam.has( "lo-frequency" ) )
         {
@@ -398,7 +347,6 @@ namespace locust
 
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
-        const unsigned nChannels = fNChannels;
 
         //Receiver Properties
         fDeltaT = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
@@ -408,17 +356,17 @@ namespace locust
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fE_Gun);
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
-        double tEFieldAtProbe = 0.;
+        std::vector<double> tEFieldAtProbe;
         std::vector<double> dopplerFrequency;
 
 
-    	for (int l=0; l<fNModes; l++)
+    	for (int l=0; l<fInterface->fField->GetNModes(); l++)
     	{
-    		for (int m=1; m<fNModes; m++)
+    		for (int m=1; m<fInterface->fField->GetNModes(); m++)
     		{
-    			for (int n=0; n<fNModes; n++)
+    			for (int n=0; n<fInterface->fField->GetNModes(); n++)
     			{
-    				if (ModeSelect(l, m, n, fInterface->fE_Gun))
+    				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fE_Gun, fNormCheck))
     				{
     					std::vector<double> tE_normalized;
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
@@ -433,7 +381,7 @@ namespace locust
 					std::cout << "ReconvertAnalyticGFtoFIR run" << std::endl;*/
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(l,m,n,tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
-    					fAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( fAvgDotProductFactor[l][m][n] * tThisEventNSamples + fInterface->fField->GetDotProductFactor(tKassParticleXP, tE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
+    					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
     					double modeAmplitude = sqrt( tE_normalized.front()*tE_normalized.front()  + tE_normalized.back()*tE_normalized.back());
 
 
@@ -442,8 +390,7 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-
-    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP);
     					}
     					else
@@ -451,26 +398,26 @@ namespace locust
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = fAvgDotProductFactor[l][m][n] * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
 
     						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
     						if (fUseDirectKassPower)
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
-        						excitationAmplitude = fAvgDotProductFactor[l][m][n]*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+        						excitationAmplitude = tAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
     						}
 
     					}
 
-    					for(int channelIndex = 0; channelIndex < nChannels; ++channelIndex)  // one channel per probe.
+    					for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)  // one channel per probe.
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
     						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
-    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe, dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, !(fInterface->fTOld > 0.) );
+    						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
     						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
     					}
 
@@ -568,6 +515,12 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+ 		if (fNChannels > 2)
+ 		{
+    		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
+        	throw std::runtime_error("Only 1 or 2 channels is allowed.");
+        	return false;
+ 		}
 
         int PreEventCounter = 0;
 //	std::cout << "Setting NFilterBinsRequired in DoGenerateTime" << std::endl;
