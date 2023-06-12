@@ -362,15 +362,15 @@ namespace locust
     				{
     					double TElmnFieldFromCavity = GetTElmnFieldCavity(l,m,n,aFinalParticle);
     					double Almnsqu = GetCouplingFactorTElmnCavity(l,m,n,bTE,aFinalParticle);
-    					double DampingFactorTElmnCavity = 1. - Almnsqu + Almnsqu*TElmnFieldFromCavity*TElmnFieldFromCavity;  // = P'/P
-    					DampingFactorCavity += DampingFactorTElmnCavity;
+    					double DampingFactorTElmnCavity = 1. - Almnsqu + Almnsqu*TElmnFieldFromCavity*TElmnFieldFromCavity;  // = (P'/P)_{lmn}
+    					DampingFactorCavity += DampingFactorTElmnCavity - 1.; // (P'/P)_{lmn} - 1
     				}
      			}
     		}
     	}
     	}
     	if (fabs(DampingFactorCavity) > 0.)
-    		return DampingFactorCavity;
+    		return DampingFactorCavity + 1.0;
     	else
     		return 1.0;  // No feedback
     }
