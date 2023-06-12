@@ -307,7 +307,7 @@ namespace locust
     	return coupling*coupling;
     }
 
-    double FieldCalculator::GetTXlmnFieldCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
     {
 
     	// l, m, & n are needed for selecting the resonant frequency and Q.  (Still TO-DO).
@@ -360,7 +360,7 @@ namespace locust
     			{
     				if (ModeSelect(l, m, n, 0, 0))
     				{
-    					double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,aFinalParticle);
+    					double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
     					double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
     					double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
     					DampingFactorCavity += DampingFactorTXlmnCavity - 1.; // (P'/P)_{lmn} - 1

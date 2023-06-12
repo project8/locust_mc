@@ -43,7 +43,7 @@ namespace locust
             double GetCouplingFactorTXlmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
-            double GetTXlmnFieldCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
+            double GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
             std::pair<double,double> GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF);
             void SetNFilterBinsRequired( double dt );
             int GetNFilterBinsRequired();
