@@ -293,7 +293,7 @@ namespace locust
     	return fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
-    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
+    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode)
     {
 
     	std::vector<double> rProbe;
@@ -306,10 +306,12 @@ namespace locust
 
     	if (l>0)
     	{
-    		//If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
-    		double thetaElectron = tKassParticleXP[1];
-    		thetaEffective.push_back(thetaProbe[0] - thetaElectron);
-    		thetaEffective.push_back(thetaProbe[1] - thetaElectron);
+                //If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
+                double thetaElectron = tKassParticleXP[1];
+                double TMOffset = 0;
+                if(!teMode) TMOffset = LMCConst::Pi() / 2.0 / (double)l; //Different angular dependence of E_theta [sin vs cos] in TM modes requires offset to correct for probe projection 
+                thetaEffective.push_back(thetaProbe[0] - thetaElectron + TMOffset);
+                thetaEffective.push_back(thetaProbe[1] - thetaElectron + TMOffset);
     	}
     	else
     	{
@@ -322,22 +324,36 @@ namespace locust
 
     	//Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
     	std::vector<double> tEFieldAtProbe;
-    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[0],0).back());
-    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[1],0).back());
+    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode).back());
+    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode).back());
 
     	return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1]};
 
     }
 
-    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
+    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
+    {
+	return GetFieldAtProbe(l, m, n, includeOtherPols, tKassParticleXP, true);
+    }
+
+    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode)
     {
     	double tR = tKassParticleXP[0];
     	double tTheta = tKassParticleXP[1];
     	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
+	double normFactor;
 
-       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
-       	double normFactor = GetNormFactorsTE()[l][m][n];
+	if(teMode)
+	{
+       		tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		normFactor = GetNormFactorsTE()[l][m][n];
+	}
+	else
+	{
+                tField = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+                normFactor = GetNormFactorsTM()[l][m][n];
+	}
    		auto it = tField.begin();
    		while (it != tField.end())
    		{
@@ -354,6 +370,11 @@ namespace locust
 
        	return tField;  // return normalized field.
        }
+
+	std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
+	{
+		return GetNormalizedModeField(l,m,n,tKassParticleXP,includeOtherPols, true);
+	}
 
 	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
 	{

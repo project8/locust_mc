@@ -33,6 +33,7 @@ namespace locust
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
         fOverrideAliasing( false ),
+	fbTE( true ),
         fBypassTF( false ),
         fNormCheck( false ),
         fIntermediateFile( false ),
@@ -186,6 +187,11 @@ namespace locust
         {
             fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
+	
+	if( aParam.has( "te-modes" ) )
+	{
+		fbTE = aParam["te-modes"]().as_bool();
+	}
 
         if( aParam.has( "bypass-tf" ) )
         {
@@ -352,7 +358,7 @@ namespace locust
     				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fE_Gun, fNormCheck))
     				{
     					std::vector<double> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
+    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,fbTE);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
@@ -365,8 +371,8 @@ namespace locust
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP);
-    					}
+    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,fbTE);
+ 					}
     					else
     					{
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si

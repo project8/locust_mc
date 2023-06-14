@@ -54,6 +54,7 @@ namespace locust
      - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
      - "lo-frequency":  local oscillator frequency in Hz.
+     - "te-modes": bool(true) -- if true look at TE mode rather than TM mode.
      - "bypass-tf":  bool(false) -- if true, set FIR convolution output to 1.0
      - "norm-check": bool(false) -- if true, calculate weighted running averages of J \cdot E
       	 for all modes with indices of order < fNModes, and write the avgs to an intermediate file.
@@ -98,6 +99,7 @@ namespace locust
             bool fAliasedFrequencies;
             bool fOverrideAliasing;
             double fphiLO; // voltage phase of LO in radians;
+	    bool fbTE;
             bool fBypassTF;
             bool fNormCheck;
             bool fIntermediateFile;
