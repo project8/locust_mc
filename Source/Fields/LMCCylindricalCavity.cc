@@ -331,11 +331,6 @@ namespace locust
 
     }
 
-    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
-    {
-	return GetFieldAtProbe(l, m, n, includeOtherPols, tKassParticleXP, true);
-    }
-
     std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode)
     {
     	double tR = tKassParticleXP[0];
