@@ -309,7 +309,7 @@ namespace locust
                 //If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
                 double thetaElectron = tKassParticleXP[1];
                 double TMOffset = 0;
-                if(!teMode) TMOffset = LMCConst::Pi() / 2.0 / (double)l; //Different angular dependence of E_theta [sin vs cos] in TM modes requires offset to correct for probe projection 
+                //if(!teMode) TMOffset = LMCConst::Pi() / 2.0 / (double)l; //Different angular dependence of E_theta [sin vs cos] in TM modes requires offset to correct for probe projection 
                 thetaEffective.push_back(thetaProbe[0] - thetaElectron + TMOffset);
                 thetaEffective.push_back(thetaProbe[1] - thetaElectron + TMOffset);
     	}
