@@ -366,11 +366,6 @@ namespace locust
        	return tField;  // return normalized field.
        }
 
-	std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
-	{
-		return GetNormalizedModeField(l,m,n,tKassParticleXP,includeOtherPols, true);
-	}
-
 	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
 	{
 		std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();

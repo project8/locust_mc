@@ -154,7 +154,7 @@ namespace locust
     	{
     		if (!bNormCheck)
     		{
-    			if ((l==0)&&(m==1)&&(n==1))
+                        if ((l==0)&&(m==1)&&(n==1))
     				return true;
     			else
     				return false;
