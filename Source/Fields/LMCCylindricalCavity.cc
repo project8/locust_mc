@@ -322,10 +322,10 @@ namespace locust
     	tProbeLocation.push_back({rProbe[0], thetaEffective[0], zProbe[0]});
     	tProbeLocation.push_back({rProbe[1], thetaEffective[1], zProbe[1]});
 
-    	//Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
+    	//Assumes probe couples to E of mode. If mode is polarized, transforms angle to reference frame of electron
     	std::vector<double> tEFieldAtProbe;
-    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode).back());
-    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode).back());
+    	tEFieldAtProbe.push_back( TotalFieldNorm(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode)) );
+    	tEFieldAtProbe.push_back( TotalFieldNorm(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode)) );
 
     	return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1]};
 
@@ -365,6 +365,18 @@ namespace locust
 
        	return tField;  // return normalized field.
        }
+
+	double CylindricalCavity::TotalFieldNorm(std::vector<double> field)
+	{
+		double norm = 0;
+		auto it = field.begin();
+		while (it != field.end())
+		{
+			if (!isnan(*it)) norm += (*it)*(*it);
+			*it++;
+		}
+		return sqrt(norm);
+	}
 
 	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
 	{
