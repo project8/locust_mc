@@ -335,34 +335,34 @@ namespace locust
     	double tTheta = tKassParticleXP[1];
     	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
-	double normFactor;
-
-	if(teMode)
-	{
+       	double normFactor;
+       	if(teMode)
+       	{
        		tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
        		normFactor = GetNormFactorsTE()[l][m][n];
-	}
-	else
-	{
-                tField = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
-                normFactor = GetNormFactorsTM()[l][m][n];
-	}
-   		auto it = tField.begin();
-   		while (it != tField.end())
-   		{
-   			if (!isnan(*it))
-   			{
-   				(*it) *= normFactor;
-   			}
-   			else
-   			{
-   				(*it) = 0.;
-   			}
-   			*it++;
-   		}
+       	}
+       	else
+       	{
+       		tField = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		normFactor = GetNormFactorsTM()[l][m][n];
+       	}
+       	auto it = tField.begin();
+       	while (it != tField.end())
+       	{
+       		if (!isnan(*it))
+       		{
+       			(*it) *= normFactor;
+       		}
+       		else
+       		{
+       			(*it) = 0.;
+       		}
+       		*it++;
+       	}
 
        	return tField;  // return normalized field.
-       }
+    }
+
 
 	double CylindricalCavity::TotalFieldNorm(std::vector<double> field)
 	{
