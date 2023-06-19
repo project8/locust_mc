@@ -19,6 +19,7 @@ namespace locust
     		fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
+			fAnalyticResponseFunction( 0 ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -26,6 +27,7 @@ namespace locust
     		fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
+			fAnalyticResponseFunction( 0 ),
 			fInterface( aCopy.fInterface )
     {
     }
