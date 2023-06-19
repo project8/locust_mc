@@ -99,7 +99,6 @@ namespace locust
             bool fAliasedFrequencies;
             bool fOverrideAliasing;
             double fphiLO; // voltage phase of LO in radians;
-            bool fbTE;
             bool fBypassTF;
             bool fNormCheck;
             bool fIntermediateFile;

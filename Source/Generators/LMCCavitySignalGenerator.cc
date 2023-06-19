@@ -33,7 +33,6 @@ namespace locust
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
         fOverrideAliasing( false ),
-	fbTE( true ),
         fBypassTF( false ),
         fNormCheck( false ),
         fIntermediateFile( false ),
@@ -187,11 +186,6 @@ namespace locust
         {
             fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
-	
-	if( aParam.has( "te-modes" ) )
-	{
-		fbTE = aParam["te-modes"]().as_bool();
-	}
 
         if( aParam.has( "bypass-tf" ) )
         {
@@ -348,17 +342,18 @@ namespace locust
         std::vector<double> tEFieldAtProbe;
         std::vector<double> dopplerFrequency;
 
-
+    	for (int bTE=0; bTE<2; bTE++) // TM/TE.
+    	{
     	for (int l=0; l<fInterface->fField->GetNModes(); l++)
     	{
     		for (int m=1; m<fInterface->fField->GetNModes(); m++)
     		{
     			for (int n=0; n<fInterface->fField->GetNModes(); n++)
     			{
-    				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fE_Gun, fNormCheck))
+    				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fE_Gun, fNormCheck, bTE))
     				{
     					std::vector<double> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,fbTE);
+    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
     					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
@@ -371,7 +366,7 @@ namespace locust
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,fbTE);
+    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
  					}
     					else
     					{
@@ -405,6 +400,7 @@ namespace locust
     			} // n
     		} // m
     	} // l
+    	} // bTE
 
     	fInterface->fTOld += fDeltaT;
     	if (!fAliasingIsChecked)
