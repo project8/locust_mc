@@ -16,14 +16,18 @@ namespace locust
     LOGGER( lmclog, "FieldCalculator" );
 
     FieldCalculator::FieldCalculator() :
-    		fNFilterBinsRequired(0),
+    		fNFilterBinsRequired( 0 ),
+			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
+			fAnalyticResponseFunction( 0 ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-    		fNFilterBinsRequired(0),
+    		fNFilterBinsRequired( 0 ),
+			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
+			fAnalyticResponseFunction( 0 ),
 			fInterface( aCopy.fInterface )
     {
     }
@@ -51,6 +55,12 @@ namespace locust
 
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
      {
+
+        if( aParam.has( "multi-mode" ) )
+        {
+    		LPROG(lmclog,"Running in multimode configuration.");
+        	fbMultiMode = aParam["multi-mode"]().as_bool();
+        }
 
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
@@ -130,7 +140,7 @@ namespace locust
     	return fFIRBuffer.size();
     }
 
-    bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck)
+    bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)
     {
     	int nModes = fInterface->fField->GetNModes();
     	if (eGun)
@@ -154,7 +164,7 @@ namespace locust
     	{
     		if (!bNormCheck)
     		{
-    			if ((l==0)&&(m==1)&&(n==1))
+    			if ((((l==0)&&(m==1)&&(n==1))&&(bTE)) || (((l==1)&&(m==1)&&(n==1))&&(!bTE)&&(fbMultiMode)))
     				return true;
     			else
     				return false;
@@ -350,7 +360,7 @@ namespace locust
 
     	double DampingFactorCavity = 0.;
 
-    	for (int bTE=1; bTE<2; bTE++) // TM/TE.  TO-DO:  Allow TM by starting at bTE=0.
+    	for (int bTE=0; bTE<2; bTE++) // TM/TE.
     	{
     	for (int l=0; l<fInterface->fField->GetNModes(); l++)
     	{
@@ -358,7 +368,7 @@ namespace locust
     		{
     			for (int n=0; n<fInterface->fField->GetNModes(); n++)
     			{
-    				if (ModeSelect(l, m, n, 0, 0))
+    				if (ModeSelect(l, m, n, 0, 0, bTE))
     				{
     					double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
     					double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
