@@ -143,7 +143,7 @@ namespace locust
     bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)
     {
     	int nModes = fInterface->fField->GetNModes();
-    	if (eGun)
+    	if (eGun)  // The waveguide case is not in regular use.
     	{
     		if (!bNormCheck)
     		{
@@ -160,16 +160,17 @@ namespace locust
     				return false;
     		}
     	}
-    	else
+    	else  // Cavity
     	{
     		if (!bNormCheck)
     		{
+    			// Allow only TE011, or TE011+TM111 if fbMultimode==true
     			if ((((l==0)&&(m==1)&&(n==1))&&(bTE)) || (((l==1)&&(m==1)&&(n==1))&&(!bTE)&&(fbMultiMode)))
     				return true;
     			else
     				return false;
     		}
-    		else
+    		else  // if bNormCheck==true, allow all modes.
     		{
     			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
     				return true;
