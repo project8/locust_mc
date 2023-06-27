@@ -116,7 +116,7 @@ namespace locust
 
 
 
-    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, double dt, bool EGun)
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, double dt, bool bWaveguide)
     {
 
     	locust::Particle tParticle;
@@ -165,14 +165,17 @@ namespace locust
             particleXP[7] = tParticle.GetCyclotronFrequency();
             particleXP[8] = tParticle.GetLarmorPower();
 
-            if (EGun)  // rotate from Kass to Locust coordinate system.
+
+            if (bWaveguide)  // rotate from Kass to Locust coordinate system?
             {
+            	/*
                 particleXP[0] = pow( tposZ*tposZ + tposX*tposX, 0.5);
                 particleXP[1] = calcTheta(tposZ, tposX);
                 particleXP[2] = tposY;  // z->y
                 particleXP[3] = tvY;    // x->z
                 particleXP[4] = tvX;    // y->x
                 particleXP[5] = GetGuidingCenterVy();    // z->y, waveguide axis.
+                */
             }
 
     	}
