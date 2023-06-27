@@ -57,7 +57,7 @@ namespace locust
     	}
     	else
     	{
-		    LERROR(lmclog,"Error configuring RunPause class");
+		    LPROG(lmclog,"RunPause class did not need to be configured.");
 		    return false;
     	}
         return true;
@@ -68,6 +68,12 @@ namespace locust
 
         if (fToolbox.IsInitialized())
         {
+            for( auto sim : fToolbox.GetAll<Kassiopeia::KSSimulation>("project8_simulation"))
+            {
+            	// std::cout << "seed is " << sim->GetSeed();
+                // TO-DO:  Change seed here, for pileup tests.
+            }
+
             if( aParam.has( "cavity-radius" ) )
             {
             	if (fToolbox.HasKey("term_max_rlocust"))
