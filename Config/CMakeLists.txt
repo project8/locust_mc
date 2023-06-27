@@ -29,6 +29,7 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_1GHz.xml     
     FreeSpaceGeometry.xml
 	CavityGeometry_VTinyCoil.xml
+	WaveguideGeometry_VTinyCoil.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavity1GHz.json

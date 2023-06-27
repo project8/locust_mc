@@ -42,7 +42,7 @@
     </tag>
 </geometry>
 
-<include name="[config_path]/CavityGeometry_VTinyCoil.xml"/>
+<include name="[config_path]/WaveguideGeometry_VTinyCoil.xml"/>
 
      
 <kassiopeia>

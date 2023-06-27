@@ -40,6 +40,7 @@
 
 <!-- assembly -->
 <space name="project8_assembly">
+<space name="rectangularwaveguide" node="new_rectangularwaveguide_space"/>
 
 <space name="coil_000" node="coil_space_000">
   <transformation rotation_euler="0. 0. 0."/> 
