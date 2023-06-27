@@ -380,7 +380,7 @@ namespace locust
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
 
-    						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
+    						// Waveguide default:  Use direct Kassiopeia power budget.
     						if (fUseDirectKassPower)
     						{
     							// override one-way signal amplitude with direct Kass power:
