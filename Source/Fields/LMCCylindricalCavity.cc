@@ -465,7 +465,7 @@ namespace locust
 
 	    FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
 	    char cBufferFileName[60];
-	    int n = sprintf(cBufferFileName, "output/ModeMapOutput_z%.2fm.root", zSlice);
+	    int n = sprintf(cBufferFileName, "output/ModeMapOutput_z%dmm.root", (int)(zSlice*1.e3));
 	    const char *cFileName = cBufferFileName;
 	    aRootHistoWriter->SetFilename(cFileName);
 	    aRootHistoWriter->OpenFile("RECREATE");
@@ -491,17 +491,17 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%.2f", l, m, n, zSlice);
-    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_z%.2f", l, m, n, zSlice);
-    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%.2f", l, m, n, zSlice);
-    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%.2f", l, m, n, zSlice);
+    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_z%d", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
     				    }
     				    else
         				{
-        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%.2f", l, m, n, zSlice);
-    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_z%.2f", l, m, n, zSlice);
-        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%.2f", l, m, n, zSlice);
-    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%.2f", l, m, n, zSlice);
+        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_z%d", l, m, n, (int)(zSlice*1.e3));
+        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
     		    		}
 
     			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
