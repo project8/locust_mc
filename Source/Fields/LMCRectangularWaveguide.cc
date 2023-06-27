@@ -50,8 +50,11 @@ namespace locust
 
         if( aParam.has( "plot-mode-maps" ) )
         {
-        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
-        	PrintModeMaps(GetNModes(),1, 0.);
+        	if (aParam["plot-mode-maps"]().as_bool())
+        	{
+        	    LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
+        	    PrintModeMaps(GetNModes(),1, 0.);
+        	}
         }
 
         return true;

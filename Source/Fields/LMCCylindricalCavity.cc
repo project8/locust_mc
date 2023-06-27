@@ -106,10 +106,13 @@ namespace locust
 
         if( aParam.has( "plot-mode-maps" ) )
         {
-        	double zSlice = 0.0;
-        	if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
-        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
-        	PrintModeMaps(GetNModes(),0, zSlice);
+        	if (aParam["plot-mode-maps"]().as_bool())
+        	{
+        	    double zSlice = 0.0;
+        	    if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
+        	    LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
+        	    PrintModeMaps(GetNModes(),0, zSlice);
+        	}
         }
 
     	return true;
