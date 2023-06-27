@@ -32,7 +32,7 @@ namespace locust
             bool ConfigureByInterface();
 
 
-            bool ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck);
+            bool ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
@@ -59,6 +59,7 @@ namespace locust
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
             int fNFilterBinsRequired;
+            bool fbMultiMode;
     };
 
 }
