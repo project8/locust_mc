@@ -198,7 +198,7 @@ namespace locust
     }
 
 
-    std::vector<double> RectangularWaveguide::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP)
+    std::vector<double> RectangularWaveguide::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP,  bool includeOtherPols)
     {
      	// The l index is inert in the waveguide.
       	double tX = tKassParticleXP[0] * cos(tKassParticleXP[1]);
@@ -220,8 +220,17 @@ namespace locust
   			}
   			*it++;
   		}
+
       	return tTE_E_electron;  // return normalized field.
     }
+
+	double RectangularWaveguide::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+	{
+		std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
+		tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
+		SetAvgDotProductFactor(tAvgDotProductFactor);
+		return tAvgDotProductFactor[l][m][n];
+	}
 
 
     double RectangularWaveguide::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile)
@@ -233,7 +242,6 @@ namespace locust
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
     	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
-
 
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)
