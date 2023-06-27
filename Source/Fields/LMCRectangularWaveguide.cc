@@ -21,22 +21,28 @@ namespace locust
     bool RectangularWaveguide::Configure( const scarab::param_node& aParam)
     {
 
-    	LWARN( lmclog, "The rectanguar waveguide simulation is not fully supported with a suitable trap right now ... " );
-    	LWARN( lmclog, "Press return to continue ... " );
-    	getchar();
-
     	if( !Field::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring Field class from CylindricalCavity subclass");
     		return false;
     	}
 
-    	if( aParam.has( "center-to-short" ) ) // for use in e-gun
+        if( aParam.has( "waveguide-x" ) )
+        {
+            SetDimX( aParam["waveguide-x"]().as_double() );
+        }
+
+        if( aParam.has( "waveguide-y" ) )
+        {
+        	SetDimY( aParam["waveguide-y"]().as_double() );
+        }
+
+    	if( aParam.has( "center-to-short" ) ) // for use in waveguide
         {
             fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
         }
 
-        if( aParam.has( "center-to-antenna" ) ) // for use in e-gun
+        if( aParam.has( "center-to-antenna" ) ) // for use in waveguide
         {
             fInterface->fCENTER_TO_ANTENNA = aParam["center-to-antenna"]().as_double();
         }
@@ -307,10 +313,10 @@ namespace locust
     void RectangularWaveguide::CheckNormalization(int nModes)
     {
 
-        printf("\n |E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used in the waveguide.\n");
+        printf("\n|E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used in the waveguide.\n");
         printf("m is the index in the x-direction (widest).  n is the index in the y-direction (narrowest).\n");
         printf("The waveguide calculations assume a signal frequency of 25.9e9 Hz. This can be changed "
-        		"by adjusting the parameter \"central-frequency\" on the command line.\n\n");
+        		"by adjusting the parameter \"waveguide-central-frequency\" on the command line.\n\n");
 
 
     	for (int l=0; l<nModes; l++)

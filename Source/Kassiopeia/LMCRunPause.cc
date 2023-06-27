@@ -74,6 +74,15 @@ namespace locust
                 // TO-DO:  Change seed here, for pileup tests.
             }
 
+
+            if( aParam.has( "waveguide-x" ) )
+            {
+            	// TO-DO:  Adjust Kass waveguide dimensions here.  Use fToolbox.
+
+            }
+
+
+
             if( aParam.has( "cavity-radius" ) )
             {
             	if (fToolbox.HasKey("term_max_rlocust"))
