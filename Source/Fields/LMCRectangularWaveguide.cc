@@ -207,7 +207,7 @@ namespace locust
     }
 
 
-    std::vector<double> RectangularWaveguide::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP,  bool includeOtherPols)
+    std::vector<double> RectangularWaveguide::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP,  bool includeOtherPols, bool bTE)
     {
      	// The l index is inert in the waveguide.
       	double tX = tKassParticleXP[0] * cos(tKassParticleXP[1]);
