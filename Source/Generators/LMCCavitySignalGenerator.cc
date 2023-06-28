@@ -385,7 +385,10 @@ namespace locust
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
-        						excitationAmplitude = tAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+    							std::vector<double> tTempKassParticleXP = {0.,0.,0.,0.,0.,0.,0.,tKassParticleXP[7],0.};
+    							double modeMax = fInterface->fField->GetNormalizedModeField(l,m,n,tTempKassParticleXP,1).back();
+    							double modeFrac = tE_normalized.back()/modeMax;
+        						excitationAmplitude = tAvgDotProductFactor*modeFrac*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
         						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
     						}
 
