@@ -12,6 +12,8 @@
 #include "KSComponentTemplate.h"
 #include "KToolbox.h"
 #include "KSTermMaxR.h"
+#include "KSSimulation.h"
+
 
 
 

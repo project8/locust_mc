@@ -38,7 +38,7 @@ namespace locust
             fField(),
             fConfigureKass( NULL ),
             fBackReaction( false ),
-            fE_Gun( false )
+            fbWaveguide( false )
 
     {}
 

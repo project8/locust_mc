@@ -37,9 +37,9 @@ namespace locust
         	fNModes = aParam["n-modes"]().as_int();
         }
 
-    	if( aParam.has( "central-frequency" ) )
+    	if( aParam.has( "waveguide-central-frequency" ) )
     	{
-    		fCentralFrequency= 2.*LMCConst::Pi()*aParam["central-frequency"]().as_double();
+    		fCentralFrequency= 2.*LMCConst::Pi()*aParam["waveguide-central-frequency"]().as_double();
     	}
     	if( aParam.has( "n-pixels" ) )
     	{
