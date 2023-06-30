@@ -65,7 +65,7 @@ namespace locust
     	return true;
     }
 
-	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, bool initParticle)
+	bool WaveguideModes::AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
 	{
 
 		double dopplerFrequencyAntenna = dopplerFrequency.front();
@@ -75,6 +75,7 @@ namespace locust
 		{
 			InitializeVoltagePhases(particleXP, dopplerFrequency);
 		}
+
 
 		SetVoltagePhaseAntenna( GetVoltagePhaseAntenna() + dopplerFrequencyAntenna * dt);
 		SetVoltagePhaseShort( GetVoltagePhaseShort() + dopplerFrequencyShort * dt);
@@ -93,6 +94,7 @@ namespace locust
     		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 	    	aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 		}
+
 
 		if ( GetVoltageCheck() && (sampleIndex%1000 < 1) )
 			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );

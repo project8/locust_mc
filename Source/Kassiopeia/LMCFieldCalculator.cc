@@ -143,7 +143,7 @@ namespace locust
     bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)
     {
     	int nModes = fInterface->fField->GetNModes();
-    	if (eGun)  // The waveguide case is not in regular use.
+    	if ((eGun)&&(bTE))
     	{
     		if (!bNormCheck)
     		{

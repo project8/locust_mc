@@ -111,7 +111,7 @@ namespace locust
 
         if(fInterface->fProject8Phase==4) // Cavity
         {
-            if (fInterface->fE_Gun)
+            if (fInterface->fbWaveguide)
             {
             	DeltaE = fFieldCalculator->GetDampingFactorPhase1(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             }
