@@ -13,7 +13,6 @@ configure_file( LocustCavity1GHz.json.in LocustCavity1GHz.json )
 configure_file( LocustFreeSpaceTemplate.json.in LocustFreeSpaceTemplate.json )
 configure_file( LocustPlaneWaveTemplate.json.in LocustPlaneWaveTemplate.json )
 configure_file( LocustFakeTrack.json.in LocustFakeTrack.json )
-configure_file( LocustMagDipoleAntennaTemplate.json.in LocustMagDipoleAntennaTemplate.json )
 configure_file( LocustTestSignal.json.in LocustTestSignal.json )
 configure_file( plotfieldmap.c.in plotfieldmap.c )
 configure_file( katydid.json.in katydid.json )
@@ -28,17 +27,15 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_FreeSpace_Template.xml 
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_CCA.xml 
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_1GHz.xml     
-    WaveguideGeometry.xml
     FreeSpaceGeometry.xml
-	CavityGeometry_V00_00_00.xml
 	CavityGeometry_VTinyCoil.xml
+	WaveguideGeometry_VTinyCoil.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavity1GHz.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustPlaneWaveTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFakeTrack.json
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustMagDipoleAntennaTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustTestSignal.json
     ${CMAKE_CURRENT_BINARY_DIR}/katydid.json
     ${CMAKE_CURRENT_BINARY_DIR}/ChannelAggregatorConfig.yaml

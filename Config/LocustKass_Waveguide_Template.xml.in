@@ -19,8 +19,30 @@
 
 <define name="config_path" value="${CMAKE_INSTALL_PREFIX}/config"/>
 
+<geometry>
 
-<include name="[config_path]/WaveguideGeometry.xml"/>
+	<!-- waveguide -->
+
+    <tag name="locust_rectangular_waveguide_tag">
+	<box_space
+		name="new_rectangularwaveguide_space"
+		xa="-0.005334"
+		xb="0.005334"
+		x_mesh_count="10"
+		x_mesh_power="1."
+		ya="-0.002159"
+		yb="0.002159"
+		y_mesh_count="10"
+		y_mesh_power="1."
+		za="-0.0381"
+		zb="0.0381"
+		z_mesh_count="10"
+		z_mesh_power="1."
+	/>
+    </tag>
+</geometry>
+
+<include name="[config_path]/WaveguideGeometry_VTinyCoil.xml"/>
 
      
 <kassiopeia>
@@ -127,7 +149,7 @@
 
     <ksgen_generator_composite name="gen_uniform" pid="11">
         <energy_composite>
-            <energy_fix value="30427."/>
+            <energy_fix value="18600."/>
         </energy_composite>
         <position_rectangular_composite space="world/project8">
             <x_uniform value_min="0." value_max="0.0"/>
@@ -330,10 +352,10 @@
     <ksnav_surface name="nav_surface" transmission_split="true" reflection_split="false"/>
 
     <!-- terminators -->
-    <ksterm_max_time name="term_max_time" time="1.0e-6"/>
+    <ksterm_max_time name="term_max_time" time="1.0e-4"/>
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
-    <ksterm_min_energy name="term_min_energy" energy="25000."/>
-    <ksterm_max_energy name="term_max_energy" energy="30430."/>
+    <ksterm_min_energy name="term_min_energy" energy="18000."/>
+    <ksterm_max_energy name="term_max_energy" energy="19000."/>
     <ksterm_min_z name="term_min_z" z="-.07"/>
     <ksterm_max_z name="term_max_z" z=".07"/>
     <ksterm_death name="term_upstream_endcap_death"/>
@@ -425,7 +447,6 @@
             <command parent="root_terminator" field="add_terminator" child="term_waveguide_jacket_death"/>
         </geo_surface>
 
-
         <command parent="root_terminator" field="add_terminator" child="term_min_energy"/> 
 <!--        <command parent="root_terminator" field="add_terminator" child="term_max_energy"/> -->
 
@@ -456,7 +477,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="3"
+        events="1"
         magnetic_field="total_magnetic_field"
         space="space_world"
         generator="[generator]"

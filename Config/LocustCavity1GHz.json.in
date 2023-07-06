@@ -17,7 +17,7 @@
         "dho-time-resolution": 1.0e-9,
         "dho-threshold-factor": 0.01,
         "event-spacing-samples": 10,
-        "e-gun": false,        
+        "rectangular-waveguide": false,        
         "voltage-check": "false",
         "lo-frequency": 1.065e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_1GHz.xml"

@@ -106,10 +106,13 @@ namespace locust
 
         if( aParam.has( "plot-mode-maps" ) )
         {
-        	double zSlice = 0.0;
-        	if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
-        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
-        	PrintModeMaps(GetNModes(),0, zSlice);
+        	if (aParam["plot-mode-maps"]().as_bool())
+        	{
+        	    double zSlice = 0.0;
+        	    if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
+        	    LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
+        	    PrintModeMaps(GetNModes(),0, zSlice);
+        	}
         }
 
     	return true;
@@ -293,7 +296,7 @@ namespace locust
     	return fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
-    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP)
+    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode)
     {
 
     	std::vector<double> rProbe;
@@ -306,10 +309,10 @@ namespace locust
 
     	if (l>0)
     	{
-    		//If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
-    		double thetaElectron = tKassParticleXP[1];
-    		thetaEffective.push_back(thetaProbe[0] - thetaElectron);
-    		thetaEffective.push_back(thetaProbe[1] - thetaElectron);
+                //If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
+                double thetaElectron = tKassParticleXP[1];
+                thetaEffective.push_back(thetaProbe[0] - thetaElectron);
+                thetaEffective.push_back(thetaProbe[1] - thetaElectron);
     	}
     	else
     	{
@@ -320,40 +323,61 @@ namespace locust
     	tProbeLocation.push_back({rProbe[0], thetaEffective[0], zProbe[0]});
     	tProbeLocation.push_back({rProbe[1], thetaEffective[1], zProbe[1]});
 
-    	//Assumes probe couples to E_theta of mode. If mode is polarized, transforms angle to reference frame of electron
+    	//Assumes probe couples to E of mode. If mode is polarized, transforms angle to reference frame of electron
     	std::vector<double> tEFieldAtProbe;
-    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[0],0).back());
-    	tEFieldAtProbe.push_back(GetNormalizedModeField(l,m,n,tProbeLocation[1],0).back());
+    	tEFieldAtProbe.push_back( TotalFieldNorm(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode)) );
+    	tEFieldAtProbe.push_back( TotalFieldNorm(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode)) );
 
     	return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1]};
 
     }
 
-    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols)
+    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode)
     {
     	double tR = tKassParticleXP[0];
     	double tTheta = tKassParticleXP[1];
     	double tZ = tKassParticleXP[2];
        	std::vector<double> tField;
-
-       	tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
-       	double normFactor = GetNormFactorsTE()[l][m][n];
-   		auto it = tField.begin();
-   		while (it != tField.end())
-   		{
-   			if (!isnan(*it))
-   			{
-   				(*it) *= normFactor;
-   			}
-   			else
-   			{
-   				(*it) = 0.;
-   			}
-   			*it++;
-   		}
+       	double normFactor;
+       	if(teMode)
+       	{
+       		tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		normFactor = GetNormFactorsTE()[l][m][n];
+       	}
+       	else
+       	{
+       		tField = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		normFactor = GetNormFactorsTM()[l][m][n];
+       	}
+       	auto it = tField.begin();
+       	while (it != tField.end())
+       	{
+       		if (!isnan(*it))
+       		{
+       			(*it) *= normFactor;
+       		}
+       		else
+       		{
+       			(*it) = 0.;
+       		}
+       		*it++;
+       	}
 
        	return tField;  // return normalized field.
-       }
+    }
+
+
+	double CylindricalCavity::TotalFieldNorm(std::vector<double> field)
+	{
+		double norm = 0;
+		auto it = field.begin();
+		while (it != field.end())
+		{
+			if (!isnan(*it)) norm += (*it)*(*it);
+			*it++;
+		}
+		return sqrt(norm);
+	}
 
 	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
 	{
@@ -465,7 +489,7 @@ namespace locust
 
 	    FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
 	    char cBufferFileName[60];
-	    int n = sprintf(cBufferFileName, "output/ModeMapOutput_z%.2fm.root", zSlice);
+	    int n = sprintf(cBufferFileName, "output/ModeMapOutput_z%dmm.root", (int)(zSlice*1.e3));
 	    const char *cFileName = cBufferFileName;
 	    aRootHistoWriter->SetFilename(cFileName);
 	    aRootHistoWriter->OpenFile("RECREATE");
@@ -491,17 +515,17 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%.2f", l, m, n, zSlice);
-    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_z%.2f", l, m, n, zSlice);
-    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%.2f", l, m, n, zSlice);
-    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%.2f", l, m, n, zSlice);
+    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_z%d", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
     				    }
     				    else
         				{
-        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%.2f", l, m, n, zSlice);
-    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_z%.2f", l, m, n, zSlice);
-        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%.2f", l, m, n, zSlice);
-    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%.2f", l, m, n, zSlice);
+        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_z%d", l, m, n, (int)(zSlice*1.e3));
+        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%d", l, m, n, (int)(zSlice*1.e3));
+    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
     		    		}
 
     			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());

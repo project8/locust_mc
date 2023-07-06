@@ -70,8 +70,8 @@ namespace locust
             virtual double Z_TE(int l, int m, int n, double fcyc) const {return {0.};};
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
-            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
-            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols) {return {0.};};
+            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode) {return {0.};};
+            virtual double TotalFieldNorm(std::vector<double> field) {return {0.};};
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE) {return {{{0.}}};};
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
@@ -79,7 +79,7 @@ namespace locust
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual void CheckNormalization(int nModes){};
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice){};
-            virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP){return {0.};};
+            virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode){return {0.};};
             virtual double ScaleEPoyntingVector(double fcyc){return 0.;};
 
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();

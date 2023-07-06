@@ -54,6 +54,12 @@ namespace locust
 
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
+
+        if( aParam.has( "rectangular-waveguide" ) )
+        {
+        	fInterface->fbWaveguide = aParam["rectangular-waveguide"]().as_bool();
+        }
+
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -76,7 +82,7 @@ namespace locust
             	return false;
             }
         }
-        else // Generate analytic response function
+        else if (!fInterface->fbWaveguide)// Generate analytic response function
         {
         	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
         	{
@@ -128,13 +134,12 @@ namespace locust
 			
         	}
         } // aParam.has( "tf-receiver-filename" )
-
-        if( aParam.has( "e-gun" ) )
+        else if (fInterface->fbWaveguide)
         {
-        	fInterface->fE_Gun = aParam["e-gun"]().as_bool();
+        	fUseDirectKassPower = true;
         }
 
-        if (fInterface->fE_Gun)
+        if (fInterface->fbWaveguide)
         {
         	fInterface->fField = new RectangularWaveguide;
         	fPowerCombiner = new WaveguideModes;
@@ -353,45 +358,38 @@ namespace locust
         fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * fDeltaT;
         double tThisEventNSamples = fInterface->fTOld / fDeltaT;
 
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fE_Gun);
+    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fbWaveguide);
         double unitConversion = 1.;
         double excitationAmplitude = 0.;
         std::vector<double> tEFieldAtProbe;
         std::vector<double> dopplerFrequency;
 
-
+    	for (int bTE=0; bTE<2; bTE++) // TM/TE.
+    	{
     	for (int l=0; l<fInterface->fField->GetNModes(); l++)
     	{
     		for (int m=1; m<fInterface->fField->GetNModes(); m++)
     		{
     			for (int n=0; n<fInterface->fField->GetNModes(); n++)
     			{
-    				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fE_Gun, fNormCheck))
+    				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE))
     				{
     					std::vector<double> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1);
-//					std::cout << "Are all these non-zero?: " << std::endl;
-//					std::cout << fAcquisitionRate << " " << aSignal->DecimationFactor() << std::endl;;
-//					std::cout << "Attempting to re-establish FIR for mode " << l << " " << m << " " << n << std::endl; 
-/*					if(!fFieldCalculator->ReconvertAnalyticGFtoFIR(l, m, n))
-					{
-						LERROR(lmclog,"Error reconfiguring FIR");
-                                                exit(-1);
-					}
-					std::cout << "ReconvertAnalyticGFtoFIR run" << std::endl;*/
-    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(l,m,n,tKassParticleXP, fBypassTF).first;
+    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
+    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
-    					double modeAmplitude = sqrt( tE_normalized.front()*tE_normalized.front()  + tE_normalized.back()*tE_normalized.back());
+    					double modeAmplitude = fInterface->fField->TotalFieldNorm(tE_normalized);
 
 
-    					if (!fInterface->fE_Gun)
+    					if (!fInterface->fbWaveguide)
     					{
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP);
+    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
     					}
     					else
     					{
@@ -399,13 +397,18 @@ namespace locust
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+    						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
 
-    						// Optional cross-check:  Use direct Kassiopeia power budget.  Assume x_electron = 0.
+    						// Waveguide default:  Use direct Kassiopeia power budget.
     						if (fUseDirectKassPower)
     						{
     							// override one-way signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
-        						excitationAmplitude = tAvgDotProductFactor*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+    							std::vector<double> tTempKassParticleXP = {0.,0.,0.,0.,0.,0.,0.,tKassParticleXP[7],0.};
+    							double modeMax = fInterface->fField->GetNormalizedModeField(l,m,n,tTempKassParticleXP,0,1).back();
+    							double modeFrac = tE_normalized.back()/modeMax;
+        						excitationAmplitude = tAvgDotProductFactor*modeFrac*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+        						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
     						}
 
     					}
@@ -425,6 +428,7 @@ namespace locust
     			} // n
     		} // m
     	} // l
+    	} // bTE
 
     	fInterface->fTOld += fDeltaT;
     	if (!fAliasingIsChecked)
