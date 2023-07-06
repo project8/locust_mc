@@ -16,7 +16,7 @@ namespace locust
     LOGGER( lmclog, "FieldCalculator" );
 
     FieldCalculator::FieldCalculator() :
-    		fNFilterBinsRequired( 0 ),
+    		//fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
@@ -24,7 +24,7 @@ namespace locust
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-    		fNFilterBinsRequired( 0 ),
+    		//fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
@@ -132,24 +132,8 @@ namespace locust
         	}
         } // aParam.has( "tf-receiver-filename" )
 
-        SetFilterSize( fTFReceiverHandler->GetFilterSize());
-
         return true;
      }
-
-    bool FieldCalculator::ReconvertAnalyticGFtoFIR(int l, int m, int n)
-    {
-	return fTFReceiverHandler->ConvertAnalyticGFtoFIR(l,m,n,fAnalyticResponseFunction->GetGFarray(l,m,n));
-    }
-
-    void FieldCalculator::SetNFilterBinsRequired( double dt )
-    {
-    	if (fTFReceiverHandler)
-    	{
-    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolution());
-//	std::cout << "fNFilterBinsRequired set to " << fNFilterBinsRequired << std::endl;
-    	}
-    }
 
     void FieldCalculator::SetNFilterBinsRequiredArray(int l, int m, int n, double dt )
     {   
@@ -160,28 +144,19 @@ namespace locust
         }   
     }   
 
-    int FieldCalculator::GetNFilterBinsRequired()
-    {
-    	return fNFilterBinsRequired;
-    }
     int FieldCalculator::GetNFilterBinsRequiredArray(int l, int m, int n)
     {   
         return fNFilterBinsRequiredArray[l][m][n];
     }   
-    void FieldCalculator::SetFilterSize( int aFilterSize )
-    {
-    	fFIRBuffer.resize( aFilterSize );
-    	fFrequencyBuffer.resize( aFilterSize );
-    }
     void FieldCalculator::SetFilterSizeArray(int l, int m, int n, int aFilterSize )
     {
         fFIRBufferArray[l][m][n].resize( aFilterSize );
         fFrequencyBufferArray[l][m][n].resize( aFilterSize );
     }
 
-    int FieldCalculator::GetFilterSize()
+    int FieldCalculator::GetFilterSizeArray(int l, int m, int n)
     {
-    	return fFIRBuffer.size();
+    	return fFIRBufferArray[l][m][n].size();
     }
 
     bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)

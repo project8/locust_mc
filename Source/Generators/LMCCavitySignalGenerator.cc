@@ -68,11 +68,6 @@ namespace locust
     		return false;
     	}
 
-        if( aParam.has( "n-modes" ) ) 
-        {   
-                fNModes = aParam["n-modes"]().as_int();
-        }   
-
         if( aParam.has( "tf-receiver-filename" ) )
         {
             if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
@@ -106,6 +101,9 @@ namespace locust
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+			int fNModes = fInterface->fField->GetNModes();
+			for (int bTE=0; bTE<2; bTE++) // TM/TE.
+    	{
         		for (unsigned l=0; l<fNModes; l++)
         		{
                 		for (unsigned m=0; m<fNModes; m++)
@@ -119,17 +117,18 @@ namespace locust
                                 			exit(-1);
                                 			return false;
                         			}  
-						if (ModeSelect(l, m, n, fInterface->fE_Gun)){
-						if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(l, m, n, fAnalyticResponseFunction->GetGFarray(l,m,n)))
-                        			{
-                                			LERROR(lmclog,"GF->FIR was not generated.");
-                                			exit(-1);
-                                			return false;
-                        			}
+						if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE)) {
+							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(l, m, n, fAnalyticResponseFunction->GetGFarray(l,m,n)))
+                        				{
+                                				LERROR(lmclog,"GF->FIR was not generated.");
+                                				exit(-1);
+                                				return false;
+                        				}
 						}
 					}
                 		}
         		}
+			}
 
 			
         	}
@@ -376,7 +375,7 @@ namespace locust
     				{
     					std::vector<double> tE_normalized;
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
-    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
+    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(l,m,n,tKassParticleXP, fBypassTF).first;
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
@@ -528,8 +527,17 @@ namespace locust
 
         int PreEventCounter = 0;
 //	std::cout << "Setting NFilterBinsRequired in DoGenerateTime" << std::endl;
-        fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
-        fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSize() );
+
+	int fNModes = fInterface->fField->GetNModes();
+
+	for(unsigned l = 0; l<fNModes; l++){
+		for(unsigned m = 0; m<fNModes; m++){
+			for(unsigned n = 0; n<fNModes; n++){
+        fFieldCalculator->SetNFilterBinsRequiredArray(l, m, n, 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
+        fFieldCalculator->SetFilterSizeArray(l, m, n, fTFReceiverHandler->GetFilterSize() );
+			}
+		}
+	}
 
         if (fInterface->fTransmitter->IsKassiopeia())
         {

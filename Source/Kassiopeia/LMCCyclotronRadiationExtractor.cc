@@ -140,7 +140,20 @@ namespace locust
             	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
 //		std::cout << "Setting NFilterBinsRequired in CyclotronRadiationExtractor" << std::endl;
-                fFieldCalculator->SetNFilterBinsRequired( dt );
+
+		int fNModes = fInterface->fField->GetNModes();
+
+        for(unsigned l = 0; l<fNModes; l++){
+                for(unsigned m = 0; m<fNModes; m++){
+                        for(unsigned n = 0; n<fNModes; n++){
+		
+                fFieldCalculator->SetNFilterBinsRequiredArray(l, m, n, dt );
+			}
+		}
+	}
+
+
+
             }
 
             double t_poststep = aFinalParticle.GetTime();
