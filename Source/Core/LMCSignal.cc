@@ -395,6 +395,7 @@ namespace locust
     {
         LDEBUG( lmclog, "Performing forward FFT to frequency domain" );
         fftw_execute( fPlanToFreqComplex );
+	std::cout << "FFT Performed" << std::endl;
         fState = kFreq;
         return true;
     }

@@ -47,7 +47,7 @@ namespace locust
             virtual double GetDHOTimeResolution(int l, int m, int n) {return 0.;};
             virtual void SetDHOThresholdFactor(int l, int m, int n, double aThresholdFactor ) {};
             virtual double GetDHOThresholdFactor(int l, int m, int n) {return 0.;};
-
+	    //virtual int GetNModes() {return 0;};
 
 
         private:

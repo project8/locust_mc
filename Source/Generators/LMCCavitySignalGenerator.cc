@@ -54,7 +54,6 @@ namespace locust
 
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
-
         if( aParam.has( "rectangular-waveguide" ) )
         {
         	fInterface->fbWaveguide = aParam["rectangular-waveguide"]().as_bool();
@@ -67,6 +66,12 @@ namespace locust
     		exit(-1);
     		return false;
     	}
+
+	fFieldCalculator = new FieldCalculator();
+        if(!fFieldCalculator->Configure(aParam))
+        {   
+            LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
+        } 
 
         if( aParam.has( "tf-receiver-filename" ) )
         {
@@ -101,7 +106,7 @@ namespace locust
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
-			int fNModes = fInterface->fField->GetNModes();
+			int fNModes = 2;
 			for (int bTE=0; bTE<2; bTE++) // TM/TE.
     	{
         		for (unsigned l=0; l<fNModes; l++)
@@ -116,7 +121,7 @@ namespace locust
                                 			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
                                 			exit(-1);
                                 			return false;
-                        			}  
+                        			} 
 						if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE)) {
 							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(l, m, n, fAnalyticResponseFunction->GetGFarray(l,m,n)))
                         				{
@@ -261,14 +266,13 @@ namespace locust
         }
 
 
-        fFieldCalculator = new FieldCalculator();
+       /* fFieldCalculator = new FieldCalculator();
         if(!fFieldCalculator->Configure(aParam))
         {
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
-        }
+        }*/
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( aParam );
-
         return true;
     }
 
@@ -526,15 +530,19 @@ namespace locust
  		}
 
         int PreEventCounter = 0;
-//	std::cout << "Setting NFilterBinsRequired in DoGenerateTime" << std::endl;
 
 	int fNModes = fInterface->fField->GetNModes();
 
-	for(unsigned l = 0; l<fNModes; l++){
-		for(unsigned m = 0; m<fNModes; m++){
-			for(unsigned n = 0; n<fNModes; n++){
-        fFieldCalculator->SetNFilterBinsRequiredArray(l, m, n, 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
-        fFieldCalculator->SetFilterSizeArray(l, m, n, fTFReceiverHandler->GetFilterSize() );
+	for(unsigned bTE = 0; bTE<2; bTE++){
+		for(unsigned l = 0; l<fNModes; l++){
+			for(unsigned m = 0; m<fNModes; m++){
+				for(unsigned n = 0; n<fNModes; n++){
+					if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE)){
+						//std::cout << "Bins Required: " << 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) << std::endl;
+        					fFieldCalculator->SetNFilterBinsRequiredArray(l, m, n, 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
+        					fFieldCalculator->SetFilterSizeArray(l, m, n, fTFReceiverHandler->GetFilterSize() );
+					}
+				}
 			}
 		}
 	}
@@ -586,7 +594,6 @@ namespace locust
 
                         if (fInterface->fEventInProgress)
                         {
-//				std::cout << "About to Drive Mode" << std::endl;
                     		if (DriveMode(aSignal, index))
                     		{
                     			PreEventCounter = 0; // reset

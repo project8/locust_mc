@@ -27,7 +27,7 @@ namespace locust
 
 	fCavityFrequency.resize(fNModes);
 	fCavityQ.resize(fNModes);
-	//fTimeResolution.resize(fNModes);
+	fTimeResolution.resize(fNModes);
 	fThresholdFactor.resize(fNModes);
 	fBFactor.resize(fNModes);
 	fCavityDampingFactor.resize(fNModes);
@@ -36,7 +36,7 @@ namespace locust
 	{
 		fCavityFrequency[l].resize(fNModes);
          	fCavityQ[l].resize(fNModes);
-        	//fTimeResolution[l].resize(fNModes);
+        	fTimeResolution[l].resize(fNModes);
         	fThresholdFactor[l].resize(fNModes);
           	fBFactor[l].resize(fNModes);
 		fCavityDampingFactor[l].resize(fNModes);
@@ -45,7 +45,7 @@ namespace locust
 		{
 			fCavityFrequency[l][m].resize(fNModes);
 			fCavityQ[l][m].resize(fNModes);
-        		//fTimeResolution[l][m].resize(fNModes);
+        		fTimeResolution[l][m].resize(fNModes);
         		fThresholdFactor[l][m].resize(fNModes);
 			fBFactor[l][m].resize(fNModes);
 			fCavityDampingFactor[l][m].resize(fNModes);
@@ -54,7 +54,7 @@ namespace locust
                   	{
 				fCavityFrequency[l][m][n] = 1.067e9;
 				fCavityQ[l][m][n] = 1000.;
-        			//fTimeResolution[l][m][n] = 1.e-10;
+        			fTimeResolution[l][m][n] = 1.e-10;
         			fThresholdFactor[l][m][n] = 0.25;
 				fBFactor[l][m][n] = 0.;
 				fCavityDampingFactor[l][m][n] = 0.;
@@ -68,7 +68,6 @@ namespace locust
 
     bool DampedHarmonicOscillator::Configure( const scarab::param_node& aParam )
     {
-	std::cout << "Entering DHO Config" << std::endl;
     	if( !AnalyticResponseFunction::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring AnalyticResponseFunction class from DampedHarmonicOscillator subclass");
@@ -153,7 +152,6 @@ namespace locust
                         }   
                 }  
         }   
-	std::cout << "json paramaters set" << std::endl;
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -161,7 +159,6 @@ namespace locust
     		exit(-1);
     		return false;
     	}
-	std::cout << "Receiver Handler configured" << std::endl;
     	if ( !Initialize() ) return false;
     	else return true;
     }
@@ -341,8 +338,12 @@ namespace locust
     	else return true;
 
     }
-
-
+/*
+    int DampedHarmonicOscillator::GetNModes()
+    {
+	return fNModes;
+    }
+*/
 
 
 } /* namespace locust */

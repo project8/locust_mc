@@ -54,7 +54,7 @@ namespace locust
             double NormFactor(int l, int m, int n, double aDriveFrequency);
             bool PopulateCalibrationSignal(int l, int m, int n, Signal* aSignal, int N0, double aDriveFrequency);
             std::deque<double> SignalToDeque(Signal* aSignal);
-
+	    //virtual int GetNModes();
 
 
         private:
