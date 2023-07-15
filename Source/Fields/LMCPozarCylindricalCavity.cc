@@ -35,11 +35,8 @@ namespace locust
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
-    	double tEr = 0.;
-    	double tEtheta = 0.;
-
-    	tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
-    	tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	double tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
 
     	if ((includeOtherPols)&&(l>0))
     	{
@@ -70,22 +67,16 @@ namespace locust
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
     	double tHz = boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z);
-    	double tHr = 0.;
-    	double tHtheta = 0.;
+    	double tHr = -k3/k1 * jPrime * cos(l*theta) * cos(k3*z);
+    	double tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
 
-    	if ((!includeOtherPols)||(l==0))
+    	if ((includeOtherPols)&&(l>0))
     	{
-        	tHr = -k3/k1 * jPrime * cos(l*theta) * cos(k3*z);
-    		tHtheta = -l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
-    	}
-    	else
-    	{
-    		LERROR(lmclog,"This superposition has not yet been implemented.");
-    		exit(-1);
-    		// Possible suggestion:
-    		// Here we can implement the superposition with other polarities of the same mode.
-    		// The superposition can be done either in this function itself, or with some kind
-    		// of new helper function in this class.
+		double dTheta = LMCConst::Pi() / 2.0 / (double)l;
+		std::vector<double> tPolarization = this->TE_H(R,L,l,m,n,r,theta+dTheta,zKass,0);
+		tHr = tHr*sin((double)l*(theta+dTheta)) + tPolarization[0]*cos((double)l*(theta+dTheta)) ;
+                tHz = tHz*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
+		tHtheta = tHtheta*sin((double)l*theta) + tPolarization[2]*cos((double)l*theta) ;
     	}
 
     	TE_H.push_back(tHr);  // r
@@ -107,23 +98,17 @@ namespace locust
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
-    	double tEz = eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * sin(k3*z);
-    	double tEr = 0.;
-    	double tEtheta = 0.;
+    	double tEz = eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * cos(k3*z);
+    	double tEr = -k3/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+    	double tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
 
-    	if ((!includeOtherPols)||(l==0))
+    	if ((includeOtherPols)&&(l>0))
     	{
-        	tEr = -k3/k1 * eta * jPrime * cos(l*theta) * cos(k3*z);
-    		tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
-    	}
-    	else
-    	{
-    		LERROR(lmclog,"This superposition has not yet been implemented.");
-    		exit(-1);
-    		// Possible suggestion:
-    		// Here we can implement the superposition with other polarities of the same mode.
-    		// The superposition can be done either in this function itself, or with some kind
-    		// of new helper function in this class.
+                double dTheta = LMCConst::Pi() / 2.0 / (double)l;
+                std::vector<double> tPolarization = this->TM_E(R,L,l,m,n,r,theta+dTheta,zKass,0);
+                tEr = tEr*sin((double)l*(theta+dTheta)) + tPolarization[0]*cos((double)l*(theta+dTheta)) ;
+                tEz = tEz*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
+                tEtheta = tEtheta*sin((double)l*theta) + tPolarization[2]*cos((double)l*theta) ;
     	}
 
     	TM_E.push_back(tEr); // r
@@ -144,22 +129,16 @@ namespace locust
     	double k = pow(k1*k1+k3*k3,0.5);
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
-    	double tHr = 0.;
-    	double tHtheta = 0.;
+    	double tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
+    	double tHtheta = -k/k1 * jPrime * cos(l*theta) * cos(k3*z);
 
-    	if ((!includeOtherPols)||(l==0))
+    	if ((includeOtherPols)&&(l>0))
     	{
-        	tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
-    		tHtheta = -k/k1 * jPrime * cos(l*theta) * sin(k3*z);
-    	}
-    	else
-    	{
-    		LERROR(lmclog,"This superposition has not yet been implemented.");
-    		exit(-1);
-    		// Possible suggestion:
-    		// Here we can implement the superposition with other polarities of the same mode.
-    		// The superposition can be done either in this function itself, or with some kind
-    		// of new helper function in this class.
+                //modifies both r and theta components of TM field.
+                double dTheta = LMCConst::Pi() / 2.0 / (double)l;
+                std::vector<double> tPolarization = this->TM_H(R,L,l,m,n,r,theta+dTheta,zKass,0);
+                tHr = tHr*sin((double)l*theta) + tPolarization[0]*cos((double)l*theta) ;
+                tHtheta = tHtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
     	}
 
     	TM_H.push_back(tHr);  // r

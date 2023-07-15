@@ -65,10 +65,12 @@ namespace locust
     double KassCurrentTransmitter::calcOrbitPhase(double vx, double vy)
     {
     	double phase = 0.;
-    	if (fabs(vy) > 0.)
+        if ((fabs(vy) > 0.))
+    	{
     		phase = atan(-vx/vy);
+    	}
+
     	phase += quadrantOrbitCorrection(phase, vx);
-//    	printf("phase is %g\n", phase*180./LMCConst::Pi()); getchar();
     	return phase;
     }
 
@@ -114,7 +116,7 @@ namespace locust
 
 
 
-    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, double dt, bool EGun)
+    std::vector<double> KassCurrentTransmitter::ExtractParticleXP(double TOld, bool Interpolate, double dt, bool bWaveguide)
     {
 
     	locust::Particle tParticle;
@@ -142,6 +144,14 @@ namespace locust
             double tvY = tParticle.GetVelocity(true).Y();
             double tvZ = tParticle.GetVelocity(true).Z();
 
+        	if (!(std::isfinite(tvX)))  // Check for discontinuity at scattering interaction.
+        	{
+        		tvX = 0.;
+        		tvY = 0.;
+        		tvZ = 0.;
+        	}
+
+
 //            fOrbitPhase += dt*tParticle.GetCyclotronFrequency();  // accumulate phase semi-analytically.
     	    fOrbitPhase = calcOrbitPhase(tvX, tvY); // or use Kass kinematics
 
@@ -155,14 +165,17 @@ namespace locust
             particleXP[7] = tParticle.GetCyclotronFrequency();
             particleXP[8] = tParticle.GetLarmorPower();
 
-            if (EGun)  // rotate from Kass to Locust coordinate system.
+
+            if (bWaveguide)  // rotate from Kass to Locust coordinate system?
             {
+            	/*
                 particleXP[0] = pow( tposZ*tposZ + tposX*tposX, 0.5);
                 particleXP[1] = calcTheta(tposZ, tposX);
                 particleXP[2] = tposY;  // z->y
                 particleXP[3] = tvY;    // x->z
                 particleXP[4] = tvX;    // y->x
                 particleXP[5] = GetGuidingCenterVy();    // z->y, waveguide axis.
+                */
             }
 
     	}

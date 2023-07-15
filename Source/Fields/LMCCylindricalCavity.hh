@@ -47,29 +47,32 @@ namespace locust
             virtual double Z_TM(int l, int m, int n, double fcyc) const;
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField);
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
-            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols);
+            virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode);
+            virtual double TotalFieldNorm(std::vector<double> field);
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
+            virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
+        	virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples);
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
             virtual void CheckNormalization(int nModes);
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);
-            virtual double GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP);
-            double GetCavityProbeZ();
-            void SetCavityProbeZ ( double aZ );
-            double GetCavityProbeRFrac();
-            void SetCavityProbeRFrac ( double aFraction );
-            double GetCavityProbeGain();
-            void SetCavityProbeTheta( double aTheta );
-            double GetCavityProbeTheta();
-            void SetCavityProbeGain( double aGain );
+            virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode);
+            std::vector<double> GetCavityProbeZ();
+            void SetCavityProbeZ ( double aZ, unsigned index );
+            std::vector<double> GetCavityProbeRFrac();
+            void SetCavityProbeRFrac ( double aFraction, unsigned index );
+            std::vector<double> GetCavityProbeGain();
+            void SetCavityProbeTheta( double aTheta, unsigned index );
+            std::vector<double> GetCavityProbeTheta();
+            void SetCavityProbeGain( double aGain, unsigned index );
 
 
         private:
             FieldCore* fFieldCore;
-            double fCavityProbeZ;
-            double fCavityProbeRFrac;
-            double fCavityProbeTheta;
-            double fProbeGain;
+            std::vector<double> fCavityProbeZ;
+            std::vector<double> fCavityProbeRFrac;
+            std::vector<double> fCavityProbeTheta;
+            std::vector<double> fProbeGain;
 
     };
 

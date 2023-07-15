@@ -16,14 +16,18 @@ namespace locust
     LOGGER( lmclog, "FieldCalculator" );
 
     FieldCalculator::FieldCalculator() :
-    		fNFilterBinsRequired(0),
+    		fNFilterBinsRequired( 0 ),
+			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
+			fAnalyticResponseFunction( 0 ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-    		fNFilterBinsRequired(0),
+    		fNFilterBinsRequired( 0 ),
+			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
+			fAnalyticResponseFunction( 0 ),
 			fInterface( aCopy.fInterface )
     {
     }
@@ -51,6 +55,12 @@ namespace locust
 
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
      {
+
+        if( aParam.has( "multi-mode" ) )
+        {
+    		LPROG(lmclog,"Running in multimode configuration.");
+        	fbMultiMode = aParam["multi-mode"]().as_bool();
+        }
 
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
@@ -129,6 +139,48 @@ namespace locust
     {
     	return fFIRBuffer.size();
     }
+
+    bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)
+    {
+    	int nModes = fInterface->fField->GetNModes();
+    	if ((eGun)&&(bTE))
+    	{
+    		if (!bNormCheck)
+    		{
+    			if ((l==0)&&(m==1)&&(n==0))
+    				return true;
+    			else
+    				return false;
+    		}
+    		else
+    		{
+    			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
+    				return true;
+    			else
+    				return false;
+    		}
+    	}
+    	else  // Cavity
+    	{
+    		if (!bNormCheck)
+    		{
+    			// Allow only TE011, or TE011+TM111 if fbMultimode==true
+    			if ((((l==0)&&(m==1)&&(n==1))&&(bTE)) || (((l==1)&&(m==1)&&(n==1))&&(!bTE)&&(fbMultiMode)))
+    				return true;
+    			else
+    				return false;
+    		}
+    		else  // if bNormCheck==true, allow all modes.
+    		{
+    			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
+    				return true;
+    			else
+    				return false;
+    		}
+    	}
+    }
+
+
 
 
     double FieldCalculator::GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle)
@@ -241,28 +293,37 @@ namespace locust
       return DampingFactorTM01;
     }
 
-    double FieldCalculator::GetCouplingFactorTE011Cavity(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetCouplingFactorTXlmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
     {
-    	int l = 0;
-    	int m = 1;
-    	int n = 1;
+    	double tAvgDotProductFactor = fInterface->fField->GetAvgDotProductFactor()[l][m][n];
+    	double norm = 0.;
+    	double coupling = 0.;
     	double dimR = fInterface->fField->GetDimR(); // m
     	double x = aFinalParticle.GetPosition().GetX();
     	double y = aFinalParticle.GetPosition().GetY();
     	double z = aFinalParticle.GetPosition().GetZ();
     	double r = pow( x*x + y*y, 0.5 );
-    	double norm = fInterface->fField->GetTE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value
-    	double tAvgDotProductFactor = 0.63;  // TO-DO:  this should be calculated and not just overridden like this.
-    	double coupling = tAvgDotProductFactor * fInterface->fField->GetTE_E(l,m,n,r,0.,z,false).back()/norm;
+
+    	if (bTE)
+    	{
+    		norm = fInterface->fField->GetTE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value, TO-DO:  make more general?
+    		coupling = tAvgDotProductFactor * fInterface->fField->GetTE_E(l,m,n,r,0.,z,false).back()/norm;
+    	}
+    	else
+    	{
+    		norm = fInterface->fField->GetTM_E(l,m,n,dimR/2.,0.,0.,false).back(); // TO-DO:  decide coordinates
+    		coupling = tAvgDotProductFactor * fInterface->fField->GetTM_E(l,m,n,r,0.,z,false).back()/norm;
+    	}
+
     	return coupling*coupling;
     }
 
-    double FieldCalculator::GetTE011FieldCavity(Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
     {
-    	int l = 0;
-    	int m = 1;
-    	int n = 1;
 
+    	// l, m, & n are needed for selecting the resonant frequency and Q.  (Still TO-DO).
+
+    	// Extract particle at back of deque, by default if !Interpolate as in:
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, 0., false);
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
@@ -271,13 +332,11 @@ namespace locust
 
 
         // The excitation amplitude A_\lambda should be calculated the same way here
-        // as in the signal generator, but here it is normalized such that the
-        // E-field magnitude peaks at the Hanneke factor when the cyclotron frequency
-        // is on the mode resonance.
+        // as in the signal generator.
 
-        // Convolution with LMCDampedHarmonicOscillator resonance peaks at 1.0*fHannekePowerFactor,
+        // Convolution with LMCDampedHarmonicOscillator resonance peaks at 1.0,
         // and GetCavityFIRSample returns that convolution scaled with vMag*Q.  Normalizing with
-        // vMag*Q as below, we have a dhoMag that peaks at 1.0*fHannekePowerFactor:
+        // vMag*Q as below, we have a dhoMag that peaks at 1.0:
 
         double dhoNorm = vMag * LMCConst::Q();
         double dhoMag = 0.;
@@ -299,17 +358,32 @@ namespace locust
 
     double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
-    	double TE011FieldFromCavity = GetTE011FieldCavity(aFinalParticle);
-    	double A011squ = GetCouplingFactorTE011Cavity(aFinalParticle);
-    	double DampingFactorTE011Cavity = 1. - A011squ + A011squ*TE011FieldFromCavity*TE011FieldFromCavity;  // = P'/P
-    	if ( fabs(DampingFactorTE011Cavity) > 0. )
+
+    	double DampingFactorCavity = 0.;
+
+    	for (int bTE=0; bTE<2; bTE++) // TM/TE.
     	{
-    		return DampingFactorTE011Cavity;
+    	for (int l=0; l<fInterface->fField->GetNModes(); l++)
+    	{
+    		for (int m=1; m<fInterface->fField->GetNModes(); m++)
+    		{
+    			for (int n=0; n<fInterface->fField->GetNModes(); n++)
+    			{
+    				if (ModeSelect(l, m, n, 0, 0, bTE))
+    				{
+    					double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
+    					double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
+    					double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
+    					DampingFactorCavity += DampingFactorTXlmnCavity - 1.; // (P'/P)_{lmn} - 1
+    				}
+     			}
+    		}
     	}
+    	}
+    	if (fabs(DampingFactorCavity) > 0.)
+    		return DampingFactorCavity + 1.0;
     	else
-    	{
-    		return 1.0;
-    	}
+    		return 1.0;  // No feedback
     }
 
 

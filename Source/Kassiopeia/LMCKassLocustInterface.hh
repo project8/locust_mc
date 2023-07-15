@@ -65,7 +65,7 @@ namespace locust
         Field* fField;
         ConfigureKass* fConfigureKass;
         bool fBackReaction;
-        bool fE_Gun;
+        bool fbWaveguide;
 
 
     };
