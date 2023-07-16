@@ -23,6 +23,13 @@ namespace locust
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
 
+    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	{
+    		return {0.,0.};
+    	}
+    	else
+    	{
+
     	// from Pozar
     	std::vector<double> TE_E;
     	double k1 = m * LMCConst::Pi() / dimX;
@@ -35,6 +42,7 @@ namespace locust
     	TE_E.push_back(tEx);
     	TE_E.push_back(tEy);
         return TE_E;
+    	}
     }
 
 
@@ -42,6 +50,13 @@ namespace locust
     {
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
+
+    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	{
+    		return {0.,0.};
+    	}
+    	else
+    	{
 
     	// from Pozar
     	std::vector<double> TE_H;
@@ -57,6 +72,7 @@ namespace locust
     	TE_H.push_back(tHx);
     	TE_H.push_back(tHy);
         return TE_H;
+    	}
     }
 
 
@@ -64,6 +80,13 @@ namespace locust
     {
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
+
+    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	{
+    		return {0.,0.};
+    	}
+    	else
+    	{
 
     	// from Pozar
     	std::vector<double> TM_E;
@@ -78,12 +101,20 @@ namespace locust
     	TM_E.push_back(tEx);
     	TM_E.push_back(tEy);
         return TM_E;
+    	}
     }
 
     std::vector<double> PozarRectangularWaveguide::TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc)
     {
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
+
+    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	{
+    		return {0.,0.};
+    	}
+    	else
+    	{
 
     	// from Pozar
     	std::vector<double> TM_H;
@@ -96,6 +127,7 @@ namespace locust
     	TM_H.push_back(tHx);
     	TM_H.push_back(tHy);
         return TM_H;
+    	}
     }
 
 
