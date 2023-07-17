@@ -37,23 +37,22 @@ namespace locust
             double GetInitialFreq();
             void SetTFarray( std::vector<std::complex<double>> aTFarray );
             std::vector<std::complex<double>> GetTFarray();
-            void SetGFarray( int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray );
-            std::vector<std::pair<double,std::pair<double,double> > > GetGFarray(int l, int m, int n);
-            virtual void SetCavityQ(int l, int m, int n, double aQ ) {};
-            virtual double GetCavityQ(int l, int m, int n ) {return 1.;};
-            virtual void SetCavityFrequency(int l, int m, int n,  double aFrequency ) {};
-            virtual double GetCavityFrequency(int l, int m, int n ) {return 0.;};
-            virtual void SetDHOTimeResolution(int l, int m, int n, double aTimeResolution ) {};
-            virtual double GetDHOTimeResolution(int l, int m, int n) {return 0.;};
-            virtual void SetDHOThresholdFactor(int l, int m, int n, double aThresholdFactor ) {};
-            virtual double GetDHOThresholdFactor(int l, int m, int n) {return 0.;};
-	    //virtual int GetNModes() {return 0;};
+            void SetGFarray( int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray );
+            std::vector<std::pair<double,std::pair<double,double> > > GetGFarray(int bTE, int l, int m, int n);
+            virtual void SetCavityQ( int bTE, int l, int m, int n, double aQ ) {};
+            virtual double GetCavityQ(int bTE, int l, int m, int n ) {return 1.;};
+            virtual void SetCavityFrequency(int bTE, int l, int m, int n,  double aFrequency ) {};
+            virtual double GetCavityFrequency(int bTE, int l, int m, int n ) {return 0.;};
+            virtual void SetDHOTimeResolution(int bTE, int l, int m, int n, double aTimeResolution ) {};
+            virtual double GetDHOTimeResolution(int bTE, int l, int m, int n) {return 0.;};
+            virtual void SetDHOThresholdFactor(int bTE, int l, int m, int n, double aThresholdFactor ) {};
+            virtual double GetDHOThresholdFactor(int bTE, int l, int m, int n) {return 0.;};
 
 
         private:
             bool fGeneratingTF;
             std::vector<std::complex<double>> fTFarray;
-            std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > fGFarray;
+            std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > fGFarray;
             double fInitialFreq;
 
 

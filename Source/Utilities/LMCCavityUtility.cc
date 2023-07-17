@@ -29,7 +29,7 @@ namespace locust
     {
     }
 
-	bool CavityUtility::Configure(int l, int m, int n)
+	bool CavityUtility::Configure(int bTE, int l, int m, int n)
 	{
 
 		fTFReceiverHandler = new TFReceiverHandler();
@@ -45,7 +45,7 @@ namespace locust
 			LWARN(testlog,"DampedHarmonicOscillator was not configured.");
 			return false;
 		}
-		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(l,m,n,fAnalyticResponseFunction->GetGFarray(l,m,n)) ) //VALUES HARD CODED FOR FUNCTIONALITY BUT NEEDS TO BE UPDATED!!!!!
+		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE,l,m,n,fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)) ) //VALUES HARD CODED FOR FUNCTIONALITY BUT NEEDS TO BE UPDATED!!!!!
 		{
 			LWARN(testlog,"GF->FIR was not generated.");
 			return false;
@@ -106,10 +106,10 @@ namespace locust
 	    return incidentSignal;
 	}
 
-        std::deque<double> CavityUtility::SignalToDequeArray(int l, int m, int n, Signal* aSignal)
+        std::deque<double> CavityUtility::SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal)
         {   
             std::deque<double> incidentSignal;
-            for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(l,m,n); i++)
+            for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n); i++)
             {   
                 incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
             }   
@@ -134,21 +134,21 @@ namespace locust
 	}
 
 
-    bool CavityUtility::CheckCavityQ(int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
+    bool CavityUtility::CheckCavityQ(int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
     {
     	AddParam( "dho-time-resolution", dhoTimeResolution );
     	AddParam( "dho-threshold-factor", dhoThresholdFactor );
     	AddParam( "dho-cavity-frequency", dhoCavityFrequency );
     	AddParam( "dho-cavity-Q", dhoCavityQ );
-    	if (!Configure(l,m,n))
+    	if (!Configure(bTE,l,m,n))
     	{
     		LERROR(testlog,"Cavity was not configured correctly.");
     	    exit(-1);
     	}
         /* initialize time series */
         Signal* aSignal = new Signal();
-        int N0 = fTFReceiverHandler->GetFilterSizeArray(l,m,n);
-        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(l,m,n));
+        int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n);
+        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE,l,m,n));
         aSignal->Initialize( N0 , 1 );
 
         double qInferred = 0.;
@@ -168,7 +168,7 @@ namespace locust
         		// populate time series and convolve it with the FIR filter
         		PopulateSignal(aSignal, N0);
 			//std::cout << "filter array size: " << N0 << std::endl;
-        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(l, m, n, SignalToDequeArray(l,m,n,aSignal));
+        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l, m, n, SignalToDequeArray(bTE,l,m,n,aSignal));
 			//std::cout << (fabs(convolutionPair.first)) << std::endl;
     	    		if (fabs(convolutionPair.first) > convolutionMag)
         		{

@@ -46,13 +46,13 @@ namespace locust
             virtual double Z_TE(int l, int m, int n, double fcyc) const;
             virtual double Z_TM(int l, int m, int n, double fcyc) const;
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField);
-            virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
+            virtual std::vector<double> GetDopplerFrequency(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP);
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode);
             virtual double TotalFieldNorm(std::vector<double> field);
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-        	virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples);
+            virtual double CalculateDotProductFactor(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples);
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
             virtual void CheckNormalization(int nModes);
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);

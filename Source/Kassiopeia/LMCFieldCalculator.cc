@@ -16,7 +16,7 @@ namespace locust
     LOGGER( lmclog, "FieldCalculator" );
 
     FieldCalculator::FieldCalculator() :
-    		fNFilterBinsRequiredArray( {{{0}}} ),
+    		fNFilterBinsRequiredArray( {{{{0}}}} ),
 			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
@@ -24,7 +24,7 @@ namespace locust
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-    		fNFilterBinsRequiredArray( {{{0}}} ),
+    		fNFilterBinsRequiredArray( {{{{0}}}} ),
 			fbMultiMode( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
@@ -103,29 +103,37 @@ namespace locust
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
         			return false;
         		}
-			fFIRBufferArray.resize(2);
-			fFrequencyBufferArray.resize(2);
-			fNFilterBinsRequiredArray.resize(2);
-			for(int l=0; l<2; l++)
+			
+                        fFIRBufferArray.resize(2);
+                        fFrequencyBufferArray.resize(2);
+                        fNFilterBinsRequiredArray.resize(2);
+
+			for(int bTE=0; bTE<2; bTE++)
 			{
-				fFIRBufferArray[l].resize(2);
-				fFrequencyBufferArray[l].resize(2);
-				fNFilterBinsRequiredArray[l].resize(2);
-				for(int m=0; m<2; m++)
+				fFIRBufferArray[bTE].resize(2);
+				fFrequencyBufferArray[bTE].resize(2);
+				fNFilterBinsRequiredArray[bTE].resize(2);
+				for(int l=0; l<2; l++)
 				{
-					fFIRBufferArray[l][m].resize(2);
-					fFrequencyBufferArray[l][m].resize(2);
-					fNFilterBinsRequiredArray[l][m].resize(2);
-					for(int n=0; n<2; n++)
-					{ 
+					fFIRBufferArray[bTE][l].resize(2);
+					fFrequencyBufferArray[bTE][l].resize(2);
+					fNFilterBinsRequiredArray[bTE][l].resize(2);
+					for(int m=0; m<2; m++)
+					{
+						fFIRBufferArray[bTE][l][m].resize(2);
+						fFrequencyBufferArray[bTE][l][m].resize(2);
+						fNFilterBinsRequiredArray[bTE][l][m].resize(2);
+						for(int n=0; n<2; n++)
+						{ 
 //IF THIS WORKS CLEAN THIS UP
-						if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(l,m,n,fAnalyticResponseFunction->GetGFarray(l,m,n)))
-        					{
-        						LWARN(lmclog,"GF->FIR was not generated.");
-        						return false;
-        					}
-					//std::cout << "fTFReceiverHandler::FilterSizeArray: " << fTFReceiverHandler->GetFilterSizeArray(l,m,n) << std::endl;
-					SetFilterSizeArray(l, m, n, fTFReceiverHandler->GetFilterSizeArray(l,m,n));
+							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE,l,m,n,fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)))
+        						{
+        							LWARN(lmclog,"GF->FIR was not generated.");
+        							return false;
+        						}
+							//std::cout << "fTFReceiverHandler::FilterSizeArray: " << fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n) << std::endl;
+							SetFilterSizeArray(bTE, l, m, n, fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n));
+						}
 					}
 				}
 			}
@@ -135,28 +143,28 @@ namespace locust
         return true;
      }
 
-    void FieldCalculator::SetNFilterBinsRequiredArray(int l, int m, int n, double dt )
+    void FieldCalculator::SetNFilterBinsRequiredArray(int bTE, int l, int m, int n, double dt )
     {   
         if (fTFReceiverHandler)
         {   
-            fNFilterBinsRequiredArray[l][m][n] = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(l,m,n));
+            fNFilterBinsRequiredArray[bTE][l][m][n] = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(bTE,l,m,n));
 //      std::cout << "fNFilterBinsRequired set to " << fNFilterBinsRequired << std::endl;
         }   
     }   
 
-    int FieldCalculator::GetNFilterBinsRequiredArray(int l, int m, int n)
+    int FieldCalculator::GetNFilterBinsRequiredArray(int bTE, int l, int m, int n)
     {   
-        return fNFilterBinsRequiredArray[l][m][n];
+        return fNFilterBinsRequiredArray[bTE][l][m][n];
     }   
-    void FieldCalculator::SetFilterSizeArray(int l, int m, int n, int aFilterSize )
+    void FieldCalculator::SetFilterSizeArray(int bTE, int l, int m, int n, int aFilterSize )
     {
-        fFIRBufferArray[l][m][n].resize( aFilterSize );
-        fFrequencyBufferArray[l][m][n].resize( aFilterSize );
+        fFIRBufferArray[bTE][l][m][n].resize( aFilterSize );
+        fFrequencyBufferArray[bTE][l][m][n].resize( aFilterSize );
     }
 
-    int FieldCalculator::GetFilterSizeArray(int l, int m, int n)
+    int FieldCalculator::GetFilterSizeArray(int bTE, int l, int m, int n)
     {
-    	return fFIRBufferArray[l][m][n].size();
+    	return fFIRBufferArray[bTE][l][m][n].size();
     }
 
     bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)
@@ -314,7 +322,7 @@ namespace locust
 
     double FieldCalculator::GetCouplingFactorTXlmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
     {
-    	double tAvgDotProductFactor = fInterface->fField->GetAvgDotProductFactor()[l][m][n];
+    	double tAvgDotProductFactor = fInterface->fField->GetAvgDotProductFactor()[bTE][l][m][n];
     	double norm = 0.;
     	double coupling = 0.;
     	double dimR = fInterface->fField->GetDimR(); // m
@@ -339,7 +347,6 @@ namespace locust
 
     double FieldCalculator::GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
     {
-	//std::cout << "Entering FieldCalculator::GetTXlmnFieldCavity " << l << m << n << std::endl;
     	// l, m, & n are needed for selecting the resonant frequency and Q.  (Still TO-DO).
 
     	// Extract particle at back of deque, by default if !Interpolate as in:
@@ -347,9 +354,7 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-	//std::cout << "About to convolve" << std::endl;	
-        std::pair<double,double> complexConvolution = GetCavityFIRSample(l,m,n,tKassParticleXP, 0);
-	//std::cout << "Convolved with elements: " << std::endl;
+        std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE,l,m,n,tKassParticleXP, 0);
 	//std::cout << complexConvolution.first << " " << complexConvolution.second << std::endl;
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
@@ -376,7 +381,7 @@ namespace locust
     }
 
 
-    double FieldCalculator::GetDampingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetDampingFactorCavity( Kassiopeia::KSParticle& aFinalParticle)
     {
 
     	double DampingFactorCavity = 0.;
@@ -393,7 +398,7 @@ namespace locust
     				{
     					double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
     					double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
-    					double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
+					double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
     					DampingFactorCavity += DampingFactorTXlmnCavity - 1.; // (P'/P)_{lmn} - 1
     				}
      			}
@@ -407,7 +412,7 @@ namespace locust
     }
 
 
-    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF)
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF)
     {
     	double convolutionMag = 0.0;
     	double convolutionPhase = 0.0;
@@ -421,33 +426,33 @@ namespace locust
     		double cycFrequency = tKassParticleXP[7];  // rad/s
     		// populate FIR filter with frequency for just this sample interval:
 		//std::cout << "fNFilterBinsRequired: " << fNFilterBinsRequiredArray[l][m][n] << std::endl;
-    		for (int i=0; i < fNFilterBinsRequiredArray[l][m][n]; i++)
+    		for (int i=0; i < fNFilterBinsRequiredArray[bTE][l][m][n]; i++)
     		{
-    			fFrequencyBufferArray[l][m][n].push_back(cycFrequency);  // rad/s
-    			fFrequencyBufferArray[l][m][n].pop_front();
+    			fFrequencyBufferArray[bTE][l][m][n].push_back(cycFrequency);  // rad/s
+    			fFrequencyBufferArray[bTE][l][m][n].pop_front();
     		}
 
-    		std::deque<double>::iterator it = fFrequencyBufferArray[l][m][n].begin();
+    		std::deque<double>::iterator it = fFrequencyBufferArray[bTE][l][m][n].begin();
 		//std::cout << "fFrequencyBufferArray size: " << fFrequencyBufferArray[l][m][n].size() << std::endl;
-    		while (it != fFrequencyBufferArray[l][m][n].end())
+    		while (it != fFrequencyBufferArray[bTE][l][m][n].end())
     		{
     			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
-    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(l,m,n);
+    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(bTE,l,m,n);
 
     			if (*it != 0.)
     			{
-    				fFIRBufferArray[l][m][n].push_back(cos(orbitPhase));
+    				fFIRBufferArray[bTE][l][m][n].push_back(cos(orbitPhase));
     			}
     			else
     			{
-    				fFIRBufferArray[l][m][n].push_back(0.);
+    				fFIRBufferArray[bTE][l][m][n].push_back(0.);
     			}
-    			fFIRBufferArray[l][m][n].pop_front();
+    			fFIRBufferArray[bTE][l][m][n].pop_front();
 
     			*it++;
     		}
 		//std::cout << "fFIRBufferArray size: " << fFIRBufferArray[l][m][n].size() << std::endl;
-                std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(l,m,n,fFIRBufferArray[l][m][n]);
+                std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,fFIRBufferArray[bTE][l][m][n]);
     		convolutionMag = convolution.first;
     		convolutionPhase = convolution.second;
 

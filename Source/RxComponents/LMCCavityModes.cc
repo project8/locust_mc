@@ -47,17 +47,22 @@ namespace locust
 #endif
         }
 
+        fRollingAvg.resize(2);
+        fCounter.resize(2);	
 
-        fRollingAvg.resize(GetNCavityModes());
-        fCounter.resize(GetNCavityModes());
-        for (int i = 0; i < GetNCavityModes(); i++)
-        {
-            fRollingAvg[i].resize(GetNCavityModes());
-            fCounter[i].resize(GetNCavityModes());
-            for (int j = 0; j < GetNCavityModes(); j++)
-            {
-            	fRollingAvg[i][j].resize(GetNCavityModes());
-            	fCounter[i][j].resize(GetNCavityModes());
+	for ( int bTE = 0; bTE<2; bTE++)
+	{
+        	fRollingAvg[bTE].resize(GetNCavityModes());
+        	fCounter[bTE].resize(GetNCavityModes());
+        	for (int i = 0; i < GetNCavityModes(); i++)
+        	{
+            		fRollingAvg[bTE][i].resize(GetNCavityModes());
+            		fCounter[bTE][i].resize(GetNCavityModes());
+            		for (int j = 0; j < GetNCavityModes(); j++)
+            		{
+            			fRollingAvg[bTE][i][j].resize(GetNCavityModes());
+            			fCounter[bTE][i][j].resize(GetNCavityModes());
+			}
             }
         }
 
@@ -69,6 +74,7 @@ namespace locust
 		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
 		SetVoltagePhase( GetVoltagePhase(channelIndex) + dopplerFrequency * dt, channelIndex ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
+		//std::cout << excitationAmplitude << " " << EFieldAtProbe << " " << totalScalingFactor << std::endl;
 		voltageValue *= cos(GetVoltagePhase(channelIndex));
 
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
@@ -84,7 +90,8 @@ namespace locust
 #ifdef ROOT_FOUND
 		int nModes = GetNCavityModes()*100 + GetNCavityModes()*10 + GetNCavityModes();
 		fRootHistoWriter->OpenFile("UPDATE");
-		TH1D* aHisto = new TH1D("ModeEnergies", "Mode Energy Depositions; Mode l*100 + m*10 + n; log10(Energy[arb])", nModes, 0., nModes);
+		TH1D* aHisto = new TH1D("ModeEnergies", "TEMode Energy Depositions; Mode l*100 + m*10 + n; log10(Energy[arb])", nModes, 0., nModes);
+		int bTE = 1;
 		for (int iBin=0; iBin<nModes; iBin++)
 		{
 			// initialize histo:
@@ -98,9 +105,9 @@ namespace locust
 				for (int iN=0; iN<GetNCavityModes(); iN++)
 				{
 					int binIndex = iL*100 + iM*10 + iN;
-					if (fRollingAvg[iL][iM][iN] > 0.)
+					if (fRollingAvg[bTE][iL][iM][iN] > 0.)
 					{
-						aHisto->SetBinContent(binIndex+1, log10(fRollingAvg[iL][iM][iN]));
+						aHisto->SetBinContent(binIndex+1, log10(fRollingAvg[bTE][iL][iM][iN]));
 					}
 				}
 			}
@@ -114,18 +121,18 @@ namespace locust
 	}
 
 
-	bool CavityModes::AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
+	bool CavityModes::AddOneSampleToRollingAvg(int bTE, int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
 	{
 
 		fp = fopen("output/modeEnergies.txt", "a");
 		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, convolved with resonance by default (fBypassTF=false).
 
-		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
+		fRollingAvg[bTE][l][m][n] = ( fRollingAvg[bTE][l][m][n] * fCounter[bTE][l][m][n] + pow(amp,2.) ) / ( fCounter[bTE][l][m][n] + 1 );
 
 		if ( (sampleIndex%1000 < 1) && (sampleIndex < 20000) )
 		{
 
-			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
+			fprintf(fp, "%d %d%d%d %g\n", bTE, l, m, n, fRollingAvg[bTE][l][m][n]);
 
 			if ((l==GetNCavityModes()-1)&&(m==GetNCavityModes()-1)&&(n==GetNCavityModes()-1))
 			{
@@ -136,9 +143,9 @@ namespace locust
 					{
 						for (int iN=0; iN<GetNCavityModes(); iN++)
 						{
-							if (!isnan(fRollingAvg[iL][iM][iN]))
+							if (!isnan(fRollingAvg[bTE][iL][iM][iN]))
 							{
-								totalEnergy += fRollingAvg[iL][iM][iN];
+								totalEnergy += fRollingAvg[bTE][iL][iM][iN];
 							}
 						}
 					}
@@ -158,7 +165,7 @@ namespace locust
 
 		}
 
-		fCounter[l][m][n] += 1;
+		fCounter[bTE][l][m][n] += 1;
 		fclose (fp);
 
 		return true;

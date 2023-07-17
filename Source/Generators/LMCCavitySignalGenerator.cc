@@ -116,14 +116,14 @@ namespace locust
 					for (unsigned n=0; n<fNModes; n++)
                                  	{
                         			if ( !fAnalyticResponseFunction->Configure(aParam) ||
-                                        			(!CrossCheckCavityConfig(l,m,n)) )
+                                        			(!CrossCheckCavityConfig(bTE,l,m,n)) )
                         			{   
                                 			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
                                 			exit(-1);
                                 			return false;
                         			} 
 						if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE)) {
-							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(l, m, n, fAnalyticResponseFunction->GetGFarray(l,m,n)))
+							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE, l, m, n, fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)))
                         				{
                                 				LERROR(lmclog,"GF->FIR was not generated.");
                                 				exit(-1);
@@ -294,18 +294,18 @@ namespace locust
     	}
     }
 
-    bool CavitySignalGenerator::CrossCheckCavityConfig(int l, int m, int n)
+    bool CavitySignalGenerator::CrossCheckCavityConfig(int bTE, int l, int m, int n)
 	{
 
     	LPROG(lmclog,"Running some cavity cross-checks ...");
 
     	CavityUtility aCavityUtility;
-    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(l,m,n);
-    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(l,m,n);
-    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(l,m,n);
-    	double qExpected = fAnalyticResponseFunction->GetCavityQ(l,m,n);
+    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE,l,m,n);
+    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE,l,m,n);
+    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE,l,m,n);
+    	double qExpected = fAnalyticResponseFunction->GetCavityQ(bTE,l,m,n);
     	aCavityUtility.SetOutputFile(fUnitTestRootFile);
-    	if (!aCavityUtility.CheckCavityQ( l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+    	if (!aCavityUtility.CheckCavityQ(bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
     	{
         	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
         			"with the unit test as in bin/testLMCCavity [-h]");
@@ -379,10 +379,10 @@ namespace locust
     				{
     					std::vector<double> tE_normalized;
     					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
-    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(l,m,n,tKassParticleXP, fBypassTF).first;
-    					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(bTE,l,m,n,tKassParticleXP, fBypassTF).first;
+    					dopplerFrequency = fInterface->fField->GetDopplerFrequency(bTE, l, m, n, tKassParticleXP);
 
-    					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
+    					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(bTE, l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
     					double modeAmplitude = fInterface->fField->TotalFieldNorm(tE_normalized);
 
 
@@ -392,6 +392,7 @@ namespace locust
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+						std::cout << tAvgDotProductFactor << " " << modeAmplitude << " " << cavityFIRSample << std::endl;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
     					}
     					else
@@ -424,7 +425,7 @@ namespace locust
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
     						fPowerCombiner->AddOneModeToCavityProbe(aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
-    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
+    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(bTE, l, m, n, excitationAmplitude, sampleIndex);
     					}
 
     				} // ModeSelect
@@ -539,8 +540,8 @@ namespace locust
 				for(unsigned n = 0; n<fNModes; n++){
 					if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE)){
 						//std::cout << "Bins Required: " << 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) << std::endl;
-        					fFieldCalculator->SetNFilterBinsRequiredArray(l, m, n, 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
-        					fFieldCalculator->SetFilterSizeArray(l, m, n, fTFReceiverHandler->GetFilterSize() );
+        					fFieldCalculator->SetNFilterBinsRequiredArray(bTE, l, m, n, 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
+        					fFieldCalculator->SetFilterSizeArray(bTE, l, m, n, fTFReceiverHandler->GetFilterSize() );
 					}
 				}
 			}

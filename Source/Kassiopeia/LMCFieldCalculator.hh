@@ -37,18 +37,18 @@ namespace locust
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase1(Kassiopeia::KSParticle& aFinalParticle);
-            double GetDampingFactorCavity(int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTXlmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
             double GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
-            std::pair<double,double> GetCavityFIRSample(int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
-            void SetNFilterBinsRequiredArray(int l, int m, int n, double dt );
-            int GetNFilterBinsRequiredArray(int l, int m, int n);
-            void SetFilterSizeArray(int l, int m, int n, int aFilterSize );
-            int GetFilterSizeArray(int l, int m, int n);
+            std::pair<double,double> GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
+            void SetNFilterBinsRequiredArray(int bTE, int l, int m, int n, double dt );
+            int GetNFilterBinsRequiredArray(int bTE, int l, int m, int n);
+            void SetFilterSizeArray(int bTE, int l, int m, int n, int aFilterSize );
+            int GetFilterSizeArray(int bTE, int l, int m, int n);
 
             kl_interface_ptr_t fInterface;
 
@@ -57,9 +57,9 @@ namespace locust
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
-            std::vector< std::vector< std::vector< std::deque<double> >>> fFIRBufferArray;
-            std::vector< std::vector< std::vector< std::deque<double> >>> fFrequencyBufferArray;
-	    std::vector< std::vector< std::vector< int >>> fNFilterBinsRequiredArray;
+            std::vector< std::vector< std::vector< std::vector< std::deque<double> >>>> fFIRBufferArray;
+            std::vector< std::vector< std::vector< std::vector< std::deque<double> >>>> fFrequencyBufferArray;
+	    std::vector< std::vector< std::vector< std::vector< int >>>> fNFilterBinsRequiredArray;
             bool fbMultiMode;
     };
 

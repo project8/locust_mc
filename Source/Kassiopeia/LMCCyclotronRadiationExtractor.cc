@@ -117,9 +117,9 @@ namespace locust
             }
             else
             {
-//		std::cout << "About to call GetDampingFactor Cavity from LMCCyclotronRadiationExtractor" << std::endl;
-            	DeltaE = fFieldCalculator->GetDampingFactorCavity(1, 1, 1, aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy()); //Infrastructure needs to be generalized to other modes
-//		std::cout << "DeltaE is " << DeltaE << std::endl;
+		//std::cout << "About to call GetDampingFactor Cavity from LMCCyclotronRadiationExtractor" << std::endl;
+            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy()); //Infrastructure needs to be generalized to other modes
+		//std::cout << "DeltaE is " << DeltaE << std::endl;
             }
             if (fInterface->fBackReaction)
             {
@@ -132,7 +132,6 @@ namespace locust
         }
 
 
-
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
             if (fInterface->fTOld == 0.)
@@ -143,14 +142,15 @@ namespace locust
 
 		int fNModes = fInterface->fField->GetNModes();
 
-        for(unsigned l = 0; l<fNModes; l++){
-                for(unsigned m = 0; m<fNModes; m++){
-                        for(unsigned n = 0; n<fNModes; n++){
-		
-                fFieldCalculator->SetNFilterBinsRequiredArray(l, m, n, dt );
+		for(unsigned bTE=0; bTE<2; bTE++){
+        		for(unsigned l = 0; l<fNModes; l++){
+                		for(unsigned m = 0; m<fNModes; m++){
+                        		for(unsigned n = 0; n<fNModes; n++){
+                				fFieldCalculator->SetNFilterBinsRequiredArray(bTE, l, m, n, dt );
+					}
+				}
 			}
 		}
-	}
 
 
 

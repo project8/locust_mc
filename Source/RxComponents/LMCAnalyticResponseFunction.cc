@@ -20,15 +20,19 @@ namespace locust
 		fInitialFreq( 0. ),
 		fTFarray(0 )
     {  
-	int fNModes = 2; 
-        fGFarray.resize(fNModes);
-        for(int l=0; l<fNModes; l++)
-        {   
-                fGFarray[l].resize(fNModes);
-                for(int m=0; m<fNModes; m++)
-                {   
-                        fGFarray[l][m].resize(fNModes);
-                }    
+	int fNModes = 2;
+	fGFarray.resize(2); 
+	for( int bTE = 0; bTE<2; bTE++)
+	{
+        	fGFarray[bTE].resize(fNModes);
+        	for(int l=0; l<fNModes; l++)
+        	{   
+                	fGFarray[bTE][l].resize(fNModes);
+                	for(int m=0; m<fNModes; m++)
+                	{   
+                        	fGFarray[bTE][l][m].resize(fNModes);
+                	}
+		}    
         }   
     } 
     AnalyticResponseFunction::~AnalyticResponseFunction() {}
@@ -63,21 +67,21 @@ namespace locust
     {
     	return fTFarray;
     }
-    void AnalyticResponseFunction::SetGFarray(int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray )
+    void AnalyticResponseFunction::SetGFarray(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray )
     {
-	if(fGFarray[l][m][n].size()!=aGFarray.size())
+	if(fGFarray[bTE][l][m][n].size()!=aGFarray.size())
 	{
-		fGFarray[l][m][n].resize(aGFarray.size());
+		fGFarray[bTE][l][m][n].resize(aGFarray.size());
 	}
 	for (unsigned index=0; index<aGFarray.size(); index++)
         {   
-        	fGFarray[l][m][n][index] = std::make_pair(aGFarray[index].first, aGFarray[index].second);
+        	fGFarray[bTE][l][m][n][index] = std::make_pair(aGFarray[index].first, aGFarray[index].second);
         }  
     }
 
-    std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray(int l, int m, int n)
+    std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray(int bTE, int l, int m, int n)
     {
-    	return fGFarray[l][m][n];
+    	return fGFarray[bTE][l][m][n];
     }
 
 

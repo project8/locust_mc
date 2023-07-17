@@ -69,13 +69,13 @@ namespace locust
             virtual double Z_TM(int l, int m, int n, double fcyc) const {return {0.};};
             virtual double Z_TE(int l, int m, int n, double fcyc) const {return {0.};};
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
-            virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
+            virtual std::vector<double> GetDopplerFrequency(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode) {return {0.};};
             virtual double TotalFieldNorm(std::vector<double> field) {return {0.};};
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE) {return {{{0.}}};};
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
-            virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, double tThisEventNSamples) {return {0.};};
+            virtual double CalculateDotProductFactor(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, double tThisEventNSamples) {return {0.};};
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual void CheckNormalization(int nModes){};
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice){};
@@ -86,8 +86,8 @@ namespace locust
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
             void SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor);
-            std::vector<std::vector<std::vector<double>>> GetAvgDotProductFactor();
-            void SetAvgDotProductFactor(std::vector<std::vector<std::vector<double>>> aFactor);
+            std::vector<std::vector<std::vector<std::vector<double>>>> GetAvgDotProductFactor();
+            void SetAvgDotProductFactor(std::vector<std::vector<std::vector<std::vector<double>>>> aFactor);
             double GetCentralFrequency();
             void SetCentralFrequency( double aCentralFrequency );
             int GetNPixels();
@@ -115,7 +115,7 @@ namespace locust
             double fL;
             double fX;  // Rectangular waveguide dimensions.
             double fY;
-            std::vector<std::vector<std::vector<double>>> fAvgDotProductFactor;
+            std::vector<std::vector<std::vector<std::vector<double>>>> fAvgDotProductFactor;
 
 
 
