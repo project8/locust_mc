@@ -23,7 +23,7 @@ namespace locust
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
 
-    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	if ((fabs(xKass) > dimX/2.) || (fabs(yKass) > dimY/2.))
     	{
     		return {0.,0.};
     	}
@@ -51,7 +51,7 @@ namespace locust
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
 
-    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	if ((fabs(xKass) > dimX/2.) || (fabs(yKass) > dimY/2.))
     	{
     		return {0.,0.};
     	}
@@ -81,7 +81,7 @@ namespace locust
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
 
-    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	if ((fabs(xKass) > dimX/2.) || (fabs(yKass) > dimY/2.))
     	{
     		return {0.,0.};
     	}
@@ -109,7 +109,7 @@ namespace locust
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
 
-    	if ((fabs(x) > dimX/2.) || (fabs(y) > dimY/2.))
+    	if ((fabs(xKass) > dimX/2.) || (fabs(yKass) > dimY/2.))
     	{
     		return {0.,0.};
     	}

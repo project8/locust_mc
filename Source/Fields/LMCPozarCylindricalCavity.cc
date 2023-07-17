@@ -25,7 +25,7 @@ namespace locust
 
     	double z = zKass + L/2.;
 
-    	if ((r > R) || (fabs(z) > L/2.))  // outside the cavity
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{
     		return {0.,0.};
     	}
@@ -66,7 +66,7 @@ namespace locust
 
     	double z = zKass + L/2.;
 
-    	if ((r > R) || (fabs(z) > L/2.))  // outside the cavity
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{
     		return {0.,0.,0.};
     	}
@@ -105,7 +105,7 @@ namespace locust
     {
     	double z = zKass + L/2.;
 
-    	if ((r > R) || (fabs(z) > L/2.))  // outside the cavity
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{
     		return {0.,0.,0.};
     	}
@@ -145,7 +145,7 @@ namespace locust
     {
     	double z = zKass + L/2.;
 
-    	if ((r > R) || (fabs(z) > L/2.))  // outside the cavity
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{
     		return {0.,0.};
     	}
