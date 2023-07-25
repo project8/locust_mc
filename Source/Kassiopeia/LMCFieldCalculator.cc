@@ -397,11 +397,11 @@ namespace locust
     	double zLocation = tKassParticleXP[2];
     	double dimZ = fInterface->fField->GetDimL();
 		double orbitPhase = tKassParticleXP[6];  // radians
-
-		double cycFrequency = 0.;
+		double cycFrequency = tKassParticleXP[7];
+		double amplitude = 0.;
 		if (fabs(zLocation) < dimZ/2.) // Check whether the electron is inside the cavity length.
 		{
-			cycFrequency = tKassParticleXP[7];  // rad/s
+			amplitude = 1.;
 		}
 
     	if ( !BypassTF )
@@ -421,7 +421,7 @@ namespace locust
 
     			if (*it != 0.)
     			{
-    				fFIRBuffer.push_back(cos(orbitPhase));
+    				fFIRBuffer.push_back(amplitude * cos(orbitPhase));
     			}
     			else
     			{
