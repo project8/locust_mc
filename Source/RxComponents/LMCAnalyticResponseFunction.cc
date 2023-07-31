@@ -52,13 +52,26 @@ namespace locust
     {
     	return fTFarray;
     }
+
     void AnalyticResponseFunction::SetGFarray( std::vector<std::pair<double,std::pair<double,double> > > aGFarray )
     {
-    	for (unsigned index=0; index<aGFarray.size(); index++)
+    	if (fGFarray.size() > 0)
     	{
-    		fGFarray.push_back(std::make_pair(aGFarray[index].first, aGFarray[index].second));
+        	for (unsigned index=0; index<aGFarray.size(); index++)
+        	{
+        		fGFarray[index].second.first = aGFarray[index].second.first;
+        		fGFarray[index].second.second = aGFarray[index].second.second;
+        	}
+    	}
+    	else
+    	{
+    		for (unsigned index=0; index<aGFarray.size(); index++)
+    		{
+    			fGFarray.push_back(std::make_pair(aGFarray[index].first, aGFarray[index].second));
+    		}
     	}
     }
+
     std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray()
     {
     	return fGFarray;
