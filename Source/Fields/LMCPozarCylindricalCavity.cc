@@ -25,6 +25,13 @@ namespace locust
 
     	double z = zKass + L/2.;
 
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
+    	{
+    		return {0.,0.};
+    	}
+    	else
+    	{
+
     	// from Pozar
     	std::vector<double> TE_E;
     	double x_lm = GetBesselNKPrimeZeros(l,m);
@@ -51,12 +58,20 @@ namespace locust
     	TE_E.push_back(tEtheta);
 
         return TE_E;
+    	}
     }
 
     std::vector<double> PozarCylindricalCavity::TE_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
     	double z = zKass + L/2.;
+
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
+    	{
+    		return {0.,0.,0.};
+    	}
+    	else
+    	{
 
     	// from Pozar
     	std::vector<double> TE_H;
@@ -83,11 +98,19 @@ namespace locust
     	TE_H.push_back(tHz);  // z
     	TE_H.push_back(tHtheta); // theta
     	return TE_H; // r, z, theta
+    	}
     }
 
     std::vector<double> PozarCylindricalCavity::TM_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
     	double z = zKass + L/2.;
+
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
+    	{
+    		return {0.,0.,0.};
+    	}
+    	else
+    	{
 
     	// from Pozar
     	std::vector<double> TM_E;
@@ -115,11 +138,19 @@ namespace locust
     	TM_E.push_back(tEz);  // z
     	TM_E.push_back(tEtheta);  // theta
     	return TM_E; // r, z, theta
+    	}
     }
 
     std::vector<double> PozarCylindricalCavity::TM_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
     	double z = zKass + L/2.;
+
+    	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
+    	{
+    		return {0.,0.};
+    	}
+    	else
+    	{
 
     	// from Pozar
     	std::vector<double> TM_H;
@@ -144,6 +175,7 @@ namespace locust
     	TM_H.push_back(tHr);  // r
     	TM_H.push_back(tHtheta); // theta
         return TM_H;
+    	}
     }
 
 } /* namespace locust */

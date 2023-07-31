@@ -394,12 +394,19 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+    	double zLocation = tKassParticleXP[2];
+    	double dimZ = fInterface->fField->GetDimL();
+    	double orbitPhase = tKassParticleXP[6];  // radians
+    	double cycFrequency = tKassParticleXP[7];
+    	double amplitude = 0.;
+    	if (fabs(zLocation) < dimZ/2.)
+    	{
+    		amplitude = 1.;
+    	}
+
 
     	if ( !BypassTF )
     	{
-    		double orbitPhase = tKassParticleXP[6];  // radians
-    		double cycFrequency = tKassParticleXP[7];  // rad/s
-
     		// populate FIR filter with frequency for just this sample interval:
     		for (int i=0; i < fNFilterBinsRequired; i++)
     		{
@@ -415,7 +422,7 @@ namespace locust
 
     			if (*it != 0.)
     			{
-    				fFIRBuffer.push_back(cos(orbitPhase));
+    				fFIRBuffer.push_back(amplitude * cos(orbitPhase));
     			}
     			else
     			{
