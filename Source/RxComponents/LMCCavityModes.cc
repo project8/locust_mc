@@ -61,21 +61,31 @@ namespace locust
             }
         }
 
-	int nchannels = 2; //TO-DO:  Configure this as LMCGenerator::fNChannels.
-        fVoltagePhase.resize(nchannels); // max nchannels.  TO-DO:  Configure this as LMCGenerator::fNChannels.
-        for (int n = 0; n < GetNCavityModes(); n++)
-        {
-            fVoltagePhase[n].resize(GetNCavityModes());
-            for (int i = 0; i < GetNCavityModes(); i++)
-            {
-            	fVoltagePhase[n][i].resize(GetNCavityModes());
-            	for (int j = 0; j < GetNCavityModes(); j++)
-            	{
-            		fVoltagePhase[n][i][j].resize(GetNCavityModes());
-            	}
-            }
-        }
+        SizeNChannels(GetNChannels());
 
+    	return true;
+    }
+
+    bool CavityModes::SizeNChannels(int aNumberOfChannels)
+    {
+    	SetNChannels(aNumberOfChannels);
+
+    	std::vector<std::vector<std::vector<std::vector<double>>>> tZeroVector;
+    	fVoltagePhase.swap(tZeroVector);
+    	fVoltagePhase.resize(aNumberOfChannels);
+
+    	for (int n = 0; n < GetNChannels(); n++)
+    	{
+    		fVoltagePhase[n].resize(GetNCavityModes());
+    		for (int i = 0; i < GetNCavityModes(); i++)
+    		{
+    			fVoltagePhase[n][i].resize(GetNCavityModes());
+    			for (int j = 0; j < GetNCavityModes(); j++)
+    			{
+    				fVoltagePhase[n][i][j].resize(GetNCavityModes());
+    			}
+    		}
+    	}
 
     	return true;
     }

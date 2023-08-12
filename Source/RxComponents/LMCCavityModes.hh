@@ -40,7 +40,8 @@ namespace locust
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
             double GetVoltagePhase(int aChannel, int l, int m, int n);
             void SetVoltagePhase( double aPhase, int aChannel, int l, int m, int n);
-        	bool WriteRootHisto();
+            virtual bool SizeNChannels(int aNumberOfChannels);
+            bool WriteRootHisto();
 
 
 
