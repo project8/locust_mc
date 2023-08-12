@@ -62,8 +62,11 @@ namespace locust
             bool GetVoltageCheck();
             void SetNCavityModes( int aNumberOfModes );
             int GetNCavityModes();
+            void SetNChannels( int aNumberOfChannels );
+            int GetNChannels();
             double GetVoltagePhase();
             void SetVoltagePhase( double aPhase );
+            virtual bool SizeNChannels(int aNumberOfChannels) {return true;};
 
             bool GetWaveguideShortIsPresent();
             void SetWaveguideShortIsPresent ( bool aValue );
@@ -80,6 +83,7 @@ namespace locust
             double fjunctionResistance;
             bool fvoltageCheck;
             int fNCavityModes;
+            int fNChannels;
             bool fWaveguideShortIsPresent;
 
 

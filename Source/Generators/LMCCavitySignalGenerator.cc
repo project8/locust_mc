@@ -162,6 +162,7 @@ namespace locust
         }
 
         fPowerCombiner->SetNCavityModes(fInterface->fField->GetNModes());
+
         if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
@@ -501,6 +502,8 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+
+    	fPowerCombiner->SizeNChannels(fNChannels);
  		if (fNChannels > 2)
  		{
     		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
