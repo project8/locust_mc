@@ -250,7 +250,11 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
-    	double unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
+    	double unitJdotE = 0.;
+    	if ( (tEmag > 0.) && (tVmag > 0.) )
+    	{
+    		unitJdotE = fabs(0. + tEy*tVy)/tEmag/tVmag;
+    	}
 
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)
