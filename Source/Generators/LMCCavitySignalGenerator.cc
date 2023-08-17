@@ -365,8 +365,7 @@ namespace locust
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
     					double modeAmplitude = fInterface->fField->TotalFieldNorm(tE_normalized);
 
-
-    					if (!fInterface->fbWaveguide)
+    					if (!fInterface->fbWaveguide) // Cavity:
     					{
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
@@ -374,32 +373,24 @@ namespace locust
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
     					}
-    					else
+    					else // Waveguide:
     					{
-    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
-    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
-
     						// Waveguide default:  Use direct Kassiopeia power budget.
     						if (fUseDirectKassPower)
     						{
-    							// override one-way signal amplitude with direct Kass power:
+    							// replace signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
     							std::vector<double> tTempKassParticleXP = {0.,0.,0.,0.,0.,0.,0.,tKassParticleXP[7],0.};
     							double modeMax = fInterface->fField->GetNormalizedModeField(l,m,n,tTempKassParticleXP,0,1).back();
-    							double modeFrac = tE_normalized.back()/modeMax;
+    							double modeFrac = 0.; if (modeMax > 0.) modeFrac = tE_normalized.back()/modeMax;
         						excitationAmplitude = tAvgDotProductFactor*modeFrac*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
         						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
     						}
-
     					}
 
     					for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)  // one channel per probe.
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-
     						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
