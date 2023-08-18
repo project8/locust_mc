@@ -123,7 +123,7 @@ namespace locust
         else if (fInterface->fbWaveguide) // Waveguide config follows:
         {
         	// Do not presently use a mode response function, but instead use the Kass energy
-        	// budget to calculate the waveguide mode excitation, as is done in the Locust paper.
+        	// budget to calculate the waveguide mode excitation.
         	fUseDirectKassPower = true;
         }
 
