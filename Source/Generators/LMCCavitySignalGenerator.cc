@@ -60,6 +60,7 @@ namespace locust
         	fInterface->fbWaveguide = aParam["rectangular-waveguide"]().as_bool();
         }
 
+        // Define generic response function:
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -68,7 +69,8 @@ namespace locust
     		return false;
     	}
 
-        if( aParam.has( "tf-receiver-filename" ) )
+    	// Configure the generic response function:
+        if( aParam.has( "tf-receiver-filename" ) ) // If using HFSS output
         {
             if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
             {
@@ -77,8 +79,9 @@ namespace locust
             	return false;
             }
         }
-        else if (!fInterface->fbWaveguide)// Generate analytic response function
+        else if (!fInterface->fbWaveguide) // Cavity config follows
         {
+        	// Cavity as equivalent circuit
         	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
         	{
         		fAnalyticResponseFunction = new EquivalentCircuit();
@@ -98,6 +101,7 @@ namespace locust
         			}
         		}
         	}
+        	// Cavity as damped harmonic oscillator
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
@@ -116,53 +120,32 @@ namespace locust
         		}
         	}
         } // aParam.has( "tf-receiver-filename" )
-        else if (fInterface->fbWaveguide)
+        else if (fInterface->fbWaveguide) // Waveguide config follows:
         {
+        	// Do not presently use a mode response function, but instead use the Kass energy
+        	// budget to calculate the waveguide mode excitation, as is done in the Locust paper.
         	fUseDirectKassPower = true;
         }
 
-        if (fInterface->fbWaveguide)
+        // Select mode fields and power combiners:
+        if (fInterface->fbWaveguide) // Waveguide
         {
         	fInterface->fField = new RectangularWaveguide;
         	fPowerCombiner = new WaveguideModes;
-        	if ( aParam.has( "waveguide-short" ) )
-        	{
-        		fPowerCombiner->SetWaveguideShortIsPresent(aParam["waveguide-short"]().as_bool());
-        	}
-        	else
-        	{
-        		// This is the same as the default case in LMCPowerCombiner
-        		fPowerCombiner->SetWaveguideShortIsPresent( true );
-        	}
-        	// Allow back reaction only if short is present:
-        	if ( fPowerCombiner->GetWaveguideShortIsPresent() )
-        	{
-        		if ( aParam.has( "back-reaction" ) )
-        		{
-        			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-        		}
-        		else
-        		{
-        			fInterface->fBackReaction = true;
-        		}
-        	}
         }
-        else
+        else // Cavity
         {
         	fInterface->fField = new CylindricalCavity;
         	fPowerCombiner = new CavityModes;
-        	if ( aParam.has( "back-reaction" ) )
-        	{
-        		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-        	}
         }
-        if( aParam.has( "n-modes" ) )
+
+        // Configure selected mode fields and power combiners:
+        if (!fInterface->fField->Configure(aParam))
         {
-            fInterface->fField->SetNModes(aParam["n-modes"]().as_int());
+        	LERROR(lmclog,"Error configuring LMCField.");
+        	exit(-1);
+        	return false;
         }
-
-        fPowerCombiner->SetNCavityModes(fInterface->fField->GetNModes());
-
         if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
@@ -170,33 +153,57 @@ namespace locust
 			return false;
 		}
 
-        if (!fInterface->fField->Configure(aParam))
-        {
-        	LERROR(lmclog,"Error configuring LMCField.");
-        	exit(-1);
-        	return false;
-        }
+    	// Configure back reaction:
+    	if (( fInterface->fbWaveguide ) && ( fPowerCombiner->GetWaveguideShortIsPresent() ))
+    	{
+    		if ( aParam.has( "back-reaction" ) )
+    		{
+    			// optional to switch off:
+    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+        		LWARN(lmclog,"Switching back-reaction to " << fInterface->fBackReaction );
+    		}
+    		else
+    		{
+    			// if the short is present in the waveguide, default is for back reaction = true
+    			fInterface->fBackReaction = true;
+    		}
+    	}
+    	else if ( !fInterface->fbWaveguide ) // Cavity
+    	{
+    		if ( aParam.has( "back-reaction" ) )
+    		{
+    			// optional to switch off
+    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+    		}
+    		else
+    		{
+    			// default is true in the cavity
+    			fInterface->fBackReaction = true;
+    		}
+    	}
+		else
+		{
+			// No short, no cavity -> no back reaction.
+			fInterface->fBackReaction = false;
+		}
 
+    	// Configure signal parameters:
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
-
         if( aParam.has( "event-spacing-samples" ) )
         {
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
         }
-
         if( aParam.has( "override-aliasing" ) )
         {
             fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
-
         if( aParam.has( "bypass-tf" ) )
         {
         	fBypassTF = aParam["bypass-tf"]().as_bool();
         }
-
         if( aParam.has( "norm-check" ) )
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
@@ -218,6 +225,7 @@ namespace locust
             gxml_filename = aParam["xml-filename"]().as_string();
         }
 
+        // Configure the transmitter, which defines the impulses taken from Kassiopeia.
         if( aParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
@@ -244,7 +252,7 @@ namespace locust
             exit(-1);
         }
 
-
+        // Configure Locust-Kass interface classes and parameters:
         fFieldCalculator = new FieldCalculator();
         if(!fFieldCalculator->Configure(aParam))
         {

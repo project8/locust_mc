@@ -35,6 +35,19 @@ namespace locust
     		return false;
     	}
 
+    	if ( aParam.has( "waveguide-short" ) )
+    	{
+    		SetWaveguideShortIsPresent(aParam["waveguide-short"]().as_bool());
+    		LWARN(lmclog,"Switching waveguide-short to " << GetWaveguideShortIsPresent() );
+    	}
+    	else
+    	{
+    		// This is the same as the default case in LMCPowerCombiner
+    		SetWaveguideShortIsPresent( true );
+    	}
+
+        SetNCavityModes(fInterface->fField->GetNModes());
+
     	SizeNChannels(GetNChannels());
 
     	return true;

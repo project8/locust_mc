@@ -16,7 +16,8 @@ namespace locust
 
     CavityModes::CavityModes():
 		fOrbitPhase( 0. ),
-		fVoltagePhase( 0 )
+		fVoltagePhase( 0 ),
+		fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
@@ -33,6 +34,11 @@ namespace locust
     		LERROR(lmclog,"Error configuring PowerCombiner class from CavityModes subclass");
     		return false;
     	}
+
+        SetNCavityModes(fInterface->fField->GetNModes());
+
+        SizeNChannels(GetNChannels());
+
 
         if( aParam.has( "norm-check" ) )
         {
@@ -61,7 +67,6 @@ namespace locust
             }
         }
 
-        SizeNChannels(GetNChannels());
 
     	return true;
     }

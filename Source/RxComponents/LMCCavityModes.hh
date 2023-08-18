@@ -8,6 +8,7 @@
 #ifndef LMCCAVITYMODES_HH_
 #define LMCCAVITYMODES_HH_
 
+#include "LMCKassLocustInterface.hh"
 #include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
@@ -54,6 +55,7 @@ namespace locust
 #ifdef ROOT_FOUND
             FileWriter* fRootHistoWriter;
 #endif
+            kl_interface_ptr_t fInterface;
 
 
 
