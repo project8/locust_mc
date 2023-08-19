@@ -173,7 +173,8 @@ namespace locust
     }
     fFilterComplex = fFIRComplex;
 
-    if (fPrintFIR) PrintFIR( fFilter );
+    if (fPrintFIR) PrintFIR( fFIRComplex, fFIRNBins, "output/FIRhisto.root" );
+    if (fPrintFIR) PrintFIR( fTFComplex, fTFNBins, "output/TFhisto.root" );
 
     LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
     return true;
@@ -265,7 +266,7 @@ namespace locust
         	fFilterComplex[i][1] = gfArray[i].second.second;
         }
 
-        if (fPrintFIR) PrintFIR( fFilterComplex );
+        if (fPrintFIR) PrintFIR( fFilterComplex, fFIRNBins, "output/FIRhisto.root" );
 
         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
@@ -293,24 +294,24 @@ namespace locust
         return true;
     }    
 
-	bool HFSSResponseFileHandlerCore::WriteRootHisto( std::vector<double> aFilter, bool bIQ )
+	bool HFSSResponseFileHandlerCore::WriteRootHisto( std::vector<double> aFilter, int nBins, bool bIQ )
 	{
 #ifdef ROOT_FOUND
 	    char fbuffer[60];
 	    if (!bIQ)
 	    {
-	    	int a = sprintf(fbuffer, "FIR_I");
+	    	int a = sprintf(fbuffer, "Real");
 	    }
 	    else
 	    {
-	    	int a = sprintf(fbuffer, "FIR_Q");
+	    	int a = sprintf(fbuffer, "Imag");
 	    }
 		fRootHistoWriter->OpenFile("UPDATE");
 		const char *hName = fbuffer;
-		TH1D* aHisto = new TH1D(hName, "FIR coefficients; index; coefficient", fFIRNBins, 0., (double)fFIRNBins);
+		TH1D* aHisto = new TH1D(hName, "Coefficients; index; coefficient", nBins, 0., (double)nBins);
 		aHisto->SetDirectory(0);
 
-		for (unsigned i=0; i<fFIRNBins; i++)
+		for (unsigned i=0; i<nBins; i++)
 		{
 			aHisto->SetBinContent(i+1, aFilter[i]);
 		}
@@ -323,28 +324,34 @@ namespace locust
 	}
 
     
-    void HFSSResponseFileHandlerCore::PrintFIR( std::vector<double> aFilter )
+    void HFSSResponseFileHandlerCore::PrintFIR( std::vector<double> aFilter, int nBins, const char* filename )
     {
-    	LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
-    	FILE * fFIRout = fopen("output/FIR.txt", "w");
-    	for (int i = 0; i < fFIRNBins; i++)
+    	LDEBUG( lmclog, "Printing coefficients to file ... ");
+    	std::string textFile(filename);
+    	std::string suffix(".txt");
+    	textFile.replace(textFile.find(".root"),5,suffix);
+    	FILE * fFIRout = fopen(textFile.c_str(), "w");
+    	for (int i = 0; i < nBins; i++)
         {
     		fprintf(fFIRout,"%g\n", aFilter[i]);
         }
         fclose(fFIRout);
 #ifdef ROOT_FOUND
-        WriteRootHisto( aFilter, 0 );
+        WriteRootHisto( aFilter, fFIRNBins, 0 );
 #endif
 
     }
 
-    void HFSSResponseFileHandlerCore::PrintFIR( fftw_complex* aFilter )
+    void HFSSResponseFileHandlerCore::PrintFIR( fftw_complex* aFilter, int nBins, const char* filename )
     {
     	std::vector<double> vecFilter0;
     	std::vector<double> vecFilter1;
-    	LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
-    	FILE * fFIRout = fopen("output/FIR.txt", "w");
-    	for (int i = 0; i < fFIRNBins; i++)
+    	LDEBUG( lmclog, "Printing coefficients to file ... ");
+    	std::string textFile(filename);
+    	std::string suffix(".txt");
+    	textFile.replace(textFile.find(".root"),5,suffix);
+    	FILE * fFIRout = fopen(textFile.c_str(), "w");
+    	for (int i = 0; i < nBins; i++)
     	{
     		fprintf(fFIRout,"%g %g\n", aFilter[i][0], aFilter[i][1]);
     		vecFilter0.push_back(aFilter[i][0]);
@@ -353,11 +360,11 @@ namespace locust
     	fclose(fFIRout);
 #ifdef ROOT_FOUND
     	fRootHistoWriter = RootHistoWriter::get_instance();
-    	fRootHistoWriter->SetFilename("output/FIRhisto.root");
+    	fRootHistoWriter->SetFilename(filename);
     	fRootHistoWriter->OpenFile("RECREATE");
     	fRootHistoWriter->CloseFile();
-    	WriteRootHisto( vecFilter0, 0 );
-    	WriteRootHisto( vecFilter1, 1 );
+    	WriteRootHisto( vecFilter0, nBins, 0 );
+    	WriteRootHisto( vecFilter1, nBins, 1 );
 #endif
     }
 
