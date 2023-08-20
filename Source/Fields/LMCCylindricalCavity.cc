@@ -300,11 +300,11 @@ namespace locust
     {
 
     	std::vector<double> rProbe;
-        rProbe.push_back(this->GetCavityProbeRFrac()[0] * this->GetDimR());
-        rProbe.push_back(this->GetCavityProbeRFrac()[1] * this->GetDimR());
+        rProbe.push_back(GetCavityProbeRFrac()[0] * GetDimR());
+        rProbe.push_back(GetCavityProbeRFrac()[1] * GetDimR());
 
-    	std::vector<double> thetaProbe = this->GetCavityProbeTheta();
-    	std::vector<double> zProbe = this->GetCavityProbeZ();
+    	std::vector<double> thetaProbe = GetCavityProbeTheta();
+    	std::vector<double> zProbe = GetCavityProbeZ();
     	std::vector<double> thetaEffective;
 
     	if (l>0)
@@ -325,8 +325,8 @@ namespace locust
 
     	//Assumes probe couples to E of mode. If mode is polarized, transforms angle to reference frame of electron
     	std::vector<double> tEFieldAtProbe;
-    	tEFieldAtProbe.push_back( TotalFieldNorm(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode)) );
-    	tEFieldAtProbe.push_back( TotalFieldNorm(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode)) );
+    	tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode)) );
+    	tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode)) );
 
     	return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1]};
 
@@ -365,19 +365,6 @@ namespace locust
 
        	return tField;  // return normalized field.
     }
-
-
-	double CylindricalCavity::TotalFieldNorm(std::vector<double> field)
-	{
-		double norm = 0;
-		auto it = field.begin();
-		while (it != field.end())
-		{
-			if (!isnan(*it)) norm += (*it)*(*it);
-			*it++;
-		}
-		return sqrt(norm);
-	}
 
 	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
 	{
@@ -430,6 +417,22 @@ namespace locust
 
     	return unitJdotE;
     }
+
+    bool CylindricalCavity::InVolume(std::vector<double> tKassParticleXP)
+    {
+    	double rLocation = sqrt( tKassParticleXP[0]* tKassParticleXP[0] + tKassParticleXP[1]*tKassParticleXP[1] );
+    	double zLocation = tKassParticleXP[2];
+
+    	if ((rLocation < GetDimR()) && (fabs(zLocation) < GetDimL()/2.))
+    	{
+    		return true;
+    	}
+    	else
+    	{
+    		return false;
+    	}
+    }
+
 
     void CylindricalCavity::CheckNormalization(int nModes)
     {
@@ -494,7 +497,7 @@ namespace locust
 	    aRootHistoWriter->SetFilename(cFileName);
 	    aRootHistoWriter->OpenFile("RECREATE");
 
-    	int nbins = this->GetNPixels();
+    	int nbins = GetNPixels();
     	char hbufferEtheta[60]; char hbufferEr[60];
     	char hbufferHtheta[60]; char hbufferHr[60];
     	int a;
@@ -528,10 +531,10 @@ namespace locust
     	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
     		    		}
 
-    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
-    			 	    TH2D* hTEr = new TH2D(hname_Er, hname_Er, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
-    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, hname_Htheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
-    			 	    TH2D* hTHr = new TH2D(hname_Hr, hname_Hr, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., this->GetDimR());
+    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			 	    TH2D* hTEr = new TH2D(hname_Er, hname_Er, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, hname_Htheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			 	    TH2D* hTHr = new TH2D(hname_Hr, hname_Hr, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
 
         				double normFactor = 1.0;
         				if (bTE)

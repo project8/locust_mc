@@ -37,6 +37,11 @@ namespace locust
         	SetDimY( aParam["waveguide-y"]().as_double() );
         }
 
+        if( aParam.has( "waveguide-z") )
+        {
+        	SetDimL( aParam["waveguide-z"]().as_double() );
+        }
+
     	if( aParam.has( "center-to-short" ) ) // for use in waveguide
         {
             fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
@@ -368,6 +373,21 @@ namespace locust
     	printf("\nThe modes normalized as above are available for use in the simulation.\n\n");
     }
 
+    bool RectangularWaveguide::InVolume(std::vector<double> tKassParticleXP)
+    {
+    	double xLocation = tKassParticleXP[0];
+    	double yLocation = tKassParticleXP[1];
+    	double zLocation = tKassParticleXP[2];
+
+    	if ((fabs(xLocation) < GetDimX()/2.) && (fabs(yLocation) < GetDimY()/2.) && (fabs(zLocation) < GetDimL()/2.))
+    	{
+    		return true;
+    	}
+    	else
+    	{
+    		return false;
+    	}
+    }
 
 
     void RectangularWaveguide::PrintModeMaps(int nModes, bool bTE, double zSlice)
@@ -379,7 +399,7 @@ namespace locust
 	    aRootHistoWriter->SetFilename("output/ModeMapOutput.root");
 	    aRootHistoWriter->OpenFile("RECREATE");
 
-    	int nbins = this->GetNPixels();
+    	int nbins = GetNPixels();
     	char hbufferx[60]; char hbuffery[60]; int a;
     	char labelx[60]; char labely[60];
 

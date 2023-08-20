@@ -93,6 +93,18 @@ namespace locust
     	fAvgDotProductFactor = aFactor;
     }
 
+    double Field::NormalizedEFieldMag(std::vector<double> field)
+    {
+    	double norm = 0;
+    	auto it = field.begin();
+    	while (it != field.end())
+    	{
+    		if (std::isfinite(*it)) norm += (*it)*(*it);
+    		*it++;
+    	}
+    	return sqrt(norm);
+    }
+
      double FieldCore::GetBesselNKZeros(int l, int m)
      {
      	return fBesselNKZeros[l][m];

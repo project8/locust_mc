@@ -394,12 +394,10 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-    	double zLocation = tKassParticleXP[2];
-    	double dimZ = fInterface->fField->GetDimL();
     	double orbitPhase = tKassParticleXP[6];  // radians
     	double cycFrequency = tKassParticleXP[7];
     	double amplitude = 0.;
-    	if (fabs(zLocation) < dimZ/2.)
+    	if (fInterface->fField->InVolume(tKassParticleXP))
     	{
     		amplitude = 1.;
     	}
