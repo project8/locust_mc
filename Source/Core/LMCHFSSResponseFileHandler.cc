@@ -98,7 +98,18 @@ namespace locust
         double complexPhase = atan(convolutionValueImag/convolutionValueReal);
         double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
 
-        return std::make_pair(complexMag, complexPhase);
+        /* Note that the convolution above uses a real signal to drive both the real and
+         * imaginary filter components, without a phase shift.  For sinusoidal signals, this
+         * seems like a reasonable approach.  It also increases the effective gain of
+         * the complex filter, compared to a real filter.  To align the complex gain with
+         * that of a real filter, a gain factor of 0.5x for sinusoidal drive signals is
+         * applied below.  For non-sinusoidal drive signals, this scaling should not necessarily
+         * be applicable.
+         */
+
+        double gainFactor = 0.5;
+
+        return std::make_pair(gainFactor*complexMag, complexPhase);
         return complexConvolution;
     }
 
