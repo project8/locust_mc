@@ -27,7 +27,8 @@ namespace locust
  @details
  Available configuration options:
        - "norm-check":  bool [false] Record energy depositions of normalized modes into text
-       file and Root histogram file.
+       file and Root histogram file.  Each record in the text/Root file represents an updated
+       rolling average of relative mode energy depositions.
 
  */
 
