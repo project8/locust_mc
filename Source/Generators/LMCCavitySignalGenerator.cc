@@ -50,17 +50,20 @@ namespace locust
 
 
 
-
-
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
         if( aParam.has( "rectangular-waveguide" ) )
         {
         	fInterface->fbWaveguide = aParam["rectangular-waveguide"]().as_bool();
+        	if ( aParam.has ( "direct-kass-power" ) )
+        	{
+        		fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
+        	}
         }
 
-        // Define generic response function:
+
+        // Define generic response function for use in cavity or waveguide:
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -72,8 +75,17 @@ namespace locust
     	// Configure the generic response function:
         if( aParam.has( "tf-receiver-filename" ) ) // If using HFSS output
         {
-        	fUseDirectKassPower = false;
-        	if (!fTFReceiverHandler->ReadHFSSFile())
+        	if (!fInterface->fbWaveguide)
+        	{
+        		LERROR(lmclog,"HFSS data is not yet supported in the cavity.  Only the waveguide.");
+        		exit(-1);
+        		return false;
+        	}
+        	else if ( fUseDirectKassPower )
+        	{
+        		LWARN(lmclog,"Using direct Kass energy budget, and not HFSS data, due to parameter \"direct-kass-power\" = true");
+        	}
+        	else if (!fTFReceiverHandler->ReadHFSSFile())
         	{
         		LERROR(lmclog,"FIR has not been generated.");
         		exit(-1);
@@ -121,11 +133,7 @@ namespace locust
         		}
         	}
         } // aParam.has( "tf-receiver-filename" )
-        else if (fInterface->fbWaveguide) // Waveguide config follows:
-        {
-        	// Do not presently use a mode response function, but instead use the Kass energy
-        	// budget to calculate the waveguide mode excitation.
-        }
+
 
         // Select mode fields and power combiners:
         if (fInterface->fbWaveguide) // Waveguide
@@ -174,6 +182,7 @@ namespace locust
     		{
     			// optional to switch off
     			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+        		LWARN(lmclog,"Switching back-reaction to " << fInterface->fBackReaction );
     		}
     		else
     		{
