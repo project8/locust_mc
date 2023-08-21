@@ -188,16 +188,17 @@ namespace locust
     				return false;
     		}
     	}
-    	else
+    	else  // Cavity
     	{
     		if (!bNormCheck)
     		{
+    			// Allow only TE011, or TE011+TM111 if fbMultimode==true
     			if ((((l==0)&&(m==1)&&(n==1))&&(bTE)) || (((l==1)&&(m==1)&&(n==1))&&(!bTE)&&(fbMultiMode)))
     				return true;
     			else
     				return false;
     		}
-    		else
+    		else  // if bNormCheck==true, allow all modes.
     		{
     			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
     				return true;
@@ -419,6 +420,16 @@ namespace locust
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+    	double zLocation = tKassParticleXP[2];
+    	double dimZ = fInterface->fField->GetDimL();
+    	double orbitPhase = tKassParticleXP[6];  // radians
+    	double cycFrequency = tKassParticleXP[7];
+    	double amplitude = 0.;
+    	if (fabs(zLocation) < dimZ/2.)
+    	{
+    		amplitude = 1.;
+    	}
+
 
     	if ( !BypassTF )
     	{

@@ -6,6 +6,10 @@
 #include "param.hh"
 #include "LMCComplexFFT.hh"
 
+#ifdef ROOT_FOUND
+    #include "LMCRootHistoWriter.hh"
+#endif
+
 namespace locust
 {
     /*!
@@ -36,7 +40,8 @@ namespace locust
 	double GetFilterResolutionArray(int bTE, int l, int m, int n) const;//Get the resolution of the filter
         void PrintFIR( std::vector<double> );
         void PrintFIR( fftw_complex* aFilter );
-        
+        bool WriteRootHisto( std::vector<double> aFilter, bool bIQ );
+
     protected:
         
         // Member variables
@@ -58,6 +63,10 @@ namespace locust
         std::string fWindowName;
         double fWindowParam;
         bool fPrintFIR;
+#ifdef ROOT_FOUND
+        FileWriter* fRootHistoWriter;
+#endif
+
 
 
         //Member functions

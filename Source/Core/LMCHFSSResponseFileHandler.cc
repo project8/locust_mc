@@ -355,27 +355,73 @@ namespace locust
         fIsFIRCreated=true;
         return true;
     }    
+
+	bool HFSSResponseFileHandlerCore::WriteRootHisto( std::vector<double> aFilter, bool bIQ )
+	{
+#ifdef ROOT_FOUND
+	    char fbuffer[60];
+	    if (!bIQ)
+	    {
+	    	int a = sprintf(fbuffer, "FIR_I");
+	    }
+	    else
+	    {
+	    	int a = sprintf(fbuffer, "FIR_Q");
+	    }
+		fRootHistoWriter->OpenFile("UPDATE");
+		const char *hName = fbuffer;
+		TH1D* aHisto = new TH1D(hName, "FIR coefficients; index; coefficient", fFIRNBins, 0., (double)fFIRNBins);
+		aHisto->SetDirectory(0);
+
+		for (unsigned i=0; i<fFIRNBins; i++)
+		{
+			aHisto->SetBinContent(i+1, aFilter[i]);
+		}
+
+		fRootHistoWriter->Write1DHisto(aHisto);
+		fRootHistoWriter->CloseFile();
+		delete aHisto;
+#endif
+		return true;
+	}
+
     
     void HFSSResponseFileHandlerCore::PrintFIR( std::vector<double> aFilter )
     {
-        LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
-        FILE * fFIRout = fopen("output/FIR.txt", "w");
-        for (int i = 0; i < fFIRNBins; i++)
+    	LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
+    	FILE * fFIRout = fopen("output/FIR.txt", "w");
+    	for (int i = 0; i < fFIRNBins; i++)
         {
     		fprintf(fFIRout,"%g\n", aFilter[i]);
         }
         fclose(fFIRout);
+#ifdef ROOT_FOUND
+        WriteRootHisto( aFilter, 0 );
+#endif
+
     }
 
     void HFSSResponseFileHandlerCore::PrintFIR( fftw_complex* aFilter )
     {
-        LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
-        FILE * fFIRout = fopen("output/FIR.txt", "w");
-        for (int i = 0; i < fFIRNBins; i++)
-        {
+    	std::vector<double> vecFilter0;
+    	std::vector<double> vecFilter1;
+    	LDEBUG( lmclog, "Printing FIR coefficients to file ... ");
+    	FILE * fFIRout = fopen("output/FIR.txt", "w");
+    	for (int i = 0; i < fFIRNBins; i++)
+    	{
     		fprintf(fFIRout,"%g %g\n", aFilter[i][0], aFilter[i][1]);
-        }
-        fclose(fFIRout);
+    		vecFilter0.push_back(aFilter[i][0]);
+    		vecFilter1.push_back(aFilter[i][1]);
+    	}
+    	fclose(fFIRout);
+#ifdef ROOT_FOUND
+    	fRootHistoWriter = RootHistoWriter::get_instance();
+    	fRootHistoWriter->SetFilename("output/FIRhisto.root");
+    	fRootHistoWriter->OpenFile("RECREATE");
+    	fRootHistoWriter->CloseFile();
+    	WriteRootHisto( vecFilter0, 0 );
+    	WriteRootHisto( vecFilter1, 1 );
+#endif
     }
 
     FIRFileHandlerCore::FIRFileHandlerCore():HFSSResponseFileHandlerCore()
