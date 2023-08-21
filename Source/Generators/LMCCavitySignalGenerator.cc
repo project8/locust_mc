@@ -36,7 +36,7 @@ namespace locust
         fBypassTF( false ),
         fNormCheck( false ),
         fIntermediateFile( false ),
-        fUseDirectKassPower( false ),
+        fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
 		fUnitTestRootFile( false ),
         fInterface( new KassLocustInterface() )
@@ -72,12 +72,13 @@ namespace locust
     	// Configure the generic response function:
         if( aParam.has( "tf-receiver-filename" ) ) // If using HFSS output
         {
-            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
-            {
-            	LERROR(lmclog,"FIR has not been generated.");
-            	exit(-1);
-            	return false;
-            }
+        	fUseDirectKassPower = false;
+        	if (!fTFReceiverHandler->ReadHFSSFile())
+        	{
+        		LERROR(lmclog,"FIR has not been generated.");
+        		exit(-1);
+        		return false;
+        	}
         }
         else if (!fInterface->fbWaveguide) // Cavity config follows
         {
@@ -124,7 +125,6 @@ namespace locust
         {
         	// Do not presently use a mode response function, but instead use the Kass energy
         	// budget to calculate the waveguide mode excitation.
-        	fUseDirectKassPower = true;
         }
 
         // Select mode fields and power combiners:
@@ -371,7 +371,7 @@ namespace locust
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
-    					double modeAmplitude = fInterface->fField->TotalFieldNorm(tE_normalized);
+    					double modeAmplitude = fInterface->fField->NormalizedEFieldMag(tE_normalized);
 
     					if (!fInterface->fbWaveguide) // Cavity:
     					{
@@ -392,6 +392,16 @@ namespace locust
     							double modeMax = fInterface->fField->GetNormalizedModeField(l,m,n,tTempKassParticleXP,0,1).back();
     							double modeFrac = 0.; if (fabs(modeMax) > 0.) modeFrac = tE_normalized.back()/modeMax;
         						excitationAmplitude = tAvgDotProductFactor*modeFrac*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+        						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
+    						}
+    						else
+    						{
+        						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+        						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+        						// Jackson |A| = 2piZ/c \int{J \dot E dV}, written assuming cgs units, and cavityFIRSample represents qvZ:
+        						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * 2. * LMCConst::Pi() / (LMCConst::C()*1.e2);
+        						// To extract the propagating E-field, scale the excitation amplitude as in the Pozar Poynting vector integral, p. 114:
+        						excitationAmplitude *= fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]);
         						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
     						}
     					}
