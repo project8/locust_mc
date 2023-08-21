@@ -416,7 +416,7 @@ namespace locust
 
     bool CylindricalCavity::InVolume(std::vector<double> tKassParticleXP)
     {
-    	double rLocation = sqrt( tKassParticleXP[0]* tKassParticleXP[0] + tKassParticleXP[1]*tKassParticleXP[1] );
+    	double rLocation = tKassParticleXP[0];
     	double zLocation = tKassParticleXP[2];
 
     	if ((rLocation < GetDimR()) && (fabs(zLocation) < GetDimL()/2.))
