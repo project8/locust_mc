@@ -26,7 +26,17 @@ namespace locust
  @brief Derived class to define RectangularWaveguide fields.
  @details
  Available configuration options:
- No input parameters
+  - "waveguide-central-frequency" -- double [1.63e11] Central frequency in radians
+  to be applied in waveguide mode normalizations.
+  - "waveguide-x" -- double [0.010668] X dimension in meters of rectangular waveguide.
+  - "waveguide-y" -- double [0.004318] Y dimension in meters of rectangular waveguide.
+  - "waveguide-z" -- double [3.0] Z dimension in meters of relevant length of rectangular waveguide.
+  This variable is not used for any waveguide EM field calculations, but appears in the InVolume()
+  calculation for discriminating between active and inactive regions in the experiment.
+  - "center-to-short" -- double [0.05] Distance in meters from center of trap to reflecting short.
+  - "center-to-antenna" -- double [0.05] Distance in meters from center of trap to antenna at the
+  input to the DAQ chain.
+
  */
 
 

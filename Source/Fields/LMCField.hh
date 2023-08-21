@@ -23,7 +23,12 @@ namespace locust
  @brief Base class to characterize Field selection
  @details
  Available configuration options:
- No input parameters
+ - "n-modes" : int -- [2] Range of l, m, and n indices used to configure available mode normalizations.
+ Of the available normalized modes, modes to be included in the simulation itself are identified in the function
+ LMCFieldCalculator::ModeSelect().
+ - "n-pixels" : int -- [100] Number of pixels used in each dimension of the mode field definitions.
+ - "plot-mode-maps": bool -- [false] Option to print all normalized (see n-modes above) mode maps to
+ 2D histograms in Root files, for inspection.
  */
 
     class FieldCore
@@ -103,6 +108,12 @@ namespace locust
             void SetDimR( double aDim );
             double GetDimL() const;
             void SetDimL( double aDim );
+            double GetCenterToShort() const;
+            void SetCenterToShort( double aDistance );
+            double GetCenterToAntenna() const;
+            void SetCenterToAntenna( double aDistance );
+            bool PlotModeMaps() const;
+            void SetPlotModeMaps( bool aFlag );
 
 
 
@@ -116,7 +127,10 @@ namespace locust
             double fL;
             double fX;  // Rectangular waveguide dimensions.
             double fY;
+            double fCENTER_TO_SHORT;
+            double fCENTER_TO_ANTENNA;
             std::vector<std::vector<std::vector<double>>> fAvgDotProductFactor;
+            bool fPlotModeMaps;
 
 
 

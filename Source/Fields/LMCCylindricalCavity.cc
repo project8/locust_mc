@@ -82,7 +82,6 @@ namespace locust
      		SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
      	}
 
-
         /*
                 if( aParam.has( "modemap-filename" ) )
                 {
@@ -104,15 +103,12 @@ namespace locust
 
         CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
 
-        if( aParam.has( "plot-mode-maps" ) )
+        if( PlotModeMaps() )
         {
-        	if (aParam["plot-mode-maps"]().as_bool())
-        	{
-        	    double zSlice = 0.0;
-        	    if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
-        	    LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
-        	    PrintModeMaps(GetNModes(),0, zSlice);
-        	}
+        	double zSlice = 0.0;
+        	if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
+        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
+        	PrintModeMaps(GetNModes(),0, zSlice);
         }
 
     	return true;

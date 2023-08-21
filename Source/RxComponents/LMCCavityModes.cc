@@ -17,6 +17,7 @@ namespace locust
     CavityModes::CavityModes():
 		fOrbitPhase( 0. ),
 		fVoltagePhase( 0 ),
+		fp( 0 ),
 		fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -149,7 +150,7 @@ namespace locust
 	{
 
 		fp = fopen("output/modeEnergies.txt", "a");
-		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, convolved with resonance by default (fBypassTF=false).
+		double amp = excitationAmplitude;
 
 		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
 

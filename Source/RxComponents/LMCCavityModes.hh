@@ -26,7 +26,9 @@ namespace locust
  @brief Derived class describing resonant cavity
  @details
  Available configuration options:
- No input parameters
+       - "norm-check":  bool [false] Record energy depositions of normalized modes into text
+       file and Root histogram file.
+
  */
 
 

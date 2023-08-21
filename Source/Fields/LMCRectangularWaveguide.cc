@@ -27,6 +27,11 @@ namespace locust
     		return false;
     	}
 
+    	if( aParam.has( "waveguide-central-frequency" ) )
+    	{
+    		SetCentralFrequency( 2.*LMCConst::Pi()*aParam["waveguide-central-frequency"]().as_double() );
+    	}
+
         if( aParam.has( "waveguide-x" ) )
         {
             SetDimX( aParam["waveguide-x"]().as_double() );
@@ -44,12 +49,12 @@ namespace locust
 
     	if( aParam.has( "center-to-short" ) ) // for use in waveguide
         {
-            fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
+            SetCenterToShort(aParam["center-to-short"]().as_double());
         }
 
         if( aParam.has( "center-to-antenna" ) ) // for use in waveguide
         {
-            fInterface->fCENTER_TO_ANTENNA = aParam["center-to-antenna"]().as_double();
+            SetCenterToAntenna(aParam["center-to-antenna"]().as_double());
         }
 
         fFieldCore = new PozarRectangularWaveguide();
@@ -59,13 +64,10 @@ namespace locust
 
         CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
 
-        if( aParam.has( "plot-mode-maps" ) )
+        if( PlotModeMaps() )
         {
-        	if (aParam["plot-mode-maps"]().as_bool())
-        	{
-        	    LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
-        	    PrintModeMaps(GetNModes(),1, 0.);
-        	}
+        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
+        	PrintModeMaps(GetNModes(),1, 0.);
         }
 
         return true;

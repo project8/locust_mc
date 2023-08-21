@@ -32,12 +32,10 @@ namespace locust
             fDigitizerCondition(),
             fKassReadyCondition(),
             fProject8Phase( 0 ),
-            fCENTER_TO_SHORT( 0.05 ),
-            fCENTER_TO_ANTENNA( 0.05 ),
             fTransmitter(),
             fField(),
             fConfigureKass( NULL ),
-            fBackReaction( false ),
+            fBackReaction( true ),
             fbWaveguide( false )
 
     {}

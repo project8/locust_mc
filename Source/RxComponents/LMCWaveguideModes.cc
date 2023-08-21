@@ -96,8 +96,8 @@ namespace locust
     {
     	double fcyc = tKassParticleXP[7]/2./LMCConst::Pi(); // cycles/sec
     	double tPositionZ = tKassParticleXP[2];
-    	double aCenterToAntenna = fInterface->fCENTER_TO_ANTENNA;
-    	double aCenterToShort = fInterface->fCENTER_TO_SHORT;
+    	double aCenterToAntenna = fInterface->fField->GetCenterToAntenna();
+    	double aCenterToShort = fInterface->fField->GetCenterToShort();
     	double aDimX = fInterface->fField->GetDimX();
 
         double tVoltagePhaseAntenna = 2.*LMCConst::Pi()*(aCenterToAntenna - tPositionZ) / (GroupVelocity(fcyc, aDimX) / dopplerFrequency[0]);

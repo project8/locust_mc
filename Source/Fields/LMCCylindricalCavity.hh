@@ -28,9 +28,21 @@ namespace locust
  @class CylindricalCavity
  @author P. Slocum
  @brief Derived class to define CylindricalCavity fields.
- @details
+ @details  This class calculates field values induced by a moving electron in a
+     cylindrical cavity.  The fields are calculated at either one probe location
+     if the simulation parameter n-channels = 1, or at two probe locations if
+     n-channels = 2.
  Available configuration options:
- No input parameters
+   - "cavity-radius" -- double [0.18] Radius of default cylindrical cavity, in meters.
+   - "cavity-length" -- double [3.0] Length of default cylindrical cavity, in meters.
+   - "cavity-probe-gain0" -- double [1.0] Gain of probe 0.
+   - "cavity-probe-gain1" -- double [1.0] Gain of probe 1.
+   - "cavity-probe-z0" -- double [0.0] Z location of probe 0, in meters.
+   - "cavity-probe-z1" -- double [0.0] Z location of probe 1, in meters.
+   - "cavity-probe-r-fraction0" -- double [0.5] Fractional radial position of probe 0 (unitless).
+   - "cavity-probe-r-fraction1" -- double [0.5] Fractional radial position of probe 1 (unitless).
+   - "cavity-probe-theta0" -- double [0.0] Azimuthal angle of probe 0 (radians).
+   - "cavity-probe-theta1" -- double [0.0] Azimuthal angle of probe 1 (radians).
  */
 
 

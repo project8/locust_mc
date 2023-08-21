@@ -19,7 +19,7 @@ namespace locust
      @details
      Available configuration options:
      - "hfss-filetype": string -- The type of file being handler. Currently only Transfer function and Finite Impulse Response
-     - "print-fir-debug": bool -- Print text file of FIR coefficients.
+     - "print-fir-debug": bool -- Print text file of FIR and TF coefficients and/or plot Root histograms to file.
      */
     
     class HFSSResponseFileHandlerCore

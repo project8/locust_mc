@@ -24,7 +24,9 @@ namespace locust
  @brief Base class to characterize power combiners
  @details
  Available configuration options:
- No input parameters
+      - "waveguide-short":  bool [true] optional presence/absence of reflecting short in waveguide.
+      - "voltage-check": bool [false] optional print signal voltages to terminal during simulation.
+      This can be useful for e.g. checking suitability of digitizer range or other debugging.
  */
     class PowerCombiner
     {

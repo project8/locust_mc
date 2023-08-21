@@ -25,7 +25,7 @@ namespace locust
             fjunctionResistance( 0.3 ),
 			fvoltageCheck( false ),
 			fNCavityModes( 0 ),
-			fNChannels( 2 ),
+			fNChannels( 1 ),
 			fWaveguideShortIsPresent( true )
     {}
     PowerCombiner::~PowerCombiner() {}
@@ -82,12 +82,6 @@ namespace locust
 			LPROG( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
-
-
-
-
-
-
 
     int PowerCombiner::GetNElementsPerStrip()
     {
@@ -159,6 +153,7 @@ namespace locust
     {
      	fNCavityModes = aNumberOfModes;
     }
+
     int PowerCombiner::GetNChannels()
     {
         return fNChannels;
@@ -167,6 +162,7 @@ namespace locust
     {
      	fNChannels = aNumberOfChannels;
     }
+
     bool PowerCombiner::GetWaveguideShortIsPresent()
     {
     	return fWaveguideShortIsPresent;
