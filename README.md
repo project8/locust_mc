@@ -1,10 +1,10 @@
 # locust_mc
 
-locust_mc is a monte carlo simulation package of the receiver chain for Project 8.
+locust_mc is a monte carlo simulation package for simulating RF signals.
 
 ### Instructions For Use:
 
-Once locust is installed and added to your path (see Installing in Section #4), it runs and is typically configured on the command line as:
+After installation, Locust runs on the command line as
 ```
   $ LocustSim config=/path/to/config/LocustConfigFile.json
 ```
@@ -61,7 +61,7 @@ Installation
 
 ### Installing
 
-The following steps will build locust from scratch.  In the terminal:
+The following steps will build locust from source.  In the terminal:
 
 1. Clone the repository and make a build directory as recommended above. You will also have to initialize the submodules.
   ```
@@ -75,21 +75,14 @@ The following steps will build locust from scratch.  In the terminal:
 
   ```
   $ cd build
-  $ ccmake ..
+  $ ccmake ../
   ```
 
-  You will be prompted to press [c] to configure, and the window will fill up with several options. 
+You will be prompted to press [c] to configure, and the window will fill up with a list of options. 
 
-  You should set the CMake variable `CMAKE_BUILD_TYPE` to either `RELEASE`, `STANDARD`, or `DEBUG` (default), in order
-  of how much text output you would like (from least to most) and how much compiler optimization
-  should be performed (from most to least).
+To build with Locust with Kassiopeia, set ```locust_mc_BUILD_WITH_KASSIOPEIA``` to ```ON```.  To generate unit test executables, set ```locust_mc_ENABLE_TESTING``` to ON.  System-dependent compiler flags can be adjusted in the field ```USE_CPPxx```.
 
-  The install prefix is specified by the CMake variable `CMAKE_INSTALL_PREFIX`.
-  The library, binaries, and header files will be installed in the
-  lib, bin, and include subdirectories. The default install prefix is the
-  build directory.
-
-  After you've finished, if you've changed anything press [c] again to configure.  Then [g] to generate and exit.
+After you've finished, if you've changed anything press [c] again to configure.  Then [g] to generate and exit.
 
 3. Build and install.
 
@@ -113,50 +106,42 @@ The following steps will build locust from scratch.  In the terminal:
   
 ### Exit codes
 
-When running Locust with Kassiopeia in a shared cluster environment, 2 CPUs may be required unless hyperthreading is enabled on the cluster.  If the level of activity on the cluster is high, thread signals between the separate CPUs can occasionally be missed and an exception will be thrown.  Locust terminates with an integer exception in these three cases:
+Locust terminates with an integer exception in the following case:  
 
 *  ```exit(1)``` if the digitizer range was saturated.
-*  ```exit(2)``` if the Kassiopeia thread did not start.
-*  ```exit(3)``` if a digitizer sample was skipped.  
 
-Immediately after Locust has finished, the exit status can be checked from a bash prompt with ```echo #?```.  If the returned value is zero, then no exception was thrown.  Returned values of ```1```, ```2```, or ```3``` correspond to the exceptions above.  Output egg files are not written if an exception is thrown.  Exit codes ```2``` or ```3``` can typically be immediately requeued.  An exit code of ```1``` should be either reconfigured to unsaturate the digitizer, or if the digitizer does not appear saturated, reported as an issue.
+Immediately after Locust has finished, the exit status can be checked from a bash prompt with ```echo #?```.  If the returned value is zero, then no exception was thrown.  A returned value of ```1``` corresponds to the exception above.  Output egg files are not written if an exception is thrown.
 
 ### Docker container
 
-* A Docker container with Locust is available at https://hub.docker.com/r/project8/locust_mc 
+* A Docker container with Locust is available at ```ghcr.io/project8/locust_mc:v2.4.0``` .  
 
 * This Docker container can be used with Docker (with superuser privileges).
 
 * Pull the container to your system with
 ```
-> sudo docker pull project8/locust_mc
+> sudo docker pull ghcr.io/project8/locust_mc:v2.4.0
 ```
 
 Open a shell inside the container with
 ```
-> sudo docker run --rm -it project8/locust_mc /bin/bash
+> sudo docker run --rm -it ghcr.io/project8/locust_mc:v2.4.0 /bin/bash
 ```
 
 * The Docker container can also be used with Singularity (as a regular user without sudo).
 
 Pull the container to your system with
 ```
-> singularity pull docker://project8/locust_mc
+> singularity pull docker://ghcr.io/project8/locust_mc:v2.4.0
 ```
 
 Open a shell inside the container with
 ```
-> singularity shell /path/to/local/sif/locust-latest.sif
+> singularity shell /path/to/local/sif/[nameOfContainer].sif
 ```
-
-or to avoid mounting the $HOME directory
-```
-> singularity shell --no-home /path/to/local/sif/locust-latest.sif
-```
-
 and to mount a local directory for e.g. I/O to the container
 ```
-> singularity shell --no-home --bind /path/to/local/directory:/usr/local/p8/locust/v2.1.5/output ./locust_mc_latest.sif 
+> singularity shell --no-home --bind /path/to/local/directory:/usr/local/p8/locust/v2.1.5/output ./[nameOfContainer].sif 
 ```
 
 
