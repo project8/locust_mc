@@ -16,7 +16,9 @@ namespace locust
 
     CavityModes::CavityModes():
 		fOrbitPhase( 0. ),
-		fVoltagePhase( 0 )
+		fVoltagePhase( 0 ),
+		fp( 0 ),
+		fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
@@ -33,6 +35,11 @@ namespace locust
     		LERROR(lmclog,"Error configuring PowerCombiner class from CavityModes subclass");
     		return false;
     	}
+
+        SetNCavityModes(fInterface->fField->GetNModes());
+
+        SizeNChannels(GetNChannels());
+
 
         if( aParam.has( "norm-check" ) )
         {
@@ -61,21 +68,30 @@ namespace locust
             }
         }
 
-	int nchannels = 2; //TO-DO:  Configure this as LMCGenerator::fNChannels.
-        fVoltagePhase.resize(nchannels); // max nchannels.  TO-DO:  Configure this as LMCGenerator::fNChannels.
-        for (int n = 0; n < GetNCavityModes(); n++)
-        {
-            fVoltagePhase[n].resize(GetNCavityModes());
-            for (int i = 0; i < GetNCavityModes(); i++)
-            {
-            	fVoltagePhase[n][i].resize(GetNCavityModes());
-            	for (int j = 0; j < GetNCavityModes(); j++)
-            	{
-            		fVoltagePhase[n][i][j].resize(GetNCavityModes());
-            	}
-            }
-        }
 
+    	return true;
+    }
+
+    bool CavityModes::SizeNChannels(int aNumberOfChannels)
+    {
+    	SetNChannels(aNumberOfChannels);
+
+    	std::vector<std::vector<std::vector<std::vector<double>>>> tZeroVector;
+    	fVoltagePhase.swap(tZeroVector);
+    	fVoltagePhase.resize(aNumberOfChannels);
+
+    	for (int n = 0; n < GetNChannels(); n++)
+    	{
+    		fVoltagePhase[n].resize(GetNCavityModes());
+    		for (int i = 0; i < GetNCavityModes(); i++)
+    		{
+    			fVoltagePhase[n][i].resize(GetNCavityModes());
+    			for (int j = 0; j < GetNCavityModes(); j++)
+    			{
+    				fVoltagePhase[n][i][j].resize(GetNCavityModes());
+    			}
+    		}
+    	}
 
     	return true;
     }
@@ -134,7 +150,7 @@ namespace locust
 	{
 
 		fp = fopen("output/modeEnergies.txt", "a");
-		double amp = excitationAmplitude;  // Kass electron current * J\cdot E, convolved with resonance by default (fBypassTF=false).
+		double amp = excitationAmplitude;
 
 		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
 

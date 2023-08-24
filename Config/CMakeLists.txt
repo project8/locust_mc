@@ -25,10 +25,11 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/JustKassFieldMap.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Waveguide_Template.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_FreeSpace_Template.xml 
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_CCA.xml 
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_1GHz.xml     
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_CCA.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_1GHz.xml
     FreeSpaceGeometry.xml
 	CavityGeometry_VTinyCoil.xml
+	CavityGeometry_V00_00_00.xml
 	WaveguideGeometry_VTinyCoil.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json

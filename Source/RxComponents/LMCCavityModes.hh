@@ -8,6 +8,7 @@
 #ifndef LMCCAVITYMODES_HH_
 #define LMCCAVITYMODES_HH_
 
+#include "LMCKassLocustInterface.hh"
 #include "LMCPowerCombiner.hh"
 #include "param.hh"
 #include "logger.hh"
@@ -25,7 +26,10 @@ namespace locust
  @brief Derived class describing resonant cavity
  @details
  Available configuration options:
- No input parameters
+       - "norm-check":  bool [false] Record energy depositions of normalized modes into text
+       file and Root histogram file.  Each record in the text/Root file represents an updated
+       rolling average of relative mode energy depositions.
+
  */
 
 
@@ -40,7 +44,8 @@ namespace locust
         	virtual bool AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex);
             double GetVoltagePhase(int aChannel, int l, int m, int n);
             void SetVoltagePhase( double aPhase, int aChannel, int l, int m, int n);
-        	bool WriteRootHisto();
+            virtual bool SizeNChannels(int aNumberOfChannels);
+            bool WriteRootHisto();
 
 
 
@@ -53,6 +58,7 @@ namespace locust
 #ifdef ROOT_FOUND
             FileWriter* fRootHistoWriter;
 #endif
+            kl_interface_ptr_t fInterface;
 
 
 
