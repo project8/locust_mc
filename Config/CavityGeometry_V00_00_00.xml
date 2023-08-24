@@ -1,0 +1,140 @@
+    <define name="magnetic_field_scale" value="3200"/>
+
+
+    <define name="start_coil_windings" value="4"/>
+<!--    <define name="start_coil_z_position" value="0.0"/>  -->
+    <define name="start_coil_z_position" value="-2.45"/>
+    <define name="start_coil_radius" value="0.6"/>
+    <define name="start_coil_length" value="0.1"/>
+    <define name="start_coil_current" value="{0.7 * [magnetic_field_scale] * [start_coil_windings]}"/>
+
+    <define name="background_coil_windings" value="190"/>
+<!--    <define name="background_coil_z_position" value="0.1"/>  -->
+    <define name="background_coil_z_position" value="-2.35"/>
+    <define name="background_coil_radius" value="0.4"/>
+    <define name="background_coil_length" value="{4.8}"/>
+    <define name="background_coil_current" value="{0.25 * [magnetic_field_scale]* [background_coil_windings]}"/>
+    
+    <define name="end_coil_windings" value="4"/>
+<!--    <define name="end_coil_z_position" value="4.9"/>  -->
+    <define name="end_coil_z_position" value="2.45"/>
+    <define name="end_coil_radius" value="0.6"/>
+    <define name="end_coil_length" value="0.1"/>
+    <define name="end_coil_current" value="{0.7 * [magnetic_field_scale] * [end_coil_windings]}"/>
+
+    <define name="pinch1_coil_windings" value="1"/>
+<!--    <define name="pinch1_coil_z_position" value="1.0"/> -->
+    <define name="pinch1_coil_z_position" value="-1.45"/>
+    <define name="pinch1_coil_radius" value="0.4"/>
+    <define name="pinch1_coil_length" value="0.025"/>
+    <define name="pinch1_coil_current" value="{0.15 * [magnetic_field_scale]* [pinch1_coil_windings]}"/>
+    
+    
+    <define name="pinch2_coil_windings" value="1"/>
+<!--    <define name="pinch2_coil_z_position" value="4.0"/>  -->
+    <define name="pinch2_coil_z_position" value="1.55"/>
+    <define name="pinch2_coil_radius" value="0.4"/>
+    <define name="pinch2_coil_length" value="0.025"/>
+    <define name="pinch2_coil_current" value="{0.15 * [magnetic_field_scale]* [pinch2_coil_windings]}"/>
+
+    <print name="pinch2_coil_current" value="[pinch2_coil_current]"/>
+    <print name="pinch1_coil_current" value="[pinch1_coil_current]"/>
+
+    <external_define name="max_step_length" value="0.1"/><!-- max. length of each step during tracking -->
+
+<geometry>
+
+
+    
+    <!-- solenoids -->
+
+    <tag name="magnet_tag" name="solenoid_tag" name="background_solenoid_tag">
+        <cylinder_tube_space name="background_solenoid_space" z1="[background_coil_z_position]" z2="{[background_coil_length] + [background_coil_z_position]}" r1="{[background_coil_radius]}" r2="{[background_coil_radius] + 0.005}" radial_mesh_count="300"/>
+    </tag>
+    
+    
+    <tag name="magnet_tag" name="solenoid_tag" name="pinch1_solenoid_tag">
+        <cylinder_tube_space name="pinch1_solenoid_space" z1="{[pinch1_coil_z_position] - [pinch1_coil_length]/2}" z2="{[pinch1_coil_z_position] + [pinch1_coil_length]/2}" r1="{[pinch1_coil_radius]}" r2="{[pinch1_coil_radius] + 0.005}" radial_mesh_count="300"/>
+    </tag>
+    
+    <tag name="magnet_tag" name="solenoid_tag" name="pinch2_solenoid_tag">
+        <cylinder_tube_space name="pinch2_solenoid_space" z1="{[pinch2_coil_z_position] - [pinch2_coil_length]/2}" z2="{[pinch2_coil_z_position] + [pinch2_coil_length]/2}" r1="{[pinch2_coil_radius]}" r2="{[pinch2_coil_radius] + 0.005}" radial_mesh_count="300"/>
+    </tag>
+    
+    
+    <tag name="magnet_tag" name="solenoid_tag" name="start_solenoid_tag">
+        <cylinder_tube_space name="start_solenoid_space" z1="{[start_coil_z_position]}" z2="{[start_coil_z_position] + [start_coil_length]}" r1="{[start_coil_radius]}" r2="{[start_coil_radius] + 0.005}" radial_mesh_count="300"/>
+    </tag>
+    <tag name="magnet_tag" name="solenoid_tag" name="end_solenoid_tag">
+        <cylinder_tube_space name="end_solenoid_space" z1="{[end_coil_z_position]}" z2="{[end_coil_z_position] + [end_coil_length]}" r1="{[end_coil_radius]}" r2="{[end_coil_radius] + 0.005}" radial_mesh_count="300"/>
+    </tag>
+        
+    
+    <space name="project8_assembly">
+        <space name="background_solenoid" node="background_solenoid_space"/>
+        <space name="pinch1_solenoid" node="pinch1_solenoid_space"/>
+        <space name="pinch2_solenoid" node="pinch2_solenoid_space"/>
+        <space name="start_solenoid" node="start_solenoid_space"/>
+        <space name="end_solenoid" node="end_solenoid_space"/>
+    </space>
+
+    <!-- world -->
+    <!--
+    <cylinder_space name="world_space" z1="-200.0e-3" z2="200.0e-3" r="200.0e-3"/>
+    -->
+    <cylinder_space name="world_space" z1="-100.0" z2="100.0" r="20.0"/>
+    <space name="world" node="world_space">
+      <space name="project8" tree="project8_assembly">
+        <transformation rotation_axis_angle="0. 90. 90."/>
+      </space>
+    </space>
+
+    <electromagnet name="electromagnet_background_solenoid" spaces="world/project8/@background_solenoid_tag" current="[background_coil_current]"/>
+    
+    <electromagnet name="electromagnet_pinch1_solenoid" spaces="world/project8/@pinch1_solenoid_tag" current="[pinch1_coil_current]"/>
+    <electromagnet name="electromagnet_pinch2_solenoid" spaces="world/project8/@pinch2_solenoid_tag" current="[pinch2_coil_current]"/>
+    <electromagnet name="electromagnet_pinch2_solenoid" spaces="world/project8/@start_solenoid_tag" current="[start_coil_current]"/>
+    <electromagnet name="electromagnet_pinch2_solenoid" spaces="world/project8/@end_solenoid_tag" current="[end_coil_current]"/>
+    
+
+</geometry>
+
+<kemfield>
+
+    <!-- magnetic fields -->
+    
+    <electromagnet_field
+            name="field_electromagnet"
+            directory="[KEMFIELD_CACHE]"
+            file="CavityMagnets.kbd"
+            system="world/project8"
+            spaces="world/project8/@solenoid_tag"
+            >
+        <zonal_harmonic_field_solver
+                number_of_bifurcations="-1"
+                convergence_ratio=".99"
+                convergence_parameter="1.e-15"
+                proximity_to_sourcepoint="1.e-12"
+                number_of_central_coefficients="500"
+                use_fractional_central_sourcepoint_spacing="true"
+                central_sourcepoint_fractional_distance="1e-2"
+                central_sourcepoint_spacing="2.e-5"
+                number_of_remote_coefficients="200"
+                remote_sourcepoint_start="-1.e-1"
+                remote_sourcepoint_end="1.e-1"
+        />
+    </electromagnet_field>
+
+
+    <magnetic_superposition_field
+        name="total_magnetic_field"
+        use_caching="false"
+            >
+<!--        <add_field name="background_field" enhancement="1.0" />  -->
+        <add_field name="field_electromagnet" enhancement="1.0" />
+    </magnetic_superposition_field>
+
+    
+ 
+</kemfield>
+

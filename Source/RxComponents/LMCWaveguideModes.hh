@@ -34,19 +34,20 @@ namespace locust
             WaveguideModes();
             virtual ~WaveguideModes();
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool AddOneModeToCavityProbe(Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle);
-            double GetVoltagePhaseAntenna();
-            void SetVoltagePhaseAntenna( double aPhase );
-            double GetVoltagePhaseShort();
-            void SetVoltagePhaseShort( double aPhase );
+        	virtual bool AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle);
+            double GetVoltagePhaseAntenna(int aChannel, int l, int m, int n);
+            void SetVoltagePhaseAntenna( double aPhase, int aChannel, int l, int m, int n);
+            double GetVoltagePhaseShort(int aChannel, int l, int m, int n);
+            void SetVoltagePhaseShort( double aPhase, int aChannel, int l, int m, int n);
+            virtual bool SizeNChannels(int aNumberOfChannels);
 
 
 
         private:
-            bool InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency);
+            bool InitializeVoltagePhases(std::vector<double> tKassParticleXP, std::vector<double> dopplerFrequency, int aChannel, int l, int m, int n);
             double GroupVelocity(double fcyc, double aDimX);
-            double fVoltagePhaseAntenna;
-            double fVoltagePhaseShort;
+            std::vector<std::vector<std::vector<std::vector<double>>>> fVoltagePhaseAntenna;
+            std::vector<std::vector<std::vector<std::vector<double>>>> fVoltagePhaseShort;
             kl_interface_ptr_t fInterface;
 
 

@@ -11,6 +11,7 @@
 #include "LMCGenerator.hh"
 
 #include "LMCKassLocustInterface.hh"
+#include "LMCRectangularWaveguide.hh" // : LMCField
 #include "LMCException.hh"
 #include <vector>
 using std::vector;

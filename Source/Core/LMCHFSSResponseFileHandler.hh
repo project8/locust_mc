@@ -19,7 +19,7 @@ namespace locust
      @details
      Available configuration options:
      - "hfss-filetype": string -- The type of file being handler. Currently only Transfer function and Finite Impulse Response
-     - "print-fir-debug": bool -- Print text file of FIR coefficients.
+     - "print-fir-debug": bool -- Print text file of FIR and TF coefficients and/or plot Root histograms to file.
      */
     
     class HFSSResponseFileHandlerCore
@@ -35,9 +35,9 @@ namespace locust
         virtual std::pair<double,double> ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
-        void PrintFIR( std::vector<double> );
-        void PrintFIR( fftw_complex* aFilter );
-        bool WriteRootHisto( std::vector<double> aFilter, bool bIQ );
+        void PrintFIR( std::vector<double>, int nBins, const char* filename );
+        void PrintFIR( fftw_complex* aFilter, int nBins, const char* filename );
+        bool WriteRootHisto( std::vector<double> aFilter, int nBins, bool bIQ );
 
         
     protected:

@@ -13,9 +13,14 @@ are needed in the configuration, either in the json file or on the command line:
 "cavity-signal.shift-n-bins": 6000,
 "cavity-signal.zero-padding-size": 1000
 
-To print out the resulting FIR to a text file "output/FIR.txt", use this parameter:
-
+To print out the resulting FIR to a text file "output/FIR.txt", and Root file "output/FIRhisto.root" use this parameter:
 "cavity-signal.print-fir-debug"=true
+
+Other configuration parameters:
+     - "equivalentR": Resistance from equivalent RLC circuit in Ohms
+     - "equivalentL": Inductance from equivalent RLC circuit in Henries
+     - "equivalentC": Capacitance from equivalent RLC circuit in Farads
+
 
  */
 

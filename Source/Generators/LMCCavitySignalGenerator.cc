@@ -36,7 +36,7 @@ namespace locust
         fBypassTF( false ),
         fNormCheck( false ),
         fIntermediateFile( false ),
-        fUseDirectKassPower( false ),
+        fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
 		fUnitTestRootFile( false ),
         fInterface( new KassLocustInterface() )
@@ -50,16 +50,20 @@ namespace locust
 
 
 
-
-
     bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
         if( aParam.has( "rectangular-waveguide" ) )
         {
         	fInterface->fbWaveguide = aParam["rectangular-waveguide"]().as_bool();
+        	if ( aParam.has ( "direct-kass-power" ) )
+        	{
+        		fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
+        	}
         }
 
+
+        // Define generic response function for use in cavity or waveguide:
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -68,17 +72,29 @@ namespace locust
     		return false;
     	}
 
-        if( aParam.has( "tf-receiver-filename" ) )
+    	// Configure the generic response function:
+        if( aParam.has( "tf-receiver-filename" ) ) // If using HFSS output
         {
-            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
-            {
-            	LERROR(lmclog,"FIR has not been generated.");
-            	exit(-1);
-            	return false;
-            }
+        	if (!fInterface->fbWaveguide)
+        	{
+        		LERROR(lmclog,"HFSS data is not yet supported in the cavity.  Only the waveguide.");
+        		exit(-1);
+        		return false;
+        	}
+        	else if ( fUseDirectKassPower )
+        	{
+        		LWARN(lmclog,"Using direct Kass energy budget, and not HFSS data, due to parameter \"direct-kass-power\" = true");
+        	}
+        	else if (!fTFReceiverHandler->ReadHFSSFile())
+        	{
+        		LERROR(lmclog,"FIR has not been generated.");
+        		exit(-1);
+        		return false;
+        	}
         }
-        else if (!fInterface->fbWaveguide)// Generate analytic response function
+        else if (!fInterface->fbWaveguide) // Cavity config follows
         {
+        	// Cavity as equivalent circuit
         	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
         	{
         		fAnalyticResponseFunction = new EquivalentCircuit();
@@ -98,6 +114,7 @@ namespace locust
         			}
         		}
         	}
+        	// Cavity as damped harmonic oscillator
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
@@ -116,52 +133,27 @@ namespace locust
         		}
         	}
         } // aParam.has( "tf-receiver-filename" )
-        else if (fInterface->fbWaveguide)
-        {
-        	fUseDirectKassPower = true;
-        }
 
-        if (fInterface->fbWaveguide)
+
+        // Select mode fields and power combiners:
+        if (fInterface->fbWaveguide) // Waveguide
         {
         	fInterface->fField = new RectangularWaveguide;
         	fPowerCombiner = new WaveguideModes;
-        	if ( aParam.has( "waveguide-short" ) )
-        	{
-        		fPowerCombiner->SetWaveguideShortIsPresent(aParam["waveguide-short"]().as_bool());
-        	}
-        	else
-        	{
-        		// This is the same as the default case in LMCPowerCombiner
-        		fPowerCombiner->SetWaveguideShortIsPresent( true );
-        	}
-        	// Allow back reaction only if short is present:
-        	if ( fPowerCombiner->GetWaveguideShortIsPresent() )
-        	{
-        		if ( aParam.has( "back-reaction" ) )
-        		{
-        			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-        		}
-        		else
-        		{
-        			fInterface->fBackReaction = true;
-        		}
-        	}
         }
-        else
+        else // Cavity
         {
         	fInterface->fField = new CylindricalCavity;
         	fPowerCombiner = new CavityModes;
-        	if ( aParam.has( "back-reaction" ) )
-        	{
-        		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-        	}
-        }
-        if( aParam.has( "n-modes" ) )
-        {
-            fInterface->fField->SetNModes(aParam["n-modes"]().as_int());
         }
 
-        fPowerCombiner->SetNCavityModes(fInterface->fField->GetNModes());
+        // Configure selected mode fields and power combiners:
+        if (!fInterface->fField->Configure(aParam))
+        {
+        	LERROR(lmclog,"Error configuring LMCField.");
+        	exit(-1);
+        	return false;
+        }
         if(!fPowerCombiner->Configure(aParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
@@ -169,33 +161,58 @@ namespace locust
 			return false;
 		}
 
-        if (!fInterface->fField->Configure(aParam))
-        {
-        	LERROR(lmclog,"Error configuring LMCField.");
-        	exit(-1);
-        	return false;
-        }
+    	// Configure back reaction:
+    	if (( fInterface->fbWaveguide ) && ( fPowerCombiner->GetWaveguideShortIsPresent() ))
+    	{
+    		if ( aParam.has( "back-reaction" ) )
+    		{
+    			// optional to switch off:
+    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+        		LWARN(lmclog,"Switching back-reaction to " << fInterface->fBackReaction );
+    		}
+    		else
+    		{
+    			// if the short is present in the waveguide, default is for back reaction = true
+    			fInterface->fBackReaction = true;
+    		}
+    	}
+    	else if ( !fInterface->fbWaveguide ) // Cavity
+    	{
+    		if ( aParam.has( "back-reaction" ) )
+    		{
+    			// optional to switch off
+    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+        		LWARN(lmclog,"Switching back-reaction to " << fInterface->fBackReaction );
+    		}
+    		else
+    		{
+    			// default is true in the cavity
+    			fInterface->fBackReaction = true;
+    		}
+    	}
+		else
+		{
+			// No short, no cavity -> no back reaction.
+			fInterface->fBackReaction = false;
+		}
 
+    	// Configure signal parameters:
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
-
         if( aParam.has( "event-spacing-samples" ) )
         {
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
         }
-
         if( aParam.has( "override-aliasing" ) )
         {
             fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
-
         if( aParam.has( "bypass-tf" ) )
         {
         	fBypassTF = aParam["bypass-tf"]().as_bool();
         }
-
         if( aParam.has( "norm-check" ) )
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
@@ -217,6 +234,7 @@ namespace locust
             gxml_filename = aParam["xml-filename"]().as_string();
         }
 
+        // Configure the transmitter, which defines the impulses taken from Kassiopeia.
         if( aParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
@@ -243,7 +261,7 @@ namespace locust
             exit(-1);
         }
 
-
+        // Configure Locust-Kass interface classes and parameters:
         fFieldCalculator = new FieldCalculator();
         if(!fFieldCalculator->Configure(aParam))
         {
@@ -362,10 +380,9 @@ namespace locust
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
-    					double modeAmplitude = fInterface->fField->TotalFieldNorm(tE_normalized);
+    					double modeAmplitude = fInterface->fField->NormalizedEFieldMag(tE_normalized);
 
-
-    					if (!fInterface->fbWaveguide)
+    					if (!fInterface->fbWaveguide) // Cavity:
     					{
     						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
@@ -373,32 +390,34 @@ namespace locust
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
     					}
-    					else
+    					else // Waveguide:
     					{
-    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
-    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						// Calculate propagating E-field with J \dot E and integrated Poynting vector.  cavityFIRSample units are [current]*[ohms].
-    						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]) * cavityFIRSample * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
-
     						// Waveguide default:  Use direct Kassiopeia power budget.
     						if (fUseDirectKassPower)
     						{
-    							// override one-way signal amplitude with direct Kass power:
+    							// replace signal amplitude with direct Kass power:
     							unitConversion = 1.0;  // Kass power is already in Watts.
     							std::vector<double> tTempKassParticleXP = {0.,0.,0.,0.,0.,0.,0.,tKassParticleXP[7],0.};
     							double modeMax = fInterface->fField->GetNormalizedModeField(l,m,n,tTempKassParticleXP,0,1).back();
-    							double modeFrac = tE_normalized.back()/modeMax;
+    							double modeFrac = 0.; if (fabs(modeMax) > 0.) modeFrac = tE_normalized.back()/modeMax;
         						excitationAmplitude = tAvgDotProductFactor*modeFrac*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
         						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
     						}
-
+    						else
+    						{
+        						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+        						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+        						// Jackson |A| = 2piZ/c \int{J \dot E dV}, written assuming cgs units, and cavityFIRSample represents qvZ:
+        						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * 2. * LMCConst::Pi() / (LMCConst::C()*1.e2);
+        						// To extract the propagating E-field, scale the excitation amplitude as in the Pozar Poynting vector integral, p. 114:
+        						excitationAmplitude *= fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]);
+        						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
+    						}
     					}
 
     					for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)  // one channel per probe.
     					{
     						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-
     						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
     						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
     						double totalScalingFactor = sqrt(50.) * unitConversion;
@@ -501,6 +520,8 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+
+    	fPowerCombiner->SizeNChannels(fNChannels);
  		if (fNChannels > 2)
  		{
     		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
