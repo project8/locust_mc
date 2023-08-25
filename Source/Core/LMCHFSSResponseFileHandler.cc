@@ -184,8 +184,14 @@ namespace locust
     }
     fFilterComplex = fFIRComplex;
 
-    if (fPrintFIR) PrintFIR( fFIRComplex, fFIRNBins, "output/FIRhisto.root" );
-    if (fPrintFIR) PrintFIR( fTFComplex, fTFNBins, "output/TFhisto.root" );
+    if (fPrintFIR)
+    {
+    	PrintFIR( fFIRComplex, fFIRNBins, "output/FIRhisto.root" );
+        PrintFIR( fTFComplex, fTFNBins, "output/TFhisto.root" );
+        LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
+        LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
+        getchar();
+    }
 
     LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
     return true;
@@ -277,7 +283,13 @@ namespace locust
         	fFilterComplex[i][1] = gfArray[i].second.second;
         }
 
-        if (fPrintFIR) PrintFIR( fFilterComplex, fFIRNBins, "output/FIRhisto.root" );
+        if (fPrintFIR)
+        {
+        	PrintFIR( fFilterComplex, fFIRNBins, "output/FIRhisto.root" );
+            LPROG( lmclog, "Finished writing histos to output/FIRhisto.root");
+            LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
+            getchar();
+        }
 
         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
