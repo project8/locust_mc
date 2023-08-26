@@ -16,7 +16,7 @@
         "transmitter": "kass-current",
         "waveguide-x": 0.010668,
         "waveguide-y": 0.004318,
-        "waveguide-y": 10.0,        
+        "waveguide-z": 10.0,        
         "center-to-short": 0.05,
         "center-to-antenna": 0.05,  
         "waveguide-central-frequency": 1.63e11,

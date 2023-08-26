@@ -1,0 +1,47 @@
+{
+    "generators":
+    [   
+     "test-signal",
+     "lpf-fft",
+     "decimate-signal",
+     "gaussian-noise",
+     "digitizer"
+    ],
+
+    "lpf-fft":
+    {
+    },
+
+    "decimate-signal":
+    {
+    },
+
+    "test-signal":
+    {
+    "rf-frequency": 20.7e9,
+    "lo-frequency": 20.65e9,
+    "amplitude": 5.0e-8 
+    },
+
+    
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
+        "n-records": 1,
+        "n-channels": 1,
+        "record-size": 8192
+    },
+  
+    "gaussian-noise":
+    {
+    "noise-floor-psd": 4.0e-22,
+    "domain": "time"
+    },
+
+    "digitizer":
+    {
+    "v-range": 8.0e-5,
+    "v-offset": -4.0e-5
+    }
+
+}
