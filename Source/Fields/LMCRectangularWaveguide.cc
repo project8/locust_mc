@@ -377,11 +377,16 @@ namespace locust
 
     bool RectangularWaveguide::InVolume(std::vector<double> tKassParticleXP)
     {
-    	double xLocation = tKassParticleXP[0];
-    	double yLocation = tKassParticleXP[1];
+    	// TO-DO:  Check x and y axes of Kass vs. waveguide geometry.  For
+    	// now, rely on zLocation to define waveguide volume, and assume
+    	// that the waveguide jacket termination works to stop particles
+    	// when they hit the walls of the waveguide.
+
+//    	double xLocation = tKassParticleXP[0] * cos(tKassParticleXP[1]);
+//    	double yLocation = tKassParticleXP[0] * sin(tKassParticleXP[1]);
     	double zLocation = tKassParticleXP[2];
 
-    	if ((fabs(xLocation) < GetDimX()/2.) && (fabs(yLocation) < GetDimY()/2.) && (fabs(zLocation) < GetDimL()/2.))
+    	if (fabs(zLocation) < GetDimL()/2.)
     	{
     		return true;
     	}
