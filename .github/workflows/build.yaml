@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   BASE_IMG_REPO: project8/kassiopeia_builder
-  BASE_IMG_TAG: v4.0.0-beta.0
+  BASE_IMG_TAG: v4.0.0
   FINAL_BASE_IMG_REPO: project8/luna_base
   FINAL_BASE_IMG_TAG: v1.3.3
   locust_mc_BUILD_WITH_KASSIOPEIA: ON
