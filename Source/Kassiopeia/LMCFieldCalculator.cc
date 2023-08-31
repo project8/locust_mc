@@ -57,8 +57,8 @@ namespace locust
      {
 
         if( aParam.has( "multi-mode" ) )
-        {
-    		LPROG(lmclog,"Running in multimode configuration.");
+        {	
+    		if(aParam["multi-mode"]().as_bool()) LPROG(lmclog,"Running in multimode configuration.");
         	fbMultiMode = aParam["multi-mode"]().as_bool();
         }
 
@@ -131,7 +131,6 @@ namespace locust
         							LWARN(lmclog,"GF->FIR was not generated.");
         							return false;
         						}
-							//std::cout << "fTFReceiverHandler::FilterSizeArray: " << fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n) << std::endl;
 							SetFilterSizeArray(bTE, l, m, n, fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n));
 						}
 					}
@@ -148,7 +147,6 @@ namespace locust
         if (fTFReceiverHandler)
         {   
             fNFilterBinsRequiredArray[bTE][l][m][n] = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(bTE,l,m,n));
-//      std::cout << "fNFilterBinsRequired set to " << fNFilterBinsRequired << std::endl;
         }   
     }   
 
@@ -356,7 +354,6 @@ namespace locust
     	double tVy = tKassParticleXP[4];
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
         std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE,l,m,n,tKassParticleXP, 0);
-	//std::cout << complexConvolution.first << " " << complexConvolution.second << std::endl;
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
 
@@ -377,7 +374,6 @@ namespace locust
         // "dhoMag" scales from ~0 (off-resonance) to DampedHarmonicOscillator::fHannekePowerFactor (on-resonance).
         // The electron should radiate maximally if on resonance.
         double fieldCavity = cos(0.) + dhoMag*cos(dhoPhase);
-	//std::cout << "Exiting FieldCalculator::GetTXlmnFieldCavity " << std::endl;
         return fieldCavity;
     }
 
@@ -436,7 +432,6 @@ namespace locust
     		double orbitPhase = tKassParticleXP[6];  // radians
     		double cycFrequency = tKassParticleXP[7];  // rad/s
     		// populate FIR filter with frequency for just this sample interval:
-		//std::cout << "fNFilterBinsRequired: " << fNFilterBinsRequiredArray[l][m][n] << std::endl;
     		for (int i=0; i < fNFilterBinsRequiredArray[bTE][l][m][n]; i++)
     		{
     			fFrequencyBufferArray[bTE][l][m][n].push_back(cycFrequency);  // rad/s
@@ -444,7 +439,6 @@ namespace locust
     		}
 
     		std::deque<double>::iterator it = fFrequencyBufferArray[bTE][l][m][n].begin();
-		//std::cout << "fFrequencyBufferArray size: " << fFrequencyBufferArray[l][m][n].size() << std::endl;
     		while (it != fFrequencyBufferArray[bTE][l][m][n].end())
     		{
     			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
@@ -462,7 +456,6 @@ namespace locust
 
     			*it++;
     		}
-		//std::cout << "fFIRBufferArray size: " << fFIRBufferArray[l][m][n].size() << std::endl;
                 std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,fFIRBufferArray[bTE][l][m][n]);
     		convolutionMag = convolution.first;
     		convolutionPhase = convolution.second;

@@ -118,7 +118,7 @@ namespace locust
         }
         int firBinNumber=0;
 
-	int inputBufferSize = inputBuffer.size();	
+	int inputBufferSize = inputBuffer.size();
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
         {
         	convolutionValueReal += *(it)*fFilterComplex[firBinNumber][0];
@@ -145,18 +145,12 @@ namespace locust
         int firBinNumber=0;
 
         int inputBufferSize = inputBuffer.size();    
-//	std::cout << "ConvolveWithComplexFIRFilterArray inputBufferSize: " << inputBufferSize << std::endl;
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
-        {   
-//		std::cout << "firBinNumber: " << firBinNumber << std::endl;
-//		std::cout << "*(it): " << *(it) << std::endl;
-//		std::cout << "FilterComplexArray: " << fFilterComplexArray[l][m][n][firBinNumber][0] << std::endl;
+        {  
                 convolutionValueReal += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][0];
                 convolutionValueImag += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][1];
                 firBinNumber++;
-        } 
-//	std::cout << "ConvolveWithComplexFIRFilterArray convolution completed with Real and Imag: " << std::endl; 
-//	std::cout << convolutionValueReal << " " << convolutionValueImag << std::endl;
+        }
         //std::pair<double,double> complexConvolution;
         double complexPhase = atan(convolutionValueImag/convolutionValueReal);
         double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
@@ -186,7 +180,6 @@ namespace locust
             fFIRComplex = NULL;
         }
     }
-    
     bool TFFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
         return true;
@@ -318,17 +311,13 @@ namespace locust
         fFIRNBinsArray[bTE][l][m][n] = gfArray.size();
         fResolutionArray[bTE][l][m][n] = gfArray[0].first;
 
-//	std::cout << "Entering ConvertAnalyticGFtoFIR for mode " << l << " " << m << " " << n << std::endl;
-
         fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
-
         for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
         {
         	fFilterComplexArray[bTE][l][m][n][i][0] = gfArray[i].second.first;
         	fFilterComplexArray[bTE][l][m][n][i][1] = gfArray[i].second.second;
         }
-
-        if (fPrintFIR) PrintFIR( fFilterComplexArray[bTE][l][m][n] );
+        if (fPrintFIR) PrintFIR(  fFilterComplexArray[bTE][l][m][n]);
 	fIsFIRCreatedArray[bTE][l][m][n]=true;
         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 

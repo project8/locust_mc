@@ -188,8 +188,12 @@ namespace locust
     		exit(-1);
     		return false;
     	}
+	//std::cout << "DHO HFSSHandler Configured. Now Initializing DHO" << std::endl;
     	if ( !Initialize() ) return false;
-    	else return true;
+    	else
+	{
+		return true;
+	}
     }
 
     bool DampedHarmonicOscillator::Initialize()
@@ -224,10 +228,12 @@ namespace locust
         				fBFactor[bTE][l][m][n] = fCavityDampingFactor[bTE][l][m][n] * fCavityOmega[bTE][l][m][n];
         				fCavityOmegaPrime[bTE][l][m][n] = sqrt( fCavityOmega[bTE][l][m][n]*fCavityOmega[bTE][l][m][n] - fBFactor[bTE][l][m][n]*fBFactor[bTE][l][m][n] );
 					if (!GenerateGreensFunction(bTE,l,m,n)) return false;
+					//std::cout << std::endl;
 				}
                         }   
                 }   
-        }   
+        }  
+	//std::cout << "DHO initilized" << std::endl; 
     	return true;
     }
 
@@ -279,7 +285,6 @@ namespace locust
 
     	// Modify Green's function for nominal gain of unity, keeping phase information unchanged.
     	// Power model could possibly be implemented as in here:
-
     	double GreensFunctionValueReal = fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, t) * sin( fCavityOmegaPrime[bTE][l][m][n] * t);
     	double GreensFunctionValueImag = -1. * fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, t) * cos( fCavityOmegaPrime[bTE][l][m][n] * t);
 	
@@ -289,12 +294,15 @@ namespace locust
 
     double DampedHarmonicOscillator::NormFactor(int bTE, int l, int m, int n, double aDriveFrequency)
     {
+		int GFsize = GetGFarray(bTE, l, m, n).size();
+		//std::cout << "In NormFactor, GF starts at " << GetGFarray(bTE, l, m, n)[0].second.first << " " << GetGFarray(bTE, l, m, n)[0].second.second << std::endl;
 		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE, l, m, n, GetGFarray(bTE, l, m, n)))
 		{
 			LERROR(lmclog,"GF->FIR was not generated in DHO::NormFactor.");
 			exit(-1);
 			return false;
 		}
+
         /* initialize time series */
         Signal* aSignal = new Signal();
         int N0 = GetGFarray(bTE, l, m, n).size();
@@ -306,7 +314,9 @@ namespace locust
         {
             // populate time series and convolve it with the FIR filter
             PopulateCalibrationSignal(bTE, l, m, n, aSignal, N0, aDriveFrequency);
-        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n, SignalToDeque(aSignal));
+		//std::cout << "InputBufferSize via DHO: " << N0 << std::endl;
+        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n, SignalToDequeArray(bTE,l,m,n,aSignal));
+		//std::cout << "convolved magnitude: " << fabs(convolutionPair.first) << std::endl;
             if (fabs(convolutionPair.first) > convolutionMag)
             {
     	        convolutionMag = convolutionPair.first;
@@ -330,6 +340,7 @@ namespace locust
             aSignal->LongSignalTimeComplex()[index][0] = cos(voltage_phase);
             aSignal->LongSignalTimeComplex()[index][1] = cos(-LMCConst::Pi()/2. + voltage_phase);
         }
+	//std::cout << "PopulateCalibrationSignal signal at index 10: " << aSignal->LongSignalTimeComplex()[10][0] << ", " << aSignal->LongSignalTimeComplex()[10][1] << std::endl;
         return true;
 	}
 
@@ -343,9 +354,20 @@ namespace locust
 	    return incidentSignal;
 	}
 
+        std::deque<double> DampedHarmonicOscillator::SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal)
+        {   
+            std::deque<double> incidentSignal;
+            //std::cout << "FilterSize from DHO::SignalToDeque " << fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n) << std::endl;
+            for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n); i++)
+            {   
+                incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
+            }   
+            return incidentSignal;
+        }   
 
     bool DampedHarmonicOscillator::GenerateGreensFunction(int bTE, int l, int m, int n)
     {
+	//std::cout << "Generating Greens Function for mode " << bTE << l << m << n << std::endl;
         std::vector<std::pair<double,std::pair<double,double> > > tGFArray;
 
     	int sizeCounter = 0;
@@ -361,10 +383,13 @@ namespace locust
     		}
     	}
 	
-    	//tGFArray.resize( sizeCounter );
-    	std::reverse( tGFArray.begin(), tGFArray.end() );
+    	tGFArray.resize( sizeCounter );
+	//std::cout << "prereverse GF: " << tGFArray[0].second.first << " " << tGFArray[0].second.second << std::endl;
+    	std::reverse( tGFArray.begin(), tGFArray.end() );	
+	//std::cout << "reversed GF: " <<  tGFArray[0].second.first << " " << tGFArray[0].second.second << std::endl;
     	SetGFarray(bTE, l, m, n, tGFArray ); // unnormalized.
     	double aNormFactor = NormFactor(bTE, l, m, n, fCavityFrequency[bTE][l][m][n]);
+	//std::cout << "aNormFactor from GenerateGreensFunction for mode " << bTE << l << m << n << ": " << aNormFactor << std::endl;
     	for (unsigned i=0; i<sizeCounter; i++)
     	{
     		tGFArray[i].second.first /= aNormFactor;

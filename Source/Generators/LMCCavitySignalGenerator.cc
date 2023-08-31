@@ -106,22 +106,27 @@ namespace locust
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+			if ( !fAnalyticResponseFunction->Configure(aParam)){
+				LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
+				exit(-1);
+				return false;
+			}
+
 			int fNModes = 2;
 			for (int bTE=0; bTE<2; bTE++) // TM/TE.
-    	{
+    			{
         		for (unsigned l=0; l<fNModes; l++)
         		{
                 		for (unsigned m=0; m<fNModes; m++)
                 		{
 					for (unsigned n=0; n<fNModes; n++)
                                  	{
-                        			if ( !fAnalyticResponseFunction->Configure(aParam) ||
-                                        			(!CrossCheckCavityConfig(bTE,l,m,n)) )
-                        			{   
-                                			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
-                                			exit(-1);
-                                			return false;
-                        			} 
+						if (!CrossCheckCavityConfig(bTE,l,m,n))
+						{
+							LERROR(lmclog,"CavityCrossCheck Failed");
+							exit(-1);
+							return false;	
+						} 
 						if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE)) {
 							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE, l, m, n, fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)))
                         				{
@@ -266,11 +271,12 @@ namespace locust
         }
 
 
-       /* fFieldCalculator = new FieldCalculator();
+       // fFieldCalculator = new FieldCalculator();
         if(!fFieldCalculator->Configure(aParam))
         {
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
-        }*/
+        }
+
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( aParam );
         return true;
@@ -392,7 +398,6 @@ namespace locust
     						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
     						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
     						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-						std::cout << tAvgDotProductFactor << " " << modeAmplitude << " " << cavityFIRSample << std::endl;
     						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
     					}
     					else
@@ -539,9 +544,8 @@ namespace locust
 			for(unsigned m = 0; m<fNModes; m++){
 				for(unsigned n = 0; n<fNModes; n++){
 					if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE)){
-						//std::cout << "Bins Required: " << 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) << std::endl;
         					fFieldCalculator->SetNFilterBinsRequiredArray(bTE, l, m, n, 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
-        					fFieldCalculator->SetFilterSizeArray(bTE, l, m, n, fTFReceiverHandler->GetFilterSize() );
+        					fFieldCalculator->SetFilterSizeArray(bTE, l, m, n, fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n) );
 					}
 				}
 			}
