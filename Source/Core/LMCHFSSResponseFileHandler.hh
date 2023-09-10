@@ -48,7 +48,9 @@ namespace locust
         fftw_complex* fFilterComplex;
         int fTFNBins;
         int fFIRNBins;
+        int fCropIndex;
         double fResolution;
+        double fCharacteristicImpedance;
         int fNSkips;
         bool fHFSSFiletype;
         ComplexFFT fComplexFFT;
@@ -56,6 +58,7 @@ namespace locust
         std::string fWindowName;
         double fWindowParam;
         bool fPrintFIR;
+        bool fConvertStoZ;
 #ifdef ROOT_FOUND
         FileWriter* fRootHistoWriter;
 #endif
@@ -104,6 +107,8 @@ namespace locust
         
         // Member functions
         bool ConvertTFtoFIR(std::vector<std::complex<double>> &, bool GeneratedTF);
+        bool ConvertStoZ(std::vector<std::complex<double>> &tfArray, bool bConvert);
+        bool CropFIR(fftw_complex* anArray, bool bConvert);
 
     protected:
         //Member variables

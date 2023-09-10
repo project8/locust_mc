@@ -21,14 +21,17 @@ namespace locust
     HFSSResponseFileHandlerCore::HFSSResponseFileHandlerCore():
     fTFNBins(1000),
     fFIRNBins(2000),
+    fCropIndex(2100),
     fResolution(1e-12),
+    fCharacteristicImpedance(1.0),
     fNSkips(1),
     fComplexFFT(),
     fHFSSFiletype(""),
     fIsFIRCreated(false),
     fWindowName("tukey"),
     fWindowParam(0.5),
-    fPrintFIR ( false )
+    fPrintFIR ( false ),
+    fConvertStoZ ( false )
     {
     }
     
@@ -43,6 +46,22 @@ namespace locust
     	{
     	    fPrintFIR = aParam["print-fir-debug"]().as_bool();
     	}
+
+        if( aParam.has( "convert-sparams-to-z"))
+        {
+        	fConvertStoZ = aParam["convert-sparams-to-z"]().as_bool();
+        }
+
+        if( aParam.has( "crop-index"))
+        {
+        	fCropIndex = aParam["crop-index"]().as_int();
+        }
+
+        if( aParam.has( "characteristic-impedance"))
+        {
+        	fCharacteristicImpedance = aParam["characteristic-impedance"]().as_double();
+        }
+
 
         return true;
     }
@@ -62,15 +81,16 @@ namespace locust
     double HFSSResponseFileHandlerCore::ConvolveWithFIRFilter(std::deque<double> inputBuffer)
     {
         double convolution=0.0;
-        if(fFIRNBins<=0){
+        if(fFIRNBins<=0)
+        {
             LERROR(lmclog,"Number of bins in the filter should be positive");
         }
-	int firBinNumber=0;
-	for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
-	{
-	    convolution+=*(it)*fFilter[firBinNumber];
-	    firBinNumber++;
-	}
+        int firBinNumber=0;
+        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
+        {
+        	convolution+=*(it)*fFilter[firBinNumber];
+        	firBinNumber++;
+        }
 
         return convolution;
     }
@@ -160,7 +180,9 @@ namespace locust
         }
         // this length is somewhat arbitrary, but works for now
         // future improvement: make it adjust depending on length of FIR
-        fFIRNBins=fTFNBins+2*fComplexFFT.GetShiftNBins();
+
+        fFIRNBins=fTFNBins + 2*fComplexFFT.GetShiftNBins();
+
 
 	if(GeneratedTF)
     { 
@@ -175,8 +197,11 @@ namespace locust
 	}
 
     fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
+
     fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex);
+
     fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
+
     fResolution=fComplexFFT.GetTimeResolution();
     for (int i = 0; i < fFIRNBins; i++)
     {
@@ -184,25 +209,16 @@ namespace locust
     }
     fFilterComplex = fFIRComplex;
 
-    if (fPrintFIR)
-    {
-    	PrintFIR( fFIRComplex, fFIRNBins, "output/FIRhisto.root" );
-        PrintFIR( fTFComplex, fTFNBins, "output/TFhisto.root" );
-        LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
-        LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
-        getchar();
-    }
-
     LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
     return true;
     }
     
     bool TFFileHandlerCore::ReadHFSSFile()
     {
-	if(fIsFIRCreated) 
-	{
-	    return true;	
-	}
+    	if(fIsFIRCreated)
+    	{
+    		return true;
+    	}
         fTFNBins=0;
         if(!ends_with(fHFSSFilename,".txt"))
         {
@@ -247,8 +263,8 @@ namespace locust
                         }
                         ++wordCount;
                     }
-		    // The TF values from HFSS are in GHz, so need to convert to Hz
-		    if(fTFNBins==0)fInitialTFIndex=tfIndex*pow(10.0,9);
+                    // The TF values from HFSS are in GHz, so need to convert to Hz
+                    if(fTFNBins==0)fInitialTFIndex=tfIndex*pow(10.0,9);
                     const std::complex<double> temp(tfRealValue,tfImaginaryValue);
                     tfArray.push_back(temp);
                     ++fTFNBins;
@@ -257,11 +273,89 @@ namespace locust
         }
         tfFile.close();
         LDEBUG( lmclog, "Finished reading transfer function file");
-        if(!ConvertTFtoFIR(tfArray,false)){ //bool determines if TF was generated dynamically
+        if (!ConvertStoZ( tfArray, fConvertStoZ ) )
+        {
+            LERROR( lmclog, "The S parameters were not successfully converted to impedance.");
+        	return false;
+        }
+
+        if (!ConvertTFtoFIR( tfArray, false ) ) //bool determines if TF was generated dynamically
+        {
             return false;
         }
+
+        if (!CropFIR( fFIRComplex, fConvertStoZ ) )
+        {
+            return false;
+        }
+
         fIsFIRCreated=true;
+
+        if (fPrintFIR)
+        {
+            PrintFIR( fFIRComplex, fFIRNBins, "output/FIRhisto.root" );
+            PrintFIR( fTFComplex, fTFNBins, "output/TFhisto.root" );
+
+            LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
+            LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
+            getchar();
+        }
+
         return true;
+    }
+
+    bool TFFileHandlerCore::CropFIR(fftw_complex* anArray, bool bConvert)
+    {
+     	if (bConvert)
+     	{
+     	    int cropRange = fCropIndex;
+
+     	    fftw_complex* aSubArray;
+     	    aSubArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * cropRange);
+
+            for (unsigned i=0; i<cropRange; i++)
+            {
+            	aSubArray[i][0] = anArray[i][0];
+            	aSubArray[i][1] = anArray[i][1];
+            }
+            anArray = aSubArray;
+            fFIRNBins = cropRange;
+     	}
+     	return true;
+     }
+
+
+    bool TFFileHandlerCore::ConvertStoZ(std::vector<std::complex<double>> &tfArray, bool bConvert)
+    {
+    	if (bConvert)
+    	{
+    		double Z0 = 50.;
+    		int count = tfArray.size();
+    		double maxZ = 0.;
+    		int maxZBin = 0;
+
+    		for (int i=0; i<count; i++)
+    		{
+    			double R = tfArray.at(i).real();
+    			double X = tfArray.at(i).imag();
+    			double tfI = Z0*(1.-R*R-X*X)/((1.-R)*(1.-R)+X*X);
+    			double tfQ = -Z0*(2.*X)/((1.-R)*(1.-R)+X*X);
+    			double tfMagSquared = tfI*tfI + tfQ*tfQ;
+    			if (tfMagSquared > maxZ)
+    			{
+    				maxZBin = i;
+    				maxZ = tfMagSquared;
+    			}
+    			tfArray[i] = std::complex<double>(tfI, tfQ);
+    		}
+    		for (int i=0; i<count; i++)
+    		{
+    			tfArray[i] /= pow(maxZ,0.5);
+    			tfArray[i] *= fCharacteristicImpedance;
+    		}
+    	}
+
+    	return true;
     }
 
     bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(std::vector<std::pair<double,std::pair<double,double> > > gfArray)
