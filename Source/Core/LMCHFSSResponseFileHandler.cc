@@ -329,7 +329,6 @@ namespace locust
     {
     	if (bConvert)
     	{
-    		double Z0 = 50.;
     		int count = tfArray.size();
     		double maxZ = 0.;
     		int maxZBin = 0;
@@ -338,8 +337,8 @@ namespace locust
     		{
     			double R = tfArray.at(i).real();
     			double X = tfArray.at(i).imag();
-    			double tfI = Z0*(1.-R*R-X*X)/((1.-R)*(1.-R)+X*X);
-    			double tfQ = -Z0*(2.*X)/((1.-R)*(1.-R)+X*X);
+    			double tfI = (1.-R*R-X*X)/((1.-R)*(1.-R)+X*X);
+    			double tfQ = -(2.*X)/((1.-R)*(1.-R)+X*X);
     			double tfMagSquared = tfI*tfI + tfQ*tfQ;
     			if (tfMagSquared > maxZ)
     			{
