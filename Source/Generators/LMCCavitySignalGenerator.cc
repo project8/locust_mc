@@ -62,7 +62,6 @@ namespace locust
         	}
         }
 
-
         // Define generic response function for use in cavity or waveguide:
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
@@ -73,15 +72,9 @@ namespace locust
     	}
 
     	// Configure the generic response function:
-        if( aParam.has( "tf-receiver-filename" ) ) // If using HFSS output
+        if( aParam.has( "tf-receiver-filename" ) && aParam.has( "tf-receiver-bin-width" ) ) // If using HFSS output for cavity or waveguide
         {
-        	if (!fInterface->fbWaveguide)
-        	{
-        		LERROR(lmclog,"HFSS data is not yet supported in the cavity.  Only the waveguide.");
-        		exit(-1);
-        		return false;
-        	}
-        	else if ( fUseDirectKassPower )
+        	if (( fUseDirectKassPower ) && ( fInterface->fbWaveguide == true ))
         	{
         		LWARN(lmclog,"Using direct Kass energy budget, and not HFSS data, due to parameter \"direct-kass-power\" = true");
         	}
@@ -94,45 +87,31 @@ namespace locust
         }
         else if (!fInterface->fbWaveguide) // Cavity config follows
         {
-        	// Cavity as equivalent circuit
-        	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
-        	{
-        		fAnalyticResponseFunction = new EquivalentCircuit();
-        		if ( !fAnalyticResponseFunction->Configure(aParam) )
-        		{
-        			LWARN(lmclog,"EquivalentCircuit was not configured.");
-        			exit(-1);
-        			return false;
-        		}
-        		else
-        		{
-        			if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
-        			{
-        				LWARN(lmclog,"TF->FIR was not generated correctly.");
-        				exit(-1);
-        				return false;
-        			}
-        		}
-        	}
-        	// Cavity as damped harmonic oscillator
-        	else
-        	{
-        		fAnalyticResponseFunction = new DampedHarmonicOscillator();
-        		if ( !fAnalyticResponseFunction->Configure(aParam) ||
-        				(!CrossCheckCavityConfig()) )
-        		{
-        			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
-        			exit(-1);
-        			return false;
-        		}
-        		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
-        		{
-        			LERROR(lmclog,"GF->FIR was not generated.");
-        			exit(-1);
-        			return false;
-        		}
-        	}
+        	// No HFSS file is present:  Cavity as damped harmonic oscillator
+        	LPROG(lmclog,"Configuring DampedHarmonicOscillator.\n");
+
+        	fAnalyticResponseFunction = new DampedHarmonicOscillator();
+    		if ( !fAnalyticResponseFunction->Configure(aParam) ||
+    				(!CrossCheckCavityConfig()) )
+    		{
+    			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
+    			exit(-1);
+    			return false;
+    		}
+    		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
+    		{
+    			LERROR(lmclog,"GF->FIR was not generated.");
+    			exit(-1);
+    			return false;
+    		}
         } // aParam.has( "tf-receiver-filename" )
+        else
+        {
+        	// Can't find the required config information:
+        	LERROR(lmclog, "For the rectangular waveguide, either \"direct-kass-power\" should be true, or both a \"tf-receiver-filename\" and \"tf-receiver-bin-width\" should be specified.");
+        	exit(-1);
+        	return false;
+        }
 
 
         // Select mode fields and power combiners:
@@ -168,7 +147,7 @@ namespace locust
     		{
     			// optional to switch off:
     			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-        		LWARN(lmclog,"Switching back-reaction to " << fInterface->fBackReaction );
+        		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
     		}
     		else
     		{
@@ -182,7 +161,7 @@ namespace locust
     		{
     			// optional to switch off
     			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
-        		LWARN(lmclog,"Switching back-reaction to " << fInterface->fBackReaction );
+        		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
     		}
     		else
     		{
@@ -194,6 +173,7 @@ namespace locust
 		{
 			// No short, no cavity -> no back reaction.
 			fInterface->fBackReaction = false;
+    		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
 		}
 
     	// Configure signal parameters:
@@ -224,10 +204,6 @@ namespace locust
         if( aParam.has( "unit-test-root-file" ) )
         {
         	fUnitTestRootFile = aParam["unit-test-root-file"]().as_bool();
-        }
-        if( aParam.has( "direct-kass-power" ) )
-        {
-        	fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
         }
         if( aParam.has( "xml-filename" ) )
         {
