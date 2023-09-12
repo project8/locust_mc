@@ -293,8 +293,10 @@ namespace locust
 
         if (fPrintFIR)
         {
-            PrintFIR( fFIRComplex, fFIRNBins, "output/FIRhisto.root" );
-            PrintFIR( fTFComplex, fTFNBins, "output/TFhisto.root" );
+            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+
+            PrintFIR( fFIRComplex, fFIRNBins, (dataDir / "../output/FIRhisto.root").string() );
+            PrintFIR( fTFComplex, fTFNBins, (dataDir / "../output/TFhisto.root").string() );
 
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
@@ -378,7 +380,10 @@ namespace locust
 
         if (fPrintFIR)
         {
-        	PrintFIR( fFilterComplex, fFIRNBins, "output/FIRhisto.root" );
+
+            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+
+            PrintFIR( fFilterComplex, fFIRNBins, (dataDir / "../output/FIRhisto.root").string() );
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
             getchar();
@@ -440,7 +445,7 @@ namespace locust
 	}
 
     
-    void HFSSResponseFileHandlerCore::PrintFIR( std::vector<double> aFilter, int nBins, const char* filename )
+    void HFSSResponseFileHandlerCore::PrintFIR( std::vector<double> aFilter, int nBins, std::string filename )
     {
     	LDEBUG( lmclog, "Printing coefficients to file ... ");
     	std::string textFile(filename);
@@ -458,7 +463,7 @@ namespace locust
 
     }
 
-    void HFSSResponseFileHandlerCore::PrintFIR( fftw_complex* aFilter, int nBins, const char* filename )
+    void HFSSResponseFileHandlerCore::PrintFIR( fftw_complex* aFilter, int nBins, std::string filename )
     {
     	std::vector<double> vecFilter0;
     	std::vector<double> vecFilter1;

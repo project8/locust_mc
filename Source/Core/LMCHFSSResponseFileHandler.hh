@@ -35,8 +35,8 @@ namespace locust
         virtual std::pair<double,double> ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
         int GetFilterSize() const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
-        void PrintFIR( std::vector<double>, int nBins, const char* filename );
-        void PrintFIR( fftw_complex* aFilter, int nBins, const char* filename );
+        void PrintFIR( std::vector<double>, int nBins, std::string filename );
+        void PrintFIR( fftw_complex* aFilter, int nBins, std::string filename );
         bool WriteRootHisto( std::vector<double> aFilter, int nBins, bool bIQ );
 
         
