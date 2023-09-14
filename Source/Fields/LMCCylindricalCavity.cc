@@ -400,14 +400,15 @@ namespace locust
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)
     	{
-        	char buffer[60];
-    		int a = sprintf(buffer, "output/dotProducts.txt");
-    		const char *fpname = buffer;
-    		FILE *fp = fopen(fpname, "a");
-    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
-    		fclose(fp);
+            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+            char buffer[60];
+            int a = sprintf(buffer, "%s/../output/dotProducts.txt", dataDir.string().c_str());
+            const char *fpname = buffer;
+            FILE *fp = fopen(fpname, "a");
+            fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
+            fclose(fp);
 
-    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
+            printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
     			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
     	}
 
@@ -486,12 +487,13 @@ namespace locust
 
 #ifdef ROOT_FOUND
 
-	    FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
-	    char cBufferFileName[60];
-	    int n = sprintf(cBufferFileName, "output/ModeMapOutput_z%dmm.root", (int)(zSlice*1.e3));
-	    const char *cFileName = cBufferFileName;
-	    aRootHistoWriter->SetFilename(cFileName);
-	    aRootHistoWriter->OpenFile("RECREATE");
+    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+    	FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
+    	char cBufferFileName[60];
+    	int n = sprintf(cBufferFileName, "%s/../output/ModeMapOutput_z%dmm.root", dataDir.string().c_str(), (int)(zSlice*1.e3));
+    	const char *cFileName = cBufferFileName;
+    	aRootHistoWriter->SetFilename(cFileName);
+    	aRootHistoWriter->OpenFile("RECREATE");
 
     	int nbins = GetNPixels();
     	char hbufferEtheta[60]; char hbufferEr[60];

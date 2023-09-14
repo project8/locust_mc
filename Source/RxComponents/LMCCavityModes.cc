@@ -43,14 +43,20 @@ namespace locust
 
         if( aParam.has( "norm-check" ) )
         {
-    		fp = fopen("output/modeEnergies.txt", "w");
-    		fclose(fp);
+            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+            char cBufferFileName[60];
+            int n = sprintf(cBufferFileName, "%s/../output/ModeEnergies.txt", dataDir.string().c_str());
+            const char *cFileName = cBufferFileName;
+            fp = fopen(cFileName, "w");
+            fclose(fp);
 
 #ifdef ROOT_FOUND
-    		fRootHistoWriter = RootHistoWriter::get_instance();
-    		fRootHistoWriter->SetFilename("output/modeEnergies.root");
-    		fRootHistoWriter->OpenFile("RECREATE");
-    		fRootHistoWriter->CloseFile();
+            fRootHistoWriter = RootHistoWriter::get_instance();
+            n = sprintf(cBufferFileName, "%s/../output/ModeEnergies.root", dataDir.string().c_str());
+            cFileName = cBufferFileName;
+            fRootHistoWriter->SetFilename(cFileName);
+            fRootHistoWriter->OpenFile("RECREATE");
+            fRootHistoWriter->CloseFile();
 #endif
         }
 
@@ -148,52 +154,54 @@ namespace locust
 
 	bool CavityModes::AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
 	{
+	    scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+	    char cBufferFileName[60];
+	    int a = sprintf(cBufferFileName, "%s/../output/ModeEnergies.txt", dataDir.string().c_str());
+	    const char *cFileName = cBufferFileName;
+	    fp = fopen(cFileName, "a");
 
-		fp = fopen("output/modeEnergies.txt", "a");
-		double amp = excitationAmplitude;
+	    double amp = excitationAmplitude;
 
-		fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
+	    fRollingAvg[l][m][n] = ( fRollingAvg[l][m][n] * fCounter[l][m][n] + pow(amp,2.) ) / ( fCounter[l][m][n] + 1 );
 
-		if ( (sampleIndex%1000 < 1) && (sampleIndex < 20000) )
-		{
+	    if ( (sampleIndex%1000 < 1) && (sampleIndex < 20000) )
+	    {
 
-			fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
+	    	fprintf(fp, "%d%d%d %g\n", l, m, n, fRollingAvg[l][m][n]);
 
-			if ((l==GetNCavityModes()-1)&&(m==GetNCavityModes()-1)&&(n==GetNCavityModes()-1))
-			{
-				double totalEnergy = 0.;
-				for (int iL=0; iL<GetNCavityModes(); iL++)
-				{
-					for (int iM=0; iM<GetNCavityModes(); iM++)
-					{
-						for (int iN=0; iN<GetNCavityModes(); iN++)
-						{
-							if (!isnan(fRollingAvg[iL][iM][iN]))
-							{
-								totalEnergy += fRollingAvg[iL][iM][iN];
-							}
-						}
-					}
-				}
+	    	if ((l==GetNCavityModes()-1)&&(m==GetNCavityModes()-1)&&(n==GetNCavityModes()-1))
+	    	{
+	    		double totalEnergy = 0.;
+	    		for (int iL=0; iL<GetNCavityModes(); iL++)
+	    		{
+	    			for (int iM=0; iM<GetNCavityModes(); iM++)
+	    			{
+	    				for (int iN=0; iN<GetNCavityModes(); iN++)
+	    				{
+	    					if (!isnan(fRollingAvg[iL][iM][iN]))
+	    					{
+	    						totalEnergy += fRollingAvg[iL][iM][iN];
+	    					}
+	    				}
+	    			}
+	    		}
 
-				fprintf(fp, "\ntotal energy is %g\n\n\n", totalEnergy);
+	    		fprintf(fp, "\ntotal energy is %g\n\n\n", totalEnergy);
 
 #ifdef ROOT_FOUND
-				WriteRootHisto();
+	    		WriteRootHisto();
 #endif
+	    		LPROG( lmclog, "\n\n\nMode energies written to files output/modeEnergies.root and output/modeEnergies.txt: sampleIndex is " << sampleIndex);
+	    		LPROG( lmclog, "\n\n\nPress return to continue averaging and writing mode energies, or Cntrl-C to quit.");
+	    		getchar();
+	    	}
 
-				LPROG( lmclog, "\n\n\nMode energies written to files output/modeEnergies.root and output/modeEnergies.txt: sampleIndex is " << sampleIndex);
-				LPROG( lmclog, "\n\n\nPress return to continue averaging and writing mode energies, or Cntrl-C to quit.");
-				getchar();
+	    }
 
-			}
+	    fCounter[l][m][n] += 1;
+	    fclose (fp);
 
-		}
-
-		fCounter[l][m][n] += 1;
-		fclose (fp);
-
-		return true;
+	    return true;
 	}
 
     double CavityModes::GetVoltagePhase(int aChannel, int l, int m, int n)

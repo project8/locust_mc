@@ -266,14 +266,15 @@ namespace locust
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)
     	{
-        	char buffer[60];
-    		int a = sprintf(buffer, "output/dotProducts.txt");
-    		const char *fpname = buffer;
-    		FILE *fp = fopen(fpname, "a");
-    		fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
-    		fclose(fp);
+            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+            char cBufferFileName[60];
+            int a = sprintf(cBufferFileName, "%s/../output/dotProducts.txt", dataDir.string().c_str());
+            const char *fpname = cBufferFileName;
+            FILE *fp = fopen(fpname, "a");
+            fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
+            fclose(fp);
 
-    		printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
+            printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
     			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
     	}
 
@@ -401,72 +402,76 @@ namespace locust
     {
 
 #ifdef ROOT_FOUND
+        scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+        FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
+        char cBufferFileName[60];
+        int n = sprintf(cBufferFileName, "%s/../output/ModeMapOutput.root", dataDir.string().c_str());
+        const char *cFileName = cBufferFileName;
+        aRootHistoWriter->SetFilename(cFileName);
+        aRootHistoWriter->SetFilename(cFileName);
+        aRootHistoWriter->OpenFile("RECREATE");
 
-	    FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
-	    aRootHistoWriter->SetFilename("output/ModeMapOutput.root");
-	    aRootHistoWriter->OpenFile("RECREATE");
+        int nbins = GetNPixels();
+        char hbufferx[60]; char hbuffery[60]; int a;
+        char labelx[60]; char labely[60];
 
-    	int nbins = GetNPixels();
-    	char hbufferx[60]; char hbuffery[60]; int a;
-    	char labelx[60]; char labely[60];
+        for (int l=0; l<1; l++)
+        	for (int m=1; m<nModes; m++)
+        		for (int n=0; n<nModes; n++)
+        		{
+        			printf("l m n is %d %d %d\n", l, m, n);
+        			a = sprintf(hbuffery, "TE%d%d_Ey", m, n);
+        			const char *hname_y = hbuffery;
+        			a = sprintf(labely, "TE%d%d_Ey; x (m); y (m)", m, n);
+        			const char *haxis_y = labely;
+        			a = sprintf(hbufferx, "TE%d%d_Ex", m, n);
+        			const char *hname_x = hbufferx;
+        			a = sprintf(labelx, "TE%d%d_Ex; x (m); y (m)", m, n);
+        			const char *haxis_x = labelx;
+        			TH2D* hTEy = new TH2D(hname_y, haxis_y, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+        			TH2D* hTEx = new TH2D(hname_x, haxis_x, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
 
-    	for (int l=0; l<1; l++)
-    		for (int m=1; m<nModes; m++)
-    			for (int n=0; n<nModes; n++)
-    			{
-    				printf("l m n is %d %d %d\n", l, m, n);
-    		    	a = sprintf(hbuffery, "TE%d%d_Ey", m, n);
-    		    	const char *hname_y = hbuffery;
-    		    	a = sprintf(labely, "TE%d%d_Ey; x (m); y (m)", m, n);
-    		    	const char *haxis_y = labely;
-    		    	a = sprintf(hbufferx, "TE%d%d_Ex", m, n);
-    		    	const char *hname_x = hbufferx;
-    		    	a = sprintf(labelx, "TE%d%d_Ex; x (m); y (m)", m, n);
-    		    	const char *haxis_x = labelx;
-    		    	TH2D* hTEy = new TH2D(hname_y, haxis_y, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-    		    	TH2D* hTEx = new TH2D(hname_x, haxis_x, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-
-    				double normFactor = 1.0;
-    				int a = 0;
-    				if (bTE)
-    				{
-    					normFactor = GetNormFactorsTE()[l][m][n];
-    				}
-    				else
-    				{
-    					normFactor = GetNormFactorsTM()[l][m][n];
-    				}
-    				for (unsigned i=0; i<GetNPixels(); i++)
-    				{
-    					double x = ((double)i+0.5)/GetNPixels()*GetDimX() - GetDimX()/2.;
-    					for (unsigned j=0; j<GetNPixels(); j++)
-    					{
+        			double normFactor = 1.0;
+        			int a = 0;
+        			if (bTE)
+        			{
+        				normFactor = GetNormFactorsTE()[l][m][n];
+        			}
+        			else
+        			{
+        				normFactor = GetNormFactorsTM()[l][m][n];
+        			}
+        			for (unsigned i=0; i<GetNPixels(); i++)
+        			{
+        				double x = ((double)i+0.5)/GetNPixels()*GetDimX() - GetDimX()/2.;
+        				for (unsigned j=0; j<GetNPixels(); j++)
+        				{
         					double y = ((double)j+0.5)/GetNPixels()*GetDimY() - GetDimY()/2.;
         					for (unsigned k=0; k<1; k++)
         					{
-            				    double z = zSlice;
-    						    std::vector<double> tE;
-    						    std::vector<double> tH;
-    							tE = fFieldCore->TE_E(GetDimX(),GetDimY(),m,n,x,y,GetCentralFrequency());
-    						    if (!std::isnan(tE.back())) hTEy->Fill(x,y,tE.back());
-    						    if (!std::isnan(tE.front())) hTEx->Fill(x,y,tE.front());
+        						double z = zSlice;
+        						std::vector<double> tE;
+        						std::vector<double> tH;
+        						tE = fFieldCore->TE_E(GetDimX(),GetDimY(),m,n,x,y,GetCentralFrequency());
+        						if (!std::isnan(tE.back())) hTEy->Fill(x,y,tE.back());
+        						if (!std::isnan(tE.front())) hTEx->Fill(x,y,tE.front());
         					}
-    					}
-    				}
-    				aRootHistoWriter->Write2DHisto(hTEy);
-    				aRootHistoWriter->Write2DHisto(hTEx);
-    				delete hTEy; delete hTEx;
-    			}
+        				}
+        			}
+        			aRootHistoWriter->Write2DHisto(hTEy);
+        			aRootHistoWriter->Write2DHisto(hTEx);
+        			delete hTEy; delete hTEx;
+        		}
 
-		aRootHistoWriter->CloseFile();
-    	LPROG(lmclog, "\n\nTo plot a mode map:\n"
+        aRootHistoWriter->CloseFile();
+        LPROG(lmclog, "\n\nTo plot a mode map:\n"
     			"> root file:output/ModeMapOutput.root\n"
     			"# _file0->ls()\n"
     			"# TE10_Ey->SetLineColor(0)\n"
     			"# TE10_Ey->SetLineWidth(0)\n"
     			"# TE10_Ey->DrawCopy(\"colz\")\n"
     			"\n\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.");
-    	getchar();
+        getchar();
 
 #endif
 
