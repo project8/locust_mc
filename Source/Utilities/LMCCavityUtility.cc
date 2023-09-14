@@ -142,18 +142,16 @@ namespace locust
     	AddParam( "dho-threshold-factor", dhoThresholdFactor );
     	AddParam( "dho-cavity-frequency", dhoCavityFrequency );
     	AddParam( "dho-cavity-Q", dhoCavityQ );
-	//std::cout << "Configuring CavityUtility" << std::endl;
     	if (!Configure(bTE,l,m,n))
     	{
     		LERROR(testlog,"Cavity was not configured correctly.");
     	    exit(-1);
     	}
-        //std::cout << "Configured CavityUtility for mode " << bTE << l << m << n << std::endl;
         /* initialize time series */
         Signal* aSignal = new Signal();
         int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n);
-	//std::cout << "In CheckCavityQ, TFReceiverHandler FilterSizeArray: " << N0;
         fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE,l,m,n));
+	std::cout << "fFilterRate for mode " << bTE << l << m << n << ": " << fFilterRate << std::endl;
         aSignal->Initialize( N0 , 1 );
 
         double qInferred = 0.;
@@ -163,6 +161,7 @@ namespace locust
         int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
         double* freqArray = new double[nSteps];
         double* gainArray = new double[nSteps];
+	std::cout << "For mode " << bTE << l << m << n << ": Span, StepSize, nSteps, f_central: " << rfSpanSweep << " " << rfStepSize << " " << nSteps << " " << dhoCavityFrequency << std::endl;
         for (int i=0; i<nSteps; i++) // frequency sweep
         {
         	int rfStep = -nSteps/2/fExpandFactor + i;
@@ -189,6 +188,7 @@ namespace locust
         	}
         	else if ((convolutionMag*convolutionMag < 0.5*maxGain) && (qInferred == 0.))
         	{
+			std::cout << "Q set at freq " << fRF_frequency << " with CavFreq, stepsize, and step: " << dhoCavityFrequency << ", " << rfStepSize << ", " << rfStep << std::endl;
         		qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
         	}
         	LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );

@@ -113,6 +113,14 @@ namespace locust
                         }
         	}
 	}     
+        if( aParam.has( "dho-time-resolution-TE011" ) )
+        {
+                SetDHOTimeResolution( 1, 0, 1, 1, aParam["dho-time-resolution-TE011"]().as_double() );
+        }
+        if( aParam.has( "dho-time-resolution-TM111" ) )
+        {
+                SetDHOTimeResolution( 0, 1, 1, 1, aParam["dho-time-resolution-TM111"]().as_double() );
+        }
     	if( aParam.has( "dho-threshold-factor" ) )
         {  
 		fThresholdFactor.resize(2);
@@ -133,6 +141,15 @@ namespace locust
                         }   
                 }   
         }   
+        if( aParam.has( "dho-threshold-factor-TE011" ) )
+        {
+                SetDHOThresholdFactor( 1, 0, 1, 1, aParam["dho-threshold-factor-TE011"]().as_double() );
+        }
+        if( aParam.has( "dho-threshold-factor-TM111" ) )
+        {
+                SetDHOThresholdFactor( 0, 1, 1, 1, aParam["dho-threshold-factor-TM111"]().as_double() );
+        }
+
     	if( aParam.has( "dho-cavity-frequency" ) )
     	{
 		fCavityFrequency.resize(2);
@@ -181,6 +198,15 @@ namespace locust
                         }   
                 }  
         }   
+        if( aParam.has( "dho-cavity-Q-TE011" ) ) 
+        {   
+                SetCavityQ( 1, 0, 1, 1, aParam["dho-cavity-Q-TE011"]().as_double() );   
+        }   
+        if( aParam.has( "dho-cavity-Q-TM111" ) ) 
+        {    
+                SetCavityQ( 0, 1, 1, 1, aParam["dho-cavity-Q-TM111"]().as_double() );
+        }   
+
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
