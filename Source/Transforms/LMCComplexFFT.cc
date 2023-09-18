@@ -46,6 +46,12 @@ namespace locust
     
     bool ComplexFFT::Configure(const scarab::param_node& aParam)
     {
+        if( aParam.has( "convert-sparams-to-z"))
+        {
+        	// Helpful setting for some cavity-HFSS models:
+        	fZeroPaddingSize = 10000;
+        	// Override this with a different zero-padding-size if necessary, below.
+        }
         if( aParam.has("transform-flag"))
         {
             fTransformFlag=aParam["transform-flag"]().as_bool();
@@ -114,6 +120,11 @@ namespace locust
         fSize=size;	
         fFreqResolution=freqResolution;
         fPreFilterBins=(int)(intialBinValue*1.0/freqResolution);
+        if ( fPreFilterBins < 0 )
+        {
+        	fPreFilterBins = 0;
+        }
+
         fTotalWindowSize=fPreFilterBins+fZeroPaddingSize+fSize;
         fTimeResolution=1.0/(fTotalWindowSize*freqResolution);
 

@@ -74,11 +74,18 @@ namespace locust
                 // TO-DO:  Change seed here, for pileup tests.
             }
 
-
             if( aParam.has( "waveguide-x" ) )
             {
-            	// TO-DO:  Adjust Kass waveguide dimensions here.  Use fToolbox.
-
+            	// TO-DO:  Adjust Kass waveguide dimensions here.  The below syntax
+            	// is a first attempt.  Unfortunately it is not yet finding the parameter
+				// in the xml file.
+            	/*
+                for( auto sim : fToolbox.GetAll<KGeoBag::KGBoxSpace>("new_rectangularwaveguide_space"))
+                {
+                	// std::cout << "seed is " << sim->GetSeed();
+                    // TO-DO:  Change seed here, for pileup tests.
+                }
+                */
             }
 
 

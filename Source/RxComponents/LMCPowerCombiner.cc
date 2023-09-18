@@ -25,6 +25,7 @@ namespace locust
             fjunctionResistance( 0.3 ),
 			fvoltageCheck( false ),
 			fNCavityModes( 0 ),
+			fNChannels( 1 ),
 			fWaveguideShortIsPresent( true )
     {}
     PowerCombiner::~PowerCombiner() {}
@@ -32,7 +33,6 @@ namespace locust
 
     bool PowerCombiner::Configure( const scarab::param_node& aParam )
     {
-
     	if ( aParam.has( "voltage-check" ) )
     	{
     		fvoltageCheck = aParam["voltage-check"]().as_bool();
@@ -82,12 +82,6 @@ namespace locust
 			LPROG( lmclog, "Voltage " << z_index << "  " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
-
-
-
-
-
-
 
     int PowerCombiner::GetNElementsPerStrip()
     {
@@ -159,6 +153,16 @@ namespace locust
     {
      	fNCavityModes = aNumberOfModes;
     }
+
+    int PowerCombiner::GetNChannels()
+    {
+        return fNChannels;
+    }
+    void PowerCombiner::SetNChannels( int aNumberOfChannels )
+    {
+     	fNChannels = aNumberOfChannels;
+    }
+
     bool PowerCombiner::GetWaveguideShortIsPresent()
     {
     	return fWaveguideShortIsPresent;

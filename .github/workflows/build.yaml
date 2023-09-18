@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   BASE_IMG_REPO: project8/kassiopeia_builder
-  BASE_IMG_TAG: v3.8.2
+  BASE_IMG_TAG: v4.0.0
   FINAL_BASE_IMG_REPO: project8/luna_base
   FINAL_BASE_IMG_TAG: v1.3.3
   locust_mc_BUILD_WITH_KASSIOPEIA: ON
@@ -111,12 +111,7 @@ jobs:
         if: ${{ matrix.build-tests == true }}
         run: echo '#!/bin/bash' > job.sh && echo source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh >> job.sh && echo /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/bin/RunTests >> job.sh && chmod +x job.sh && docker run -v /home/runner/work/locust_mc/locust_mc:/tmp ${{ steps.build-to-test.outputs.imageid }} /tmp/job.sh
         # End alternate lines from pls testing.
-        
-        # Disabled for now because tests aren't installed
-#        if: false
-#        if: ${{ matrix.build-tests == true }}
-#        run: docker run ${{ steps.build-to-test.outputs.imageid }} "source /usr/local/p8/locust/${{ steps.tag_name.outputs.tag }}/setup.sh; /tmp_loc_source/build/Source/Applications/Testing/RunTests"
-
+       
 
       - name: Build to Push
         id: build-to-push

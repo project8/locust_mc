@@ -9,6 +9,7 @@ set( LOCUST_MC_DATA_FILES
     PatchTFLocust_cropped.txt
     cavityTF.txt            
     WEGA_Impedance_Center.txt
+    CCA_TE011_sParams_V01.txt
     TF_Template.txt
 )
 

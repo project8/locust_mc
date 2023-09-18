@@ -20,7 +20,9 @@ namespace locust
  @brief Derived class to define RectangularWaveguide fields as in Pozar.
  @details
  Available configuration options:
- No input parameters
+  - "waveguide-central-frequency" -- double [1.63e11] Central frequency in radians
+  to be applied in waveguide mode normalizations.
+
  */
 
     class PozarRectangularWaveguide: public FieldCore

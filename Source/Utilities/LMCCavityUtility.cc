@@ -151,17 +151,16 @@ namespace locust
         Signal* aSignal = new Signal();
         int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n);
         fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE,l,m,n));
-	std::cout << "fFilterRate for mode " << bTE << l << m << n << ": " << fFilterRate << std::endl;
         aSignal->Initialize( N0 , 1 );
 
         double qInferred = 0.;
         double maxGain = 0.;
+	double maxGainFreq = 0.;
         double rfSpanSweep = 3. * dhoCavityFrequency / dhoCavityQ;
-        double rfStepSize = 0.00005 * dhoCavityFrequency;
+        double rfStepSize = 0.00001 * dhoCavityFrequency;
         int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
         double* freqArray = new double[nSteps];
         double* gainArray = new double[nSteps];
-	std::cout << "For mode " << bTE << l << m << n << ": Span, StepSize, nSteps, f_central: " << rfSpanSweep << " " << rfStepSize << " " << nSteps << " " << dhoCavityFrequency << std::endl;
         for (int i=0; i<nSteps; i++) // frequency sweep
         {
         	int rfStep = -nSteps/2/fExpandFactor + i;
@@ -184,12 +183,13 @@ namespace locust
         	if (convolutionMag*convolutionMag > maxGain)
         	{
         		maxGain = convolutionMag*convolutionMag;
+			maxGainFreq = fRF_frequency;
         		qInferred = 0.;
         	}
         	else if ((convolutionMag*convolutionMag < 0.5*maxGain) && (qInferred == 0.))
         	{
-			std::cout << "Q set at freq " << fRF_frequency << " with CavFreq, stepsize, and step: " << dhoCavityFrequency << ", " << rfStepSize << ", " << rfStep << std::endl;
-        		qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
+        		//qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
+			qInferred = maxGainFreq / (2.* fabs(fRF_frequency - maxGainFreq));
         	}
         	LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
         }

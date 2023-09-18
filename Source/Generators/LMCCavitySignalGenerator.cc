@@ -389,7 +389,7 @@ namespace locust
     					dopplerFrequency = fInterface->fField->GetDopplerFrequency(bTE, l, m, n, tKassParticleXP);
 
     					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(bTE, l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
-    					double modeAmplitude = fInterface->fField->TotalFieldNorm(tE_normalized);
+    					double modeAmplitude = fInterface->fField->NormalizedEFieldMag(tE_normalized);
 
 
     					if (!fInterface->fbWaveguide)

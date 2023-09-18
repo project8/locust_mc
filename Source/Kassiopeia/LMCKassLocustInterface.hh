@@ -55,15 +55,14 @@ namespace locust
 
 
 
-        // TODO: remove these in some way to avoid the Project 8-specificity
+        // TO-DO: remove these in some way to avoid the Project 8-specificity
         int fProject8Phase; // 1, 2, or 3, defined with the step modifier instance in the xml file.
-        double fCENTER_TO_SHORT;
-        double fCENTER_TO_ANTENNA;
 
         // Cavity and e-gun variables:
         Transmitter* fTransmitter;
         Field* fField;
         ConfigureKass* fConfigureKass;
+        // TO-DO:  Move these next two variables into more specific classes.
         bool fBackReaction;
         bool fbWaveguide;
 

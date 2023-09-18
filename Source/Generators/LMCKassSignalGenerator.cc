@@ -85,16 +85,7 @@ namespace locust
             fThreadCheckTime = aParam["thread-check-time"]().as_int();
         }
 
-        if( aParam.has( "center-to-short" ) )
-    	{
-    		fInterface->fCENTER_TO_SHORT = aParam["center-to-short"]().as_double();
-    	}
-
-    	if( aParam.has( "center-to-antenna" ) )
-    	{
-    		fInterface->fCENTER_TO_ANTENNA = aParam["center-to-antenna"]().as_double();
-    	}
-
+    	fInterface->fField = new RectangularWaveguide;
 
         return true;
     }
@@ -188,9 +179,9 @@ namespace locust
         {
             // initialize phases.
 
-            fPhi_t1 = 2.*LMCConst::Pi()*(fInterface->fCENTER_TO_ANTENNA - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
+            fPhi_t1 = 2.*LMCConst::Pi()*(fInterface->fField->GetCenterToAntenna() - tPositionZ) / (tGroupVelocity / tDopplerFrequencyAntenna);
 
-            fPhi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fInterface->fCENTER_TO_SHORT + fInterface->fCENTER_TO_ANTENNA) /
+            fPhi_t2 = LMCConst::Pi()/2. + 2.*LMCConst::Pi()*(fInterface->fField->GetCenterToShort() + fInterface->fField->GetCenterToAntenna()) /
                     (tGroupVelocity / tDopplerFrequencyShort);  // phase of reflected field at antenna.
 
             fEventStartTime = (double)index/fAcquisitionRate/1.e6/aSignal->DecimationFactor();

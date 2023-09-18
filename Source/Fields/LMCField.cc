@@ -19,7 +19,10 @@ namespace locust
         fR( 0.18 ),
         fL( 3.0 ),
         fX( 0.010668 ),
-        fY( 0.004318 )
+        fY( 0.004318 ),
+        fCENTER_TO_SHORT( 0.05 ),
+        fCENTER_TO_ANTENNA( 0.05 ),
+        fPlotModeMaps( false )
     {}
     Field::~Field() {}
 
@@ -37,14 +40,15 @@ namespace locust
         	fNModes = aParam["n-modes"]().as_int();
         }
 
-    	if( aParam.has( "waveguide-central-frequency" ) )
-    	{
-    		fCentralFrequency= 2.*LMCConst::Pi()*aParam["waveguide-central-frequency"]().as_double();
-    	}
     	if( aParam.has( "n-pixels" ) )
     	{
     		SetNPixels(aParam["n-pixels"]().as_int());
     	}
+
+        if( aParam.has( "plot-mode-maps" ) ) 
+        {   
+                SetPlotModeMaps(aParam["plot-mode-maps"]().as_bool());
+        }   
 
 	fAvgDotProductFactor.resize(2);
 	for (unsigned bTE=0; bTE<2; bTE++)
@@ -95,6 +99,18 @@ namespace locust
     void Field::SetAvgDotProductFactor(std::vector<std::vector<std::vector<std::vector<double>>>> aFactor)
     {
     	fAvgDotProductFactor = aFactor;
+    }
+
+    double Field::NormalizedEFieldMag(std::vector<double> field)
+    {
+    	double norm = 0;
+    	auto it = field.begin();
+    	while (it != field.end())
+    	{
+    		if (std::isfinite(*it)) norm += (*it)*(*it);
+    		*it++;
+    	}
+    	return sqrt(norm);
     }
 
      double FieldCore::GetBesselNKZeros(int l, int m)
@@ -206,7 +222,35 @@ namespace locust
     	fL = aDim;
     }
 
+    double Field::GetCenterToShort() const
+    {
+    	return fCENTER_TO_SHORT;
+    }
 
+    void Field::SetCenterToShort( double aDistance )
+    {
+    	fCENTER_TO_SHORT = aDistance;
+    }
+
+    double Field::GetCenterToAntenna() const
+    {
+    	return fCENTER_TO_ANTENNA;
+    }
+
+    void Field::SetCenterToAntenna( double aDistance )
+    {
+    	fCENTER_TO_ANTENNA = aDistance;
+    }
+
+    bool Field::PlotModeMaps() const
+    {
+    	return fPlotModeMaps;
+    }
+
+    void Field::SetPlotModeMaps( bool aFlag )
+    {
+    	fPlotModeMaps = aFlag;
+    }
 
 
 

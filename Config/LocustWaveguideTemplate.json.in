@@ -9,10 +9,14 @@
 
     "cavity-signal":
     {
-        "rectangular-waveguide": true,        
+        "rectangular-waveguide": true,   
+        "direct-kass-power": false,     
+        "tf-receiver-filename": "${CMAKE_INSTALL_PREFIX}/data/WEGA_Impedance_Center.txt",
+        "tf-receiver-bin-width": 0.01e9,
         "transmitter": "kass-current",
         "waveguide-x": 0.010668,
         "waveguide-y": 0.004318,
+        "waveguide-z": 10.0,        
         "center-to-short": 0.05,
         "center-to-antenna": 0.05,  
         "waveguide-central-frequency": 1.63e11,

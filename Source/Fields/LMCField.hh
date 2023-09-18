@@ -23,7 +23,12 @@ namespace locust
  @brief Base class to characterize Field selection
  @details
  Available configuration options:
- No input parameters
+ - "n-modes" : int -- [2] Range of l, m, and n indices used to configure available mode normalizations.
+ Of the available normalized modes, modes to be included in the simulation itself are identified in the function
+ LMCFieldCalculator::ModeSelect().
+ - "n-pixels" : int -- [100] Number of pixels used in each dimension of the mode field definitions.
+ - "plot-mode-maps": bool -- [false] Option to print all normalized (see n-modes above) mode maps to
+ 2D histograms in Root files, for inspection.
  */
 
     class FieldCore
@@ -71,12 +76,13 @@ namespace locust
             virtual double Integrate(int l, int m, int n, bool teMode, bool eField){return 0.;};
             virtual std::vector<double> GetDopplerFrequency(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode) {return {0.};};
-            virtual double TotalFieldNorm(std::vector<double> field) {return {0.};};
+            double NormalizedEFieldMag(std::vector<double> field);
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE) {return {{{0.}}};};
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual double CalculateDotProductFactor(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, double tThisEventNSamples) {return {0.};};
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
+            virtual bool InVolume(std::vector<double> tKassParticleXP){return false;};
             virtual void CheckNormalization(int nModes){};
             virtual void PrintModeMaps(int nModes, bool bTE, double zSlice){};
             virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode){return {0.};};
@@ -102,6 +108,12 @@ namespace locust
             void SetDimR( double aDim );
             double GetDimL() const;
             void SetDimL( double aDim );
+            double GetCenterToShort() const;
+            void SetCenterToShort( double aDistance );
+            double GetCenterToAntenna() const;
+            void SetCenterToAntenna( double aDistance );
+            bool PlotModeMaps() const;
+            void SetPlotModeMaps( bool aFlag );
 
 
 
@@ -115,7 +127,10 @@ namespace locust
             double fL;
             double fX;  // Rectangular waveguide dimensions.
             double fY;
+            double fCENTER_TO_SHORT;
+            double fCENTER_TO_ANTENNA;
             std::vector<std::vector<std::vector<std::vector<double>>>> fAvgDotProductFactor;
+            bool fPlotModeMaps;
 
 
 

@@ -19,7 +19,7 @@ namespace locust
      @details
      Available configuration options:
      - "hfss-filetype": string -- The type of file being handler. Currently only Transfer function and Finite Impulse Response
-     - "print-fir-debug": bool -- Print text file of FIR coefficients.
+     - "print-fir-debug": bool -- Print text file of FIR and TF coefficients and/or plot Root histograms to file.
      */
     
     class HFSSResponseFileHandlerCore
@@ -38,9 +38,9 @@ namespace locust
 	int GetFilterSizeArray(int bTE, int l, int m, int n) const;//Number of entries in the filter
         double GetFilterResolution() const;//Get the resolution of the filter
 	double GetFilterResolutionArray(int bTE, int l, int m, int n) const;//Get the resolution of the filter
-        void PrintFIR( std::vector<double> );
-        void PrintFIR( fftw_complex* aFilter );
-        bool WriteRootHisto( std::vector<double> aFilter, bool bIQ );
+        void PrintFIR( std::vector<double>, int nBins, std::string filename );
+        void PrintFIR( fftw_complex* aFilter, int nBins, std::string filename );
+        bool WriteRootHisto( std::vector<double> aFilter, int nBins, bool bIQ );
 
     protected:
         
@@ -55,6 +55,8 @@ namespace locust
 	int fNModes;
         double fResolution;
 	std::vector < std::vector < std::vector < std::vector < double >>>> fResolutionArray;
+        int fCropIndex;
+        double fCharacteristicImpedance;
         int fNSkips;
         bool fHFSSFiletype;
         ComplexFFT fComplexFFT;
@@ -63,6 +65,7 @@ namespace locust
         std::string fWindowName;
         double fWindowParam;
         bool fPrintFIR;
+        bool fConvertStoZ;
 #ifdef ROOT_FOUND
         FileWriter* fRootHistoWriter;
 #endif
@@ -120,6 +123,8 @@ namespace locust
         
         // Member functions
         bool ConvertTFtoFIR(std::vector<std::complex<double>> &, bool GeneratedTF);
+        bool ConvertStoZ(std::vector<std::complex<double>> &tfArray, bool bConvert);
+        bool CropFIR(fftw_complex* anArray, bool bConvert);
 
     protected:
         //Member variables

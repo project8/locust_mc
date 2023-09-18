@@ -24,7 +24,9 @@ namespace locust
  @brief Base class to characterize power combiners
  @details
  Available configuration options:
- No input parameters
+      - "waveguide-short":  bool [true] optional presence/absence of reflecting short in waveguide.
+      - "voltage-check": bool [false] optional print signal voltages to terminal during simulation.
+      This can be useful for e.g. checking suitability of digitizer range or other debugging.
  */
     class PowerCombiner
     {
@@ -62,8 +64,11 @@ namespace locust
             bool GetVoltageCheck();
             void SetNCavityModes( int aNumberOfModes );
             int GetNCavityModes();
+            void SetNChannels( int aNumberOfChannels );
+            int GetNChannels();
             double GetVoltagePhase();
             void SetVoltagePhase( double aPhase );
+            virtual bool SizeNChannels(int aNumberOfChannels) {return true;};
 
             bool GetWaveguideShortIsPresent();
             void SetWaveguideShortIsPresent ( bool aValue );
@@ -80,6 +85,7 @@ namespace locust
             double fjunctionResistance;
             bool fvoltageCheck;
             int fNCavityModes;
+            int fNChannels;
             bool fWaveguideShortIsPresent;
 
 

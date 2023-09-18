@@ -42,32 +42,23 @@ namespace locust
      @brief Generate signal in cavity and detect it with antennas.
 
      @details
-     Operates in [tbd] domain
+     Operates in time domain
 
      Configuration name: "cavity-signal"
 
      Available configuration options:
-     - "cavity-radius" : double -- ideal cylindrical cavity radius.
-     - "cavity-length" : double -- ideal cylindrical cavity length.
-     - "n-modes" : int -- range of l, m, and n indices used to configure mode normalizations.
-     	 	 However, presently the only mode being simulated is 011.
-     - "lo-frequency" : double -- local oscillator frequency
      - "xml-filename" : std::string -- the name of the xml locust config file.
-     - "lo-frequency":  local oscillator frequency in Hz.
-     - "te-modes": bool(true) -- if true look at TE mode rather than TM mode.
-     - "bypass-tf":  bool(false) -- if true, set FIR convolution output to 1.0
-     - "norm-check": bool(false) -- if true, calculate weighted running averages of J \cdot E
-      	 for all modes with indices of order < fNModes, and write the avgs to an intermediate file.
-     - "equivalentR": Resistance from equivalent RLC circuit in Ohms
-     - "equivalentL": Inductance from equivalent RLC circuit in Henries
-     - "equivalentC": Capacitance from equivalent RLC circuit in Farads
-     - "e-gun": Select e-gun configuration instead of cavity [false].
-     - "center-to-short": distance [0.05 m] from center of e-gun waveguide to reflecting short.
-     - "center-to-antenna": distance [0.05 m] from center of e-gun waveguide to antenna.
-     - "waveguide-short":  optional presence/absence of reflecting short [true].
-     - "back-reaction": optional waveguide back reaction in e-gun.  default to [true] if waveguide-short is present.
-     - "direct-kass-power":  In e-gun, overrides calculated waveguide signal amplitudes and replaces
-     	 them with sqrt(KassPower).  This is for cross-checking the more detailed signal calculations.
+     - "lo-frequency":  double -- local oscillator frequency in Hz.
+     - "bypass-tf":  bool(false) -- if true, set FIR convolution output to 1.0 .
+     - "back-reaction": bool [true] -- Default is true unless defined as false, or if "waveguide-short" = false.
+     - "direct-kass-power":  bool [true] In waveguide simulation, populates signal amplitudes with sqrt(KassPower).
+     This is useful for cross-checking the more detailed signal calculations.  Value changes to [false]
+     if tf-receiver-filename is defined in the config file.
+     - "tf-receiver-filename": string [""] Full path to HFSS output file.  An example is the file
+     data/WEGA_Impedance_Center.txt.  If this file is specified, then the parameter tf-receiver-bin-width
+     must also be specified.
+     - "tf-receiver-bin-width" double [100.e6] Frequency bin width contained in tf-receiver-filename.
+     TO-DO:  Calculate this automatically instead of having to specify this parameter.
     */
 
     class CavitySignalGenerator : public Generator
