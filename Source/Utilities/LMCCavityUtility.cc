@@ -109,8 +109,12 @@ namespace locust
 	bool CavityUtility::WriteRootHisto(int npoints, double* freqArray, double* gainArray)
 	{
 	#ifdef ROOT_FOUND
+		scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+		char cBufferFileName[60];
+		int n = sprintf(cBufferFileName, "%s/../output/UnitTestOutput.root", dataDir.string().c_str());
+		const char *cFileName = cBufferFileName;
 		FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
-		aRootHistoWriter->SetFilename("output/UnitTestOutput.root");
+		aRootHistoWriter->SetFilename(cFileName);
 		aRootHistoWriter->OpenFile("RECREATE");
 		TH1D* aHisto = new TH1D("cavityHisto", "Green's function; frequency (Hz); 10 log10(|A|^{2})", npoints, freqArray[0], freqArray[npoints-1]);
 		for (unsigned i=0; i<npoints; i++)

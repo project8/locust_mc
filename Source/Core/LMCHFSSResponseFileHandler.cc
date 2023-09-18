@@ -59,7 +59,8 @@ namespace locust
 
         if( aParam.has( "characteristic-impedance"))
         {
-        	fCharacteristicImpedance = aParam["characteristic-impedance"]().as_double();
+            fCharacteristicImpedance = aParam["characteristic-impedance"]().as_double();
+            LPROG( lmclog, "Characteristic impedance has been changed to " << fCharacteristicImpedance);
         }
 
 
@@ -331,29 +332,40 @@ namespace locust
     {
     	if (bConvert)
     	{
-    		int count = tfArray.size();
-    		double maxZ = 0.;
-    		int maxZBin = 0;
+    	    int count = tfArray.size();
+    	    double maxZ = 0.;
+    	    double maxZFrequency = 0.;
+    	    double qInferred = -99.;
+    	    double tFrequency = fInitialTFIndex;
 
-    		for (int i=0; i<count; i++)
-    		{
-    			double R = tfArray.at(i).real();
-    			double X = tfArray.at(i).imag();
-    			double tfI = (1.-R*R-X*X)/((1.-R)*(1.-R)+X*X);
-    			double tfQ = -(2.*X)/((1.-R)*(1.-R)+X*X);
-    			double tfMagSquared = tfI*tfI + tfQ*tfQ;
-    			if (tfMagSquared > maxZ)
-    			{
-    				maxZBin = i;
-    				maxZ = tfMagSquared;
-    			}
-    			tfArray[i] = std::complex<double>(tfI, tfQ);
-    		}
-    		for (int i=0; i<count; i++)
-    		{
-    			tfArray[i] /= pow(maxZ,0.5);
-    			tfArray[i] *= fCharacteristicImpedance;
-    		}
+    	    for (int i=0; i<count; i++)
+    	    {
+    	        double R = tfArray.at(i).real();
+    	        double X = tfArray.at(i).imag();
+    	        double tfI = (1.-R*R-X*X)/((1.-R)*(1.-R)+X*X);
+    	        double tfQ = -(2.*X)/((1.-R)*(1.-R)+X*X);
+    	        double tfMagSquared = tfI*tfI + tfQ*tfQ;
+    	        if ( (tfMagSquared > maxZ) && (tFrequency > fInitialTFIndex) )
+    	        {
+    	            maxZFrequency = tFrequency;
+    	            maxZ = tfMagSquared;
+    	            qInferred = 0.;
+    	        }
+    	        else if ((tfMagSquared < 0.5*maxZ) && (qInferred == 0.))
+    	        {
+    	            double dFrequency = tFrequency - maxZFrequency;
+    	            qInferred = maxZFrequency /  (2.* dFrequency);
+    	        }
+
+    	        tfArray[i] = std::complex<double>(tfI, tfQ);
+    	        tFrequency += fTFBinWidth*1.e9;
+    	    }
+    	    for (int i=0; i<count; i++)
+    	    {
+    		    tfArray[i] /= pow(maxZ,0.5);
+    		    tfArray[i] *= fCharacteristicImpedance;
+    	    }
+    	    LPROG(lmclog, "Resonant frequency is " << maxZFrequency << " and inferred Q is " << qInferred);
     	}
 
     	return true;

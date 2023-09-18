@@ -25,13 +25,12 @@ namespace locust
         fDoGenerateFunc( &TestSignalGenerator::DoGenerateTime ),
         fLO_frequency( 20.05e9 ),
         fRF_frequency( 20.1e9 ),
-		fAMModfrequency( 0.0e6 ),
-		fAMModSelect( 0 ),
+        fAMModfrequency( 0.0e6 ),
+        fAMModSelect( 0 ),
         fAmplitude( 5.e-8 ),
-		fMixingProduct( false ),
-    	fWriteRootHisto( false ),
-		fWriteRootGraph( false ),
-		fRootFilename( "output/LocustTestSignal.root")
+        fMixingProduct( false ),
+        fWriteRootHisto( false ),
+        fWriteRootGraph( false )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -79,12 +78,6 @@ namespace locust
         {
         	fWriteRootGraph = aParam.get_value< bool >( "write-root-graph", fWriteRootGraph );
         }
-
-    	if( aParam.has( "root-filename" ) )
-        {
-            fRootFilename = aParam["root-filename"]().as_string();
-        }
-
 
         if( aParam.has( "domain" ) )
         {
@@ -213,9 +206,15 @@ namespace locust
     bool TestSignalGenerator::WriteRootHisto()
     {
 		#ifdef ROOT_FOUND
+
+    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+    	char cBufferFileName[60];
+    	int a = sprintf(cBufferFileName, "%s/../output/TestSignalHisto.root", dataDir.string().c_str());
+    	const char *cFileName = cBufferFileName;
+
     	FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
-    	aRootHistoWriter->SetFilename(fRootFilename);
-    	aRootHistoWriter->OpenFile("UPDATE");
+    	aRootHistoWriter->SetFilename(cFileName);
+    	aRootHistoWriter->OpenFile("RECREATE");
     	TH1D* aHisto = new TH1D("testhisto", "histotitle", 200, 0., 400.);
     	for (unsigned i=0; i<200; i++)
     	{
@@ -230,9 +229,14 @@ namespace locust
     bool TestSignalGenerator::WriteRootGraph()
     {
 		#ifdef ROOT_FOUND
+
+    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+    	char cBufferFileName[60];
+    	int a = sprintf(cBufferFileName, "%s/../output/TestSignalGraph.root", dataDir.string().c_str());
+    	const char *cFileName = cBufferFileName;
     	FileWriter* aRootGraphWriter = RootGraphWriter::get_instance();
-    	aRootGraphWriter->SetFilename(fRootFilename);
-    	aRootGraphWriter->OpenFile("UPDATE");
+    	aRootGraphWriter->SetFilename(cFileName);
+    	aRootGraphWriter->OpenFile("RECREATE");
     	std::vector<double> xVector{1,2,3,4,5};
     	std::vector<double> yVector{1,2,3,4,5};
     	aRootGraphWriter->WriteVectorGraph(xVector, yVector);

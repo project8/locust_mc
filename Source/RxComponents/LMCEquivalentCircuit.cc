@@ -75,10 +75,6 @@ namespace locust
     	double V_im[fTFBins];
 		std::vector<std::complex<double>> tTFarray;
 
-//    	FILE * fTFout = fopen("output/Generated_TF.txt", "w");
-//    	fprintf(fTFout,"# RLC circuit analytic TF with f_res = 1.0 GHz, Q = 1000\n#        Freq [GHz]     vRe []     vIm []\n");
-//    	fprintf(fTFout,"#Transfer function: Frequency, magnitude, phase, vRe, vIm\n");
-
     	for (int counts=0; counts<fTFBins; counts++)
     	{
     		freq[counts] = freq_min + counts*(freq_max - freq_min)/(1.0 * fTFBins);
