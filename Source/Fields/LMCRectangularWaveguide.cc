@@ -402,7 +402,7 @@ namespace locust
     {
         scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
         std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
-        std::cout << "path is " << sFileName; getchar();
+
 #ifdef ROOT_FOUND
         FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
         aRootHistoWriter->SetFilename(sFileName);
