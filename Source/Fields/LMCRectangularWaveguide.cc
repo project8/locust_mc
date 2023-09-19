@@ -406,6 +406,7 @@ namespace locust
         FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
         char cBufferFileName[60];
         int n = sprintf(cBufferFileName, "%s/../output/ModeMapOutput.root", dataDir.string().c_str());
+        std::cout << "path is " << cBufferFileName; getchar();
         const char *cFileName = cBufferFileName;
         aRootHistoWriter->SetFilename(cFileName);
         aRootHistoWriter->SetFilename(cFileName);

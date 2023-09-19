@@ -299,6 +299,8 @@ namespace locust
             PrintFIR( fFIRComplex, fFIRNBins, (dataDir / "../output/FIRhisto.root").string() );
             PrintFIR( fTFComplex, fTFNBins, (dataDir / "../output/TFhisto.root").string() );
 
+            std::cout << "path is " << (dataDir / "../output/FIRhisto.root").string(); getchar();
+
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
             getchar();
