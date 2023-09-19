@@ -98,6 +98,7 @@ namespace locust
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
+
         		if ( !fAnalyticResponseFunction->Configure(aParam) )
         		{
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
@@ -107,7 +108,6 @@ namespace locust
                         fFIRBufferArray.resize(2);
                         fFrequencyBufferArray.resize(2);
                         fNFilterBinsRequiredArray.resize(2);
-
 			for(int bTE=0; bTE<2; bTE++)
 			{
 				fFIRBufferArray[bTE].resize(2);
@@ -126,11 +126,13 @@ namespace locust
 						for(int n=0; n<2; n++)
 						{ 
 //IF THIS WORKS CLEAN THIS UP
+
 							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE,l,m,n,fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)))
         						{
         							LWARN(lmclog,"GF->FIR was not generated.");
         							return false;
         						}
+
 							SetFilterSizeArray(bTE, l, m, n, fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n));
 						}
 					}
@@ -138,7 +140,6 @@ namespace locust
 			}
         	}
         } // aParam.has( "tf-receiver-filename" )
-
         return true;
      }
 

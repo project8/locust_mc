@@ -45,7 +45,6 @@ namespace locust
 			LWARN(testlog,"DampedHarmonicOscillator was not configured.");
 			return false;
 		}
-		//std::cout << "For mode " << bTE << l << m << n << " the GF starts at " << fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)[0].second.first << ", " << fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)[0].second.second << std::endl;		
 		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE,l,m,n,fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)) ) 
 		{
 			LWARN(testlog,"GF->FIR was not generated.");
@@ -110,7 +109,6 @@ namespace locust
         std::deque<double> CavityUtility::SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal)
         {   
             std::deque<double> incidentSignal;
-	    //std::cout << "FilterSize from CavityUtility::SignalToDeque " << fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n) << std::endl;
             for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n); i++)
             {   
                 incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
@@ -121,8 +119,12 @@ namespace locust
 	bool CavityUtility::WriteRootHisto(int npoints, double* freqArray, double* gainArray)
 	{
 	#ifdef ROOT_FOUND
+		scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+		char cBufferFileName[60];
+		int n = sprintf(cBufferFileName, "%s/../output/UnitTestOutput.root", dataDir.string().c_str());
+		const char *cFileName = cBufferFileName;
 		FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
-		aRootHistoWriter->SetFilename("output/UnitTestOutput.root");
+		aRootHistoWriter->SetFilename(cFileName);
 		aRootHistoWriter->OpenFile("RECREATE");
 		TH1D* aHisto = new TH1D("cavityHisto", "Green's function; frequency (Hz); 10 log10(|A|^{2})", npoints, freqArray[0], freqArray[npoints-1]);
 		for (unsigned i=0; i<npoints; i++)
@@ -157,7 +159,7 @@ namespace locust
         double maxGain = 0.;
 	double maxGainFreq = 0.;
         double rfSpanSweep = 3. * dhoCavityFrequency / dhoCavityQ;
-        double rfStepSize = 0.00001 * dhoCavityFrequency;
+        double rfStepSize = 0.00005 * dhoCavityFrequency;
         int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
         double* freqArray = new double[nSteps];
         double* gainArray = new double[nSteps];
@@ -170,7 +172,6 @@ namespace locust
         	{
         		// populate time series and convolve it with the FIR filter
         		PopulateSignal(aSignal, N0);
-			//std::cout << "InputBufferSize via Utility: " << N0 << std::endl;
         		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l, m, n, SignalToDequeArray(bTE,l,m,n,aSignal));
     	    		if (fabs(convolutionPair.first) > convolutionMag)
         		{
@@ -188,8 +189,8 @@ namespace locust
         	}
         	else if ((convolutionMag*convolutionMag < 0.5*maxGain) && (qInferred == 0.))
         	{
-        		//qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
-			qInferred = maxGainFreq / (2.* fabs(fRF_frequency - maxGainFreq));
+        		qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
+			//qInferred = maxGainFreq / (2.* fabs(fRF_frequency - maxGainFreq));
         	}
         	LPROG( testlog, "Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
         }

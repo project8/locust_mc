@@ -117,7 +117,6 @@ namespace locust
             bool fMixingProduct;
             bool fWriteRootHisto;
             bool fWriteRootGraph;
-            std::string fRootFilename;
 
             
     };
