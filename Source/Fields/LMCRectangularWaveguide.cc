@@ -400,14 +400,13 @@ namespace locust
 
     void RectangularWaveguide::PrintModeMaps(int nModes, bool bTE, double zSlice)
     {
-
-#ifdef ROOT_FOUND
         scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-        FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
         char cBufferFileName[60];
         int n = sprintf(cBufferFileName, "%s/../output/ModeMapOutput.root", dataDir.string().c_str());
         std::cout << "path is " << cBufferFileName; getchar();
         const char *cFileName = cBufferFileName;
+#ifdef ROOT_FOUND
+        FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
         aRootHistoWriter->SetFilename(cFileName);
         aRootHistoWriter->SetFilename(cFileName);
         aRootHistoWriter->OpenFile("RECREATE");
