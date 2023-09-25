@@ -78,7 +78,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       -D BUILD_KOMMON:BOOL=TRUE 
                       -D KASPER_USE_VTK:BOOL=TRUE
                       -D CMAKE_CXX_STANDARD:STRING=14
-                      -D KConst_REFERENCE_EPOCH:STRING=2006
                       ${PROJECT_SOURCE_DIR}/kassiopeia
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
         )
@@ -90,7 +89,6 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
                       -D BUILD_KOMMON:BOOL=TRUE 
                       -D KASPER_USE_VTK:BOOL=TRUE
                       -D CMAKE_CXX_STANDARD:STRING=14
-                      -D KConst_REFERENCE_EPOCH:STRING=2006
                       ${PROJECT_SOURCE_DIR}/kassiopeia
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/kassiopeia
         )
