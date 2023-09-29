@@ -67,7 +67,8 @@ namespace locust
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
             virtual bool InVolume(std::vector<double> tKassParticleXP);
             virtual void CheckNormalization(int nModes);
-            virtual void PrintModeMaps(int nModes, bool bTE, double zSlice);
+            virtual void PrintModeMaps(int nModes, double zSlice, double thetaSlice);
+            void PrintModeMapsLongSlice(int nModes, double thetaSlice);
             virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode);
             std::vector<double> GetCavityProbeZ();
             void SetCavityProbeZ ( double aZ, unsigned index );
