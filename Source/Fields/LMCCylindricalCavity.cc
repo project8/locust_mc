@@ -82,21 +82,22 @@ namespace locust
      		SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
      	}
 
-        /*
-                if( aParam.has( "modemap-filename" ) )
-                {
-                    // TO-DO:  This is where we can plan to read in a mode map.                     *
-                    fFieldCore = new TBDModeMapClass();
-                }
-        */
-
-        fFieldCore = new PozarCylindricalCavity();
-
-
-        // TO-DO:  Move the next 3 lines to a parent class.
-        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+     	if( aParam.has( "modemap-filename" ) )
+     	{
+     		fFieldCore = new ModeMapCylindricalCavity();
+     		if (!fFieldCore->ReadModeMapTE_E(aParam["modemap-filename"]().as_string()))
+     		{
+     			LERROR(lmclog,"There was a problem uploading the mode map.");
+     			exit(-1);
+     		}
+     	}
+     	else
+     	{
+     		fFieldCore = new PozarCylindricalCavity();
+     		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+     		fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+     		fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+     	}
 
         SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
         SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));

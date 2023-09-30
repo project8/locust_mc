@@ -13,6 +13,7 @@
 #include "logger.hh"
 #include "LMCField.hh"
 #include "LMCPozarCylindricalCavity.hh"
+#include "LMCModeMapCylindricalCavity.hh"
 #include <boost/math/special_functions/bessel.hpp>
 
 #include <vector>
