@@ -45,4 +45,4 @@ namespace locust
 
 }; /* namespace locust */
 
-#endif /* LMCCYLINDRICALCAVITY_HH_ */
+#endif /* LMCPOZARCYLINDRICALCAVITY_HH_ */
