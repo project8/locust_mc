@@ -82,21 +82,22 @@ namespace locust
      		SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
      	}
 
-        /*
-                if( aParam.has( "modemap-filename" ) )
-                {
-                    // TO-DO:  This is where we can plan to read in a mode map.                     *
-                    fFieldCore = new TBDModeMapClass();
-                }
-        */
-
-        fFieldCore = new PozarCylindricalCavity();
-
-
-        // TO-DO:  Move the next 3 lines to a parent class.
-        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+     	if( aParam.has( "modemap-filename" ) )
+     	{
+     		fFieldCore = new ModeMapCylindricalCavity();
+     		if (!fFieldCore->ReadModeMapTE_E(aParam["modemap-filename"]().as_string()))
+     		{
+     			LERROR(lmclog,"There was a problem uploading the mode map.");
+     			exit(-1);
+     		}
+     	}
+     	else
+     	{
+     		fFieldCore = new PozarCylindricalCavity();
+     		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+     		fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+     		fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+     	}
 
         SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
         SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
@@ -106,9 +107,11 @@ namespace locust
         if( PlotModeMaps() )
         {
         	double zSlice = 0.0;
+        	double thetaSlice = 0.0;
         	if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
-        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput*.root... " );
-        	PrintModeMaps(GetNModes(),0, zSlice);
+        	if (aParam.has( "map-theta-slice" )) thetaSlice = aParam["map-theta-slice"]().as_double();
+        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModemapOutput*.root... " );
+        	PrintModeMaps(GetNModes(), zSlice, thetaSlice);
         }
 
     	return true;
@@ -482,7 +485,7 @@ namespace locust
     }
 
 
-    void CylindricalCavity::PrintModeMaps(int nModes, bool bTE, double zSlice)
+    void CylindricalCavity::PrintModeMaps(int nModes, double zSlice, double thetaSlice)
     {
     	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
         std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
@@ -591,8 +594,11 @@ namespace locust
         			}
     	} // bTE
 		aRootHistoWriter->CloseFile();
+
+		PrintModeMapsLongSlice(nModes, 0.);
+
     	LPROG(lmclog, "\n\nTo plot a mode map:\n"
-    			"> root file:output/ModeMapOutput.root\n"
+    			"> root file:output/ModemapOutput.root\n"
     			"# _file0->ls()\n"
     			"# TE011_Etheta->SetLineColor(0)\n"
     			"# TE011_Etheta->SetLineWidth(0)\n"
@@ -605,6 +611,120 @@ namespace locust
 #endif
 
     }
+
+    void CylindricalCavity::PrintModeMapsLongSlice(int nModes, double thetaSlice)
+    {
+    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+        std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
+
+#ifdef ROOT_FOUND
+
+    	FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
+    	aRootHistoWriter->SetFilename(sFileName);
+    	aRootHistoWriter->OpenFile("UPDATE");
+
+    	int nbins = GetNPixels();
+    	char hbufferEtheta[60]; char hbufferEr[60];
+    	char hbufferHtheta[60]; char hbufferHr[60];
+    	int a;
+    	const char *hname_Etheta = hbufferEtheta;
+    	const char *hname_Htheta = hbufferHtheta;
+    	const char *hname_Er = hbufferEr;
+    	const char *hname_Hr = hbufferHr;
+
+    	char bufferE[60];
+    	char bufferH[60];
+
+    	for (int bTE=0; bTE<2; bTE++) // TM and TE
+    	{
+        	for (int l=0; l<nModes; l++)
+        		for (int m=1; m<nModes; m++)
+    	    		for (int n=0; n<nModes; n++)
+    		    	{
+    			    	printf("l m n is %d %d %d\n", l, m, n);
+    		    		if (bTE)
+    			    	{
+    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    				    }
+    				    else
+        				{
+        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_thetaLong_r%d", l, m, n, (int)(thetaSlice*1.e3));
+    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    		    		}
+
+    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    			 	    TH2D* hTEr = new TH2D(hname_Er, hname_Er, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, hname_Htheta, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    			 	    TH2D* hTHr = new TH2D(hname_Hr, hname_Hr, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+
+        				double normFactor = 1.0;
+        				if (bTE)
+    	    			{
+    		    			normFactor = GetNormFactorsTE()[l][m][n];
+    			    	}
+    	    			else
+    		    		{
+    			    		normFactor = GetNormFactorsTM()[l][m][n];
+        				}
+    	    			for (unsigned i=0; i<GetNPixels(); i++)
+    		    		{
+    			    		double r = -GetDimR() + ((double)i+0.5)/(GetNPixels())*2.*GetDimR();
+    				    	for (unsigned j=0; j<1; j++)
+        					{
+        						double theta = thetaSlice;
+            					for (unsigned k=0; k<GetNPixels(); k++)
+        	    				{
+            	    			    double z = -GetDimL()/2. + ((double)k+0.5)/(GetNPixels())*GetDimL();
+    				    		    std::vector<double> tE;
+    					    	    std::vector<double> tH;
+        							if (bTE)
+    	    						{
+    		    						tE = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    			    					tH = fFieldCore->TE_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    				    			}
+        							else
+    	    						{
+    		    						tE = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+        								tH = fFieldCore->TM_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    	    						}
+    		    				    if ((!std::isnan(tE.back())))
+    			    			    {
+        						        hTEtheta->Fill(z,r,tE.back());
+    	    					    }
+    		    				    if ((!std::isnan(tE.front())))
+    			    			    {
+        						    	hTEr->Fill(z,r,tE.front());
+        						    }
+    		    				    if ((!std::isnan(tH.back())))
+    			    			    {
+        						        hTHtheta->Fill(z,r,tH.back());
+    	    					    }
+    		    				    if ((!std::isnan(tH.front())))
+    			    			    {
+        						    	hTHr->Fill(z,r,tH.front());
+        						    }
+
+            					}
+        					}
+        				}
+    	    			aRootHistoWriter->Write2DHisto(hTEtheta);
+        				aRootHistoWriter->Write2DHisto(hTEr);
+    	    			aRootHistoWriter->Write2DHisto(hTHtheta);
+        				aRootHistoWriter->Write2DHisto(hTHr);
+        				delete hTEtheta; delete hTEr;
+        				delete hTHtheta; delete hTHr;
+        			}
+    	} // bTE
+		aRootHistoWriter->CloseFile();
+#endif
+
+    }
+
 
     std::vector<double> CylindricalCavity::GetCavityProbeGain()
     {
