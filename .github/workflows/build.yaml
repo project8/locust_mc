@@ -94,7 +94,7 @@ jobs:
           load: true
           build-args: |
             img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
-            img_tag=${{ env.BASE_IMG_TAG }}-dev
+            img_tag=${{ env.BASE_IMG_TAG }}
             final_img_repo=${{ env.REGISTRY }}/${{ env.FINAL_BASE_IMG_REPO }}
             final_img_tag=${{ env.FINAL_BASE_IMG_TAG }}${{ matrix.tag-suffix }}
             locust_tag=${{ steps.tag_name.outputs.tag }}
@@ -125,7 +125,7 @@ jobs:
           load: false
           build-args: |
             build_img_repo=${{ env.REGISTRY }}/${{ env.BASE_IMG_REPO }}
-            build_img_tag=${{ env.BASE_IMG_TAG }}-dev
+            build_img_tag=${{ env.BASE_IMG_TAG }}
             final_img_repo=${{ env.REGISTRY }}/${{ env.FINAL_BASE_IMG_REPO }}
             final_img_tag=${{ env.FINAL_BASE_IMG_TAG }}${{ matrix.tag-suffix }}
             locust_tag=${{ steps.tag_name.outputs.tag }}
