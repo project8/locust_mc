@@ -18,6 +18,7 @@ namespace locust
     FieldCalculator::FieldCalculator() :
     		fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
+			fDelaySignalTime( 0. ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
@@ -26,6 +27,7 @@ namespace locust
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
     		fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
+			fDelaySignalTime( 0. ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
 			fInterface( aCopy.fInterface )
@@ -55,6 +57,12 @@ namespace locust
 
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
      {
+
+        if( aParam.has( "locust-signal-delay" ) )
+        {
+        	fDelaySignalTime = aParam["locust-signal-delay"]().as_bool();
+    		LPROG(lmclog,"Delaying signal ring-up by " << fDelaySignalTime << " seconds.");
+        }
 
         if( aParam.has( "multi-mode" ) )
         {
@@ -406,8 +414,9 @@ namespace locust
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
     	double orbitPhase = tKassParticleXP[6];  // radians
     	double cycFrequency = tKassParticleXP[7];
+    	double tTime = tKassParticleXP[9];
     	double amplitude = 0.;
-    	if (fInterface->fField->InVolume(tKassParticleXP))
+    	if ( (tTime > fDelaySignalTime) && (fInterface->fField->InVolume(tKassParticleXP)) )
     	{
     		amplitude = 1.;
     	}

@@ -62,6 +62,7 @@ namespace locust
             std::deque<double> fFrequencyBuffer;
             int fNFilterBinsRequired;
             bool fbMultiMode;
+            double fDelaySignalTime;
     };
 
 }
