@@ -54,6 +54,8 @@ namespace locust
             kl_interface_ptr_t fInterface;
 
         private:
+            double calcOrbitPhase(double vx, double vy);
+            double quadrantOrbitCorrection(double phase, double vx);
             TFReceiverHandler* fTFReceiverHandler;
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;

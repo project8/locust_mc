@@ -323,13 +323,19 @@ namespace locust
 
     	// l, m, & n are needed for selecting the resonant frequency and Q.  (Still TO-DO).
 
-    	// Extract particle at back of deque, by default if !Interpolate as in:
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, 0., false);
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
+    	double tposX = aFinalParticle.GetPosition().X();
+    	double tposY = aFinalParticle.GetPosition().Y();
+    	double tposZ = aFinalParticle.GetPosition().Z();
+    	double tVx = aFinalParticle.GetVelocity().X();
+    	double tVy = aFinalParticle.GetVelocity().Y();
+    	double tVz = aFinalParticle.GetVelocity().Z();
+    	double orbitPhase = calcOrbitPhase(tVx, tVy);
+    	double fCyc = aFinalParticle.GetCyclotronFrequency() * 2. * LMCConst::Pi();
+
+    	std::vector<double> tKassParticleXP = {tposX, tposY, tposZ, tVx, tVy, tVz, orbitPhase, fCyc};
+
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
         std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
-
 
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
@@ -447,7 +453,26 @@ namespace locust
 
     }
 
+    double FieldCalculator::calcOrbitPhase(double vx, double vy)
+    {
+    	double phase = 0.;
+        if ((fabs(vy) > 0.))
+    	{
+    		phase = atan(-vx/vy);
+    	}
 
+    	phase += quadrantOrbitCorrection(phase, vx);
+    	return phase;
+    }
+
+    double FieldCalculator::quadrantOrbitCorrection(double phase, double vx)
+    {
+    	double phaseCorrection = 0.;
+    	if (((phase < 0.)&&(vx < 0.)) || ((phase > 0.)&&(vx > 0.)))
+    		phaseCorrection = LMCConst::Pi();
+
+    	return phaseCorrection;
+    }
 
 
 
