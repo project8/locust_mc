@@ -323,19 +323,23 @@ namespace locust
 
     	// l, m, & n are needed for selecting the resonant frequency and Q.  (Still TO-DO).
 
-    	double tposX = aFinalParticle.GetPosition().X();
-    	double tposY = aFinalParticle.GetPosition().Y();
-    	double tposZ = aFinalParticle.GetPosition().Z();
     	double tVx = aFinalParticle.GetVelocity().X();
     	double tVy = aFinalParticle.GetVelocity().Y();
-    	double tVz = aFinalParticle.GetVelocity().Z();
-    	double orbitPhase = calcOrbitPhase(tVx, tVy);
-    	double fCyc = aFinalParticle.GetCyclotronFrequency() * 2. * LMCConst::Pi();
 
-    	std::vector<double> tKassParticleXP = {tposX, tposY, tposZ, tVx, tVy, tVz, orbitPhase, fCyc};
+    	std::vector<double> tKassParticleXP;
+    	tKassParticleXP.push_back(aFinalParticle.GetPosition().X());
+    	tKassParticleXP.push_back(aFinalParticle.GetPosition().Y());
+    	tKassParticleXP.push_back(aFinalParticle.GetPosition().Z());
+    	tKassParticleXP.push_back(aFinalParticle.GetVelocity().X());
+    	tKassParticleXP.push_back(aFinalParticle.GetVelocity().Y());
+    	tKassParticleXP.push_back(aFinalParticle.GetVelocity().Z());
+    	tKassParticleXP.push_back(calcOrbitPhase(tVx, tVy));
+    	tKassParticleXP.push_back(aFinalParticle.GetCyclotronFrequency() * 2. * LMCConst::Pi());
+    	tKassParticleXP.push_back(aFinalParticle.GetTime());
 
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-        std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
+
+    	std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
 
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
