@@ -18,7 +18,8 @@ namespace locust
     FieldCalculator::FieldCalculator() :
     		fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
-			fDelaySignalTime( 0. ),
+			fZSignalStart( 0. ),
+			fSignalStarted( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
@@ -27,7 +28,8 @@ namespace locust
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
     		fNFilterBinsRequired( 0 ),
 			fbMultiMode( false ),
-			fDelaySignalTime( 0. ),
+			fZSignalStart( 0. ),
+			fSignalStarted( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
 			fInterface( aCopy.fInterface )
@@ -58,10 +60,10 @@ namespace locust
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
      {
 
-        if( aParam.has( "locust-signal-delay" ) )
+        if( aParam.has( "locust-signal-zstart" ) )
         {
-        	fDelaySignalTime = aParam["locust-signal-delay"]().as_bool();
-    		LPROG(lmclog,"Delaying signal ring-up by " << fDelaySignalTime << " seconds.");
+        	fZSignalStart = aParam["locust-signal-zstart"]().as_bool();
+    		LPROG(lmclog,"Starting signal calculation when e- z-position > " << fZSignalStart << " m.");
         }
 
         if( aParam.has( "multi-mode" ) )
@@ -404,6 +406,23 @@ namespace locust
     		return 1.0;  // No feedback
     }
 
+    bool FieldCalculator::GetSignalStartCondition(std::vector<double> tKassParticleXP)
+    {
+    	if ( fabs(tKassParticleXP[2]) > fZSignalStart )
+    	{
+    		return true;
+    	}
+    	else
+    	{
+    		return false;
+    	}
+
+    }
+
+    void FieldCalculator::SetSignalStartCondition(bool aFlag)
+    {
+    	fSignalStarted = aFlag;
+    }
 
     std::pair<double,double> FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
     {
@@ -416,11 +435,17 @@ namespace locust
     	double cycFrequency = tKassParticleXP[7];
     	double tTime = tKassParticleXP[9];
     	double amplitude = 0.;
-    	if ( (tTime > fDelaySignalTime) && (fInterface->fField->InVolume(tKassParticleXP)) )
+    	if (!fSignalStarted)
     	{
-    		amplitude = 1.;
+    		fSignalStarted = GetSignalStartCondition(tKassParticleXP);
     	}
-
+    	else
+    	{
+        	if ( fInterface->fField->InVolume(tKassParticleXP))
+        	{
+        		amplitude = 1.;
+        	}
+    	}
 
     	if ( !BypassTF )
     	{
