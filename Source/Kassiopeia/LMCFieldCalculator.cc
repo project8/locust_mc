@@ -62,7 +62,7 @@ namespace locust
 
         if( aParam.has( "locust-signal-zstart" ) )
         {
-        	fZSignalStart = aParam["locust-signal-zstart"]().as_bool();
+        	fZSignalStart = aParam["locust-signal-zstart"]().as_double();
     		LPROG(lmclog,"Starting signal calculation when e- z-position > " << fZSignalStart << " m.");
         }
 
