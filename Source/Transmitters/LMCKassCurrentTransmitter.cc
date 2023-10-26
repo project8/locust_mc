@@ -121,7 +121,6 @@ namespace locust
 
     	locust::Particle tParticle;
     	std::vector<double> particleXP;
-    	particleXP.resize(9);
 
     	int pSize = fInterface->fParticleHistory.size();
     	if ( pSize > 0 )
@@ -155,15 +154,16 @@ namespace locust
 //            fOrbitPhase += dt*tParticle.GetCyclotronFrequency();  // accumulate phase semi-analytically.
     	    fOrbitPhase = calcOrbitPhase(tvX, tvY); // or use Kass kinematics
 
-            particleXP[0] = pow( tposX*tposX + tposY*tposY, 0.5);
-            particleXP[1] = calcTheta(tposX, tposY);
-            particleXP[2] = tposZ;
-            particleXP[3] = tvX;
-            particleXP[4] = tvY;
-            particleXP[5] = tvZ;
-            particleXP[6] = fOrbitPhase;
-            particleXP[7] = tParticle.GetCyclotronFrequency();
-            particleXP[8] = tParticle.GetLarmorPower();
+            particleXP.push_back(pow( tposX*tposX + tposY*tposY, 0.5));
+            particleXP.push_back(calcTheta(tposX, tposY));
+            particleXP.push_back(tposZ);
+            particleXP.push_back(tvX);
+            particleXP.push_back(tvY);
+            particleXP.push_back(tvZ);
+            particleXP.push_back(fOrbitPhase);
+            particleXP.push_back(tParticle.GetCyclotronFrequency());
+            particleXP.push_back(tParticle.GetLarmorPower());
+            particleXP.push_back(tParticle.GetTime());
 
 
             if (bWaveguide)  // rotate from Kass to Locust coordinate system?
