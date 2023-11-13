@@ -29,11 +29,11 @@ namespace locust
         }
         while (!modeMapFile.eof())
         {
-        	// Populate fModeMapTE_E with contents of file.
-        	LPROG(lmclog,"Next step is to decide on a file format.");
+        	// Read file.  Populate fModeMapTE_E with contents of file.
+        	LPROG(lmclog,"Press Cntrl-C to exit.  Next step is to decide on a file format.");
+        	getchar();
         }
         modeMapFile.close();
-
     	return true;
     }
 
