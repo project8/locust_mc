@@ -134,7 +134,8 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 
 	aCavityUtility.SetExpandFactor(the_main.GetExpandSweep());
 	aCavityUtility.SetOutputFile(the_main.UnitTestOutputFile());
-	bool checkCavityQ = aCavityUtility.CheckCavityQ( the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+	// TO-DO:  Remove hard-wired TE011 mode in the next line, and make it more flexible for other modes.
+	bool checkCavityQ = aCavityUtility.CheckCavityQ( 1, 0, 1, 1, the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
 
 	REQUIRE( checkCavityQ );
 }

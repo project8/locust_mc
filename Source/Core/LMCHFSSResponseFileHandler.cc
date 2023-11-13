@@ -25,6 +25,7 @@ namespace locust
     fResolution(1e-12),
     fCharacteristicImpedance(1.0),
     fNSkips(1),
+    fNModes(2),
     fComplexFFT(),
     fHFSSFiletype(""),
     fIsFIRCreated(false),
@@ -41,12 +42,40 @@ namespace locust
     
     bool HFSSResponseFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
-
         if( aParam.has( "print-fir-debug" ) )
-    	{
-    	    fPrintFIR = aParam["print-fir-debug"]().as_bool();
+    	{    
+	    fPrintFIR = aParam["print-fir-debug"]().as_bool();
     	}
+	if( aParam.has( "n-modes" ) )
+	{
+		fNModes = aParam["n-modes"]().as_int();
+	}
 
+        fFilterComplexArray.resize(2);
+        fFIRNBinsArray.resize(2);
+        fResolutionArray.resize(2);
+        fIsFIRCreatedArray.resize(2);  
+	for ( unsigned bTE=0; bTE<2; bTE++)
+	{
+	        fFilterComplexArray[bTE].resize(fNModes);
+		fFIRNBinsArray[bTE].resize(fNModes);
+		fResolutionArray[bTE].resize(fNModes);
+		fIsFIRCreatedArray[bTE].resize(fNModes);	
+        	for (unsigned l=0; l<fNModes; l++)
+        	{   
+               		fFilterComplexArray[bTE][l].resize(fNModes);
+			fFIRNBinsArray[bTE][l].resize(fNModes);
+        		fResolutionArray[bTE][l].resize(fNModes);
+        		fIsFIRCreatedArray[bTE][l].resize(fNModes);  
+               		for (unsigned m=0; m<fNModes; m++)
+               		{   
+                       		fFilterComplexArray[bTE][l][m].resize(fNModes);
+				fFIRNBinsArray[bTE][l][m].resize(fNModes);
+        			fResolutionArray[bTE][l][m].resize(fNModes);
+        			fIsFIRCreatedArray[bTE][l][m].resize(fNModes);  
+			}
+               	}   
+        }  
         if( aParam.has( "convert-sparams-to-z"))
         {
         	fConvertStoZ = aParam["convert-sparams-to-z"]().as_bool();
@@ -108,13 +137,13 @@ namespace locust
         }
         int firBinNumber=0;
 
+	int inputBufferSize = inputBuffer.size();
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
         {
         	convolutionValueReal += *(it)*fFilterComplex[firBinNumber][0];
         	convolutionValueImag += *(it)*fFilterComplex[firBinNumber][1];
         	firBinNumber++;
         }
-
         std::pair<double,double> complexConvolution;
         double complexPhase = atan(convolutionValueImag/convolutionValueReal);
         double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
@@ -134,6 +163,31 @@ namespace locust
         return complexConvolution;
     }
 
+    std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer)
+    {   
+        double convolutionMag = 0.0;
+        double convolutionValueReal = 0.0;
+        double convolutionValueImag = 0.0;
+
+        if(fFIRNBinsArray[bTE][l][m][n]<=0)
+        {   
+            LERROR(lmclog,"Number of bins in the filter should be positive");
+        }   
+        int firBinNumber=0;
+
+        int inputBufferSize = inputBuffer.size();    
+        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
+        {  
+                convolutionValueReal += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][0];
+                convolutionValueImag += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][1];
+                firBinNumber++;
+        }
+        //std::pair<double,double> complexConvolution;
+        double complexPhase = atan(convolutionValueImag/convolutionValueReal);
+        double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
+        return std::make_pair(complexMag, complexPhase);
+        //return complexConvolution;
+    }  
 
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
@@ -157,7 +211,6 @@ namespace locust
             fFIRComplex = NULL;
         }
     }
-    
     bool TFFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
         return true;
@@ -291,7 +344,6 @@ namespace locust
         }
 
         fIsFIRCreated=true;
-
         if (fPrintFIR)
         {
             scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
@@ -371,36 +423,35 @@ namespace locust
     	return true;
     }
 
-    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(std::vector<std::pair<double,std::pair<double,double> > > gfArray)
+    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
     {
-
-    	if(fIsFIRCreated)
+    	if(fIsFIRCreatedArray[bTE][l][m][n])
         {
             return true;
         }
 
-        fFIRNBins = gfArray.size();
-        fResolution = gfArray[0].first;
+        fFIRNBinsArray[bTE][l][m][n] = gfArray.size();
+        fResolutionArray[bTE][l][m][n] = gfArray[0].first;
 
-        fFilterComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
-
-        for (int i = 0; i < fFIRNBins; i++)
+        fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
+        for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
         {
-        	fFilterComplex[i][0] = gfArray[i].second.first;
-        	fFilterComplex[i][1] = gfArray[i].second.second;
+        	fFilterComplexArray[bTE][l][m][n][i][0] = gfArray[i].second.first;
+        	fFilterComplexArray[bTE][l][m][n][i][1] = gfArray[i].second.second;
         }
-
         if (fPrintFIR)
         {
 
             scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-
-            PrintFIR( fFilterComplex, fFIRNBins, (dataDir / "../output/FIRhisto.root").string() );
-            LPROG( lmclog, "Finished writing histos to output/FIRhisto.root");
+	    std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
+	    std::string fileName = (dataDir / "../output/FIRhisto").string() + modeIndexStr + ".root";
+            PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
+		
+            LPROG( lmclog, "Finished writing histos to output/FIRhisto"+modeIndexStr+".root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
             getchar();
         }
-
+	fIsFIRCreatedArray[bTE][l][m][n]=true;
         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
     	return true;

@@ -221,14 +221,18 @@ namespace locust
     	return tIntegral;
     }
 
-    std::vector<double> CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    std::vector<double> CylindricalCavity::GetDopplerFrequency(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP)
     {
     	std::vector<double> freqPrime;
     	double vz = tKassParticleXP[5];
-    	double term1 = fFieldCore->GetBesselNKPrimeZeros(l,m) / GetDimR();
+	double term1 = 0;
+    	if(bTE==1) term1 = fFieldCore->GetBesselNKPrimeZeros(l,m) / GetDimR();
+	else term1 = fFieldCore->GetBesselNKZeros(l,m) / GetDimR();
     	double term2 = n * LMCConst::Pi() / GetDimL();
     	double lambda = 1. / pow( 1. / 4. / LMCConst::Pi() / LMCConst::Pi() * ( term1*term1 + term2*term2 ), 0.5);
-    	double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
+    	double lambda_c = 0.;
+	if(bTE==1)lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
+	else lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKZeros(l,m);
     	double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
     	double dopplerShift = 0.;
     	if (vp > 0.) dopplerShift = vz / vp;
@@ -365,12 +369,25 @@ namespace locust
        	return tField;  // return normalized field.
     }
 
-	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+/*
+	double CylindricalCavity::TotalFieldNorm(std::vector<double> field)
 	{
-		std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
-		tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
+		double norm = 0;
+		auto it = field.begin();
+		while (it != field.end())
+		{
+			if (!isnan(*it)) norm += (*it)*(*it);
+			*it++;
+		}
+		return sqrt(norm);
+	}
+*/
+	double CylindricalCavity::CalculateDotProductFactor(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+	{
+		std::vector<std::vector<std::vector<std::vector<double>>>> tAvgDotProductFactor = GetAvgDotProductFactor();
+		tAvgDotProductFactor[bTE][l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[bTE][l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
 		SetAvgDotProductFactor(tAvgDotProductFactor);
-		return tAvgDotProductFactor[l][m][n];
+		return tAvgDotProductFactor[bTE][l][m][n];
 	}
 
 

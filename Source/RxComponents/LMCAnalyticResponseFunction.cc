@@ -19,7 +19,22 @@ namespace locust
 	    fGeneratingTF( false ),
 		fInitialFreq( 0. ),
 		fTFarray(0 )
-    {}
+    {  
+	int fNModes = 2;
+	fGFarray.resize(2); 
+	for( int bTE = 0; bTE<2; bTE++)
+	{
+        	fGFarray[bTE].resize(fNModes);
+        	for(int l=0; l<fNModes; l++)
+        	{   
+                	fGFarray[bTE][l].resize(fNModes);
+                	for(int m=0; m<fNModes; m++)
+                	{   
+                        	fGFarray[bTE][l][m].resize(fNModes);
+                	}
+		}    
+        }   
+    } 
     AnalyticResponseFunction::~AnalyticResponseFunction() {}
 
 
@@ -52,29 +67,21 @@ namespace locust
     {
     	return fTFarray;
     }
-
-    void AnalyticResponseFunction::SetGFarray( std::vector<std::pair<double,std::pair<double,double> > > aGFarray )
+    void AnalyticResponseFunction::SetGFarray(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray )
     {
-    	if (fGFarray.size() > 0)
-    	{
-        	for (unsigned index=0; index<aGFarray.size(); index++)
-        	{
-        		fGFarray[index].second.first = aGFarray[index].second.first;
-        		fGFarray[index].second.second = aGFarray[index].second.second;
-        	}
-    	}
-    	else
-    	{
-    		for (unsigned index=0; index<aGFarray.size(); index++)
-    		{
-    			fGFarray.push_back(std::make_pair(aGFarray[index].first, aGFarray[index].second));
-    		}
-    	}
+	if(fGFarray[bTE][l][m][n].size()!=aGFarray.size())
+	{
+		fGFarray[bTE][l][m][n].resize(aGFarray.size());
+	}
+	for (unsigned index=0; index<aGFarray.size(); index++)
+        {   
+        	fGFarray[bTE][l][m][n][index] = std::make_pair(aGFarray[index].first, aGFarray[index].second);
+        }  
     }
 
-    std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray()
+    std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray(int bTE, int l, int m, int n)
     {
-    	return fGFarray;
+    	return fGFarray[bTE][l][m][n];
     }
 
 
