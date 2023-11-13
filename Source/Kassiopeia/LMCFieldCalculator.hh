@@ -49,10 +49,14 @@ namespace locust
             int GetNFilterBinsRequiredArray(int bTE, int l, int m, int n);
             void SetFilterSizeArray(int bTE, int l, int m, int n, int aFilterSize );
             int GetFilterSizeArray(int bTE, int l, int m, int n);
+            void SetSignalStartCondition( bool aFlag );
 
             kl_interface_ptr_t fInterface;
 
         private:
+            bool GetSignalStartCondition(std::vector<double> tKassParticleXP);
+            double calcOrbitPhase(double vx, double vy);
+            double quadrantOrbitCorrection(double phase, double vx);
             TFReceiverHandler* fTFReceiverHandler;
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;
@@ -61,6 +65,8 @@ namespace locust
             std::vector< std::vector< std::vector< std::vector< std::deque<double> >>>> fFrequencyBufferArray;
 	    std::vector< std::vector< std::vector< std::vector< int >>>> fNFilterBinsRequiredArray;
             bool fbMultiMode;
+            double fZSignalStart;
+            bool fSignalStarted;
     };
 
 }

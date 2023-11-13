@@ -44,17 +44,14 @@ namespace locust
         if( aParam.has( "norm-check" ) )
         {
             scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-            char cBufferFileName[60];
-            int n = sprintf(cBufferFileName, "%s/../output/ModeEnergies.txt", dataDir.string().c_str());
-            const char *cFileName = cBufferFileName;
-            fp = fopen(cFileName, "w");
+            std::string sFileName = (dataDir / "../output/ModeEnergies.root").string();
+            std::string sTextFileName = (dataDir / "../output/ModeEnergies.txt").string();
+            fp = fopen(sTextFileName.c_str(), "w");
             fclose(fp);
 
 #ifdef ROOT_FOUND
             fRootHistoWriter = RootHistoWriter::get_instance();
-            n = sprintf(cBufferFileName, "%s/../output/ModeEnergies.root", dataDir.string().c_str());
-            cFileName = cBufferFileName;
-            fRootHistoWriter->SetFilename(cFileName);
+            fRootHistoWriter->SetFilename(sFileName);
             fRootHistoWriter->OpenFile("RECREATE");
             fRootHistoWriter->CloseFile();
 #endif

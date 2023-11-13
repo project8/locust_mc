@@ -578,6 +578,7 @@ namespace locust
                     {
                         fInterface->fPreEventInProgress = false;  // reset.
                         fInterface->fEventInProgress = true;
+                        fFieldCalculator->SetSignalStartCondition( false ); // reset
                         LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
                         WakeBeforeEvent();  // trigger Kass event.
                     }

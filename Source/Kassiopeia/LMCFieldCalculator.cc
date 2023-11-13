@@ -18,6 +18,8 @@ namespace locust
     FieldCalculator::FieldCalculator() :
     		fNFilterBinsRequiredArray( {{{{0}}}} ),
 			fbMultiMode( false ),
+			fZSignalStart( 0. ),
+			fSignalStarted( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
 			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
@@ -26,6 +28,8 @@ namespace locust
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
     		fNFilterBinsRequiredArray( {{{{0}}}} ),
 			fbMultiMode( false ),
+			fZSignalStart( 0. ),
+			fSignalStarted( false ),
 			fTFReceiverHandler( NULL ),
 			fAnalyticResponseFunction( 0 ),
 			fInterface( aCopy.fInterface )
@@ -55,6 +59,12 @@ namespace locust
 
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
      {
+
+        if( aParam.has( "locust-signal-zstart" ) )
+        {
+        	fZSignalStart = aParam["locust-signal-zstart"]().as_double();
+    		LPROG(lmclog,"Starting signal calculation when e- z-position > " << fZSignalStart << " m.");
+        }
 
         if( aParam.has( "multi-mode" ) )
         {	
@@ -349,12 +359,24 @@ namespace locust
     {
     	// l, m, & n are needed for selecting the resonant frequency and Q.  (Still TO-DO).
 
-    	// Extract particle at back of deque, by default if !Interpolate as in:
-    	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(0., false, 0., false);
-    	double tVx = tKassParticleXP[3];
-    	double tVy = tKassParticleXP[4];
+    	double tVx = aFinalParticle.GetVelocity().X();
+    	double tVy = aFinalParticle.GetVelocity().Y();
+
+    	std::vector<double> tKassParticleXP;
+    	tKassParticleXP.push_back(aFinalParticle.GetPosition().X());
+    	tKassParticleXP.push_back(aFinalParticle.GetPosition().Y());
+    	tKassParticleXP.push_back(aFinalParticle.GetPosition().Z());
+    	tKassParticleXP.push_back(aFinalParticle.GetVelocity().X());
+    	tKassParticleXP.push_back(aFinalParticle.GetVelocity().Y());
+    	tKassParticleXP.push_back(aFinalParticle.GetVelocity().Z());
+    	tKassParticleXP.push_back(calcOrbitPhase(tVx, tVy));
+    	tKassParticleXP.push_back(aFinalParticle.GetCyclotronFrequency() * 2. * LMCConst::Pi());
+    	tKassParticleXP.push_back(aFinalParticle.GetTime());
+
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
+
         std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE,l,m,n,tKassParticleXP, 0);
+
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
 
@@ -409,6 +431,23 @@ namespace locust
     		return 1.0;  // No feedback
     }
 
+    bool FieldCalculator::GetSignalStartCondition(std::vector<double> tKassParticleXP)
+    {
+    	if ( fabs(tKassParticleXP[2]) > fZSignalStart )
+    	{
+    		return true;
+    	}
+    	else
+    	{
+    		return false;
+    	}
+
+    }
+
+    void FieldCalculator::SetSignalStartCondition(bool aFlag)
+    {
+    	fSignalStarted = aFlag;
+    }
 
     std::pair<double,double> FieldCalculator::GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF)
     {
@@ -419,12 +458,19 @@ namespace locust
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
     	double orbitPhase = tKassParticleXP[6];  // radians
     	double cycFrequency = tKassParticleXP[7];
+    	double tTime = tKassParticleXP[9];
     	double amplitude = 0.;
-    	if (fInterface->fField->InVolume(tKassParticleXP))
+    	if (!fSignalStarted)
     	{
-    		amplitude = 1.;
+    		fSignalStarted = GetSignalStartCondition(tKassParticleXP);
     	}
-
+    	else
+    	{
+        	if ( fInterface->fField->InVolume(tKassParticleXP))
+        	{
+        		amplitude = 1.;
+        	}
+    	}
 
     	if ( !BypassTF )
     	{
@@ -470,7 +516,26 @@ namespace locust
 
     }
 
+    double FieldCalculator::calcOrbitPhase(double vx, double vy)
+    {
+    	double phase = 0.;
+        if ((fabs(vy) > 0.))
+    	{
+    		phase = atan(-vx/vy);
+    	}
 
+    	phase += quadrantOrbitCorrection(phase, vx);
+    	return phase;
+    }
+
+    double FieldCalculator::quadrantOrbitCorrection(double phase, double vx)
+    {
+    	double phaseCorrection = 0.;
+    	if (((phase < 0.)&&(vx < 0.)) || ((phase > 0.)&&(vx > 0.)))
+    		phaseCorrection = LMCConst::Pi();
+
+    	return phaseCorrection;
+    }
 
 
 

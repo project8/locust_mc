@@ -51,13 +51,20 @@ namespace locust
             virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
             virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
 
+            // Imported mode map:
+            virtual bool ReadModeMapTE_E(std::string aFilename){return 0;};
+            virtual bool ReadModeMapTE_H(std::string aFilename){return 0;};
+            virtual bool ReadModeMapTM_E(std::string aFilename){return 0;};
+            virtual bool ReadModeMapTM_H(std::string aFilename){return 0;};
+
+
             void ReadBesselZeroes(std::string filename, bool prime);
             double GetBesselNKZeros(int l, int m);
             double GetBesselNKPrimeZeros(int l, int m);
 
+
         private:
             std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
-
 
     };
 
@@ -84,7 +91,7 @@ namespace locust
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual bool InVolume(std::vector<double> tKassParticleXP){return false;};
             virtual void CheckNormalization(int nModes){};
-            virtual void PrintModeMaps(int nModes, bool bTE, double zSlice){};
+            virtual void PrintModeMaps(int nModes, double zSlice, double thetaSlice){};
             virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode){return {0.};};
             virtual double ScaleEPoyntingVector(double fcyc){return 0.;};
 
@@ -131,9 +138,6 @@ namespace locust
             double fCENTER_TO_ANTENNA;
             std::vector<std::vector<std::vector<std::vector<double>>>> fAvgDotProductFactor;
             bool fPlotModeMaps;
-
-
-
 
     };
 

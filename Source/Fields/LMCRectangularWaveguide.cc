@@ -66,8 +66,8 @@ namespace locust
 
         if( PlotModeMaps() )
         {
-        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModeMapOutput.root... " );
-        	PrintModeMaps(GetNModes(),1, 0.);
+        	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModemapOutput.root... " );
+        	PrintModeMaps(GetNModes(), 0., 0.);
         }
 
         return true;
@@ -398,17 +398,16 @@ namespace locust
     }
 
 
-    void RectangularWaveguide::PrintModeMaps(int nModes, bool bTE, double zSlice)
+    void RectangularWaveguide::PrintModeMaps(int nModes, double zSlice, double thetaSlice)
     {
+        scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
+        std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
+        bool bTE = 1; // TE and not TM.
 
 #ifdef ROOT_FOUND
-        scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
         FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
-        char cBufferFileName[60];
-        int n = sprintf(cBufferFileName, "%s/../output/ModeMapOutput.root", dataDir.string().c_str());
-        const char *cFileName = cBufferFileName;
-        aRootHistoWriter->SetFilename(cFileName);
-        aRootHistoWriter->SetFilename(cFileName);
+        aRootHistoWriter->SetFilename(sFileName);
+        aRootHistoWriter->SetFilename(sFileName);
         aRootHistoWriter->OpenFile("RECREATE");
 
         int nbins = GetNPixels();
@@ -465,7 +464,7 @@ namespace locust
 
         aRootHistoWriter->CloseFile();
         LPROG(lmclog, "\n\nTo plot a mode map:\n"
-    			"> root file:output/ModeMapOutput.root\n"
+    			"> root file:output/ModemapOutput.root\n"
     			"# _file0->ls()\n"
     			"# TE10_Ey->SetLineColor(0)\n"
     			"# TE10_Ey->SetLineWidth(0)\n"
