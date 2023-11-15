@@ -43,7 +43,7 @@ namespace locust
 
         private:
 
-            std::vector<std::vector<std::vector<double>>> fModeMapTE_E;
+            std::vector<std::vector<double>> fModeMapTE_E;
 
     };
 
