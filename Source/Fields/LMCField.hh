@@ -39,13 +39,19 @@ namespace locust
     	    FieldCore();
     	    virtual ~FieldCore();
 
-	        // Cylindrical cavity:
+	        // Cylindrical Pozar cavity:
             virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
             virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
             virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
             virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
 
-            // Rectangular waveguide:
+            // Rectangular Pozar cavity:
+            virtual std::vector<double> TE_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass){return {0.};};
+            virtual std::vector<double> TE_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass){return {0.};};
+            virtual std::vector<double> TM_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass){return {0.};};
+            virtual std::vector<double> TM_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass){return {0.};};
+
+            // Rectangular Pozar waveguide:
             virtual std::vector<double> TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
             virtual std::vector<double> TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
             virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};

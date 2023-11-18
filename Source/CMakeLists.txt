@@ -184,6 +184,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Fields/LMCField.hh
         Fields/LMCCylindricalCavity.hh
         Fields/LMCPozarCylindricalCavity.hh
+        Fields/LMCRectangularCavity.hh
+        Fields/LMCPozarRectangularCavity.hh        
         Fields/LMCModeMapCylindricalCavity.hh
         Fields/LMCRectangularWaveguide.hh
         Fields/LMCPozarRectangularWaveguide.hh
@@ -219,6 +221,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Fields/LMCField.cc
         Fields/LMCCylindricalCavity.cc
         Fields/LMCPozarCylindricalCavity.cc
+        Fields/LMCRectangularCavity.cc
+        Fields/LMCPozarRectangularCavity.cc        
         Fields/LMCModeMapCylindricalCavity.cc
         Fields/LMCRectangularWaveguide.cc
         Fields/LMCPozarRectangularWaveguide.cc
