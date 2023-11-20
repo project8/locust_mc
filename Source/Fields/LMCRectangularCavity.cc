@@ -227,19 +227,20 @@ namespace locust
 
     std::vector<double> RectangularCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
     {
+    	// Following the calculations in https://3.basecamp.com/3700981/buckets/3107037/documents/4496563487#__recording_4496575215
     	std::vector<double> freqPrime;
 
-/*
     	double vz = tKassParticleXP[5];
-    	double term1 = fFieldCore->GetBesselNKPrimeZeros(l,m) / GetDimR();
-    	double term2 = n * LMCConst::Pi() / GetDimL();
-    	double lambda = 1. / pow( 1. / 4. / LMCConst::Pi() / LMCConst::Pi() * ( term1*term1 + term2*term2 ), 0.5);
-    	double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
-    	double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
+    	double k1 = l * LMCConst::Pi() / GetDimX();
+    	double k2 = m * LMCConst::Pi() / GetDimY();
+    	double kc = sqrt( k1*k1 + k2*k2 );
+    	double lambda_c = 2. * LMCConst::Pi() / kc;
+    	double lambda = 1. / sqrt( 1. / lambda_c / lambda_c + n*n / 4. / GetDimL() / GetDimL() );
+    	double vp = LMCConst::C() * sqrt( 1. - lambda*lambda / lambda_c/lambda_c );
     	double dopplerShift = 0.;
     	if (vp > 0.) dopplerShift = vz / vp;
 		freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
-*/
+
     	return freqPrime;
     }
 
