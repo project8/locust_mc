@@ -9,6 +9,7 @@ configure_file( LocustKass_Cavity_CCA.xml.in LocustKass_Cavity_CCA.xml )
 configure_file( LocustKass_Cavity_1GHz.xml.in LocustKass_Cavity_1GHz.xml )
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
 configure_file( LocustCavityCCA.json.in LocustCavityCCA.json )
+configure_file( LocustCavityRectangular.json.in LocustCavityRectangular.json )
 configure_file( LocustCavity1GHz.json.in LocustCavity1GHz.json )
 configure_file( LocustSignalPlusNoise.json.in LocustSignalPlusNoise.json )
 configure_file( LocustFreeSpaceTemplate.json.in LocustFreeSpaceTemplate.json )
@@ -34,6 +35,7 @@ set (EXAMPLE_CONFIGFILES
 	WaveguideGeometry_VTinyCoil.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityRectangular.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavity1GHz.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustPlaneWaveTemplate.json

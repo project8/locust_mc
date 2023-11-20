@@ -20,6 +20,7 @@
 #include "LMCFieldCalculator.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
+#include "LMCRectangularCavity.hh" // : LMCField
 #include "LMCRectangularWaveguide.hh" // : LMCField
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
