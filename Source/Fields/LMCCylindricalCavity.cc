@@ -82,27 +82,29 @@ namespace locust
      		SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
      	}
 
-     	if( aParam.has( "modemap-filename" ) )
+     	if( aParam.has( "upload-modemap-filename" ) )  // import "realistic" test mode map
      	{
      		fFieldCore = new ModeMapCylindricalCavity();
-     		if (!fFieldCore->ReadModeMapTE_E(aParam["modemap-filename"]().as_string()))
+     		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+         	if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string()))
      		{
      			LERROR(lmclog,"There was a problem uploading the mode map.");
      			exit(-1);
      		}
+         	SetNormFactorsTE( SetUnityNormFactors(GetNModes()));
+         	SetNormFactorsTM( SetUnityNormFactors(GetNModes()));
      	}
-     	else
+     	else // otherwise default to ideal Pozar mode map
      	{
      		fFieldCore = new PozarCylindricalCavity();
      		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
      		fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
      		fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+     		SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
+     		SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
+     		CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
      	}
 
-        SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
-        SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
-
-        CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
 
         if( PlotModeMaps() )
         {
@@ -116,6 +118,39 @@ namespace locust
 
     	return true;
     }
+
+    std::vector<std::vector<std::vector<double>>> CylindricalCavity::SetUnityNormFactors(int nModes)
+    {
+    	LPROG(lmclog, "Setting mode normalization factors to 1.0 ... " );
+
+     	std::vector<std::vector<std::vector<double>>> tNormFactor;
+    	tNormFactor.resize(nModes);
+
+    	for (unsigned m=0; m<nModes; m++)
+    	{
+    		tNormFactor[m].resize(nModes);
+    		for (unsigned n=0; n<nModes; n++)
+    		{
+    			tNormFactor[m][n].resize(nModes);
+    		}
+    	}
+
+    	for (unsigned l=0; l<nModes; l++)
+    	{
+    		for (unsigned m=0; m<nModes; m++)
+    		{
+    			for (unsigned n=0; n<nModes; n++)
+    			{
+    				tNormFactor[l][m][n] = 1.;
+    			}
+    		}
+    	}
+
+    	return tNormFactor;
+
+    }
+
+
 
     std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
     {
