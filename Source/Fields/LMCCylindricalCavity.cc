@@ -530,10 +530,10 @@ namespace locust
     	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
     		    		}
 
-    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
-    			 	    TH2D* hTEr = new TH2D(hname_Er, hname_Er, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
-    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, hname_Htheta, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
-    			 	    TH2D* hTHr = new TH2D(hname_Hr, hname_Hr, nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, (std::string(hname_Etheta)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			    	TH2D* hTEr = new TH2D(hname_Er, (std::string(hname_Er)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			    	TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
 
         				double normFactor = 1.0;
         				if (bTE)
@@ -651,16 +651,16 @@ namespace locust
     				    }
     				    else
         				{
-        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_thetaLong_r%d", l, m, n, (int)(thetaSlice*1.e3));
+        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
     	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
         					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
     	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
     		    		}
 
-    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, hname_Etheta, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    			 	    TH2D* hTEr = new TH2D(hname_Er, hname_Er, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, hname_Htheta, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    			 	    TH2D* hTHr = new TH2D(hname_Hr, hname_Hr, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    		    		TH2D* hTEtheta = new TH2D(hname_Etheta, (std::string(hname_Etheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    		    		TH2D* hTEr = new TH2D(hname_Er, (std::string(hname_Er)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    		    		TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    		    		TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
 
         				double normFactor = 1.0;
         				if (bTE)

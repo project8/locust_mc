@@ -483,23 +483,23 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbufferEx, "TE%d%d%d_Ex_z%d", l, m, n, (int)(zSlice*1.e3));
-    					    a = sprintf(hbufferEy, "TE%d%d%d_Ey_z%d", l, m, n, (int)(zSlice*1.e3));
-    				    	a = sprintf(hbufferHx, "TE%d%d%d_Hx_z%d", l, m, n, (int)(zSlice*1.e3));
-    					    a = sprintf(hbufferHy, "TE%d%d%d_Hy_z%d", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEx, "TE%d%d%d_Ex_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEy, "TE%d%d%d_Ey_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHx, "TE%d%d%d_Hx_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHy, "TE%d%d%d_Hy_z%dmm", l, m, n, (int)(zSlice*1.e3));
     				    }
     				    else
         				{
-        					a = sprintf(hbufferEx, "TM%d%d%d_Ex_z%d", l, m, n, (int)(zSlice*1.e3));
-    	    				a = sprintf(hbufferEy, "TM%d%d%d_Ey_z%d", l, m, n, (int)(zSlice*1.e3));
-        					a = sprintf(hbufferHx, "TM%d%d%d_Hx_z%d", l, m, n, (int)(zSlice*1.e3));
-    	    				a = sprintf(hbufferHy, "TM%d%d%d_Hy_z%d", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEx, "TM%d%d%d_Ex_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEy, "TM%d%d%d_Ey_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHx, "TM%d%d%d_Hx_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHy, "TM%d%d%d_Hy_z%dmm", l, m, n, (int)(zSlice*1.e3));
     		    		}
 
-    			    	TH2D* hTEx = new TH2D(hname_Ex, hname_Ex, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-    			 	    TH2D* hTEy = new TH2D(hname_Ey, hname_Ey, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-    			    	TH2D* hTHx = new TH2D(hname_Hx, hname_Hx, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-    			 	    TH2D* hTHy = new TH2D(hname_Hy, hname_Hy, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    			    	TH2D* hTEx = new TH2D(hname_Ex, (std::string(hname_Ex)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    			    	TH2D* hTEy = new TH2D(hname_Ey, (std::string(hname_Ey)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    			    	TH2D* hTHx = new TH2D(hname_Hx, (std::string(hname_Hx)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    			    	TH2D* hTHy = new TH2D(hname_Hy, (std::string(hname_Hy)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
 
         				double normFactor = 1.0;
         				if (bTE)
@@ -605,23 +605,23 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbufferEx, "TE%d%d%d_Ex_zLong_x%d", l, m, n, (int)(xSlice));
-    					    a = sprintf(hbufferEy, "TE%d%d%d_Ey_zLong_x%d", l, m, n, (int)(xSlice));
-    				    	a = sprintf(hbufferHx, "TE%d%d%d_Hx_zLong_x%d", l, m, n, (int)(xSlice));
-    					    a = sprintf(hbufferHy, "TE%d%d%d_Hy_zLong_x%d", l, m, n, (int)(xSlice));
+    				    	a = sprintf(hbufferEx, "TE%d%d%d_Ex_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferEy, "TE%d%d%d_Ey_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHx, "TE%d%d%d_Hx_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHy, "TE%d%d%d_Hy_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
     				    }
     				    else
         				{
-        					a = sprintf(hbufferEx, "TM%d%d%d_Ex_zLong_x%d", l, m, n, (int)(xSlice));
-    	    				a = sprintf(hbufferEy, "TM%d%d%d_Ey_zLong_x%d", l, m, n, (int)(xSlice));
-        					a = sprintf(hbufferHx, "TM%d%d%d_Hx_zLong_x%d", l, m, n, (int)(xSlice));
-    	    				a = sprintf(hbufferHy, "TM%d%d%d_Hy_zLong_x%d", l, m, n, (int)(xSlice));
+    				    	a = sprintf(hbufferEx, "TM%d%d%d_Ex_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferEy, "TM%d%d%d_Ey_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHx, "TM%d%d%d_Hx_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHy, "TM%d%d%d_Hy_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
     		    		}
 
-    			    	TH2D* hTEx = new TH2D(hname_Ex, hname_Ex, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-    			 	    TH2D* hTEy = new TH2D(hname_Ey, hname_Ey, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-    			    	TH2D* hTHx = new TH2D(hname_Hx, hname_Hx, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
-    			 	    TH2D* hTHy = new TH2D(hname_Hy, hname_Hy, nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    		TH2D* hTEx = new TH2D(hname_Ex, (std::string(hname_Ex)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    		TH2D* hTEy = new TH2D(hname_Ey, (std::string(hname_Ey)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    		TH2D* hTHx = new TH2D(hname_Hx, (std::string(hname_Hx)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    		TH2D* hTHy = new TH2D(hname_Hy, (std::string(hname_Hy)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
 
         				double normFactor = 1.0;
         				if (bTE)
