@@ -42,9 +42,9 @@ namespace locust
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 113
     	double Z_TE = kc * eta / beta;
 
-       	double tEx = k2 * cos(k1*x) * sin(k2*y) * sin(k3*z);
-        double tEy = k1 * sin(k1*x) * cos(k2*y) * sin(k3*z);
-        double tEz = 0.; // TE mode.
+    	double tEx = Z_TE * beta * k2 / kc / kc * cos(k1*x) * sin(k2*y) * sin(k3*z);
+    	double tEy = -Z_TE * beta * k1 / kc / kc * sin(k1*x) * cos(k2*y) * sin(k3*z);
+    	double tEz = 0.; // TE mode.
 
     	TE_E.push_back(tEx);
     	TE_E.push_back(tEy);
@@ -78,10 +78,9 @@ namespace locust
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 113
     	double Z_TE = kc * eta / beta;
 
-
-       	double tHx = k2 / Z_TE * sin(k1*x) * cos(k2*y) * cos(k3*z);
-        double tHy = k1 / Z_TE * cos(k1*x) * sin(k2*y) * cos(k3*z);
-        double tHz = k2 * LMCConst::Pi() / kc / eta / dimX * cos(k1*x) * cos(k2*y) * sin(k3*z);
+    	double tHx = beta * k1 / kc / kc * sin(k1*x) * cos(k2*y) * cos(k3*z);
+    	double tHy = beta * k2 / kc / kc * cos(k1*x) * sin(k2*y) * cos(k3*z);
+    	double tHz = beta * (k1*k1 + k2*k2) / kc / kc * Z_TE / kc / eta  * cos(k1*x) * cos(k2*y) * sin(k3*z); // 6.42c
 
     	TE_H.push_back(tHx);
     	TE_H.push_back(tHz);
@@ -112,13 +111,13 @@ namespace locust
         double k2 = m * LMCConst::Pi() / dimY;
         double k3 = n * LMCConst::Pi() / dimZ;
         double kc = pow(k1*k1+k2*k2+k3*k3,0.5);
-        double beta = k3;
+    	double beta = k3;
         double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 113
-        double Z_TM = beta * eta / kc;
+    	double Z_TE = kc * eta / beta;
 
-        double tEx = k1 * Z_TM * sin(k1*x) * cos(k2*y) * cos(k3*z);
-        double tEy = k2 * Z_TM * cos(k1*x) * sin(k2*y) * cos(k3*z);
-        double tEz = k2 * LMCConst::Pi() / kc / eta / dimX * cos(k1*x) * cos(k2*y) * sin(k3*z);
+    	double tEx = -beta * k1 / kc / kc * cos(k1*x) * sin(k2*y) * sin(k3*z);
+    	double tEy = -beta * k2 / kc / kc * sin(k1*x) * cos(k2*y) * sin(k3*z);
+    	double tEz =  Z_TE * beta * (k1*k1 + k2*k2) / kc / kc / kc / eta * sin(k1*x) * sin(k2*y) * cos(k3*z);
 
         TM_E.push_back(tEx);
         TM_E.push_back(tEz);
@@ -149,11 +148,12 @@ namespace locust
     	double k3 = n * LMCConst::Pi() / dimZ;
     	double kc = pow(k1*k1+k2*k2+k3*k3,0.5);
     	double beta = k3;
-    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 113
+    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );
+    	double Z_TM = beta * eta / kc;
 
-       	double tHx = k2 * cos(k1*x) * sin(k2*y) * sin(k3*z);
-        double tHy = -k1 * sin(k1*x) * cos(k2*y) * sin(k3*z);
-        double tHz = 0.; // TM mode.
+    	double tHx = beta * k2 / kc / kc / Z_TM * sin(k1*x) * cos(k2*y) * cos(k3*z);
+    	double tHy = -beta * k1 / kc / kc / Z_TM * cos(k1*x) * sin(k2*y) * cos(k3*z);
+    	double tHz = 0.; // TM mode.
 
     	TM_H.push_back(tHx);
     	TM_H.push_back(tHy);
