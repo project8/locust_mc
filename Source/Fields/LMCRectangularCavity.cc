@@ -1,40 +1,45 @@
 /*
- * LMCCylindricalCavity.cc
+ * LMCRectangularCavity.cc
  *
  *  Created on: Jun 9, 2021
  *      Author: pslocum
  */
 
-#include "LMCCylindricalCavity.hh"
+#include "LMCRectangularCavity.hh"
 
 
 namespace locust
 {
 
-    LOGGER( lmclog, "CylindricalCavity" );
-    CylindricalCavity::CylindricalCavity():
+    LOGGER( lmclog, "RectangularCavity" );
+    RectangularCavity::RectangularCavity():
     	fProbeGain( {1., 1.}),
 		fCavityProbeZ( {0., 0.} ),
 		fCavityProbeRFrac( {0.5, 0.5} ),
 		fCavityProbeTheta( {0.0, 0.0} )
 		{}
 
-    CylindricalCavity::~CylindricalCavity() {}
+    RectangularCavity::~RectangularCavity() {}
 
 
 
-    bool CylindricalCavity::Configure( const scarab::param_node& aParam)
+    bool RectangularCavity::Configure( const scarab::param_node& aParam)
     {
 
     	if( !Field::Configure(aParam))
     	{
-    		LERROR(lmclog,"Error configuring Field class from CylindricalCavity subclass");
+    		LERROR(lmclog,"Error configuring Field class from RectangularCavity subclass");
     		return false;
     	}
 
-        if( aParam.has( "cavity-radius" ) )
+        if( aParam.has( "cavity-x" ) )
         {
-            SetDimR( aParam["cavity-radius"]().as_double() );
+            SetDimX( aParam["cavity-x"]().as_double() );
+        }
+
+        if( aParam.has( "cavity-y" ) )
+        {
+            SetDimY( aParam["cavity-y"]().as_double() );
         }
 
         if( aParam.has( "cavity-length" ) )
@@ -94,33 +99,27 @@ namespace locust
          	SetNormFactorsTE( SetUnityNormFactors(GetNModes()));
          	SetNormFactorsTM( SetUnityNormFactors(GetNModes()));
      	}
-     	else // otherwise default to ideal Pozar mode map
+     	else
      	{
-     		fFieldCore = new PozarCylindricalCavity();
-     		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-     		fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-     		fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
-     		SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
-     		SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
-     		CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
+     		fFieldCore = new PozarRectangularCavity();
+            SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
+            SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
+            CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
      	}
 
 
         if( PlotModeMaps() )
         {
         	double zSlice = 0.0;
-        	double thetaSlice = 0.0;
         	if (aParam.has( "map-z-slice" )) zSlice = aParam["map-z-slice"]().as_double();
-        	if (aParam.has( "map-theta-slice" )) thetaSlice = aParam["map-theta-slice"]().as_double();
         	LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModemapOutput*.root... " );
-        	PrintModeMaps(GetNModes(), zSlice, thetaSlice);
+        	PrintModeMaps(GetNModes(), zSlice);
         }
 
     	return true;
     }
 
-
-    std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
+    std::vector<std::vector<std::vector<double>>> RectangularCavity::CalculateNormFactors(int nModes, bool bTE)
     {
 
         LPROG(lmclog, "Calculating mode normalization factors ... " );
@@ -161,14 +160,14 @@ namespace locust
 
 
 
-    double CylindricalCavity::Integrate(int l, int m, int n, bool teMode, bool eField)
+    double RectangularCavity::Integrate(int l, int m, int n, bool teMode, bool eField)
     {
 
     	std::vector<double> aField;
-    	double r, theta, zPozar, zKass = 0.;
-    	double dR = GetDimR()/GetNPixels();
+    	double xPozar, yPozar, zPozar, xKass, yKass, zKass = 0.;
+    	double dX = GetDimX()/GetNPixels();
+    	double dY = GetDimY()/GetNPixels();
     	double dZ = GetDimL()/GetNPixels();
-    	double dTheta = 2.*LMCConst::Pi()/GetNPixels();
     	double tVolume = 0.;
     	double tIntegral = 0.;
 
@@ -179,31 +178,33 @@ namespace locust
     			for (unsigned k=0; k<GetNPixels(); k++)
     			{
 
-    	    		r = (double)i*dR;
-    	    		theta = (double)j*dTheta;
+    	    		xPozar = (double)i*dX;
+    	    		yPozar = (double)j*dY;
     	    		zPozar = (double)k*dZ;
+    	    		xKass = xPozar - GetDimX()/2.;
+    	    		yKass = yPozar - GetDimY()/2.;
     	    		zKass = zPozar - GetDimL()/2.;
 
     	    		if (teMode)
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = fFieldCore->TE_E(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    		    	aField = fFieldCore->TE_E(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TE_H(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    				aField = fFieldCore->TE_H(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = fFieldCore->TM_E(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    				aField = fFieldCore->TM_E(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TM_H(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    				aField = fFieldCore->TM_H(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    		}
 
@@ -211,95 +212,69 @@ namespace locust
     	    		auto it = aField.begin();
     	    		while (it != aField.end())
     	    		{
-		    			if (!isnan(*it))
+		    			if (!std::isnan(*it))
 		    				aFieldMagSq += (*it)*(*it);
     	    			*it++;
     	    		}
 
-    				tIntegral += aFieldMagSq*r*dR*dTheta*dZ;
-//    		    	tVolume += r*dR*dTheta*dZ;  // sanity check volume integral.
+    				tIntegral += aFieldMagSq*dX*dY*dZ;
+    		    	//tVolume += dX*dY*dZ;  // sanity check volume integral.
     			}
     		}
     	}
     	return tIntegral;
     }
 
-    std::vector<double> CylindricalCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
+    std::vector<double> RectangularCavity::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
     {
+    	// Following the calculations in https://3.basecamp.com/3700981/buckets/3107037/documents/4496563487#__recording_4496575215
     	std::vector<double> freqPrime;
+
     	double vz = tKassParticleXP[5];
-    	double term1 = fFieldCore->GetBesselNKPrimeZeros(l,m) / GetDimR();
-    	double term2 = n * LMCConst::Pi() / GetDimL();
-    	double lambda = 1. / pow( 1. / 4. / LMCConst::Pi() / LMCConst::Pi() * ( term1*term1 + term2*term2 ), 0.5);
-    	double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
-    	double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
+    	double k1 = l * LMCConst::Pi() / GetDimX();
+    	double k2 = m * LMCConst::Pi() / GetDimY();
+    	double kc = sqrt( k1*k1 + k2*k2 );
+    	double lambda_c = 2. * LMCConst::Pi() / kc;
+    	double lambda = 1. / sqrt( 1. / lambda_c / lambda_c + n*n / 4. / GetDimL() / GetDimL() );
+    	double vp = LMCConst::C() * sqrt( 1. - lambda*lambda / lambda_c/lambda_c );
     	double dopplerShift = 0.;
     	if (vp > 0.) dopplerShift = vz / vp;
 		freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
+
     	return freqPrime;
     }
 
 
-    double CylindricalCavity::Z_TE(int l, int m, int n, double fcyc) const
+    double RectangularCavity::Z_TE(int l, int m, int n, double fcyc) const
     {
-    	/*
-    	double Z_TE = 1.0;
-    	double x_lm = fInterface->fBesselNKPrimeZeros[l][m];
-    	double k1 = x_lm / GetDimR();
-    	double k3 = n * LMCConst::Pi() / GetDimL();
-    	double k = pow(k1*k1+k3*k3,0.5);
-    	double k0 = fcyc / LMCConst::C();
 
-    	if ( k*k-k0*k0 != 0. )
-    	{
-    		// Red Jackson wave impedance Eq. 8.32
-    		Z_TE = LMCConst::MuNull() * fcyc / LMCConst::C() / k;
-    	}
-    	*/
-
-    	// Bypass all realistic impedance calculations for now, and return a constant.
-    	// This allows us to implement a power model elsewhere in the code without having
-    	// a duplicate resonant impedance from this function.
-    	double Z_TE = 500.; // ohms
+     	double Z_TE = 500.; // ohms
     	return Z_TE;
 
     }
 
-    double CylindricalCavity::Z_TM(int l, int m, int n, double fcyc) const
+    double RectangularCavity::Z_TM(int l, int m, int n, double fcyc) const
     {
-    	/*
-    	double Z_TM = 1.0;
-    	double x_lm = fInterface->fBesselNKZeros[l][m];
-    	double k1 = x_lm / GetDimR();
-    	double k3 = n * LMCConst::Pi() / GetDimL();
-    	double k = pow(k1*k1+k3*k3,0.5);
-    	double k0 = fcyc / LMCConst::C();
-
-    	if ( k*k-k0*k0 != 0. )
-    	{
-    		// Red Jackson waveguide impedance Eq. 8.32
-    		Z_TM = 1. / ( LMCConst::EpsNull() * fcyc / LMCConst::C() / k ); // cgs units
-    	}
-    	*/
-
-    	// See comments in Z_TE, above ^
     	double Z_TM = 500.; //ohms
     	return Z_TM;
     }
 
 
-    std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
+    std::vector<double> RectangularCavity::GetTE_E(int l, int m, int n, double x, double y, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    	return fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     }
 
-    std::vector<double> CylindricalCavity::GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
+    std::vector<double> RectangularCavity::GetTM_E(int l, int m, int n, double x, double y, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    	return fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     }
 
-    std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode)
+    std::vector<double> RectangularCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode)
     {
+
+    	/* Even for a rectangular cavity, probe location is defined in polar coordinates for consistency
+    	 * with LMCKassCurrentTransmitter output. */
 
     	std::vector<double> rProbe;
         rProbe.push_back(GetCavityProbeRFrac()[0] * GetDimR());
@@ -307,25 +282,11 @@ namespace locust
 
     	std::vector<double> thetaProbe = GetCavityProbeTheta();
     	std::vector<double> zProbe = GetCavityProbeZ();
-    	std::vector<double> thetaEffective;
-
-    	if (l>0)
-    	{
-                //If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
-                double thetaElectron = tKassParticleXP[1];
-                thetaEffective.push_back(thetaProbe[0] - thetaElectron);
-                thetaEffective.push_back(thetaProbe[1] - thetaElectron);
-    	}
-    	else
-    	{
-    		thetaEffective = thetaProbe;
-    	}
 
     	std::vector<std::vector<double>> tProbeLocation;
-    	tProbeLocation.push_back({rProbe[0], thetaEffective[0], zProbe[0]});
-    	tProbeLocation.push_back({rProbe[1], thetaEffective[1], zProbe[1]});
+    	tProbeLocation.push_back({rProbe[0], thetaProbe[0], zProbe[0]});
+    	tProbeLocation.push_back({rProbe[1], thetaProbe[1], zProbe[1]});
 
-    	//Assumes probe couples to E of mode. If mode is polarized, transforms angle to reference frame of electron
     	std::vector<double> tEFieldAtProbe;
     	tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode)) );
     	tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode)) );
@@ -334,27 +295,29 @@ namespace locust
 
     }
 
-    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode)
+    std::vector<double> RectangularCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode)
     {
     	double tR = tKassParticleXP[0];
     	double tTheta = tKassParticleXP[1];
     	double tZ = tKassParticleXP[2];
+    	double tX = tR*cos(tTheta);
+    	double tY = tR*sin(tTheta);
        	std::vector<double> tField;
        	double normFactor;
        	if(teMode)
        	{
-       		tField = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		tField = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,tX,tY,tZ,0);
        		normFactor = GetNormFactorsTE()[l][m][n];
        	}
        	else
        	{
-       		tField = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		tField = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,tX,tY,tZ,0);
        		normFactor = GetNormFactorsTM()[l][m][n];
        	}
        	auto it = tField.begin();
        	while (it != tField.end())
        	{
-       		if (!isnan(*it))
+       		if (!std::isnan(*it))
        		{
        			(*it) *= normFactor;
        		}
@@ -368,7 +331,7 @@ namespace locust
        	return tField;  // return normalized field.
     }
 
-	double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+	double RectangularCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
 	{
 		std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
 		tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
@@ -377,22 +340,21 @@ namespace locust
 	}
 
 
-    double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile)
+    double RectangularCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile)
     {
     	double tThetaParticle = tKassParticleXP[1];
-    	double tEtheta = 0.;
-    	double tEr = 0.;
-    	if (!isnan(anE_normalized.back()))
+    	double tEx = 0.;
+    	double tEy = 0.;
+
+    	if (!std::isnan(anE_normalized.back()))
     	{
-    		tEtheta = anE_normalized.back();
+    		tEy = anE_normalized.back();
     	}
-    	if (!isnan(anE_normalized.front()))
+    	if (!std::isnan(anE_normalized.front()))
     	{
-    		tEr = anE_normalized.front();
+    		tEx = anE_normalized.front();
     	}
-    	double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
-    	double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
-    	double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
+    	double tEmag = pow(tEx*tEx + tEy*tEy, 0.5);
     	double tVx = tKassParticleXP[3];
     	double tVy = tKassParticleXP[4];
     	double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
@@ -421,12 +383,13 @@ namespace locust
     	return unitJdotE;
     }
 
-    bool CylindricalCavity::InVolume(std::vector<double> tKassParticleXP)
+    bool RectangularCavity::InVolume(std::vector<double> tKassParticleXP)
     {
-    	double rLocation = tKassParticleXP[0];
+    	double xLocation = tKassParticleXP[0]*cos(tKassParticleXP[1]);
+    	double yLocation = tKassParticleXP[0]*sin(tKassParticleXP[1]);
     	double zLocation = tKassParticleXP[2];
 
-    	if ((rLocation < GetDimR()) && (fabs(zLocation) < GetDimL()/2.))
+    	if ((fabs(xLocation) < GetDimX()/2.) && (fabs(yLocation) < GetDimY()/2.) && (fabs(zLocation) < GetDimL()/2.))
     	{
     		return true;
     	}
@@ -437,7 +400,7 @@ namespace locust
     }
 
 
-    void CylindricalCavity::CheckNormalization(int nModes)
+    void RectangularCavity::CheckNormalization(int nModes)
     {
 
        printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
@@ -488,7 +451,7 @@ namespace locust
     }
 
 
-    void CylindricalCavity::PrintModeMaps(int nModes, double zSlice, double thetaSlice)
+    void RectangularCavity::PrintModeMaps(int nModes, double zSlice)
     {
     	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
         std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
@@ -500,13 +463,13 @@ namespace locust
     	aRootHistoWriter->OpenFile("RECREATE");
 
     	int nbins = GetNPixels();
-    	char hbufferEtheta[60]; char hbufferEr[60];
-    	char hbufferHtheta[60]; char hbufferHr[60];
+    	char hbufferEx[60]; char hbufferEy[60];
+    	char hbufferHx[60]; char hbufferHy[60];
     	int a;
-    	const char *hname_Etheta = hbufferEtheta;
-    	const char *hname_Htheta = hbufferHtheta;
-    	const char *hname_Er = hbufferEr;
-    	const char *hname_Hr = hbufferHr;
+    	const char *hname_Ex = hbufferEx;
+    	const char *hname_Hx = hbufferHx;
+    	const char *hname_Ey = hbufferEy;
+    	const char *hname_Hy = hbufferHy;
 
     	char bufferE[60];
     	char bufferH[60];
@@ -520,23 +483,23 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
-    				    	a = sprintf(hbufferEr, "TE%d%d%d_Er_z%dmm", l, m, n, (int)(zSlice*1.e3));
-    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
-    				    	a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%dmm", l, m, n, (int)(zSlice*1.e3));
-    			    	}
-    		    		else
-    		    		{
-    		    			a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
-    		    			a = sprintf(hbufferEr, "TM%d%d%d_Er_z%dmm", l, m, n, (int)(zSlice*1.e3));
-    		    			a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
-    		    			a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEx, "TE%d%d%d_Ex_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEy, "TE%d%d%d_Ey_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHx, "TE%d%d%d_Hx_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHy, "TE%d%d%d_Hy_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    }
+    				    else
+        				{
+    				    	a = sprintf(hbufferEx, "TM%d%d%d_Ex_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEy, "TM%d%d%d_Ey_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHx, "TM%d%d%d_Hx_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHy, "TM%d%d%d_Hy_z%dmm", l, m, n, (int)(zSlice*1.e3));
     		    		}
 
-    			    	TH2D* hTEtheta = new TH2D(hname_Etheta, (std::string(hname_Etheta)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
-    			    	TH2D* hTEr = new TH2D(hname_Er, (std::string(hname_Er)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
-    			    	TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
-    			    	TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
+    			    	TH2D* hTEx = new TH2D(hname_Ex, (std::string(hname_Ex)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    			    	TH2D* hTEy = new TH2D(hname_Ey, (std::string(hname_Ey)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    			    	TH2D* hTHx = new TH2D(hname_Hx, (std::string(hname_Hx)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    			    	TH2D* hTHy = new TH2D(hname_Hy, (std::string(hname_Hy)+";x(m);y(m)").c_str(), nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
 
         				double normFactor = 1.0;
         				if (bTE)
@@ -549,10 +512,10 @@ namespace locust
         				}
     	    			for (unsigned i=0; i<GetNPixels(); i++)
     		    		{
-    			    		double r = ((double)i+0.5)/(GetNPixels())*GetDimR();
+    			    		double x = ((double)i+0.5)/(GetNPixels())*GetDimX() - GetDimX()/2.;
     				    	for (unsigned j=0; j<GetNPixels(); j++)
         					{
-        						double theta = ((double)j+0.5)/(GetNPixels())*2.*LMCConst::Pi();
+        						double y = ((double)j+0.5)/(GetNPixels())*GetDimY() - GetDimY()/2.;
             					for (unsigned k=0; k<1; k++)
         	    				{
             	    			    double z = zSlice;
@@ -560,65 +523,66 @@ namespace locust
     					    	    std::vector<double> tH;
         							if (bTE)
     	    						{
-    		    						tE = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
-    		    						tH = fFieldCore->TE_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
-    				    			}
+     		    						tE = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+     		    						tH = fFieldCore->TE_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    	    						}
         							else
     	    						{
-    		    						tE = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
-    		    						tH = fFieldCore->TM_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tE = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    		    						tH = fFieldCore->TM_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     	    						}
     		    				    if ((!std::isnan(tE.back())))
     			    			    {
-        						        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE.back());
+        						        hTEy->Fill(x,y,tE.back());
     	    					    }
     		    				    if ((!std::isnan(tE.front())))
     			    			    {
-        						    	hTEr->Fill(theta-LMCConst::Pi(),r,tE.front());
+        						    	hTEx->Fill(x,y,tE.front());
         						    }
     		    				    if ((!std::isnan(tH.back())))
     			    			    {
-        						        hTHtheta->Fill(theta-LMCConst::Pi(),r,tH.back());
+        						        hTHy->Fill(x,y,tH.back());
     	    					    }
     		    				    if ((!std::isnan(tH.front())))
     			    			    {
-        						    	hTHr->Fill(theta-LMCConst::Pi(),r,tH.front());
+        						    	hTHx->Fill(x,y,tH.front());
         						    }
 
             					}
         					}
         				}
-    	    			aRootHistoWriter->Write2DHisto(hTEtheta);
-        				aRootHistoWriter->Write2DHisto(hTEr);
-    	    			aRootHistoWriter->Write2DHisto(hTHtheta);
-        				aRootHistoWriter->Write2DHisto(hTHr);
-        				delete hTEtheta; delete hTEr;
-        				delete hTHtheta; delete hTHr;
+    	    			aRootHistoWriter->Write2DHisto(hTEx);
+        				aRootHistoWriter->Write2DHisto(hTEy);
+    	    			aRootHistoWriter->Write2DHisto(hTHx);
+        				aRootHistoWriter->Write2DHisto(hTHy);
+        				delete hTEx; delete hTEy;
+        				delete hTHx; delete hTHy;
         			}
     	} // bTE
 		aRootHistoWriter->CloseFile();
 
-		PrintModeMapsLongSlice(nModes, 0.);
+		PrintModeMapsLongSlice(nModes, GetDimX()*0.1);
 
     	LPROG(lmclog, "\n\nTo plot a mode map:\n"
     			"> root file:output/ModemapOutput.root\n"
     			"# _file0->ls()\n"
-    			"# TE011_Etheta->SetLineColor(0)\n"
-    			"# TE011_Etheta->SetLineWidth(0)\n"
-    			"# TE011_Etheta->DrawCopy(\"pol lego2\")\n"
-    			"# TPad *p = (TPad*)c1->cd()\n"
-    			"# p->SetTheta(90.); p->SetPhi(0.)\n"
-    			"# p->Update()\n"
+    			"# TE011->DrawCopy()\n"
     			"\n\nMode map files have been generated; press RETURN to continue, or Cntrl-C to quit.");
     	getchar();
 #endif
 
     }
 
-    void CylindricalCavity::PrintModeMapsLongSlice(int nModes, double thetaSlice)
+    void RectangularCavity::PrintModeMapsLongSlice(int nModes, double xSlice)
     {
     	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
         std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
+
+
+
+
+
+
 
 #ifdef ROOT_FOUND
 
@@ -627,13 +591,13 @@ namespace locust
     	aRootHistoWriter->OpenFile("UPDATE");
 
     	int nbins = GetNPixels();
-    	char hbufferEtheta[60]; char hbufferEr[60];
-    	char hbufferHtheta[60]; char hbufferHr[60];
+    	char hbufferEx[60]; char hbufferEy[60];
+    	char hbufferHx[60]; char hbufferHy[60];
     	int a;
-    	const char *hname_Etheta = hbufferEtheta;
-    	const char *hname_Htheta = hbufferHtheta;
-    	const char *hname_Er = hbufferEr;
-    	const char *hname_Hr = hbufferHr;
+    	const char *hname_Ex = hbufferEx;
+    	const char *hname_Hx = hbufferHx;
+    	const char *hname_Ey = hbufferEy;
+    	const char *hname_Hy = hbufferHy;
 
     	char bufferE[60];
     	char bufferH[60];
@@ -647,23 +611,23 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
-    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
-    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
-    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    				    	a = sprintf(hbufferEx, "TE%d%d%d_Ex_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferEy, "TE%d%d%d_Ey_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHx, "TE%d%d%d_Hx_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHy, "TE%d%d%d_Hy_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
     				    }
     				    else
         				{
-        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
-    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
-        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
-    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
+    				    	a = sprintf(hbufferEx, "TM%d%d%d_Ex_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferEy, "TM%d%d%d_Ey_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHx, "TM%d%d%d_Hx_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
+    				    	a = sprintf(hbufferHy, "TM%d%d%d_Hy_zLong_x%dmm", l, m, n, (int)(xSlice*1000.));
     		    		}
 
-    		    		TH2D* hTEtheta = new TH2D(hname_Etheta, (std::string(hname_Etheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    		    		TH2D* hTEr = new TH2D(hname_Er, (std::string(hname_Er)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    		    		TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    		    		TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    		    		TH2D* hTEx = new TH2D(hname_Ex, (std::string(hname_Ex)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    		TH2D* hTEy = new TH2D(hname_Ey, (std::string(hname_Ey)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    		TH2D* hTHx = new TH2D(hname_Hx, (std::string(hname_Hx)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
+    		    		TH2D* hTHy = new TH2D(hname_Hy, (std::string(hname_Hy)+";z(m);y(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimY()/2., GetDimY()/2.);
 
         				double normFactor = 1.0;
         				if (bTE)
@@ -676,10 +640,10 @@ namespace locust
         				}
     	    			for (unsigned i=0; i<GetNPixels(); i++)
     		    		{
-    			    		double r = -GetDimR() + ((double)i+0.5)/(GetNPixels())*2.*GetDimR();
+    			    		double x = xSlice;
     				    	for (unsigned j=0; j<1; j++)
         					{
-        						double theta = thetaSlice;
+        			    		double y = -GetDimY()/2. + ((double)i+0.5)/(GetNPixels())*GetDimY();
             					for (unsigned k=0; k<GetNPixels(); k++)
         	    				{
             	    			    double z = -GetDimL()/2. + ((double)k+0.5)/(GetNPixels())*GetDimL();
@@ -687,40 +651,40 @@ namespace locust
     					    	    std::vector<double> tH;
         							if (bTE)
     	    						{
-    		    						tE = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
-    		    						tH = fFieldCore->TE_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tE = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    		    						tH = fFieldCore->TE_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     				    			}
         							else
     	    						{
-    		    						tE = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
-    		    						tH = fFieldCore->TM_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tE = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    		    						tH = fFieldCore->TM_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     	    						}
     		    				    if ((!std::isnan(tE.back())))
     			    			    {
-        						        hTEtheta->Fill(z,r,tE.back());
+        						        hTEy->Fill(z,y,tE.back());
     	    					    }
     		    				    if ((!std::isnan(tE.front())))
     			    			    {
-        						    	hTEr->Fill(z,r,tE.front());
+        						    	hTEx->Fill(z,y,tE.front());
         						    }
     		    				    if ((!std::isnan(tH.back())))
     			    			    {
-        						        hTHtheta->Fill(z,r,tH.back());
+        						        hTHx->Fill(z,y,tH.back());
     	    					    }
     		    				    if ((!std::isnan(tH.front())))
     			    			    {
-        						    	hTHr->Fill(z,r,tH.front());
+        						    	hTHx->Fill(z,y,tH.front());
         						    }
 
             					}
         					}
         				}
-    	    			aRootHistoWriter->Write2DHisto(hTEtheta);
-        				aRootHistoWriter->Write2DHisto(hTEr);
-    	    			aRootHistoWriter->Write2DHisto(hTHtheta);
-        				aRootHistoWriter->Write2DHisto(hTHr);
-        				delete hTEtheta; delete hTEr;
-        				delete hTHtheta; delete hTHr;
+    	    			aRootHistoWriter->Write2DHisto(hTEx);
+        				aRootHistoWriter->Write2DHisto(hTEy);
+    	    			aRootHistoWriter->Write2DHisto(hTHx);
+        				aRootHistoWriter->Write2DHisto(hTHy);
+        				delete hTEx; delete hTEy;
+        				delete hTHx; delete hTHy;
         			}
     	} // bTE
 		aRootHistoWriter->CloseFile();
@@ -729,35 +693,35 @@ namespace locust
     }
 
 
-    std::vector<double> CylindricalCavity::GetCavityProbeGain()
+    std::vector<double> RectangularCavity::GetCavityProbeGain()
     {
     	return fProbeGain;
     }
-    void CylindricalCavity::SetCavityProbeGain( double aGain, unsigned index )
+    void RectangularCavity::SetCavityProbeGain( double aGain, unsigned index )
     {
     	fProbeGain[index] = aGain;
     }
-    std::vector<double> CylindricalCavity::GetCavityProbeZ()
+    std::vector<double> RectangularCavity::GetCavityProbeZ()
     {
     	return fCavityProbeZ;
     }
-    void CylindricalCavity::SetCavityProbeZ ( double aZ, unsigned index )
+    void RectangularCavity::SetCavityProbeZ ( double aZ, unsigned index )
     {
     	fCavityProbeZ[index] = aZ;
     }
-    std::vector<double> CylindricalCavity::GetCavityProbeRFrac()
+    std::vector<double> RectangularCavity::GetCavityProbeRFrac()
     {
     	return fCavityProbeRFrac;
     }
-    void CylindricalCavity::SetCavityProbeRFrac ( double aFraction, unsigned index )
+    void RectangularCavity::SetCavityProbeRFrac ( double aFraction, unsigned index )
     {
     	fCavityProbeRFrac[index] = aFraction;
     }
-    std::vector<double> CylindricalCavity::GetCavityProbeTheta()
+    std::vector<double> RectangularCavity::GetCavityProbeTheta()
     {
 	return fCavityProbeTheta;
     }
-    void CylindricalCavity::SetCavityProbeTheta ( double aTheta, unsigned index )
+    void RectangularCavity::SetCavityProbeTheta ( double aTheta, unsigned index )
     {
 	fCavityProbeTheta[index] = aTheta;
     }
