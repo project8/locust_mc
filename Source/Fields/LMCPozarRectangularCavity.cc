@@ -17,7 +17,7 @@ namespace locust
     PozarRectangularCavity::~PozarRectangularCavity() {}
 
 
-    std::vector<double> PozarRectangularCavity::TE_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass)
+    std::vector<double> PozarRectangularCavity::TE_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols)
     {
 
     	double x = xKass + dimX/2.;
@@ -54,7 +54,7 @@ namespace locust
     }
 
 
-    std::vector<double> PozarRectangularCavity::TE_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass)
+    std::vector<double> PozarRectangularCavity::TE_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols)
     {
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
@@ -91,7 +91,7 @@ namespace locust
     }
 
 
-    std::vector<double> PozarRectangularCavity::TM_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass)
+    std::vector<double> PozarRectangularCavity::TM_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols)
     {
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;
@@ -127,7 +127,7 @@ namespace locust
     	}
     }
 
-    std::vector<double> PozarRectangularCavity::TM_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass)
+    std::vector<double> PozarRectangularCavity::TM_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols)
     {
     	double x = xKass + dimX/2.;
     	double y = yKass + dimY/2.;

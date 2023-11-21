@@ -87,26 +87,26 @@ namespace locust
      		SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
      	}
 
-/*
-     	if( aParam.has( "modemap-filename" ) )
+     	if( aParam.has( "upload-modemap-filename" ) )  // import "realistic" test mode map
      	{
-     		fFieldCore = new ModeMapRectangularCavity();
-     		if (!fFieldCore->ReadModeMapTE_E(aParam["modemap-filename"]().as_string()))
+     		fFieldCore = new ModeMapCavity();
+     		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+         	if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string()))
      		{
      			LERROR(lmclog,"There was a problem uploading the mode map.");
      			exit(-1);
      		}
+         	SetNormFactorsTE( SetUnityNormFactors(GetNModes()));
+         	SetNormFactorsTM( SetUnityNormFactors(GetNModes()));
      	}
      	else
-*/
      	{
      		fFieldCore = new PozarRectangularCavity();
+            SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
+            SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
+            CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
      	}
 
-        SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
-        SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
-
-        CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
 
         if( PlotModeMaps() )
         {
@@ -189,22 +189,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = fFieldCore->TE_E(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass);
+    	    		    	aField = fFieldCore->TE_E(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TE_H(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass);
+    	    				aField = fFieldCore->TE_H(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = fFieldCore->TM_E(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass);
+    	    				aField = fFieldCore->TM_E(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TM_H(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass);
+    	    				aField = fFieldCore->TM_H(GetDimX(), GetDimY(), GetDimL(), l, m, n, xKass, yKass, zKass, 0);
     	    			}
     	    		}
 
@@ -262,12 +262,12 @@ namespace locust
 
     std::vector<double> RectangularCavity::GetTE_E(int l, int m, int n, double x, double y, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
+    	return fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     }
 
     std::vector<double> RectangularCavity::GetTM_E(int l, int m, int n, double x, double y, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
+    	return fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     }
 
     std::vector<double> RectangularCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode)
@@ -306,12 +306,12 @@ namespace locust
        	double normFactor;
        	if(teMode)
        	{
-       		tField = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,tX,tY,tZ);
+       		tField = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,tX,tY,tZ,0);
        		normFactor = GetNormFactorsTE()[l][m][n];
        	}
        	else
        	{
-       		tField = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,tX,tY,tZ);
+       		tField = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,tX,tY,tZ,0);
        		normFactor = GetNormFactorsTM()[l][m][n];
        	}
        	auto it = tField.begin();
@@ -523,13 +523,13 @@ namespace locust
     					    	    std::vector<double> tH;
         							if (bTE)
     	    						{
-    		    						tE = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
-    			    					tH = fFieldCore->TE_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
-    				    			}
+     		    						tE = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+     		    						tH = fFieldCore->TE_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    	    						}
         							else
     	    						{
-    		    						tE = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
-        								tH = fFieldCore->TM_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
+    		    						tE = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    		    						tH = fFieldCore->TM_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     	    						}
     		    				    if ((!std::isnan(tE.back())))
     			    			    {
@@ -577,6 +577,12 @@ namespace locust
     {
     	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
         std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
+
+
+
+
+
+
 
 #ifdef ROOT_FOUND
 
@@ -645,13 +651,13 @@ namespace locust
     					    	    std::vector<double> tH;
         							if (bTE)
     	    						{
-    		    						tE = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
-    			    					tH = fFieldCore->TE_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
+    		    						tE = fFieldCore->TE_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    		    						tH = fFieldCore->TE_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     				    			}
         							else
     	    						{
-    		    						tE = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
-        								tH = fFieldCore->TM_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z);
+    		    						tE = fFieldCore->TM_E(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
+    		    						tH = fFieldCore->TM_H(GetDimX(),GetDimY(),GetDimL(),l,m,n,x,y,z,0);
     	    						}
     		    				    if ((!std::isnan(tE.back())))
     			    			    {

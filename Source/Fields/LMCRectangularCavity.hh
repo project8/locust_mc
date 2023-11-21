@@ -13,7 +13,7 @@
 #include "logger.hh"
 #include "LMCField.hh"
 #include "LMCPozarRectangularCavity.hh"
-//#include "LMCModeMapRectangularCavity.hh"
+#include "LMCModeMapCavity.hh"
 
 #include <vector>
 

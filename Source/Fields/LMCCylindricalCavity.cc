@@ -84,7 +84,7 @@ namespace locust
 
      	if( aParam.has( "upload-modemap-filename" ) )  // import "realistic" test mode map
      	{
-     		fFieldCore = new ModeMapCylindricalCavity();
+     		fFieldCore = new ModeMapCavity();
      		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
          	if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string()))
      		{
@@ -118,38 +118,6 @@ namespace locust
 
     	return true;
     }
-
-    std::vector<std::vector<std::vector<double>>> CylindricalCavity::SetUnityNormFactors(int nModes)
-    {
-    	LPROG(lmclog, "Setting mode normalization factors to 1.0 ... " );
-
-     	std::vector<std::vector<std::vector<double>>> tNormFactor;
-    	tNormFactor.resize(nModes);
-
-    	for (unsigned m=0; m<nModes; m++)
-    	{
-    		tNormFactor[m].resize(nModes);
-    		for (unsigned n=0; n<nModes; n++)
-    		{
-    			tNormFactor[m][n].resize(nModes);
-    		}
-    	}
-
-    	for (unsigned l=0; l<nModes; l++)
-    	{
-    		for (unsigned m=0; m<nModes; m++)
-    		{
-    			for (unsigned n=0; n<nModes; n++)
-    			{
-    				tNormFactor[l][m][n] = 1.;
-    			}
-    		}
-    	}
-
-    	return tNormFactor;
-
-    }
-
 
 
     std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
@@ -220,22 +188,22 @@ namespace locust
     	    		{
     	    			if (eField)
     	    			{
-    	    		    	aField = fFieldCore->TE_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    		    	aField = fFieldCore->TE_E(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TE_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    				aField = fFieldCore->TE_H(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    		}
     	    		else
     	    		{
     	    			if (eField)
     	    			{
-    	    				aField = fFieldCore->TM_E(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    				aField = fFieldCore->TM_E(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    			else
     	    			{
-    	    				aField = fFieldCore->TM_H(GetDimR(), GetDimL(), l, m, n, r, theta, zKass,0);
+    	    				aField = fFieldCore->TM_H(GetDimR(), 2.*LMCConst::Pi(), GetDimL(), l, m, n, r, theta, zKass,0);
     	    			}
     	    		}
 
@@ -322,12 +290,12 @@ namespace locust
 
     std::vector<double> CylindricalCavity::GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    	return fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
     std::vector<double> CylindricalCavity::GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols)
     {
-    	return fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    	return fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     }
 
     std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode)
@@ -375,12 +343,12 @@ namespace locust
        	double normFactor;
        	if(teMode)
        	{
-       		tField = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		tField = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
        		normFactor = GetNormFactorsTE()[l][m][n];
        	}
        	else
        	{
-       		tField = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
+       		tField = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
        		normFactor = GetNormFactorsTM()[l][m][n];
        	}
        	auto it = tField.begin();
@@ -552,17 +520,17 @@ namespace locust
     			    	printf("l m n is %d %d %d\n", l, m, n);
     		    		if (bTE)
     			    	{
-    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%d", l, m, n, (int)(zSlice*1.e3));
-    					    a = sprintf(hbufferEr, "TE%d%d%d_Er_z%d", l, m, n, (int)(zSlice*1.e3));
-    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%d", l, m, n, (int)(zSlice*1.e3));
-    					    a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
-    				    }
-    				    else
-        				{
-        					a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%d", l, m, n, (int)(zSlice*1.e3));
-    	    				a = sprintf(hbufferEr, "TM%d%d%d_Er_z%d", l, m, n, (int)(zSlice*1.e3));
-        					a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%d", l, m, n, (int)(zSlice*1.e3));
-    	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%d", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferEr, "TE%d%d%d_Er_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHtheta, "TE%d%d%d_Htheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    				    	a = sprintf(hbufferHr, "TE%d%d%d_Hr_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    			    	}
+    		    		else
+    		    		{
+    		    			a = sprintf(hbufferEtheta, "TM%d%d%d_Etheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    		    			a = sprintf(hbufferEr, "TM%d%d%d_Er_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    		    			a = sprintf(hbufferHtheta, "TM%d%d%d_Htheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
+    		    			a = sprintf(hbufferHr, "TM%d%d%d_Hr_z%dmm", l, m, n, (int)(zSlice*1.e3));
     		    		}
 
     			    	TH2D* hTEtheta = new TH2D(hname_Etheta, (std::string(hname_Etheta)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
@@ -592,13 +560,13 @@ namespace locust
     					    	    std::vector<double> tH;
         							if (bTE)
     	    						{
-    		    						tE = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-    			    					tH = fFieldCore->TE_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tE = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tH = fFieldCore->TE_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     				    			}
         							else
     	    						{
-    		    						tE = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-        								tH = fFieldCore->TM_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tE = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tH = fFieldCore->TM_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     	    						}
     		    				    if ((!std::isnan(tE.back())))
     			    			    {
@@ -719,13 +687,13 @@ namespace locust
     					    	    std::vector<double> tH;
         							if (bTE)
     	    						{
-    		    						tE = fFieldCore->TE_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-    			    					tH = fFieldCore->TE_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tE = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tH = fFieldCore->TE_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     				    			}
         							else
     	    						{
-    		    						tE = fFieldCore->TM_E(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
-        								tH = fFieldCore->TM_H(GetDimR(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tE = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+    		    						tH = fFieldCore->TM_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     	    						}
     		    				    if ((!std::isnan(tE.back())))
     			    			    {

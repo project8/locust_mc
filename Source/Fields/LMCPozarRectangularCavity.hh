@@ -30,10 +30,10 @@ namespace locust
 	        PozarRectangularCavity();
 	        virtual ~PozarRectangularCavity();
 
-            virtual std::vector<double> TE_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass);
-            virtual std::vector<double> TE_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass);
-            virtual std::vector<double> TM_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass);
-            virtual std::vector<double> TM_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass);
+            virtual std::vector<double> TE_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols);
+            virtual std::vector<double> TE_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols);
+            virtual std::vector<double> TM_E(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols);
+            virtual std::vector<double> TM_H(double dimX, double dimY, double dimZ, int l, int m, int n, double xKass, double yKass, double zKass, bool includeOtherPols);
 
     };
 

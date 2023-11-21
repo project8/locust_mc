@@ -13,7 +13,7 @@
 #include "logger.hh"
 #include "LMCField.hh"
 #include "LMCPozarCylindricalCavity.hh"
-#include "LMCModeMapCylindricalCavity.hh"
+#include "LMCModeMapCavity.hh"
 #include <boost/math/special_functions/bessel.hpp>
 
 #include <vector>
@@ -62,7 +62,6 @@ namespace locust
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP);
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode);
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE);
-            virtual std::vector<std::vector<std::vector<double>>> SetUnityNormFactors(int nModes);
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
         	virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples);

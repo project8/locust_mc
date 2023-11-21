@@ -67,6 +67,39 @@ namespace locust
     }
 
 
+    std::vector<std::vector<std::vector<double>>> Field::SetUnityNormFactors(int nModes)
+    {
+    	LPROG(lmclog, "Setting mode normalization factors to 1.0 ... " );
+
+     	std::vector<std::vector<std::vector<double>>> tNormFactor;
+    	tNormFactor.resize(nModes);
+
+    	for (unsigned m=0; m<nModes; m++)
+    	{
+    		tNormFactor[m].resize(nModes);
+    		for (unsigned n=0; n<nModes; n++)
+    		{
+    			tNormFactor[m][n].resize(nModes);
+    		}
+    	}
+
+    	for (unsigned l=0; l<nModes; l++)
+    	{
+    		for (unsigned m=0; m<nModes; m++)
+    		{
+    			for (unsigned n=0; n<nModes; n++)
+    			{
+    				tNormFactor[l][m][n] = 1.;
+    			}
+    		}
+    	}
+
+    	return tNormFactor;
+
+    }
+
+
+
     std::vector<std::vector<std::vector<double>>> Field::GetNormFactorsTE()
     {
     	return fModeNormFactorTE;
