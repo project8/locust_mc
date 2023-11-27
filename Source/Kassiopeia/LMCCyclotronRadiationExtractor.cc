@@ -12,7 +12,6 @@ namespace locust
 			fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
 			fSampleIndex( 0 ),
-			fTriggerConfirm( 100000 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     	Configure();
@@ -23,7 +22,6 @@ namespace locust
 			fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
 			fSampleIndex( aCopy.fSampleIndex ),
-			fTriggerConfirm( aCopy.fTriggerConfirm ),
             fInterface( aCopy.fInterface )
     {
     	Configure();
@@ -189,8 +187,8 @@ namespace locust
 
                 fInterface->fDigitizerCondition.notify_one();  // notify Locust after writing.
 
-                unsigned tTriggerConfirm = 0;
-                while ((fSampleIndex == fInterface->fSampleIndex) && (tTriggerConfirm < fTriggerConfirm))
+                int tTriggerConfirm = 0;
+                while ((fSampleIndex == fInterface->fSampleIndex) && (tTriggerConfirm < fInterface->fTriggerConfirm))
                 {
                 	// If the Locust sample index has not advanced yet, keep checking it.
                 	tTriggerConfirm += 1;

@@ -66,6 +66,7 @@ namespace locust
         bool fBackReaction;
         bool fbWaveguide;
         unsigned fSampleIndex;
+        int fTriggerConfirm;
 
 
     };

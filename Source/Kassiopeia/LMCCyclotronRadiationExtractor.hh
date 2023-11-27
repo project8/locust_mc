@@ -50,7 +50,6 @@ namespace locust
             FieldCalculator* fFieldCalculator;
             kl_interface_ptr_t fInterface;
             unsigned fSampleIndex;
-            int fTriggerConfirm;
     };
 
 

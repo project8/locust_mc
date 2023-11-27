@@ -209,6 +209,10 @@ namespace locust
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
+        if( aParam.has( "trigger-confirm" ) )
+        {
+        	fInterface->fTriggerConfirm = aParam["trigger-confirm"]().as_int();
+        }
 
         // Configure the transmitter, which defines the impulses taken from Kassiopeia.
         if( aParam.has( "transmitter" ))
