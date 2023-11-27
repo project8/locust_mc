@@ -11,6 +11,8 @@ namespace locust
             fNewParticleHistory(),
 			fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
+			fSampleIndex( 0 ),
+			fTriggerConfirm( 100000 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     	Configure();
@@ -20,6 +22,8 @@ namespace locust
             fNewParticleHistory(),
 			fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
+			fSampleIndex( aCopy.fSampleIndex ),
+			fTriggerConfirm( aCopy.fTriggerConfirm ),
             fInterface( aCopy.fInterface )
     {
     	Configure();
@@ -146,6 +150,8 @@ namespace locust
             if (t_poststep - fInterface->fTOld >= fInterface->fKassTimeStep) //take a digitizer sample every KassTimeStep
             {
 
+            	fSampleIndex = fInterface->fSampleIndex; // record Locust sample index before locking:
+
                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();
 
@@ -182,6 +188,13 @@ namespace locust
                 tLock.unlock();
 
                 fInterface->fDigitizerCondition.notify_one();  // notify Locust after writing.
+
+                unsigned tTriggerConfirm = 0;
+                while ((fSampleIndex == fInterface->fSampleIndex) && (tTriggerConfirm < fTriggerConfirm))
+                {
+                	// If the Locust sample index has not advanced yet, keep checking it.
+                	tTriggerConfirm += 1;
+                }
 
             }
         } // DoneWithSignalGeneration
