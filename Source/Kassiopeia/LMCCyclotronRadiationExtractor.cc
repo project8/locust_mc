@@ -9,9 +9,9 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor() :
             fNewParticleHistory(),
-			fFieldCalculator( NULL ),
+            fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
-			fSampleIndex( 0 ),
+            fSampleIndex( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     	Configure();
@@ -19,9 +19,9 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
             fNewParticleHistory(),
-			fFieldCalculator( NULL ),
+            fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
-			fSampleIndex( aCopy.fSampleIndex ),
+            fSampleIndex( aCopy.fSampleIndex ),
             fInterface( aCopy.fInterface )
     {
     	Configure();
@@ -148,7 +148,7 @@ namespace locust
             if (t_poststep - fInterface->fTOld >= fInterface->fKassTimeStep) //take a digitizer sample every KassTimeStep
             {
 
-            	fSampleIndex = fInterface->fSampleIndex; // record Locust sample index before locking:
+                fSampleIndex = fInterface->fSampleIndex; // record Locust sample index before locking
 
                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();

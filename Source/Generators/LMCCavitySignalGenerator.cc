@@ -555,7 +555,7 @@ namespace locust
                     if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                     {
 
-                        fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
+                    	fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
                     	tLock.lock();
 
                     	fInterface->fDigitizerCondition.wait( tLock );
