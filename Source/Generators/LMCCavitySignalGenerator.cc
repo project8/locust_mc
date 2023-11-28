@@ -209,6 +209,10 @@ namespace locust
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
+        if( aParam.has( "trigger-confirm" ) )
+        {
+        	fInterface->fTriggerConfirm = aParam["trigger-confirm"]().as_int();
+        }
 
         // Configure the transmitter, which defines the impulses taken from Kassiopeia.
         if( aParam.has( "transmitter" ))
@@ -551,7 +555,7 @@ namespace locust
                     if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                     {
 
-
+                    	fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
                     	tLock.lock();
 
                     	fInterface->fDigitizerCondition.wait( tLock );
@@ -570,6 +574,7 @@ namespace locust
                     			break;
                     		}
                         }
+                        fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
 
                         tLock.unlock();
 

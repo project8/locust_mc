@@ -36,8 +36,9 @@ namespace locust
             fField(),
             fConfigureKass( NULL ),
             fBackReaction( true ),
-            fbWaveguide( false )
-
+            fbWaveguide( false ),
+            fSampleIndex( 0 ),
+            fTriggerConfirm( 100000 )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :

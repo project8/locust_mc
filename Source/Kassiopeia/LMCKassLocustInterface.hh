@@ -65,6 +65,8 @@ namespace locust
         // TO-DO:  Move these next two variables into more specific classes.
         bool fBackReaction;
         bool fbWaveguide;
+        unsigned fSampleIndex;
+        int fTriggerConfirm;
 
 
     };

@@ -674,6 +674,7 @@ namespace locust
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
                 	if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                 	{
+                        fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
                         tLock.lock();
                         fInterface->fDigitizerCondition.wait( tLock );
                         if (fInterface->fEventInProgress)
@@ -690,6 +691,8 @@ namespace locust
                     			break;
                     		}
                         }
+                        fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
+
                         tLock.unlock();
                 	}
                  	else  // diagnose Kass
