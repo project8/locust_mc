@@ -51,7 +51,6 @@ namespace locust
 
         private:
             double fOrbitPhase;
-            double fTrapPhase;
             std::vector<std::vector<std::vector<std::vector<double>>>> fVoltagePhase;
             std::vector<std::vector<std::vector<double>>> fRollingAvg;
             std::vector<std::vector<std::vector<int>>> fCounter;
