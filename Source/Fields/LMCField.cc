@@ -22,7 +22,8 @@ namespace locust
         fY( 0.004318 ),
         fCENTER_TO_SHORT( 0.05 ),
         fCENTER_TO_ANTENNA( 0.05 ),
-        fPlotModeMaps( false )
+        fPlotModeMaps( false ),
+        fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
     {}
     Field::~Field() {}
 
@@ -48,6 +49,11 @@ namespace locust
     	if( aParam.has( "plot-mode-maps" ) )
     	{
     		SetPlotModeMaps(aParam["plot-mode-maps"]().as_bool());
+    	}
+
+    	if ( aParam.has( "output-path" ) )
+    	{
+    		fOutputPath = aParam["output-path"]().as_string();
     	}
 
     	fAvgDotProductFactor.resize(fNModes);
@@ -248,6 +254,15 @@ namespace locust
     	fPlotModeMaps = aFlag;
     }
 
+    std::string Field::GetOutputPath()
+    {
+        return fOutputPath;
+    }
+
+    void Field::SetOutputPath( std::string aPath )
+    {
+     	fOutputPath = aPath;
+    }
 
 
 } /* namespace locust */

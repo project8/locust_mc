@@ -51,6 +51,7 @@ namespace locust
         bool WriteRootHisto(int npoints, double* freqArray, double* gainArray);
         bool PopulateSignal(Signal* aSignal, int N0);
         const scarab::param_node* GetParams();
+        void SetOutputPath( std::string aPath );
 
 
     private:
@@ -63,6 +64,7 @@ namespace locust
         double fFilterRate;
         double fExpandFactor;
         bool fWriteOutputFile;
+        std::string fOutputPath;
 
 
     };

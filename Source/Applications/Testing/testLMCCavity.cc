@@ -69,7 +69,8 @@ class testCavity_app : public main_app
 			fCavityFrequency(1.067e9),
 			fCavityQ(1000.),
 			fExpandSweep(1.0),
-			fUnitTestOutputFile(false)
+			fUnitTestOutputFile(false),
+			fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
         {
             add_option("-r,--dho-time-resolution", fDHOTimeResolution, "[1.e-8] Time resolution used in Green's function (s).");
             add_option("-m,--dho-threshold-factor", fDHOThresholdFactor, "[0.01] Minimum fractional threshold of Green's function used to calculate FIR.");
@@ -77,6 +78,7 @@ class testCavity_app : public main_app
             add_option("-q,--dho-cavity-Q", fCavityQ, "[1000] Cavity Q.");
             add_option("-x,--expand-sweep", fExpandSweep, "[1.0] Factor by which to expand range of frequency sweep.");
             add_option("-w, --write-output", fUnitTestOutputFile, "[0==false] Write histo to Root file.");
+            add_option("-o, --output-path", fOutputPath, "[PB_OUTPUT_DIR]");
         }
 
         virtual ~testCavity_app() {}
@@ -105,6 +107,10 @@ class testCavity_app : public main_app
         {
         	return fUnitTestOutputFile;
         }
+        std::string GetOutputPath()
+        {
+        	return fOutputPath;
+        }
 
 
     private:
@@ -114,6 +120,7 @@ class testCavity_app : public main_app
         double fCavityQ;
         double fExpandSweep;
         bool fUnitTestOutputFile;
+        std::string fOutputPath;
 };
 
 
@@ -132,6 +139,7 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 
 	CavityUtility aCavityUtility;
 
+	aCavityUtility.SetOutputPath(the_main.GetOutputPath());
 	aCavityUtility.SetExpandFactor(the_main.GetExpandSweep());
 	aCavityUtility.SetOutputFile(the_main.UnitTestOutputFile());
 	bool checkCavityQ = aCavityUtility.CheckCavityQ( the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
