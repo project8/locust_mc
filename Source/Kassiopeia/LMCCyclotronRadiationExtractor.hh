@@ -8,6 +8,7 @@
 #include "LMCFieldCalculator.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCParticle.hh"
+#include "LMCException.hh"
 
 
 #include <deque>
@@ -48,6 +49,7 @@ namespace locust
             double fPitchAngle;
             FieldCalculator* fFieldCalculator;
             kl_interface_ptr_t fInterface;
+            unsigned fSampleIndex;
     };
 
 

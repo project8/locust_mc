@@ -26,16 +26,23 @@ namespace locust
 			fvoltageCheck( false ),
 			fNCavityModes( 0 ),
 			fNChannels( 1 ),
-			fWaveguideShortIsPresent( true )
+			fWaveguideShortIsPresent( true ),
+			fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
     {}
     PowerCombiner::~PowerCombiner() {}
 
 
     bool PowerCombiner::Configure( const scarab::param_node& aParam )
     {
+
     	if ( aParam.has( "voltage-check" ) )
     	{
     		fvoltageCheck = aParam["voltage-check"]().as_bool();
+    	}
+
+    	if ( aParam.has( "output-path" ) )
+    	{
+    		fOutputPath = aParam["output-path"]().as_string();
     	}
 
         if( aParam.has( "nelements-per-strip" ) )
@@ -161,6 +168,15 @@ namespace locust
     void PowerCombiner::SetNChannels( int aNumberOfChannels )
     {
      	fNChannels = aNumberOfChannels;
+    }
+
+    std::string PowerCombiner::GetOutputPath()
+    {
+        return fOutputPath;
+    }
+    void PowerCombiner::SetOutputPath( std::string aPath )
+    {
+     	fOutputPath = aPath;
     }
 
     bool PowerCombiner::GetWaveguideShortIsPresent()

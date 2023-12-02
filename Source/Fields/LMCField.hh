@@ -125,6 +125,8 @@ namespace locust
             void SetCenterToAntenna( double aDistance );
             bool PlotModeMaps() const;
             void SetPlotModeMaps( bool aFlag );
+            void SetOutputPath( std::string aPath );
+            std::string GetOutputPath();
 
 
 
@@ -142,6 +144,7 @@ namespace locust
             double fCENTER_TO_ANTENNA;
             std::vector<std::vector<std::vector<double>>> fAvgDotProductFactor;
             bool fPlotModeMaps;
+            std::string fOutputPath;
 
     };
 
