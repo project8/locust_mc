@@ -23,7 +23,7 @@ namespace locust
         fCENTER_TO_SHORT( 0.05 ),
         fCENTER_TO_ANTENNA( 0.05 ),
         fPlotModeMaps( false ),
-		fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
+        fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
     {}
     Field::~Field() {}
 

@@ -31,7 +31,7 @@ namespace locust
         fMixingProduct( false ),
         fWriteRootHisto( false ),
         fWriteRootGraph( false ),
-		fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
+        fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
     {
         fRequiredSignalState = Signal::kTime;
     }

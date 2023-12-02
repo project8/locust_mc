@@ -32,7 +32,7 @@ namespace locust
     fWindowParam(0.5),
     fPrintFIR ( false ),
     fConvertStoZ ( false ),
-	fOutputPath( TOSTRING(PB_OUTPUT_DIR))
+    fOutputPath( TOSTRING(PB_OUTPUT_DIR))
     {
     }
     
@@ -397,7 +397,6 @@ namespace locust
         if (fPrintFIR)
         {
 
-        	std::cout << "path is " << fOutputPath << " \n";
             PrintFIR( fFilterComplex, fFIRNBins, fOutputPath+"/FIRhisto.root");
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
