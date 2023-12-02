@@ -43,9 +43,8 @@ namespace locust
 
         if( aParam.has( "norm-check" ) )
         {
-            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-            std::string sFileName = (dataDir / "../output/ModeEnergies.root").string();
-            std::string sTextFileName = (dataDir / "../output/ModeEnergies.txt").string();
+            std::string sFileName = GetOutputPath()+"/ModeEnergies.root";
+            std::string sTextFileName = GetOutputPath()+"/ModeEnergies.txt";
             fp = fopen(sTextFileName.c_str(), "w");
             fclose(fp);
 
@@ -101,8 +100,13 @@ namespace locust
 
 	bool CavityModes::AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
 	{
+		double trapShift = 0.;
+		if (particleXP[5] > 0.) trapShift = -LMCConst::Pi()*0.01;
+		else trapShift = 0.; //-LMCConst::Pi()*0.01;
+
 		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
-		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
+		SetVoltagePhase( trapShift + GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
+//		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
 		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n));
 
@@ -151,9 +155,8 @@ namespace locust
 
 	bool CavityModes::AddOneSampleToRollingAvg(int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
 	{
-	    scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
 	    char cBufferFileName[60];
-	    int a = sprintf(cBufferFileName, "%s/../output/ModeEnergies.txt", dataDir.string().c_str());
+	    int a = sprintf(cBufferFileName, "%s/ModeEnergies.txt", GetOutputPath().c_str());
 	    const char *cFileName = cBufferFileName;
 	    fp = fopen(cFileName, "a");
 

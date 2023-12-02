@@ -31,7 +31,8 @@ namespace locust
     fWindowName("tukey"),
     fWindowParam(0.5),
     fPrintFIR ( false ),
-    fConvertStoZ ( false )
+    fConvertStoZ ( false ),
+	fOutputPath( TOSTRING(PB_OUTPUT_DIR))
     {
     }
     
@@ -63,6 +64,10 @@ namespace locust
             LPROG( lmclog, "Characteristic impedance has been changed to " << fCharacteristicImpedance);
         }
 
+    	if ( aParam.has( "output-path" ) )
+    	{
+    		fOutputPath = aParam["output-path"]().as_string();
+    	}
 
         return true;
     }
@@ -294,10 +299,9 @@ namespace locust
 
         if (fPrintFIR)
         {
-            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
 
-            PrintFIR( fFIRComplex, fFIRNBins, (dataDir / "../output/FIRhisto.root").string() );
-            PrintFIR( fTFComplex, fTFNBins, (dataDir / "../output/TFhisto.root").string() );
+            PrintFIR( fFIRComplex, fFIRNBins, fOutputPath+"/FIRhisto.root");
+            PrintFIR( fTFComplex, fTFNBins, fOutputPath+"/TFhisto.root");
 
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
@@ -393,9 +397,8 @@ namespace locust
         if (fPrintFIR)
         {
 
-            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-
-            PrintFIR( fFilterComplex, fFIRNBins, (dataDir / "../output/FIRhisto.root").string() );
+        	std::cout << "path is " << fOutputPath << " \n";
+            PrintFIR( fFilterComplex, fFIRNBins, fOutputPath+"/FIRhisto.root");
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
             getchar();
