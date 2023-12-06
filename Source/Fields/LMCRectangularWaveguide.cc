@@ -266,9 +266,8 @@ namespace locust
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)
     	{
-            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
             char cBufferFileName[60];
-            int a = sprintf(cBufferFileName, "%s/../output/dotProducts.txt", dataDir.string().c_str());
+            int a = sprintf(cBufferFileName, "%s/dotProducts.txt", GetOutputPath().c_str());
             const char *fpname = cBufferFileName;
             FILE *fp = fopen(fpname, "a");
             fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
@@ -400,8 +399,7 @@ namespace locust
 
     void RectangularWaveguide::PrintModeMaps(int nModes, double zSlice, double thetaSlice)
     {
-        scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-        std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
+        std::string sFileName = GetOutputPath()+"/ModemapOutput.root";
         bool bTE = 1; // TE and not TM.
 
 #ifdef ROOT_FOUND

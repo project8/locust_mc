@@ -66,6 +66,8 @@ namespace locust
             int GetNCavityModes();
             void SetNChannels( int aNumberOfChannels );
             int GetNChannels();
+            void SetOutputPath( std::string aPath );
+            std::string GetOutputPath();
             double GetVoltagePhase();
             void SetVoltagePhase( double aPhase );
             virtual bool SizeNChannels(int aNumberOfChannels) {return true;};
@@ -86,6 +88,7 @@ namespace locust
             bool fvoltageCheck;
             int fNCavityModes;
             int fNChannels;
+            std::string fOutputPath;
             bool fWaveguideShortIsPresent;
 
 

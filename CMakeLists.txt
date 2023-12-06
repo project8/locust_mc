@@ -6,7 +6,7 @@ cmake_minimum_required( VERSION 3.1 )
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( locust_mc VERSION 2.5.5)
+project( locust_mc VERSION 2.5.6)
 
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Scarab/cmake )
@@ -29,6 +29,7 @@ set( locus_mc_KASS_NPROC "4" CACHE STRING "Number of processors to use for the K
 
 # make the data install directory available as a preprocessor macro
 add_definitions( -DPB_DATA_INSTALL_DIR=${DATA_INSTALL_DIR} )
+add_definitions( -DPB_OUTPUT_DIR=${CMAKE_INSTALL_PREFIX}/output )
 
 set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Generators/
