@@ -19,7 +19,7 @@ class test_app : public main_app
     public:
         test_app() :
             main_app(),
-			fTestParameter(0.)
+            fTestParameter(0.)
         {
             add_option("-t,--test-parameter", fTestParameter, "Set a test parameter." );
         }
@@ -51,11 +51,11 @@ double GetPower(bool bTime)
 	for (int j = 0; j < N0; ++j)
 	{
 	    // IQ signal:
-	    data[j][0] = 1.0 * sin(-0.1*j);
-	    data[j][1] = 1.0 * cos(0.1*j);  // (set this to 0. for real signal.)
+		data[j][0] = 1.0 * sin(-0.1*j);
+		data[j][1] = 1.0 * cos(0.1*j);  // (set this to 0. for real signal.)
 
-	    // power in time series:
-	    pdata += data[j][0]*data[j][0]+data[j][1]*data[j][1];
+		// power in time series:
+		pdata += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
 
 	/* compute transform, in-place */
@@ -65,12 +65,12 @@ double GetPower(bool bTime)
 	double ptransform = 0.;
 	for (int j = 0; j < N0; ++j)
 	{
-	    // IQ signal:
+		// IQ signal:
 		data[j][0] /= normalization;
 		data[j][1] /= normalization;
 
 		// power in frequency spectrum:
-	    ptransform += data[j][0]*data[j][0]+data[j][1]*data[j][1];
+		ptransform += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
 
     if (bTime)
@@ -80,7 +80,7 @@ double GetPower(bool bTime)
     }
     else
     {
-  	    LPROG(testlog, "power of transform is: " << ptransform);
+    	LPROG(testlog, "power of transform is: " << ptransform);
     	return ptransform;
     }
 
@@ -89,7 +89,7 @@ double GetPower(bool bTime)
 bool parseFFT(test_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
-    CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
+	CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
 	return true;
 }
 
@@ -100,7 +100,7 @@ TEST_CASE( "Power before FFT = power after FFT (pass)", "[single-file]" )
 	test_app the_main;
 	if (!parseFFT(the_main)) exit(-1);
 	double threshold = 1.e-4;
-    REQUIRE( fabs(GetPower(1)-GetPower(0)) < threshold );
+	REQUIRE( fabs(GetPower(1)-GetPower(0)) < threshold );
 }
 
 
