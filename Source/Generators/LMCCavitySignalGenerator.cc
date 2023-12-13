@@ -39,8 +39,9 @@ namespace locust
         fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
 		fUnitTestRootFile( false ),
-        fInterface( new KassLocustInterface() )
+        fInterface( nullptr )
     {
+    	if ( fInterface == nullptr ) fInterface = new KassLocustInterface();
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
