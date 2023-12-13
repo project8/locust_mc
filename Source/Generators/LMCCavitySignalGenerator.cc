@@ -39,8 +39,14 @@ namespace locust
         fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
 		fUnitTestRootFile( false ),
-        fInterface( nullptr )
+        fInterface( nullptr )  // Initialize fInterface to (nullptr) instead of to (new KassLocustInterface())
     {
+    	// This next line shows the preferred functionality.
+    	// Unfortunately it doesn't compile.  The error is:
+    	// /home/penny/locust_mc/Source/Generators/LMCCavitySignalGenerator.cc: In constructor ‘locust::CavitySignalGenerator::CavitySignalGenerator(const string&)’:
+    	// /home/penny/locust_mc/Source/Generators/LMCCavitySignalGenerator.cc:44:75: error: no match for ‘operator=’ (operand types are ‘locust::kl_interface_ptr_t’ {aka ‘std::shared_ptr<locust::KassLocustInterface>’} and ‘locust::KassLocustInterface*’)
+    	//   44 |    	if ( fInterface == nullptr ) fInterface = new KassLocustInterface();
+
     	if ( fInterface == nullptr ) fInterface = new KassLocustInterface();
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
