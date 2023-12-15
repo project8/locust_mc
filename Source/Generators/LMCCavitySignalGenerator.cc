@@ -41,14 +41,6 @@ namespace locust
 		fUnitTestRootFile( false ),
         fInterface( nullptr )  // Initialize fInterface to (nullptr) instead of to (new KassLocustInterface())
     {
-    	// This next line shows the preferred functionality.
-    	// Unfortunately it doesn't compile.  The error is:
-    	// /home/penny/locust_mc/Source/Generators/LMCCavitySignalGenerator.cc: In constructor ‘locust::CavitySignalGenerator::CavitySignalGenerator(const string&)’:
-    	// /home/penny/locust_mc/Source/Generators/LMCCavitySignalGenerator.cc:44:75: error: no match for ‘operator=’ (operand types are ‘locust::kl_interface_ptr_t’ {aka ‘std::shared_ptr<locust::KassLocustInterface>’} and ‘locust::KassLocustInterface*’)
-    	//   44 |    	if ( fInterface == nullptr ) fInterface = new KassLocustInterface();
-
-    	if ( fInterface == nullptr ) fInterface = new KassLocustInterface();
-        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
     CavitySignalGenerator::~CavitySignalGenerator()
@@ -56,22 +48,26 @@ namespace locust
     }
 
 
-
-    bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
+    bool CavitySignalGenerator::ConfigureInterface()
     {
 
-        if( aParam.has( "rectangular-waveguide" ) )
+    	if ( fInterface == nullptr ) fInterface.reset( new KassLocustInterface() );
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
+
+    	const scarab::param_node& tParam = *GetParameters();
+
+    	if( tParam.has( "rectangular-waveguide" ) )
         {
-        	fInterface->fbWaveguide = aParam["rectangular-waveguide"]().as_bool();
-        	if ( aParam.has ( "direct-kass-power" ) )
+        	fInterface->fbWaveguide = tParam["rectangular-waveguide"]().as_bool();
+        	if ( tParam.has ( "direct-kass-power" ) )
         	{
-        		fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
+        		fUseDirectKassPower = tParam["direct-kass-power"]().as_bool();
         	}
         }
 
         // Define generic response function for use in cavity or waveguide:
     	fTFReceiverHandler = new TFReceiverHandler;
-    	if(!fTFReceiverHandler->Configure(aParam))
+    	if(!fTFReceiverHandler->Configure(tParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     		exit(-1);
@@ -79,7 +75,7 @@ namespace locust
     	}
 
     	// Configure the generic response function:
-        if( aParam.has( "tf-receiver-filename" ) && aParam.has( "tf-receiver-bin-width" ) ) // If using HFSS output for cavity or waveguide
+        if( tParam.has( "tf-receiver-filename" ) && tParam.has( "tf-receiver-bin-width" ) ) // If using HFSS output for cavity or waveguide
         {
         	if (( fUseDirectKassPower ) && ( fInterface->fbWaveguide == true ))
         	{
@@ -98,7 +94,7 @@ namespace locust
         	LPROG(lmclog,"Configuring DampedHarmonicOscillator.\n");
 
         	fAnalyticResponseFunction = new DampedHarmonicOscillator();
-    		if ( !fAnalyticResponseFunction->Configure(aParam) ||
+    		if ( !fAnalyticResponseFunction->Configure(tParam) ||
     				(!CrossCheckCavityConfig()) )
     		{
     			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
@@ -111,7 +107,7 @@ namespace locust
     			exit(-1);
     			return false;
     		}
-        } // aParam.has( "tf-receiver-filename" )
+        } // tParam.has( "tf-receiver-filename" )
         else
         {
         	// Can't find the required config information:
@@ -134,13 +130,13 @@ namespace locust
         }
 
         // Configure selected mode fields and power combiners:
-        if (!fInterface->fField->Configure(aParam))
+        if (!fInterface->fField->Configure(tParam))
         {
         	LERROR(lmclog,"Error configuring LMCField.");
         	exit(-1);
         	return false;
         }
-        if(!fPowerCombiner->Configure(aParam))
+        if(!fPowerCombiner->Configure(tParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
 			exit(-1);
@@ -150,10 +146,10 @@ namespace locust
     	// Configure back reaction:
     	if (( fInterface->fbWaveguide ) && ( fPowerCombiner->GetWaveguideShortIsPresent() ))
     	{
-    		if ( aParam.has( "back-reaction" ) )
+    		if ( tParam.has( "back-reaction" ) )
     		{
     			// optional to switch off:
-    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+    			fInterface->fBackReaction = tParam["back-reaction"]().as_bool();
         		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
     		}
     		else
@@ -164,10 +160,10 @@ namespace locust
     	}
     	else if ( !fInterface->fbWaveguide ) // Cavity
     	{
-    		if ( aParam.has( "back-reaction" ) )
+    		if ( tParam.has( "back-reaction" ) )
     		{
     			// optional to switch off
-    			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+    			fInterface->fBackReaction = tParam["back-reaction"]().as_bool();
         		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
     		}
     		else
@@ -182,6 +178,70 @@ namespace locust
 			fInterface->fBackReaction = false;
     		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
 		}
+
+        // Configure the transmitter, which defines the impulses taken from Kassiopeia.
+        if( tParam.has( "transmitter" ))
+        {
+        	int ntransmitters = 0;
+
+        	if(tParam["transmitter"]().as_string() == "kass-current")
+        	{
+        		ntransmitters += 1;
+        		fInterface->fTransmitter = new KassCurrentTransmitter;
+        		if(!fInterface->fTransmitter->Configure(tParam))
+        		{
+        			LERROR(lmclog,"Error Configuring kass-current transmitter class");
+        		}
+        	}
+
+        	if (ntransmitters != 1)
+        	{
+        		LERROR(lmclog,"LMCCavitySignalGenerator needs the kass-current transmitter.  Please choose transmitter:kass-current in the config file.");
+                exit(-1);
+        	}
+        }
+        else
+        {
+    		LERROR(lmclog,"LMCCavitySignalGenerator needs the kass-current transmitter.  Please choose transmitter:kass-current in the config file.");
+            exit(-1);
+        }
+
+        if( tParam.has( "trigger-confirm" ) )
+        {
+        	fInterface->fTriggerConfirm = tParam["trigger-confirm"]().as_int();
+        }
+
+        // Configure Locust-Kass interface classes and parameters:
+        fFieldCalculator = new FieldCalculator();
+        if(!fFieldCalculator->Configure(tParam))
+        {
+            LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
+        }
+        fInterface->fConfigureKass = new ConfigureKass();
+        fInterface->fConfigureKass->SetParameters( tParam );
+
+
+
+    	return true;
+    }
+
+
+    void CavitySignalGenerator::SetParameters( const scarab::param_node& aParam )
+    {
+    	fParam = &aParam;
+    }
+
+
+    const scarab::param_node* CavitySignalGenerator::GetParameters()
+    {
+    	return fParam;
+    }
+
+
+    bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
+    {
+
+    	SetParameters( aParam );
 
     	// Configure signal parameters:
         if( aParam.has( "lo-frequency" ) )
@@ -216,46 +276,6 @@ namespace locust
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
-        if( aParam.has( "trigger-confirm" ) )
-        {
-        	fInterface->fTriggerConfirm = aParam["trigger-confirm"]().as_int();
-        }
-
-        // Configure the transmitter, which defines the impulses taken from Kassiopeia.
-        if( aParam.has( "transmitter" ))
-        {
-        	int ntransmitters = 0;
-
-        	if(aParam["transmitter"]().as_string() == "kass-current")
-        	{
-        		ntransmitters += 1;
-        		fInterface->fTransmitter = new KassCurrentTransmitter;
-        		if(!fInterface->fTransmitter->Configure(aParam))
-        		{
-        			LERROR(lmclog,"Error Configuring kass-current transmitter class");
-        		}
-        	}
-
-        	if (ntransmitters != 1)
-        	{
-        		LERROR(lmclog,"LMCCavitySignalGenerator needs the kass-current transmitter.  Please choose transmitter:kass-current in the config file.");
-                exit(-1);
-        	}
-        }
-        else
-        {
-    		LERROR(lmclog,"LMCCavitySignalGenerator needs the kass-current transmitter.  Please choose transmitter:kass-current in the config file.");
-            exit(-1);
-        }
-
-        // Configure Locust-Kass interface classes and parameters:
-        fFieldCalculator = new FieldCalculator();
-        if(!fFieldCalculator->Configure(aParam))
-        {
-            LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
-        }
-        fInterface->fConfigureKass = new ConfigureKass();
-        fInterface->fConfigureKass->SetParameters( aParam );
 
         return true;
     }
@@ -507,14 +527,15 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
+        ConfigureInterface();
 
-    	fPowerCombiner->SizeNChannels(fNChannels);
- 		if (fNChannels > 2)
- 		{
+        fPowerCombiner->SizeNChannels(fNChannels);
+ 	    if (fNChannels > 2)
+ 	    {
     		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
         	throw std::runtime_error("Only 1 or 2 channels is allowed.");
         	return false;
- 		}
+ 	    }
 
         int PreEventCounter = 0;
         fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
