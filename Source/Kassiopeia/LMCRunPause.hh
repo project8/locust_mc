@@ -9,13 +9,10 @@
 #define LOCUST_LMCRUNPAUSE_HH_
 
 #include "KSRunModifier.h"
-#include "KSComponentTemplate.h"
 #include "KToolbox.h"
 #include "KSTermMaxR.h"
-#include "KSSimulation.h"
-
-
-
+#include "KSTermMaxTime.h"
+#include "KSRootTerminator.h"
 
 #include "LMCKassLocustInterface.hh"
 
