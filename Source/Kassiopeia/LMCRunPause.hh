@@ -12,7 +12,12 @@
 #include "KToolbox.h"
 #include "KSTermMaxR.h"
 #include "KSTermMaxTime.h"
+#include "KSTermDeath.h"
 #include "KSRootTerminator.h"
+#include "KSGeoSpace.h"
+#include "KSGeoSurface.h"
+#include "KGBoxSpace.hh"
+#include "KGCore.hh"
 
 #include "LMCKassLocustInterface.hh"
 
@@ -43,6 +48,9 @@ namespace locust
 
         private:
             katrin::KToolbox& fToolbox;
+            Kassiopeia::KSGeoSurface* fSurface;
+            Kassiopeia::KSTermDeath* fLocustTermDeath;
+            Kassiopeia::KSCommand* fCommand;
 
 
 

@@ -69,18 +69,17 @@ namespace locust
         if ( fToolbox.IsInitialized() )
         {
             if( aParam.has( "electron-duration" ) )
-             {
-                 Kassiopeia::KSTermMaxTime* tLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
-                 tLocustMaxTimeTerminator->SetName("locust-electron-duration");
-                 if (!fToolbox.HasKey("locust-electron-duration"))
-                 {
-                     tLocustMaxTimeTerminator->SetTime( aParam["electron-duration"]().as_double() );
-                     tLocustMaxTimeTerminator->Initialize();
-                     tLocustMaxTimeTerminator->Activate();
-                     fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(tLocustMaxTimeTerminator);
-                 }
-             }
-
+            {
+                Kassiopeia::KSTermMaxTime* tLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
+                tLocustMaxTimeTerminator->SetName("locust-electron-duration");
+                if (!fToolbox.HasKey("locust-electron-duration"))
+                {
+                    tLocustMaxTimeTerminator->SetTime( aParam["electron-duration"]().as_double() );
+                    tLocustMaxTimeTerminator->Initialize();
+                    tLocustMaxTimeTerminator->Activate();
+                    fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(tLocustMaxTimeTerminator);
+                }
+            }
 
             if( aParam.has( "cavity-radius" ) )
             {
@@ -94,6 +93,36 @@ namespace locust
                     fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(tLocustMaxRTerminator);
                 }
             }
+
+
+
+            auto* tBox = new KGeoBag::KGBoxSpace();
+            tBox->XA(-4.e-3);
+            tBox->XB(4.e-3);
+            tBox->YA(-4.e-3);
+            tBox->YB(4.e-3);
+            tBox->ZA(-1.e-12);
+            tBox->ZB(1.e-12);
+            tBox->SetTag("box_mockup");
+
+            auto* tSpace = new KGeoBag::KGSpace();
+            tSpace->Volume(std::shared_ptr<KGeoBag::KGVolume>(tBox));
+
+            fSurface = new Kassiopeia::KSGeoSurface();
+            fSurface->SetName("box_mockup_surface");
+
+            fSurface->AddContent(*tSpace->GetBoundaries()->begin());
+            fLocustTermDeath = new Kassiopeia::KSTermDeath();
+            fLocustTermDeath->Initialize(); // This is required.
+//            fLocustTermDeath->Activate(); // not needed.
+            fCommand = fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->Command("add_terminator", fLocustTermDeath);
+            fCommand->SetName("my_new_command");
+//            tCommand->Activate(); // If this happens, the terminator is active all the time (bad).
+            fToolbox.Get<Kassiopeia::KSGeoSpace>("space_world")->AddSurface(fSurface);
+            fSurface->Initialize();
+            fSurface->Activate();
+            fSurface->AddCommand(fCommand);
+
         }
         else
         {
@@ -128,6 +157,15 @@ namespace locust
     {
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
 //        fInterface->fRunInProgress = true;
+
+        fSurface->Deactivate();
+        fSurface->Deinitialize();
+    	fLocustTermDeath->Deinitialize();
+    	fLocustTermDeath->Deactivate();
+    	fSurface->RemoveCommand(fCommand);
+    	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustTermDeath);
+        fToolbox.Get<Kassiopeia::KSGeoSpace>("space_world")->RemoveSurface(fSurface);
+
 
         return true;
     }
