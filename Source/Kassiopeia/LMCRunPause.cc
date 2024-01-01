@@ -96,6 +96,9 @@ namespace locust
 
 
 
+            if (!fToolbox.HasKey("box_mockup_surface"))
+            {
+
             auto* tBox = new KGeoBag::KGBoxSpace();
             tBox->XA(-4.e-3);
             tBox->XB(4.e-3);
@@ -110,18 +113,22 @@ namespace locust
 
             fSurface = new Kassiopeia::KSGeoSurface();
             fSurface->SetName("box_mockup_surface");
-
             fSurface->AddContent(*tSpace->GetBoundaries()->begin());
+            fToolbox.Add(fSurface);
+
             fLocustTermDeath = new Kassiopeia::KSTermDeath();
             fLocustTermDeath->Initialize(); // This is required.
 //            fLocustTermDeath->Activate(); // not needed.
+            fToolbox.Add(fLocustTermDeath);
+
             fCommand = fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->Command("add_terminator", fLocustTermDeath);
             fCommand->SetName("my_new_command");
 //            tCommand->Activate(); // If this happens, the terminator is active all the time (bad).
             fToolbox.Get<Kassiopeia::KSGeoSpace>("space_world")->AddSurface(fSurface);
-            fSurface->Initialize();
-            fSurface->Activate();
+//            fSurface->Initialize();
+//            fSurface->Activate();
             fSurface->AddCommand(fCommand);
+            }
 
         }
         else
@@ -158,6 +165,7 @@ namespace locust
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
 //        fInterface->fRunInProgress = true;
 
+/*
         fSurface->Deactivate();
         fSurface->Deinitialize();
     	fLocustTermDeath->Deinitialize();
@@ -165,7 +173,7 @@ namespace locust
     	fSurface->RemoveCommand(fCommand);
     	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustTermDeath);
         fToolbox.Get<Kassiopeia::KSGeoSpace>("space_world")->RemoveSurface(fSurface);
-
+*/
 
         return true;
     }
