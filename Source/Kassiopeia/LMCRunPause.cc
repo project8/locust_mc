@@ -70,64 +70,83 @@ namespace locust
         {
             if( aParam.has( "electron-duration" ) )
             {
-                Kassiopeia::KSTermMaxTime* tLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
-                tLocustMaxTimeTerminator->SetName("locust-electron-duration");
+                fLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
+                fLocustMaxTimeTerminator->SetName("locust-electron-duration");
+                fLocustMaxTimeTerminator->SetTime( aParam["electron-duration"]().as_double() );
+                fLocustMaxTimeTerminator->Initialize();
+                fLocustMaxTimeTerminator->Activate();
                 if (!fToolbox.HasKey("locust-electron-duration"))
                 {
-                    tLocustMaxTimeTerminator->SetTime( aParam["electron-duration"]().as_double() );
-                    tLocustMaxTimeTerminator->Initialize();
-                    tLocustMaxTimeTerminator->Activate();
-                    fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(tLocustMaxTimeTerminator);
+                    fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxTimeTerminator);
                 }
             }
 
             if( aParam.has( "cavity-radius" ) )
             {
-                Kassiopeia::KSTermMaxR* tLocustMaxRTerminator = new Kassiopeia::KSTermMaxR();
-                tLocustMaxRTerminator->SetName("locust-radius-terminator");
+                fLocustMaxRTerminator = new Kassiopeia::KSTermMaxR();
+                fLocustMaxRTerminator->SetName("locust-radius-terminator");
+                fLocustMaxRTerminator->SetMaxR( aParam["cavity-radius"]().as_double() );
+                fLocustMaxRTerminator->Initialize();
+                fLocustMaxRTerminator->Activate();
                 if (!fToolbox.HasKey("locust-radius-terminator"))
                 {
-                    tLocustMaxRTerminator->SetMaxR( aParam["cavity-radius"]().as_double() );
-                    tLocustMaxRTerminator->Initialize();
-                    tLocustMaxRTerminator->Activate();
-                    fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(tLocustMaxRTerminator);
+                    fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxRTerminator);
                 }
             }
 
-
-
-            if (!fToolbox.HasKey("box_mockup_surface"))
+            if ( aParam.has( "waveguide-x" ) )
             {
+                if ( aParam.has( "waveguide-y" ) && aParam.has( "waveguide-z" ) )
+                {
+                    fBox = new KGeoBag::KGBoxSpace();
+                    fBox->XA(-aParam["waveguide-x"]().as_double()/2.);
+                    fBox->XB(aParam["waveguide-x"]().as_double()/2.);
+                    fBox->YA(-aParam["waveguide-y"]().as_double()/2.);
+                    fBox->YB(aParam["waveguide-y"]().as_double()/2.);
+                    fBox->ZA(-aParam["waveguide-z"]().as_double()/2.);
+                    fBox->ZB(aParam["waveguide-z"]().as_double()/2.);
+                    fBox->SetTag("waveguide_box");
 
-            auto* tBox = new KGeoBag::KGBoxSpace();
-            tBox->XA(-4.e-3);
-            tBox->XB(4.e-3);
-            tBox->YA(-4.e-3);
-            tBox->YB(4.e-3);
-            tBox->ZA(-1.e-12);
-            tBox->ZB(1.e-12);
-            tBox->SetTag("box_mockup");
+                    fKGSpace = new KGeoBag::KGSpace();
+                    fKGSpace->Volume(std::shared_ptr<KGeoBag::KGVolume>(fBox));
 
-            auto* tSpace = new KGeoBag::KGSpace();
-            tSpace->Volume(std::shared_ptr<KGeoBag::KGVolume>(tBox));
+                    fSurface = new Kassiopeia::KSGeoSurface();
+                    fSurface->SetName("waveguide_surfaces");
+                    auto it = fKGSpace->GetBoundaries()->begin();
+                    while (it != fKGSpace->GetBoundaries()->end())
+                    {
+                        fSurface->AddContent(*it);
+                        *it++;
+                    }
 
-            fSurface = new Kassiopeia::KSGeoSurface();
-            fSurface->SetName("box_mockup_surface");
-            fSurface->AddContent(*tSpace->GetBoundaries()->begin());
-            fToolbox.Add(fSurface);
+                    if (!fToolbox.HasKey("waveguide_surfaces"))
+                    {
+                        fToolbox.Add(fSurface);
 
-            fLocustTermDeath = new Kassiopeia::KSTermDeath();
-            fLocustTermDeath->Initialize(); // This is required.
-//            fLocustTermDeath->Activate(); // not needed.
-            fToolbox.Add(fLocustTermDeath);
+                        fLocustTermDeath = new Kassiopeia::KSTermDeath();
+                        fLocustTermDeath->Initialize();
+                        fToolbox.Add(fLocustTermDeath);
 
-            fCommand = fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->Command("add_terminator", fLocustTermDeath);
-            fCommand->SetName("my_new_command");
-//            tCommand->Activate(); // If this happens, the terminator is active all the time (bad).
-            fToolbox.Get<Kassiopeia::KSGeoSpace>("space_world")->AddSurface(fSurface);
-//            fSurface->Initialize();
-//            fSurface->Activate();
-            fSurface->AddCommand(fCommand);
+                        fCommand = fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->Command("add_terminator", fLocustTermDeath);
+                        fKSSpaces = fToolbox.GetAll<Kassiopeia::KSGeoSpace>();
+                        if ( fKSSpaces.size() == 1 )
+                        {
+                            LPROG(lmclog,"LMCRunPause found the KSGeoSpace named <" << fKSSpaces[0]->GetName() << ">");
+                            fKSSpaces[0]->AddSurface(fSurface);
+                        }
+                        else
+                        {
+                            LERROR(lmclog,"Only one KSGeoSpace instance was expected to be in the KToolbox.");
+                            exit(-1);
+                        }
+
+                        fSurface->AddCommand(fCommand);
+                    }
+                }
+                else
+                {
+        		    LERROR(lmclog,"Waveguide dimensions waveguide-x, waveguide-y, and waveguide-z are needed.");
+                }
             }
 
         }
@@ -160,20 +179,34 @@ namespace locust
 //.
 //.
 
+    bool RunPause::DeleteLocalKassObjects()
+    {
+
+        delete fLocustMaxTimeTerminator;
+        delete fLocustMaxRTerminator;
+        delete fBox;
+        delete fKGSpace;
+        delete fSurface;
+        delete fLocustTermDeath;
+        delete fCommand;
+        for (unsigned i=0; i<fKSSpaces.size(); i++)
+        {
+        	delete fKSSpaces[0];
+        }
+
+
+    	return true;
+    }
+
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
 //        fInterface->fRunInProgress = true;
 
-/*
-        fSurface->Deactivate();
-        fSurface->Deinitialize();
-    	fLocustTermDeath->Deinitialize();
-    	fLocustTermDeath->Deactivate();
-    	fSurface->RemoveCommand(fCommand);
-    	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustTermDeath);
-        fToolbox.Get<Kassiopeia::KSGeoSpace>("space_world")->RemoveSurface(fSurface);
-*/
+        if ( !fToolbox.IsInitialized() )
+        {
+        	DeleteLocalKassObjects();
+        }
 
         return true;
     }

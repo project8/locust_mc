@@ -41,6 +41,8 @@ namespace locust
 
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
+            bool DeleteLocalKassObjects();
+
 
 
         protected:
@@ -48,9 +50,14 @@ namespace locust
 
         private:
             katrin::KToolbox& fToolbox;
+            Kassiopeia::KSTermMaxTime* fLocustMaxTimeTerminator;
+            Kassiopeia::KSTermMaxR* fLocustMaxRTerminator;
+            KGeoBag::KGBoxSpace* fBox;
+            KGeoBag::KGSpace* fKGSpace;
             Kassiopeia::KSGeoSurface* fSurface;
             Kassiopeia::KSTermDeath* fLocustTermDeath;
             Kassiopeia::KSCommand* fCommand;
+            std::vector<Kassiopeia::KSGeoSpace*> fKSSpaces;
 
 
 
