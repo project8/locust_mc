@@ -24,7 +24,7 @@
         "event-spacing-samples": 10,
         "voltage-check": "false",
         "lo-frequency": 25.9602e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Waveguide_Template.xml"
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA.xml"
     },
 
     "simulation":
