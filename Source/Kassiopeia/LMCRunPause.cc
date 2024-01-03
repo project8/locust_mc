@@ -94,6 +94,45 @@ namespace locust
                 }
             }
 
+
+
+            auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
+            for (unsigned i=0; i<tGen.size(); i++)
+            {
+            	if ( tGen[i]->IsActivated() )
+            	{
+                    fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(tGen[i]);
+            	}
+            }
+
+            Kassiopeia::KSGenEnergyComposite* tGenEnergyComposite;
+            Kassiopeia::KSGenValueUniform* tEnergyGenerator = new Kassiopeia::KSGenValueUniform();
+            tEnergyGenerator->SetValueMin(18600.);
+            tEnergyGenerator->SetValueMax(18600.);
+            tGenEnergyComposite->SetEnergyValue(tEnergyGenerator);
+
+            Kassiopeia::KSGenPositionRectangularComposite* tGenPositionComposite = new Kassiopeia::KSGenPositionRectangularComposite();
+            tGenPositionComposite->SetOrigin(GetKSWorldSpace()->GetContent()->)
+            Kassiopeia::KSGenValueUniform* tPositionXGenerator = new Kassiopeia::KSGenValueUniform();
+            Kassiopeia::KSGenValueUniform* tPositionYGenerator = new Kassiopeia::KSGenValueUniform();
+            Kassiopeia::KSGenValueUniform* tPositionZGenerator = new Kassiopeia::KSGenValueUniform();
+            tPositionXGenerator->SetValueMin(0.004);
+            tPositionXGenerator->SetValueMin(0.004);
+            tPositionYGenerator->SetValueMin(0.0);
+            tPositionYGenerator->SetValueMin(0.0);
+            tPositionZGenerator->SetValueMin(0.0);
+            tPositionZGenerator->SetValueMin(0.0);
+            tGenPositionComposite->SetXValue(tPositionXGenerator);
+            tGenPositionComposite->SetYValue(tPositionYGenerator);
+            tGenPositionComposite->SetZValue(tPositionZGenerator);
+
+
+            tPositionGenerator->SetXValue()
+//            fGenerator->
+
+
+
+
             if ( aParam.has( "waveguide-x" ) )
             {
                 if ( aParam.has( "waveguide-y" ) && aParam.has( "waveguide-z" ) )
@@ -128,18 +167,8 @@ namespace locust
                         fToolbox.Add(fLocustTermDeath);
 
                         fCommand = fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->Command("add_terminator", fLocustTermDeath);
-                        fKSSpaces = fToolbox.GetAll<Kassiopeia::KSGeoSpace>();
-                        if ( fKSSpaces.size() == 1 )
-                        {
-                            LPROG(lmclog,"LMCRunPause found the KSGeoSpace named <" << fKSSpaces[0]->GetName() << ">");
-                            fKSSpaces[0]->AddSurface(fSurface);
-                        }
-                        else
-                        {
-                            LERROR(lmclog,"Only one KSGeoSpace instance was expected to be in the KToolbox.");
-                            exit(-1);
-                        }
-
+                        fKSSpace = GetKSWorldSpace();
+                        fKSSpace->AddSurface(fSurface);
                         fSurface->AddCommand(fCommand);
                     }
                 }
@@ -159,6 +188,22 @@ namespace locust
      }
 
 
+
+    Kassiopeia::KSGeoSpace* RunPause::GetKSWorldSpace()
+    {
+    	std::vector<Kassiopeia::KSGeoSpace*> tKSSpaces = fToolbox.GetAll<Kassiopeia::KSGeoSpace>();
+        if ( tKSSpaces.size() == 1 )
+        {
+            LPROG(lmclog,"LMCRunPause found the KSGeoSpace named <" << tKSSpaces[0]->GetName() << ">");
+            tKSSpaces[0]->AddSurface(fSurface);
+        }
+        else
+        {
+            LERROR(lmclog,"Only one KSGeoSpace instance was expected to be in the KToolbox.");
+            exit(-1);
+        }
+        return tKSSpaces[0];
+    }
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
@@ -189,11 +234,7 @@ namespace locust
         delete fSurface;
         delete fLocustTermDeath;
         delete fCommand;
-        for (unsigned i=0; i<fKSSpaces.size(); i++)
-        {
-        	delete fKSSpaces[0];
-        }
-
+        delete fKSSpace;
 
     	return true;
     }

@@ -18,6 +18,12 @@
 #include "KSGeoSurface.h"
 #include "KGBoxSpace.hh"
 #include "KGCore.hh"
+#include "KSRootGenerator.h"
+#include "KSGenGeneratorComposite.h"
+#include "KSGenValueUniform.h"
+#include "KSGenEnergyComposite.h"
+#include "KSGenPositionRectangularComposite.h"
+#include "KSGenDirectionSphericalComposite.h"
 
 #include "LMCKassLocustInterface.hh"
 
@@ -41,6 +47,7 @@ namespace locust
 
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
+            Kassiopeia::KSGeoSpace* GetKSWorldSpace();
             bool DeleteLocalKassObjects();
 
 
@@ -57,7 +64,8 @@ namespace locust
             Kassiopeia::KSGeoSurface* fSurface;
             Kassiopeia::KSTermDeath* fLocustTermDeath;
             Kassiopeia::KSCommand* fCommand;
-            std::vector<Kassiopeia::KSGeoSpace*> fKSSpaces;
+            Kassiopeia::KSGeoSpace* fKSSpace;
+            Kassiopeia::KSGenGeneratorComposite* fGenerator;
 
 
 
