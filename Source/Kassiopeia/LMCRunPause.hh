@@ -48,6 +48,7 @@ namespace locust
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
             Kassiopeia::KSGeoSpace* GetKSWorldSpace();
+            KGeoBag::KGSpace* GetKGWorldSpace();
             bool DeleteLocalKassObjects();
 
 

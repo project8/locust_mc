@@ -95,7 +95,7 @@ namespace locust
             }
 
 
-
+/*
             auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
             for (unsigned i=0; i<tGen.size(); i++)
             {
@@ -130,7 +130,7 @@ namespace locust
             tPositionGenerator->SetXValue()
 //            fGenerator->
 
-
+*/
 
 
             if ( aParam.has( "waveguide-x" ) )
@@ -146,13 +146,15 @@ namespace locust
                     fBox->ZB(aParam["waveguide-z"]().as_double()/2.);
                     fBox->SetTag("waveguide_box");
 
-                    fKGSpace = new KGeoBag::KGSpace();
-                    fKGSpace->Volume(std::shared_ptr<KGeoBag::KGVolume>(fBox));
+                    fKGSpace = GetKGWorldSpace();
+                    KGeoBag::KGSpace* tKGSpace = new KGeoBag::KGSpace();
+                    tKGSpace->Volume(std::shared_ptr<KGeoBag::KGVolume>(fBox));
+                    fKGSpace->GetChildSpaces()->at(0)->AddChildSpace(tKGSpace);
 
                     fSurface = new Kassiopeia::KSGeoSurface();
                     fSurface->SetName("waveguide_surfaces");
-                    auto it = fKGSpace->GetBoundaries()->begin();
-                    while (it != fKGSpace->GetBoundaries()->end())
+                    auto it = tKGSpace->GetBoundaries()->begin();
+                    while (it != tKGSpace->GetBoundaries()->end())
                     {
                         fSurface->AddContent(*it);
                         *it++;
@@ -170,6 +172,8 @@ namespace locust
                         fKSSpace = GetKSWorldSpace();
                         fKSSpace->AddSurface(fSurface);
                         fSurface->AddCommand(fCommand);
+
+                        KGeoBag::KGSpace* test = GetKGWorldSpace();
                     }
                 }
                 else
@@ -177,6 +181,7 @@ namespace locust
         		    LERROR(lmclog,"Waveguide dimensions waveguide-x, waveguide-y, and waveguide-z are needed.");
                 }
             }
+
 
         }
         else
@@ -195,15 +200,38 @@ namespace locust
         if ( tKSSpaces.size() == 1 )
         {
             LPROG(lmclog,"LMCRunPause found the KSGeoSpace named <" << tKSSpaces[0]->GetName() << ">");
-            tKSSpaces[0]->AddSurface(fSurface);
         }
         else
         {
-            LERROR(lmclog,"Only one KSGeoSpace instance was expected to be in the KToolbox.");
+            LERROR(lmclog,"One and only one KSGeoSpace instance was expected to be in the KToolbox.");
+            getchar();
             exit(-1);
         }
+
         return tKSSpaces[0];
     }
+
+    KGeoBag::KGSpace* RunPause::GetKGWorldSpace()
+    {
+    	Kassiopeia::KSGeoSpace* tKSSpace = GetKSWorldSpace();
+    	std::vector<KGeoBag::KGSpace*> tKGSpaces = tKSSpace->GetContent();
+        if (( tKGSpaces.size() == 1 ) && (tKGSpaces[0]->GetChildSpaces()->at(0)->GetName()=="project8"))
+        {
+            LPROG(lmclog,"LMCRunPause found the KGSpace named <" << tKGSpaces[0]->GetName() << "/project8>");
+        }
+        else
+        {
+            LERROR(lmclog,"One and only one KGSpace instance was expected to be in the KToolbox, and "
+            		"it was expected to contain a child KGSpace named <project8>");
+            getchar();
+            exit(-1);
+        }
+
+        const KGeoBag::KGSpace* test = tKGSpaces[0];
+
+        return tKGSpaces[0];
+    }
+
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
