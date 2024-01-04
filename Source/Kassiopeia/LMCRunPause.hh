@@ -21,10 +21,11 @@
 #include "KSRootGenerator.h"
 #include "KSGenGeneratorComposite.h"
 #include "KSGenValueUniform.h"
+#include "KSGenValueFix.h"
 #include "KSGenEnergyComposite.h"
 #include "KSGenPositionRectangularComposite.h"
 #include "KSGenDirectionSphericalComposite.h"
-
+#include "KSGenTimeComposite.h"
 #include "LMCKassLocustInterface.hh"
 
 namespace locust
@@ -50,6 +51,11 @@ namespace locust
             Kassiopeia::KSGeoSpace* GetKSWorldSpace();
             KGeoBag::KGSpace* GetKGWorldSpace();
             bool DeleteLocalKassObjects();
+            bool AddWaveguideTerminator( const scarab::param_node& aParam );
+            bool AddMaxTimeTerminator( const scarab::param_node& aParam );
+            bool AddMaxRTerminator( const scarab::param_node& aParam );
+            bool AddGenerator( const scarab::param_node& aParam );
+
 
 
 
