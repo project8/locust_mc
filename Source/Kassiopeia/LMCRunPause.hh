@@ -27,6 +27,9 @@
 #include "KSGenDirectionSphericalComposite.h"
 #include "KSGenTimeComposite.h"
 #include "LMCKassLocustInterface.hh"
+#include <stdlib.h>
+#include <time.h>
+
 
 namespace locust
 {

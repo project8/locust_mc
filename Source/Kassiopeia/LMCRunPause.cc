@@ -68,7 +68,7 @@ namespace locust
 
         if ( fToolbox.IsInitialized() )
         {
-            if( aParam.has( "track-length" ) )
+            if( aParam.has( "track-length" ) || ( aParam.has( "random-track-length" ) ) )
             {
             	if (!AddMaxTimeTerminator( aParam ))
             	{
@@ -207,7 +207,7 @@ namespace locust
 		        LERROR(lmclog,"To configure starting e- kinematics, all of these parameters are needed:  "
 		    		"ks-starting-xpos-min, ks-starting-xpos-max, ks-starting-ypos-min, ks-starting-ypos-max, "
 		    		"ks-starting-zpos-min, ks-starting-zpos-max, ks-starting-pitch-min, ks-starting-pitch-max ");
-		        exit(-1);
+		        return false;
             }
 
     	return true;
@@ -231,9 +231,32 @@ namespace locust
 
     bool RunPause::AddMaxTimeTerminator( const scarab::param_node& aParam )
     {
+        double tMaxTrackLength = 0.;
         fLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
+
+    	if ( aParam.has( "track-length" ) )
+    	{
+    		tMaxTrackLength = aParam["track-length"]().as_double();
+            fLocustMaxTimeTerminator->SetTime( tMaxTrackLength );
+    	}
+    	else
+    	{
+		    LERROR(lmclog,"Parameter \"track-length\" is required to set the maximum track length.");
+		    return false;
+    	}
+
+    	if ( aParam.has( "random-track-length" ) )
+    	{
+    		if ( aParam["random-track-length"]().as_bool() == true)
+    		{
+    	        srand (time(NULL));
+    	        double tRandomTime = tMaxTrackLength/10. * (rand() % 10 + 1);
+                fLocustMaxTimeTerminator->SetTime( tRandomTime );
+		        LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
+    		}
+    	}
+
         fLocustMaxTimeTerminator->SetName("ksmax-time-project8");
-        fLocustMaxTimeTerminator->SetTime( aParam["track-length"]().as_double() );
         fLocustMaxTimeTerminator->Initialize();
         fLocustMaxTimeTerminator->Activate();
         if (!fToolbox.HasKey("ksmax-time-project8"))
