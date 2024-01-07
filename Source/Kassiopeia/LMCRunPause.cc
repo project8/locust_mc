@@ -68,7 +68,7 @@ namespace locust
 
         if ( fToolbox.IsInitialized() )
         {
-            if( aParam.has( "electron-duration" ) )
+            if( aParam.has( "track-length" ) )
             {
             	if (!AddMaxTimeTerminator( aParam ))
             	{
@@ -92,13 +92,12 @@ namespace locust
             	}
             }
 
-            if ( true )
+            if ( aParam.has( "ks-starting-xpos" )  )
             {
             	if (!AddGenerator( aParam ))
             	{
             		return false;
             	}
-
             }
 
             return true;
@@ -113,64 +112,103 @@ namespace locust
 
     bool RunPause::AddGenerator( const scarab::param_node& aParam )
     {
-        auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
-        for (unsigned i=0; i<tGen.size(); i++)
+        if ( aParam.has( "ks-starting-xpos-min" ) && aParam.has( "ks-starting-xpos-max" )
+        &&   aParam.has( "ks-starting-ypos-min" ) && aParam.has( "ks-starting-ypos-max" )
+		&&   aParam.has( "ks-starting-zpos-min" ) && aParam.has( "ks-starting-zpos-max" )
+		&&   aParam.has( "ks-starting-energy-min" ) && aParam.has( "ks-starting-energy-max" )
+		&&   aParam.has( "ks-starting-pitch-min" ) && aParam.has( "ks-starting-pitch-max" ) )
         {
-        	if ( tGen[i]->IsActivated() )
-        	{
-                fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(tGen[i]);
-        	}
-        }
 
-        Kassiopeia::KSGenValueFix* tGenPidComposite = new Kassiopeia::KSGenValueFix();
-        tGenPidComposite->SetValue(11);
 
-        Kassiopeia::KSGenTimeComposite* tGenTimeComposite = new Kassiopeia::KSGenTimeComposite();
-        Kassiopeia::KSGenValueUniform* tTimeGenerator = new Kassiopeia::KSGenValueUniform();
-        tTimeGenerator->SetValueMin(0.);
-        tTimeGenerator->SetValueMax(0.);
-        tGenTimeComposite->SetTimeValue(tTimeGenerator);
+            if (!fToolbox.HasKey("gen_project8"))
+            {
+                auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
+                for (unsigned i=0; i<tGen.size(); i++)
+                {
+        	        if ( (tGen[i]->IsActivated()) && (tGen[i]->GetName()!="root_generator") )
+        	        {
+                        fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(tGen[i]);
+                        fToolbox.Remove(tGen[i]->GetName());
+        	        }
+                }
 
-        Kassiopeia::KSGenEnergyComposite* tGenEnergyComposite = new Kassiopeia::KSGenEnergyComposite();
-        Kassiopeia::KSGenValueUniform* tEnergyGenerator = new Kassiopeia::KSGenValueUniform();
-        tEnergyGenerator->SetValueMin(18600.);
-        tEnergyGenerator->SetValueMax(18600.);
-        tGenEnergyComposite->SetEnergyValue(tEnergyGenerator);
+                Kassiopeia::KSGenValueFix* tGenPidComposite = new Kassiopeia::KSGenValueFix();
+                tGenPidComposite->SetValue(11); // electron
 
-        Kassiopeia::KSGenPositionRectangularComposite* tGenPositionComposite = new Kassiopeia::KSGenPositionRectangularComposite();
-        tGenPositionComposite->SetOrigin(GetKGWorldSpace()->GetOrigin());
-        Kassiopeia::KSGenValueUniform* tPositionXGenerator = new Kassiopeia::KSGenValueUniform();
-        Kassiopeia::KSGenValueUniform* tPositionYGenerator = new Kassiopeia::KSGenValueUniform();
-        Kassiopeia::KSGenValueUniform* tPositionZGenerator = new Kassiopeia::KSGenValueUniform();
-        tPositionXGenerator->SetValueMin(0.004);
-        tPositionXGenerator->SetValueMin(0.004);
-        tPositionYGenerator->SetValueMin(0.0);
-        tPositionYGenerator->SetValueMin(0.0);
-        tPositionZGenerator->SetValueMin(0.0);
-        tPositionZGenerator->SetValueMin(0.0);
-        tGenPositionComposite->SetXValue(tPositionXGenerator);
-        tGenPositionComposite->SetYValue(tPositionYGenerator);
-        tGenPositionComposite->SetZValue(tPositionZGenerator);
+                Kassiopeia::KSGenTimeComposite* tGenTimeComposite = new Kassiopeia::KSGenTimeComposite();
+                Kassiopeia::KSGenValueUniform* tTimeGenerator = new Kassiopeia::KSGenValueUniform();
+                tTimeGenerator->SetValueMin(0.);
+                tTimeGenerator->SetValueMax(0.);
+                tGenTimeComposite->SetTimeValue(tTimeGenerator);
 
-        Kassiopeia::KSGenDirectionSphericalComposite* tGenDirectionComposite = new Kassiopeia::KSGenDirectionSphericalComposite();
-        Kassiopeia::KSGenValueUniform* tPhiGenerator = new Kassiopeia::KSGenValueUniform();
-        tPhiGenerator->SetValueMin(0.);
-        tPhiGenerator->SetValueMax(0.);
-        Kassiopeia::KSGenValueUniform* tThetaGenerator = new Kassiopeia::KSGenValueUniform();
-        tThetaGenerator->SetValueMin(90.);
-        tThetaGenerator->SetValueMax(90.);
-        tGenDirectionComposite->SetPhiValue(tPhiGenerator);
-        tGenDirectionComposite->SetThetaValue(tThetaGenerator);
+                Kassiopeia::KSGenEnergyComposite* tGenEnergyComposite = new Kassiopeia::KSGenEnergyComposite();
+                Kassiopeia::KSGenValueUniform* tEnergyGenerator = new Kassiopeia::KSGenValueUniform();
+                if ( aParam.has( "ks-starting-energy-min" ) && ( aParam.has( "ks-starting-energy-max" ) ) )
+                {
+                    tEnergyGenerator->SetValueMin( aParam["ks-starting-energy-min"]().as_double() ); // eV
+                    tEnergyGenerator->SetValueMax( aParam["ks-starting-energy-max"]().as_double() ); // eV
+                }
+                else
+                {
+                    tEnergyGenerator->SetValueMin( 18600. ); // eV
+                    tEnergyGenerator->SetValueMax( 18600. ); // eV
+                }
+                tGenEnergyComposite->SetEnergyValue(tEnergyGenerator);
 
-        fGenerator->SetPid(tGenPidComposite);
-        fGenerator->AddCreator(tGenPositionComposite);
-        fGenerator->AddCreator(tGenEnergyComposite);
-        fGenerator->AddCreator(tGenDirectionComposite);
-        fGenerator->AddCreator(tGenTimeComposite);
+                Kassiopeia::KSGenPositionRectangularComposite* tGenPositionComposite = new Kassiopeia::KSGenPositionRectangularComposite();
+                tGenPositionComposite->SetOrigin(GetKGWorldSpace()->GetOrigin());
+                Kassiopeia::KSGenValueUniform* tPositionXGenerator = new Kassiopeia::KSGenValueUniform();
+                Kassiopeia::KSGenValueUniform* tPositionYGenerator = new Kassiopeia::KSGenValueUniform();
+                Kassiopeia::KSGenValueUniform* tPositionZGenerator = new Kassiopeia::KSGenValueUniform();
+                tPositionXGenerator->SetValueMin( aParam["ks-starting-xpos-min"]().as_double() ); // meters
+                tPositionXGenerator->SetValueMax( aParam["ks-starting-xpos-max"]().as_double() );
+                tPositionYGenerator->SetValueMin( aParam["ks-starting-ypos-min"]().as_double() );
+                tPositionYGenerator->SetValueMax( aParam["ks-starting-ypos-max"]().as_double() );
+                tPositionZGenerator->SetValueMin( aParam["ks-starting-zpos-min"]().as_double() );
+                tPositionZGenerator->SetValueMax( aParam["ks-starting-zpos-max"]().as_double() );
+                tGenPositionComposite->SetXValue(tPositionXGenerator);
+                tGenPositionComposite->SetYValue(tPositionYGenerator);
+                tGenPositionComposite->SetZValue(tPositionZGenerator);
 
-        fGenerator->Initialize();
-        fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->SetGenerator(fGenerator);
+                Kassiopeia::KSGenDirectionSphericalComposite* tGenDirectionComposite = new Kassiopeia::KSGenDirectionSphericalComposite();
+                Kassiopeia::KSGenValueUniform* tThetaGenerator = new Kassiopeia::KSGenValueUniform();
+                tThetaGenerator->SetValueMin( aParam["ks-starting-pitch-min"]().as_double() );
+                tThetaGenerator->SetValueMax( aParam["ks-starting-pitch-max"]().as_double() );
+                Kassiopeia::KSGenValueUniform* tPhiGenerator = new Kassiopeia::KSGenValueUniform();
+                if ( aParam.has( "ks-starting-phi-min" ) && ( aParam.has( "ks-starting-phi-max" ) ) )
+                {
+                    tPhiGenerator->SetValueMin( aParam["ks-starting-phi-min"]().as_double() );
+                    tPhiGenerator->SetValueMax( aParam["ks-starting-phi-max"]().as_double() );
+                }
+                else
+                {
+                    tPhiGenerator->SetValueMin( 0. );
+                    tPhiGenerator->SetValueMax( 0. );
+                }
+                tGenDirectionComposite->SetPhiValue(tPhiGenerator);
+                tGenDirectionComposite->SetThetaValue(tThetaGenerator);
 
+                fGenerator = new Kassiopeia::KSGenGeneratorComposite();
+                fGenerator->SetPid(tGenPidComposite);
+                fGenerator->AddCreator(tGenPositionComposite);
+                fGenerator->AddCreator(tGenEnergyComposite);
+                fGenerator->AddCreator(tGenDirectionComposite);
+                fGenerator->AddCreator(tGenTimeComposite);
+                fGenerator->SetName("gen_project8");
+                fGenerator->Initialize();
+
+                fToolbox.Add(fGenerator);
+                fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->SetGenerator(fGenerator);
+
+            }
+            }
+            else
+            {
+		        LERROR(lmclog,"To configure starting e- kinematics, all of these parameters are needed:  "
+		    		"ks-starting-xpos-min, ks-starting-xpos-max, ks-starting-ypos-min, ks-starting-ypos-max, "
+		    		"ks-starting-zpos-min, ks-starting-zpos-max, ks-starting-pitch-min, ks-starting-pitch-max ");
+		        exit(-1);
+            }
 
     	return true;
     }
@@ -179,11 +217,11 @@ namespace locust
     bool RunPause::AddMaxRTerminator( const scarab::param_node& aParam )
     {
         fLocustMaxRTerminator = new Kassiopeia::KSTermMaxR();
-        fLocustMaxRTerminator->SetName("locust-radius-terminator");
+        fLocustMaxRTerminator->SetName("ksmax-r-project8");
         fLocustMaxRTerminator->SetMaxR( aParam["cavity-radius"]().as_double() );
         fLocustMaxRTerminator->Initialize();
         fLocustMaxRTerminator->Activate();
-        if (!fToolbox.HasKey("locust-radius-terminator"))
+        if (!fToolbox.HasKey("ksmax-r-project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxRTerminator);
         }
@@ -194,11 +232,11 @@ namespace locust
     bool RunPause::AddMaxTimeTerminator( const scarab::param_node& aParam )
     {
         fLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
-        fLocustMaxTimeTerminator->SetName("locust-electron-duration");
-        fLocustMaxTimeTerminator->SetTime( aParam["electron-duration"]().as_double() );
+        fLocustMaxTimeTerminator->SetName("ksmax-time-project8");
+        fLocustMaxTimeTerminator->SetTime( aParam["track-length"]().as_double() );
         fLocustMaxTimeTerminator->Initialize();
         fLocustMaxTimeTerminator->Activate();
-        if (!fToolbox.HasKey("locust-electron-duration"))
+        if (!fToolbox.HasKey("ksmax-time-project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxTimeTerminator);
         }
@@ -224,7 +262,7 @@ namespace locust
             fKGSpace->GetChildSpaces()->at(0)->AddChildSpace(tKGSpace);
 
             fSurface = new Kassiopeia::KSGeoSurface();
-            fSurface->SetName("waveguide_surfaces");
+            fSurface->SetName("waveguide_surfaces_project8");
             auto it = tKGSpace->GetBoundaries()->begin();
             while (it != tKGSpace->GetBoundaries()->end())
             {
@@ -232,7 +270,7 @@ namespace locust
                 *it++;
             }
 
-            if (!fToolbox.HasKey("waveguide_surfaces"))
+            if (!fToolbox.HasKey("waveguide_surfaces_project8"))
             {
                 fToolbox.Add(fSurface);
 
@@ -327,6 +365,7 @@ namespace locust
         delete fLocustTermDeath;
         delete fCommand;
         delete fKSSpace;
+        delete fGenerator;
 
     	return true;
     }
