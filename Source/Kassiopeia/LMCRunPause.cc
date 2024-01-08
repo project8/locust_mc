@@ -125,7 +125,7 @@ namespace locust
             {
                 if ( (tGen[i]->IsActivated()) && (tGen[i]->GetName()!="root_generator") )
                 {
-                    LPROG(lmclog,"Clearing" << tGen[i]->GetName());
+                    LPROG(lmclog,"Clearing " << tGen[i]->GetName());
                     fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(tGen[i]);
                     fToolbox.Remove(tGen[i]->GetName());
                 }
@@ -254,18 +254,20 @@ namespace locust
 
     	    if ( aParam.has( "random-track-length" ) )
     	    {
-    	        if ( aParam["random-track-length"]().as_bool() == true)
+                if ( aParam["random-track-length"]().as_bool() == true)
                 {
-    	            srand (time(NULL));
-    	            double tRandomTime = tMaxTrackLength/10. * (rand() % 10 + 1);
-    	            fLocustMaxTimeTerminator->SetTime( tRandomTime );
-    	            LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
+                    srand (time(NULL));
+                    double tRandomTime = tMaxTrackLength/10. * ( rand() % 10 ); // 0 < t < tMaxTrackLength
+                    fLocustMaxTimeTerminator->SetTime( tRandomTime );
+                    LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
                 }
     	    }
 
             fLocustMaxTimeTerminator->SetName("ksmax-time-project8");
             fLocustMaxTimeTerminator->Initialize();
             fLocustMaxTimeTerminator->Activate();
+
+            fToolbox.Add(fLocustMaxTimeTerminator);
 
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxTimeTerminator);
         }
