@@ -250,7 +250,19 @@ namespace locust
         }
         if( aParam.has( "event-spacing-samples" ) )
         {
-            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+            int tNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+
+        	if (aParam.has( "random-spacing-samples" ))
+        	{
+        		if (aParam["random-spacing-samples"]().as_bool() == true)
+        		{
+    	            srand (time(NULL));
+    	            tNPreEventSamples = tNPreEventSamples/10 * (rand() % 10 + 1);
+		            LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
+        		}
+        	}
+
+            fNPreEventSamples = tNPreEventSamples;
         }
         if( aParam.has( "override-aliasing" ) )
         {

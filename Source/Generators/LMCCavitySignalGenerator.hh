@@ -29,6 +29,9 @@
 #include <sstream>
 #include <string>
 #include "LMCException.hh"
+#include <stdlib.h>
+#include <time.h>
+
 
 
 
