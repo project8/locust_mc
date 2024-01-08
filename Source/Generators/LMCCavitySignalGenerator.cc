@@ -29,6 +29,7 @@ namespace locust
         gxml_filename("blank.xml"),
         fphiLO(0.),
         fNPreEventSamples( 150000 ),
+        fRandomPreEventSamples( false ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
@@ -250,19 +251,14 @@ namespace locust
         }
         if( aParam.has( "event-spacing-samples" ) )
         {
-            int tNPreEventSamples = aParam["event-spacing-samples"]().as_int();
-
-        	if (aParam.has( "random-spacing-samples" ))
-        	{
-        		if (aParam["random-spacing-samples"]().as_bool() == true)
-        		{
-    	            srand (time(NULL));
-    	            tNPreEventSamples = tNPreEventSamples/10 * (rand() % 10 + 1);
-		            LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
-        		}
-        	}
-
-            fNPreEventSamples = tNPreEventSamples;
+            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+            if (aParam.has( "random-spacing-samples" ))
+            {
+            if (aParam["random-spacing-samples"]().as_bool() == true)
+                {
+                    fRandomPreEventSamples = true;
+                }
+            }
         }
         if( aParam.has( "override-aliasing" ) )
         {
@@ -288,6 +284,16 @@ namespace locust
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
+
+        return true;
+    }
+
+    bool CavitySignalGenerator::RandomizeStartDelay()
+    {
+        srand (time(NULL));
+        int tNPreEventSamples = fNPreEventSamples/10 * ( rand() % 10 );
+        LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
+        fNPreEventSamples = tNPreEventSamples;
 
         return true;
     }
@@ -540,6 +546,7 @@ namespace locust
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
         ConfigureInterface();
+        if (fRandomPreEventSamples) RandomizeStartDelay();
 
         fPowerCombiner->SizeNChannels(fNChannels);
  	    if (fNChannels > 2)

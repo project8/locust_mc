@@ -89,7 +89,8 @@ namespace locust
         private:
             double fLO_Frequency;
             double fDeltaT;
-            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            int fNPreEventSamples;  // spacing between events.
+            bool fRandomPreEventSamples;
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             std::string gxml_filename;
             bool fKassNeverStarted;
@@ -111,6 +112,7 @@ namespace locust
             bool TryWakeAgain();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, unsigned index);
+            bool RandomizeStartDelay();
 
 
             bool DoGenerate( Signal* aSignal );
