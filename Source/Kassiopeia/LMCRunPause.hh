@@ -27,6 +27,7 @@
 #include "KSGenDirectionSphericalComposite.h"
 #include "KSGenTimeComposite.h"
 #include "LMCKassLocustInterface.hh"
+#include "KRandom.h"
 #include <stdlib.h>
 #include <time.h>
 
