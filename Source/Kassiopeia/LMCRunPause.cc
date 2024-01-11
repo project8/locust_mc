@@ -220,13 +220,21 @@ namespace locust
 
     bool RunPause::AddMaxRTerminator( const scarab::param_node& aParam )
     {
+    	/* Remove any existing KSTermMaxR objects */
+        auto tMaxR = fToolbox.GetAll<Kassiopeia::KSTermMaxR>();
+        for (unsigned i=0; i<tMaxR.size(); i++)
+        {
+        	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxR[i]);
+        	fToolbox.Remove(tMaxR[i]->GetName());
+        }
+
         if (!fToolbox.HasKey("ksmax-r-project8"))
         {
             fLocustMaxRTerminator = new Kassiopeia::KSTermMaxR();
             fLocustMaxRTerminator->SetName("ksmax-r-project8");
             fLocustMaxRTerminator->SetMaxR( aParam["cavity-radius"]().as_double() );
             fLocustMaxRTerminator->Initialize();
-            fLocustMaxRTerminator->Activate();
+            fToolbox.Add(fLocustMaxRTerminator);
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxRTerminator);
         }
         return true;
@@ -235,6 +243,15 @@ namespace locust
 
     bool RunPause::AddMaxTimeTerminator( const scarab::param_node& aParam )
     {
+
+    	/* Remove any existing KSTermMaxTime objects */
+        auto tMaxTime = fToolbox.GetAll<Kassiopeia::KSTermMaxTime>();
+        for (unsigned i=0; i<tMaxTime.size(); i++)
+        {
+        	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxTime[i]);
+        	fToolbox.Remove(tMaxTime[i]->GetName());
+        }
+
         if (!fToolbox.HasKey("ksmax-time-project8"))
         {
 
@@ -265,8 +282,6 @@ namespace locust
 
             fLocustMaxTimeTerminator->SetName("ksmax-time-project8");
             fLocustMaxTimeTerminator->Initialize();
-            fLocustMaxTimeTerminator->Activate();
-
             fToolbox.Add(fLocustMaxTimeTerminator);
 
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxTimeTerminator);
@@ -313,8 +328,6 @@ namespace locust
                 fKSSpace = GetKSWorldSpace();
                 fKSSpace->AddSurface(fSurface);
                 fSurface->AddCommand(fCommand);
-
-                KGeoBag::KGSpace* test = GetKGWorldSpace();
             }
             return true;
         }
@@ -388,15 +401,15 @@ namespace locust
     bool RunPause::DeleteLocalKassObjects()
     {
 
-        delete fLocustMaxTimeTerminator;
-        delete fLocustMaxRTerminator;
-        delete fBox;
-        delete fKGSpace;
-        delete fSurface;
-        delete fLocustTermDeath;
-        delete fCommand;
-        delete fKSSpace;
-        delete fGenerator;
+        fLocustMaxTimeTerminator = NULL;
+        fLocustMaxRTerminator = NULL;
+        fBox = NULL;
+        fKGSpace = NULL;
+        fSurface = NULL;
+        fLocustTermDeath = NULL;
+        fCommand = NULL;
+        fKSSpace = NULL;
+        fGenerator = NULL;
 
     	return true;
     }
@@ -406,10 +419,9 @@ namespace locust
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
 //        fInterface->fRunInProgress = true;
 
-        if ( !fToolbox.IsInitialized() )
-        {
-            DeleteLocalKassObjects();
-        }
+
+    	DeleteLocalKassObjects();
+
 
         return true;
     }
