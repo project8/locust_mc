@@ -274,7 +274,7 @@ namespace locust
                 if ( aParam["random-track-length"]().as_bool() == true)
                 {
                     srand (time(NULL));
-                    double tRandomTime = tMaxTrackLength/10. * ( rand() % 10 ); // 0 < t < tMaxTrackLength
+                    double tRandomTime = tMaxTrackLength/10. * ( 1 + rand() % 10 ); // 0.1*tMaxTrackLength < t < 1.1*tMaxTrackLength
                     fLocustMaxTimeTerminator->SetTime( tRandomTime );
                     LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
                 }
