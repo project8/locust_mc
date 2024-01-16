@@ -282,8 +282,9 @@ namespace locust
 
             fLocustMaxTimeTerminator->SetName("ksmax-time-project8");
             fLocustMaxTimeTerminator->Initialize();
-            fToolbox.Add(fLocustMaxTimeTerminator);
+            fLocustMaxTimeTerminator->Activate();
 
+            fToolbox.Add(fLocustMaxTimeTerminator);
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxTimeTerminator);
         }
         return true;
