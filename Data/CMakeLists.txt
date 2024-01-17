@@ -1,9 +1,7 @@
 # CMakeLists.txt for Locust_mc/Data
 
-set( LOCUST_MC_DATA_FILES
-    H2OscillatorStrength.txt
-    KrOscillatorStrength.txt
-    KrShakeParameters214.txt
-)
+add_subdirectory( TransferFunctions )
+add_subdirectory( Math )
+add_subdirectory( Physics )
+add_subdirectory( ModeMaps )
 
-pbuilder_install_data( ${LOCUST_MC_DATA_FILES} )

@@ -126,7 +126,11 @@ namespace locust
         }
         else // Cavity
         {
-        	fInterface->fField = new CylindricalCavity;
+            if( tParam.has( "rectangular-cavity" ) )
+            {
+            	if ( tParam["rectangular-cavity"]().as_bool() ) fInterface->fField = new RectangularCavity;
+            }
+            else fInterface->fField = new CylindricalCavity;
         	fPowerCombiner = new CavityModes;
         }
 
