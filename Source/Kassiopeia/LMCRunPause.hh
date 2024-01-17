@@ -9,15 +9,28 @@
 #define LOCUST_LMCRUNPAUSE_HH_
 
 #include "KSRunModifier.h"
-#include "KSComponentTemplate.h"
 #include "KToolbox.h"
 #include "KSTermMaxR.h"
-#include "KSSimulation.h"
-
-
-
-
+#include "KSTermMaxTime.h"
+#include "KSTermDeath.h"
+#include "KSRootTerminator.h"
+#include "KSGeoSpace.h"
+#include "KSGeoSurface.h"
+#include "KGBoxSpace.hh"
+#include "KGCore.hh"
+#include "KSRootGenerator.h"
+#include "KSGenGeneratorComposite.h"
+#include "KSGenValueUniform.h"
+#include "KSGenValueFix.h"
+#include "KSGenEnergyComposite.h"
+#include "KSGenPositionRectangularComposite.h"
+#include "KSGenDirectionSphericalComposite.h"
+#include "KSGenTimeComposite.h"
 #include "LMCKassLocustInterface.hh"
+#include "KRandom.h"
+#include <stdlib.h>
+#include <time.h>
+
 
 namespace locust
 {
@@ -39,6 +52,15 @@ namespace locust
 
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
+            Kassiopeia::KSGeoSpace* GetKSWorldSpace();
+            KGeoBag::KGSpace* GetKGWorldSpace();
+            bool DeleteLocalKassObjects();
+            bool AddWaveguideTerminator( const scarab::param_node& aParam );
+            bool AddMaxTimeTerminator( const scarab::param_node& aParam );
+            bool AddMaxRTerminator( const scarab::param_node& aParam );
+            bool AddGenerator( const scarab::param_node& aParam );
+
+
 
 
         protected:
@@ -46,6 +68,15 @@ namespace locust
 
         private:
             katrin::KToolbox& fToolbox;
+            Kassiopeia::KSTermMaxTime* fLocustMaxTimeTerminator;
+            Kassiopeia::KSTermMaxR* fLocustMaxRTerminator;
+            KGeoBag::KGBoxSpace* fBox;
+            KGeoBag::KGSpace* fKGSpace;
+            Kassiopeia::KSGeoSurface* fSurface;
+            Kassiopeia::KSTermDeath* fLocustTermDeath;
+            Kassiopeia::KSCommand* fCommand;
+            Kassiopeia::KSGeoSpace* fKSSpace;
+            Kassiopeia::KSGenGeneratorComposite* fGenerator;
 
 
 
