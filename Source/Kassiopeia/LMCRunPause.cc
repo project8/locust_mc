@@ -264,7 +264,7 @@ namespace locust
         auto tMaxTime = fToolbox.GetAll<Kassiopeia::KSTermMaxTime>();
         for (unsigned i=0; i<tMaxTime.size(); i++)
         {
-        	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxTime[i]);
+//        	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxTime[i]);
         	fToolbox.Remove(tMaxTime[i]->GetName());
         }
 
