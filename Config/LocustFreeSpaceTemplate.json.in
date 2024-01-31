@@ -23,7 +23,7 @@
     {
         "transmitter": "kassiopeia",
         "voltage-check": false,
-	"event-spacing-samples": 15000,
+        "event-spacing-samples": 15000,
         "lo-frequency": 25.8781e9,
         "array-radius": 0.05,
         "nelements-per-strip": 6,

@@ -17,6 +17,7 @@
         "dho-time-resolution": 1.0e-9,
         "dho-threshold-factor": 0.01,
         "event-spacing-samples": 10,
+        "track-length": 0.5e-4,
         "rectangular-waveguide": false,        
         "voltage-check": "false",
         "lo-frequency": 1.065e9,
