@@ -58,7 +58,7 @@ namespace locust
     	else
     	{
             LPROG(lmclog,"RunPause class did not need to be configured.");
-            return false;
+            return true;
     	}
         return true;
     }
@@ -241,6 +241,22 @@ namespace locust
     }
 
 
+    int RunPause::GetSeed( const scarab::param_node& aParam )
+    {
+        int tSeed = 0;
+        if ( aParam.has( "random-track-seed" ) )
+        {
+            tSeed = aParam["random-track-seed"]().as_int();
+        }
+        else
+        {
+            tSeed = time(NULL);
+        }
+        LPROG(lmclog,"Setting random seed for track length to " << tSeed);
+        return tSeed;
+    }
+
+
     bool RunPause::AddMaxTimeTerminator( const scarab::param_node& aParam )
     {
 
@@ -273,7 +289,7 @@ namespace locust
     	    {
                 if ( aParam["random-track-length"]().as_bool() == true)
                 {
-                    srand (time(NULL));
+                    srand ( GetSeed( aParam ));
                     double tRandomTime = tMaxTrackLength/10. * ( 1 + rand() % 10 ); // 0.1*tMaxTrackLength < t < 1.1*tMaxTrackLength
                     fLocustMaxTimeTerminator->SetTime( tRandomTime );
                     LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
@@ -283,7 +299,6 @@ namespace locust
             fLocustMaxTimeTerminator->SetName("ksmax-time-project8");
             fLocustMaxTimeTerminator->Initialize();
             fLocustMaxTimeTerminator->Activate();
-
             fToolbox.Add(fLocustMaxTimeTerminator);
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxTimeTerminator);
         }

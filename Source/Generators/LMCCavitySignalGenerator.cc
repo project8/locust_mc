@@ -30,6 +30,7 @@ namespace locust
         fphiLO(0.),
         fNPreEventSamples( 150000 ),
         fRandomPreEventSamples( false ),
+		fTrackDelaySeed( 0 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
@@ -254,10 +255,18 @@ namespace locust
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
             if (aParam.has( "random-spacing-samples" ))
             {
-            if (aParam["random-spacing-samples"]().as_bool() == true)
+                if (aParam["random-spacing-samples"]().as_bool() == true)
                 {
                     fRandomPreEventSamples = true;
                 }
+        	    if ( aParam.has( "random-track-seed" ) )
+        	    {
+        	        SetSeed( aParam["random-track-seed"]().as_int() );
+        	    }
+        	    else
+        	    {
+        	    	SetSeed (time(NULL) );
+        	    }
             }
         }
         if( aParam.has( "override-aliasing" ) )
@@ -288,9 +297,17 @@ namespace locust
         return true;
     }
 
+    bool CavitySignalGenerator::SetSeed(int aSeed)
+    {
+        LPROG(lmclog,"Setting random seed for track delay to " << aSeed);
+        fTrackDelaySeed = aSeed;
+        return true;
+    }
+
+
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
-        srand (time(NULL));
+        srand ( fTrackDelaySeed );
         int tNPreEventSamples = fNPreEventSamples/10 * ( rand() % 10 );
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;

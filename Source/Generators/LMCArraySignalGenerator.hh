@@ -92,6 +92,7 @@ namespace locust
 
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
+            bool TryWakeAgain();
             bool ReceivedKassReady();
 
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
