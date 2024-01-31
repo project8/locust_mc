@@ -58,7 +58,7 @@ namespace locust
     	else
     	{
             LPROG(lmclog,"RunPause class did not need to be configured.");
-            return false;
+            return true;
     	}
         return true;
     }
@@ -264,7 +264,7 @@ namespace locust
         auto tMaxTime = fToolbox.GetAll<Kassiopeia::KSTermMaxTime>();
         for (unsigned i=0; i<tMaxTime.size(); i++)
         {
-//        	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxTime[i]);
+        	fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxTime[i]);
         	fToolbox.Remove(tMaxTime[i]->GetName());
         }
 
@@ -298,6 +298,7 @@ namespace locust
 
             fLocustMaxTimeTerminator->SetName("ksmax-time-project8");
             fLocustMaxTimeTerminator->Initialize();
+            fLocustMaxTimeTerminator->Activate();
             fToolbox.Add(fLocustMaxTimeTerminator);
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxTimeTerminator);
         }
