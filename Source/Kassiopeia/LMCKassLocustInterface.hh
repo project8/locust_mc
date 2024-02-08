@@ -67,6 +67,7 @@ namespace locust
         bool fbWaveguide;
         unsigned fSampleIndex;
         int fTriggerConfirm;
+        int fFastRecordLength;
 
 
     };
