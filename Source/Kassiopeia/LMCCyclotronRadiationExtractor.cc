@@ -196,7 +196,7 @@ namespace locust
                 	if ( tTriggerConfirm > fInterface->fTriggerConfirm - 3)
                 	{
                  	    LERROR(lmclog,"Locust digitizer sample index has not advanced properly.  "
-                 	    		"Either increase the value of \"trigger-confirm\" [10000] and resubmit "
+                 	    		"Either increase the value of \"trigger-confirm\" [100000] and resubmit "
                  	    		"the jobs, or check HPC status.");
 
                  	    exit(-1);  // This works, but is not really preferable.
