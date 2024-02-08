@@ -53,6 +53,7 @@ namespace locust
     }
 
 
+
     locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( Kassiopeia::KSParticle &anInitialParticle, Kassiopeia::KSParticle &aFinalParticle)
     {
         LMCThreeVector tPosition(aFinalParticle.GetPosition().Components());
@@ -192,7 +193,19 @@ namespace locust
                 {
                 	// If the Locust sample index has not advanced yet, keep checking it.
                 	tTriggerConfirm += 1;
+                	if ( tTriggerConfirm > fInterface->fTriggerConfirm - 3)
+                	{
+                 	    LERROR(lmclog,"Locust digitizer sample index has not advanced properly.  "
+                 	    		"Either increase the value of \"trigger-confirm\" [10000] and resubmit "
+                 	    		"the jobs, or check HPC status.");
+
+                 	    exit(-1);  // This works, but is not really preferable.
+//                    	throw 3; // This is the preferred approach, but is not being caught by LocustSim.cc,
+                 	             // and is causing an "unhandled exception" error.
+
+                	}
                 }
+
 
             }
         } // DoneWithSignalGeneration
