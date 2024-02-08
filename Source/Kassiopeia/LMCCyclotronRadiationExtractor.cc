@@ -193,11 +193,13 @@ namespace locust
                 {
                 	// If the Locust sample index has not advanced yet, keep checking it.
                 	tTriggerConfirm += 1;
-                	if ( tTriggerConfirm > fInterface->fTriggerConfirm - 3)
+                	if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength ) )
                 	{
                  	    LERROR(lmclog,"Locust digitizer sample index has not advanced properly.  "
                  	    		"Either increase the value of \"trigger-confirm\" [100000] and resubmit "
                  	    		"the jobs, or check HPC status.");
+                 	    LERROR(lmclog, "tTriggerConfirm, fSampleIndex are " << tTriggerConfirm << " and " << fSampleIndex);
+
 
                  	    exit(-1);  // This works, but is not really preferable.
 //                    	throw 3; // This is the preferred approach, but is not being caught by LocustSim.cc,
