@@ -38,7 +38,8 @@ namespace locust
             fBackReaction( true ),
             fbWaveguide( false ),
             fSampleIndex( 0 ),
-            fTriggerConfirm( 100000 )
+            fTriggerConfirm( 100000 ),
+            fFastRecordLength( 0 )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :

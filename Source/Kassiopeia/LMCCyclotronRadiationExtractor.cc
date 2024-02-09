@@ -1,5 +1,7 @@
 #include "LMCCyclotronRadiationExtractor.hh"
 #include "KSModifiersMessage.h"
+#include <chrono>
+#include <thread>
 
 
 namespace locust
@@ -51,6 +53,7 @@ namespace locust
     {
         fInterface->fProject8Phase = P8Phase;
     }
+
 
 
     locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( Kassiopeia::KSParticle &anInitialParticle, Kassiopeia::KSParticle &aFinalParticle)
@@ -188,11 +191,39 @@ namespace locust
                 fInterface->fDigitizerCondition.notify_one();  // notify Locust after writing.
 
                 int tTriggerConfirm = 0;
-                while ((fSampleIndex == fInterface->fSampleIndex) && (tTriggerConfirm < fInterface->fTriggerConfirm))
+
+                while ( !(fSampleIndex < fInterface->fSampleIndex) && (tTriggerConfirm < fInterface->fTriggerConfirm) )
                 {
-                	// If the Locust sample index has not advanced yet, keep checking it.
-                	tTriggerConfirm += 1;
+                    // If the Locust sample index has not advanced yet, keep checking it.
+                    tTriggerConfirm += 1;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    if ( tTriggerConfirm % 1000 == 0 )
+                    {
+                    	LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm );
+                    }
+
+                    if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength ) )
+                    {
+                        LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm);
+                        LPROG(lmclog,"Checking the digitizer synchronization, at fast sample = " << fSampleIndex);
+                        LPROG(lmclog,"Checking the digitizer synchronization, at Locust fast sample = " << fInterface->fSampleIndex);
+                        LPROG(lmclog,"Fast record length = " << fInterface->fFastRecordLength);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+                        if ( !(fSampleIndex < fInterface->fSampleIndex) )
+                        {
+                            LPROG(lmclog,"Checking the digitizer synchronization again.  ");
+                            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+                            if ( !(fSampleIndex < fInterface->fSampleIndex) )
+                            {
+                                LERROR(lmclog,"Locust digitizer sample index has not advanced properly.  "
+                         	    		"Please either resubmit the job, or check HPC status.");
+                                LERROR(lmclog, "tTriggerConfirm, fSampleIndex are " << tTriggerConfirm << " and " << fSampleIndex);
+                                exit(-1);  // TO-DO:  throw this exception to be caught properly by scarab, as in LocustSim.cc .
+                            }
+                        }
+                    }
                 }
+
 
             }
         } // DoneWithSignalGeneration

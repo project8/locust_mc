@@ -50,7 +50,7 @@ namespace locust
     }
 
 
-    bool CavitySignalGenerator::ConfigureInterface()
+    bool CavitySignalGenerator::ConfigureInterface( Signal* aSignal )
     {
 
     	if ( fInterface == nullptr ) fInterface.reset( new KassLocustInterface() );
@@ -212,6 +212,7 @@ namespace locust
         {
         	fInterface->fTriggerConfirm = tParam["trigger-confirm"]().as_int();
         }
+        fInterface->fFastRecordLength = fRecordLength * aSignal->DecimationFactor();
 
         // Configure Locust-Kass interface classes and parameters:
         fFieldCalculator = new FieldCalculator();
@@ -562,7 +563,8 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-        ConfigureInterface();
+        ConfigureInterface( aSignal );
+
         if (fRandomPreEventSamples) RandomizeStartDelay();
 
         fPowerCombiner->SizeNChannels(fNChannels);
