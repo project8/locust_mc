@@ -199,17 +199,16 @@ namespace locust
                     {
                         LPROG(lmclog,"Checking the digitizer synchronization, at fast sample  " << fSampleIndex);
                         std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-                        if ( (fSampleIndex > fInterface->fSampleIndex) )
+                        if ( !(fSampleIndex < fInterface->fSampleIndex) )
                         {
                             LPROG(lmclog,"Checking the digitizer synchronization again.  ");
                             std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-                            if ( (fSampleIndex > fInterface->fSampleIndex) )
+                            if ( !(fSampleIndex < fInterface->fSampleIndex) )
                             {
                                 LERROR(lmclog,"Locust digitizer sample index has not advanced properly.  "
-                         	    		"Either increase the value of \"trigger-confirm\" [100000] and resubmit "
-                         	    		"the jobs, or check HPC status.");
+                         	    		"Please either resubmit the job, or check HPC status.");
                                 LERROR(lmclog, "tTriggerConfirm, fSampleIndex are " << tTriggerConfirm << " and " << fSampleIndex);
-                                exit(-1);  // To-do:  throw this exception to scarab.
+                                exit(-1);  // TO-DO:  throw this exception to be caught properly by scarab, as in LocustSim.cc .
                             }
                         }
                     }
