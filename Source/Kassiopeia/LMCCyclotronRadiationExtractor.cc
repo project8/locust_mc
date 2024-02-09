@@ -195,11 +195,11 @@ namespace locust
                 {
                 	// If the Locust sample index has not advanced yet, keep checking it.
                     tTriggerConfirm += 1;
-                    LPROG(lmclog,"tTriggerConfirm index = " << tTriggerConfirm);
                     if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength ) )
                     {
                         LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm);
                         LPROG(lmclog,"Checking the digitizer synchronization, at fast sample = " << fSampleIndex);
+                        LPROG(lmclog,"Fast record length = " << fInterface->fFastRecordLength);
                         std::this_thread::sleep_for(std::chrono::milliseconds(10000));
                         if ( !(fSampleIndex < fInterface->fSampleIndex) )
                         {
