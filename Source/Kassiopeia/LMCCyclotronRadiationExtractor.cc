@@ -191,7 +191,7 @@ namespace locust
                 fInterface->fDigitizerCondition.notify_one();  // notify Locust after writing.
 
                 int tTriggerConfirm = 0;
-                while ((fSampleIndex == fInterface->fSampleIndex) && (tTriggerConfirm < fInterface->fTriggerConfirm))
+                while ( !(fSampleIndex < fInterface->fSampleIndex) && (tTriggerConfirm < fInterface->fTriggerConfirm) )
                 {
                 	// If the Locust sample index has not advanced yet, keep checking it.
                     tTriggerConfirm += 1;
