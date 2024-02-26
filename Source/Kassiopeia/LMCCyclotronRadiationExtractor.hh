@@ -10,6 +10,12 @@
 #include "LMCParticle.hh"
 #include "LMCException.hh"
 
+#ifdef ROOT_FOUND
+    #include "LMCRootTreeWriter.hh"
+    #include "LMCEvent.hh"
+#endif
+
+
 
 #include <deque>
 
@@ -42,6 +48,7 @@ namespace locust
 
             void SetTrajectory( Kassiopeia::KSTrajectory* aTrajectory );
             void SetP8Phase( int P8Phase );
+            bool UpdateTrackTime( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart );
 
 
         private:

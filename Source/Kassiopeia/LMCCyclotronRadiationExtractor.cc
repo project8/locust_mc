@@ -54,6 +54,25 @@ namespace locust
         fInterface->fProject8Phase = P8Phase;
     }
 
+    bool CyclotronRadiationExtractor::UpdateTrackTime( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
+    {
+    	double tTime = index;
+#ifdef ROOT_FOUND
+    	if (bStart)
+    	{
+            fInterface->aTrack.StartTime = tTime;
+            fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
+    	}
+    	else
+    	{
+            fInterface->aTrack.EndTime = tTime;
+    	}
+#endif
+
+        return true;
+    }
+
+
 
 
     locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( Kassiopeia::KSParticle &anInitialParticle, Kassiopeia::KSParticle &aFinalParticle)
@@ -83,6 +102,7 @@ namespace locust
             if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
             {
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
+                fInterface->aTrack.PitchAngle = aFinalParticle.GetPolarAngleToB();
             }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
@@ -143,6 +163,7 @@ namespace locust
             	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
+                UpdateTrackTime( aFinalParticle, fInterface->fSampleIndex, 1 );
             }
 
             double t_poststep = aFinalParticle.GetTime();
@@ -152,6 +173,7 @@ namespace locust
             {
 
                 fSampleIndex = fInterface->fSampleIndex; // record Locust sample index before locking
+                UpdateTrackTime( aFinalParticle, fSampleIndex, 0 );  // Keep recording the track candidate end time.
 
                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();
