@@ -50,7 +50,7 @@ namespace locust
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename("LocustEventProperties.root");
-        aRootTreeWriter->OpenFile("UPDATE");
+        aRootTreeWriter->OpenFile("RECREATE");
         fInterface->anEvent->AddTrack( fInterface->aTrack );
         aRootTreeWriter->WriteEvent( fInterface->anEvent );
         aRootTreeWriter->CloseFile();

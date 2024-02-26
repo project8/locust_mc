@@ -48,7 +48,11 @@ namespace locust
 
             void SetTrajectory( Kassiopeia::KSTrajectory* aTrajectory );
             void SetP8Phase( int P8Phase );
-            bool UpdateTrackTime( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart );
+            bool UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart );
+            double calcOrbitPhase(double tX, double tY);
+            double quadrantOrbitCorrection(double phase, double vx);
+
+
 
 
         private:
