@@ -34,9 +34,34 @@ namespace locust
     }
 
 
+    bool EventHold::OpenEvent()
+    {
+#ifdef ROOT_FOUND
+        fInterface->anEvent = new Event();
+        fInterface->anEvent->fNTracks = 0;
+#endif
+
+        return true;
+    }
+
+
+    bool EventHold::WriteEvent()
+    {
+#ifdef ROOT_FOUND
+        FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
+        aRootTreeWriter->SetFilename("LocustEventProperties.root");
+        aRootTreeWriter->OpenFile("UPDATE");
+        fInterface->anEvent->AddTrack( fInterface->aTrack );
+        aRootTreeWriter->WriteEvent( fInterface->anEvent );
+        aRootTreeWriter->CloseFile();
+#endif
+        return true;
+    }
+
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
 
+        OpenEvent();
         LPROG( lmclog, "Kass is waiting for event trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
@@ -62,6 +87,7 @@ namespace locust
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
+        WriteEvent();
         fInterface->fEventInProgress = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
