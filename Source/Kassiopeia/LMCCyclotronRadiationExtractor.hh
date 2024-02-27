@@ -12,7 +12,6 @@
 
 #ifdef ROOT_FOUND
     #include "LMCRootTreeWriter.hh"
-    #include "LMCEvent.hh"
 #endif
 
 

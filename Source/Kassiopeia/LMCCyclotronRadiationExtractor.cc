@@ -56,7 +56,7 @@ namespace locust
 
     bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
     {
-    	double tTime = index;
+    	double tTime = index / fInterface->aRunParameter->fSamplingRateMHz / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
 #ifdef ROOT_FOUND
     	if (bStart)
     	{
