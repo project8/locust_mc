@@ -73,6 +73,7 @@ namespace locust
 
             bool Configure( const scarab::param_node& aNode );
             bool ConfigureInterface(Signal* aSignal);
+            bool RecordRunParameters(Signal* aSignal);
             bool CrossCheckCavityConfig();
             bool CrossCheckAliasing(Signal* aSignal, double dopplerFrequency );
 

@@ -300,6 +300,18 @@ namespace locust
         return true;
     }
 
+    bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
+    {
+    	fInterface->aRunParameter = new RunParameters();
+    	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
+    	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
+    	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
+
+    	return true;
+    }
+
+
+
     bool CavitySignalGenerator::SetSeed(int aSeed)
     {
         LPROG(lmclog,"Setting random seed for track delay to " << aSeed);
@@ -566,6 +578,7 @@ namespace locust
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
         ConfigureInterface( aSignal );
+        RecordRunParameters( aSignal );
 
         if (fRandomPreEventSamples) RandomizeStartDelay();
 
