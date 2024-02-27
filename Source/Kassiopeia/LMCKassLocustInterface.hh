@@ -21,7 +21,7 @@
 #include <mutex>
 
 #ifdef ROOT_FOUND
-    #include "LMCEvent.hh"
+    #include "LMCRootTreeWriter.hh"
 #endif
 
 namespace locust
@@ -75,6 +75,7 @@ namespace locust
 #ifdef ROOT_FOUND
         Event* anEvent;
         Track aTrack;
+        RunParameters* aRunParameter;
 #endif
 
 
