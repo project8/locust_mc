@@ -28,6 +28,8 @@ namespace locust
 
             double fNoise;
             double fLOfrequency;
+            double fSamplingRateMHz;
+            double fDecimationFactor;
 
             ClassDef(RunParameters,1)  // Root syntax.
 
