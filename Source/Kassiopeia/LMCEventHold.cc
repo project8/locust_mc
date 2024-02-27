@@ -38,7 +38,9 @@ namespace locust
     {
 #ifdef ROOT_FOUND
         fInterface->anEvent = new Event();
-        fInterface->anEvent->fNTracks = 0;
+        fInterface->anEvent->fEventID = 0;
+        fInterface->anEvent->fRandomSeed = -99;
+        fInterface->anEvent->fLOFrequency = -99.;
 #endif
 
         return true;
@@ -53,6 +55,7 @@ namespace locust
         aRootTreeWriter->OpenFile("RECREATE");
         fInterface->anEvent->AddTrack( fInterface->aTrack );
         aRootTreeWriter->WriteEvent( fInterface->anEvent );
+        aRootTreeWriter->WriteRunParameters(fInterface->aRunParameter);
         aRootTreeWriter->CloseFile();
 #endif
         return true;
