@@ -49,9 +49,11 @@ namespace locust
 
     bool EventHold::WriteEvent()
     {
+        std::string tOutputPath = TOSTRING(PB_OUTPUT_DIR);
+        std::string sFileName = tOutputPath+"/LocustEventProperties.root";
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
-        aRootTreeWriter->SetFilename("LocustEventProperties.root");
+        aRootTreeWriter->SetFilename(sFileName);
         aRootTreeWriter->OpenFile("RECREATE");
         fInterface->anEvent->AddTrack( fInterface->aTrack );
         aRootTreeWriter->WriteEvent( fInterface->anEvent );
