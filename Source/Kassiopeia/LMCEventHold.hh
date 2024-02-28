@@ -34,6 +34,7 @@ namespace locust
             EventHold* Clone() const;
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
+            std::string fTruthOutputFilename;
 
 
         public:

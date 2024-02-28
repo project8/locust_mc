@@ -15,11 +15,13 @@ namespace locust
 	LOGGER( lmclog, "EventHold" );
 
     EventHold::EventHold() :
+            fTruthOutputFilename("LocustEventProperties.root"),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
     EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
+            fTruthOutputFilename("LocustEventProperties.root"),
             fInterface( aOrig.fInterface )
     {
     }
@@ -60,6 +62,10 @@ namespace locust
 	    {
 	    	fInterface->anEvent->fRandomSeed = aParam["random-track-seed"]().as_int();
 	    }
+	    if ( aParam.has( "truth-output-filename" ) )
+	    {
+	    	fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
+	    }
 
 
     	return true;
@@ -84,7 +90,7 @@ namespace locust
     bool EventHold::WriteEvent()
     {
         std::string tOutputPath = TOSTRING(PB_OUTPUT_DIR);
-        std::string sFileName = tOutputPath+"/LocustEventProperties.root";
+        std::string sFileName = tOutputPath+"/"+fTruthOutputFilename;
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename(sFileName);
