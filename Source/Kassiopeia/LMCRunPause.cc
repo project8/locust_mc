@@ -272,7 +272,14 @@ namespace locust
         {
 
             double tMaxTrackLength = 0.;
+            double tMinTrackLengthFraction = 0.1;
             fLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
+
+    	    if ( aParam.has( "min-track-length-fraction" ) )
+    	    {
+    	    	tMinTrackLengthFraction = aParam["min-track-length-fraction"]().as_double();
+                LPROG(lmclog,"Setting minimum track length fraction to " << tMinTrackLengthFraction);
+    	    }
 
     	    if ( aParam.has( "track-length" ) )
     	    {
@@ -290,7 +297,8 @@ namespace locust
                 if ( aParam["random-track-length"]().as_bool() == true)
                 {
                     srand ( GetSeed( aParam ));
-                    double tRandomTime = tMaxTrackLength/10. * ( 1 + rand() % 10 ); // 0.1*tMaxTrackLength < t < 1.1*tMaxTrackLength
+                    double tMinTrackLength = tMaxTrackLength * tMinTrackLengthFraction;
+                    double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * (rand() % 10) / 9.;
                     fLocustMaxTimeTerminator->SetTime( tRandomTime );
                     LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
                 }
