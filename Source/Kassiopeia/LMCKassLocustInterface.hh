@@ -20,6 +20,9 @@
 #include <memory>
 #include <mutex>
 
+#ifdef ROOT_FOUND
+    #include "LMCRootTreeWriter.hh"
+#endif
 
 namespace locust
 {
@@ -69,6 +72,14 @@ namespace locust
         int fTriggerConfirm;
         int fFastRecordLength;
 
+#ifdef ROOT_FOUND
+        Event* anEvent;
+        Track aTrack;
+        RunParameters* aRunParameter;
+#endif
+
+
+
 
     };
 
@@ -91,6 +102,7 @@ namespace locust
             ~KLInterfaceBootstrapper();
 
             kl_interface_ptr_t fInterface;
+
     };
 
 } /* namespace locust */

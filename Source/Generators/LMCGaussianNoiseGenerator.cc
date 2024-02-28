@@ -26,9 +26,7 @@ namespace locust
         fMean( 0. ),
         fSigma( 1. ),
         fRandomSeed( 0 ),
-        fNormDist( fMean, fSigma ),
-		fWriteRootTree( false ),
-        fRootFilename( "LocustNoise.root")
+        fNormDist( fMean, fSigma )
     {
         fRequiredSignalState = Signal::kFreq;
     }
@@ -58,19 +56,6 @@ namespace locust
             LERROR( lmclog, "LMCGaussianNoiseGenerator has been configured without a noise background.");
             exit(-1);
             return false;
-        }
-
-        if (aParam.has( "write-root-tree" ))
-        {
-            if (aParam["write-root-tree"]().as_bool())
-            {
-            	fWriteRootTree = true;
-            }
-        }
-
-    	if( aParam.has( "root-filename" ) )
-        {
-            fRootFilename = aParam["root-filename"]().as_string();
         }
 
 
@@ -173,24 +158,6 @@ namespace locust
         return;
     }
 
-
-    bool GaussianNoiseGenerator::WriteRootTree()
-    {
-		#ifdef ROOT_FOUND
-    	FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
-    	aRootTreeWriter->SetFilename(fRootFilename);
-    	aRootTreeWriter->OpenFile("UPDATE");
-        RunParameters* aRunParameter = new RunParameters();
-        aRunParameter->fNoise = fSigma*fSigma;
-        aRootTreeWriter->WriteRunParameters(aRunParameter, "Noise");
-        aRootTreeWriter->CloseFile();
-        delete aRunParameter;
-		#endif
-
-        return true;
-    }
-
-
     bool GaussianNoiseGenerator::DoGenerate( Signal* aSignal )
     {
         return (this->*fDoGenerateFunc)( aSignal );
@@ -212,7 +179,6 @@ namespace locust
         std::default_random_engine generator(random_seed_val);
 
     	SetMeanAndSigma( fMean, fSigma, fSigma * sqrt(fAcquisitionRate * 1.e6) );
-    	if (fWriteRootTree) WriteRootTree();
 
         double gain=1.;
         const unsigned nchannels = fNChannels;

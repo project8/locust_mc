@@ -43,7 +43,7 @@ namespace locust
         virtual double GetTestVar() {return 0.;};
         virtual void SetTestVar(double aValue) {};
         virtual void WriteEvent(Event* anEvent) {};
-        virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName ) {};
+        virtual void WriteRunParameters( RunParameters* aRunParameter) {};
         virtual void Write1DHisto(TH1D* aHisto) {};
         virtual void Write2DHisto(TH2D* aHisto) {};
         virtual void WriteVector1DHisto(std::vector<double> aVector, double xmin, double xmax) {};

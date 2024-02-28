@@ -35,22 +35,16 @@ namespace locust
     	return true;
     }
 
-    void RootTreeWriter::WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName )
+    void RootTreeWriter::WriteRunParameters( RunParameters* aRunParameter)
     {
         TTree *aTree = new TTree("Run Parameters","Locust Tree");
-
-        if (aParameterName=="Noise")
-        	{
-        	aTree->Branch("Noise", &aRunParameter->fNoise, "Noise/D");
-        	}
-        if (aParameterName=="LOfrequency")
-        	{
-        	aTree->Branch("LO frequency", &aRunParameter->fLOfrequency, "LOfrequency/D");
-        	}
-
+        aTree->Branch("LOFrequency", &aRunParameter->fLOfrequency, "LOfrequency/D");
+        aTree->Branch("SamplingFrequencyMHz", &aRunParameter->fSamplingRateMHz, "SamplingFrequency/D");
+        aTree->Branch("DecimationRate", &aRunParameter->fDecimationFactor, "DecimationFactor/D");
         aTree->Fill();
         aTree->Write();
         delete aTree;
+
     }
 
     void RootTreeWriter::WriteEvent(Event* anEvent)

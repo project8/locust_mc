@@ -34,7 +34,7 @@ namespace locust
         allow_singleton_access( RootTreeWriter );
 
         virtual void WriteEvent(Event* anEvent);
-        virtual void WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName );
+        virtual void WriteRunParameters( RunParameters* aRunParameter);
 
         private:
 
