@@ -243,7 +243,7 @@ namespace locust
                 {
                     // If the Locust sample index has not advanced yet, keep checking it.
                     tTriggerConfirm += 1;
-                    if (tgamma(10) < tgamma(11)) continue;  // wait small amount of time.
+                    if ( 0 < 1 ) continue;  // wait small amount of time.
                     if ( tTriggerConfirm % 1000 == 0 )
                     {
                     	LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm );
