@@ -32,6 +32,9 @@ namespace locust
             virtual ~EventHold();
 
             EventHold* Clone() const;
+            bool ConfigureByInterface();
+            bool Configure( const scarab::param_node& aParam );
+
 
         public:
 

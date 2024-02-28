@@ -33,6 +33,39 @@ namespace locust
         return new EventHold( *this );
     }
 
+    bool EventHold::ConfigureByInterface()
+    {
+        OpenEvent();
+
+    	if (fInterface->fConfigureKass)
+    	{
+    	    const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+    	    if (!this->Configure( *aParam ))
+    	    {
+                LERROR(lmclog,"Error configuring EventHold class");
+                return false;
+    	    }
+    	}
+    	else
+    	{
+            LPROG(lmclog,"EventHold class did not need to be configured.");
+            return true;
+    	}
+        return true;
+    }
+
+    bool EventHold::Configure( const scarab::param_node& aParam )
+    {
+	    if ( aParam.has( "random-track-seed" ) )
+	    {
+	    	fInterface->anEvent->fRandomSeed = aParam["random-track-seed"]().as_int();
+	    }
+
+
+    	return true;
+    }
+
+
 
     bool EventHold::OpenEvent()
     {
@@ -41,6 +74,7 @@ namespace locust
         fInterface->anEvent->fEventID = 0;
         fInterface->anEvent->fRandomSeed = -99;
         fInterface->anEvent->fLOFrequency = -99.;
+        fInterface->anEvent->fRandomSeed = -99;
 #endif
 
         return true;
@@ -65,8 +99,11 @@ namespace locust
 
     bool EventHold::ExecutePreEventModification(Kassiopeia::KSEvent &anEvent)
     {
+    	if ( !ConfigureByInterface() )
+    	{
+    	    return false;
+    	}
 
-        OpenEvent();
         LPROG( lmclog, "Kass is waiting for event trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
