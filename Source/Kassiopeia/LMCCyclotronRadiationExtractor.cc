@@ -243,7 +243,7 @@ namespace locust
                 {
                     // If the Locust sample index has not advanced yet, keep checking it.
                     tTriggerConfirm += 1;
-                    if ( 0 < 1 ) continue;  // wait small amount of time.
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     if ( tTriggerConfirm % 1000 == 0 )
                     {
                     	LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm );
