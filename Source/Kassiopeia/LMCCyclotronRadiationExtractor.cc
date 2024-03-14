@@ -66,6 +66,7 @@ namespace locust
             double tY = aFinalParticle.GetPosition().Y();
             fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack.RadialPhase = calcOrbitPhase(tX, tY);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     	}
     	else
     	{
@@ -183,13 +184,15 @@ namespace locust
 
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
-            if (fInterface->fTOld == 0.)
+            if (!(fInterface->fTOld > 0.))
             {
             	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
+            	LPROG(lmclog,"Updated track properties at sample " << fInterface->fSampleIndex );
             }
+
 
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
