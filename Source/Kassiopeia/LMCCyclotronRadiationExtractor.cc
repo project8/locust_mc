@@ -71,6 +71,7 @@ namespace locust
     	else
     	{
             fInterface->aTrack.EndTime = tTime;
+            fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
     	}
 #endif
 

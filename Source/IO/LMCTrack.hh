@@ -33,6 +33,7 @@ namespace locust
             double EndTime = -99.;
             double TrackLength = -99.;
             double StartFrequency = -99.;
+            double EndFrequency = -99.;
             double LOFrequency = -99.;
             double TrackPower = -99.;
             double Slope = -99.;

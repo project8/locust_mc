@@ -23,6 +23,7 @@ namespace locust
     void Event::AddTrack(const Track aTrack)
     {
         fStartFrequencies.push_back( aTrack.StartFrequency );
+        fEndFrequencies.push_back( aTrack.EndFrequency );
         fTrackPowers.push_back( aTrack.TrackPower );
         fStartTimes.push_back( aTrack.StartTime );
         fTrackLengths.push_back( aTrack.TrackLength );
