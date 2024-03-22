@@ -57,6 +57,7 @@ namespace locust
         aTree->Branch("EventID", &anEvent->fEventID, "EventID/I");
         aTree->Branch("ntracks", &anEvent->fNTracks, "ntracks/I");
         aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
+        aTree->Branch("EndFrequencies", "std::vector<double>", &anEvent->fEndFrequencies);
         aTree->Branch("StartTimes", "std::vector<double>", &anEvent->fStartTimes);
         aTree->Branch("EndTimes", "std::vector<double>", &anEvent->fEndTimes);
         aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->fTrackLengths);
