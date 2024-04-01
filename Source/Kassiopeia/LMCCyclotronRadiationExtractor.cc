@@ -60,6 +60,7 @@ namespace locust
 #ifdef ROOT_FOUND
     	if (bStart)
     	{
+            fStartingIndex = index;
             fInterface->aTrack.StartTime = tTime;
             fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
             double tX = aFinalParticle.GetPosition().X();
@@ -72,6 +73,10 @@ namespace locust
     	{
             fInterface->aTrack.EndTime = tTime;
             fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
+            unsigned nElapsedSamples = index - fStartingIndex;
+            fInterface->aTrack.AvgFrequency = ( fInterface->aTrack.AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
+            fInterface->aTrack.TrackLength = tTime - fInterface->aTrack.StartTime;
+            fInterface->aTrack.Slope = (fInterface->aTrack.EndFrequency - fInterface->aTrack.StartFrequency) / (fInterface->aTrack.TrackLength);
     	}
 #endif
 

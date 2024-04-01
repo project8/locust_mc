@@ -35,6 +35,7 @@ namespace locust
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
             std::string fTruthOutputFilename;
+            bool fAccumulateTruthInfo;
 
 
         public:

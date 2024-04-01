@@ -16,12 +16,14 @@ namespace locust
 
     EventHold::EventHold() :
             fTruthOutputFilename("LocustEventProperties.root"),
+            fAccumulateTruthInfo( false ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
     EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
             fTruthOutputFilename("LocustEventProperties.root"),
+            fAccumulateTruthInfo( false ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -66,6 +68,10 @@ namespace locust
 	    {
 	    	fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
 	    }
+	    if ( aParam.has( "accumulate-truth-info" ) )
+	    {
+	    	fAccumulateTruthInfo = aParam["accumulate-truth-info"]().as_bool();
+	    }
 
 
     	return true;
@@ -94,7 +100,17 @@ namespace locust
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename(sFileName);
-        aRootTreeWriter->OpenFile("RECREATE");
+        if (fAccumulateTruthInfo)
+        {
+        	// This option should be used when running pileup.  We will need to
+        	// figure out how to explicitly increment the event ID, given that the
+        	// same (identical) simulation is being run multiple times in this case.
+        	aRootTreeWriter->OpenFile("UPDATE");
+        }
+        else
+        {
+        	aRootTreeWriter->OpenFile("RECREATE");
+        }
         fInterface->anEvent->AddTrack( fInterface->aTrack );
         aRootTreeWriter->WriteEvent( fInterface->anEvent );
         aRootTreeWriter->WriteRunParameters(fInterface->aRunParameter);

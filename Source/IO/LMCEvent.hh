@@ -35,6 +35,7 @@ namespace locust
 
             std::vector<double> fStartFrequencies;
             std::vector<double> fEndFrequencies;
+            std::vector<double> fAvgFrequencies;
             std::vector<double> fTrackPowers;
             std::vector<double> fStartTimes;
             std::vector<double> fEndTimes;
