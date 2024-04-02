@@ -66,6 +66,8 @@ namespace locust
         double fWindowParam;
         bool fPrintFIR;
         bool fConvertStoZ;
+        std::string fOutputPath;
+
 #ifdef ROOT_FOUND
         FileWriter* fRootHistoWriter;
 #endif

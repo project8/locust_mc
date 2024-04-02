@@ -21,7 +21,8 @@ namespace locust
 			fWriteOutputFile( false ),
 			fTFReceiverHandler( 0 ),
 			fAnalyticResponseFunction( 0 ),
-			fparam_0( new param_node() )
+			fparam_0( new param_node() ),
+			fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
     {
     }
 
@@ -116,12 +117,16 @@ namespace locust
             return incidentSignal;
         } 
 
+	void CavityUtility::SetOutputPath( std::string aPath )
+	{
+		fOutputPath = aPath;
+	}
+
 	bool CavityUtility::WriteRootHisto(int npoints, double* freqArray, double* gainArray)
 	{
 	#ifdef ROOT_FOUND
-		scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
 		char cBufferFileName[60];
-		int n = sprintf(cBufferFileName, "%s/../output/UnitTestOutput.root", dataDir.string().c_str());
+		int n = sprintf(cBufferFileName, "%s/UnitTestOutput.root", fOutputPath.c_str());
 		const char *cFileName = cBufferFileName;
 		FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
 		aRootHistoWriter->SetFilename(cFileName);

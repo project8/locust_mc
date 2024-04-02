@@ -29,6 +29,8 @@ namespace locust
         gxml_filename("blank.xml"),
         fphiLO(0.),
         fNPreEventSamples( 150000 ),
+        fRandomPreEventSamples( false ),
+		fTrackDelaySeed( 0 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
@@ -39,9 +41,8 @@ namespace locust
         fUseDirectKassPower( false ),
         fAliasingIsChecked( false ),
 		fUnitTestRootFile( false ),
-        fInterface( new KassLocustInterface() )
+        fInterface( nullptr )  // Initialize fInterface to (nullptr) instead of to (new KassLocustInterface())
     {
-        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
     CavitySignalGenerator::~CavitySignalGenerator()
@@ -49,18 +50,25 @@ namespace locust
     }
 
 
-
-
-
-    bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
+    bool CavitySignalGenerator::ConfigureInterface( Signal* aSignal )
     {
-        if( aParam.has( "rectangular-waveguide" ) )
+
+    	if ( fInterface == nullptr ) fInterface.reset( new KassLocustInterface() );
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
+
+    	const scarab::param_node& tParam = *GetParameters();
+
+    	if( tParam.has( "rectangular-waveguide" ) )
         {
-        	fInterface->fbWaveguide = aParam["rectangular-waveguide"]().as_bool();
+        	fInterface->fbWaveguide = tParam["rectangular-waveguide"]().as_bool();
+        	if ( tParam.has ( "direct-kass-power" ) )
+        	{
+        		fUseDirectKassPower = tParam["direct-kass-power"]().as_bool();
+        	}
         }
 
     	fTFReceiverHandler = new TFReceiverHandler;
-    	if(!fTFReceiverHandler->Configure(aParam))
+    	if(!fTFReceiverHandler->Configure(tParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     		exit(-1);
@@ -68,26 +76,32 @@ namespace locust
     	}
 
 	fFieldCalculator = new FieldCalculator();
-        if(!fFieldCalculator->Configure(aParam))
+        if(!fFieldCalculator->Configure(tParam))
         {   
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
         } 
 
-        if( aParam.has( "tf-receiver-filename" ) )
+        // Configure the generic response function:
+        if( tParam.has( "tf-receiver-filename" ) && tParam.has( "tf-receiver-bin-width" ) ) // If using HFSS output for cavity or waveguide
         {
-            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
-            {
-            	LERROR(lmclog,"FIR has not been generated.");
-            	exit(-1);
-            	return false;
-            }
+                if (( fUseDirectKassPower ) && ( fInterface->fbWaveguide == true ))
+                {
+                        LWARN(lmclog,"Using direct Kass energy budget, and not HFSS data, due to parameter \"direct-kass-power\" = true");
+                }
+                else if (!fTFReceiverHandler->ReadHFSSFile())
+                {
+                        LERROR(lmclog,"FIR has not been generated.");
+                        exit(-1);
+                        return false;
+                }
         }
+
         else if (!fInterface->fbWaveguide)// Generate analytic response function
         {
-        	if ((aParam.has( "equivalent-circuit" ) ) && (aParam["equivalent-circuit"]().as_bool()))
+        	if ((tParam.has( "equivalent-circuit" ) ) && (tParam["equivalent-circuit"]().as_bool()))
         	{
         		fAnalyticResponseFunction = new EquivalentCircuit();
-        		if ( !fAnalyticResponseFunction->Configure(aParam) )
+        		if ( !fAnalyticResponseFunction->Configure(tParam) )
         		{
         			LWARN(lmclog,"EquivalentCircuit was not configured.");
         			exit(-1);
@@ -106,7 +120,7 @@ namespace locust
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
-			if ( !fAnalyticResponseFunction->Configure(aParam)){
+			if ( !fAnalyticResponseFunction->Configure(tParam)){
 				LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
 				exit(-1);
 				return false;
@@ -142,8 +156,8 @@ namespace locust
 
 			
         	}
-        } // aParam.has( "tf-receiver-filename" )
-        else if (fInterface->fbWaveguide)
+        } // tParam.has( "tf-receiver-filename" )
+        else
         {
         	fUseDirectKassPower = true;
         }
@@ -152,9 +166,9 @@ namespace locust
         {
         	fInterface->fField = new RectangularWaveguide;
         	fPowerCombiner = new WaveguideModes;
-        	if ( aParam.has( "waveguide-short" ) )
+        	if ( tParam.has( "waveguide-short" ) )
         	{
-        		fPowerCombiner->SetWaveguideShortIsPresent(aParam["waveguide-short"]().as_bool());
+        		fPowerCombiner->SetWaveguideShortIsPresent(tParam["waveguide-short"]().as_bool());
         	}
         	else
         	{
@@ -164,9 +178,9 @@ namespace locust
         	// Allow back reaction only if short is present:
         	if ( fPowerCombiner->GetWaveguideShortIsPresent() )
         	{
-        		if ( aParam.has( "back-reaction" ) )
+        		if ( tParam.has( "back-reaction" ) )
         		{
-        			fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+        			fInterface->fBackReaction = tParam["back-reaction"]().as_bool();
         		}
         		else
         		{
@@ -178,81 +192,77 @@ namespace locust
         {
         	fInterface->fField = new CylindricalCavity;
         	fPowerCombiner = new CavityModes;
-        	if ( aParam.has( "back-reaction" ) )
+        	if ( tParam.has( "back-reaction" ) )
         	{
-        		fInterface->fBackReaction = aParam["back-reaction"]().as_bool();
+        		fInterface->fBackReaction = tParam["back-reaction"]().as_bool();
         	}
         }
-        if( aParam.has( "n-modes" ) )
+        if( tParam.has( "n-modes" ) )
         {
-            fInterface->fField->SetNModes(aParam["n-modes"]().as_int());
+            fInterface->fField->SetNModes(tParam["n-modes"]().as_int());
         }
 
         fPowerCombiner->SetNCavityModes(fInterface->fField->GetNModes());
-        if(!fPowerCombiner->Configure(aParam))
+        // Configure selected mode fields and power combiners:
+        if (!fInterface->fField->Configure(tParam))
+        {
+        	LERROR(lmclog,"Error configuring LMCField.");
+        	exit(-1);
+        	return false;
+        }
+        if(!fPowerCombiner->Configure(tParam))
 		{
 			LERROR(lmclog,"Error configuring PowerCombiner.");
 			exit(-1);
 			return false;
 		}
 
-        if (!fInterface->fField->Configure(aParam))
-        {
-        	LERROR(lmclog,"Error configuring LMCField.");
-        	exit(-1);
-        	return false;
-        }
+    	// Configure back reaction:
+    	if (( fInterface->fbWaveguide ) && ( fPowerCombiner->GetWaveguideShortIsPresent() ))
+    	{
+    		if ( tParam.has( "back-reaction" ) )
+    		{
+    			// optional to switch off:
+    			fInterface->fBackReaction = tParam["back-reaction"]().as_bool();
+        		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
+    		}
+    		else
+    		{
+    			// if the short is present in the waveguide, default is for back reaction = true
+    			fInterface->fBackReaction = true;
+    		}
+    	}
+    	else if ( !fInterface->fbWaveguide ) // Cavity
+    	{
+    		if ( tParam.has( "back-reaction" ) )
+    		{
+    			// optional to switch off
+    			fInterface->fBackReaction = tParam["back-reaction"]().as_bool();
+        		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
+    		}
+    		else
+    		{
+    			// default is true in the cavity
+    			fInterface->fBackReaction = true;
+    		}
+    	}
+		else
+		{
+			// No short, no cavity -> no back reaction.
+			fInterface->fBackReaction = false;
+    		LWARN(lmclog,"Setting back-reaction to " << fInterface->fBackReaction );
+		}
 
-        if( aParam.has( "lo-frequency" ) )
-        {
-            fLO_Frequency = aParam["lo-frequency"]().as_double();
-        }
-
-        if( aParam.has( "event-spacing-samples" ) )
-        {
-            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
-        }
-
-        if( aParam.has( "override-aliasing" ) )
-        {
-            fOverrideAliasing = aParam["override-aliasing"]().as_bool();
-        }
-
-        if( aParam.has( "bypass-tf" ) )
-        {
-        	fBypassTF = aParam["bypass-tf"]().as_bool();
-        }
-
-        if( aParam.has( "norm-check" ) )
-        {
-        	fNormCheck = aParam["norm-check"]().as_bool();
-        }
-        if( aParam.has( "intermediate-file" ) )
-        {
-        	fIntermediateFile = aParam["intermediate-file"]().as_bool();
-        }
-        if( aParam.has( "unit-test-root-file" ) )
-        {
-        	fUnitTestRootFile = aParam["unit-test-root-file"]().as_bool();
-        }
-        if( aParam.has( "direct-kass-power" ) )
-        {
-        	fUseDirectKassPower = aParam["direct-kass-power"]().as_bool();
-        }
-        if( aParam.has( "xml-filename" ) )
-        {
-            gxml_filename = aParam["xml-filename"]().as_string();
-        }
-
-        if( aParam.has( "transmitter" ))
+        // Configure the transmitter, which defines the impulses taken from Kassiopeia.
+        if( tParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
 
-        	if(aParam["transmitter"]().as_string() == "kass-current")
+        	if(tParam["transmitter"]().as_string() == "kass-current")
         	{
         		ntransmitters += 1;
         		fInterface->fTransmitter = new KassCurrentTransmitter;
-        		if(!fInterface->fTransmitter->Configure(aParam))
+        		if(!fInterface->fTransmitter->Configure(tParam))
         		{
         			LERROR(lmclog,"Error Configuring kass-current transmitter class");
         		}
@@ -270,15 +280,137 @@ namespace locust
             exit(-1);
         }
 
+        if( tParam.has( "trigger-confirm" ) )
+        {
+        	fInterface->fTriggerConfirm = tParam["trigger-confirm"]().as_int();
+        }
+        fInterface->fFastRecordLength = fRecordLength * aSignal->DecimationFactor();
 
-       // fFieldCalculator = new FieldCalculator();
-        if(!fFieldCalculator->Configure(aParam))
+        // Configure Locust-Kass interface classes and parameters:
+        fFieldCalculator = new FieldCalculator();
+        if(!fFieldCalculator->Configure(tParam))
         {
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
         }
-
         fInterface->fConfigureKass = new ConfigureKass();
-        fInterface->fConfigureKass->SetParameters( aParam );
+        fInterface->fConfigureKass->SetParameters( tParam );
+
+
+
+    	return true;
+    }
+
+
+    void CavitySignalGenerator::SetParameters( const scarab::param_node& tParam )
+    {
+    	fParam = &tParam;
+    }
+
+
+    const scarab::param_node* CavitySignalGenerator::GetParameters()
+    {
+    	return fParam;
+    }
+
+
+    bool CavitySignalGenerator::Configure( const scarab::param_node& tParam )
+    {
+
+    	SetParameters( tParam );
+
+    	// Configure signal parameters:
+        if( tParam.has( "lo-frequency" ) )
+        {
+            fLO_Frequency = tParam["lo-frequency"]().as_double();
+        }
+
+        if( tParam.has( "event-spacing-samples" ) )
+        {
+            fNPreEventSamples = tParam["event-spacing-samples"]().as_int();
+            if (tParam.has( "random-spacing-samples" ))
+            {
+                if (tParam["random-spacing-samples"]().as_bool() == true)
+                {
+                    fRandomPreEventSamples = true;
+                }
+        	    if ( tParam.has( "random-track-seed" ) )
+        	    {
+        	        SetSeed( tParam["random-track-seed"]().as_int() );
+        	    }
+        	    else
+        	    {
+        	    	// Delay SetSeed to allow time stamp to advance between randomized tracks.
+            		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        	    	SetSeed (time(NULL) );
+        	    }
+            }
+        }
+
+        if( tParam.has( "override-aliasing" ) )
+        {
+            fOverrideAliasing = tParam["override-aliasing"]().as_bool();
+        }
+
+        if( tParam.has( "bypass-tf" ) )
+        {
+        	fBypassTF = tParam["bypass-tf"]().as_bool();
+        }
+
+        if( tParam.has( "norm-check" ) )
+        {
+        	fNormCheck = tParam["norm-check"]().as_bool();
+        }
+        if( tParam.has( "intermediate-file" ) )
+        {
+        	fIntermediateFile = tParam["intermediate-file"]().as_bool();
+        }
+        if( tParam.has( "unit-test-root-file" ) )
+        {
+        	fUnitTestRootFile = tParam["unit-test-root-file"]().as_bool();
+        }
+        if( tParam.has( "direct-kass-power" ) )
+        {
+        	fUseDirectKassPower = tParam["direct-kass-power"]().as_bool();
+        }
+        if( tParam.has( "xml-filename" ) )
+        {
+            gxml_filename = tParam["xml-filename"]().as_string();
+        }
+
+        if( tParam.has( "transmitter" ))
+        {
+        	int ntransmitters = 0;
+	}
+
+        return true;
+    }
+
+    bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
+    {
+    	fInterface->aRunParameter = new RunParameters();
+    	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
+    	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
+    	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
+
+    	return true;
+    }
+
+
+    bool CavitySignalGenerator::SetSeed(int aSeed)
+    {
+        LPROG(lmclog,"Setting random seed for track delay to " << aSeed);
+        fTrackDelaySeed = aSeed;
+        return true;
+    }
+
+
+    bool CavitySignalGenerator::RandomizeStartDelay()
+    {
+        srand ( fTrackDelaySeed );
+        int tNPreEventSamples = fNPreEventSamples/10 * ( rand() % 10 );
+        LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
+        fNPreEventSamples = tNPreEventSamples;
+
         return true;
     }
 
@@ -528,12 +660,18 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
- 		if (fNChannels > 2)
- 		{
+        ConfigureInterface( aSignal );
+        RecordRunParameters( aSignal );
+
+        if (fRandomPreEventSamples) RandomizeStartDelay();
+
+        fPowerCombiner->SizeNChannels(fNChannels);
+ 	    if (fNChannels > 2)
+ 	    {
     		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
         	throw std::runtime_error("Only 1 or 2 channels is allowed.");
         	return false;
- 		}
+ 	    }
 
         int PreEventCounter = 0;
 
@@ -593,6 +731,7 @@ namespace locust
                     if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                     {
 
+                    	fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
                     	tLock.lock();
 
                     	fInterface->fDigitizerCondition.wait( tLock );
@@ -611,6 +750,7 @@ namespace locust
                     			break;
                     		}
                         }
+                        fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
 
                         tLock.unlock();
 

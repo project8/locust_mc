@@ -35,22 +35,16 @@ namespace locust
     	return true;
     }
 
-    void RootTreeWriter::WriteRunParameters( RunParameters* aRunParameter, const char* aParameterName )
+    void RootTreeWriter::WriteRunParameters( RunParameters* aRunParameter)
     {
         TTree *aTree = new TTree("Run Parameters","Locust Tree");
-
-        if (aParameterName=="Noise")
-        	{
-        	aTree->Branch("Noise", &aRunParameter->fNoise, "Noise/D");
-        	}
-        if (aParameterName=="LOfrequency")
-        	{
-        	aTree->Branch("LO frequency", &aRunParameter->fLOfrequency, "LOfrequency/D");
-        	}
-
+        aTree->Branch("LOFrequency", &aRunParameter->fLOfrequency, "LOfrequency/D");
+        aTree->Branch("SamplingFrequencyMHz", &aRunParameter->fSamplingRateMHz, "SamplingFrequency/D");
+        aTree->Branch("DecimationRate", &aRunParameter->fDecimationFactor, "DecimationFactor/D");
         aTree->Fill();
         aTree->Write();
         delete aTree;
+
     }
 
     void RootTreeWriter::WriteEvent(Event* anEvent)
@@ -63,6 +57,8 @@ namespace locust
         aTree->Branch("EventID", &anEvent->fEventID, "EventID/I");
         aTree->Branch("ntracks", &anEvent->fNTracks, "ntracks/I");
         aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
+        aTree->Branch("EndFrequencies", "std::vector<double>", &anEvent->fEndFrequencies);
+        aTree->Branch("AvgFrequencies", "std::vector<double>", &anEvent->fAvgFrequencies);
         aTree->Branch("StartTimes", "std::vector<double>", &anEvent->fStartTimes);
         aTree->Branch("EndTimes", "std::vector<double>", &anEvent->fEndTimes);
         aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->fTrackLengths);

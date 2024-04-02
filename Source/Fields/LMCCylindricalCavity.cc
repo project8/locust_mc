@@ -420,9 +420,8 @@ namespace locust
     	//  Write trajectory points, dot product, and E-field mag to file for debugging etc.
     	if (IntermediateFile)
     	{
-            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
             char buffer[60];
-            int a = sprintf(buffer, "%s/../output/dotProducts.txt", dataDir.string().c_str());
+            int a = sprintf(buffer, "%s/dotProducts.txt", GetOutputPath().c_str());
             const char *fpname = buffer;
             FILE *fp = fopen(fpname, "a");
             fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
@@ -504,8 +503,7 @@ namespace locust
 
     void CylindricalCavity::PrintModeMaps(int nModes, double zSlice, double thetaSlice)
     {
-    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-        std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
+        std::string sFileName = GetOutputPath()+"/ModemapOutput.root";
 
 #ifdef ROOT_FOUND
 
@@ -631,8 +629,7 @@ namespace locust
 
     void CylindricalCavity::PrintModeMapsLongSlice(int nModes, double thetaSlice)
     {
-    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-        std::string sFileName = (dataDir / "../output/ModemapOutput.root").string();
+        std::string sFileName = GetOutputPath()+"/ModemapOutput.root";
 
 #ifdef ROOT_FOUND
 

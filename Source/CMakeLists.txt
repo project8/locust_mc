@@ -55,7 +55,6 @@ set( LOCUST_MC_HEADER_FILES
     RxComponents/LMCPowerCombiner.hh
     RxComponents/LMCVoltageDivider.hh
     RxComponents/LMCSlottedWaveguide.hh
-    RxComponents/LMCCavityModes.hh
     RxComponents/LMCSinglePatch.hh
     RxComponents/LMCCorporateFeed.hh
     RxComponents/LMCsMatrix.hh
@@ -130,7 +129,6 @@ set( LOCUST_MC_SOURCE_FILES
     RxComponents/LMCPowerCombiner.cc
     RxComponents/LMCVoltageDivider.cc
     RxComponents/LMCSlottedWaveguide.cc
-    RxComponents/LMCCavityModes.cc
     RxComponents/LMCSinglePatch.cc
     RxComponents/LMCCorporateFeed.cc
     RxComponents/LMCsMatrix.cc
@@ -165,7 +163,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Transmitters/LMCKassCurrentTransmitter.hh
         
         RxComponents/LMCWaveguideModes.hh        
-        
+        RxComponents/LMCCavityModes.hh        
+
         Core/LMCHFSSReader.hh
 
         Kassiopeia/LMCCyclotronRadiationExtractor.hh
@@ -199,7 +198,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Transmitters/LMCKassCurrentTransmitter.cc
         
         RxComponents/LMCWaveguideModes.cc        
-        
+        RxComponents/LMCCavityModes.cc        
+
         # Why is this here?
         Core/LMCHFSSReader.cc
 

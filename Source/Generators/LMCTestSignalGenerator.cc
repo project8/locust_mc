@@ -30,7 +30,8 @@ namespace locust
         fAmplitude( 5.e-8 ),
         fMixingProduct( false ),
         fWriteRootHisto( false ),
-        fWriteRootGraph( false )
+        fWriteRootGraph( false ),
+        fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
     {
         fRequiredSignalState = Signal::kTime;
     }
@@ -78,6 +79,11 @@ namespace locust
         {
         	fWriteRootGraph = aParam.get_value< bool >( "write-root-graph", fWriteRootGraph );
         }
+
+    	if ( aParam.has( "output-path" ) )
+    	{
+    		fOutputPath = aParam["output-path"]().as_string();
+    	}
 
         if( aParam.has( "domain" ) )
         {
@@ -207,9 +213,8 @@ namespace locust
     {
 		#ifdef ROOT_FOUND
 
-    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
     	char cBufferFileName[60];
-    	int a = sprintf(cBufferFileName, "%s/../output/TestSignalHisto.root", dataDir.string().c_str());
+    	int a = sprintf(cBufferFileName, "%s/TestSignalHisto.root", fOutputPath.c_str());
     	const char *cFileName = cBufferFileName;
 
     	FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
@@ -230,9 +235,8 @@ namespace locust
     {
 		#ifdef ROOT_FOUND
 
-    	scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
     	char cBufferFileName[60];
-    	int a = sprintf(cBufferFileName, "%s/../output/TestSignalGraph.root", dataDir.string().c_str());
+    	int a = sprintf(cBufferFileName, "%s/TestSignalGraph.root", fOutputPath.c_str());
     	const char *cFileName = cBufferFileName;
     	FileWriter* aRootGraphWriter = RootGraphWriter::get_instance();
     	aRootGraphWriter->SetFilename(cFileName);

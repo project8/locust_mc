@@ -22,9 +22,10 @@
         "waveguide-central-frequency": 1.63e11,
         "back-reaction": "true",
         "event-spacing-samples": 10,
+        "track-length": 0.5e-4,
         "voltage-check": "false",
         "lo-frequency": 25.9602e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Waveguide_Template.xml"
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA.xml"
     },
 
     "simulation":

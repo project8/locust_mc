@@ -43,9 +43,8 @@ namespace locust
 
         if( aParam.has( "norm-check" ) )
         {
-            scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-            std::string sFileName = (dataDir / "../output/ModeEnergies.root").string();
-            std::string sTextFileName = (dataDir / "../output/ModeEnergies.txt").string();
+            std::string sFileName = GetOutputPath()+"/ModeEnergies.root";
+            std::string sTextFileName = GetOutputPath()+"/ModeEnergies.txt";
             fp = fopen(sTextFileName.c_str(), "w");
             fclose(fp);
 
@@ -157,13 +156,10 @@ namespace locust
 
 	bool CavityModes::AddOneSampleToRollingAvg(int bTE, int l, int m, int n, double excitationAmplitude, unsigned sampleIndex)
 	{
-
-	    scarab::path dataDir = TOSTRING(PB_DATA_INSTALL_DIR);
-            char cBufferFileName[60];
-            int a = sprintf(cBufferFileName, "%s/../output/ModeEnergies.txt", dataDir.string().c_str());
-            const char *cFileName = cBufferFileName;
-            fp = fopen(cFileName, "a");
-
+	    char cBufferFileName[60];
+	    int a = sprintf(cBufferFileName, "%s/ModeEnergies.txt", GetOutputPath().c_str());
+	    const char *cFileName = cBufferFileName;
+	    fp = fopen(cFileName, "a");
 
 	    double amp = excitationAmplitude;
 

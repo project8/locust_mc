@@ -29,6 +29,9 @@
 #include <sstream>
 #include <string>
 #include "LMCException.hh"
+#include <stdlib.h>
+#include <time.h>
+
 
 
 
@@ -70,6 +73,8 @@ namespace locust
 
             bool Configure( const scarab::param_node& aNode );
             bool CrossCheckCavityConfig(int bTE, int l, int m, int n);
+            bool ConfigureInterface(Signal* aSignal);
+            bool RecordRunParameters(Signal* aSignal);
             bool CrossCheckAliasing(Signal* aSignal, double dopplerFrequency );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
@@ -78,12 +83,18 @@ namespace locust
             void SetDomain( Signal::State aDomain );
             void CheckNormalization();
 
+            const scarab::param_node* GetParameters();
+            void SetParameters( const scarab::param_node& aNode );
+            bool SetSeed(int aSeed);
+
 
 
         private:
             double fLO_Frequency;
             double fDeltaT;
-            int fNPreEventSamples;  // spacing between events.  constant for now, could be randomized.
+            int fNPreEventSamples;  // spacing between events.
+            int fTrackDelaySeed; // Seed to randomize fNPreEventSamples
+            bool fRandomPreEventSamples;
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             std::string gxml_filename;
             bool fKassNeverStarted;
@@ -105,6 +116,7 @@ namespace locust
             bool TryWakeAgain();
             bool ReceivedKassReady();
             bool DriveMode(Signal* aSignal, unsigned index);
+            bool RandomizeStartDelay();
 
 
             bool DoGenerate( Signal* aSignal );
@@ -119,6 +131,9 @@ namespace locust
 
             kl_interface_ptr_t fInterface;
             FILE *fp;
+
+            const scarab::param_node* fParam;
+
 
     };
 
