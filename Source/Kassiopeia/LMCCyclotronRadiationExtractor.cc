@@ -1,5 +1,7 @@
 #include "LMCCyclotronRadiationExtractor.hh"
 #include "KSModifiersMessage.h"
+#include <chrono>
+#include <thread>
 
 
 namespace locust
@@ -52,6 +54,58 @@ namespace locust
         fInterface->fProject8Phase = P8Phase;
     }
 
+    bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
+    {
+    	double tTime = index / fInterface->aRunParameter->fSamplingRateMHz / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
+#ifdef ROOT_FOUND
+    	if (bStart)
+    	{
+            fStartingIndex = index;
+            fInterface->aTrack.StartTime = tTime;
+            fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
+            double tX = aFinalParticle.GetPosition().X();
+            double tY = aFinalParticle.GetPosition().Y();
+            fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
+            fInterface->aTrack.RadialPhase = calcOrbitPhase(tX, tY);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    	}
+    	else
+    	{
+            fInterface->aTrack.EndTime = tTime;
+            fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
+            unsigned nElapsedSamples = index - fStartingIndex;
+            fInterface->aTrack.AvgFrequency = ( fInterface->aTrack.AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
+            fInterface->aTrack.TrackLength = tTime - fInterface->aTrack.StartTime;
+            fInterface->aTrack.Slope = (fInterface->aTrack.EndFrequency - fInterface->aTrack.StartFrequency) / (fInterface->aTrack.TrackLength);
+    	}
+#endif
+
+        return true;
+    }
+
+    double CyclotronRadiationExtractor::calcOrbitPhase(double tX, double tY)
+    {
+    	double phase = 0.;
+        if ((fabs(tX) > 0.))
+    	{
+    		phase = atan(tY/tX);
+    	}
+
+    	phase += quadrantOrbitCorrection(phase, tY);
+    	return phase;
+    }
+
+    double CyclotronRadiationExtractor::quadrantOrbitCorrection(double phase, double tY)
+    {
+    	double phaseCorrection = 0.;
+    	if (((phase < 0.)&&(tY > 0.)) || ((phase > 0.)&&(tY < 0.)))
+    		phaseCorrection = LMCConst::Pi();
+
+    	return phaseCorrection;
+    }
+
+
+
 
     locust::Particle CyclotronRadiationExtractor::ExtractKassiopeiaParticle( Kassiopeia::KSParticle &anInitialParticle, Kassiopeia::KSParticle &aFinalParticle)
     {
@@ -80,6 +134,7 @@ namespace locust
             if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
             {
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
+                fInterface->aTrack.PitchAngle = aFinalParticle.GetPolarAngleToB();
             }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
@@ -135,12 +190,15 @@ namespace locust
 
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
-            if (fInterface->fTOld == 0.)
+            if (!(fInterface->fTOld > 0.))
             {
             	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
+                UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
+            	LPROG(lmclog,"Updated track properties at sample " << fInterface->fSampleIndex );
             }
+
 
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
@@ -149,6 +207,7 @@ namespace locust
             {
 
                 fSampleIndex = fInterface->fSampleIndex; // record Locust sample index before locking
+                UpdateTrackProperties( aFinalParticle, fSampleIndex, 0 );  // Keep recording the track candidate end time.
 
                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();
@@ -188,11 +247,39 @@ namespace locust
                 fInterface->fDigitizerCondition.notify_one();  // notify Locust after writing.
 
                 int tTriggerConfirm = 0;
-                while ((fSampleIndex == fInterface->fSampleIndex) && (tTriggerConfirm < fInterface->fTriggerConfirm))
+
+                while ( !(fSampleIndex < fInterface->fSampleIndex) && (tTriggerConfirm < fInterface->fTriggerConfirm) )
                 {
-                	// If the Locust sample index has not advanced yet, keep checking it.
-                	tTriggerConfirm += 1;
+                    // If the Locust sample index has not advanced yet, keep checking it.
+                    tTriggerConfirm += 1;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    if ( tTriggerConfirm % 1000 == 0 )
+                    {
+                    	LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm );
+                    }
+
+                    if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength ) )
+                    {
+                        LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm);
+                        LPROG(lmclog,"Checking the digitizer synchronization, at fast sample = " << fSampleIndex);
+                        LPROG(lmclog,"Checking the digitizer synchronization, at Locust fast sample = " << fInterface->fSampleIndex);
+                        LPROG(lmclog,"Fast record length = " << fInterface->fFastRecordLength);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+                        if ( !(fSampleIndex < fInterface->fSampleIndex) )
+                        {
+                            LPROG(lmclog,"Checking the digitizer synchronization again.  ");
+                            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+                            if ( !(fSampleIndex < fInterface->fSampleIndex) )
+                            {
+                                LERROR(lmclog,"Locust digitizer sample index has not advanced properly.  "
+                         	    		"Please either resubmit the job, or check HPC status.");
+                                LERROR(lmclog, "tTriggerConfirm, fSampleIndex are " << tTriggerConfirm << " and " << fSampleIndex);
+                                exit(-1);  // TO-DO:  throw this exception to be caught properly by scarab, as in LocustSim.cc .
+                            }
+                        }
+                    }
                 }
+
 
             }
         } // DoneWithSignalGeneration

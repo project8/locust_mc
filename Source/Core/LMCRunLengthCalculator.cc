@@ -74,6 +74,7 @@ namespace locust
         while( nextGenerator != NULL )
         {
 	    nextGenerator->ConfigureNChannels(frlcChannels);
+	    nextGenerator->ConfigureRecordLength(fRecordSize);
 	    nextGenerator->ConfigureAcquisitionRate(frlcAcquisitionRate);
             nextGenerator->Accept( this );
             nextGenerator = nextGenerator->GetNextGenerator();

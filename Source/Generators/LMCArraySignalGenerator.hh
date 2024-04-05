@@ -64,6 +64,11 @@ namespace locust
             virtual ~ArraySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
+            bool ConfigureInterface(Signal* aSignal);
+            bool RecordRunParameters(Signal* aSignal);
+            const scarab::param_node* GetParameters();
+            void SetParameters( const scarab::param_node& aNode );
+
 
             void Accept( GeneratorVisitor* aVisitor ) const;
               
@@ -92,6 +97,7 @@ namespace locust
 
             void KassiopeiaInit(const std::string &aFile);
             void WakeBeforeEvent();
+            bool TryWakeAgain();
             bool ReceivedKassReady();
 
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
@@ -123,6 +129,8 @@ namespace locust
             HilbertTransform fHilbertTransform;
 
             kl_interface_ptr_t fInterface;
+            const scarab::param_node* fParam;
+
 
 
     };

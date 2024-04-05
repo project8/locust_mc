@@ -59,6 +59,7 @@ namespace locust
             bool AddMaxTimeTerminator( const scarab::param_node& aParam );
             bool AddMaxRTerminator( const scarab::param_node& aParam );
             bool AddGenerator( const scarab::param_node& aParam );
+            int GetSeed( const scarab::param_node& aParam );
 
 
 

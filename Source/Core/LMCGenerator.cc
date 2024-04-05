@@ -83,6 +83,11 @@ namespace locust
         fNChannels = nchannels;
     }
 
+    void Generator::ConfigureRecordLength( unsigned recordLength ) const
+    {
+        fRecordLength = recordLength;
+    }
+
     void Generator::ConfigureAcquisitionRate( double ar ) const
     {
         fAcquisitionRate = ar;

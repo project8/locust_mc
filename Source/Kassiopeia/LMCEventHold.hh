@@ -13,6 +13,11 @@
 
 #include "LMCKassLocustInterface.hh"
 
+#ifdef ROOT_FOUND
+    #include "LMCRootTreeWriter.hh"
+#endif
+
+
 namespace locust
 {
 
@@ -22,9 +27,16 @@ namespace locust
         public:
             EventHold();
             EventHold( const EventHold& aOrig );
+            bool OpenEvent();
+            bool WriteEvent();
             virtual ~EventHold();
 
             EventHold* Clone() const;
+            bool ConfigureByInterface();
+            bool Configure( const scarab::param_node& aParam );
+            std::string fTruthOutputFilename;
+            bool fAccumulateTruthInfo;
+
 
         public:
 

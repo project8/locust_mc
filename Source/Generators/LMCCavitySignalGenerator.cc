@@ -30,6 +30,7 @@ namespace locust
         fphiLO(0.),
         fNPreEventSamples( 150000 ),
         fRandomPreEventSamples( false ),
+		fTrackDelaySeed( 0 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
@@ -49,7 +50,7 @@ namespace locust
     }
 
 
-    bool CavitySignalGenerator::ConfigureInterface()
+    bool CavitySignalGenerator::ConfigureInterface( Signal* aSignal )
     {
 
     	if ( fInterface == nullptr ) fInterface.reset( new KassLocustInterface() );
@@ -215,6 +216,7 @@ namespace locust
         {
         	fInterface->fTriggerConfirm = tParam["trigger-confirm"]().as_int();
         }
+        fInterface->fFastRecordLength = fRecordLength * aSignal->DecimationFactor();
 
         // Configure Locust-Kass interface classes and parameters:
         fFieldCalculator = new FieldCalculator();
@@ -258,10 +260,20 @@ namespace locust
             fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
             if (aParam.has( "random-spacing-samples" ))
             {
-            if (aParam["random-spacing-samples"]().as_bool() == true)
+                if (aParam["random-spacing-samples"]().as_bool() == true)
                 {
                     fRandomPreEventSamples = true;
                 }
+        	    if ( aParam.has( "random-track-seed" ) )
+        	    {
+        	        SetSeed( aParam["random-track-seed"]().as_int() );
+        	    }
+        	    else
+        	    {
+        	    	// Delay SetSeed to allow time stamp to advance between randomized tracks.
+            		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        	    	SetSeed (time(NULL) );
+        	    }
             }
         }
         if( aParam.has( "override-aliasing" ) )
@@ -292,9 +304,29 @@ namespace locust
         return true;
     }
 
+    bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
+    {
+    	fInterface->aRunParameter = new RunParameters();
+    	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
+    	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
+    	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
+
+    	return true;
+    }
+
+
+
+    bool CavitySignalGenerator::SetSeed(int aSeed)
+    {
+        LPROG(lmclog,"Setting random seed for track delay to " << aSeed);
+        fTrackDelaySeed = aSeed;
+        return true;
+    }
+
+
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
-        srand (time(NULL));
+        srand ( fTrackDelaySeed );
         int tNPreEventSamples = fNPreEventSamples/10 * ( rand() % 10 );
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
@@ -549,7 +581,9 @@ namespace locust
 
     bool CavitySignalGenerator::DoGenerateTime( Signal* aSignal )
     {
-        ConfigureInterface();
+        ConfigureInterface( aSignal );
+        RecordRunParameters( aSignal );
+
         if (fRandomPreEventSamples) RandomizeStartDelay();
 
         fPowerCombiner->SizeNChannels(fNChannels);

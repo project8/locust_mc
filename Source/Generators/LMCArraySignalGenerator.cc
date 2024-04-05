@@ -48,103 +48,117 @@ namespace locust
 		fKassNeverStarted( false ),
 		fSkippedSamples( false ),
 		fAllowFastSampling( false ),
-		fInterface( new KassLocustInterface() )
+		fInterface( nullptr )  // Initialize fInterface to (nullptr) instead of to (new KassLocustInterface())
     {
         fRequiredSignalState = Signal::kTime;
-
-        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
     }
 
     ArraySignalGenerator::~ArraySignalGenerator()
     {
     }
 
-    bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
+    void ArraySignalGenerator::SetParameters( const scarab::param_node& aParam )
+    {
+    	fParam = &aParam;
+    }
+
+
+    const scarab::param_node* ArraySignalGenerator::GetParameters()
+    {
+    	return fParam;
+    }
+
+    bool ArraySignalGenerator::ConfigureInterface( Signal* aSignal )
     {
 
-    	if (aParam.has( "power-combining-feed" ))
+        if ( fInterface == nullptr ) fInterface.reset( new KassLocustInterface() );
+        KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
+
+        const scarab::param_node& tParam = *GetParameters();
+
+    	if (tParam.has( "power-combining-feed" ))
     	{
     		int npowercombiners = 0;
 
-        	if(aParam["power-combining-feed"]().as_string() == "voltage-divider")
+        	if(tParam["power-combining-feed"]().as_string() == "voltage-divider")
         	{
         		npowercombiners += 1;
         		fPowerCombiner = new VoltageDivider;
-        		if(!fPowerCombiner->Configure(aParam))
+        		if(!fPowerCombiner->Configure(tParam))
         		{
         			LERROR(lmclog,"Error configuring voltage divider.");
         			exit(-1);
         		}
         		fAntennaElementPositioner = new AntennaElementPositioner;
-           		if(!fAntennaElementPositioner->Configure(aParam))
+           		if(!fAntennaElementPositioner->Configure(tParam))
             	{
             		LERROR(lmclog,"Error configuring antenna element positioner.");
             		exit(-1);
             	}
         	}
 
-        	if(aParam["power-combining-feed"]().as_string() == "slotted-waveguide")
+        	if(tParam["power-combining-feed"]().as_string() == "slotted-waveguide")
         	{
         		npowercombiners += 1;
         		fPowerCombiner = new SlottedWaveguide;
-        		if(!fPowerCombiner->Configure(aParam))
+        		if(!fPowerCombiner->Configure(tParam))
         		{
         			LERROR(lmclog,"Error configuring slotted waveguide.");
         			exit(-1);
         		}
         		fAntennaElementPositioner = new AntennaElementPositioner;
-           		if(!fAntennaElementPositioner->Configure(aParam))
+           		if(!fAntennaElementPositioner->Configure(tParam))
             	{
             		LERROR(lmclog,"Error configuring antenna element positioner.");
             		exit(-1);
             	}
         	}
 
-        	if(aParam["power-combining-feed"]().as_string() == "single-patch")
+        	if(tParam["power-combining-feed"]().as_string() == "single-patch")
         	{
         		npowercombiners += 1;
         		fPowerCombiner = new SinglePatch;
-        		if(!fPowerCombiner->Configure(aParam))
+        		if(!fPowerCombiner->Configure(tParam))
         		{
         			LERROR(lmclog,"Error configuring single patch.");
         			exit(-1);
         		}
         		fAntennaElementPositioner = new SinglePatchPositioner;
-           		if(!fAntennaElementPositioner->Configure(aParam))
+           		if(!fAntennaElementPositioner->Configure(tParam))
             	{
             		LERROR(lmclog,"Error configuring single patch positioner.");
             		exit(-1);
             	}
         	}
 
-        	if(aParam["power-combining-feed"]().as_string() == "corporate")
+        	if(tParam["power-combining-feed"]().as_string() == "corporate")
         	{
         		npowercombiners += 1;
         		fPowerCombiner = new CorporateFeed;
-        		if(!fPowerCombiner->Configure(aParam))
+        		if(!fPowerCombiner->Configure(tParam))
         		{
         			LERROR(lmclog,"Error configuring corporate feed.");
         			exit(-1);
         		}
         		fAntennaElementPositioner = new AntennaElementPositioner;
-           		if(!fAntennaElementPositioner->Configure(aParam))
+           		if(!fAntennaElementPositioner->Configure(tParam))
             	{
             		LERROR(lmclog,"Error configuring antenna element positioner.");
             		exit(-1);
             	}
         	}
 
-        	if(aParam["power-combining-feed"]().as_string() == "s-matrix")
+        	if(tParam["power-combining-feed"]().as_string() == "s-matrix")
         	{
         		npowercombiners += 1;
         		fPowerCombiner = new SMatrix;
-        		if(!fPowerCombiner->Configure(aParam))
+        		if(!fPowerCombiner->Configure(tParam))
         		{
         			LERROR(lmclog,"Error configuring s matrix.");
         			exit(-1);
         		}
         		fAntennaElementPositioner = new AntennaElementPositioner;
-           		if(!fAntennaElementPositioner->Configure(aParam))
+           		if(!fAntennaElementPositioner->Configure(tParam))
             	{
             		LERROR(lmclog,"Error configuring antenna element positioner.");
             		exit(-1);
@@ -152,19 +166,19 @@ namespace locust
         	}
 
 
-        	if((aParam["power-combining-feed"]().as_string() == "unit-cell-one-quarter")||
-               (aParam["power-combining-feed"]().as_string() == "unit-cell-seven-eighths")||
-               (aParam["power-combining-feed"]().as_string() == "unit-cell-nine-sixteenths"))
+        	if((tParam["power-combining-feed"]().as_string() == "unit-cell-one-quarter")||
+               (tParam["power-combining-feed"]().as_string() == "unit-cell-seven-eighths")||
+               (tParam["power-combining-feed"]().as_string() == "unit-cell-nine-sixteenths"))
         	{
         		npowercombiners += 1;
         		fPowerCombiner = new UnitCell;
-        		if(!fPowerCombiner->Configure(aParam))
+        		if(!fPowerCombiner->Configure(tParam))
         		{
         			LERROR(lmclog,"Error configuring unit cell.");
         			exit(-1);
         		}
         		fAntennaElementPositioner = new AntennaElementPositioner;
-           		if(!fAntennaElementPositioner->Configure(aParam))
+           		if(!fAntennaElementPositioner->Configure(tParam))
             	{
             		LERROR(lmclog,"Error configuring antenna element positioner.");
             		exit(-1);
@@ -172,16 +186,16 @@ namespace locust
         	}
 
 
-        	if(aParam["power-combining-feed"]().as_string() == "series-feed")
+        	if(tParam["power-combining-feed"]().as_string() == "series-feed")
         	{
         		npowercombiners += 1;
         		fPowerCombiner = new SeriesFeed;
-        		if(!fPowerCombiner->Configure(aParam))
+        		if(!fPowerCombiner->Configure(tParam))
         		{
         			LERROR(lmclog,"Error configuring series feed.");
         		}
         		fAntennaElementPositioner = new AntennaElementPositioner;
-           		if(!fAntennaElementPositioner->Configure(aParam))
+           		if(!fAntennaElementPositioner->Configure(tParam))
             	{
             		LERROR(lmclog,"Error configuring antenna element positioner.");
             		exit(-1);
@@ -203,15 +217,15 @@ namespace locust
         }
 
 
-        if( aParam.has( "transmitter" ))
+        if( tParam.has( "transmitter" ))
         {
         	int ntransmitters = 0;
 
-        	if(aParam["transmitter"]().as_string() == "antenna")
+        	if(tParam["transmitter"]().as_string() == "antenna")
         	{
         		ntransmitters += 1;
         		fTransmitter = new AntennaSignalTransmitter;
-        		if(!fTransmitter->Configure(aParam))
+        		if(!fTransmitter->Configure(tParam))
         		{
         			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
         		}
@@ -221,22 +235,22 @@ namespace locust
         		}
         	}
 
-        	if(aParam["transmitter"]().as_string() == "planewave")
+        	if(tParam["transmitter"]().as_string() == "planewave")
         	{
         		ntransmitters += 1;
         		fTransmitter = new PlaneWaveTransmitter;
-        		if(!fTransmitter->Configure(aParam))
+        		if(!fTransmitter->Configure(tParam))
         		{
         			LERROR(lmclog,"Error Configuring planewave transmitter class");
         		}
 
         	}
 
-        	if(aParam["transmitter"]().as_string() == "kassiopeia")
+        	if(tParam["transmitter"]().as_string() == "kassiopeia")
         	{
         		ntransmitters += 1;
         		fTransmitter = new KassTransmitter;
-        		if(!fTransmitter->Configure(aParam))
+        		if(!fTransmitter->Configure(tParam))
         		{
         			LERROR(lmclog,"Error Configuring kassiopeia transmitter class");
         		}
@@ -256,21 +270,39 @@ namespace locust
         }
 
 
-    	if(!fTFReceiverHandler.Configure(aParam))
+    	if(!fTFReceiverHandler.Configure(tParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
 
-        if( aParam.has( "buffer-size" ) )
+        if( tParam.has( "buffer-size" ) )
         {
-        	fFieldBufferSize = aParam["buffer-size"]().as_int();
-        	fHilbertTransform.SetBufferSize(aParam["buffer-size"]().as_int());
+        	fFieldBufferSize = tParam["buffer-size"]().as_int();
+        	fHilbertTransform.SetBufferSize(tParam["buffer-size"]().as_int());
         }
 
-    	if(!fHilbertTransform.Configure(aParam))
+    	if(!fHilbertTransform.Configure(tParam))
     	{
     		LERROR(lmclog,"Error configuring buffer sizes in receiver HilbertTransform class");
     	}
+
+
+
+
+        fInterface->fConfigureKass = new ConfigureKass();
+        fInterface->fConfigureKass->SetParameters( tParam );
+
+     	return true;
+    }
+
+
+
+
+    bool ArraySignalGenerator::Configure( const scarab::param_node& aParam )
+    {
+
+    	SetParameters( aParam );
+
 
         if( aParam.has( "lo-frequency" ) )
         {
@@ -328,6 +360,17 @@ namespace locust
         return true;
     }
 
+    bool ArraySignalGenerator::RecordRunParameters( Signal* aSignal )
+    {
+    	fInterface->aRunParameter = new RunParameters();
+    	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
+    	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
+    	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
+
+    	return true;
+    }
+
+
     void ArraySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
     {
         aVisitor->Visit( this );
@@ -359,6 +402,25 @@ namespace locust
         fInterface->fPreEventCondition.notify_one();
         return;
     }
+
+    bool ArraySignalGenerator::TryWakeAgain()
+    {
+    	int count = 0;
+    	while (count < 10)
+    	{
+    		LPROG(lmclog,"Kass thread is unresponsive.  Trying again.\n");
+    		LPROG( lmclog, "LMC about to try WakeBeforeEvent() again" );
+    		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    		WakeBeforeEvent();  // trigger Kass event.
+    		if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+    		{
+    			return true;
+    		}
+    		count += 1;
+    	}
+ 		return false;
+    }
+
 
     bool ArraySignalGenerator::ReceivedKassReady()
     {
@@ -601,6 +663,9 @@ namespace locust
     bool ArraySignalGenerator::DoGenerate( Signal* aSignal )
     {
 
+        ConfigureInterface( aSignal );
+        RecordRunParameters( aSignal );
+
         if(!InitializeElementArray())
         {
         	LERROR(lmclog,"Error configuring Element array");
@@ -632,16 +697,16 @@ namespace locust
         	return true;
         }
 
-
         if (fTransmitter->IsKassiopeia())
         {
-        	bool fTruth = false;
-        	int startingIndex;
+            int startingIndex;
+
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        	std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
+            std::thread tKassiopeia (&ArraySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
+
                 if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
                 	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
@@ -650,16 +715,13 @@ namespace locust
                 		printf("breaking\n");
                 		break;
                 	}
-
                 	LPROG( lmclog, "LMC ReceivedKassReady" );
-
                 }
 
                 if (fInterface->fPreEventInProgress)  // Locust keeps sampling until Kass event.
                 {
                     PreEventCounter += 1;
-
-                    if (((!fTruth)&&(PreEventCounter > fNPreEventSamples))||((fTruth)&&(PreEventCounter > fNPreEventSamples)&&(index%(8192*aSignal->DecimationFactor())==0)  ))// finished pre-samples.  Start event.
+                    if (PreEventCounter > fNPreEventSamples)// finished pre-samples.  Start event.
                     {
                         fInterface->fPreEventInProgress = false;  // reset.
                         fInterface->fEventInProgress = true;
@@ -671,82 +733,96 @@ namespace locust
 
                 if (fInterface->fEventInProgress)  // fEventInProgress
                 {
+
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
-                	if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
-                	{
+
+                    if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
+                    {
+
                         fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
                         tLock.lock();
+
                         fInterface->fDigitizerCondition.wait( tLock );
+
                         if (fInterface->fEventInProgress)
                         {
-                    		if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
-                    		{
+                            if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
+                            {
                                 PreEventCounter = 0; // reset
-                    		}
-                    		else
-                    		{
-                    			LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
-                    			fSkippedSamples = true;
+                            }
+                            else
+                            {
+                                LERROR(lmclog,"The antenna did not respond correctly.  Exiting.\n");
+                                fSkippedSamples = true;
                                 tLock.unlock();
-                    			break;
-                    		}
+                                break;
+                            }
                         }
                         fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
 
                         tLock.unlock();
-                	}
-                 	else  // diagnose Kass
-                 	{
-                         tLock.lock();
-                         std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
-                         if (!fInterface->fKassEventReady)  // Kass event did start.  Continue but skip this sample.
-                         {
-                         	tLock.unlock();
-                         }
-                         else  // Kass event has not started.
-                         {
-                          	if ( fInterface->fEventInProgress )
-                          	{
-                          		if ( index < fNPreEventSamples+1 ) // Kass never started at all.
-                          		{
-                         			LERROR(lmclog,"Kass thread is unresponsive.  Exiting.\n");
-                             		fKassNeverStarted = true;
-                          		}
-                             	tLock.unlock(); // Kass either started or not, but is now finished.
-                             	break;
-                          	}
-                          	else  // Kass started an event and quickly terminated it.
-                          	{
-                         		LWARN(lmclog, "Kass event terminated quickly.\n");
-                         		tLock.unlock();
-                          	}
-                         }
-                 	} // diagnose Kass
+
+
+                    }
+                    else  // diagnose Kass
+                    {
+                        tLock.lock();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
+                        if (!fInterface->fKassEventReady)   // Kass event did start.  Continue but skip this sample.
+                        {
+                            tLock.unlock();
+                        }
+                        else    // Kass event has not started.
+                        {
+                            if ( fInterface->fEventInProgress )
+                            {
+                 		        if ( index < fNPreEventSamples+1 )  // Kass never started.
+                                {
+                                    if (TryWakeAgain())
+                                    {
+                                        tLock.unlock();
+                                    }
+                                    else
+                                    {
+                                        LPROG(lmclog,"Locust is stopping because Kass has either stopped reporting, or never started.\n");
+                                        tLock.unlock();
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    LPROG(lmclog,"Locust infers that Kass has completed all events.\n");
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                LWARN(lmclog, "Kass event terminated quickly.\n");
+                                tLock.unlock();
+                            }
+                        }
+                    } // diagnose Kass
+
 
                 } // if fEventInProgress
+
             }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
             if (fTextFileWriting==1) fclose(fp);
             LPROG( lmclog, "Finished signal loop." );
-			fInterface->fWaitBeforeEvent = false;
+            fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
 
             if (fKassNeverStarted == true)
             {
-            	throw 2;
+            	throw std::runtime_error("Kassiopeia did not start.");
             	return false;
             }
-            if (fSkippedSamples == true)
-            {
-            	throw 3;
-            	return false;
-            }
-
-
 
         }  // fTransmitter->IsKassiopeia()
+
 
         return true;
 

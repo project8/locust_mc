@@ -73,7 +73,8 @@ namespace locust
             virtual ~CavitySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
-            bool ConfigureInterface();
+            bool ConfigureInterface(Signal* aSignal);
+            bool RecordRunParameters(Signal* aSignal);
             bool CrossCheckCavityConfig();
             bool CrossCheckAliasing(Signal* aSignal, double dopplerFrequency );
 
@@ -85,12 +86,15 @@ namespace locust
 
             const scarab::param_node* GetParameters();
             void SetParameters( const scarab::param_node& aNode );
+            bool SetSeed(int aSeed);
+
 
 
         private:
             double fLO_Frequency;
             double fDeltaT;
             int fNPreEventSamples;  // spacing between events.
+            int fTrackDelaySeed; // Seed to randomize fNPreEventSamples
             bool fRandomPreEventSamples;
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             std::string gxml_filename;
