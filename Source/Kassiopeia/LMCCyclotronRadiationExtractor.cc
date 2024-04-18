@@ -62,7 +62,6 @@ namespace locust
     	{
             fStartingIndex = index;
             fInterface->aTrack.StartTime = tTime;
-            fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
             double tX = aFinalParticle.GetPosition().X();
             double tY = aFinalParticle.GetPosition().Y();
             fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
@@ -72,7 +71,6 @@ namespace locust
     	else
     	{
             fInterface->aTrack.EndTime = tTime;
-            fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
             unsigned nElapsedSamples = index - fStartingIndex;
             fInterface->aTrack.AvgFrequency = ( fInterface->aTrack.AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
             fInterface->aTrack.TrackLength = tTime - fInterface->aTrack.StartTime;
@@ -129,12 +127,17 @@ namespace locust
         aNewParticle.SetKinematicProperties();
 
 
-        if (fPitchAngle == -99.)  // first crossing of center
+        if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
         {
-            if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
+            if (fPitchAngle == -99.)  // first crossing of center
             {
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
                 fInterface->aTrack.PitchAngle = aFinalParticle.GetPolarAngleToB();
+                fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
+            }
+            else
+            {
+                fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
             }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
