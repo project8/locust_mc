@@ -296,9 +296,12 @@ namespace locust
     	    {
                 if ( aParam["random-track-length"]().as_bool() == true)
                 {
-                    srand ( GetSeed( aParam ));
+                    scarab::param_node default_setting;
+                    default_setting.add("name","uniform");
+                    fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
+                    fDistributionInterface.SetSeed( GetSeed(aParam) );
                     double tMinTrackLength = tMaxTrackLength * tMinTrackLengthFraction;
-                    double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * (rand() % 10) / 9.;
+                    double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
                     fLocustMaxTimeTerminator->SetTime( tRandomTime );
                     LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
                 }

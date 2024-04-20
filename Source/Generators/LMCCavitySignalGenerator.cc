@@ -322,8 +322,11 @@ namespace locust
 
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
-        srand ( fTrackDelaySeed );
-        int tNPreEventSamples = fNPreEventSamples/10 * ( rand() % 10 );
+        scarab::param_node default_setting;
+        default_setting.add("name","uniform");
+        fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
+        fDistributionInterface.SetSeed( fTrackDelaySeed );
+        int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
 
