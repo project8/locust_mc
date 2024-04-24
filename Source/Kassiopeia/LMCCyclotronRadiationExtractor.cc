@@ -132,12 +132,19 @@ namespace locust
             if (fPitchAngle == -99.)  // first crossing of center
             {
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
+#ifdef ROOT_FOUND
                 fInterface->aTrack.PitchAngle = aFinalParticle.GetPolarAngleToB();
                 fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
+                double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
+                double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
+                fInterface->aTrack.OutputStartFrequency = fInterface->aTrack.StartFrequency - tLOfrequency + tSamplingRate * 1.e6 / 2.;
+#endif
             }
             else
             {
+#ifdef ROOT_FOUND
                 fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
+#endif
             }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
