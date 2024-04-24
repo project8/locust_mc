@@ -30,6 +30,7 @@ namespace locust
             double fLOfrequency;
             double fSamplingRateMHz;
             double fDecimationFactor;
+            int fRandomSeed;
 
             ClassDef(RunParameters,1)  // Root syntax.
 

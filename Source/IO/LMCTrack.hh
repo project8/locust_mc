@@ -29,6 +29,7 @@ namespace locust
             Track();
             virtual ~Track();
             int EventID = -99;
+            int RandomSeed = -99.;
             double StartTime = -99.;
             double EndTime = -99.;
             double TrackLength = -99.;

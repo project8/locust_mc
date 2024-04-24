@@ -35,7 +35,10 @@ namespace locust
         fRadii.push_back( aTrack.Radius );
         fRadialPhases.push_back( aTrack.RadialPhase );
 
-        //update size
+        // Update size.  And, record fLOFrequency for compatibility with previous work.  The LO frequency is
+        // now also recorded in the RunParameters Tree.
         fNTracks = fStartFrequencies.size();
+        fLOFrequency = aTrack.LOFrequency;
+        fRandomSeed = aTrack.RandomSeed;
     }
 }
