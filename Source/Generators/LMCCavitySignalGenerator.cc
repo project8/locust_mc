@@ -262,7 +262,9 @@ namespace locust
                 }
         	    if ( aParam.has( "random-track-seed" ) )
         	    {
-        	        SetSeed( aParam["random-track-seed"]().as_int() );
+        	    	// Offset event-spacing seed from track-length seed.
+        	    	int tSeed = aParam["random-track-seed"]().as_int() + 1;
+        	        SetSeed( tSeed );
         	    }
         	    else
         	    {
@@ -302,11 +304,13 @@ namespace locust
 
     bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
     {
+#ifdef ROOT_FOUND
     	fInterface->aRunParameter = new RunParameters();
     	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
     	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
     	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
-
+    	fInterface->aRunParameter->fRandomSeed = fTrackDelaySeed;
+#endif
     	return true;
     }
 
