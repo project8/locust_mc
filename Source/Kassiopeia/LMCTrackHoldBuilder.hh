@@ -1,26 +1,26 @@
 /*
- * LMCEventHoldBuilder.hh
+ * LMCTrackHoldBuilder.hh
  *
  *  Created on: Mar 13, 2016
  *      Author: nsoblath
  */
 
-#ifndef LOCUST_LMCEVENTHOLDBUILDER_HH_
-#define LOCUST_LMCEVENTHOLDBUILDER_HH_
+#ifndef LOCUST_LMCTRACKHOLDBUILDER_HH_
+#define LOCUST_LMCTRACKHOLDBUILDER_HH_
 
 #include "KComplexElement.hh"
 
-#include "LMCEventHold.hh"
+#include "LMCTrackHold.hh"
 
 namespace locust
 {
 
-    typedef katrin::KComplexElement< locust::EventHold > EventHoldBuilder;
+    typedef katrin::KComplexElement< locust::TrackHold > TrackHoldBuilder;
 
 } /* namespace locust */
 
 template< >
-inline bool locust::EventHoldBuilder::AddAttribute(KContainer *aContainer)
+inline bool locust::TrackHoldBuilder::AddAttribute(KContainer *aContainer)
 {
     if( aContainer->GetName() == "name" )
     {
@@ -31,4 +31,4 @@ inline bool locust::EventHoldBuilder::AddAttribute(KContainer *aContainer)
 }
 
 
-#endif /* LOCUST_LMCEVENTHOLDBUILDER_HH_ */
+#endif /* LOCUST_LMCTRACKHOLDBUILDER_HH_ */

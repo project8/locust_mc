@@ -11,6 +11,8 @@
 
 #include "KSTrackModifier.h"
 #include "KSComponentTemplate.h"
+#include "LMCKassLocustInterface.hh"
+
 
 namespace locust
 {
@@ -24,12 +26,23 @@ namespace locust
         virtual ~TrackHold();
         TrackHold* Clone() const;
 
+        bool ConfigureByInterface();
+        bool Configure( const scarab::param_node& aParam );
+
+
 
 
         public:
 
         virtual bool ExecutePreTrackModification(Kassiopeia::KSTrack &aTrack);
         virtual bool ExecutePostTrackModification(Kassiopeia::KSTrack &aTrack);
+
+        protected:
+            kl_interface_ptr_t fInterface;
+
+        private:
+
+        int fTrackCounter;
 
 
 };

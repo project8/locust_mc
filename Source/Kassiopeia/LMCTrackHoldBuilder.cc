@@ -1,27 +1,27 @@
 /*
- * LMCEventHoldBuilder.cc
+ * LMCTrackHoldBuilder.cc
  *
- *  Created on: Mar 13, 2016
- *      Author: nsoblath
+ *  Created on: Apr 25, 2024
+ *      Author: pslocum
  */
 
-#include "LMCEventHoldBuilder.hh"
+#include "LMCTrackHoldBuilder.hh"
 
 #include "KSRootBuilder.h"
 
 template< >
-locust::EventHoldBuilder::~KComplexElement()
+locust::TrackHoldBuilder::~KComplexElement()
 {
 }
 
 namespace locust
 {
 
-    STATICINT SLMCEventHoldStructure =
-            locust::EventHoldBuilder::Attribute< std::string >( "name" );
+    STATICINT SLMCTrackHoldStructure =
+            locust::TrackHoldBuilder::Attribute< std::string >( "name" );
 
-    STATICINT sLMCEventHold =
-            katrin::KSRootBuilder::ComplexElement< locust::EventHold >( "mod_event_hold" );
+    STATICINT sLMCTrackHold =
+            katrin::KSRootBuilder::ComplexElement< locust::TrackHold >( "mod_track_hold" );
 
 } /* namespace locust */
 
