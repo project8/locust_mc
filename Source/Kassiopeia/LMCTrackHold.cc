@@ -63,12 +63,17 @@ namespace locust
 
     bool TrackHold::ExecutePreTrackModification(Kassiopeia::KSTrack &aTrack)
     {
+        double tPitchAngle = aTrack.GetInitialParticle().GetPolarAngleToB();
+        LWARN(lmclog,"LMCTrack " << fTrackCounter << " is starting, with instantaneous pitch angle " <<  tPitchAngle);
         return true;
     }
 
     bool TrackHold::ExecutePostTrackModification(Kassiopeia::KSTrack &aTrack)
     {
-        printf("Hi, I'm the post track modifier. The track counter is %d\n", fTrackCounter); getchar();
+        double tPitchAngle = aTrack.GetFinalParticle().GetPolarAngleToB();
+        double tTime = aTrack.GetFinalParticle().GetTime();
+        LWARN(lmclog,"LMCTrack " << fTrackCounter << " is complete at Kass time " << tTime << ", with instantaneous pitch angle " <<  tPitchAngle);
+        fTrackCounter += 1;
         return true;
     }
 

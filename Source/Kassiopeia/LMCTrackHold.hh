@@ -10,6 +10,8 @@
 #define LOCUST_LMCTRACKHOLD_HH_
 
 #include "KSTrackModifier.h"
+#include "KSTrack.h"
+
 #include "KSComponentTemplate.h"
 #include "LMCKassLocustInterface.hh"
 
