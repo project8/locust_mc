@@ -175,6 +175,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCFieldCalculator.hh
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
+        Kassiopeia/LMCTrackHold.hh
+        Kassiopeia/LMCTrackHoldBuilder.hh        
         Kassiopeia/LMCKassLocustInterface.hh
         Kassiopeia/LMCRunKassiopeia.hh
         Kassiopeia/LMCRunPause.hh
@@ -211,6 +213,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCFieldCalculator.cc
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
+        Kassiopeia/LMCTrackHold.cc
+        Kassiopeia/LMCTrackHoldBuilder.cc
         Kassiopeia/LMCKassLocustInterface.cc
         Kassiopeia/LMCRunKassiopeia.cc
         Kassiopeia/LMCRunPause.cc
