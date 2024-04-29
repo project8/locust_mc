@@ -208,7 +208,7 @@ namespace locust
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
-            	LPROG(lmclog,"Updated track properties at sample " << fInterface->fSampleIndex );
+            	LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
 
@@ -270,7 +270,7 @@ namespace locust
                     	LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm );
                     }
 
-                    if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength ) )
+                    if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength-1 ) )
                     {
                         LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm);
                         LPROG(lmclog,"Checking the digitizer synchronization, at fast sample = " << fSampleIndex);
