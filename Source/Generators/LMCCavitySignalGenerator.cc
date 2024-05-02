@@ -330,9 +330,9 @@ namespace locust
     }
 
 
-    void CavitySignalGenerator::SetParameters( const scarab::param_node& tParam )
+    void CavitySignalGenerator::SetParameters( const scarab::param_node& aParam )
     {
-    	fParam = &tParam;
+    	fParam = &aParam;
     }
 
 
@@ -341,30 +341,30 @@ namespace locust
     	return fParam;
     }
 
-
-    bool CavitySignalGenerator::Configure( const scarab::param_node& tParam )
+    bool CavitySignalGenerator::Configure( const scarab::param_node& aParam )
     {
 
-    	SetParameters( tParam );
+    	SetParameters( aParam );
 
     	// Configure signal parameters:
-        if( tParam.has( "lo-frequency" ) )
+        if( aParam.has( "lo-frequency" ) )
         {
-            fLO_Frequency = tParam["lo-frequency"]().as_double();
+            fLO_Frequency = aParam["lo-frequency"]().as_double();
         }
-
-        if( tParam.has( "event-spacing-samples" ) )
+        if( aParam.has( "event-spacing-samples" ) )
         {
-            fNPreEventSamples = tParam["event-spacing-samples"]().as_int();
-            if (tParam.has( "random-spacing-samples" ))
+            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+            if (aParam.has( "random-spacing-samples" ))
             {
-                if (tParam["random-spacing-samples"]().as_bool() == true)
+                if (aParam["random-spacing-samples"]().as_bool() == true)
                 {
                     fRandomPreEventSamples = true;
                 }
-        	    if ( tParam.has( "random-track-seed" ) )
+        	    if ( aParam.has( "random-track-seed" ) )
         	    {
-        	        SetSeed( tParam["random-track-seed"]().as_int() );
+        	    	// Offset event-spacing seed from track-length seed.
+        	    	int tSeed = aParam["random-track-seed"]().as_int() + 1;
+        	        SetSeed( tSeed );
         	    }
         	    else
         	    {
@@ -374,45 +374,34 @@ namespace locust
         	    }
             }
         }
-
-        if( tParam.has( "override-aliasing" ) )
+        if( aParam.has( "override-aliasing" ) )
         {
-            fOverrideAliasing = tParam["override-aliasing"]().as_bool();
+            fOverrideAliasing = aParam["override-aliasing"]().as_bool();
         }
-
-        if( tParam.has( "bypass-tf" ) )
+        if( aParam.has( "bypass-tf" ) )
         {
-        	fBypassTF = tParam["bypass-tf"]().as_bool();
+        	fBypassTF = aParam["bypass-tf"]().as_bool();
         }
-
-        if( tParam.has( "norm-check" ) )
+        if( aParam.has( "norm-check" ) )
         {
-        	fNormCheck = tParam["norm-check"]().as_bool();
+        	fNormCheck = aParam["norm-check"]().as_bool();
         }
-        if( tParam.has( "intermediate-file" ) )
+        if( aParam.has( "intermediate-file" ) )
         {
-        	fIntermediateFile = tParam["intermediate-file"]().as_bool();
+        	fIntermediateFile = aParam["intermediate-file"]().as_bool();
         }
-        if( tParam.has( "unit-test-root-file" ) )
+        if( aParam.has( "unit-test-root-file" ) )
         {
-        	fUnitTestRootFile = tParam["unit-test-root-file"]().as_bool();
+        	fUnitTestRootFile = aParam["unit-test-root-file"]().as_bool();
         }
-        if( tParam.has( "direct-kass-power" ) )
+        if( aParam.has( "xml-filename" ) )
         {
-        	fUseDirectKassPower = tParam["direct-kass-power"]().as_bool();
+            gxml_filename = aParam["xml-filename"]().as_string();
         }
-        if( tParam.has( "xml-filename" ) )
-        {
-            gxml_filename = tParam["xml-filename"]().as_string();
-        }
-
-        if( tParam.has( "transmitter" ))
-        {
-        	int ntransmitters = 0;
-	}
 
         return true;
     }
+
 
     bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
     {
@@ -424,7 +413,6 @@ namespace locust
     	return true;
     }
 
-
     bool CavitySignalGenerator::SetSeed(int aSeed)
     {
         LPROG(lmclog,"Setting random seed for track delay to " << aSeed);
@@ -435,8 +423,11 @@ namespace locust
 
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
-        srand ( fTrackDelaySeed );
-        int tNPreEventSamples = fNPreEventSamples/10 * ( rand() % 10 );
+        scarab::param_node default_setting;
+        default_setting.add("name","uniform");
+        fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
+        fDistributionInterface.SetSeed( fTrackDelaySeed );
+        int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
 

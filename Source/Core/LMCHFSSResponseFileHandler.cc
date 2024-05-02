@@ -417,7 +417,6 @@ namespace locust
 	    std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
 	    std::string fileName = (dataDir / "../output/FIRhisto").string() + modeIndexStr + ".root";
             PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
-		
             LPROG( lmclog, "Finished writing histos to output/FIRhisto"+modeIndexStr+".root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
             getchar();

@@ -102,7 +102,7 @@ namespace locust
         aRootTreeWriter->SetFilename(sFileName);
         if (fAccumulateTruthInfo)
         {
-        	// This option should be used when running pileup.  We will need to
+        	// TO-DO:  This option should be used when running pileup.  We will need to
         	// figure out how to explicitly increment the event ID, given that the
         	// same (identical) simulation is being run multiple times in this case.
         	aRootTreeWriter->OpenFile("UPDATE");

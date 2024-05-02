@@ -24,6 +24,7 @@ namespace locust
     RunPause::RunPause() :
         fToolbox(KToolbox::GetInstance()),
         KSComponent(),
+        fMinTrackLengthFraction(0.1),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -31,6 +32,7 @@ namespace locust
     RunPause::RunPause( const RunPause& aCopy ) :
         fToolbox(KToolbox::GetInstance()),
         KSComponent(),
+        fMinTrackLengthFraction(0.1),
         fInterface( aCopy.fInterface )
     {
     }
@@ -272,13 +274,12 @@ namespace locust
         {
 
             double tMaxTrackLength = 0.;
-            double tMinTrackLengthFraction = 0.1;
             fLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
 
     	    if ( aParam.has( "min-track-length-fraction" ) )
     	    {
-    	    	tMinTrackLengthFraction = aParam["min-track-length-fraction"]().as_double();
-                LPROG(lmclog,"Setting minimum track length fraction to " << tMinTrackLengthFraction);
+                fMinTrackLengthFraction = aParam["min-track-length-fraction"]().as_double();
+                LPROG(lmclog,"Setting minimum track length fraction to " << fMinTrackLengthFraction);
     	    }
 
     	    if ( aParam.has( "track-length" ) )
@@ -296,9 +297,12 @@ namespace locust
     	    {
                 if ( aParam["random-track-length"]().as_bool() == true)
                 {
-                    srand ( GetSeed( aParam ));
-                    double tMinTrackLength = tMaxTrackLength * tMinTrackLengthFraction;
-                    double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * (rand() % 10) / 9.;
+                    scarab::param_node default_setting;
+                    default_setting.add("name","uniform");
+                    fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
+                    fDistributionInterface.SetSeed( GetSeed(aParam) );
+                    double tMinTrackLength = tMaxTrackLength * fMinTrackLengthFraction;
+                    double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
                     fLocustMaxTimeTerminator->SetTime( tRandomTime );
                     LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
                 }

@@ -221,7 +221,7 @@ namespace locust
                                         }   
 				}
 			}
-		
+		}	
 	}
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
