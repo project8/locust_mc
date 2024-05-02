@@ -40,6 +40,23 @@ namespace locust
 
     bool AnalyticResponseFunction::Configure( const scarab::param_node& aParam )
     {
+
+	if( aParam.has( "n-modes" ) )
+	{
+		int fNModes = aParam["n-modes"]().as_int();
+        	for( int bTE = 0; bTE<2; bTE++)
+        	{   
+                	fGFarray[bTE].resize(fNModes);
+                	for(int l=0; l<fNModes; l++)
+                	{   
+                        	fGFarray[bTE][l].resize(fNModes);
+                        	for(int m=0; m<fNModes; m++)
+                        	{   
+                                	fGFarray[bTE][l][m].resize(fNModes);
+                        	}   
+                	}    
+        	}  
+	}	
         return true;
     }
 

@@ -109,7 +109,7 @@ namespace locust
 		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
 		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n));
-
+		//std::cout << "CavityModes mode " << l << m << n << ": " << excitationAmplitude << ", " << EFieldAtProbe << ", " << cos(GetVoltagePhase(channelIndex, l, m, n)) << std::endl;
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 

@@ -102,8 +102,10 @@ namespace locust
 
         	void InitializeFieldPoints(std::vector< Channel<Receiver*> > allRxChannels);
             void RecordIncidentFields(FILE *fp, double t_old, int patchIndex, double zpatch, double tEFieldCoPol);
-            double GetFIRSample(int nFilterBinsRequired, double dtfilter, unsigned channel, unsigned patch);
+            double GetFIRSampleArray(int bTE, int l, int m, int n, int nFilterBinsRequired, double dtfilter, unsigned channel, unsigned patch);
+	    //double GetFIRSample(int nFilterBinsRequired, double dtfilter, unsigned channel, unsigned patch);
             void InitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
+	    void ReInitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize);
             void CleanupBuffers();
             void PopBuffers(unsigned channel, unsigned patch);
             void FillBuffers(Signal* aSignal, double DopplerFrequency, double EFieldValue, double LOPhase, unsigned index, unsigned channel, unsigned patch);
@@ -120,7 +122,7 @@ namespace locust
 
 
             bool DoGenerate( Signal* aSignal );
-            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtfilter);
+            bool DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, std::vector< std::vector< std::vector< std::vector<int>>>> nFilterBinsRequiredArray, std::vector< std::vector< std::vector< std::vector<double>>>> dtfilterArray, std::vector< std::vector< std::vector< std::vector<int>>>> nFilterBinsArray);
             bool InitializeElementArray();
             AntennaElementPositioner* fAntennaElementPositioner;
             Transmitter* fTransmitter; // transmitter object

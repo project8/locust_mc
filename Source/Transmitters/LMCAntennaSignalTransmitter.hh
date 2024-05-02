@@ -50,13 +50,13 @@ namespace locust
         bool Configure( const scarab::param_node& aNode );
         
         /// Generate the electric field based on the voltage input from the config file and convolution with FIR
-        virtual std::vector<double> GetEFieldCoPol(int fieldPointIndex, double dt);
+        virtual std::vector<double> GetEFieldCoPol(int bTE, int l, int m, int n, int fieldPointIndex, double dt);
         
         /// Get initial phase delay
         double GetInitialPhaseDelay();
         
         /// Initialize the FIR filter and the field estimator
-        bool InitializeTransmitter();
+        bool InitializeTransmitter(int bTE, int l, int m, int n);
         
         /// Select dipole or turnstile
         bool SetAntennaType( std::string antennaType );

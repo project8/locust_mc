@@ -32,14 +32,12 @@ namespace locust
 
 	bool CavityUtility::Configure(int bTE, int l, int m, int n)
 	{
-
 		fTFReceiverHandler = new TFReceiverHandler();
 		if ( !fTFReceiverHandler->Configure(*GetParams()) )
 		{
 			LWARN(testlog,"TFReceiverHandler was not configured correctly.");
 		    return false;
 		}
-
 		fAnalyticResponseFunction = new DampedHarmonicOscillator();
 		if ( !fAnalyticResponseFunction->Configure(*GetParams()) )
 		{
@@ -51,7 +49,6 @@ namespace locust
 			LWARN(testlog,"GF->FIR was not generated.");
 			return false;
 		}
-
         	fRF_frequency = 0.; // Hz
 		delete fAnalyticResponseFunction;
 		return true;
@@ -96,16 +93,17 @@ namespace locust
 	}
 
 
-
+/*
 	std::deque<double> CavityUtility::SignalToDeque(Signal* aSignal)
 	{
 	    std::deque<double> incidentSignal;
-	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSize(); i++)
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSize(bTE,l,m,n); i++)
 	    {
 	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
 	    }
 	    return incidentSignal;
 	}
+*/
 
         std::deque<double> CavityUtility::SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal)
         {   
@@ -143,12 +141,13 @@ namespace locust
 	}
 
 
-    bool CavityUtility::CheckCavityQ(int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
+    bool CavityUtility::CheckCavityQ(int bTE, int l, int m, int n, int nModes, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
     {
     	AddParam( "dho-time-resolution", dhoTimeResolution );
     	AddParam( "dho-threshold-factor", dhoThresholdFactor );
     	AddParam( "dho-cavity-frequency", dhoCavityFrequency );
     	AddParam( "dho-cavity-Q", dhoCavityQ );
+	AddParam( "n-modes", nModes );
     	if (!Configure(bTE,l,m,n))
     	{
     		LERROR(testlog,"Cavity was not configured correctly.");
@@ -159,7 +158,6 @@ namespace locust
         int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n);
         fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE,l,m,n));
         aSignal->Initialize( N0 , 1 );
-
         double qInferred = 0.;
         double maxGain = 0.;
 	double maxGainFreq = 0.;
@@ -185,7 +183,6 @@ namespace locust
         	}
         	freqArray[i] = fRF_frequency;
         	gainArray[i] = convolutionMag*convolutionMag;
-
         	if (convolutionMag*convolutionMag > maxGain)
         	{
         		maxGain = convolutionMag*convolutionMag;

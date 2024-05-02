@@ -17,6 +17,7 @@ namespace locust
 
     FieldCalculator::FieldCalculator() :
     		fNFilterBinsRequiredArray( {{{{0}}}} ),
+			fNModes( 2 ),
 			fbMultiMode( false ),
 			fZSignalStart( 0. ),
 			fSignalStarted( false ),
@@ -27,6 +28,7 @@ namespace locust
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
     		fNFilterBinsRequiredArray( {{{{0}}}} ),
+			fNModes( 2 ),
 			fbMultiMode( false ),
 			fZSignalStart( 0. ),
 			fSignalStarted( false ),
@@ -59,32 +61,49 @@ namespace locust
 
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
      {
-
+        if (aParam.has( "n-modes" ) ) 
+        {   
+        	fNModes = aParam["n-modes"]().as_int();
+        }
         if( aParam.has( "locust-signal-zstart" ) )
         {
         	fZSignalStart = aParam["locust-signal-zstart"]().as_double();
     		LPROG(lmclog,"Starting signal calculation when e- z-position > " << fZSignalStart << " m.");
         }
-
         if( aParam.has( "multi-mode" ) )
         {	
     		if(aParam["multi-mode"]().as_bool()) LPROG(lmclog,"Running in multimode configuration.");
         	fbMultiMode = aParam["multi-mode"]().as_bool();
         }
-
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring receiver FIRHandler class");
     	}
-
         if( aParam.has( "tf-receiver-filename" ) )
         {
-            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
-            {
-            	LERROR(lmclog,"FIR has not been generated.");
-            	exit(-1);
-            }
+
+
+ 		for(int bTE=0; bTE<2; bTE++)
+                        {
+                                for(int l=0; l<fNModes; l++)
+                                {
+                                        for(int m=0; m<fNModes; m++)
+                                        {
+                                                for(int n=0; n<fNModes; n++)
+                                                {
+            						if (!fTFReceiverHandler->ReadHFSSFile(bTE, l, m, n))  // Read external file
+            						{
+            							LERROR(lmclog,"FIR has not been generated.");
+            							exit(-1);
+            						}
+						}
+					}
+				}
+			}
+
+
+
         }
         else // Generate analytic response function
         {
@@ -98,45 +117,53 @@ namespace locust
         		}
         		else
         		{
-        			if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray()))
-        			{
-        				LWARN(lmclog,"TF->FIR was not generated correctly.");
-        				return false;
-        			}
+                		for(int bTE=0; bTE<2; bTE++)
+                        	{   
+                                	for(int l=0; l<fNModes; l++)
+                                	{   
+                                        	for(int m=0; m<fNModes; m++)
+                                        	{   
+                                                	for(int n=0; n<fNModes; n++)
+                                                	{
+        							if (!fTFReceiverHandler->ConvertAnalyticTFtoFIR(bTE, l, m, n, fAnalyticResponseFunction->GetInitialFreq(),fAnalyticResponseFunction->GetTFarray())) //
+        							{
+        								LWARN(lmclog,"TF->FIR was not generated correctly.");
+        								return false;
+        							}
+							}
+						}
+					}
+				}
         		}
         	}
         	else
         	{
         		fAnalyticResponseFunction = new DampedHarmonicOscillator();
-
         		if ( !fAnalyticResponseFunction->Configure(aParam) )
         		{
         			LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
         			return false;
         		}
-			
                         fFIRBufferArray.resize(2);
                         fFrequencyBufferArray.resize(2);
                         fNFilterBinsRequiredArray.resize(2);
 			for(int bTE=0; bTE<2; bTE++)
 			{
-				fFIRBufferArray[bTE].resize(2);
-				fFrequencyBufferArray[bTE].resize(2);
-				fNFilterBinsRequiredArray[bTE].resize(2);
-				for(int l=0; l<2; l++)
+				fFIRBufferArray[bTE].resize(fNModes);
+				fFrequencyBufferArray[bTE].resize(fNModes);
+				fNFilterBinsRequiredArray[bTE].resize(fNModes);
+				for(int l=0; l<fNModes; l++)
 				{
-					fFIRBufferArray[bTE][l].resize(2);
-					fFrequencyBufferArray[bTE][l].resize(2);
-					fNFilterBinsRequiredArray[bTE][l].resize(2);
-					for(int m=0; m<2; m++)
+					fFIRBufferArray[bTE][l].resize(fNModes);
+					fFrequencyBufferArray[bTE][l].resize(fNModes);
+					fNFilterBinsRequiredArray[bTE][l].resize(fNModes);
+					for(int m=0; m<fNModes; m++)
 					{
-						fFIRBufferArray[bTE][l][m].resize(2);
-						fFrequencyBufferArray[bTE][l][m].resize(2);
-						fNFilterBinsRequiredArray[bTE][l][m].resize(2);
-						for(int n=0; n<2; n++)
+						fFIRBufferArray[bTE][l][m].resize(fNModes);
+						fFrequencyBufferArray[bTE][l][m].resize(fNModes);
+						fNFilterBinsRequiredArray[bTE][l][m].resize(fNModes);
+						for(int n=0; n<fNModes; n++)
 						{ 
-//IF THIS WORKS CLEAN THIS UP
-
 							if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE,l,m,n,fAnalyticResponseFunction->GetGFarray(bTE,l,m,n)))
         						{
         							LWARN(lmclog,"GF->FIR was not generated.");
@@ -178,7 +205,6 @@ namespace locust
 
     bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)
     {
-    	int nModes = 2;
 	//int nModes = fInterface->fField->GetNModes();
     	if ((eGun)&&(bTE))
     	{
@@ -191,7 +217,7 @@ namespace locust
     		}
     		else
     		{
-    			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
+    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
     				return true;
     			else
     				return false;
@@ -201,7 +227,7 @@ namespace locust
     	{
     		if (!bNormCheck)
     		{
-    			// Allow only TE011, or TE011+TM111 if fbMultimode==true
+    			// Allow only TE011, or TE011+TM111 if fbMultiMode==true
     			if ((((l==0)&&(m==1)&&(n==1))&&(bTE)) || (((l==1)&&(m==1)&&(n==1))&&(!bTE)&&(fbMultiMode)))
     				return true;
     			else
@@ -209,7 +235,7 @@ namespace locust
     		}
     		else  // if bNormCheck==true, allow all modes.
     		{
-    			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
+    			if ((l<=fNModes)&&(m<=fNModes)&&(n<=fNModes))
     				return true;
     			else
     				return false;

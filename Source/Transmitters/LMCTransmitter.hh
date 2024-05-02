@@ -36,7 +36,8 @@ namespace locust
             virtual void TxSayHello();
 
             virtual bool Configure( const scarab::param_node& ){return true;};
-            virtual std::vector<double> GetEFieldCoPol(int fieldPointIndex, double dt) {return {0.};};
+	    //virtual std::vector<double> GetEFieldCoPol(int fieldPointIndex, double dt) {return {0.};};
+            virtual std::vector<double> GetEFieldCoPol(int bTE, int l, int m, int n, int fieldPointIndex, double dt) {return {0.};};
 
             virtual std::vector<double> SolveKassFields(LMCThreeVector pointOfInterest, LMCThreeVector coPolDirection, double tReceiverTime, unsigned tTotalElementIndex) {return {0.};};
             virtual std::vector<double> ExtractParticleXP(double TOld, bool Interpolate, double dt, bool EGun) {return {0.};};

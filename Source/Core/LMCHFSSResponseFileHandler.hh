@@ -30,13 +30,15 @@ namespace locust
         
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode);
-        virtual bool ReadHFSSFile();
-        virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
+        virtual bool ReadHFSSFile(int bTE, int l, int m, int n);
+	virtual double ConvolveWithFIRFilterArray(int bTE, int l, int m, int n, std::deque<double>);// Convolve input signal (voltage or field) with FIR
+        //virtual double ConvolveWithFIRFilter(std::deque<double>);// Convolve input signal (voltage or field) with FIR
         virtual std::pair<double,double> ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer);
-        virtual std::pair<double,double> ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
-        int GetFilterSize() const;//Number of entries in the filter
+        //virtual std::pair<double,double> ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer);
+        //int GetFilterSize() const;//Number of entries in the filter
 	int GetFilterSizeArray(int bTE, int l, int m, int n) const;//Number of entries in the filter
-        double GetFilterResolution() const;//Get the resolution of the filter
+	int GetNModes() const;
+        //double GetFilterResolution() const;//Get the resolution of the filter
 	double GetFilterResolutionArray(int bTE, int l, int m, int n) const;//Get the resolution of the filter
         void PrintFIR( std::vector<double>, int nBins, std::string filename );
         void PrintFIR( fftw_complex* aFilter, int nBins, std::string filename );
@@ -47,20 +49,21 @@ namespace locust
         // Member variables
         std::string fHFSSFilename;
         std::vector<double> fFilter;
-        fftw_complex* fFilterComplex;
+        //fftw_complex* fFilterComplex; //Updating to use multimode compatible array
 	std::vector< std::vector< std::vector < std::vector< fftw_complex*>>>> fFilterComplexArray;
-        int fTFNBins;
-        int fFIRNBins;
+        //int fTFNBins;
+	std::vector < std::vector < std::vector < std::vector < int >>>> fTFNBinsArray;
+        //int fFIRNBins;
 	std::vector < std::vector < std::vector < std::vector < int >>>> fFIRNBinsArray;
 	int fNModes;
-        double fResolution;
+        //double fResolution;
 	std::vector < std::vector < std::vector < std::vector < double >>>> fResolutionArray;
         int fCropIndex;
         double fCharacteristicImpedance;
         int fNSkips;
         bool fHFSSFiletype;
         ComplexFFT fComplexFFT;
-        bool fIsFIRCreated;
+        //bool fIsFIRCreated;
 	std::vector < std::vector < std::vector < std::vector < bool >>>> fIsFIRCreatedArray;
         std::string fWindowName;
         double fWindowParam;
@@ -77,20 +80,25 @@ namespace locust
         //Member functions
         bool ends_with(const std::string &, const std::string &);
     };
-    
+    /*
     inline int HFSSResponseFileHandlerCore::GetFilterSize() const
     {
         return fFIRNBins;
-    }
+    }*/
     
     inline int HFSSResponseFileHandlerCore::GetFilterSizeArray(int bTE, int l, int m, int n) const
     {
         return fFIRNBinsArray[bTE][l][m][n];
     }
-
+    /*
     inline double HFSSResponseFileHandlerCore::GetFilterResolution() const
     {
         return fResolution;
+    }*/
+
+    inline int HFSSResponseFileHandlerCore::GetNModes() const
+    {
+	return fNModes;
     }
 
     inline double HFSSResponseFileHandlerCore::GetFilterResolutionArray(int bTE, int l, int m, int n) const
@@ -113,8 +121,9 @@ namespace locust
         
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
-        bool ReadHFSSFile() override;
-        bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
+        bool ReadHFSSFile(int bTE, int l, int m, int n) override;
+        //bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
+	bool ConvertAnalyticTFtoFIR(int bTE, int l, int m, int n, double initialFreq, std::vector<std::complex<double>> tfArray);
         bool ConvertAnalyticGFtoFIR(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray);
 
     
@@ -124,9 +133,9 @@ namespace locust
         fftw_complex *fFIRComplex;
         
         // Member functions
-        bool ConvertTFtoFIR(std::vector<std::complex<double>> &, bool GeneratedTF);
+        bool ConvertTFtoFIR(int bTE, int l, int m, int n, std::vector<std::complex<double>> &, bool GeneratedTF);
         bool ConvertStoZ(std::vector<std::complex<double>> &tfArray, bool bConvert);
-        bool CropFIR(fftw_complex* anArray, bool bConvert);
+        bool CropFIR(int bTE, int l, int m, int n, fftw_complex* anArray, bool bConvert);
 
     protected:
         //Member variables
@@ -149,7 +158,7 @@ namespace locust
         
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
-        bool ReadHFSSFile() override;
+        bool ReadHFSSFile(int bTE, int l, int m, int n) override;
     };
 } /*namespace locust*/
 

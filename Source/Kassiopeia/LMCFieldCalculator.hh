@@ -64,6 +64,7 @@ namespace locust
             std::vector< std::vector< std::vector< std::vector< std::deque<double> >>>> fFIRBufferArray;
             std::vector< std::vector< std::vector< std::vector< std::deque<double> >>>> fFrequencyBufferArray;
 	    std::vector< std::vector< std::vector< std::vector< int >>>> fNFilterBinsRequiredArray;
+	    int fNModes;
             bool fbMultiMode;
             double fZSignalStart;
             bool fSignalStarted;
