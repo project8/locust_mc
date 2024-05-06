@@ -266,7 +266,9 @@ namespace locust
                 }
         	    if ( aParam.has( "random-track-seed" ) )
         	    {
-        	        SetSeed( aParam["random-track-seed"]().as_int() );
+        	    	// Offset event-spacing seed from track-length seed.
+        	    	int tSeed = aParam["random-track-seed"]().as_int() + 1;
+        	        SetSeed( tSeed );
         	    }
         	    else
         	    {
@@ -306,11 +308,13 @@ namespace locust
 
     bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
     {
+#ifdef ROOT_FOUND
     	fInterface->aRunParameter = new RunParameters();
     	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
     	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
     	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
-
+    	fInterface->aRunParameter->fRandomSeed = fTrackDelaySeed;
+#endif
     	return true;
     }
 
@@ -326,8 +330,11 @@ namespace locust
 
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
-        srand ( fTrackDelaySeed );
-        int tNPreEventSamples = fNPreEventSamples/10 * ( rand() % 10 );
+        scarab::param_node default_setting;
+        default_setting.add("name","uniform");
+        fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
+        fDistributionInterface.SetSeed( fTrackDelaySeed );
+        int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
 

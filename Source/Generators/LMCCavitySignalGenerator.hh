@@ -26,6 +26,7 @@
 #include "LMCTFFileHandler.hh"
 #include "LMCCavityUtility.hh"
 #include "LMCAliasingUtility.hh"
+#include "LMCDistributionInterface.hh"
 #include <vector>
 #include <sstream>
 #include <string>
@@ -134,6 +135,9 @@ namespace locust
             FILE *fp;
 
             const scarab::param_node* fParam;
+
+            std::shared_ptr< BaseDistribution> fStartDelayDistribution;
+            DistributionInterface fDistributionInterface;
 
 
     };

@@ -62,7 +62,6 @@ namespace locust
     	{
             fStartingIndex = index;
             fInterface->aTrack.StartTime = tTime;
-            fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
             double tX = aFinalParticle.GetPosition().X();
             double tY = aFinalParticle.GetPosition().Y();
             fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
@@ -72,7 +71,6 @@ namespace locust
     	else
     	{
             fInterface->aTrack.EndTime = tTime;
-            fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
             unsigned nElapsedSamples = index - fStartingIndex;
             fInterface->aTrack.AvgFrequency = ( fInterface->aTrack.AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
             fInterface->aTrack.TrackLength = tTime - fInterface->aTrack.StartTime;
@@ -129,12 +127,26 @@ namespace locust
         aNewParticle.SetKinematicProperties();
 
 
-        if (fPitchAngle == -99.)  // first crossing of center
+        if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
         {
-            if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
+            if (fPitchAngle == -99.)  // first crossing of center
             {
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
+#ifdef ROOT_FOUND
                 fInterface->aTrack.PitchAngle = aFinalParticle.GetPolarAngleToB();
+                fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
+                double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
+                double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
+                fInterface->aTrack.LOFrequency = tLOfrequency;
+                fInterface->aTrack.RandomSeed = fInterface->aRunParameter->fRandomSeed;
+                fInterface->aTrack.OutputStartFrequency = fInterface->aTrack.StartFrequency - tLOfrequency + tSamplingRate * 1.e6 / 2.;
+#endif
+            }
+            else
+            {
+#ifdef ROOT_FOUND
+                fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
+#endif
             }
         }
         aNewParticle.SetPitchAngle(fPitchAngle);
@@ -196,7 +208,7 @@ namespace locust
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
-            	LPROG(lmclog,"Updated track properties at sample " << fInterface->fSampleIndex );
+            	LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
 
@@ -258,7 +270,7 @@ namespace locust
                     	LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm );
                     }
 
-                    if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength ) )
+                    if ( ( tTriggerConfirm > fInterface->fTriggerConfirm - 3) && ( fSampleIndex < fInterface->fFastRecordLength-1 ) )
                     {
                         LPROG(lmclog,"Checking the digitizer synchronization, tTriggerConfirm index = " << tTriggerConfirm);
                         LPROG(lmclog,"Checking the digitizer synchronization, at fast sample = " << fSampleIndex);
