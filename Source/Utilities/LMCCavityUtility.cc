@@ -141,13 +141,13 @@ namespace locust
 	}
 
 
-    bool CavityUtility::CheckCavityQ(int bTE, int l, int m, int n, int nModes, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
+    bool CavityUtility::CheckCavityQ(int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
     {
     	AddParam( "dho-time-resolution", dhoTimeResolution );
     	AddParam( "dho-threshold-factor", dhoThresholdFactor );
     	AddParam( "dho-cavity-frequency", dhoCavityFrequency );
     	AddParam( "dho-cavity-Q", dhoCavityQ );
-	AddParam( "n-modes", nModes );
+//	AddParam( "n-modes", nModes );
     	if (!Configure(bTE,l,m,n))
     	{
     		LERROR(testlog,"Cavity was not configured correctly.");

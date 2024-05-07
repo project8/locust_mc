@@ -71,7 +71,7 @@ public:
 			LWARN(testlog,"TFReceiverHandler was not configured correctly.");
 			return false;
 		}
-		if ( !fTFReceiverHandler->ReadHFSSFile() )
+		if ( !fTFReceiverHandler->ReadHFSSFile(1,0,1,1) )
 		{
 			LWARN(testlog,"TF file was not read correctly.");
 			return false;
@@ -111,7 +111,7 @@ public:
 	std::deque<double> SignalToDeque(Signal* aSignal)
 	{
 	    std::deque<double> incidentSignal;
-	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSize(); i++)
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(1,0,1,1); i++)
 	    {
 	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
 	    }
@@ -155,8 +155,8 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
 
 	/* initialize time series */
 	Signal* aSignal = new Signal();
-	int N0 = aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterSize();
-	aTestLMCPlaneWaveFIR.fFilterRate = (1./aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterResolution());
+	int N0 = aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterSizeArray(1,0,1,1);
+	aTestLMCPlaneWaveFIR.fFilterRate = (1./aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1));
 	aSignal->Initialize( N0 , 1 );
 
 	double firGainMax = 0.;
@@ -172,7 +172,7 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
 				/* populate time series and convolve it with the FIR filter */
 				double timeStamp = i/aTestLMCPlaneWaveFIR.fAcquisitionRate;
 				aTestLMCPlaneWaveFIR.PopulateSignal(aSignal, N0, timeStamp);
-				double convolution = aTestLMCPlaneWaveFIR.fTFReceiverHandler->ConvolveWithFIRFilter(aTestLMCPlaneWaveFIR.SignalToDeque(aSignal));
+				double convolution = aTestLMCPlaneWaveFIR.fTFReceiverHandler->ConvolveWithFIRFilterArray(1,0,1,1,aTestLMCPlaneWaveFIR.SignalToDeque(aSignal));
 				if (fabs(convolution) > convolutionMag)
 				{
 					convolutionMag = convolution;

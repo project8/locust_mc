@@ -463,7 +463,7 @@ namespace locust
     	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE,l,m,n);
     	double qExpected = fAnalyticResponseFunction->GetCavityQ(bTE,l,m,n);
     	aCavityUtility.SetOutputFile(fUnitTestRootFile);
-    	if (!aCavityUtility.CheckCavityQ(bTE, l, m, n, fInterface->fField->GetNModes(), timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+    	if (!aCavityUtility.CheckCavityQ(bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
     	{
         	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
         			"with the unit test as in bin/testLMCCavity [-h]");
