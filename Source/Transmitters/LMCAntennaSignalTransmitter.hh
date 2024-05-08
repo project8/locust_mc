@@ -56,7 +56,7 @@ namespace locust
         double GetInitialPhaseDelay();
         
         /// Initialize the FIR filter and the field estimator
-        bool InitializeTransmitter(int bTE, int l, int m, int n);
+        bool InitializeTransmitter();
         
         /// Select dipole or turnstile
         bool SetAntennaType( std::string antennaType );

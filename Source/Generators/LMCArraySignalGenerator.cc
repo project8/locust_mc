@@ -6,7 +6,6 @@
  */
 
 #include "LMCArraySignalGenerator.hh"
-#include "LMCFieldCalculator.hh"
 
 #include "LMCRunKassiopeia.hh"
 
@@ -304,7 +303,6 @@ namespace locust
 
     	SetParameters( aParam );
 
-
         if( aParam.has( "lo-frequency" ) )
         {
             fLO_Frequency = aParam["lo-frequency"]().as_double();
@@ -447,19 +445,7 @@ namespace locust
 
     }
 
-
-    // fields incident on element.
-    void ArraySignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int elementIndex, double zelement, double tEFieldCoPol)
-    {
-    	if (t_old > 0.5e-9)
-         	{
-         	fprintf(fp, "%d %g %g\n", elementIndex, zelement, tEFieldCoPol);
-         	}
-    }
-
-
-
-    double ArraySignalGenerator::GetFIRSampleArray(int bTE, int l, int m, int n, int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
+    double ArraySignalGenerator::GetFIRSample(int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
     {
 
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
@@ -499,7 +485,7 @@ namespace locust
     			*it++;
     		}
 
-    		convolution=fTFReceiverHandler.ConvolveWithFIRFilterArray(bTE,l,m,n,ElementFIRBuffer[channel*fNElementsPerStrip+element]);
+    		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
     		return convolution;
 
     	}
@@ -508,15 +494,8 @@ namespace locust
     }
 
 
-    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal,  std::vector< std::vector< std::vector< std::vector< int >>>> nFilterBinsRequiredArray,  std::vector< std::vector< std::vector< std::vector< double >>>> dtFilterArray,  std::vector< std::vector< std::vector< std::vector< int >>>> nFilterBinsArray)
+    bool ArraySignalGenerator::DriveAntenna(int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtFilter)
     {
-
-	FieldCalculator* fFieldCalculator = new FieldCalculator();
-	int nModes = 2;
-	if (fParam->has( "nModes" ) )
-        {
-                nModes = (*fParam)["n-modes"]().as_int();
-        }
 
         const int signalSize = aSignal->TimeSize();
         unsigned sampleIndex = 0;
@@ -538,39 +517,21 @@ namespace locust
             	Receiver* currentElement = allRxChannels[channelIndex][elementIndex];
                 sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
 
-                std::vector< std::vector< std::vector< std::vector< std::vector<double> >>>> tFieldSolution; //tFieldSolution.resize(2);
-		double VoltageFIRSample = 0;
-		for( int bTE = 0; bTE<2; bTE++)
-		{
-			for( int l = 0; l < nModes; l++)
-			{
-				for( int m = 0; m < nModes; m++)
-				{
-					for( int n = 0; n<nModes; n++)
-					{
-						if (fFieldCalculator->ModeSelect(l, m, n, 0, 0, bTE))
-						{
-							ReInitializeBuffers(nFilterBinsArray[bTE][l][m][n], fFieldBufferSize);
-							if (!fTransmitter->IsKassiopeia())
-                					{  
-                						tFieldSolution[bTE][l][m][n] = fTransmitter->GetEFieldCoPol(bTE, l, m, n, tTotalElementIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
-							}
-					                else
-                					{   
-                        					tFieldSolution[bTE][l][m][n] = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
-                					} 
-							tFieldSolution[bTE][l][m][n][0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
-							if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[bTE][l][m][n][1]);
-							PopBuffers(channelIndex, elementIndex);
-                    					FillBuffers(aSignal, tFieldSolution[bTE][l][m][n][1], tFieldSolution[bTE][l][m][n][0], fphiLO, index, channelIndex, elementIndex);
-							VoltageFIRSample += GetFIRSampleArray(bTE, l, m, n, nFilterBinsRequiredArray[bTE][l][m][n], dtFilterArray[bTE][l][m][n], channelIndex, elementIndex);
-						}
-					}
-				}
-			}
+                std::vector<double> tFieldSolution; //tFieldSolution.resize(2);
+                if (!fTransmitter->IsKassiopeia())
+                {
+                	tFieldSolution = fTransmitter->GetEFieldCoPol(tTotalElementIndex, 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor()));
+                }
+                else
+                {
+                	tFieldSolution = fTransmitter->SolveKassFields(currentElement->GetPosition(), currentElement->GetPolarizationDirection(), tReceiverTime, tTotalElementIndex);
                 }
 
+                tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
                 
+                PopBuffers(channelIndex, elementIndex);
+ 	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
+ 	            double VoltageFIRSample = GetFIRSample(nFilterBinsRequired, dtFilter, channelIndex, elementIndex);
             	if ((VoltageFIRSample == 0.)&&(index-startingIndex > fFieldBufferSize + fFIRzeroBuffer))
             	{
                     LERROR(lmclog,"A digitizer sample was skipped due to likely unresponsive thread.\n");
@@ -628,22 +589,6 @@ namespace locust
     	FIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
     }
 
-    void ArraySignalGenerator::ReInitializeBuffers(unsigned filterbuffersize, unsigned fieldbuffersize)
-    {
-        FieldBuffer aFieldBuffer;
-        std::vector<std::deque<double>> tempEFieldBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-	std::swap(tempEFieldBuffer,EFieldBuffer);
-        std::vector<std::deque<double>> tempEFrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-        std::swap(tempEFrequencyBuffer, EFrequencyBuffer);
-        std::vector<std::deque<double>> tempLOPhaseBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-        std::swap(tempLOPhaseBuffer, LOPhaseBuffer);
-        std::vector<std::deque<unsigned>> tempIndexBuffer = aFieldBuffer.InitializeUnsignedBuffer(fNChannels, fNElementsPerStrip, fieldbuffersize);
-        std::swap(tempIndexBuffer, IndexBuffer);
-        std::vector<std::deque<double>> tempElementFIRBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
-        std::swap(tempElementFIRBuffer, ElementFIRBuffer);
-        std::vector<std::deque<double>> tempFIRfrequencyBuffer = aFieldBuffer.InitializeBuffer(fNChannels, fNElementsPerStrip, filterbuffersize);
-        std::swap(tempFIRfrequencyBuffer, tempFIRfrequencyBuffer);
-    }
 
     void ArraySignalGenerator::CleanupBuffers()
     {
@@ -659,27 +604,12 @@ namespace locust
 
     bool ArraySignalGenerator::InitializeElementArray()
     {
-	int nModes = 2;
-        if (fParam->has( "nModes" ) )
+
+        if(!fTFReceiverHandler.ReadHFSSFile())
         {
-                nModes = (*fParam)["n-modes"]().as_int();
+            return false;
         }
-	for(int bTE=0; bTE<2; bTE++)
-	{
-		for(int l=0; l<nModes; l++)
-		{
-			for(int m=0; m<nModes; m++)
-			{
-				for(int n=0; n<nModes; n++)
-				{
-        				if(!fTFReceiverHandler.ReadHFSSFile(bTE, l, m, n))
-        				{
-            					return false;
-        				}
-				}
-			}
-		}
-	}
+
         const unsigned nChannels = fNChannels;
         const unsigned nSubarrays = fNSubarrays;
         const int nReceivers = fNElementsPerStrip;
@@ -727,51 +657,15 @@ namespace locust
             exit(-1);
         }
 
-        FILE *fp;
-        if (fTextFileWriting==1) fp = fopen("incidentfields.txt", "w");
-
-	int nModes = 2;
-        if (fParam->has( "nModes" ) )
-        {
-               nModes = (*fParam)["n-modes"]().as_int();
-        }
-	int PreEventCounter = 0;
-	std::vector< std::vector< std::vector< std::vector<int>>>> nFilterBinsArray;
-	std::vector< std::vector< std::vector< std::vector<double>>>> dtFilterArray;
-	std::vector< std::vector< std::vector< std::vector<int>>>> dtFilterBinsRequiredArray;
-	nFilterBinsArray.resize(2);
-	dtFilterArray.resize(2);
-	dtFilterBinsRequiredArray.resize(2);
-	for(int bTE=0; bTE<2; bTE++)
-	{
-		nFilterBinsArray[bTE].resize(nModes);
-		dtFilterArray[bTE].resize(nModes);
-		dtFilterBinsRequiredArray[bTE].resize(nModes);
-		for(int l=0; l<nModes; l++)
-		{
-			nFilterBinsArray[bTE][l].resize(nModes);
-                 	dtFilterArray[bTE][l].resize(nModes);
-			dtFilterBinsRequiredArray[bTE][l].resize(nModes);
-			for(int m=0; m<nModes; m++)
-			{
-				nFilterBinsArray[bTE][l][m].resize(nModes);
-                                dtFilterArray[bTE][l][m].resize(nModes);
-				dtFilterBinsRequiredArray[bTE][l][m].resize(nModes);
-				for(int n=0; n<nModes; n++)
-				{
-					nFilterBinsArray[bTE][l][m][n] = fTFReceiverHandler.GetFilterSizeArray(bTE, l, m, n);
-					dtFilterArray[bTE][l][m][n] = fTFReceiverHandler.GetFilterResolutionArray(bTE, l, m, n);
-					dtFilterBinsRequiredArray[bTE][l][m][n]  = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilterArray[bTE][l][m][n], (double)nFilterBinsArray[bTE][l][m][n] );
-					if (!fAllowFastSampling) dtFilterBinsRequiredArray[bTE][l][m][n] = nFilterBinsArray[bTE][l][m][n];
-				}
-			}
-		}
-	}
-
         //n samples for event spacing in Kass.
-        //int PreEventCounter = 0;
+        int PreEventCounter = 0;
 
-        InitializeBuffers(nFilterBinsArray[1][0][1][1], fFieldBufferSize);
+        int nFilterBins = fTFReceiverHandler.GetFilterSize();
+        double dtFilter = fTFReceiverHandler.GetFilterResolution();
+        int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
+        if (!fAllowFastSampling) nFilterBinsRequired = nFilterBins;
+        unsigned nFieldBufferBins = fFieldBufferSize;
+        InitializeBuffers(nFilterBins, nFieldBufferBins);
 
         InitializeFieldPoints(allRxChannels);
 
@@ -779,7 +673,7 @@ namespace locust
         {
         	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         	{
-        		DriveAntenna(fp, PreEventCounter, index, aSignal, dtFilterBinsRequiredArray, dtFilterArray, nFilterBinsArray);
+        		DriveAntenna(PreEventCounter, index, aSignal, nFilterBinsRequired, dtFilter);
         	}  // for loop
         	return true;
         }
@@ -793,7 +687,6 @@ namespace locust
 
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
-
                 if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
                 	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
@@ -833,7 +726,7 @@ namespace locust
 
                         if (fInterface->fEventInProgress)
                         {
-                            if (DriveAntenna(fp, startingIndex, index, aSignal, dtFilterBinsRequiredArray, dtFilterArray, nFilterBinsArray))
+                            if (DriveAntenna(startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
                             {
                                 PreEventCounter = 0; // reset
                             }
@@ -896,7 +789,6 @@ namespace locust
             }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
-            if (fTextFileWriting==1) fclose(fp);
             LPROG( lmclog, "Finished signal loop." );
             fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();

@@ -133,16 +133,16 @@ namespace locust
         return FieldSolution;
     }
     
-    bool AntennaSignalTransmitter::InitializeTransmitter(int bTE, int l, int m, int n)
+    bool AntennaSignalTransmitter::InitializeTransmitter()
     {
-        if(!fTransmitterHandler.ReadHFSSFile(bTE,l,m,n))
+        if(!fTransmitterHandler.ReadHFSSFile())
         {
-	    LERROR(lmclog,"Error reading HFSS file");
+            LERROR(lmclog,"Error reading HFSS file");
             return false;
         }
-        double filterSize=fTransmitterHandler.GetFilterSizeArray(bTE,l,m,n);
+        double filterSize=fTransmitterHandler.GetFilterSize();
         InitializeBuffers(filterSize);
-        fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fTransmitterHandler.GetFilterResolutionArray(bTE,l,m,n))*fInputFrequency;
+        fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fTransmitterHandler.GetFilterResolution())*fInputFrequency;
         fPhaseDelay = fInitialPhaseDelay;
         return true;
     }
@@ -160,9 +160,8 @@ namespace locust
     
     void AntennaSignalTransmitter::AddPropagationPhaseDelay(LMCThreeVector pointOfInterest)
     {
-        double phaseDelay = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*
-		fTransmitterHardware->GetPropagationDistance(pointOfInterest);
-	Transmitter::AddPropagationPhaseDelay(phaseDelay);
+        double phaseDelay = 2.*LMCConst::Pi()*fInputFrequency/LMCConst::C()*fTransmitterHardware->GetPropagationDistance(pointOfInterest);
+        Transmitter::AddPropagationPhaseDelay(phaseDelay);
     }
 
     void AntennaSignalTransmitter::InitializeBuffers(unsigned filterbuffersize)
