@@ -57,7 +57,7 @@
 using namespace scarab;
 using namespace locust;
 
-LOGGER( testlog, "testLMCCavity" );
+LOGGER( lmclog, "testLMCCavity" );
 
 class testCavity_app : public main_app
 {
@@ -68,14 +68,21 @@ class testCavity_app : public main_app
         fDHOThresholdFactor(0.01),
         fCavityFrequency(1.067e9),
         fCavityQ(1000.),
+        fL(0),
+        fM(1),
+        fN(1),
+        fbTE(true),
         fExpandSweep(1.0),
         fUnitTestOutputFile(false),
         fOutputPath( TOSTRING(PB_OUTPUT_DIR) )
         {
             add_option("-r,--dho-time-resolution", fDHOTimeResolution, "[1.e-8] Time resolution used in Green's function (s).");
-            add_option("-m,--dho-threshold-factor", fDHOThresholdFactor, "[0.01] Minimum fractional threshold of Green's function used to calculate FIR.");
+            add_option("-t,--dho-threshold-factor", fDHOThresholdFactor, "[0.01] Minimum fractional threshold of Green's function used to calculate FIR.");
             add_option("-f,--dho-cavity-frequency", fCavityFrequency, "[1.067e9] Cavity resonant frequency (Hz).");
             add_option("-g,--dho-cavity-Q", fCavityQ, "[1000] Cavity Q.");
+            add_option("-l,--l-index", fL, "[0] Azimuthal mode index.");
+            add_option("-m,--m-index", fM, "[1] Radial mode index.");
+            add_option("-n,--n-index", fN, "[1] Axial mode index.");
             add_option("-x,--expand-sweep", fExpandSweep, "[1.0] Factor by which to expand range of frequency sweep.");
             add_option("-w, --write-output", fUnitTestOutputFile, "[0==false] Write histo to Root file.");
             add_option("-o, --output-path", fOutputPath, "[PB_OUTPUT_DIR]");
@@ -99,6 +106,22 @@ class testCavity_app : public main_app
         {
         	return fCavityQ;
         }
+        double GetL()
+        {
+        	return fL;
+        }
+        double GetM()
+        {
+        	return fM;
+        }
+        double GetN()
+        {
+        	return fN;
+        }
+        bool GetbTE()
+        {
+        	return fbTE;
+        }
         double GetExpandSweep()
         {
         	return fExpandSweep;
@@ -118,6 +141,10 @@ class testCavity_app : public main_app
         double fDHOThresholdFactor;
         double fCavityFrequency;
         double fCavityQ;
+        int fL;
+        int fM;
+        int fN;
+        bool fbTE;
         double fExpandSweep;
         bool fUnitTestOutputFile;
         std::string fOutputPath;
@@ -142,10 +169,22 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 	aCavityUtility.SetOutputPath(the_main.GetOutputPath());
 	aCavityUtility.SetExpandFactor(the_main.GetExpandSweep());
 	aCavityUtility.SetOutputFile(the_main.UnitTestOutputFile());
-	// TO-DO:  Remove hard-wired TE011 mode in the next line, and make it more flexible for other modes.
-	bool checkCavityQ = aCavityUtility.CheckCavityQ( 1, 0, 1, 1, the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+	int l = the_main.GetL();
+	int m = the_main.GetM();
+	int n = the_main.GetN();
+	bool bTE = the_main.GetbTE();
+	bool checkCavityQ;
 
-	REQUIRE( checkCavityQ );
+	if ( (l<2) && (m<2) && (n<2) )
+	{
+	    checkCavityQ = aCavityUtility.CheckCavityQ( bTE, l, m, n, the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+	    REQUIRE( checkCavityQ );
+	}
+	else
+	{
+	    LERROR(lmclog,"This unit test presently only supports mode indices lmn < 2.");
+	    REQUIRE( false );
+	}
 
 }
 
