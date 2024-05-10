@@ -186,7 +186,7 @@ namespace locust
             }
             else
             {
-            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy()); //Infrastructure needs to be generalized to other modes
+            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             }
             if (fInterface->fBackReaction)
             {
@@ -207,7 +207,7 @@ namespace locust
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
-                LPROG(lmclog,"Updating track properties at sample " << fInterface->fSampleIndex );
+                LPROG(lmclog,"Updating recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
 
@@ -290,7 +290,6 @@ namespace locust
                         }
                     }
                 }
-
 
             }
         } // DoneWithSignalGeneration
