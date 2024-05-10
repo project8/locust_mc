@@ -47,7 +47,7 @@ namespace locust
 			return false;
 		}
 
-		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(1,0,1,1,fAnalyticResponseFunction->GetGFarray()) )
+		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(2, fAnalyticResponseFunction->GetGFarray(1,0,1,1)) )
 		{
 			LWARN(testlog,"GF->FIR was not generated.");
 			return false;

@@ -96,14 +96,13 @@ namespace locust
         	LPROG(lmclog,"Configuring DampedHarmonicOscillator.\n");
 
         	fAnalyticResponseFunction = new DampedHarmonicOscillator();
-    		if ( !fAnalyticResponseFunction->Configure(tParam) ||
-    				(!CrossCheckCavityConfig()) )
+    		if ( !fAnalyticResponseFunction->Configure(tParam) )
     		{
     			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
     			exit(-1);
     			return false;
     		}
-    		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(1,0,1,1,fAnalyticResponseFunction->GetGFarray()))
+    		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(2, fAnalyticResponseFunction->GetGFarray(1,0,1,1)))
     		{
     			LERROR(lmclog,"GF->FIR was not generated.");
     			exit(-1);
@@ -222,7 +221,11 @@ namespace locust
         }
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( tParam );
-
+        if ( !CrossCheckCavityConfig() )
+		{
+            LERROR(lmclog,"The cavity Q did not check out.");
+            exit(-1);
+		}
 
 
     	return true;
@@ -359,23 +362,37 @@ namespace locust
 	{
 
     	LPROG(lmclog,"Running some cavity cross-checks ...");
+    	int nModes = 2;
 
-    	CavityUtility aCavityUtility;
-    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution();
-    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor();
-    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency();
-    	double qExpected = fAnalyticResponseFunction->GetCavityQ();
-    	aCavityUtility.SetOutputFile(fUnitTestRootFile);
-    	if (!aCavityUtility.CheckCavityQ(1,0,1,1,timeResolution, thresholdFactor, cavityFrequency, qExpected ))
-    	{
-        	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
-        			"with the unit test as in bin/testLMCCavity [-h]");
-    		return false;
-    	}
-    	else
-    	{
-    		return true;
-    	}
+    	for( int bTE=0; bTE<2; bTE++)
+        {
+            for(int l=0; l<nModes; l++)
+            {
+                for(int m=0; m<nModes; m++)
+                {
+                    for(int n=0; n<nModes; n++)
+                    {
+                        if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, 0, bTE))
+                        {
+                            CavityUtility aCavityUtility;
+                            double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE, l, m, n);
+                            double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
+                            double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
+                            double qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
+                            aCavityUtility.SetOutputFile(fUnitTestRootFile);
+                            if (!aCavityUtility.CheckCavityQ(bTE,l,m,n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+                            {
+                                LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
+                            	    "with the unit test as in bin/testLMCCavity [-h]");
+                        	    return false;
+                        	}
+                        }
+                    }
+                }
+            }
+        }
+
+    	return true;
 	}
 
     void CavitySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
