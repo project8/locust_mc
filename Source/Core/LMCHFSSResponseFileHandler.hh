@@ -40,6 +40,7 @@ namespace locust
         int GetNModes() const;
         double GetFilterResolutionArray(int bTE, int l, int m, int n) const;//Get the resolution of the filter
         double GetFilterResolution() const;//Get the resolution of the filter
+        bool DimensionMultiMode( int nModes );
         void PrintFIR( std::vector<double>, int nBins, std::string filename );
         void PrintFIR( fftw_complex* aFilter, int nBins, std::string filename );
         bool WriteRootHisto( std::vector<double> aFilter, int nBins, bool bIQ );
@@ -123,8 +124,7 @@ namespace locust
         virtual bool Configure( const scarab::param_node& aNode) override;
         bool ReadHFSSFile();
         bool ConvertAnalyticTFtoFIR(int bTE, int l, int m, int n, double initialFreq, std::vector<std::complex<double>> tfArray);
-        bool ConvertAnalyticGFtoFIR(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray);
-
+        bool ConvertAnalyticGFtoFIR(int nModes, std::vector<std::pair<double,std::pair<double,double> > > gfArray);
     
     private:
         //Member variables

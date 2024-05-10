@@ -52,35 +52,8 @@ namespace locust
             fNModes = aParam["n-modes"]().as_int();
         }
 
-        fFilterComplexArray.resize(2); // TE or TM
-        fTFNBinsArray.resize(2);
-        fFIRNBinsArray.resize(2);
-        fResolutionArray.resize(2);
-        fIsFIRCreatedArray.resize(2);
-        for ( unsigned bTE=0; bTE<2; bTE++)
-        {
-            fFilterComplexArray[bTE].resize(fNModes);
-            fTFNBinsArray[bTE].resize(fNModes);
-            fFIRNBinsArray[bTE].resize(fNModes);
-            fResolutionArray[bTE].resize(fNModes);
-            fIsFIRCreatedArray[bTE].resize(fNModes);
-            for (unsigned l=0; l<fNModes; l++)
-            {
-                fFilterComplexArray[bTE][l].resize(fNModes);
-                fTFNBinsArray[bTE][l].resize(fNModes);
-                fFIRNBinsArray[bTE][l].resize(fNModes);
-                fResolutionArray[bTE][l].resize(fNModes);
-                fIsFIRCreatedArray[bTE][l].resize(fNModes);
-                for (unsigned m=0; m<fNModes; m++)
-                {
-                    fFilterComplexArray[bTE][l][m].resize(fNModes);
-                    fTFNBinsArray[bTE][l][m].resize(fNModes);
-                    fFIRNBinsArray[bTE][l][m].resize(fNModes);
-                    fResolutionArray[bTE][l][m].resize(fNModes);
-                    fIsFIRCreatedArray[bTE][l][m].resize(fNModes);
-                }
-            }
-        }  
+        DimensionMultiMode( fNModes );
+
         if( aParam.has( "convert-sparams-to-z"))
         {
         	fConvertStoZ = aParam["convert-sparams-to-z"]().as_bool();
@@ -103,6 +76,41 @@ namespace locust
     	}
 
         return true;
+    }
+
+    bool HFSSResponseFileHandlerCore::DimensionMultiMode( int nModes )
+    {
+        fFilterComplexArray.resize(2); // TE or TM
+        fTFNBinsArray.resize(2);
+        fFIRNBinsArray.resize(2);
+        fResolutionArray.resize(2);
+        fIsFIRCreatedArray.resize(2);
+        for ( unsigned bTE=0; bTE<2; bTE++)
+        {
+            fFilterComplexArray[bTE].resize(nModes);
+            fTFNBinsArray[bTE].resize(nModes);
+            fFIRNBinsArray[bTE].resize(nModes);
+            fResolutionArray[bTE].resize(nModes);
+            fIsFIRCreatedArray[bTE].resize(nModes);
+            for (unsigned l=0; l<nModes; l++)
+            {
+                fFilterComplexArray[bTE][l].resize(nModes);
+                fTFNBinsArray[bTE][l].resize(nModes);
+                fFIRNBinsArray[bTE][l].resize(nModes);
+                fResolutionArray[bTE][l].resize(nModes);
+                fIsFIRCreatedArray[bTE][l].resize(nModes);
+                for (unsigned m=0; m<nModes; m++)
+                {
+                    fFilterComplexArray[bTE][l][m].resize(nModes);
+                    fTFNBinsArray[bTE][l][m].resize(nModes);
+                    fFIRNBinsArray[bTE][l][m].resize(nModes);
+                    fResolutionArray[bTE][l][m].resize(nModes);
+                    fIsFIRCreatedArray[bTE][l][m].resize(nModes);
+                }
+            }
+        }
+
+    	return true;
     }
     
     bool HFSSResponseFileHandlerCore::ends_with(const std::string &str, const std::string &suffix)
@@ -491,33 +499,41 @@ namespace locust
     	return true;
     }
 
-    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
+    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int nModes, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
     {
-    	if(fIsFIRCreatedArray[bTE][l][m][n])
+        for( int bTE=0; bTE<2; bTE++)
         {
-            return true;
+            for(int l=0; l<nModes; l++)
+            {
+                for(int m=0; m<nModes; m++)
+                {
+                    for(int n=0; n<nModes; n++)
+                    {
+                        if(fIsFIRCreatedArray[bTE][l][m][n]) return true;
+                        fFIRNBinsArray[bTE][l][m][n] = gfArray.size();
+                        fResolutionArray[bTE][l][m][n] = gfArray[0].first;
+                        fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
+                        for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
+                        {
+                        	printf("values are %g and %g\n", gfArray[i].second.first, gfArray[i].second.second);
+                            fFilterComplexArray[bTE][l][m][n][i][0] = gfArray[i].second.first;
+                            fFilterComplexArray[bTE][l][m][n][i][1] = gfArray[i].second.second;
+                        }
+                        if (fPrintFIR)
+                        {
+                            std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
+                            std::string fileName = fOutputPath + "/" + modeIndexStr + ".root";
+                            PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
+                            LPROG( lmclog, "Finished writing histos to output/FIRhisto"+modeIndexStr+".root");
+                            LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
+                            getchar();
+                        }
+                        fIsFIRCreatedArray[bTE][l][m][n]=true;
+                        LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
+                    }
+                }
+            }
         }
-
-        fFIRNBinsArray[bTE][l][m][n] = gfArray.size();
-        fResolutionArray[bTE][l][m][n] = gfArray[0].first;
-
-        fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
-        for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
-        {
-        	fFilterComplexArray[bTE][l][m][n][i][0] = gfArray[i].second.first;
-        	fFilterComplexArray[bTE][l][m][n][i][1] = gfArray[i].second.second;
-        }
-        if (fPrintFIR)
-        {
-            std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
-            std::string fileName = fOutputPath + modeIndexStr + ".root";
-            PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
-            LPROG( lmclog, "Finished writing histos to output/FIRhisto"+modeIndexStr+".root");
-            LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
-            getchar();
-        }
-        fIsFIRCreatedArray[bTE][l][m][n]=true;
-        LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
 
     	return true;
     }
