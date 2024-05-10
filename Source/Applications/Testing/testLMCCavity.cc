@@ -177,6 +177,7 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 
 	if ( (l<2) && (m<2) && (n<2) )
 	{
+
 	    checkCavityQ = aCavityUtility.CheckCavityQ( bTE, l, m, n, the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
 	    REQUIRE( checkCavityQ );
 	}

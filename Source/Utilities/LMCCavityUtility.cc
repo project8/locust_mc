@@ -46,7 +46,8 @@ namespace locust
 			LWARN(testlog,"DampedHarmonicOscillator was not configured.");
 			return false;
 		}
-		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()) )
+
+		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(1,0,1,1,fAnalyticResponseFunction->GetGFarray()) )
 		{
 			LWARN(testlog,"GF->FIR was not generated.");
 			return false;
@@ -100,7 +101,7 @@ namespace locust
 	std::deque<double> CavityUtility::SignalToDeque(Signal* aSignal)
 	{
 	    std::deque<double> incidentSignal;
-	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSize(); i++)
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(1,0,1,1); i++)
 	    {
 	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
 	    }
@@ -134,7 +135,7 @@ namespace locust
 	}
 
 
-    bool CavityUtility::CheckCavityQ( double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
+    bool CavityUtility::CheckCavityQ( int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
     {
     	AddParam( "dho-time-resolution", dhoTimeResolution );
     	AddParam( "dho-threshold-factor", dhoThresholdFactor );
@@ -148,8 +149,8 @@ namespace locust
 
         /* initialize time series */
         Signal* aSignal = new Signal();
-        int N0 = fTFReceiverHandler->GetFilterSize();
-        fFilterRate = (1./fTFReceiverHandler->GetFilterResolution());
+        int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n);
+        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
         aSignal->Initialize( N0 , 1 );
 
         double qInferred = 0.;
@@ -169,7 +170,7 @@ namespace locust
         	{
         		// populate time series and convolve it with the FIR filter
         		PopulateSignal(aSignal, N0);
-        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilter(SignalToDeque(aSignal));
+        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n,SignalToDeque(aSignal));
         		if (fabs(convolutionPair.first) > convolutionMag)
         		{
         			convolutionMag = convolutionPair.first;

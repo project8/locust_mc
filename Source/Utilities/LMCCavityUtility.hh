@@ -43,7 +43,7 @@ namespace locust
         virtual ~CavityUtility();
 
         bool Configure();
-        bool CheckCavityQ( double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
+        bool CheckCavityQ( int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
         void SetExpandFactor(double aFactor);
     	void SetOutputFile(bool aFlag);
         void AddParam(std::string aString, double aValue);
