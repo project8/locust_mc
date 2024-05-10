@@ -14,7 +14,7 @@ namespace locust
     Field::Field():
         fnPixels( 100 ),
         fCentralFrequency(1.63e11),
-		fAvgDotProductFactor( {{{{0.}}}} ),
+		fAvgDotProductFactor( 0. ),
         fNModes( 2 ),
         fR( 0.18 ),
         fL( 3.0 ),
@@ -46,27 +46,24 @@ namespace locust
     		SetNPixels(aParam["n-pixels"]().as_int());
     	}
 
-        if( aParam.has( "plot-mode-maps" ) ) 
-        {   
-                SetPlotModeMaps(aParam["plot-mode-maps"]().as_bool());
-        }   
+    	if( aParam.has( "plot-mode-maps" ) )
+    	{
+    		SetPlotModeMaps(aParam["plot-mode-maps"]().as_bool());
+    	}
 
-        if ( aParam.has( "output-path" ) ) 
-        {   
-                fOutputPath = aParam["output-path"]().as_string();
-        }   
-	fAvgDotProductFactor.resize(2);
-	for (unsigned bTE=0; bTE<2; bTE++)
-	{
-    		fAvgDotProductFactor[bTE].resize(fNModes);
-		for(unsigned l=0; l<fNModes; l++)
-		{
-			fAvgDotProductFactor[bTE][l].resize(fNModes);
-    			for (unsigned m=0; m<fNModes; m++)
-    			{
-    				fAvgDotProductFactor[bTE][l][m].resize(fNModes);
-			}
-		}
+    	if ( aParam.has( "output-path" ) )
+    	{
+    		fOutputPath = aParam["output-path"]().as_string();
+    	}
+
+    	fAvgDotProductFactor.resize(fNModes);
+    	for (unsigned m=0; m<fNModes; m++)
+    	{
+    		fAvgDotProductFactor[m].resize(fNModes);
+        	for (unsigned n=0; n<fNModes; n++)
+        	{
+        		fAvgDotProductFactor[m][n].resize(fNModes);
+        	}
     	}
 
 
@@ -96,12 +93,12 @@ namespace locust
     	fModeNormFactorTM = aNormFactor;
     }
 
-    std::vector<std::vector<std::vector<std::vector<double>>>> Field::GetAvgDotProductFactor()
+    std::vector<std::vector<std::vector<double>>> Field::GetAvgDotProductFactor()
     {
     	return fAvgDotProductFactor;
     }
 
-    void Field::SetAvgDotProductFactor(std::vector<std::vector<std::vector<std::vector<double>>>> aFactor)
+    void Field::SetAvgDotProductFactor(std::vector<std::vector<std::vector<double>>> aFactor)
     {
     	fAvgDotProductFactor = aFactor;
     }

@@ -155,7 +155,7 @@ namespace locust
     }
 
 
-    std::vector<double> RectangularWaveguide::GetDopplerFrequency(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP)
+    std::vector<double> RectangularWaveguide::GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP)
     {
     	std::vector<double> freqPrime;
     	double fcyc = tKassParticleXP[7];
@@ -240,12 +240,12 @@ namespace locust
       	return tTE_E_electron;  // return normalized field.
     }
 
-	double RectangularWaveguide::CalculateDotProductFactor(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+	double RectangularWaveguide::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
 	{
-		std::vector<std::vector<std::vector<std::vector<double>>>> tAvgDotProductFactor = GetAvgDotProductFactor();
-		tAvgDotProductFactor[bTE][l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[bTE][l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
+		std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
+		tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
 		SetAvgDotProductFactor(tAvgDotProductFactor);
-		return tAvgDotProductFactor[bTE][l][m][n];
+		return tAvgDotProductFactor[l][m][n];
 	}
 
 
