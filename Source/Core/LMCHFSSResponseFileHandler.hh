@@ -122,7 +122,6 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
         bool ReadHFSSFile();
-        //bool ConvertAnalyticTFtoFIR(double initialFreq, std::vector<std::complex<double>> tfArray);
         bool ConvertAnalyticTFtoFIR(int bTE, int l, int m, int n, double initialFreq, std::vector<std::complex<double>> tfArray);
         bool ConvertAnalyticGFtoFIR(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > gfArray);
 
