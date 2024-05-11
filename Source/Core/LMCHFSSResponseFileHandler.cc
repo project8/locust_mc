@@ -44,8 +44,8 @@ namespace locust
     bool HFSSResponseFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
         if( aParam.has( "print-fir-debug" ) )
-    	{    
-	    fPrintFIR = aParam["print-fir-debug"]().as_bool();
+    	{
+            fPrintFIR = aParam["print-fir-debug"]().as_bool();
     	}
         if( aParam.has( "n-modes" ) )
         {
@@ -515,24 +515,26 @@ namespace locust
                         fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
                         for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
                         {
-                        	printf("values are %g and %g\n", gfArray[i].second.first, gfArray[i].second.second);
                             fFilterComplexArray[bTE][l][m][n][i][0] = gfArray[i].second.first;
                             fFilterComplexArray[bTE][l][m][n][i][1] = gfArray[i].second.second;
                         }
                         if (fPrintFIR)
                         {
                             std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
-                            std::string fileName = fOutputPath + "/" + modeIndexStr + ".root";
+                            std::string fileName = fOutputPath + "/FIRhisto" + modeIndexStr + ".root";
                             PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
-                            LPROG( lmclog, "Finished writing histos to output/FIRhisto"+modeIndexStr+".root");
-                            LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
-                            getchar();
                         }
                         fIsFIRCreatedArray[bTE][l][m][n]=true;
                         LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
                     }
                 }
             }
+        }
+        if (fPrintFIR)
+        {
+            LPROG( lmclog, "Finished writing histos to output/FIRhisto[bTE][l][m][n].root");
+            LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
+            getchar();
         }
 
     	return true;
