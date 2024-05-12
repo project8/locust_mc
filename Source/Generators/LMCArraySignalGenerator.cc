@@ -221,20 +221,6 @@ namespace locust
         {
         	int ntransmitters = 0;
 
-        	if(tParam["transmitter"]().as_string() == "antenna")
-        	{
-        		ntransmitters += 1;
-        		fTransmitter = new AntennaSignalTransmitter;
-        		if(!fTransmitter->Configure(tParam))
-        		{
-        			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
-        		}
-        		if(!fTransmitter->InitializeTransmitter())
-        		{
-        			exit(-1);
-        		}
-        	}
-
         	if(tParam["transmitter"]().as_string() == "planewave")
         	{
         		ntransmitters += 1;
@@ -485,8 +471,9 @@ namespace locust
     			*it++;
     		}
 
-    		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
-    		return convolution;
+    		double convolutionMag = fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element]).first;
+
+    		return convolutionMag;
 
     	}
     	else return 0.;
@@ -660,8 +647,8 @@ namespace locust
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
 
-        int nFilterBins = fTFReceiverHandler.GetFilterSize();
-        double dtFilter = fTFReceiverHandler.GetFilterResolution();
+        int nFilterBins = fTFReceiverHandler.GetFilterSizeArray(0,0,0,0);
+        double dtFilter = fTFReceiverHandler.GetFilterResolutionArray(0,0,0,0);
         int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
         if (!fAllowFastSampling) nFilterBinsRequired = nFilterBins;
         unsigned nFieldBufferBins = fFieldBufferSize;

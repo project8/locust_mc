@@ -221,12 +221,13 @@ namespace locust
         }
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( tParam );
+/*
         if ( !CrossCheckCavityConfig() )
 		{
             LERROR(lmclog,"The cavity Q did not check out.");
             exit(-1);
 		}
-
+*/
 
     	return true;
     }
@@ -616,7 +617,8 @@ namespace locust
 
         int PreEventCounter = 0;
         fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
-        fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(1,0,1,1) );
+//        fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(1,0,1,1) );
+        fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(1,0,1,0) );
 
         if (fInterface->fTransmitter->IsKassiopeia())
         {

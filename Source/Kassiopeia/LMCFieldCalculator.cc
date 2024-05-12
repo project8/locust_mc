@@ -95,7 +95,7 @@ namespace locust
             }
         } // aParam.has( "tf-receiver-filename" )
 
-        SetFilterSize( fTFReceiverHandler->GetFilterSize());
+        SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(1,0,1,0));
         return true;
      }
 
@@ -103,7 +103,8 @@ namespace locust
     {
     	if (fTFReceiverHandler)
     	{
-    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1));
+//    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1));
+    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(1,0,1,0));
     	}
     }
 
@@ -182,7 +183,6 @@ namespace locust
         double CutOffFrequency = SpeedOfLight * LMCConst::Pi() / fInterface->fField->GetDimX(); // a in m
         double fcyc = aFinalParticle.GetCyclotronFrequency();
         double GroupVelocity = SpeedOfLight * pow( 1. - pow(CutOffFrequency/(2.*LMCConst::Pi()*fcyc), 2.) , 0.5);
-        //        printf("GroupVelocity is %g\n", GroupVelocity); getchar();
         return GroupVelocity;
     }
 
@@ -432,8 +432,8 @@ namespace locust
     		std::deque<double>::iterator it = fFrequencyBuffer.begin();
     		while (it != fFrequencyBuffer.end())
     		{
-    			// TO-DO:  Consider:  Replace dtFilter with z(t)/vp.
-    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1);
+//    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1);
+    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(1,0,1,0);
 
     			if (*it != 0.)
     			{
@@ -448,7 +448,8 @@ namespace locust
     			*it++;
     		}
 
-            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(1,0,1,1,fFIRBuffer);
+//            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(1,0,1,1,fFIRBuffer);
+            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(1,0,1,0,fFIRBuffer);
 
     		convolutionMag = convolution.first;
     		convolutionPhase = convolution.second;
