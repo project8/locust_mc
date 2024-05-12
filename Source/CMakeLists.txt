@@ -41,7 +41,6 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCTransmitterInterface.hh
     Transmitters/LMCTransmitter.hh
-    Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
     Transmitters/LMCTransmitterHardware.hh
     Transmitters/LMCDipoleAntenna.hh
@@ -115,7 +114,6 @@ set( LOCUST_MC_SOURCE_FILES
     
 
     Transmitters/LMCTransmitter.cc
-    Transmitters/LMCAntennaSignalTransmitter.cc
     Transmitters/LMCPlaneWaveTransmitter.cc
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCTransmitterHardware.cc
