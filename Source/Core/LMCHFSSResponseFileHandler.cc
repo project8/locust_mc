@@ -125,78 +125,6 @@ namespace locust
         return true;
     }
 
-    double HFSSResponseFileHandlerCore::ConvolveWithFIRFilter(std::deque<double> inputBuffer)
-    {
-        double convolution=0.0;
-        if(fFIRNBins<=0)
-        {
-            LERROR(lmclog,"Number of bins in the filter should be positive");
-        }
-        int firBinNumber=0;
-        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
-        {
-        	convolution+=*(it)*fFilter[firBinNumber];
-        	firBinNumber++;
-        }
-
-        return convolution;
-    }
-
-
-    double HFSSResponseFileHandlerCore::ConvolveWithFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer)
-    {
-        double convolution=0.0;
-        if(fFIRNBinsArray[bTE][l][m][n]<=0)
-        {
-            LERROR(lmclog,"Number of bins in the filter should be positive");
-        }
-        int firBinNumber=0;
-        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
-        {
-        	convolution+=*(it)*fFilter[firBinNumber];
-        	firBinNumber++;
-        }
-
-        return convolution;
-    }
-
-    std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilter(std::deque<double> inputBuffer)
-    {
-        double convolutionMag = 0.0;
-        double convolutionValueReal = 0.0;
-        double convolutionValueImag = 0.0;
-
-        if(fFIRNBins<=0)
-        {
-            LERROR(lmclog,"Number of bins in the filter should be positive");
-        }
-        int firBinNumber=0;
-
-        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
-        {
-                convolutionValueReal += *(it)*fFilterComplex[firBinNumber][0];
-                convolutionValueImag += *(it)*fFilterComplex[firBinNumber][1];
-                firBinNumber++;
-        }
-        std::pair<double,double> complexConvolution;
-        double complexPhase = atan(convolutionValueImag/convolutionValueReal);
-        double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
-
-        /* Note that the convolution above uses a real signal to drive both the real and
-         * imaginary filter components, without a phase shift.  For sinusoidal signals, this
-         * seems like a reasonable approach.  It also increases the effective gain of
-         * the complex filter, compared to a real filter.  To align the complex gain with
-         * that of a real filter, a gain factor of 0.5x for sinusoidal drive signals is
-         * applied below.  For non-sinusoidal drive signals, this scaling should not necessarily
-         * be applicable.
-         */
-
-        double gainFactor = 0.5;
-
-        return std::make_pair(gainFactor*complexMag, complexPhase);
-    }
-
-
     std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer)
     {   
         double convolutionMag = 0.0;
@@ -205,7 +133,7 @@ namespace locust
 
         if(fFIRNBinsArray[bTE][l][m][n]<=0)
         {   
-            LERROR(lmclog,"Number of bins in the filter should be positive");
+            LERROR(lmclog,"Number of bins in the complex array filter should be positive");
         }   
         int firBinNumber=0;
 
@@ -250,53 +178,6 @@ namespace locust
 
 
 
-    bool TFFileHandlerCore::ConvertTFtoFIR(std::vector<std::complex<double>> &tfArray, bool GeneratedTF)
-    {
-        if(fTFNBins<=0)
-        {
-            LERROR(lmclog,"The size of transfer function has to be positive integer");
-            return false;
-        }
-        //Might need to be moved to a different function
-        fTFComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTFNBins);
-        
-        for (int i = 0; i < fTFNBins; ++i)
-        {
-            fTFComplex[i][0]=tfArray.at(i).real();
-            fTFComplex[i][1]=tfArray.at(i).imag();
-        }
-        // this length is somewhat arbitrary, but works for now
-        // future improvement: make it adjust depending on length of FIR
-
-        fFIRNBins = fTFNBins + 2*fComplexFFT.GetShiftNBins();
-        if(GeneratedTF)
-        {
-            // If TF generated based on config file (frequency ranges from 0.9 - 1.1 times the center given in .json config file), calculate the TF bin width given number of bins (also set in .json config file)).
-            double AnalyticTFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBins);
-            fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,AnalyticTFBinWidth, fWindowName, fWindowParam);//Uses binwidth as calculated in the previous line based on internally generated TF
-        }
-        else
-        {
-            // If TF read from externally generated TF file, use TF bin width as given in .json config file
-            fComplexFFT.SetupIFFTWindow(fTFNBins,fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam);
-        }
-
-        fFIRComplex = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBins);
-        fComplexFFT.ApplyWindowFunction(fTFNBins, fTFComplex);
-        fComplexFFT.GenerateFIR(fTFNBins,fTFComplex,fFIRComplex);
-        fResolution = fComplexFFT.GetTimeResolution();
-
-        for (int i = 0; i < fFIRNBins; i++)
-        {
-            fFilter.push_back(fFIRComplex[i][0]);
-        }
-        fFilterComplex = fFIRComplex;
-
-        LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
-        return true;
-    }
-
-
     bool TFFileHandlerCore::ConvertTFtoFIR(int bTE, int l, int m, int n, std::vector<std::complex<double>> &tfArray, bool GeneratedTF)
     {
         if(fTFNBinsArray[bTE][l][m][n]<=0)
@@ -304,6 +185,7 @@ namespace locust
             LERROR(lmclog,"The size of transfer function has to be positive integer");
             return false;
         }
+
         //Might need to be moved to a different function
         fTFComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fTFNBinsArray[bTE][l][m][n]);
 
@@ -312,9 +194,9 @@ namespace locust
             fTFComplex[i][0]=tfArray.at(i).real();
             fTFComplex[i][1]=tfArray.at(i).imag();
         }
+
         // this length is somewhat arbitrary, but works for now
         // future improvement: make it adjust depending on length of FIR
-
         fFIRNBinsArray[bTE][l][m][n]=fTFNBinsArray[bTE][l][m][n]+ 2*fComplexFFT.GetShiftNBins();
         if(GeneratedTF)
         {
@@ -329,21 +211,24 @@ namespace locust
         }
 
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
+        fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
         fComplexFFT.ApplyWindowFunction(fTFNBinsArray[bTE][l][m][n], fTFComplex);
         fComplexFFT.GenerateFIR(fTFNBinsArray[bTE][l][m][n],fTFComplex,fFIRComplex);
         fResolutionArray[bTE][l][m][n]=fComplexFFT.GetTimeResolution();
 
         for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
         {
-            fFilter.push_back(fFIRComplex[i][0]);
+            fFilterComplexArray[bTE][l][m][n][i][0] = fFIRComplex[i][0];
+            fFilterComplexArray[bTE][l][m][n][i][1] = fFIRComplex[i][1];
         }
-        //fFilterComplex = fFIRComplex;
+
+        fIsFIRCreatedArray[bTE][l][m][n]=true;
 
         LDEBUG( lmclog, "Finished IFFT to convert transfer function to FIR");
         return true;
     }
     
-    bool TFFileHandlerCore::ReadHFSSFile() //read HFSS file for a given mode
+    bool TFFileHandlerCore::ReadHFSSFile()
     {
 
     	if(fIsFIRCreated)
@@ -366,7 +251,6 @@ namespace locust
             LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<" doesn't exist");
             return false;
         }
-        //logic copied from /LMCPatchSignalGenerator.cc
         int totalcount=0;
         
         while (!tfFile.eof()){
@@ -404,35 +288,23 @@ namespace locust
         }
         tfFile.close();
         LDEBUG( lmclog, "Finished reading transfer function file");
-        if (!ConvertStoZ( tfArray, fConvertStoZ ) )
-        {
-            LERROR( lmclog, "The S parameters were not successfully converted to impedance.");
-        	return false;
-        }
 
-        if (!ConvertTFtoFIR(tfArray, false ) ) //bool determines if TF was generated dynamically
-        {
-            return false;
-        }
+        ConvertAnalyticTFtoFIR(1,0,1,0, fInitialTFIndex, tfArray);
 
-        if (!CropFIR(fFIRComplex, fConvertStoZ ) )
-        {
-            return false;
-        }
-
-        fIsFIRCreated = true;
         if (fPrintFIR)
         {
-
-            PrintFIR( fFIRComplex, fFIRNBins, fOutputPath+"/FIRhisto.root");
+        	int bTE = 1; int l = 0; int m = 1; int n = 0;
+            std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
+            std::string fileName = fOutputPath + "/FIRhisto" + modeIndexStr + ".root";
+            PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
             PrintFIR( fTFComplex, fTFNBins, fOutputPath+"/TFhisto.root");
-
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
             getchar();
         }
 
         return true;
+
     }
 
     bool TFFileHandlerCore::CropFIR(fftw_complex* anArray, bool bConvert)
@@ -648,45 +520,6 @@ namespace locust
     {
         return true;
     }
-    
-    bool FIRFileHandlerCore::ReadHFSSFile()
-    {
-        if(fIsFIRCreated)
-        {
-            return true;
-        }
-        fFIRNBins = 0;
-        if(!ends_with(fHFSSFilename,".txt"))
-        {
-            LERROR(lmclog,"The FIR file " << fHFSSFilename.c_str() <<" doesn't end in .txt");
-            return false;
-        }
-        double firIndex;
-        double filterMagnitude;
-        FILE *firFile;
-        firFile=fopen(fHFSSFilename.c_str(),"r");
-        if(!access(fHFSSFilename.c_str(), F_OK ))
-        {
-            LERROR(lmclog,"The FIR file " << fHFSSFilename.c_str() <<" doesn't exist");
-            return false;
-        }
-        //logic copied from /LMCPatchSignalGenerator.cc
-        int count=0;
-        
-        while (!feof(firFile))
-        {
-            fscanf(firFile,"%lf %lf",&firIndex,&filterMagnitude);
-            if (count%fNSkips==0)
-            {
-                fFilter.push_back(filterMagnitude);
-                ++fFIRNBins;
-            }
-            ++count;
-        }
-        fclose(firFile);
-        LDEBUG( lmclog, "Finished reading FIR file");
-        fIsFIRCreated = true;
-        return true;
-    }
+
     
 } /* namespace locust */
