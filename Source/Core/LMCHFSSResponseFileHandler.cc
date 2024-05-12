@@ -19,10 +19,6 @@ namespace locust
     LOGGER( lmclog, "HFSSResponseFileHandlerCore" );
     
     HFSSResponseFileHandlerCore::HFSSResponseFileHandlerCore():
-    fTFNBins(1000),
-    fFIRNBins(2000),
-    fCropIndex(2100),
-    fResolution(1e-12),
     fCharacteristicImpedance(1.0),
     fNSkips(1),
     fNModes(2),
@@ -57,11 +53,6 @@ namespace locust
         if( aParam.has( "convert-sparams-to-z"))
         {
         	fConvertStoZ = aParam["convert-sparams-to-z"]().as_bool();
-        }
-
-        if( aParam.has( "crop-index"))
-        {
-        	fCropIndex = aParam["crop-index"]().as_int();
         }
 
         if( aParam.has( "characteristic-impedance"))
@@ -178,7 +169,7 @@ namespace locust
 
 
 
-    bool TFFileHandlerCore::ConvertTFtoFIR(int bTE, int l, int m, int n, std::vector<std::complex<double>> &tfArray, bool GeneratedTF)
+    bool TFFileHandlerCore::ConvertTFtoFIR(int bTE, int l, int m, int n, std::vector<std::complex<double>> &tfArray)
     {
         if(fTFNBinsArray[bTE][l][m][n]<=0)
         {
@@ -198,17 +189,8 @@ namespace locust
         // this length is somewhat arbitrary, but works for now
         // future improvement: make it adjust depending on length of FIR
         fFIRNBinsArray[bTE][l][m][n]=fTFNBinsArray[bTE][l][m][n]+ 2*fComplexFFT.GetShiftNBins();
-        if(GeneratedTF)
-        {
-            // If TF generated based on config file (frequency ranges from 0.9 - 1.1 times the center given in .json config file), calculate the TF bin width given number of bins (also set in .json config file)).
-            double AnalyticTFBinWidth = 2./9.*fInitialTFIndex/(1.0*fTFNBinsArray[bTE][l][m][n]);
-            fComplexFFT.SetupIFFTWindow(fTFNBinsArray[bTE][l][m][n],fInitialTFIndex,AnalyticTFBinWidth, fWindowName, fWindowParam);//Uses binwidth as calculated in the previous line based on internally generated TF
-        }
-        else
-        {
-            // If TF read from externally generated TF file, use TF bin width as given in .json config file
-            fComplexFFT.SetupIFFTWindow(fTFNBinsArray[bTE][l][m][n],fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam);
-        }
+        // Use TF bin width as given in .json config file
+        fComplexFFT.SetupIFFTWindow(fTFNBinsArray[bTE][l][m][n],fInitialTFIndex,fTFBinWidth, fWindowName, fWindowParam);
 
         fFIRComplex=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
         fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
@@ -235,7 +217,7 @@ namespace locust
     	{
     		return true;
     	}
-        fTFNBins = 0;
+        int tTFNBins = 0;
         if(!ends_with(fHFSSFilename,".txt"))
         {
             LERROR(lmclog,"The TF file " << fHFSSFilename.c_str() <<"doesn't end in .txt");
@@ -279,10 +261,10 @@ namespace locust
                         ++wordCount;
                     }
                     // The TF values from HFSS are in GHz, so need to convert to Hz
-                    if(fTFNBins == 0)fInitialTFIndex=tfIndex*pow(10.0,9);
+                    if(tTFNBins == 0)fInitialTFIndex=tfIndex*pow(10.0,9);
                     const std::complex<double> temp(tfRealValue,tfImaginaryValue);
                     tfArray.push_back(temp);
-                    ++fTFNBins;
+                    ++tTFNBins;
                 }
             }
         }
@@ -297,7 +279,7 @@ namespace locust
             std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
             std::string fileName = fOutputPath + "/FIRhisto" + modeIndexStr + ".root";
             PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
-            PrintFIR( fTFComplex, fTFNBins, fOutputPath+"/TFhisto.root");
+            PrintFIR( fTFComplex, tTFNBins, fOutputPath+"/TFhisto.root");
             LPROG( lmclog, "Finished writing histos to output/FIRhisto.root and output/TFhisto.root");
             LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
             getchar();
@@ -306,26 +288,6 @@ namespace locust
         return true;
 
     }
-
-    bool TFFileHandlerCore::CropFIR(fftw_complex* anArray, bool bConvert)
-    {
-     	if (bConvert)
-     	{
-     	    int cropRange = fCropIndex;
-
-     	    fftw_complex* aSubArray;
-     	    aSubArray = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * cropRange);
-
-            for (unsigned i=0; i<cropRange; i++)
-            {
-            	aSubArray[i][0] = anArray[i][0];
-            	aSubArray[i][1] = anArray[i][1];
-            }
-            anArray = aSubArray;
-            fFIRNBins = cropRange;
-     	}
-     	return true;
-     }
 
 
     bool TFFileHandlerCore::ConvertStoZ(std::vector<std::complex<double>> &tfArray, bool bConvert)
@@ -426,7 +388,7 @@ namespace locust
 
 	    fTFNBinsArray[bTE][l][m][n]=tfArray.size();
 	    fInitialTFIndex = initialFreq;
-	    if(!ConvertTFtoFIR(bTE, l, m, n, tfArray, true))
+	    if(!ConvertTFtoFIR(bTE, l, m, n, tfArray))
 	    { //bool determines if TF was generated dynamically
             return false;
         }

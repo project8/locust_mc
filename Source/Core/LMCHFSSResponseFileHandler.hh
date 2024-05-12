@@ -44,19 +44,16 @@ namespace locust
         
         // Member variables
         int fNModes;
-        std::string fHFSSFilename;
-        std::vector<double> fFilter;
-        std::vector< std::vector< std::vector < std::vector< fftw_complex*>>>> fFilterComplexArray;
-        fftw_complex* fFilterComplex;
-        std::vector < std::vector < std::vector < std::vector < int >>>> fTFNBinsArray;
         int fTFNBins;
-        std::vector < std::vector < std::vector < std::vector < int >>>> fFIRNBinsArray;
-        int fFIRNBins;
-        std::vector < std::vector < std::vector < std::vector < double >>>> fResolutionArray;
         double fResolution;
+        std::string fHFSSFilename;
+        std::vector< std::vector< std::vector < std::vector< fftw_complex*>>>> fFilterComplexArray;
+        std::vector < std::vector < std::vector < std::vector < int >>>> fTFNBinsArray;
+        std::vector < std::vector < std::vector < std::vector < int >>>> fFIRNBinsArray;
+        std::vector < std::vector < std::vector < std::vector < double >>>> fResolutionArray;
         std::vector < std::vector < std::vector < std::vector < bool >>>> fIsFIRCreatedArray;
+
         bool fIsFIRCreated;
-        int fCropIndex;
         double fCharacteristicImpedance;
         int fNSkips;
         bool fHFSSFiletype;
@@ -117,9 +114,8 @@ namespace locust
         fftw_complex *fFIRComplex;
         
         // Member functions
-        bool ConvertTFtoFIR(int bTE, int l, int m, int n, std::vector<std::complex<double>> &, bool GeneratedTF);
+        bool ConvertTFtoFIR(int bTE, int l, int m, int n, std::vector<std::complex<double>> &);
         bool ConvertStoZ(std::vector<std::complex<double>> &tfArray, bool bConvert);
-        bool CropFIR(fftw_complex* anArray, bool bConvert);
 
     protected:
         //Member variables
