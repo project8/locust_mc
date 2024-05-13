@@ -111,7 +111,7 @@ namespace locust
         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
     }
     
-    bool HFSSResponseFileHandlerCore::ReadHFSSFile()
+    bool HFSSResponseFileHandlerCore::ReadHFSSFile(int bTE, int l, int m, int n)
     {
         return true;
     }
@@ -135,10 +135,24 @@ namespace locust
                 convolutionValueImag += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][1];
                 firBinNumber++;
         }
-        double complexPhase = atan(convolutionValueImag/convolutionValueReal);
+        double complexPhase = 0.;
+    	if (fabs(convolutionValueReal) > 0.) complexPhase = atan(convolutionValueImag/convolutionValueReal);
+    	complexPhase += QuadrantCorrection( convolutionValueReal, complexPhase);
+
         double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
         return std::make_pair(complexMag, complexPhase);
     }  
+
+    double HFSSResponseFileHandlerCore::QuadrantCorrection( double aRealValue, double aPhase)
+    {
+    	double phasecorrection = 0.;
+    	if (aRealValue < 0)
+    	{
+    		phasecorrection = LMCConst::Pi();  // check IQ quadrant
+    	}
+    	return phasecorrection;
+    }
+
 
     TFFileHandlerCore::TFFileHandlerCore():HFSSResponseFileHandlerCore(),
     fTFComplex(NULL),
@@ -210,7 +224,7 @@ namespace locust
         return true;
     }
     
-    bool TFFileHandlerCore::ReadHFSSFile()
+    bool TFFileHandlerCore::ReadHFSSFile(int bTE, int l, int m, int n)
     {
 
     	if(fIsFIRCreated)
@@ -271,11 +285,10 @@ namespace locust
         tfFile.close();
         LDEBUG( lmclog, "Finished reading transfer function file");
 
-        ConvertAnalyticTFtoFIR(1,0,1,0, fInitialTFIndex, tfArray);
+        ConvertAnalyticTFtoFIR(bTE, l, m, n, fInitialTFIndex, tfArray);
 
         if (fPrintFIR)
         {
-        	int bTE = 1; int l = 0; int m = 1; int n = 0;
             std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
             std::string fileName = fOutputPath + "/FIRhisto" + modeIndexStr + ".root";
             PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );

@@ -437,7 +437,6 @@ namespace locust
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
     	double HilbertMag = 0.;
     	double HilbertPhase = 0.;
-    	double convolution = 0.0;
 
     	if (EFieldBuffer[channel*fNElementsPerStrip+element].front() != 0.)  // field arrived yet?
     	{
@@ -472,8 +471,10 @@ namespace locust
     		}
 
     		double convolutionMag = fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element]).first;
+    		double convolutionCosPhase = cos(fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element]).second);
 
-    		return convolutionMag;
+
+    		return convolutionMag * convolutionCosPhase;
 
     	}
     	else return 0.;
@@ -592,7 +593,7 @@ namespace locust
     bool ArraySignalGenerator::InitializeElementArray()
     {
 
-        if(!fTFReceiverHandler.ReadHFSSFile())
+        if(!fTFReceiverHandler.ReadHFSSFile(0,0,0,0))
         {
             return false;
         }

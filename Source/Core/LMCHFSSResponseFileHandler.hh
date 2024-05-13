@@ -30,7 +30,7 @@ namespace locust
         
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode);
-        virtual bool ReadHFSSFile();
+        virtual bool ReadHFSSFile(int bTE, int l, int m, int n);
         virtual std::pair<double,double> ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer);
         int GetFilterSizeArray(int bTE, int l, int m, int n) const;//Number of entries in the filter
         int GetNModes() const;
@@ -39,6 +39,7 @@ namespace locust
         void PrintFIR( std::vector<double>, int nBins, std::string filename );
         void PrintFIR( fftw_complex* aFilter, int nBins, std::string filename );
         bool WriteRootHisto( std::vector<double> aFilter, int nBins, bool bIQ );
+        double QuadrantCorrection( double aRealValue, double aPhase);
 
     protected:
         
@@ -104,7 +105,7 @@ namespace locust
         
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode) override;
-        bool ReadHFSSFile();
+        bool ReadHFSSFile(int bTE, int l, int m, int n);
         bool ConvertAnalyticTFtoFIR(int bTE, int l, int m, int n, double initialFreq, std::vector<std::complex<double>> tfArray);
         bool ConvertAnalyticGFtoFIR(int nModes, std::vector<std::pair<double,std::pair<double,double> > > gfArray);
     
