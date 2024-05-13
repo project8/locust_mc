@@ -166,16 +166,15 @@ namespace locust
         	int rfStep = -nSteps/2/fExpandFactor + i;
         	fRF_frequency = dhoCavityFrequency + rfStepSize * rfStep;
         	double convolutionMag = 0.;
-        	for (unsigned i=0; i<1000; i++)
+        	// populate time series and convolve it with the FIR filter
+        	PopulateSignal(aSignal, N0);
+        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n,SignalToDeque(aSignal));
+
+        	if (fabs(convolutionPair.first) > convolutionMag)
         	{
-        		// populate time series and convolve it with the FIR filter
-        		PopulateSignal(aSignal, N0);
-        		std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n,SignalToDeque(aSignal));
-        		if (fabs(convolutionPair.first) > convolutionMag)
-        		{
-        			convolutionMag = convolutionPair.first;
-        		}
+        	    convolutionMag = convolutionPair.first;
         	}
+
         	freqArray[i] = fRF_frequency;
         	gainArray[i] = convolutionMag*convolutionMag;
 

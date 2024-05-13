@@ -74,7 +74,7 @@ namespace locust
 
         if( aParam.has( "tf-receiver-filename" ) )
         {
-            if (!fTFReceiverHandler->ReadHFSSFile())  // Read external file
+            if (!fTFReceiverHandler->ReadHFSSFile(1,0,1,0))  // Read external file
             {
             	LERROR(lmclog,"FIR has not been generated.");
             	exit(-1);
