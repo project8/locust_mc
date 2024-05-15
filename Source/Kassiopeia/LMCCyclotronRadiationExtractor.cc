@@ -13,6 +13,8 @@ namespace locust
             fNewParticleHistory(),
             fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
+            fT0trapMin( 0. ),
+            fNCrossings( 0 ),
             fSampleIndex( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
@@ -23,6 +25,8 @@ namespace locust
             fNewParticleHistory(),
             fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
+            fT0trapMin( aCopy.fT0trapMin ),
+            fNCrossings( aCopy.fNCrossings ),
             fSampleIndex( aCopy.fSampleIndex ),
             fInterface( aCopy.fInterface )
     {
@@ -129,9 +133,11 @@ namespace locust
 
         if (anInitialParticle.GetPosition().GetZ()/aFinalParticle.GetPosition().GetZ() < 0.)  // trap center
         {
+            fNCrossings += 1;
             if (fPitchAngle == -99.)  // first crossing of center
             {
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
+                fT0trapMin = aFinalParticle.GetTime();
 #ifdef ROOT_FOUND
                 fInterface->aTrack.PitchAngle = aFinalParticle.GetPolarAngleToB();
                 fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
@@ -146,6 +152,7 @@ namespace locust
             {
 #ifdef ROOT_FOUND
                 fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
+                fInterface->aTrack.AvgAxialFrequency = fNCrossings / 2. / ( aFinalParticle.GetTime() - fT0trapMin );
 #endif
             }
         }
