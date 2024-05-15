@@ -41,6 +41,7 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/IO/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Distributions/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Fields/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/eigen-3.4.0/Eigen/
 )
 
 

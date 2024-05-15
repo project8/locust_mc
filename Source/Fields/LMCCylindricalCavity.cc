@@ -516,6 +516,7 @@ namespace locust
     	    		for (int n=0; n<nModes; n++)
     		    	{
     			    	printf("l m n is %d %d %d\n", l, m, n);
+				if(bTE!=1 or l!=0 or m!=1 or n!=1) continue;
     		    		if (bTE)
     			    	{
     				    	a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
@@ -553,13 +554,14 @@ namespace locust
         						double theta = ((double)j+0.5)/(GetNPixels())*2.*LMCConst::Pi();
             					for (unsigned k=0; k<1; k++)
         	    				{
-            	    			    double z = zSlice;
+						    double z = zSlice;
     				    		    std::vector<double> tE;
     					    	    std::vector<double> tH;
         							if (bTE)
     	    						{
     		    						tE = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     		    						tH = fFieldCore->TE_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
+								if(j==50) std::cout << "Check " << i << " " << r << " " << tE.front() << std::endl;
     				    			}
         							else
     	    						{
@@ -582,7 +584,6 @@ namespace locust
     			    			    {
         						    	hTHr->Fill(theta-LMCConst::Pi(),r,tH.front());
         						    }
-
             					}
         					}
         				}
