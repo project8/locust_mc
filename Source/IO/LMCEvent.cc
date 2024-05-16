@@ -26,6 +26,7 @@ namespace locust
         fStartFrequencies.push_back( aTrack.StartFrequency );
         fEndFrequencies.push_back( aTrack.EndFrequency );
         fAvgFrequencies.push_back( aTrack.AvgFrequency );
+        fAvgAxialFrequencies.push_back( aTrack.AvgAxialFrequency );
         fTrackPowers.push_back( aTrack.TrackPower );
         fStartTimes.push_back( aTrack.StartTime );
         fTrackLengths.push_back( aTrack.TrackLength );

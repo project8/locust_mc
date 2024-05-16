@@ -262,8 +262,12 @@ namespace locust
                 }
         	    if ( aParam.has( "random-track-seed" ) )
         	    {
-        	    	// Offset event-spacing seed from track-length seed.
-        	    	int tSeed = aParam["random-track-seed"]().as_int() + 1;
+        	    	// Randomize seed for start time using seed for track length as input:
+        	        scarab::param_node default_setting;
+        	        default_setting.add("name","uniform");
+        	        std::shared_ptr< BaseDistribution> tSeedDistribution = fDistributionInterface.get_dist(default_setting);
+        	        fDistributionInterface.SetSeed( aParam["random-track-seed"]().as_int() );
+        	        int tSeed = 1.e8 * tSeedDistribution->Generate();
         	        SetSeed( tSeed );
         	    }
         	    else
