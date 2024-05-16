@@ -181,7 +181,7 @@ namespace locust
     {
 	//Finds coordinate indices with the floor of the index closest to that input variable for each dimension. Assumes a uniform grid in each of the 3 dimensions.
 	std::vector< int > Coordinates(3);
-	if( var1<dim1_min or var1>dim1_max or var1<dim1_min or var1>dim1_max or var1<dim1_min or var1>dim1_max )
+	if( var1<dim1_min or var1>dim1_max or var2<dim2_min or var2>dim2_max or var3<dim3_min or var3>dim3_max )
 	{
 		Coordinates[0] = 0;
 		Coordinates[1] = 0;
@@ -258,8 +258,11 @@ namespace locust
         z3 = IndexToCoordinate(TetrahedronVertices[3][2], dim3_min, dim3_max, dim3N);
   for(int i=0; i<4; i++) //check if any indices are outside the grid of points used for interpolation
   {
-	if(TetrahedronVertices[i][0]>=dim1N or TetrahedronVertices[i][1]>=dim2N or TetrahedronVertices[i][2]>=dim3N) return 0.;
-	if(TetrahedronVertices[i][0]<0 or TetrahedronVertices[i][1]<0 or TetrahedronVertices[i][2]<0) return 0.;
+	if(TetrahedronVertices[i][0]>=dim1N or TetrahedronVertices[i][2]>=dim3N) return 0.; //if r or z are outside of the grid, set field to zero
+	if(TetrahedronVertices[i][0]<0 or TetrahedronVertices[i][2]<0) return 0.;
+
+	if(TetrahedronVertices[i][1]>=dim2N) TetrahedronVertices[i][1] -= fModeMapTE_E[1].size(); //if theta is outside the the grid size wrap around back to 0 for periodicity
+	if(TetrahedronVertices[i][1]<0) TetrahedronVertices[i][1] += fModeMapTE_E[1].size();
   }
   Eigen::MatrixXd m {
 	{1., x0, y0, z0},
@@ -289,7 +292,7 @@ namespace locust
 
     double ModeMapCavity::IndexToCoordinate(int index, double min, double max, int nPixels)
     {
-	return (double)index*(max - min)/((double)nPixels);
+	return (double)index*(max - min)/((double)(nPixels-1)); //nPixels +1 since range in text file goes from bin midpoint to midpoint
     }
 
 } /* namespace locust */

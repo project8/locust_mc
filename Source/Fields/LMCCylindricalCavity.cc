@@ -561,7 +561,7 @@ namespace locust
     	    						{
     		    						tE = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     		    						tH = fFieldCore->TE_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
-								if(j==50) std::cout << "Check " << i << " " << r << " " << tE.front() << std::endl;
+								//if(j==50) std::cout << "Check " << i << " " << r << " " << tE.front() << std::endl;
     				    			}
         							else
     	    						{
