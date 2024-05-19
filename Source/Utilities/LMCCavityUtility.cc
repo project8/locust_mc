@@ -30,7 +30,7 @@ namespace locust
     {
     }
 
-	bool CavityUtility::Configure()
+	bool CavityUtility::Configure(int bTE, int l, int m, int n)
 	{
 
 		fTFReceiverHandler = new TFReceiverHandler();
@@ -47,7 +47,7 @@ namespace locust
 			return false;
 		}
 
-		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR(2, fAnalyticResponseFunction->GetGFarray(1,0,1,1)) )
+		if ( !fTFReceiverHandler->ConvertAnalyticGFtoFIR({{bTE,l,m,n}}, fAnalyticResponseFunction->GetGFarray({{bTE,l,m,n}})) )
 		{
 			LWARN(testlog,"GF->FIR was not generated.");
 			return false;
@@ -98,10 +98,10 @@ namespace locust
 
 
 
-	std::deque<double> CavityUtility::SignalToDeque(Signal* aSignal)
+	std::deque<double> CavityUtility::SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal)
 	{
 	    std::deque<double> incidentSignal;
-	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(1,0,1,1); i++)
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n); i++)
 	    {
 	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
 	    }
@@ -141,7 +141,7 @@ namespace locust
     	AddParam( "dho-threshold-factor", dhoThresholdFactor );
     	AddParam( "dho-cavity-frequency", dhoCavityFrequency );
     	AddParam( "dho-cavity-Q", dhoCavityQ );
-    	if (!Configure())
+    	if (!Configure(bTE, l, m, n))
     	{
     		LERROR(testlog,"Cavity was not configured correctly.");
     	    exit(-1);
@@ -168,7 +168,7 @@ namespace locust
         	double convolutionMag = 0.;
         	// populate time series and convolve it with the FIR filter
         	PopulateSignal(aSignal, N0);
-        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n,SignalToDeque(aSignal));
+        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal));
 
         	if (fabs(convolutionPair.first) > convolutionMag)
         	{

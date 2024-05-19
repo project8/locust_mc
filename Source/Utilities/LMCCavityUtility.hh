@@ -42,12 +42,12 @@ namespace locust
         CavityUtility();
         virtual ~CavityUtility();
 
-        bool Configure();
+        bool Configure(int bTE, int l, int m, int n);
         bool CheckCavityQ( int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
         void SetExpandFactor(double aFactor);
     	void SetOutputFile(bool aFlag);
         void AddParam(std::string aString, double aValue);
-        std::deque<double> SignalToDeque(Signal* aSignal);
+        std::deque<double> SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal);
         bool WriteRootHisto(int npoints, double* freqArray, double* gainArray);
         bool PopulateSignal(Signal* aSignal, int N0);
         const scarab::param_node* GetParams();
