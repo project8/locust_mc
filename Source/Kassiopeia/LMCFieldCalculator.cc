@@ -58,7 +58,8 @@ namespace locust
     }
 
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
-     {
+    {
+        fModeSet = fInterface->fField->ModeSelect(fInterface->fbWaveguide, 0);
 
         if( aParam.has( "multi-mode" ) )
         {
@@ -88,23 +89,23 @@ namespace locust
                 LWARN(lmclog,"DampedHarmonicOscillator was not configured.");
                 return false;
             }
-            if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(2, fAnalyticResponseFunction->GetGFarray(1,0,1,1)))
+            if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fModeSet, fAnalyticResponseFunction->GetGFarray(fModeSet)))
             {
                 LWARN(lmclog,"GF->FIR was not generated.");
                 return false;
             }
         } // aParam.has( "tf-receiver-filename" )
 
-        SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(1,0,1,0));
+        // Size the electron information buffers to be similar to the Green's functions:
+        SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[0][0],fModeSet[0][1],fModeSet[0][2],fModeSet[0][3]));
         return true;
-     }
+    }
 
     void FieldCalculator::SetNFilterBinsRequired( double dt )
     {
     	if (fTFReceiverHandler)
     	{
-//    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1));
-    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(1,0,1,0));
+    	    fNFilterBinsRequired = 1 + (int)( (dt) / fTFReceiverHandler->GetFilterResolutionArray(fModeSet[0][0],fModeSet[0][1],fModeSet[0][2],fModeSet[0][3]));
     	}
     }
 
@@ -115,6 +116,7 @@ namespace locust
 
     void FieldCalculator::SetFilterSize( int aFilterSize )
     {
+    	// These contain histories of the electron's orbit phase and cyclotron frequency:
     	fFIRBuffer.resize( aFilterSize );
     	fFrequencyBuffer.resize( aFilterSize );
     }
@@ -123,49 +125,6 @@ namespace locust
     {
     	return fFIRBuffer.size();
     }
-
-    bool FieldCalculator::ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE)
-    {
-    	int nModes = fInterface->fField->GetNModes();
-    	if ((eGun)&&(bTE))
-    	{
-    		if (!bNormCheck)
-    		{
-    			if ((l==0)&&(m==1)&&(n==0))
-    				return true;
-    			else
-    				return false;
-    		}
-    		else
-    		{
-    			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
-    				return true;
-    			else
-    				return false;
-    		}
-    	}
-    	else  // Cavity
-    	{
-    		if (!bNormCheck)
-    		{
-    			// Allow only TE011, or TE011+TM111 if fbMultimode==true
-    			if ((((l==0)&&(m==1)&&(n==1))&&(bTE)) || (((l==1)&&(m==1)&&(n==1))&&(!bTE)&&(fbMultiMode)))
-    				return true;
-    			else
-    				return false;
-    		}
-    		else  // if bNormCheck==true, allow all modes.
-    		{
-    			if ((l<=nModes)&&(m<=nModes)&&(n<=nModes))
-    				return true;
-    			else
-    				return false;
-    		}
-    	}
-    }
-
-
-
 
     double FieldCalculator::GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle)
     {
@@ -322,7 +281,7 @@ namespace locust
 
     	double vMag = pow(tVx*tVx + tVy*tVy,0.5);
 
-    	std::pair<double,double> complexConvolution = GetCavityFIRSample(tKassParticleXP, 0);
+    	std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, 0);
 
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
@@ -351,28 +310,19 @@ namespace locust
 
     double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
+        double DampingFactorCavity = 0.;
+        for (int mu=0; mu<fModeSet.size(); mu++)
+        {
+            bool bTE = fModeSet[mu][0];
+            int l = fModeSet[mu][1];
+            int m = fModeSet[mu][2];
+            int n = fModeSet[mu][3];
 
-    	double DampingFactorCavity = 0.;
-
-    	for (int bTE=0; bTE<2; bTE++) // TM/TE.
-    	{
-    	for (int l=0; l<fInterface->fField->GetNModes(); l++)
-    	{
-    		for (int m=1; m<fInterface->fField->GetNModes(); m++)
-    		{
-    			for (int n=0; n<fInterface->fField->GetNModes(); n++)
-    			{
-    				if (ModeSelect(l, m, n, 0, 0, bTE))
-    				{
-    					double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
-    					double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
-    					double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
-    					DampingFactorCavity += DampingFactorTXlmnCavity - 1.; // (P'/P)_{lmn} - 1
-    				}
-     			}
-    		}
-    	}
-    	}
+            double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
+            double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
+            double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
+            DampingFactorCavity += DampingFactorTXlmnCavity - 1.; // (P'/P)_{lmn} - 1
+        }
     	if (fabs(DampingFactorCavity) > 0.)
     		return DampingFactorCavity + 1.0;
     	else
@@ -397,7 +347,7 @@ namespace locust
     	fSignalStarted = aFlag;
     }
 
-    std::pair<double,double> FieldCalculator::GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF)
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF)
     {
     	double convolutionMag = 0.0;
     	double convolutionPhase = 0.0;
@@ -432,8 +382,7 @@ namespace locust
     		std::deque<double>::iterator it = fFrequencyBuffer.begin();
     		while (it != fFrequencyBuffer.end())
     		{
-//    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1);
-    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(1,0,1,0);
+    			orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
 
     			if (*it != 0.)
     			{
@@ -448,8 +397,7 @@ namespace locust
     			*it++;
     		}
 
-//            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(1,0,1,1,fFIRBuffer);
-            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(1,0,1,0,fFIRBuffer);
+            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n, fFIRBuffer);
 
     		convolutionMag = convolution.first;
     		convolutionPhase = convolution.second;

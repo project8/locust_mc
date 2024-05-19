@@ -32,7 +32,6 @@ namespace locust
             bool ConfigureByInterface();
 
 
-            bool ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
@@ -44,7 +43,7 @@ namespace locust
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
             double GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
-            std::pair<double,double> GetCavityFIRSample(std::vector<double> tKassParticleXP, bool BypassTF);
+            std::pair<double,double> GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
             void SetNFilterBinsRequired( double dt );
             int GetNFilterBinsRequired();
             void SetFilterSize( int aFilterSize );
@@ -64,6 +63,7 @@ namespace locust
             std::deque<double> fFrequencyBuffer;
             int fNFilterBinsRequired;
             bool fbMultiMode;
+            std::vector<std::vector<int>> fModeSet;
             double fZSignalStart;
             bool fSignalStarted;
     };
