@@ -130,10 +130,10 @@ namespace locust
 
         int inputBufferSize = inputBuffer.size();    
         for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
-        {  
-                convolutionValueReal += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][0];
-                convolutionValueImag += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][1];
-                firBinNumber++;
+        {
+            convolutionValueReal += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][0];
+            convolutionValueImag += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][1];
+            firBinNumber++;
         }
         double complexPhase = 0.;
     	if (fabs(convolutionValueReal) > 0.) complexPhase = atan(convolutionValueImag/convolutionValueReal);
@@ -346,36 +346,31 @@ namespace locust
     	return true;
     }
 
-    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR(int nModes, std::vector<std::pair<double,std::pair<double,double> > > gfArray)
+    bool TFFileHandlerCore::ConvertAnalyticGFtoFIR( std::vector<std::vector<int>> aModeSet, std::vector<std::vector<std::pair<double,std::pair<double,double>>>> gfArray)
     {
-        for( int bTE=0; bTE<2; bTE++)
+        for (int mu=0; mu < aModeSet.size(); mu++)
         {
-            for(int l=0; l<nModes; l++)
+            bool bTE = aModeSet[mu][0];
+            int l = aModeSet[mu][1];
+            int m = aModeSet[mu][2];
+            int n = aModeSet[mu][3];
+            fFIRNBinsArray[bTE][l][m][n] = gfArray[mu].size();
+            fResolutionArray[bTE][l][m][n] = gfArray[mu][0].first;
+            fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
+            for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
             {
-                for(int m=0; m<nModes; m++)
-                {
-                    for(int n=0; n<nModes; n++)
-                    {
-                        if(fIsFIRCreatedArray[bTE][l][m][n]) return true;
-                        fFIRNBinsArray[bTE][l][m][n] = gfArray.size();
-                        fResolutionArray[bTE][l][m][n] = gfArray[0].first;
-                        fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
-                        for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
-                        {
-                            fFilterComplexArray[bTE][l][m][n][i][0] = gfArray[i].second.first;
-                            fFilterComplexArray[bTE][l][m][n][i][1] = gfArray[i].second.second;
-                        }
-                        if (fPrintFIR)
-                        {
-                            std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
-                            std::string fileName = fOutputPath + "/FIRhisto" + modeIndexStr + ".root";
-                            PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
-                        }
-                        fIsFIRCreatedArray[bTE][l][m][n]=true;
-                        LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
-                    }
-                }
+                fFilterComplexArray[bTE][l][m][n][i][0] = gfArray[mu][i].second.first;
+                fFilterComplexArray[bTE][l][m][n][i][1] = gfArray[mu][i].second.second;
             }
+
+            if (fPrintFIR)
+            {
+                std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
+                std::string fileName = fOutputPath + "/FIRhisto" + modeIndexStr + ".root";
+                PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
+            }
+            fIsFIRCreatedArray[bTE][l][m][n]=true;
+            LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
         }
         if (fPrintFIR)
         {
@@ -384,7 +379,7 @@ namespace locust
             getchar();
         }
 
-    	return true;
+        return true;
     }
 
 
