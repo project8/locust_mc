@@ -27,11 +27,16 @@ namespace locust
     bool DampedHarmonicOscillator::Configure( const scarab::param_node& aParam )
     {
 
+
     	if( !AnalyticResponseFunction::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring AnalyticResponseFunction class from DampedHarmonicOscillator subclass");
     	}
 
+    	if( aParam.has( "n-modes" ) )
+    	{
+    		SetNModes( aParam["n-modes"]().as_int() );
+    	}
     	if( aParam.has( "dho-max-nbins" ) )
     	{
     		fMaxNBins = aParam["dho-max-nbins"]().as_int();
@@ -53,11 +58,6 @@ namespace locust
     		SetCavityQ( aParam["dho-cavity-Q"]().as_double() );
     	}
 
-    	if ( !Initialize( 2 ) ) // fixme nmodes
-    	{
-    		LERROR(lmclog,"Error while initializing DampedHarmonicOscillator.");
-    	}
-
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -65,6 +65,12 @@ namespace locust
     		exit(-1);
     		return false;
     	}
+
+    	if ( !Initialize( GetNModes() ) )
+    	{
+    	    LERROR(lmclog,"Error while initializing DampedHarmonicOscillator.");
+    	}
+
 
     	return true;
     }
@@ -139,10 +145,7 @@ namespace locust
             }
         }
 
-        printf("check 1.3\n");
     	if (!GenerateGreensFunction()) return false;
-    	printf("check 21.3\n");
-
 
         return true;
     }
@@ -200,19 +203,16 @@ namespace locust
 
     double DampedHarmonicOscillator::NormFactor(int bTE, int l, int m, int n, double aDriveFrequency)
     {
-
-		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(2, GetGFarray( bTE, l, m, n )))
-		{
-			LERROR(lmclog,"GF->FIR was not generated in DHO::NormFactor.");
-			exit(-1);
-			return false;
-		}
-
-		printf("so far so good.\n"); getchar();
+        if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR({{bTE,l,m,n}}, GetGFarray( {{bTE,l,m,n}} )))
+        {
+            LERROR(lmclog,"GF->FIR was not generated in DHO::NormFactor.");
+            exit(-1);
+            return false;
+        }
 
         /* initialize time series */
         Signal* aSignal = new Signal();
-        int N0 = GetGFarray( bTE, l, m, n ).size();
+        int N0 = GetGFarray( {{bTE, l, m, n}} )[0].size();
         aSignal->Initialize( N0 , 1 );
         double convolutionMag = 0.;
 
@@ -221,11 +221,11 @@ namespace locust
             // populate time series and convolve it with the FIR filter
             PopulateCalibrationSignal(bTE, l, m, n, aSignal, N0, aDriveFrequency);
 
-        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(1,0,1,1,SignalToDequeArray(bTE, l, m, n, aSignal));
+            std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,SignalToDequeArray(bTE, l, m, n, aSignal));
 
             if (fabs(convolutionPair.first) > convolutionMag)
             {
-    	        convolutionMag = convolutionPair.first;
+                convolutionMag = convolutionPair.first;
             }
         } // i
 
@@ -247,13 +247,14 @@ namespace locust
             aSignal->LongSignalTimeComplex()[index][0] = cos(voltage_phase);
             aSignal->LongSignalTimeComplex()[index][1] = cos(-LMCConst::Pi()/2. + voltage_phase);
         }
+
         return true;
 	}
 
 	std::deque<double> DampedHarmonicOscillator::SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal)
 	{
 	    std::deque<double> incidentSignal;
-	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(1,0,1,1); i++)
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n); i++)
 	    {
 	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
 	    }
@@ -263,9 +264,7 @@ namespace locust
 
     bool DampedHarmonicOscillator::GenerateGreensFunction()
     {
-        printf("check 20\n");
-
-		int nModes = 2; //fixme nModes
+        int nModes = GetNModes();
 
         std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > tGFArray;
         tGFArray.resize(2); // TE/TM
@@ -297,12 +296,8 @@ namespace locust
             }
         }
 
-
-        printf("check 21.4\n");
         SetGFarray(tGFArray ); // unnormalized
-        printf("check 21.5\n");
 
-/*
         for( int bTE=0; bTE<2; bTE++)
         {
             for(int l=0; l<nModes; l++)
@@ -314,14 +309,17 @@ namespace locust
                         double aNormFactor = NormFactor( bTE, l, m, n, fCavityFrequency[bTE][l][m][n]);
                         for (unsigned i=0; i<tGFArray[bTE][l][m][n].size(); i++)
                         {
-                            tGFArray[bTE][l][m][n][i].second.first /= aNormFactor;
-                            tGFArray[bTE][l][m][n][i].second.second /= aNormFactor;
+                            if (aNormFactor > 0.)
+                            {
+                                tGFArray[bTE][l][m][n][i].second.first /= aNormFactor;
+                                tGFArray[bTE][l][m][n][i].second.second /= aNormFactor;
+                            }
                         }
                     }
                 }
             }
         }
-*/
+
         SetGFarray( tGFArray); // now normalized.
 
     	if ( tGFArray.size() < 1 ) return false;
