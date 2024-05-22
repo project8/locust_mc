@@ -18,45 +18,14 @@ namespace locust
     AnalyticResponseFunction::AnalyticResponseFunction():
 	    fGeneratingTF( false ),
 		fInitialFreq( 0. ),
+		fNModes( 2 ),
 		fTFarray(0 )
-    {  
-	int fNModes = 2;
-	fGFarray.resize(2); 
-	for( int bTE = 0; bTE<2; bTE++)
-	{
-        	fGFarray[bTE].resize(fNModes);
-        	for(int l=0; l<fNModes; l++)
-        	{   
-                	fGFarray[bTE][l].resize(fNModes);
-                	for(int m=0; m<fNModes; m++)
-                	{   
-                        	fGFarray[bTE][l][m].resize(fNModes);
-                	}
-		}    
-        }   
-    } 
+    {}
     AnalyticResponseFunction::~AnalyticResponseFunction() {}
 
 
     bool AnalyticResponseFunction::Configure( const scarab::param_node& aParam )
     {
-
-	if( aParam.has( "n-modes" ) )
-	{
-		int fNModes = aParam["n-modes"]().as_int();
-        	for( int bTE = 0; bTE<2; bTE++)
-        	{   
-                	fGFarray[bTE].resize(fNModes);
-                	for(int l=0; l<fNModes; l++)
-                	{   
-                        	fGFarray[bTE][l].resize(fNModes);
-                        	for(int m=0; m<fNModes; m++)
-                        	{   
-                                	fGFarray[bTE][l][m].resize(fNModes);
-                        	}   
-                	}    
-        	}  
-	}	
         return true;
     }
 
@@ -76,6 +45,14 @@ namespace locust
     {
     	return fInitialFreq;
     }
+    void AnalyticResponseFunction::SetNModes( int aNumberOfModes )
+    {
+    	fNModes = aNumberOfModes;
+    }
+    int AnalyticResponseFunction::GetNModes()
+    {
+    	return fNModes;
+    }
     void AnalyticResponseFunction::SetTFarray( std::vector<std::complex<double>> aTFarray )
     {
     	fTFarray = aTFarray;
@@ -84,21 +61,26 @@ namespace locust
     {
     	return fTFarray;
     }
-    void AnalyticResponseFunction::SetGFarray(int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray )
+
+    void AnalyticResponseFunction::SetGFarray( std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > aGFarray )
     {
-	if(fGFarray[bTE][l][m][n].size()!=aGFarray.size())
-	{
-		fGFarray[bTE][l][m][n].resize(aGFarray.size());
-	}
-	for (unsigned index=0; index<aGFarray.size(); index++)
-        {   
-        	fGFarray[bTE][l][m][n][index] = std::make_pair(aGFarray[index].first, aGFarray[index].second);
-        }  
+        fGFarray = aGFarray;
     }
 
-    std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray(int bTE, int l, int m, int n)
+    std::vector< std::vector<std::pair<double,std::pair<double,double> > > > AnalyticResponseFunction::GetGFarray( std::vector<std::vector<int>> aModeSet)
     {
-    	return fGFarray[bTE][l][m][n];
+        std::vector< std::vector<std::pair<double,std::pair<double,double>>>> anArrayOfGFArrays;
+        for (int mu=0; mu<aModeSet.size(); mu++)
+		{
+		    bool bTE = aModeSet[mu][0];
+		    int l = aModeSet[mu][1];
+		    int m = aModeSet[mu][2];
+		    int n = aModeSet[mu][3];
+
+		    anArrayOfGFArrays.push_back( fGFarray[bTE][l][m][n] );
+		}
+
+        return anArrayOfGFArrays;
     }
 
 

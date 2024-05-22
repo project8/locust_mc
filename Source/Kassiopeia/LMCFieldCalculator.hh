@@ -32,7 +32,6 @@ namespace locust
             bool ConfigureByInterface();
 
 
-            bool ModeSelect(int l, int m, int n, bool eGun, bool bNormCheck, bool bTE);
             double GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle);
             double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
@@ -45,11 +44,12 @@ namespace locust
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
             double GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
             std::pair<double,double> GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
-            void SetNFilterBinsRequiredArray(int bTE, int l, int m, int n, double dt );
-            int GetNFilterBinsRequiredArray(int bTE, int l, int m, int n);
-            void SetFilterSizeArray(int bTE, int l, int m, int n, int aFilterSize );
-            int GetFilterSizeArray(int bTE, int l, int m, int n);
+            void SetNFilterBinsRequired( double dt );
+            int GetNFilterBinsRequired();
+            void SetFilterSize( int aFilterSize );
+            int GetFilterSize();
             void SetSignalStartCondition( bool aFlag );
+
 
             kl_interface_ptr_t fInterface;
 
@@ -61,11 +61,9 @@ namespace locust
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
-            std::vector< std::vector< std::vector< std::vector< std::deque<double> >>>> fFIRBufferArray;
-            std::vector< std::vector< std::vector< std::vector< std::deque<double> >>>> fFrequencyBufferArray;
-	    std::vector< std::vector< std::vector< std::vector< int >>>> fNFilterBinsRequiredArray;
-	    int fNModes;
+            int fNFilterBinsRequired;
             bool fbMultiMode;
+            std::vector<std::vector<int>> fModeSet;
             double fZSignalStart;
             bool fSignalStarted;
     };

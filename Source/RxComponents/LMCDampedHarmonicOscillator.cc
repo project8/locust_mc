@@ -15,214 +15,49 @@ namespace locust
 
     DampedHarmonicOscillator::DampedHarmonicOscillator():
     		fMaxNBins( 20000 ),
-			fTimeResolution( {{{{1.e-10}}}} ),
-			fNModes( 2 ),
-			fCavityFrequency( {{{{1.067e9}}}} ),
-			fCavityQ( {{{{1000}}}} ),
-			fThresholdFactor ( {{{{0.25}}}} ),
-			fCavityDampingFactor( {{{{0.}}}} ),
-			fBFactor( {{{{0.}}}} ),
-			fHannekePowerFactor( {{{{1.}}}} )
-    {
+			fTimeResolutionDefault( 1.e-10 ),
+			fCavityFrequencyDefault( 1.067e9 ),
+			fCavityQDefault( 1000 ),
+			fThresholdFactorDefault ( 0.25 ),
+			fHannekePowerFactorDefault( 1. )
 
-	
-        fCavityFrequency.resize(2);
-        fCavityQ.resize(2);
-        fTimeResolution.resize(2);
-        fThresholdFactor.resize(2);
-        fBFactor.resize(2);
-        fCavityDampingFactor.resize(2);
-        fHannekePowerFactor.resize(2);
-	for(int bTE=0; bTE<2; bTE++)
-	{
-
-		fCavityFrequency[bTE].resize(fNModes);
-		fCavityQ[bTE].resize(fNModes);
-		fTimeResolution[bTE].resize(fNModes);
-		fThresholdFactor[bTE].resize(fNModes);
-		fBFactor[bTE].resize(fNModes);
-		fCavityDampingFactor[bTE].resize(fNModes);
-		fHannekePowerFactor[bTE].resize(fNModes);
-		for(int l=0; l<fNModes; l++)
-		{
-			fCavityFrequency[bTE][l].resize(fNModes);
-         		fCavityQ[bTE][l].resize(fNModes);
-        		fTimeResolution[bTE][l].resize(fNModes);
-        		fThresholdFactor[bTE][l].resize(fNModes);
-          		fBFactor[bTE][l].resize(fNModes);
-			fCavityDampingFactor[bTE][l].resize(fNModes);
-			fHannekePowerFactor[bTE][l].resize(fNModes);
-			for(int m=0; m<fNModes; m++)
-			{
-				fCavityFrequency[bTE][l][m].resize(fNModes);
-				fCavityQ[bTE][l][m].resize(fNModes);
-        			fTimeResolution[bTE][l][m].resize(fNModes);
-        			fThresholdFactor[bTE][l][m].resize(fNModes);
-				fBFactor[bTE][l][m].resize(fNModes);
-				fCavityDampingFactor[bTE][l][m].resize(fNModes);
-				fHannekePowerFactor[bTE][l][m].resize(fNModes);
-				for(int n=0; n<fNModes; n++)
-                  		{
-					fCavityFrequency[bTE][l][m][n] = 1.067e9;
-					fCavityQ[bTE][l][m][n] = 1000.;
-        				fTimeResolution[bTE][l][m][n] = 1.e-10;
-        				fThresholdFactor[bTE][l][m][n] = 0.25;
-					fBFactor[bTE][l][m][n] = 0.;
-					fCavityDampingFactor[bTE][l][m][n] = 0.;
-					fHannekePowerFactor[bTE][l][m][n] = 1.;
-				}
-			}
-		}	
-	}
-    }
-
-
+    {}
     DampedHarmonicOscillator::~DampedHarmonicOscillator() {}
 
     bool DampedHarmonicOscillator::Configure( const scarab::param_node& aParam )
     {
+
+
     	if( !AnalyticResponseFunction::Configure(aParam))
     	{
     		LERROR(lmclog,"Error configuring AnalyticResponseFunction class from DampedHarmonicOscillator subclass");
     	}
+
     	if( aParam.has( "n-modes" ) )
-        {
-        	fNModes = aParam["n-modes"]().as_int();
-        }
+    	{
+    		SetNModes( aParam["n-modes"]().as_int() );
+    	}
     	if( aParam.has( "dho-max-nbins" ) )
     	{
     		fMaxNBins = aParam["dho-max-nbins"]().as_int();
     	}
     	if( aParam.has( "dho-time-resolution" ) )
-        {
-		fTimeResolution.resize(2);
-		for (unsigned bTE=0; bTE<2; bTE++)
-		{
-                	fTimeResolution[bTE].resize(fNModes);
-                	for (unsigned l=0; l<fNModes; l++)
-                	{
-                        	fTimeResolution[bTE][l].resize(fNModes);
-                        	for (unsigned m=0; m<fNModes; m++)
-                        	{
-                                	fTimeResolution[bTE][l][m].resize(fNModes);
-                                	for (unsigned n=0; n<fNModes; n++)
-                                	{
-                                        	SetDHOTimeResolution(bTE, l, m, n, aParam["dho-time-resolution"]().as_double() );
-					}
-                                }
-                        }
-        	}
-	}     
-        if( aParam.has( "dho-threshold-factor" ) )
-        {
-                fThresholdFactor.resize(2);
-                for (unsigned bTE=0; bTE<2; bTE++)
-                {
-                        fThresholdFactor[bTE].resize(fNModes);
-                        for (unsigned l=0; l<fNModes; l++)
-                        {
-                                fThresholdFactor[bTE][l].resize(fNModes);
-                                for (unsigned m=0; m<fNModes; m++)
-                                {
-                                        fThresholdFactor[bTE][l][m].resize(fNModes);
-                                        for (unsigned n=0; n<fNModes; n++)
-                                        {
-                                                SetDHOThresholdFactor(bTE, l, m, n, aParam["dho-threshold-factor"]().as_double() );
-                                        }
-                                }
-                        }
-                }
-        }
-        if( aParam.has( "dho-cavity-frequency" ) )
-        {
-                fCavityFrequency.resize(2);
-                for (unsigned bTE=0; bTE<2; bTE++)
-                {
-                        fCavityFrequency[bTE].resize(fNModes);
-                        for (unsigned l=0; l<fNModes; l++)
-                        {
-                                fCavityFrequency[bTE][l].resize(fNModes);
-                                for (unsigned m=0; m<fNModes; m++)
-                                {
-                                        fCavityFrequency[bTE][l][m].resize(fNModes);
-                                        for (unsigned n=0; n<fNModes; n++)
-                                        {
-                                                SetCavityFrequency(bTE, l, m, n, aParam["dho-cavity-frequency"]().as_double() );
-                                        }
-                                }
-                        }
-                }
-        }
-        if( aParam.has( "dho-cavity-Q" ) )
-        {
-                fCavityQ.resize(2);
-                for (unsigned bTE=0; bTE<2; bTE++)
-                {
-                        fCavityQ[bTE].resize(fNModes);
-                        for (unsigned l=0; l<fNModes; l++)
-                        {
-                                fCavityQ[bTE][l].resize(fNModes);
-                                for (unsigned m=0; m<fNModes; m++)
-                                {
-                                        fCavityQ[bTE][l][m].resize(fNModes);
-                                        for (unsigned n=0; n<fNModes; n++)
-                                        {
-                                                SetCavityQ(bTE, l, m, n, aParam["dho-cavity-Q"]().as_double() );
-                                        }
-                                }
-                        }
-                }
-        }
-	for(unsigned bTE = 0; bTE < 2; bTE++)
-	{
-		for(unsigned l=0; l<fNModes; l++)
-		{
-			for(unsigned m=0; m<fNModes; m++)
-			{
-				for(unsigned n=0; n<fNModes; n++)
-				{
-					std::string param_base_resolution = "dho-time-resolution-";
-					std::string param_base_threshold = "dho-threshold-factor-";
-					std::string param_base_frequency = "dho-cavity-frequency-";
-					std::string param_base_Q = "dho-cavity-Q-";
-					if(bTE==0) 
-					{
-						param_base_resolution = param_base_resolution + "TM";
-                                                param_base_threshold = param_base_threshold + "TM";
-                                                param_base_frequency = param_base_frequency + "TM";
-                                                param_base_Q = param_base_Q + "TM";
-					}
-					else
-					{
-                                                param_base_resolution = param_base_resolution + "TE";
-                                                param_base_threshold = param_base_threshold + "TE";
-                                                param_base_frequency = param_base_frequency + "TE";
-                                                param_base_Q = param_base_Q + "TE";
-					}
-					std::string param_key_resolution = param_base_resolution + std::to_string(l) + std::to_string(m) + std::to_string(n);
-                                        std::string param_key_threshold = param_base_threshold + std::to_string(l) + std::to_string(m) + std::to_string(n);
-                                        std::string param_key_frequency = param_base_frequency + std::to_string(l) + std::to_string(m) + std::to_string(n);
-                                        std::string param_key_Q = param_base_Q + std::to_string(l) + std::to_string(m) + std::to_string(n);
-					if( aParam.has( param_key_resolution ) )
-					{
-						SetDHOTimeResolution( bTE, l, m, n, aParam[ param_key_resolution ]().as_double() ) ;
-					}
-                                        if( aParam.has( param_key_threshold ) )
-                                        {   
-                                                SetDHOThresholdFactor( bTE, l, m, n, aParam[ param_key_threshold ]().as_double() ) ;
-                                        }   
-                                        if( aParam.has( param_key_frequency ) )
-                                        {   
-                                                SetCavityFrequency( bTE, l, m, n, aParam[ param_key_frequency ]().as_double() ) ;
-                                        }   
-                                        if( aParam.has( param_key_Q ) )
-                                        {   
-                                                SetCavityQ( bTE, l, m, n, aParam[ param_key_Q ]().as_double() ) ;
-                                        }   
-				}
-			}
-		}	
-	}
+    	{
+    		SetDHOTimeResolution( aParam["dho-time-resolution"]().as_double() );
+    	}
+    	if( aParam.has( "dho-threshold-factor" ) )
+    	{
+    		SetDHOThresholdFactor( aParam["dho-threshold-factor"]().as_double() );
+    	}
+    	if( aParam.has( "dho-cavity-frequency" ) )
+    	{
+    		SetCavityFrequency( aParam["dho-cavity-frequency"]().as_double() );
+    	}
+    	if( aParam.has( "dho-cavity-Q" ) )
+    	{
+    		SetCavityQ( aParam["dho-cavity-Q"]().as_double() );
+    	}
+
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))
     	{
@@ -230,140 +65,172 @@ namespace locust
     		exit(-1);
     		return false;
     	}
-    	if ( !Initialize() ) return false;
-    	else
-	{
-		return true;
-	}
-    }
 
-    bool DampedHarmonicOscillator::Initialize()
-    {
-        fCavityOmega.resize(2);
-        fCavityDampingFactor.resize(2);
-        fBFactor.resize(2);
-        fCavityOmegaPrime.resize(2);
-	fHannekePowerFactor.resize(2);	
-	for (unsigned bTE=0; bTE<2; bTE++)
-	{
-		fCavityOmega[bTE].resize(fNModes);
-		fCavityDampingFactor[bTE].resize(fNModes);
-		fBFactor[bTE].resize(fNModes);
-        	fCavityOmegaPrime[bTE].resize(fNModes);
-		fHannekePowerFactor[bTE].resize(fNModes);
-        	for (unsigned l=0; l<fNModes; l++)
-        	{   
-        		fCavityOmega[bTE][l].resize(fNModes);
-        		fCavityDampingFactor[bTE][l].resize(fNModes);
-        		fBFactor[bTE][l].resize(fNModes);
-        		fCavityOmegaPrime[bTE][l].resize(fNModes);
-			fHannekePowerFactor[bTE][l].resize(fNModes);
-                	for (unsigned m=0; m<fNModes; m++)
-                	{   
-        			fCavityOmega[bTE][l][m].resize(fNModes);
-        			fCavityDampingFactor[bTE][l][m].resize(fNModes);
-        			fBFactor[bTE][l][m].resize(fNModes);
-        			fCavityOmegaPrime[bTE][l][m].resize(fNModes);
-				fHannekePowerFactor[bTE][l][m].resize(fNModes); 
-                        	for (unsigned n=0; n<fNModes; n++)
-                        	{  
-        				fCavityOmega[bTE][l][m][n] = fCavityFrequency[bTE][l][m][n] * 2. * LMCConst::Pi();
-        				fCavityDampingFactor[bTE][l][m][n] = 1. / 2. / fCavityQ[bTE][l][m][n];
-        				fBFactor[bTE][l][m][n] = fCavityDampingFactor[bTE][l][m][n] * fCavityOmega[bTE][l][m][n];
-        				fCavityOmegaPrime[bTE][l][m][n] = sqrt( fCavityOmega[bTE][l][m][n]*fCavityOmega[bTE][l][m][n] - fBFactor[bTE][l][m][n]*fBFactor[bTE][l][m][n] );
-					fHannekePowerFactor[bTE][l][m][n] = 1.0; //THIS LINE NEEDS TO BE FIXED OR REINCORPORATED TO INCLUDE NON-UNITY POWER FACTORS
-					if (!GenerateGreensFunction(bTE,l,m,n)) return false;
-				}
-                        }   
-                }   
-        }  
+    	if ( !Initialize( GetNModes() ) )
+    	{
+    	    LERROR(lmclog,"Error while initializing DampedHarmonicOscillator.");
+    	}
+
+
     	return true;
     }
 
-    void DampedHarmonicOscillator::SetCavityQ(int bTE, int l, int m, int n, double aQ )
+    bool DampedHarmonicOscillator::Initialize( int nModes )
     {
-    	fCavityQ[bTE][l][m][n] = aQ;
+
+        fCavityFrequency.resize(2);
+        fCavityQ.resize(2);
+        fTimeResolution.resize(2);
+        fThresholdFactor.resize(2);
+        fBFactor.resize(2);
+        fCavityDampingFactor.resize(2);
+        fHannekePowerFactor.resize(2);
+        fCavityOmega.resize(2);
+        fCavityOmegaPrime.resize(2);
+        fHannekePowerFactor.resize(2);
+
+        for(int bTE=0; bTE<2; bTE++)
+        {
+            fCavityFrequency[bTE].resize(nModes);
+            fCavityQ[bTE].resize(nModes);
+            fTimeResolution[bTE].resize(nModes);
+            fThresholdFactor[bTE].resize(nModes);
+            fBFactor[bTE].resize(nModes);
+            fCavityDampingFactor[bTE].resize(nModes);
+            fHannekePowerFactor[bTE].resize(nModes);
+            fCavityOmega[bTE].resize(2);
+            fCavityOmegaPrime[bTE].resize(2);
+
+            for(int l=0; l<nModes; l++)
+            {
+                fCavityFrequency[bTE][l].resize(nModes);
+                fCavityQ[bTE][l].resize(nModes);
+                fTimeResolution[bTE][l].resize(nModes);
+                fThresholdFactor[bTE][l].resize(nModes);
+                fBFactor[bTE][l].resize(nModes);
+                fCavityDampingFactor[bTE][l].resize(nModes);
+                fHannekePowerFactor[bTE][l].resize(nModes);
+                fCavityOmega[bTE][l].resize(nModes);
+                fCavityOmegaPrime[bTE][l].resize(nModes);
+
+                for(int m=0; m<nModes; m++)
+                {
+                    fCavityFrequency[bTE][l][m].resize(nModes);
+                    fCavityQ[bTE][l][m].resize(nModes);
+                    fTimeResolution[bTE][l][m].resize(nModes);
+                    fThresholdFactor[bTE][l][m].resize(nModes);
+                    fBFactor[bTE][l][m].resize(nModes);
+                    fCavityDampingFactor[bTE][l][m].resize(nModes);
+                    fHannekePowerFactor[bTE][l][m].resize(nModes);
+                    fCavityOmega[bTE][l][m].resize(nModes);
+                    fCavityOmegaPrime[bTE][l][m].resize(nModes);
+
+                    for(int n=0; n<nModes; n++)
+                    {
+                    	fCavityFrequency[bTE][l][m][n] = fCavityFrequencyDefault;
+                    	fCavityQ[bTE][l][m][n] = fCavityQDefault;
+                    	fTimeResolution[bTE][l][m][n] = fTimeResolutionDefault;
+                    	fThresholdFactor[bTE][l][m][n] = fThresholdFactorDefault;
+                        fHannekePowerFactor[bTE][l][m][n] = fHannekePowerFactorDefault; // TO-DO:  Make more configurable.
+                    	fCavityOmega[bTE][l][m][n] = fCavityFrequency[bTE][l][m][n] * 2. * LMCConst::Pi();
+                    	fCavityDampingFactor[bTE][l][m][n] = 0.;
+                    	if ( fCavityQ[bTE][l][m][n] > 0. )
+                    	{
+                    		fCavityDampingFactor[bTE][l][m][n] = 1. / 2. / fCavityQ[bTE][l][m][n];
+                    	}
+                    	fBFactor[bTE][l][m][n] = fCavityDampingFactor[bTE][l][m][n] * fCavityOmega[bTE][l][m][n];
+                    	fCavityOmegaPrime[bTE][l][m][n] = sqrt( fCavityOmega[bTE][l][m][n]*fCavityOmega[bTE][l][m][n] - fBFactor[bTE][l][m][n]*fBFactor[bTE][l][m][n] );
+                    }
+                }
+            }
+        }
+
+    	if (!GenerateGreensFunction()) return false;
+
+        return true;
     }
-    double DampedHarmonicOscillator::GetCavityQ(int bTE, int l, int m, int n)
+
+
+    void DampedHarmonicOscillator::SetCavityQ( double aQ )
+    {
+        fCavityQDefault = aQ;
+    }
+    double DampedHarmonicOscillator::GetCavityQ( int bTE, int l, int m, int n )
     {
     	return fCavityQ[bTE][l][m][n];
     }
-    void DampedHarmonicOscillator::SetCavityFrequency(int bTE, int l, int m, int n, double aFrequency )
+    void DampedHarmonicOscillator::SetCavityFrequency( double aFrequency )
     {
-    	fCavityFrequency[bTE][l][m][n] = aFrequency;
+        fCavityFrequencyDefault = aFrequency;
     }
-    double DampedHarmonicOscillator::GetCavityFrequency(int bTE, int l, int m, int n)
+    double DampedHarmonicOscillator::GetCavityFrequency( int bTE, int l, int m, int n )
     {
     	return fCavityFrequency[bTE][l][m][n];
     }
-    void DampedHarmonicOscillator::SetDHOTimeResolution(int bTE, int l, int m, int n, double aTimeResolution )
+    void DampedHarmonicOscillator::SetDHOTimeResolution( double aTimeResolution )
     {
-    	fTimeResolution[bTE][l][m][n] = aTimeResolution;
+        fTimeResolutionDefault = aTimeResolution;
     }
-    double DampedHarmonicOscillator::GetDHOTimeResolution(int bTE, int l, int m, int n)
+    double DampedHarmonicOscillator::GetDHOTimeResolution( int bTE, int l, int m, int n )
     {
     	return fTimeResolution[bTE][l][m][n];
     }
-    void DampedHarmonicOscillator::SetDHOThresholdFactor(int bTE, int l, int m, int n, double aThresholdFactor )
+    void DampedHarmonicOscillator::SetDHOThresholdFactor( double aThresholdFactor )
     {
-    	fThresholdFactor[bTE][l][m][n] = aThresholdFactor;
+        fThresholdFactorDefault = aThresholdFactor;
     }
-    double DampedHarmonicOscillator::GetDHOThresholdFactor(int bTE, int l, int m, int n)
+    double DampedHarmonicOscillator::GetDHOThresholdFactor( int bTE, int l, int m, int n )
     {
     	return fThresholdFactor[bTE][l][m][n];
     }
 
-
-
-    double DampedHarmonicOscillator::ExpDecayTerm(int bTE, int l, int m, int n, double t)
+    double DampedHarmonicOscillator::ExpDecayTerm( int bTE, int l, int m, int n, double t)
     {
     	double ExpDecayTerm = exp( -fBFactor[bTE][l][m][n] * t);
     	return ExpDecayTerm;
     }
 
-    std::pair<double,double> DampedHarmonicOscillator::GreensFunction(int bTE, int l, int m, int n, double t)
+    std::pair<double,double> DampedHarmonicOscillator::GreensFunction( int bTE, int l, int m, int n, double t)
     {
-    	//double GreensFunctionValueReal = ExpDecayTerm(t) * sin( fCavityOmegaPrime * t) / fCavityOmegaPrime;
-    	//double GreensFunctionValueImag = -ExpDecayTerm(t) * cos( fCavityOmegaPrime * t) / fCavityOmegaPrime;
 
-    	// Modify Green's function for nominal gain of unity, keeping phase information unchanged.
-    	// Power model could possibly be implemented as in here:
-    	double GreensFunctionValueReal = fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, t) * sin( fCavityOmegaPrime[bTE][l][m][n] * t);
-    	double GreensFunctionValueImag = -1. * fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, t) * cos( fCavityOmegaPrime[bTE][l][m][n] * t);
-	
+    	double tExpDecayTerm = ExpDecayTerm( bTE, l, m, n, t );
+    	double GreensFunctionValueReal = fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * tExpDecayTerm * sin( fCavityOmegaPrime[bTE][l][m][n] * t);
+    	double GreensFunctionValueImag = -1. * fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * tExpDecayTerm * cos( fCavityOmegaPrime[bTE][l][m][n] * t);
+
     	return std::make_pair(GreensFunctionValueReal,GreensFunctionValueImag);
     }
 
 
     double DampedHarmonicOscillator::NormFactor(int bTE, int l, int m, int n, double aDriveFrequency)
     {
-		int GFsize = GetGFarray(bTE, l, m, n).size();
-		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(bTE, l, m, n, GetGFarray(bTE, l, m, n)))
-		{
-			LERROR(lmclog,"GF->FIR was not generated in DHO::NormFactor.");
-			exit(-1);
-			return false;
-		}
+        if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR({{bTE,l,m,n}}, GetGFarray( {{bTE,l,m,n}} )))
+        {
+            LERROR(lmclog,"GF->FIR was not generated in DHO::NormFactor.");
+            exit(-1);
+            return false;
+        }
 
         /* initialize time series */
         Signal* aSignal = new Signal();
-        int N0 = GetGFarray(bTE, l, m, n).size();
+        int N0 = GetGFarray( {{bTE, l, m, n}} )[0].size();
         aSignal->Initialize( N0 , 1 );
         double convolutionMag = 0.;
 
-        //for (unsigned i=0; i<1000; i++)  // time stamps
-        for (unsigned i=0; i<1; i++) 
+        for (unsigned i=0; i<1000; i++)  // time stamps
         {
             // populate time series and convolve it with the FIR filter
             PopulateCalibrationSignal(bTE, l, m, n, aSignal, N0, aDriveFrequency);
-        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n, SignalToDequeArray(bTE,l,m,n,aSignal));
+
+            std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,SignalToDequeArray(bTE, l, m, n, aSignal));
+
             if (fabs(convolutionPair.first) > convolutionMag)
             {
-    	        convolutionMag = convolutionPair.first;
+                convolutionMag = convolutionPair.first;
             }
-        } //
+        } // i
 
         delete aSignal;
+
         return convolutionMag;
 
     }
@@ -380,49 +247,87 @@ namespace locust
             aSignal->LongSignalTimeComplex()[index][0] = cos(voltage_phase);
             aSignal->LongSignalTimeComplex()[index][1] = cos(-LMCConst::Pi()/2. + voltage_phase);
         }
+
         return true;
 	}
 
-        std::deque<double> DampedHarmonicOscillator::SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal)
-        {   
-            std::deque<double> incidentSignal;
-            for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n); i++)
-            {   
-                incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
-            }   
-            return incidentSignal;
-        }   
+	std::deque<double> DampedHarmonicOscillator::SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal)
+	{
+	    std::deque<double> incidentSignal;
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n); i++)
+	    {
+	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
+	    }
+	    return incidentSignal;
+	}
 
-    bool DampedHarmonicOscillator::GenerateGreensFunction(int bTE, int l, int m, int n)
+
+    bool DampedHarmonicOscillator::GenerateGreensFunction()
     {
-        std::vector<std::pair<double,std::pair<double,double> > > tGFArray;
+        int nModes = GetNModes();
 
-    	int sizeCounter = 0;
-    	for (unsigned i=0; i<fMaxNBins; i++)
-    	{
-    		double tValue = i * fTimeResolution[bTE][l][m][n];
-    		tGFArray.push_back(std::make_pair(fTimeResolution[bTE][l][m][n],GreensFunction(bTE, l, m, n, tValue)));
-    		sizeCounter += 1;
-    		if ( ExpDecayTerm(bTE, l, m, n, tValue) < fThresholdFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, 0.) )
-    		{
-    			break;
-    		}
-    	}
-	
-    	tGFArray.resize( sizeCounter );
-    	std::reverse( tGFArray.begin(), tGFArray.end() );
-    	SetGFarray(bTE, l, m, n, tGFArray ); // unnormalized.
-    	double aNormFactor = NormFactor(bTE, l, m, n, fCavityFrequency[bTE][l][m][n]);
-    	for (unsigned i=0; i<sizeCounter; i++)
-    	{
-    		tGFArray[i].second.first /= aNormFactor;
-    		tGFArray[i].second.second /= aNormFactor;
-    	}
-    	SetGFarray(bTE, l, m, n, tGFArray); // now normalized.
+        std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > tGFArray;
+        tGFArray.resize(2); // TE/TM
+
+        for( int bTE=0; bTE<2; bTE++)
+        {
+            tGFArray[bTE].resize(nModes);
+
+            for(int l=0; l<nModes; l++)
+            {
+                tGFArray[bTE][l].resize(nModes);
+                for(int m=0; m<nModes; m++)
+                {
+                    tGFArray[bTE][l][m].resize(nModes);
+                    for(int n=0; n<nModes; n++)
+                    {
+                        tGFArray[bTE][l][m][n].resize(nModes);
+                        for (unsigned i=0; i<fMaxNBins; i++)
+                        {
+                            double tValue = i * fTimeResolution[bTE][l][m][n];
+                            if ( ExpDecayTerm( bTE, l, m, n, tValue) > fThresholdFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, 0.) )
+                            {
+                                tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],GreensFunction( bTE, l, m, n, tValue)));
+                            }
+                        }
+                        std::reverse( tGFArray[bTE][l][m][n].begin(), tGFArray[bTE][l][m][n].end() );
+                    }
+                }
+            }
+        }
+
+        SetGFarray(tGFArray ); // unnormalized
+
+        for( int bTE=0; bTE<2; bTE++)
+        {
+            for(int l=0; l<nModes; l++)
+            {
+                for(int m=0; m<nModes; m++)
+                {
+                    for(int n=0; n<nModes; n++)
+                    {
+                        double aNormFactor = NormFactor( bTE, l, m, n, fCavityFrequency[bTE][l][m][n]);
+                        for (unsigned i=0; i<tGFArray[bTE][l][m][n].size(); i++)
+                        {
+                            if (aNormFactor > 0.)
+                            {
+                                tGFArray[bTE][l][m][n][i].second.first /= aNormFactor;
+                                tGFArray[bTE][l][m][n][i].second.second /= aNormFactor;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        SetGFarray( tGFArray); // now normalized.
+
     	if ( tGFArray.size() < 1 ) return false;
     	else return true;
 
     }
+
+
 
 
 } /* namespace locust */

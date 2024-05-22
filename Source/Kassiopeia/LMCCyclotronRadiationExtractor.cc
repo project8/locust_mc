@@ -186,9 +186,7 @@ namespace locust
             }
             else
             {
-		//std::cout << "About to call GetDampingFactor Cavity from LMCCyclotronRadiationExtractor" << std::endl;
-            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy()); //Infrastructure needs to be generalized to other modes
-		//std::cout << "DeltaE is " << DeltaE << std::endl;
+            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             }
             if (fInterface->fBackReaction)
             {
@@ -207,20 +205,9 @@ namespace locust
             {
             	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
             	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
-
-		int fNModes = fInterface->fField->GetNModes();
-
-		for(unsigned bTE=0; bTE<2; bTE++){
-        		for(unsigned l = 0; l<fNModes; l++){
-                		for(unsigned m = 0; m<fNModes; m++){
-                        		for(unsigned n = 0; n<fNModes; n++){
-                				fFieldCalculator->SetNFilterBinsRequiredArray(bTE, l, m, n, dt );
-					}
-				}
-			}
-		}
+                fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
-            	LPROG(lmclog,"Updated track properties at sample " << fInterface->fSampleIndex );
+                LPROG(lmclog,"Updating recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
 
@@ -303,7 +290,6 @@ namespace locust
                         }
                     }
                 }
-
 
             }
         } // DoneWithSignalGeneration

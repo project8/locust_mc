@@ -121,10 +121,10 @@ namespace locust
     	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
+    	double tEz = eta * boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * cos(k3*z);
+    	double tEr = -k3/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+    	double tEtheta = -l*k3/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
 
-    	double tEz = boost::math::cyl_bessel_j(l, k1*r) * cos(l*theta) * cos(k3*z);
-    	double tEr = -k3/k1 * jPrime * cos(l*theta) * sin(k3*z);
-    	double tEtheta = -l*k3/k1 * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
     	if ((includeOtherPols)&&(l>0))
     	{
                 double dTheta = LMCConst::Pi() / 2.0 / (double)l;
@@ -158,11 +158,10 @@ namespace locust
     	double k1 = x_lm / R;
     	double k3 = n * LMCConst::Pi() / L;
     	double k = pow(k1*k1+k3*k3,0.5);
-	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
     	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
     	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
-    	double tHr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
-    	double tHtheta = -k/k1 * eta * jPrime * cos(l*theta) * cos(k3*z);
+    	double tHr = -l * k/k1  * jl_of_k1r_by_k1r * sin(l*theta) * cos(k3*z);
+    	double tHtheta = -k/k1 * jPrime * cos(l*theta) * cos(k3*z);
 
     	if ((includeOtherPols)&&(l>0))
     	{

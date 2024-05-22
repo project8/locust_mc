@@ -85,7 +85,7 @@ namespace locust
      }
 
 
-    std::vector<double> AntennaSignalTransmitter::GetEFieldCoPol(int bTE, int l, int m, int n, int fieldPointIndex, double dt)
+    std::vector<double> AntennaSignalTransmitter::GetEFieldCoPol(int fieldPointIndex, double dt)
     {
     	LMCThreeVector pointOfInterest=GetFieldPoint(fieldPointIndex);
         double estimatedField=0.0;
@@ -100,30 +100,30 @@ namespace locust
 
         	if(fInputSignalType==1) //sinusoidal wave for dipole antenna
         	{
-        		for( unsigned index = 0; index <fTransmitterHandler.GetFilterSizeArray(bTE,l,m,n);index++)
+        		for( unsigned index = 0; index <fTransmitterHandler.GetFilterSize();index++)
         		{
         			double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
         			delayedVoltageBuffer[0].push_back(voltageValue);
         			delayedVoltageBuffer[0].pop_front();
 
-        			voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolutionArray(bTE,l,m,n);
+        			voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolution();
         		}
         	}
         
         	else// For now using sinusoidal as well
         	{
-        		for( unsigned index = 0; index <fTransmitterHandler.GetFilterSizeArray(bTE,l,m,n);index++)
+        		for( unsigned index = 0; index <fTransmitterHandler.GetFilterSize();index++)
         		{
         			double voltageValue = GetFieldAtOrigin(fInputAmplitude,voltagePhase);
         			delayedVoltageBuffer[0].push_back(voltageValue);
         			delayedVoltageBuffer[0].pop_front();
-        			voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolutionArray(bTE,l,m,n);
+        			voltagePhase += 2.*LMCConst::Pi()*fInputFrequency*fTransmitterHandler.GetFilterResolution();
         		}
         	}
 
         	// find total field from all transmitting antennas in fTransmitterHardware object.
-        	estimatedField += fTransmitterHandler.ConvolveWithFIRFilterArray(bTE,l,m,n,delayedVoltageBuffer[0]) * fTransmitterHardware->GetPatternFactor(pointOfInterest, iAntenna);
-		//estimatedField += fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * fTransmitterHardware->GetPatternFactor(pointOfInterest, iAntenna);
+        	estimatedField += fTransmitterHandler.ConvolveWithFIRFilter(delayedVoltageBuffer[0]) * fTransmitterHardware->GetPatternFactor(pointOfInterest, iAntenna);
+
         } // nAntennas
 
         std::vector<double> FieldSolution; FieldSolution.resize(2);
@@ -133,16 +133,16 @@ namespace locust
         return FieldSolution;
     }
     
-    bool AntennaSignalTransmitter::InitializeTransmitter(int bTE, int l, int m, int n)
+    bool AntennaSignalTransmitter::InitializeTransmitter()
     {
-        if(!fTransmitterHandler.ReadHFSSFile(bTE,l,m,n))
+        if(!fTransmitterHandler.ReadHFSSFile())
         {
 	    LERROR(lmclog,"Error reading HFSS file");
             return false;
         }
-        double filterSize=fTransmitterHandler.GetFilterSizeArray(bTE,l,m,n);
+        double filterSize=fTransmitterHandler.GetFilterSize();
         InitializeBuffers(filterSize);
-        fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fTransmitterHandler.GetFilterResolutionArray(bTE,l,m,n))*fInputFrequency;
+        fInitialPhaseDelay = -2.*LMCConst::Pi()*(filterSize*fTransmitterHandler.GetFilterResolution())*fInputFrequency;
         fPhaseDelay = fInitialPhaseDelay;
         return true;
     }

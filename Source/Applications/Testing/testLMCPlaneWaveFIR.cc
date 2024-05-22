@@ -60,6 +60,7 @@ public:
 	    std::string filepath = tDataDir + "/PatchTFLocust.txt";
 	    param_0->add( "tf-receiver-filename", filepath.c_str() );
 	    param_0->add( "tf-receiver-bin-width", 0.01e9 );
+	    param_0->add( "print-fir-debug", false );
 	    return param_0;
 	}
 
@@ -71,7 +72,7 @@ public:
 			LWARN(testlog,"TFReceiverHandler was not configured correctly.");
 			return false;
 		}
-		if ( !fTFReceiverHandler->ReadHFSSFile(1,0,1,1) )
+		if ( !fTFReceiverHandler->ReadHFSSFile(0,0,0,0) )
 		{
 			LWARN(testlog,"TF file was not read correctly.");
 			return false;
@@ -87,17 +88,16 @@ public:
 
 
 
-	bool PopulateSignal(Signal* aSignal, int N0, double timeStamp)
+	bool PopulateSignal(Signal* aSignal, int N0)
 	{
 		double LO_phase = 0.;
 		double voltage_phase = 0.;
-		double phaseLagRF = 2.*LMCConst::Pi() * timeStamp/(1./fRF_frequency);
 		fPhaseLagLO += 2.*LMCConst::Pi() * fLO_frequency * 1./fAcquisitionRate;
 
 		for( unsigned index = 0; index < N0; ++index )
 		{
 			LO_phase = fPhaseLagLO;
-			voltage_phase = phaseLagRF + 2.*LMCConst::Pi()*fRF_frequency*(double)index/fFilterRate;
+			voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/fFilterRate;
 
 			// keep only lower sideband RF-LO
 			aSignal->LongSignalTimeComplex()[index][0] = fAmplitude*cos(voltage_phase-LO_phase);
@@ -111,7 +111,7 @@ public:
 	std::deque<double> SignalToDeque(Signal* aSignal)
 	{
 	    std::deque<double> incidentSignal;
-	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(1,0,1,1); i++)
+	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(0,0,0,0); i++)
 	    {
 	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
 	    }
@@ -155,8 +155,8 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
 
 	/* initialize time series */
 	Signal* aSignal = new Signal();
-	int N0 = aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterSizeArray(1,0,1,1);
-	aTestLMCPlaneWaveFIR.fFilterRate = (1./aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterResolutionArray(1,0,1,1));
+	int N0 = aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterSizeArray(0,0,0,0);
+	aTestLMCPlaneWaveFIR.fFilterRate = (1./aTestLMCPlaneWaveFIR.fTFReceiverHandler->GetFilterResolutionArray(0,0,0,0));
 	aSignal->Initialize( N0 , 1 );
 
 	double firGainMax = 0.;
@@ -165,24 +165,13 @@ TEST_CASE( "LMCPlaneWaveFIR with default parameter values (pass)", "[single-file
 		for (unsigned rfStep=0; rfStep<25; rfStep++)
 		{
 			aTestLMCPlaneWaveFIR.fRF_frequency = iHarmonic*20.9e9 + 0.5e9*rfStep;
-
-			double convolutionMag = 0.;
-			for (unsigned i=0; i<1000; i++)
-			{
-				/* populate time series and convolve it with the FIR filter */
-				double timeStamp = i/aTestLMCPlaneWaveFIR.fAcquisitionRate;
-				aTestLMCPlaneWaveFIR.PopulateSignal(aSignal, N0, timeStamp);
-				double convolution = aTestLMCPlaneWaveFIR.fTFReceiverHandler->ConvolveWithFIRFilterArray(1,0,1,1,aTestLMCPlaneWaveFIR.SignalToDeque(aSignal));
-				if (fabs(convolution) > convolutionMag)
-				{
-					convolutionMag = convolution;
-				}
-			}
+			/* populate time series and convolve it with the FIR filter */
+			aTestLMCPlaneWaveFIR.PopulateSignal(aSignal, N0);
+			double convolutionMag = aTestLMCPlaneWaveFIR.fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(0,0,0,0,aTestLMCPlaneWaveFIR.SignalToDeque(aSignal)).first;
 			// https://www.antenna-theory.com/definitions/antennafactor.php
 			double firGain = 10.*log10(pow(1./(aTestLMCPlaneWaveFIR.fAmplitude/convolutionMag/9.73*(3.e8/aTestLMCPlaneWaveFIR.fRF_frequency)),2.));
 			if (firGain > firGainMax) firGainMax = firGain;
 			LPROG( testlog, "FIR gain at frequency " << aTestLMCPlaneWaveFIR.fRF_frequency << " is " << firGain << " dB" );
-			//printf("firGain at frequency %g is %g dB\n", aTestLMCPlaneWaveFIR.fRF_frequency, firGain);
 		}
 	}
 

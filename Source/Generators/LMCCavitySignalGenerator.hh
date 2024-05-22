@@ -73,9 +73,9 @@ namespace locust
             virtual ~CavitySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );
-            bool CrossCheckCavityConfig(int bTE, int l, int m, int n);
             bool ConfigureInterface(Signal* aSignal);
             bool RecordRunParameters(Signal* aSignal);
+            bool CrossCheckCavityConfig();
             bool CrossCheckAliasing(Signal* aSignal, double dopplerFrequency );
 
             void Accept( GeneratorVisitor* aVisitor ) const;
@@ -108,6 +108,7 @@ namespace locust
             bool fUseDirectKassPower;
             bool fAliasingIsChecked;
             bool fUnitTestRootFile;
+            std::vector<std::vector<int>> fModeSet;
 
 
 
@@ -137,6 +138,7 @@ namespace locust
 
             std::shared_ptr< BaseDistribution> fStartDelayDistribution;
             DistributionInterface fDistributionInterface;
+
 
     };
 

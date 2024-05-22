@@ -37,8 +37,9 @@ namespace locust
             double GetInitialFreq();
             void SetTFarray( std::vector<std::complex<double>> aTFarray );
             std::vector<std::complex<double>> GetTFarray();
-            void SetGFarray( int bTE, int l, int m, int n, std::vector<std::pair<double,std::pair<double,double> > > aGFarray );
-            std::vector<std::pair<double,std::pair<double,double> > > GetGFarray(int bTE, int l, int m, int n);
+
+            void SetGFarray( std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > aGFarray );
+            std::vector< std::vector<std::pair<double,std::pair<double,double> > > > GetGFarray( std::vector<std::vector<int>> );
             virtual void SetCavityQ( int bTE, int l, int m, int n, double aQ ) {};
             virtual double GetCavityQ(int bTE, int l, int m, int n ) {return 1.;};
             virtual void SetCavityFrequency(int bTE, int l, int m, int n,  double aFrequency ) {};
@@ -47,6 +48,8 @@ namespace locust
             virtual double GetDHOTimeResolution(int bTE, int l, int m, int n) {return 0.;};
             virtual void SetDHOThresholdFactor(int bTE, int l, int m, int n, double aThresholdFactor ) {};
             virtual double GetDHOThresholdFactor(int bTE, int l, int m, int n) {return 0.;};
+            void SetNModes( int aNumberOfModes );
+            int GetNModes();
 
 
         private:
@@ -54,13 +57,7 @@ namespace locust
             std::vector<std::complex<double>> fTFarray;
             std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > fGFarray;
             double fInitialFreq;
-
-
-
-
-
-
-
+            int fNModes;
 
 };
 
