@@ -42,11 +42,11 @@ namespace locust
             virtual bool ReadModeMapTE_E(std::string aFilename);
 	    std::vector< int > FindClosestCoordinate(double var1, double var2, double var3, double dim1_min, double dim1_max, int dim1N, double dim2_min, double dim2_max, int dim2N, double dim3_min, double dim3_max, int dim3N);
 	    std::vector< std::vector< int >> GetVerticesIndices(std::vector<int> ClosestCoordinate, double var1, double var2, double var3, double dim1_min, double dim1_max, int dim1N, double dim2_min, double dim2_max, int dim2N, double dim3_min, double dim3_max, int dim3N); 
-	    double InterpolateField(double var1, double var2, double var3, std::vector< std::vector<int>> TetrahedronVertices, double dim1_min, double dim1_max, int dim1N, double dim2_min, double dim2_max, int dim2N, double dim3_min, double dim3_max, int dim3N);
+	    double InterpolateField(double var1, double var2, double var3, std::vector< std::vector<int>> TetrahedronVertices, double dim1_min, double dim1_max, int dim1N, double dim2_min, double dim2_max, int dim2N, double dim3_min, double dim3_max, int dim3N, int component);
 	    double IndexToCoordinate(int index, double min, double max, int nPixels);
         private:
 
-            std::vector< std::vector< std::vector< double >>> fModeMapTE_E;
+            std::vector< std::vector< std::vector< std::vector< double >>>> fModeMapTE_E;
 
     };
 

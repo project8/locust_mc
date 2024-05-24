@@ -33,15 +33,28 @@ namespace locust
         }
 
 	int nPixel1, nPixel2, nPixel3; //Represent number of pixels in provided Mode Map for each dimension. THESE NEED TO BE GENERALIZED!
-	double init1 = 3.5e-5;
+	/*double init1 = 3.5e-5;
 	double final1 = 0.006966;
 	double init2 = 0.03142;
 	double final2 = 6.253;
 	double init3 = 0.016;
 	double final3 = 0.085;
+	
         nPixel1 = 100;
         nPixel2 = 100;
         nPixel3 = 3;
+	*/
+
+	double init1 = 0.;
+        double final1 = 0.0762;
+        double init2 = 0.;
+        double final2 = 6.284;
+        double init3 = 0.;
+        double final3 = 0.1524;
+
+	nPixel1 = 7;
+        nPixel2 = 13;
+	nPixel3 = 13;
 	fModeMapTE_E.resize(nPixel1);
         for(int i=0; i<nPixel1; i++)
 	{
@@ -49,6 +62,10 @@ namespace locust
 		for(int j=0; j<nPixel2; j++)
 		{
 			fModeMapTE_E[i][j].resize(nPixel3);
+			for(int k=0; k<nPixel3; k++)
+			{
+				fModeMapTE_E[i][j][k].resize(3);
+			}
 		}
 	}
 
@@ -65,13 +82,15 @@ namespace locust
                 std::stringstream ss(lineContent);
                 int wordCount = 0;
 		int i,j,k;
-		double Etheta;
+		double Erho,Etheta,Ez;
                 while (ss >> token)
                 {
-                	if (wordCount == 0) i = (int)((std::stod(token)-init1)/(final1-init1)*nPixel1); // var1 position
-                	else if (wordCount == 1) j = (int)((std::stod(token)-init2)/(final2-init2)*nPixel2); // var2 position
-			else if (wordCount == 2) k = (int)((std::stod(token)-init3)/(final3-init3)*nPixel3); // var3 position
-                	else if (wordCount == 3) Etheta = std::stod(token); // mode E field value
+                	if (wordCount == 0) i = (int)((std::stod(token)-init1)/(final1-init1)*(nPixel1)); // var1 position
+                	else if (wordCount == 1) j = (int)((std::stod(token)-init2)/(final2-init2)*(nPixel2-1)); // var2 position, the -1 term at the end is due to the cyclical nature of theta, where the first and last been are redundant 
+			else if (wordCount == 2) k = (int)((std::stod(token)-init3)/(final3-init3)*(nPixel3)); // var3 position
+                	else if (wordCount == 3) Erho = std::stod(token); // mode E field value
+                        else if (wordCount == 4) Etheta = std::stod(token); // mode E field value
+                        else if (wordCount == 5) Ez = std::stod(token); // mode E field value
                 	else
                 	{
                 		LERROR(lmclog, "There are more columns than expected in the uploaded mode map file.");
@@ -79,7 +98,9 @@ namespace locust
                 	}
                 	++wordCount;
                 }
-                fModeMapTE_E[i][j][k] = Etheta;
+		//std::cout << "indices read: " << i << " " << j << " " << k << std::endl;
+		std::vector E_input = {Erho,Etheta,Ez};
+                fModeMapTE_E[i][j][k] = E_input;
 //		std::cout << "E read in at index " << i << " " << j << " " << k << ": " << fModeMapTE_E[i][j][k] << std::endl;
 //                printf("read var1 is %g, var2 is %g, E is %g\n", fModeMapTE_E.back()[0], fModeMapTE_E.back()[1], fModeMapTE_E.back()[2]);
 //                getchar();
@@ -134,22 +155,29 @@ namespace locust
 		double var3 = zKass + 0.5*dim3;
 		std::vector< int > CoordinateIndices = FindClosestCoordinate(var1, var2, var3, 0, dim1, fModeMapTE_E.size(), 0, dim2, fModeMapTE_E[0].size(), 0, dim3, fModeMapTE_E[0][0].size());
 		std::vector< std::vector< int >> TetrahedronVertices = GetVerticesIndices(CoordinateIndices, var1, var2, var3, 0, dim1, fModeMapTE_E.size(), 0, dim2, fModeMapTE_E[0].size(), 0, dim3, fModeMapTE_E[0][0].size());
-//		std::cout << "Indices: " << CoordinateIndices[0] << " " << CoordinateIndices[1] << " " << CoordinateIndices[2] << std::endl;
+		//std::cout << "Indices: " << CoordinateIndices[0] << " " << CoordinateIndices[1] << " " << CoordinateIndices[2] << std::endl;
     		if(CoordinateIndices[0]!=0 or CoordinateIndices[1]!=0 or CoordinateIndices[2]!=0) 
     		{
     			// Found a near neighbor in the uploaded mode map:
-    			//printf("E at var1=%g var2=%g var3=%g is %g\n", var1, var2, var3, fModeMapTE_E[CoordinateIndices[0]][CoordinateIndices[1]][CoordinateIndices[2]]);
-			TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0, dim1, fModeMapTE_E.size(), 0, dim2, fModeMapTE_E[0].size(), 0, dim3, fModeMapTE_E[0][0].size() ));
+    			//printf("Er at var1=%g var2=%g var3=%g is %g\n", var1, var2, var3, fModeMapTE_E[CoordinateIndices[0]][CoordinateIndices[1]][CoordinateIndices[2]][0]);
+			TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0, dim1, fModeMapTE_E.size(), 0, dim2, fModeMapTE_E[0].size(), 0, dim3, fModeMapTE_E[0][0].size(), 0));
+                        //printf("Etheta at var1=%g var2=%g var3=%g is %g\n", var1, var2, var3, fModeMapTE_E[CoordinateIndices[0]][CoordinateIndices[1]][CoordinateIndices[2]][1]);
+			TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0, dim1, fModeMapTE_E.size(), 0, dim2, fModeMapTE_E[0].size(), 0, dim3, fModeMapTE_E[0][0].size(), 1));
+                        //printf("Ez at var1=%g var2=%g var3=%g is %g\n", var1, var2, var3, fModeMapTE_E[CoordinateIndices[0]][CoordinateIndices[1]][CoordinateIndices[2]][2]);
+			TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0, dim1, fModeMapTE_E.size(), 0, dim2, fModeMapTE_E[0].size(), 0, dim3, fModeMapTE_E[0][0].size(), 2));
     			return TE_E;  // Return the near neighbor.
     		}
-    		TE_E.push_back(0.); // Never found a point.
-    		return TE_E;  // Return 0.
+		std::vector< double > zeroVector(3,0.);
+    		//TE_E.push_back(zeroVector); // Never found a point.
+    		return zeroVector;  // Return 0.
     	}
     	else
     	{
-    		TE_E.push_back(0.); // Wrong mode for right now.
+		std::vector< double > zeroVector(3,0.);
+    		//TE_E.push_back(zeroVector); // Wrong mode for right now.
+		return zeroVector;
     	}
-        return TE_E;
+        //return TE_E;
     }
 
     std::vector<double> ModeMapCavity::TE_H(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
@@ -190,9 +218,12 @@ namespace locust
 	}
 	else
 	{
-		Coordinates[0] = (int)((var1 - dim1_min)/(dim1_max - dim1_min)*dim1N + 0.5 - (var1<0)); //  "+ 0.5 - (var1<0)" means casting to int will round to the nearest int rather than truncate towards zero
-		Coordinates[1] = (int)((var2 - dim2_min)/(dim2_max - dim2_min)*dim2N + 0.5 - (var1<0));
-		Coordinates[2] = (int)((var3 - dim3_min)/(dim3_max - dim3_min)*dim3N + 0.5 - (var1<0));
+		//Coordinates[0] = (int)((var1 - dim1_min)/(dim1_max - dim1_min)*(dim1N)); 
+		//Coordinates[1] = (int)((var2 - dim2_min)/(dim2_max - dim2_min)*dim2N);
+		//Coordinates[2] = (int)((var3 - dim3_min)/(dim3_max - dim3_min)*dim3N);
+                Coordinates[0] = (int)((var1 - dim1_min)/(dim1_max - dim1_min)*(dim1N-1) + 0.5 - (var1<0)); //  "+ 0.5 - (var1<0)" means casting to int will round to the nearest int rather than truncate towards zero
+                Coordinates[1] = (int)((var2 - dim2_min)/(dim2_max - dim2_min)*(dim2N-1) + 0.5 - (var2<0));
+                Coordinates[2] = (int)((var3 - dim3_min)/(dim3_max - dim3_min)*(dim3N-1) + 0.5 - (var3<0));
 		return Coordinates;
 	}
 
@@ -240,7 +271,7 @@ namespace locust
 
     }
 
-    double ModeMapCavity::InterpolateField(double var1, double var2, double var3, std::vector< std::vector<int>> TetrahedronVertices, double dim1_min, double dim1_max, int dim1N, double dim2_min, double dim2_max, int dim2N, double dim3_min, double dim3_max, int dim3N)
+    double ModeMapCavity::InterpolateField(double var1, double var2, double var3, std::vector< std::vector<int>> TetrahedronVertices, double dim1_min, double dim1_max, int dim1N, double dim2_min, double dim2_max, int dim2N, double dim3_min, double dim3_max, int dim3N, int component)
     {
 	//Does linear interpolation of a field at a point within a tetrahedron with known field at the vertices
 	double x0, x1, x2, x3, y0, y1, y2, y3, z0, z1, z2, z3;
@@ -271,22 +302,14 @@ namespace locust
 	{1., x3, y3, z3}
   };
 
-  //std::cout << "m: " << m << std::endl; 
-
-  Eigen::VectorXd v {{ fModeMapTE_E[TetrahedronVertices[0][0]][TetrahedronVertices[0][1]][TetrahedronVertices[0][2]], fModeMapTE_E[TetrahedronVertices[1][0]][TetrahedronVertices[1][1]][TetrahedronVertices[2][2]], fModeMapTE_E[TetrahedronVertices[2][0]][TetrahedronVertices[2][1]][TetrahedronVertices[2][2]], fModeMapTE_E[TetrahedronVertices[3][0]][TetrahedronVertices[3][1]][TetrahedronVertices[3][2]]}};
-
-  //std::cout << "v: " << v << std::endl;
+  Eigen::VectorXd v {{ fModeMapTE_E[TetrahedronVertices[0][0]][TetrahedronVertices[0][1]][TetrahedronVertices[0][2]][component], fModeMapTE_E[TetrahedronVertices[1][0]][TetrahedronVertices[1][1]][TetrahedronVertices[2][2]][component], fModeMapTE_E[TetrahedronVertices[2][0]][TetrahedronVertices[2][1]][TetrahedronVertices[2][2]][component], fModeMapTE_E[TetrahedronVertices[3][0]][TetrahedronVertices[3][1]][TetrahedronVertices[3][2]][component]}};
 
   Eigen::VectorXd Coef = m.inverse() * v;
 
-  //std::cout << "Coef: " << Coef << std::endl;
-
   Eigen::VectorXd pos {{ 1., var1, var2, var3}};
 
-  //std::cout << "pos: " << pos << std::endl;
-
   double interpolated_value = pos.dot(Coef);
-  
+  //if(TetrahedronVertices[0][0]==3 and TetrahedronVertices[0][2]==7 and component==1)std::cout << y0 << " " << y2 << " " << var2 << " " << interpolated_value << std::endl;
   return interpolated_value;
   }
 

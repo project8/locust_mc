@@ -515,7 +515,7 @@ namespace locust
         		for (int m=1; m<nModes; m++)
     	    		for (int n=0; n<nModes; n++)
     		    	{
-    			    	printf("l m n is %d %d %d\n", l, m, n);
+    			    	//printf("l m n is %d %d %d\n", l, m, n);
 				if(bTE!=1 or l!=0 or m!=1 or n!=1) continue;
     		    		if (bTE)
     			    	{
@@ -555,6 +555,7 @@ namespace locust
             					for (unsigned k=0; k<1; k++)
         	    				{
 						    double z = zSlice;
+						    //std::cout << l << " " << m << " " << n << " " << r << " " << theta << " " << z << std::endl;
     				    		    std::vector<double> tE;
     					    	    std::vector<double> tH;
         							if (bTE)
@@ -568,17 +569,17 @@ namespace locust
     		    						tE = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     		    						tH = fFieldCore->TM_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     	    						}
-    		    				    if ((!std::isnan(tE.back())))
+    		    				    if ((!std::isnan(tE[1])))
     			    			    {
-        						        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE.back());
+        						        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE[1]);
     	    					    }
     		    				    if ((!std::isnan(tE.front())))
     			    			    {
         						    	hTEr->Fill(theta-LMCConst::Pi(),r,tE.front());
         						    }
-    		    				    if ((!std::isnan(tH.back())))
+    		    				    if ((!std::isnan(tH[1])))
     			    			    {
-        						        hTHtheta->Fill(theta-LMCConst::Pi(),r,tH.back());
+        						        hTHtheta->Fill(theta-LMCConst::Pi(),r,tH[1]);
     	    					    }
     		    				    if ((!std::isnan(tH.front())))
     			    			    {
@@ -658,10 +659,10 @@ namespace locust
     	    				a = sprintf(hbufferHr, "TM%d%d%d_Hr_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
     		    		}
 
-    		    		TH2D* hTEtheta = new TH2D(hname_Etheta, (std::string(hname_Etheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    		    		TH2D* hTEr = new TH2D(hname_Er, (std::string(hname_Er)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    		    		TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
-    		    		TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, -GetDimR(), GetDimR());
+    		    		TH2D* hTEtheta = new TH2D(hname_Etheta, (std::string(hname_Etheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, 0., GetDimR());
+    		    		TH2D* hTEr = new TH2D(hname_Er, (std::string(hname_Er)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, 0., GetDimR());
+    		    		TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, 0., GetDimR());
+    		    		TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, 0., GetDimR());
 
         				double normFactor = 1.0;
         				if (bTE)
@@ -674,7 +675,7 @@ namespace locust
         				}
     	    			for (unsigned i=0; i<GetNPixels(); i++)
     		    		{
-    			    		double r = -GetDimR() + ((double)i+0.5)/(GetNPixels())*2.*GetDimR();
+    			    		double r = ((double)i+0.5)/(GetNPixels())*GetDimR();
     				    	for (unsigned j=0; j<1; j++)
         					{
         						double theta = thetaSlice;
@@ -693,17 +694,17 @@ namespace locust
     		    						tE = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     		    						tH = fFieldCore->TM_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
     	    						}
-    		    				    if ((!std::isnan(tE.back())))
+    		    				    if ((!std::isnan(tE[1])))
     			    			    {
-        						        hTEtheta->Fill(z,r,tE.back());
+        						        hTEtheta->Fill(z,r,tE[1]);
     	    					    }
     		    				    if ((!std::isnan(tE.front())))
     			    			    {
         						    	hTEr->Fill(z,r,tE.front());
         						    }
-    		    				    if ((!std::isnan(tH.back())))
+    		    				    if ((!std::isnan(tH[1])))
     			    			    {
-        						        hTHtheta->Fill(z,r,tH.back());
+        						        hTHtheta->Fill(z,r,tH[1]);
     	    					    }
     		    				    if ((!std::isnan(tH.front())))
     			    			    {
