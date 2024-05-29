@@ -29,9 +29,11 @@ namespace locust
             Track();
             virtual ~Track();
             int EventID = -99;
+            int RandomSeed = -99.;
             double StartTime = -99.;
             double EndTime = -99.;
             double TrackLength = -99.;
+            double OutputStartFrequency = -99.;
             double StartFrequency = -99.;
             double EndFrequency = -99.;
             double AvgFrequency = -99.;

@@ -22,6 +22,7 @@ namespace locust
 
     void Event::AddTrack(const Track aTrack)
     {
+        fOutputStartFrequencies.push_back( aTrack.OutputStartFrequency );
         fStartFrequencies.push_back( aTrack.StartFrequency );
         fEndFrequencies.push_back( aTrack.EndFrequency );
         fAvgFrequencies.push_back( aTrack.AvgFrequency );
@@ -34,7 +35,10 @@ namespace locust
         fRadii.push_back( aTrack.Radius );
         fRadialPhases.push_back( aTrack.RadialPhase );
 
-        //update size
+        // Update size.  And, record fLOFrequency for compatibility with previous work.  The LO frequency is
+        // now also recorded in the RunParameters Tree.
         fNTracks = fStartFrequencies.size();
+        fLOFrequency = aTrack.LOFrequency;
+        fRandomSeed = aTrack.RandomSeed;
     }
 }

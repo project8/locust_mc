@@ -155,7 +155,7 @@ namespace locust
     	//
     	// Cylindrical coordinates:
     	// bin/LocustSim -c config/LocustCavityCCA.json "cavity-signal.upload-modemap-filename"="PozarExport_Etheta_CylindricalTE011.txt" "cavity-signal.plot-mode-maps"=true
-    	// root -l output/ModeMapOutput.root
+    	// root -l output/ModemapOutput.root
     	// TE011_Etheta_z0mm->DrawCopy()
     	//
     	// Recangular coordinates:
