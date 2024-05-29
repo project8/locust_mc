@@ -85,6 +85,11 @@ namespace locust
      	if( aParam.has( "upload-modemap-filename" ) )  // import "realistic" test mode map
      	{
      		fFieldCore = new ModeMapCavity();
+		if(!fFieldCore->Configure(aParam))
+		{
+			LERROR(lmclog,"There was a problem configuring the mode map.");
+                        exit(-1);
+		}
      		scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
          	if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string()))
      		{

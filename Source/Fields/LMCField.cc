@@ -148,6 +148,11 @@ namespace locust
     	return sqrt(norm);
     }
 
+     bool FieldCore::Configure( const scarab::param_node& aParam )
+     {
+	return true;
+     }
+
      double FieldCore::GetBesselNKZeros(int l, int m)
      {
      	return fBesselNKZeros[l][m];

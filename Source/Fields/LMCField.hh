@@ -39,6 +39,8 @@ namespace locust
     	    FieldCore();
     	    virtual ~FieldCore();
 
+	    virtual bool Configure( const scarab::param_node& aParam );
+
 	        // Cylindrical/rectangular Pozar cavities:
     	    // dim1 = r, dim2 = theta, dim3 = z
     	    // or
@@ -59,7 +61,6 @@ namespace locust
             virtual bool ReadModeMapTE_H(std::string aFilename){return 0;};
             virtual bool ReadModeMapTM_E(std::string aFilename){return 0;};
             virtual bool ReadModeMapTM_H(std::string aFilename){return 0;};
-
 
             void ReadBesselZeroes(std::string filename, bool prime);
             double GetBesselNKZeros(int l, int m);
