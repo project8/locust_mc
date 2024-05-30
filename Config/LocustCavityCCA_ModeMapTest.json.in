@@ -1,0 +1,54 @@
+{
+    "generators":
+    [          
+       "cavity-signal",
+       "lpf-fft",
+       "decimate-signal",
+       "digitizer"
+    ],
+
+    "cavity-signal":
+    {
+        "transmitter": "kass-current",
+        "cavity-radius": 0.077,
+        "cavity-length": 0.1524,           
+        "back-reaction": "true",
+        "nPixel1": 7,
+	"nPixel2": 13,
+	"nPixel3": 13,
+        "dho-cavity-frequency": 25.9e9,
+        "dho-time-resolution": 9.0e-11,
+        "dho-threshold-factor": 0.01,
+	"plot-mode-maps": true,
+	"upload-modemap-filename": "fieldsExportTest.fld",
+        "event-spacing-samples": 10,
+        "track-length": 0.5e-4,
+        "rectangular-waveguide": false,        
+        "voltage-check": "false",
+        "lo-frequency": 25.9602e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA.xml" 
+    },
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 81920,
+        "acquisition-rate": 301,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+        "v-range":  0.08,
+        "v-offset": -0.04
+    }
+
+}
+

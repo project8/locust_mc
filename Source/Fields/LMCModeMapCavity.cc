@@ -154,7 +154,7 @@ namespace locust
     	// For testing, import the test mode map and inspect the output of this function like this:
     	//
     	// Cylindrical coordinates:
-    	// bin/LocustSim -c config/LocustCavityCCA.json "cavity-signal.upload-modemap-filename"="PozarExport_Etheta_CylindricalTE011.txt" "cavity-signal.plot-mode-maps"=true
+    	// bin/LocustSim -c config/LocustCavityCCA_ModeMapTest.json "cavity-signal.upload-modemap-filename"="fieldsExportTest.fld" "cavity-signal.plot-mode-maps"=true
     	// root -l output/ModemapOutput.root
     	// TE011_Etheta_z0mm->DrawCopy()
     	//
