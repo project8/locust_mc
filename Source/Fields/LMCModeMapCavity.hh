@@ -14,7 +14,7 @@
 #include "LMCField.hh"
 
 #include <vector>
-#include <Dense>
+#include <Eigen/Dense>
 
 namespace locust
 {
