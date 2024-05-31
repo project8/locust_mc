@@ -114,25 +114,25 @@ Immediately after Locust has finished, the exit status can be checked from a bas
 
 ### Docker container
 
-* A Docker container with Locust is available at ```ghcr.io/project8/locust_mc:v2.4.0``` .  
+* A Docker container with Locust is available at ```ghcr.io/project8/locust_mc:latest``` .  
 
 * This Docker container can be used with Docker (with superuser privileges).
 
 * Pull the container to your system with
 ```
-> sudo docker pull ghcr.io/project8/locust_mc:v2.4.0
+> sudo docker pull ghcr.io/project8/locust_mc:latest
 ```
 
 Open a shell inside the container with
 ```
-> sudo docker run --rm -it ghcr.io/project8/locust_mc:v2.4.0 /bin/bash
+> sudo docker run --rm -it ghcr.io/project8/locust_mc:latest /bin/bash
 ```
 
 * The Docker container can also be used with Singularity (as a regular user without sudo).
 
 Pull the container to your system with
 ```
-> singularity pull docker://ghcr.io/project8/locust_mc:v2.4.0
+> singularity pull docker://ghcr.io/project8/locust_mc:latest
 ```
 
 Open a shell inside the container with
@@ -141,7 +141,7 @@ Open a shell inside the container with
 ```
 and to mount a local directory for e.g. I/O to the container
 ```
-> singularity shell --no-home --bind /path/to/local/directory:/usr/local/p8/locust/v2.1.5/output ./[nameOfContainer].sif 
+> singularity shell --no-home --bind /path/to/local/directory:/usr/local/p8/locust/current/output ./[nameOfContainer].sif 
 ```
 
 
