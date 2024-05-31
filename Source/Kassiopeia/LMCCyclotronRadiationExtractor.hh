@@ -57,6 +57,7 @@ namespace locust
         private:
             std::deque<locust::Particle> fNewParticleHistory;
             double fPitchAngle;
+            int fLMCTrackID;
             FieldCalculator* fFieldCalculator;
             kl_interface_ptr_t fInterface;
             unsigned fSampleIndex;
