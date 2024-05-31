@@ -158,6 +158,13 @@ else (GSL_FOUND)
     message(FATAL "GSL not found")
 endif (GSL_FOUND)
 
+# eigen
+# versions earlier than 3.3 may work; the exact minimum version is not known for sure.
+find_package (Eigen3 3.3 REQUIRED)
+if (EIGEN3_FOUND)
+   message (STATUS "Eigen found.")
+   include_directories (${EIGEN3_INCLUDE_DIR})
+endif (EIGEN3_FOUND)
 
 # FFTW
 find_package(FFTW REQUIRED)
