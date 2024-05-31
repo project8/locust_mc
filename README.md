@@ -32,7 +32,6 @@ Installation
     *  cd cbuild
     *  cmake -Dlocust_mc_PREBUILT_KASS_PREFIX=${KASS_PREFIX} -Dlocust_mc_BUILD_WITH_KASSIOPEIA=ON ../
     *  make install
-    *  source /Kassiopeia/install/bin/kasperenv.sh
     *  export LD_LIBRARY_PATH=/locust/cbuild/lib:$LD_LIBRARY_PATH
 * Test the executable:  ```bin/LocustSim```.
 
