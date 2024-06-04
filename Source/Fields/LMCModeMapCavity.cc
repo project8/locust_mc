@@ -145,12 +145,6 @@ namespace locust
 
     std::vector<double> ModeMapCavity::TE_E(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
     {
-    	// This placeholder function does a coarse search through an uploaded mode map (stored in fModeMapTE_E)
-    	// to find a data point near the requested location at (var1,var2).  If it finds a suitable point, the function
-    	// returns the value of the E field in the uploaded mode map at that point.  If it can't find
-    	// a point, it returns 0.  This coarse grid search should be entirely replaced with something that returns
-    	// an E-field value interpolated from the uploaded mode map.
-
     	// For testing, import the test mode map and inspect the output of this function like this:
     	//
     	// Cylindrical coordinates:
@@ -159,7 +153,7 @@ namespace locust
     	// TE011_Etheta_z0mm->DrawCopy()
     	//
     	// Recangular coordinates:
-    	// bin/LocustSim -c config/LocustCavityRectangular.json "cavity-signal.upload-modemap-filename"="PozarExport_Ex_RectangularTE011.txt" "cavity-signal.plot-mode-maps"=true
+    	// bin/LocustSim -c config/LocustCavityRectangular.json "cavity-signal.upload-modemap-filename"="[putFilenameHere]" "cavity-signal.plot-mode-maps"=true
     	// root -l output/ModeMapOutput.root
     	// TE011_Ex_z0mm->DrawCopy()
 
@@ -167,21 +161,12 @@ namespace locust
     	//
     	// Now, change the number of pixels used in the plotted mode map:
     	//
-    	// bin/LocustSim -c config/LocustCavityRectangular.json "cavity-signal.upload-modemap-filename"="PozarExport_Ex_RectangularTE011.txt" "cavity-signal.plot-mode-maps"=true "cavity-signal.n-pixels"=201
+    	// bin/LocustSim -c config/LocustCavityRectangular.json "cavity-signal.upload-modemap-filename"="fieldsExportTest.fld" "cavity-signal.plot-mode-maps"=true "cavity-signal.n-pixels"=201
     	// root -l output/ModeMapOutput.root
     	// TE011_Ex_z0mm->DrawCopy()
     	//
-    	// In the plot, we might see a few points that were extracted successfully from the uploaded mode map, but
-    	// with most if not all of the requested points missing.  This is due to the presently inadequate grid search.  With
-    	// interpolation, we should be able to report reasonable E field values for any requested point over any number
-    	// of pixels, and this should be seen as a smooth and correct mode map in the output plot.
-
     	std::vector<double> TE_E;
 
-    	// Below, we are presently hard-wired for lmn=011, which is the mode written to both available fake mode maps:
-    	// A file containing a fake cylindrical TE011 mode map in r, theta, and z with E components in r, theta, and z:  fieldsExportTest.fld,
-    	// A file containing a fake rectangular TE011 mode map in x, y, and E_x:  PozarExport_Ex_RectangularTE011.txt .
-    	//
     	if ((l==0)&&(m==1)&&(n==1))
     	{
 		double var3 = zKass + 0.5*dim3;
@@ -208,7 +193,7 @@ namespace locust
     //These next components need to be expanded once we have real Field Maps to utilize
     std::vector<double> ModeMapCavity::TE_H(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
     {
-    	//LPROG( lmclog, "TE_H is presently not available as a mode map." );
+    	LPROG( lmclog, "TE_H is presently not available as a mode map." );
     	std::vector<double> TE_H;
     	TE_H.push_back(0.);
     	return TE_H;
@@ -216,7 +201,7 @@ namespace locust
 
     std::vector<double> ModeMapCavity::TM_E(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
     {
-    	//LPROG( lmclog, "TM_E is presently not available as a mode map." );
+    	LPROG( lmclog, "TM_E is presently not available as a mode map." );
     	std::vector<double> TM_E;
     	TM_E.push_back(0.);
     	return TM_E;
@@ -224,7 +209,7 @@ namespace locust
 
     std::vector<double> ModeMapCavity::TM_H(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
     {
-    	//LPROG( lmclog, "TM_H is presently not available as a mode map." );
+    	LPROG( lmclog, "TM_H is presently not available as a mode map." );
     	std::vector<double> TM_H;
     	TM_H.push_back(0.);
         return TM_H;
