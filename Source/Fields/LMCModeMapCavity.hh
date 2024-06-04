@@ -39,16 +39,17 @@ namespace locust
             virtual std::vector<double> TM_E(double dim1, double dim2, double dim3, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
             virtual std::vector<double> TM_H(double dim1, double dim2, double dim3, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
 
-	    virtual bool Configure(const scarab::param_node& aParam);
+            virtual bool Configure(const scarab::param_node& aParam);
             virtual bool ReadModeMapTE_E(std::string aFilename);
-	    std::vector< int > FindClosestCoordinate(double var1, double var2, double var3);
-	    std::vector< std::vector< int >> GetVerticesIndices(std::vector<int> ClosestCoordinate, double var1, double var2, double var3); 
-	    double InterpolateField(double var1, double var2, double var3, std::vector< std::vector<int>> TetrahedronVertices, int component);
-	    double IndexToCoordinate(int index, double min, double max, int nPixels);
+            std::vector< int > FindClosestCoordinate(double var1, double var2, double var3);
+            std::vector< std::vector< int >> GetVerticesIndices(std::vector<int> ClosestCoordinate, double var1, double var2, double var3);
+            double InterpolateField(double var1, double var2, double var3, std::vector< std::vector<int>> TetrahedronVertices, int component);
+            double IndexToCoordinate(int index, double min, double max, int nPixels);
+
         private:
-	    int nPixel1, nPixel2, nPixel3;
-	    double dim1_min, dim2_min, dim3_min;
-	    double dim1_max, dim2_max, dim3_max;
+            int fnPixel1, fnPixel2, fnPixel3;
+            double fDim1_min, fDim2_min, fDim3_min;
+            double fDim1_max, fDim2_max, fDim3_max;
             std::vector< std::vector< std::vector< std::vector< double >>>> fModeMapTE_E;
 
     };
