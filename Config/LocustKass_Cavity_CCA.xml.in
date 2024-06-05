@@ -430,9 +430,9 @@
 
 
 
-
+<!--
             <command parent="root_space_interaction" field="add_space_interaction" child="int_hydrogen"/>
-
+-->
 <!--
             <command parent="trajectory_exact" field="remove_control" child="control_cyclotron_1_16"/>
             <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_64"/>
