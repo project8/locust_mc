@@ -13,6 +13,7 @@ namespace locust
             fNewParticleHistory(),
             fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
+            fLMCTrackID( -2 ),
             fT0trapMin( 0. ),
             fNCrossings( 0 ),
             fSampleIndex( 0 ),
@@ -25,6 +26,7 @@ namespace locust
             fNewParticleHistory(),
             fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
+            fLMCTrackID( aCopy.fLMCTrackID ),
             fT0trapMin( aCopy.fT0trapMin ),
             fNCrossings( aCopy.fNCrossings ),
             fSampleIndex( aCopy.fSampleIndex ),
@@ -209,13 +211,15 @@ namespace locust
 
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
-            if (!(fInterface->fTOld > 0.))
+
+            if ( aFinalParticle.GetParentTrackId() > fLMCTrackID )  // check for new track
             {
-            	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
-            	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
+                fLMCTrackID = aFinalParticle.GetParentTrackId();
+                fPitchAngle = -99.;  // new electron needs central pitch angle reset.
+                double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
-            	LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
+                LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
 
