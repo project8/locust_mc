@@ -519,7 +519,7 @@ namespace locust
     	            for (int n=0; n<nModes; n++)
     	            {
     		            //printf("l m n is %d %d %d\n", l, m, n)
-    	                if(bTE!=1 or l!=0 or m!=1 or n!=1) continue;
+    	                //if(bTE!=1 or l!=0 or m!=1 or n!=1) continue;
                         if (bTE)
                         {
                             a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_z%dmm", l, m, n, (int)(zSlice*1.e3));
@@ -646,7 +646,8 @@ namespace locust
                 for (int m=1; m<nModes; m++)
     	            for (int n=0; n<nModes; n++)
                     {
-                        printf("l m n is %d %d %d\n", l, m, n);
+                        //printf("l m n is %d %d %d\n", l, m, n);
+    	                //if(bTE!=1 or l!=0 or m!=1 or n!=1) continue;
                         if (bTE)
                         {
                             a = sprintf(hbufferEtheta, "TE%d%d%d_Etheta_zLong_theta%d", l, m, n, (int)(thetaSlice*1.e3));
