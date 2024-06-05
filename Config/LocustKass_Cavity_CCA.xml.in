@@ -304,10 +304,12 @@
 
 	<!-- space interactions -->
 
+<!--
     <ksint_scattering name="int_scattering" split="true">
         <density_constant temperature="300." pressure="3.e-10"/>
         <calculator_constant cross_section="1.e-18"/>
     </ksint_scattering>
+-->
 
     <!-- surface interactions -->
 
@@ -315,12 +317,12 @@
 
 
 
-<!--
+
     <ksint_scattering name="int_hydrogen" split="true">
-        <density_constant name="density_constant" temperature="300." pressure="[pressure]"/>
-        <calculator_hydrogen name="calculator_hydrogen" elastic="true" excitation="true" ionisation="true"/>
+        <density_constant name="density_constant" temperature="300." pressure="3.e-2"/>
+        <calculator_hydrogen name="calculator_hydrogen" elastic="false" excitation="true" ionisation="true"/>
     </ksint_scattering>
--->
+
 
     <!-- navigators -->
 
@@ -331,7 +333,7 @@
 
     <!-- terminators -->
     <ksterm_max_steps name="term_max_steps" steps="10000"/>
-    <ksterm_min_energy name="term_min_energy" energy="0."/>
+    <ksterm_min_energy name="term_min_energy" energy="17500."/>
     <ksterm_max_energy name="term_max_energy" energy="30430."/>
     <ksterm_min_z name="term_min_z" z="-4.0"/>
     <ksterm_max_z name="term_max_z" z="4.0"/>
@@ -342,6 +344,7 @@
     <cycl_rad_extr name="rad_extr" P8Phase="4" /> 
     <mod_run_pause name="run_pause"/>
     <mod_event_hold name="event_hold"/>
+    <mod_track_hold name="track_hold"/>
 
     <!-- writers -->
 
@@ -427,9 +430,9 @@
 
 
 
-
-<!--            <command parent="root_space_interaction" field="add_space_interaction" child="int_scattering"/>  -->
-
+<!--
+            <command parent="root_space_interaction" field="add_space_interaction" child="int_hydrogen"/>
+-->
 <!--
             <command parent="trajectory_exact" field="remove_control" child="control_cyclotron_1_16"/>
             <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_64"/>
@@ -458,6 +461,7 @@
         writer="write_root"
         add_static_run_modifier="run_pause"
         add_static_event_modifier="event_hold"
+        add_static_track_modifier="track_hold"
         add_static_step_modifier="rad_extr"
     />
 
