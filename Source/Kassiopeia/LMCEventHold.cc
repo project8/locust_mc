@@ -111,7 +111,6 @@ namespace locust
         {
         	aRootTreeWriter->OpenFile("RECREATE");
         }
-        fInterface->anEvent->AddTrack( fInterface->aTrack );
         aRootTreeWriter->WriteEvent( fInterface->anEvent );
         aRootTreeWriter->WriteRunParameters(fInterface->aRunParameter);
         aRootTreeWriter->CloseFile();
