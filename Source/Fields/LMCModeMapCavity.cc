@@ -176,9 +176,10 @@ namespace locust
             if(CoordinateIndices[0]!=0 or CoordinateIndices[1]!=0 or CoordinateIndices[2]!=0)
             {
     			// Found a near neighbor in the uploaded mode map:
-                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0));
-                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 1));
-                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 2));
+                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0));  // r
+                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 2));  // z
+                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 1));  // theta
+
                 return TE_E;  // Return the near neighbor.
             }
             std::vector< double > zeroVector(3,0.);
