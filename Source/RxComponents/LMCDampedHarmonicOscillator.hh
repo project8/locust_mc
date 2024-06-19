@@ -40,23 +40,6 @@ namespace locust
     		DampedHarmonicOscillator();
     		virtual ~DampedHarmonicOscillator();
     		virtual bool Configure( const scarab::param_node& aNode );
-/*
-    		virtual bool GenerateGreensFunction();
-            bool Initialize();
-            std::pair<double,double> GreensFunction(double t);
-            double ExpDecayTerm(double t);
-            virtual void SetCavityQ( double aQ );
-            virtual double GetCavityQ();
-            virtual void SetCavityFrequency( double aFrequency );
-            virtual double GetCavityFrequency();
-            virtual void SetDHOTimeResolution( double aTimeResolution );
-            virtual double GetDHOTimeResolution();
-            virtual void SetDHOThresholdFactor( double aThresholdFactor );
-            virtual double GetDHOThresholdFactor();
-            double NormFactor(double aDriveFrequency);
-            bool PopulateCalibrationSignal(Signal* aSignal, int N0, double aDriveFrequency);
-            std::deque<double> SignalToDeque(Signal* aSignal);
-*/
             virtual bool GenerateGreensFunction();
             bool Initialize( int nModes );
             std::pair<double,double> GreensFunction(int bTE, int l, int m, int n, double t);
@@ -73,22 +56,6 @@ namespace locust
             bool PopulateCalibrationSignal(int bTE, int l, int m, int n, Signal* aSignal, int N0, double aDriveFrequency);
             std::deque<double> SignalToDequeArray(int bTE, int l, int m, int n, Signal* aSignal);
 
-
-
-/*
-        private:
-            double fCavityFrequency; // Hz
-            double fCavityOmega; // radians/s
-            double fCavityQ;
-            double fCavityDampingFactor;
-            double fBFactor; // harmonic oscillator parameter
-            double fCavityOmegaPrime;  // damped resonant frequency
-            int fMaxNBins;
-            double fTimeResolution;
-            double fThresholdFactor;
-            double fHannekePowerFactor;
-            TFReceiverHandler* fTFReceiverHandler;
-*/
 
         private:
             int fNModes;
