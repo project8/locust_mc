@@ -281,7 +281,6 @@ namespace locust
                     tGFArray[bTE][l][m].resize(nModes);
                     for(int n=0; n<nModes; n++)
                     {
-                        tGFArray[bTE][l][m][n].resize(nModes);
                         for (unsigned i=0; i<fMaxNBins; i++)
                         {
                             double tValue = i * fTimeResolution[bTE][l][m][n];
