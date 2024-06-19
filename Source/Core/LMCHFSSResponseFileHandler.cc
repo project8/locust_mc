@@ -368,15 +368,12 @@ namespace locust
                 std::string modeIndexStr = std::to_string(bTE) + std::to_string(l) + std::to_string(m) + std::to_string(n);
                 std::string fileName = fOutputPath + "/FIRhisto" + modeIndexStr + ".root";
                 PrintFIR( fFilterComplexArray[bTE][l][m][n], fFIRNBinsArray[bTE][l][m][n], fileName );
+                LPROG( lmclog, "Finished writing histos to output/FIRhisto["<<bTE<<"]["<<l<<"]["<<m<<"]["<<n<<"].root");
+                LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
+                getchar();
             }
             fIsFIRCreatedArray[bTE][l][m][n]=true;
             LDEBUG( lmclog, "Finished populating FIR filter with Green's function.");
-        }
-        if (fPrintFIR)
-        {
-            LPROG( lmclog, "Finished writing histos to output/FIRhisto[bTE][l][m][n].root");
-            LPROG( lmclog, "Press Return to continue, or Cntrl-C to quit.");
-            getchar();
         }
 
         return true;
