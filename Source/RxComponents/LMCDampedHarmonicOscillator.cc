@@ -284,9 +284,10 @@ namespace locust
                         for (unsigned i=0; i<fMaxNBins; i++)
                         {
                             double tValue = i * fTimeResolution[bTE][l][m][n];
-                            if ( ExpDecayTerm( bTE, l, m, n, tValue) > fThresholdFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, 0.) )
+                            tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],GreensFunction( bTE, l, m, n, tValue)));
+                            if ( ExpDecayTerm( bTE, l, m, n, tValue) < fThresholdFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, 0.) )
                             {
-                                tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],GreensFunction( bTE, l, m, n, tValue)));
+                                break;
                             }
                         }
                         std::reverse( tGFArray[bTE][l][m][n].begin(), tGFArray[bTE][l][m][n].end() );
