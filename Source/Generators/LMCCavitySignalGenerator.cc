@@ -495,7 +495,6 @@ namespace locust
 		        // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
 		        double totalScalingFactor = sqrt(50.) * unitConversion;
 		        fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
-		        if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
 		    }
 		}
 
