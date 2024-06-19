@@ -181,6 +181,8 @@ namespace locust
     	double k1 = LMCConst::Pi() / GetDimX();
     	double beta = sqrt( k*k - k1*k1 );
     	double areaIntegral = fcyc * LMCConst::MuNull() * pow(GetDimX(),3.) * GetDimY() * beta / 4. / LMCConst::Pi() / LMCConst::Pi();
+    	// Modify Pozar integral to allow for power that flows in both directions:
+    	areaIntegral /= 2.;
     	// sqrt of propagating power gives amplitude of E
     	return sqrt(areaIntegral);
     }
