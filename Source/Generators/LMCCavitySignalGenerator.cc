@@ -387,6 +387,7 @@ namespace locust
                 return false;
             }
         }
+
         return true;
 	}
 

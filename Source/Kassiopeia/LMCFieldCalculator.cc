@@ -16,23 +16,21 @@ namespace locust
     LOGGER( lmclog, "FieldCalculator" );
 
     FieldCalculator::FieldCalculator() :
-    		fNFilterBinsRequired( 0 ),
-			fbMultiMode( false ),
-			fZSignalStart( 0. ),
-			fSignalStarted( false ),
-			fTFReceiverHandler( NULL ),
-			fAnalyticResponseFunction( 0 ),
-			fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+        fNFilterBinsRequired( 0 ),
+        fZSignalStart( 0. ),
+        fSignalStarted( false ),
+        fTFReceiverHandler( NULL ),
+        fAnalyticResponseFunction( 0 ),
+        fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
-    		fNFilterBinsRequired( 0 ),
-			fbMultiMode( false ),
-			fZSignalStart( 0. ),
-			fSignalStarted( false ),
-			fTFReceiverHandler( NULL ),
-			fAnalyticResponseFunction( 0 ),
-			fInterface( aCopy.fInterface )
+        fNFilterBinsRequired( 0 ),
+        fZSignalStart( 0. ),
+        fSignalStarted( false ),
+        fTFReceiverHandler( NULL ),
+        fAnalyticResponseFunction( 0 ),
+        fInterface( aCopy.fInterface )
     {
     }
     FieldCalculator* FieldCalculator::Clone() const
@@ -60,12 +58,6 @@ namespace locust
     bool FieldCalculator::Configure( const scarab::param_node& aParam )
     {
         fModeSet = fInterface->fField->ModeSelect(fInterface->fbWaveguide, 0);
-
-        if( aParam.has( "multi-mode" ) )
-        {
-    		LPROG(lmclog,"Running in multimode configuration.");
-        	fbMultiMode = aParam["multi-mode"]().as_bool();
-        }
 
     	fTFReceiverHandler = new TFReceiverHandler;
     	if(!fTFReceiverHandler->Configure(aParam))

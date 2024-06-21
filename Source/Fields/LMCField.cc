@@ -16,6 +16,7 @@ namespace locust
         fCentralFrequency(1.63e11),
 		fAvgDotProductFactor( 0. ),
         fNModes( 2 ),
+        fbMultiMode( false ),
         fR( 0.18 ),
         fL( 3.0 ),
         fX( 0.010668 ),
@@ -81,22 +82,21 @@ namespace locust
     {
     	int nModes = fNModes;
     	std::vector<std::vector<int>> tModeSet;
-    	tModeSet.resize(1);
     	if ( !bNormCheck )
     	{
     	    if ( bWaveguide )
     	    {
-    	    	tModeSet[0] = {1,0,1,0};
+    	    	tModeSet.push_back( {1,0,1,0} );
     	    }
     	    else
     	    {
     	    	if ( !fbMultiMode )
     	    	{
-    	    	    tModeSet[0] = {1,0,1,1};
+    	    	    tModeSet.push_back( {1,0,1,1} );
     	    	}
     	    	else
     	    	{
-    	    		tModeSet[0] = {1,0,1,1};
+    	    		tModeSet.push_back( {1,0,1,1} );
     	    		tModeSet.push_back( {0,1,1,1} );
     	    	}
     	    }
@@ -117,6 +117,7 @@ namespace locust
                 }
             }
     	}
+
     	return tModeSet;
     }
 

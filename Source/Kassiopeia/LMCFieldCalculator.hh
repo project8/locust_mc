@@ -62,7 +62,6 @@ namespace locust
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
             int fNFilterBinsRequired;
-            bool fbMultiMode;
             std::vector<std::vector<int>> fModeSet;
             double fZSignalStart;
             bool fSignalStarted;
