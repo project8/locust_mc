@@ -265,7 +265,7 @@ namespace locust
         double vMag = pow(tVx*tVx + tVy*tVy,0.5);
 
         std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, 0);
-q
+
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
 
