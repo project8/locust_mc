@@ -265,7 +265,7 @@ namespace locust
         double vMag = pow(tVx*tVx + tVy*tVy,0.5);
 
         std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, 0);
-
+q
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
 
@@ -279,7 +279,13 @@ namespace locust
         {
             dhoMag = complexConvolution.first / dhoNorm;
         }
-        double dhoPhase = complexConvolution.second;
+
+        // For compatibility with the develop branch, keep dhoPhase in the 1st and 4th
+        // quadrants with atan(tan(dhoPhase)).  This offsets the pre-existing field phase from
+        // the drive phase.  This may need to be revisited by removing the atan(tan()) for a
+        // closer match between the pre-existing field phase and the drive phase.  The track
+        // slope is sensitive to this phase.
+        double dhoPhase = atan(tan(complexConvolution.second));
 
         // first term represents the new field driven by the electron.
         // second term represents the field driven by the electron previously.
