@@ -96,8 +96,8 @@ namespace locust
     	    	}
     	    	else
     	    	{
-    	    		tModeSet.push_back( {1,0,1,1} );
     	    		tModeSet.push_back( {0,1,1,1} );
+    	    		tModeSet.push_back( {1,0,1,1} );
     	    	}
     	    }
     	}

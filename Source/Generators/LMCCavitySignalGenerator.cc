@@ -77,7 +77,6 @@ namespace locust
         	fInterface->fField = new CylindricalCavity;
         	fPowerCombiner = new CavityModes;
         }
-        fModeSet = fInterface->fField->ModeSelect(fInterface->fbWaveguide, 0);
 
         // Configure selected mode fields and power combiners:
         if (!fInterface->fField->Configure(tParam))
@@ -92,6 +91,7 @@ namespace locust
 			exit(-1);
 			return false;
 		}
+        fModeSet = fInterface->fField->ModeSelect(fInterface->fbWaveguide, 0);
 
 
         // Define generic response function for use in cavity or waveguide:
