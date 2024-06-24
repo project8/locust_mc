@@ -66,7 +66,7 @@ namespace locust
     		return false;
     	}
 
-    	if ( !Initialize( GetNModes() ) )
+    	if ( !Initialize( GetNModes(), aParam ) )
     	{
     	    LERROR(lmclog,"Error while initializing DampedHarmonicOscillator.");
     	}
@@ -75,7 +75,7 @@ namespace locust
     	return true;
     }
 
-    bool DampedHarmonicOscillator::Initialize( int nModes )
+    bool DampedHarmonicOscillator::Initialize( int nModes, const scarab::param_node& aParam )
     {
 
         fCavityFrequency.resize(2);
@@ -127,10 +127,63 @@ namespace locust
 
                     for(int n=0; n<nModes; n++)
                     {
-                    	fCavityFrequency[bTE][l][m][n] = fCavityFrequencyDefault;
-                    	fCavityQ[bTE][l][m][n] = fCavityQDefault;
-                    	fTimeResolution[bTE][l][m][n] = fTimeResolutionDefault;
-                    	fThresholdFactor[bTE][l][m][n] = fThresholdFactorDefault;
+
+
+			std::string param_base_resolution = "dho-time-resolution-";
+			std::string param_base_threshold = "dho-threshold-factor-";
+			std::string param_base_frequency = "dho-cavity-frequency-";
+			std::string param_base_Q = "dho-cavity-Q-";
+			if(bTE==0) 
+			{
+				param_base_resolution = param_base_resolution + "TM";
+                                param_base_threshold = param_base_threshold + "TM";
+                                param_base_frequency = param_base_frequency + "TM";
+                                param_base_Q = param_base_Q + "TM";
+			}
+			else
+			{
+                                param_base_resolution = param_base_resolution + "TE";
+                                param_base_threshold = param_base_threshold + "TE";
+                                param_base_frequency = param_base_frequency + "TE";
+                                param_base_Q = param_base_Q + "TE";
+			}
+			std::string param_key_resolution = param_base_resolution + std::to_string(l) + std::to_string(m) + std::to_string(n);
+                        std::string param_key_threshold = param_base_threshold + std::to_string(l) + std::to_string(m) + std::to_string(n);
+                        std::string param_key_frequency = param_base_frequency + std::to_string(l) + std::to_string(m) + std::to_string(n);
+                        std::string param_key_Q = param_base_Q + std::to_string(l) + std::to_string(m) + std::to_string(n);
+
+			if( aParam.has( param_key_frequency ) )
+			{
+				fCavityFrequency[bTE][l][m][n] = aParam[ param_key_frequency ]().as_double();
+			}
+			else
+			{
+                    		fCavityFrequency[bTE][l][m][n] = fCavityFrequencyDefault;
+			}
+                        if( aParam.has( param_key_Q ) ) 
+                        {   
+                                fCavityQ[bTE][l][m][n] = aParam[ param_key_Q ]().as_double();
+                        }   
+                        else
+                        {   
+                                fCavityQ[bTE][l][m][n] = fCavityQDefault;
+                        }   
+                        if( aParam.has( param_key_resolution ) ) 
+                        {   
+                                fTimeResolution[bTE][l][m][n] = aParam[ param_key_resolution ]().as_double();
+                        }   
+                        else
+                        {   
+                                fTimeResolution[bTE][l][m][n] = fTimeResolutionDefault;
+                        }   
+                        if( aParam.has( param_key_threshold ) )
+                        {
+                                fThresholdFactor[bTE][l][m][n] = aParam[ param_key_threshold ]().as_double();
+                        }
+                        else
+                        {
+                                fThresholdFactor[bTE][l][m][n] = fThresholdFactorDefault;
+                        }
                         fHannekePowerFactor[bTE][l][m][n] = fHannekePowerFactorDefault; // TO-DO:  Make more configurable.
                     	fCavityOmega[bTE][l][m][n] = fCavityFrequency[bTE][l][m][n] * 2. * LMCConst::Pi();
                     	fCavityDampingFactor[bTE][l][m][n] = 0.;
