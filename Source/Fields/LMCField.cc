@@ -17,6 +17,7 @@ namespace locust
 		fAvgDotProductFactor( 0. ),
         fNModes( 2 ),
         fbMultiMode( false ),
+		fTM111( false ),
         fR( 0.18 ),
         fL( 3.0 ),
         fX( 0.010668 ),
@@ -46,6 +47,12 @@ namespace locust
         {
     		LPROG(lmclog,"Running in multimode configuration.");
         	fbMultiMode = aParam["multi-mode"]().as_bool();
+        }
+
+        if( aParam.has( "tm111-mode" ) )
+        {
+    		LPROG(lmclog,"Running with TM111 only.");
+        	fTM111 = aParam["tm111-mode"]().as_bool();
         }
 
     	if( aParam.has( "n-pixels" ) )
@@ -92,7 +99,14 @@ namespace locust
     	    {
     	    	if ( !fbMultiMode )
     	    	{
-    	    	    tModeSet.push_back( {1,0,1,1} );
+    	    	    if ( fTM111 )
+    	    	    {
+    	    	        tModeSet.push_back( {0,1,1,1} );
+    	    	    }
+    	    	    else
+    	    	    {
+    	    	        tModeSet.push_back( {1,0,1,1} ); // default.
+    	    	    }
     	    	}
     	    	else
     	    	{
