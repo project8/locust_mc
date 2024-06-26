@@ -109,6 +109,7 @@ namespace locust
             bool fUseDirectKassPower;
             bool fAliasingIsChecked;
             bool fUnitTestRootFile;
+            std::vector<std::vector<int>> fModeSet;
 
 
 

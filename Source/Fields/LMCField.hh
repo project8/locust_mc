@@ -99,6 +99,7 @@ namespace locust
             virtual void PrintModeMaps(int nModes, double zSlice, double thetaSlice){};
             virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode){return {0.};};
             virtual double ScaleEPoyntingVector(double fcyc){return 0.;};
+            std::vector<std::vector<int>> ModeSelect(bool bWaveguide, bool bNormCheck);
 
             std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
             void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
@@ -146,6 +147,9 @@ namespace locust
             std::vector<std::vector<std::vector<double>>> fAvgDotProductFactor;
             bool fPlotModeMaps;
             std::string fOutputPath;
+            bool fbMultiMode;
+            bool fTM111;
+
 
     };
 

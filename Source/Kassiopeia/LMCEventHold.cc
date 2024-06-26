@@ -143,7 +143,6 @@ namespace locust
         	raise(SIGINT);
         	return true;
         }
-
         return true;
 
     }

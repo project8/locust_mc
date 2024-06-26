@@ -9,7 +9,6 @@
 #define LMCTRANSMITTERINTERFACE_HH_
 
 #include "LMCTransmitter.hh"
-#include "LMCAntennaSignalTransmitter.hh"
 #include "LMCPlaneWaveTransmitter.hh"
 #include "LMCKassTransmitter.hh"
 
