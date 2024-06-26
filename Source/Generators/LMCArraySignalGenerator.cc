@@ -221,20 +221,6 @@ namespace locust
         {
         	int ntransmitters = 0;
 
-        	if(tParam["transmitter"]().as_string() == "antenna")
-        	{
-        		ntransmitters += 1;
-        		fTransmitter = new AntennaSignalTransmitter;
-        		if(!fTransmitter->Configure(tParam))
-        		{
-        			LERROR(lmclog,"Error Configuring antenna signal transmitter class");
-        		}
-        		if(!fTransmitter->InitializeTransmitter())
-        		{
-        			exit(-1);
-        		}
-        	}
-
         	if(tParam["transmitter"]().as_string() == "planewave")
         	{
         		ntransmitters += 1;
@@ -302,7 +288,6 @@ namespace locust
     {
 
     	SetParameters( aParam );
-
 
         if( aParam.has( "lo-frequency" ) )
         {
@@ -446,25 +431,12 @@ namespace locust
 
     }
 
-
-    // fields incident on element.
-    void ArraySignalGenerator::RecordIncidentFields(FILE *fp,  double t_old, int elementIndex, double zelement, double tEFieldCoPol)
-    {
-    	if (t_old > 0.5e-9)
-         	{
-         	fprintf(fp, "%d %g %g\n", elementIndex, zelement, tEFieldCoPol);
-         	}
-    }
-
-
-
     double ArraySignalGenerator::GetFIRSample(int nFilterBinsRequired, double dtFilter, unsigned channel, unsigned element)
     {
 
     	double fieldfrequency = EFrequencyBuffer[channel*fNElementsPerStrip+element].front();
     	double HilbertMag = 0.;
     	double HilbertPhase = 0.;
-    	double convolution = 0.0;
 
     	if (EFieldBuffer[channel*fNElementsPerStrip+element].front() != 0.)  // field arrived yet?
     	{
@@ -498,8 +470,11 @@ namespace locust
     			*it++;
     		}
 
-    		convolution=fTFReceiverHandler.ConvolveWithFIRFilter(ElementFIRBuffer[channel*fNElementsPerStrip+element]);
-    		return convolution;
+    		double convolutionMag = fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element]).first;
+    		double convolutionCosPhase = cos(fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element]).second);
+
+
+    		return convolutionMag * convolutionCosPhase;
 
     	}
     	else return 0.;
@@ -507,7 +482,7 @@ namespace locust
     }
 
 
-    bool ArraySignalGenerator::DriveAntenna(FILE *fp, int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtFilter)
+    bool ArraySignalGenerator::DriveAntenna(int startingIndex, unsigned index, Signal* aSignal, int nFilterBinsRequired, double dtFilter)
     {
 
         const int signalSize = aSignal->TimeSize();
@@ -541,8 +516,6 @@ namespace locust
                 }
 
                 tFieldSolution[0] *= currentElement->GetPatternFactor(fTransmitter->GetIncidentKVector(tTotalElementIndex), *currentElement);
-
-                if (fTextFileWriting==1) RecordIncidentFields(fp,  fInterface->fTOld, elementIndex, currentElement->GetPosition().GetZ(), tFieldSolution[1]);
                 
                 PopBuffers(channelIndex, elementIndex);
  	            FillBuffers(aSignal, tFieldSolution[1], tFieldSolution[0], fphiLO, index, channelIndex, elementIndex);
@@ -620,7 +593,7 @@ namespace locust
     bool ArraySignalGenerator::InitializeElementArray()
     {
 
-        if(!fTFReceiverHandler.ReadHFSSFile())
+        if(!fTFReceiverHandler.ReadHFSSFile(0,0,0,0))
         {
             return false;
         }
@@ -672,15 +645,11 @@ namespace locust
             exit(-1);
         }
 
-        FILE *fp;
-        if (fTextFileWriting==1) fp = fopen("incidentfields.txt", "w");
-
-
         //n samples for event spacing in Kass.
         int PreEventCounter = 0;
 
-        int nFilterBins = fTFReceiverHandler.GetFilterSize();
-        double dtFilter = fTFReceiverHandler.GetFilterResolution();
+        int nFilterBins = fTFReceiverHandler.GetFilterSizeArray(0,0,0,0);
+        double dtFilter = fTFReceiverHandler.GetFilterResolutionArray(0,0,0,0);
         int nFilterBinsRequired = std::min( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) / dtFilter, (double)nFilterBins );
         if (!fAllowFastSampling) nFilterBinsRequired = nFilterBins;
         unsigned nFieldBufferBins = fFieldBufferSize;
@@ -692,7 +661,7 @@ namespace locust
         {
         	for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
         	{
-        		DriveAntenna(fp, PreEventCounter, index, aSignal, nFilterBinsRequired, dtFilter);
+        		DriveAntenna(PreEventCounter, index, aSignal, nFilterBinsRequired, dtFilter);
         	}  // for loop
         	return true;
         }
@@ -706,7 +675,6 @@ namespace locust
 
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
-
                 if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
                 	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
@@ -746,7 +714,7 @@ namespace locust
 
                         if (fInterface->fEventInProgress)
                         {
-                            if (DriveAntenna(fp, startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
+                            if (DriveAntenna(startingIndex, index, aSignal, nFilterBinsRequired, dtFilter))
                             {
                                 PreEventCounter = 0; // reset
                             }
@@ -809,7 +777,6 @@ namespace locust
             }  // for loop
 
             fInterface->fDoneWithSignalGeneration = true;
-            if (fTextFileWriting==1) fclose(fp);
             LPROG( lmclog, "Finished signal loop." );
             fInterface->fWaitBeforeEvent = false;
             WakeBeforeEvent();

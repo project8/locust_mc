@@ -18,6 +18,7 @@ namespace locust
     AnalyticResponseFunction::AnalyticResponseFunction():
 	    fGeneratingTF( false ),
 		fInitialFreq( 0. ),
+		fNModes( 2 ),
 		fTFarray(0 )
     {}
     AnalyticResponseFunction::~AnalyticResponseFunction() {}
@@ -44,6 +45,14 @@ namespace locust
     {
     	return fInitialFreq;
     }
+    void AnalyticResponseFunction::SetNModes( int aNumberOfModes )
+    {
+    	fNModes = aNumberOfModes;
+    }
+    int AnalyticResponseFunction::GetNModes()
+    {
+    	return fNModes;
+    }
     void AnalyticResponseFunction::SetTFarray( std::vector<std::complex<double>> aTFarray )
     {
     	fTFarray = aTFarray;
@@ -53,28 +62,25 @@ namespace locust
     	return fTFarray;
     }
 
-    void AnalyticResponseFunction::SetGFarray( std::vector<std::pair<double,std::pair<double,double> > > aGFarray )
+    void AnalyticResponseFunction::SetGFarray( std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > aGFarray )
     {
-    	if (fGFarray.size() > 0)
-    	{
-        	for (unsigned index=0; index<aGFarray.size(); index++)
-        	{
-        		fGFarray[index].second.first = aGFarray[index].second.first;
-        		fGFarray[index].second.second = aGFarray[index].second.second;
-        	}
-    	}
-    	else
-    	{
-    		for (unsigned index=0; index<aGFarray.size(); index++)
-    		{
-    			fGFarray.push_back(std::make_pair(aGFarray[index].first, aGFarray[index].second));
-    		}
-    	}
+        fGFarray = aGFarray;
     }
 
-    std::vector<std::pair<double,std::pair<double,double> > > AnalyticResponseFunction::GetGFarray()
+    std::vector< std::vector<std::pair<double,std::pair<double,double> > > > AnalyticResponseFunction::GetGFarray( std::vector<std::vector<int>> aModeSet)
     {
-    	return fGFarray;
+        std::vector< std::vector<std::pair<double,std::pair<double,double>>>> anArrayOfGFArrays;
+        for (int mu=0; mu<aModeSet.size(); mu++)
+		{
+		    bool bTE = aModeSet[mu][0];
+		    int l = aModeSet[mu][1];
+		    int m = aModeSet[mu][2];
+		    int n = aModeSet[mu][3];
+
+		    anArrayOfGFArrays.push_back( fGFarray[bTE][l][m][n] );
+		}
+
+        return anArrayOfGFArrays;
     }
 
 

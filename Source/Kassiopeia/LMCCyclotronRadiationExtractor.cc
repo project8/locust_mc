@@ -208,7 +208,6 @@ namespace locust
         }
 
 
-
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
 
@@ -302,7 +301,6 @@ namespace locust
                         }
                     }
                 }
-
 
             }
         } // DoneWithSignalGeneration

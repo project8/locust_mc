@@ -52,7 +52,6 @@ namespace locust
 
     bool CavitySignalGenerator::ConfigureInterface( Signal* aSignal )
     {
-
     	if ( fInterface == nullptr ) fInterface.reset( new KassLocustInterface() );
         KLInterfaceBootstrapper::get_instance()->SetInterface( fInterface );
 
@@ -66,58 +65,6 @@ namespace locust
         		fUseDirectKassPower = tParam["direct-kass-power"]().as_bool();
         	}
         }
-
-        // Define generic response function for use in cavity or waveguide:
-    	fTFReceiverHandler = new TFReceiverHandler;
-    	if(!fTFReceiverHandler->Configure(tParam))
-    	{
-    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
-    		exit(-1);
-    		return false;
-    	}
-
-    	// Configure the generic response function:
-        if( tParam.has( "tf-receiver-filename" ) && tParam.has( "tf-receiver-bin-width" ) ) // If using HFSS output for cavity or waveguide
-        {
-        	if (( fUseDirectKassPower ) && ( fInterface->fbWaveguide == true ))
-        	{
-        		LWARN(lmclog,"Using direct Kass energy budget, and not HFSS data, due to parameter \"direct-kass-power\" = true");
-        	}
-        	else if (!fTFReceiverHandler->ReadHFSSFile())
-        	{
-        		LERROR(lmclog,"FIR has not been generated.");
-        		exit(-1);
-        		return false;
-        	}
-        }
-        else if (!fInterface->fbWaveguide) // Cavity config follows
-        {
-        	// No HFSS file is present:  Cavity as damped harmonic oscillator
-        	LPROG(lmclog,"Configuring DampedHarmonicOscillator.\n");
-
-        	fAnalyticResponseFunction = new DampedHarmonicOscillator();
-    		if ( !fAnalyticResponseFunction->Configure(tParam) ||
-    				(!CrossCheckCavityConfig()) )
-    		{
-    			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
-    			exit(-1);
-    			return false;
-    		}
-    		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fAnalyticResponseFunction->GetGFarray()))
-    		{
-    			LERROR(lmclog,"GF->FIR was not generated.");
-    			exit(-1);
-    			return false;
-    		}
-        } // tParam.has( "tf-receiver-filename" )
-        else
-        {
-        	// Can't find the required config information:
-        	LERROR(lmclog, "For the rectangular waveguide, either \"direct-kass-power\" should be true, or both a \"tf-receiver-filename\" and \"tf-receiver-bin-width\" should be specified.");
-        	exit(-1);
-        	return false;
-        }
-
 
         // Select mode fields and power combiners:
         if (fInterface->fbWaveguide) // Waveguide
@@ -144,6 +91,59 @@ namespace locust
 			exit(-1);
 			return false;
 		}
+        fModeSet = fInterface->fField->ModeSelect(fInterface->fbWaveguide, 0);
+
+
+        // Define generic response function for use in cavity or waveguide:
+    	fTFReceiverHandler = new TFReceiverHandler;
+    	if(!fTFReceiverHandler->Configure(tParam))
+    	{
+    		LERROR(lmclog,"Error configuring receiver FIRHandler class");
+    		exit(-1);
+    		return false;
+    	}
+
+    	// Configure the generic response function:
+        if( tParam.has( "tf-receiver-filename" ) && tParam.has( "tf-receiver-bin-width" ) ) // If using HFSS output for cavity or waveguide
+        {
+        	if (( fUseDirectKassPower ) && ( fInterface->fbWaveguide == true ))
+        	{
+        		LWARN(lmclog,"Using direct Kass energy budget, and not HFSS data, due to parameter \"direct-kass-power\" = true");
+        	}
+        	else if (!fTFReceiverHandler->ReadHFSSFile(1,0,1,0)) // Placeholder values for mode indices.
+        	{
+        		LERROR(lmclog,"FIR has not been generated.");
+        		exit(-1);
+        		return false;
+        	}
+        }
+        else if (!fInterface->fbWaveguide) // Cavity config follows
+        {
+        	// No HFSS file is present:  Cavity as damped harmonic oscillator
+
+        	fAnalyticResponseFunction = new DampedHarmonicOscillator();
+    		if ( !fAnalyticResponseFunction->Configure(tParam) || !(CrossCheckCavityConfig()) )
+    		{
+    			LERROR(lmclog,"DampedHarmonicOscillator was not configured.");
+    			exit(-1);
+    			return false;
+    		}
+    		if (!fTFReceiverHandler->ConvertAnalyticGFtoFIR(fModeSet, fAnalyticResponseFunction->GetGFarray(fModeSet)))
+    		{
+    			LERROR(lmclog,"GF->FIR was not generated.");
+    			exit(-1);
+    			return false;
+    		}
+        } // tParam.has( "tf-receiver-filename" )
+        else
+        {
+        	// Can't find the required config information:
+        	LERROR(lmclog, "For the rectangular waveguide, either \"direct-kass-power\" should be true, or both a \"tf-receiver-filename\" and \"tf-receiver-bin-width\" should be specified.");
+        	exit(-1);
+        	return false;
+        }
+
+
 
     	// Configure back reaction:
     	if (( fInterface->fbWaveguide ) && ( fPowerCombiner->GetWaveguideShortIsPresent() ))
@@ -215,15 +215,19 @@ namespace locust
         fInterface->fFastRecordLength = fRecordLength * aSignal->DecimationFactor();
 
         // Configure Locust-Kass interface classes and parameters:
+        fInterface->fConfigureKass = new ConfigureKass();
+        fInterface->fConfigureKass->SetParameters( tParam );
+
         fFieldCalculator = new FieldCalculator();
         if(!fFieldCalculator->Configure(tParam))
         {
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from CavitySignal.");
         }
-        fInterface->fConfigureKass = new ConfigureKass();
-        fInterface->fConfigureKass->SetParameters( tParam );
-
-
+        fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
+        for (int mu=0; mu < fModeSet.size(); mu++)
+        {
+            fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[mu][0], fModeSet[mu][1], fModeSet[mu][2], fModeSet[mu][3]));
+        }
 
     	return true;
     }
@@ -364,22 +368,27 @@ namespace locust
 
     	LPROG(lmclog,"Running some cavity cross-checks ...");
 
-    	CavityUtility aCavityUtility;
-    	double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution();
-    	double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor();
-    	double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency();
-    	double qExpected = fAnalyticResponseFunction->GetCavityQ();
-    	aCavityUtility.SetOutputFile(fUnitTestRootFile);
-    	if (!aCavityUtility.CheckCavityQ( timeResolution, thresholdFactor, cavityFrequency, qExpected ))
-    	{
-        	LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
-        			"with the unit test as in bin/testLMCCavity [-h]");
-    		return false;
-    	}
-    	else
-    	{
-    		return true;
-    	}
+        for (int mu=0; mu<fModeSet.size(); mu++)
+        {
+            bool bTE = fModeSet[mu][0];
+            int l = fModeSet[mu][1];
+            int m = fModeSet[mu][2];
+            int n = fModeSet[mu][3];
+            CavityUtility aCavityUtility;
+            double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE, l, m, n);
+            double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
+            double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
+            double qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
+            aCavityUtility.SetOutputFile(fUnitTestRootFile);
+            if (!aCavityUtility.CheckCavityQ( bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+            {
+                LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
+                		"with the unit test as in bin/testLMCCavity [-h]");
+                return false;
+            }
+        }
+
+        return true;
 	}
 
     void CavitySignalGenerator::Accept( GeneratorVisitor* aVisitor ) const
@@ -432,74 +441,65 @@ namespace locust
         std::vector<double> tEFieldAtProbe;
         std::vector<double> dopplerFrequency;
 
-    	for (int bTE=0; bTE<2; bTE++) // TM/TE.
-    	{
-    	for (int l=0; l<fInterface->fField->GetNModes(); l++)
-    	{
-    		for (int m=1; m<fInterface->fField->GetNModes(); m++)
-    		{
-    			for (int n=0; n<fInterface->fField->GetNModes(); n++)
-    			{
-    				if (fFieldCalculator->ModeSelect(l, m, n, fInterface->fbWaveguide, fNormCheck, bTE))
-    				{
-    					std::vector<double> tE_normalized;
-    					tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
-    					double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(tKassParticleXP, fBypassTF).first;
-    					dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+        for (int mu=0; mu<fModeSet.size(); mu++)
+		{
+		    bool bTE = fModeSet[mu][0];
+		    int l = fModeSet[mu][1];
+		    int m = fModeSet[mu][2];
+		    int n = fModeSet[mu][3];
 
-    					double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
-    					double modeAmplitude = fInterface->fField->NormalizedEFieldMag(tE_normalized);
+		    std::vector<double> tE_normalized;
+		    tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
+		    double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, fBypassTF).first;
+		    dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
-    					if (!fInterface->fbWaveguide) // Cavity:
-    					{
-    						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
-    						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-    						// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-    						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-    						tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
-    					}
-    					else // Waveguide:
-    					{
-    						// Waveguide default:  Use direct Kassiopeia power budget.
-    						if (fUseDirectKassPower)
-    						{
-    							// replace signal amplitude with direct Kass power:
-    							unitConversion = 1.0;  // Kass power is already in Watts.
-    							std::vector<double> tTempKassParticleXP = {0.,0.,0.,0.,0.,0.,0.,tKassParticleXP[7],0.};
-    							double modeMax = fInterface->fField->GetNormalizedModeField(l,m,n,tTempKassParticleXP,0,1).back();
-    							double modeFrac = 0.; if (fabs(modeMax) > 0.) modeFrac = tE_normalized.back()/modeMax;
-        						excitationAmplitude = tAvgDotProductFactor*modeFrac*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
-        						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
-    						}
-    						else
-    						{
-        						// sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
-        						unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-        						// Jackson |A| = 2piZ/c \int{J \dot E dV}, written assuming cgs units, and cavityFIRSample represents qvZ:
-        						excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * 2. * LMCConst::Pi() / (LMCConst::C()*1.e2);
-        						// To extract the propagating E-field, scale the excitation amplitude as in the Pozar Poynting vector integral, p. 114:
-        						excitationAmplitude *= fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]);
-        						tEFieldAtProbe = std::vector<double> {excitationAmplitude};
-    						}
-    					}
+		    double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
+		    double modeAmplitude = fInterface->fField->NormalizedEFieldMag(tE_normalized);
 
-    					for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex)  // one channel per probe.
-    					{
-    						sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-    						// This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
-    						// as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
-    						double totalScalingFactor = sqrt(50.) * unitConversion;
-    						fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
-    						if (fNormCheck) fPowerCombiner->AddOneSampleToRollingAvg(l, m, n, excitationAmplitude, sampleIndex);
-    					}
+		    if (!fInterface->fbWaveguide)
+		    {
+		        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+		    	unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+		    	// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
+		    	excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
+		    	tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
+		    }
+		    else
+		    {
+		        // Waveguide default:  Use direct Kassiopeia power budget.
+		    	if (fUseDirectKassPower)
+		    	{
+		    	    // replace signal amplitude with direct Kass power:
+		    		unitConversion = 1.0;  // Kass power is already in Watts.
+		    		std::vector<double> tTempKassParticleXP = {0.,0.,0.,0.,0.,0.,0.,tKassParticleXP[7],0.};
+		    		double modeMax = fInterface->fField->GetNormalizedModeField(l,m,n,tTempKassParticleXP,0,1).back();
+		    		double modeFrac = 0.; if (fabs(modeMax) > 0.) modeFrac = tE_normalized.back()/modeMax;
+		    		excitationAmplitude = tAvgDotProductFactor*modeFrac*sqrt(tKassParticleXP[8]/2.);  // sqrt( modeFraction*LarmorPower/2 )
+		    		tEFieldAtProbe = std::vector<double> {excitationAmplitude};
+		    	}
+		    	else
+		    	{
+		    	    // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
+		    		unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
+		    		// Jackson |A| = 2piZ/c \int{J \dot E dV}, written assuming cgs units, and cavityFIRSample represents qvZ:
+		    		excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * 2. * LMCConst::Pi() / (LMCConst::C()*1.e2);
+		    		// To extract the propagating E-field, scale the excitation amplitude as in the Pozar Poynting vector integral, p. 114:
+		    		excitationAmplitude *= fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]);
+		    		tEFieldAtProbe = std::vector<double> {excitationAmplitude};
+		    	}
+		    } // Finished mode set.
 
-    				} // ModeSelect
-    			} // n
-    		} // m
-    	} // l
-    	} // bTE
+		    for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex) // one channel per probe
+		    {
+		        sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+		        // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
+		        // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
+		        double totalScalingFactor = sqrt(50.) * unitConversion;
+		        fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
+		    }
+		}
 
-    	fInterface->fTOld += fDeltaT;
+        fInterface->fTOld += fDeltaT;
     	if (!fAliasingIsChecked)
     	{
     		if (!fOverrideAliasing)
@@ -602,8 +602,6 @@ namespace locust
  	    }
 
         int PreEventCounter = 0;
-        fFieldCalculator->SetNFilterBinsRequired( 1. / (fAcquisitionRate*1.e6*aSignal->DecimationFactor()) );
-        fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSize() );
 
         if (fInterface->fTransmitter->IsKassiopeia())
         {
@@ -631,7 +629,6 @@ namespace locust
                     {
                         fInterface->fPreEventInProgress = false;  // reset.
                         fInterface->fEventInProgress = true;
-                        fFieldCalculator->SetSignalStartCondition( false ); // reset
                         LPROG( lmclog, "LMC about to WakeBeforeEvent()" );
                         WakeBeforeEvent();  // trigger Kass event.
                     }
