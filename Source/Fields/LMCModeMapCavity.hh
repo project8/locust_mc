@@ -23,8 +23,19 @@ namespace locust
  @author P. Slocum
  @brief Derived class to define Cavity fields from an uploaded mode map file.
  @details
- Available configuration options:
- No input parameters
+ Usage:
+     	// Cylindrical coordinates:
+    	// bin/LocustSim -c config/LocustCavityCCA_ModeMapTest.json "cavity-signal.upload-modemap-filename"="fieldsExportTest.fld" "cavity-signal.plot-mode-maps"=true
+    	// root -l output/ModemapOutput.root
+    	// TE011_Etheta_z0mm->DrawCopy()
+    	//
+    	// Recangular coordinates:
+    	// bin/LocustSim -c config/LocustCavityRectangular.json "cavity-signal.upload-modemap-filename"="[putFilenameHere]" "cavity-signal.plot-mode-maps"=true
+    	// root -l output/ModeMapOutput.root
+    	// TE011_Ex_z0mm->DrawCopy()
+
+    	// The plotted mode map should appear as an exact copy of the uploaded mode map.
+
  */
 
 

@@ -146,44 +146,19 @@ namespace locust
 
     std::vector<double> ModeMapCavity::TE_E(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
     {
-    	// For testing, import the test mode map and inspect the output of this function like this:
-    	//
-    	// Cylindrical coordinates:
-    	// bin/LocustSim -c config/LocustCavityCCA_ModeMapTest.json "cavity-signal.upload-modemap-filename"="fieldsExportTest.fld" "cavity-signal.plot-mode-maps"=true
-    	// root -l output/ModemapOutput.root
-    	// TE011_Etheta_z0mm->DrawCopy()
-    	//
-    	// Recangular coordinates:
-    	// bin/LocustSim -c config/LocustCavityRectangular.json "cavity-signal.upload-modemap-filename"="[putFilenameHere]" "cavity-signal.plot-mode-maps"=true
-    	// root -l output/ModeMapOutput.root
-    	// TE011_Ex_z0mm->DrawCopy()
-
-    	// The plotted mode map should appear as an exact copy of the uploaded mode map.
-    	//
-    	// Now, change the number of pixels used in the plotted mode map:
-    	//
-    	// bin/LocustSim -c config/LocustCavityRectangular.json "cavity-signal.upload-modemap-filename"="fieldsExportTest.fld" "cavity-signal.plot-mode-maps"=true "cavity-signal.n-pixels"=201
-    	// root -l output/ModeMapOutput.root
-    	// TE011_Ex_z0mm->DrawCopy()
-    	//
         std::vector<double> TE_E;
 
-        if ((l==0)&&(m==1)&&(n==1))
+        double var3 = zKass + 0.5*dim3;
+        std::vector< int > CoordinateIndices = FindClosestCoordinate(var1, var2, var3);
+        std::vector< std::vector< int >> TetrahedronVertices = GetVerticesIndices(CoordinateIndices, var1, var2, var3);
+        if(CoordinateIndices[0]!=0 or CoordinateIndices[1]!=0 or CoordinateIndices[2]!=0)
         {
-            double var3 = zKass + 0.5*dim3;
-            std::vector< int > CoordinateIndices = FindClosestCoordinate(var1, var2, var3);
-            std::vector< std::vector< int >> TetrahedronVertices = GetVerticesIndices(CoordinateIndices, var1, var2, var3);
-            if(CoordinateIndices[0]!=0 or CoordinateIndices[1]!=0 or CoordinateIndices[2]!=0)
-            {
-    			// Found a near neighbor in the uploaded mode map:
-                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0));  // r
-                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 2));  // z
-                TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 1));  // theta
+            // Found a near neighbor in the uploaded mode map:
+            TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0));  // r
+            TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 2));  // z
+            TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 1));  // theta
 
-                return TE_E;  // Return the near neighbor.
-            }
-            std::vector< double > zeroVector(3,0.);
-            return zeroVector;  // Return 0.
+            return TE_E;  // Return the near neighbor.
         }
         else
         {
