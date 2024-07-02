@@ -96,6 +96,8 @@ namespace locust
                 LERROR(lmclog,"There was a problem uploading the mode map.");
                 exit(-1);
             }
+            fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+            fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
             SetNormFactorsTE( SetUnityNormFactors(GetNModes()));
             SetNormFactorsTM( SetUnityNormFactors(GetNModes()));
         }
