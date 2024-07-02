@@ -45,13 +45,16 @@ namespace locust
 
     bool CyclotronRadiationExtractor::Configure()
     {
-    	fFieldCalculator = new FieldCalculator();
-    	if(!fFieldCalculator->ConfigureByInterface())
-    	{
-    	   LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
-    	   exit(-1);
-    	}
-    	return true;
+        fFieldCalculator = new FieldCalculator();
+        if (fInterface->fProject8Phase > 0)
+        {
+            if(!fFieldCalculator->ConfigureByInterface())
+            {
+                LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                exit(-1);
+            }
+        }
+        return true;
     }
 
 

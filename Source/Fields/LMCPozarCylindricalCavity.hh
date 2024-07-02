@@ -35,10 +35,10 @@ namespace locust
     	    PozarCylindricalCavity();
 		    virtual ~PozarCylindricalCavity();
 
-            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
-            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
+            virtual std::vector<double> TE_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
+            virtual std::vector<double> TE_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
+            virtual std::vector<double> TM_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
+            virtual std::vector<double> TM_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
 
     };
 

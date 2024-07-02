@@ -20,7 +20,7 @@ namespace locust
 
 
 
-    std::vector<double> PozarCylindricalCavity::TE_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
+    std::vector<double> PozarCylindricalCavity::TE_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
     	double z = zKass + L/2.;
@@ -49,7 +49,7 @@ namespace locust
     	{
     		//modifies both r and theta components of TE field.
     		double dTheta = LMCConst::Pi() / 2.0 / (double)l;
-    		std::vector<double> tPolarization = this->TE_E(R,L,l,m,n,r,theta+dTheta,zKass,0);
+    		std::vector<double> tPolarization = this->TE_E(R,2.*LMCConst::Pi(),L,l,m,n,r,theta+dTheta,zKass,0);
     		tEr = tEr*sin((double)l*theta) + tPolarization[0]*cos((double)l*theta) ;
     		tEtheta = tEtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
     	}
@@ -61,7 +61,7 @@ namespace locust
     	}
     }
 
-    std::vector<double> PozarCylindricalCavity::TE_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
+    std::vector<double> PozarCylindricalCavity::TE_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
     	double z = zKass + L/2.;
@@ -87,11 +87,11 @@ namespace locust
 
     	if ((includeOtherPols)&&(l>0))
     	{
-		double dTheta = LMCConst::Pi() / 2.0 / (double)l;
-		std::vector<double> tPolarization = this->TE_H(R,L,l,m,n,r,theta+dTheta,zKass,0);
-		tHr = tHr*sin((double)l*(theta+dTheta)) + tPolarization[0]*cos((double)l*(theta+dTheta)) ;
-                tHz = tHz*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
-		tHtheta = tHtheta*sin((double)l*theta) + tPolarization[2]*cos((double)l*theta) ;
+    		double dTheta = LMCConst::Pi() / 2.0 / (double)l;
+    		std::vector<double> tPolarization = this->TE_H(R,2.*LMCConst::Pi(),L,l,m,n,r,theta+dTheta,zKass,0);
+    		tHr = tHr*sin((double)l*(theta+dTheta)) + tPolarization[0]*cos((double)l*(theta+dTheta)) ;
+    		tHz = tHz*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
+    		tHtheta = tHtheta*sin((double)l*theta) + tPolarization[2]*cos((double)l*theta) ;
     	}
 
     	TE_H.push_back(tHr);  // r
@@ -101,7 +101,7 @@ namespace locust
     	}
     }
 
-    std::vector<double> PozarCylindricalCavity::TM_E(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
+    std::vector<double> PozarCylindricalCavity::TM_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
     	double z = zKass + L/2.;
 
@@ -128,7 +128,7 @@ namespace locust
     	if ((includeOtherPols)&&(l>0))
     	{
                 double dTheta = LMCConst::Pi() / 2.0 / (double)l;
-                std::vector<double> tPolarization = this->TM_E(R,L,l,m,n,r,theta+dTheta,zKass,0);
+                std::vector<double> tPolarization = this->TM_E(R,2.*LMCConst::Pi(),L,l,m,n,r,theta+dTheta,zKass,0);
                 tEr = tEr*sin((double)l*(theta+dTheta)) + tPolarization[0]*cos((double)l*(theta+dTheta)) ;
                 tEz = tEz*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
                 tEtheta = tEtheta*sin((double)l*theta) + tPolarization[2]*cos((double)l*theta) ;
@@ -141,7 +141,7 @@ namespace locust
     	}
     }
 
-    std::vector<double> PozarCylindricalCavity::TM_H(double R, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
+    std::vector<double> PozarCylindricalCavity::TM_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
     	double z = zKass + L/2.;
 
@@ -167,7 +167,7 @@ namespace locust
     	{
                 //modifies both r and theta components of TM field.
                 double dTheta = LMCConst::Pi() / 2.0 / (double)l;
-                std::vector<double> tPolarization = this->TM_H(R,L,l,m,n,r,theta+dTheta,zKass,0);
+                std::vector<double> tPolarization = this->TM_H(R,2.*LMCConst::Pi(),L,l,m,n,r,theta+dTheta,zKass,0);
                 tHr = tHr*sin((double)l*theta) + tPolarization[0]*cos((double)l*theta) ;
                 tHtheta = tHtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
     	}
