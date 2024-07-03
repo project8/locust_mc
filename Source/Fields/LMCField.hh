@@ -57,10 +57,10 @@ namespace locust
             virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
 
             // Imported mode map:
-            virtual bool ReadModeMapTE_E(std::string aFilename){return 0;};
-            virtual bool ReadModeMapTE_H(std::string aFilename){return 0;};
-            virtual bool ReadModeMapTM_E(std::string aFilename){return 0;};
-            virtual bool ReadModeMapTM_H(std::string aFilename){return 0;};
+            virtual bool ReadModeMapTE_E(std::string aFilename, const scarab::param_node& aParam){return 0;};
+            virtual bool ReadModeMapTE_H(std::string aFilename, const scarab::param_node& aParam){return 0;};
+            virtual bool ReadModeMapTM_E(std::string aFilename, const scarab::param_node& aParam){return 0;};
+            virtual bool ReadModeMapTM_H(std::string aFilename, const scarab::param_node& aParam){return 0;};
 
             void ReadBesselZeroes(std::string filename, bool prime);
             double GetBesselNKZeros(int l, int m);

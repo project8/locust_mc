@@ -51,11 +51,12 @@ namespace locust
             virtual std::vector<double> TM_H(double dim1, double dim2, double dim3, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
 
             virtual bool Configure(const scarab::param_node& aParam);
-            virtual bool ReadModeMapTE_E(std::string aFilename);
+            virtual bool ReadModeMapTE_E(std::string aFilename, const scarab::param_node& aParam);
             std::vector< int > FindClosestCoordinate(double var1, double var2, double var3);
             std::vector< std::vector< int >> GetVerticesIndices(std::vector<int> ClosestCoordinate, double var1, double var2, double var3);
             double InterpolateField(double var1, double var2, double var3, std::vector< std::vector<int>> TetrahedronVertices, int component);
             double IndexToCoordinate(int index, double min, double max, int nPixels);
+            void MatchCavityDimensions(const scarab::param_node& aParam);
 
         private:
             int fnPixel1, fnPixel2, fnPixel3;

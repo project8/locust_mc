@@ -77,9 +77,9 @@ namespace locust
 	return true;
     }
 
-    bool ModeMapCavity::ReadModeMapTE_E(std::string aFilename)
+    bool ModeMapCavity::ReadModeMapTE_E(std::string aFilename, const scarab::param_node& aParam)
     {
-        std::fstream modeMapFile(aFilename.c_str(),std::ios::in);
+	std::fstream modeMapFile(aFilename.c_str(),std::ios::in);
         if (modeMapFile.fail())
         {
             LERROR(lmclog,"The mode map file \"" << aFilename <<"\" was not found.");
@@ -133,6 +133,12 @@ namespace locust
                     }
                     ++wordCount;
                 }
+
+                if (i>=fnPixel1 or j>=fnPixel2 or k>=fnPixel3)
+                {   
+                    LERROR(lmclog,"Imported mode map dimensions don't agree with those in \"" << aFilename <<".\" Double check dim[1,2,3]-max.");
+                    return false;
+                }   
                 std::vector E_input = {Erho,Etheta,Ez};
                 fModeMapTE_E[i][j][k] = E_input;
 //              printf("read var1 is %g, var2 is %g, E is %g\n", fModeMapTE_E.back()[0], fModeMapTE_E.back()[1], fModeMapTE_E.back()[2]);
@@ -140,6 +146,9 @@ namespace locust
         }
 
         modeMapFile.close();
+
+	//Reset dimensions from import file to actual cavity dimensions in case they don't match up
+        MatchCavityDimensions(aParam);
 
         return true;
     }
@@ -299,6 +308,29 @@ namespace locust
     double ModeMapCavity::IndexToCoordinate(int index, double min, double max, int nPixels)
     {
         return (double)index*(max - min)/((double)(nPixels-1)); //nPixels +1 since range in text file goes from bin midpoint to midpoint
+    }
+
+    void ModeMapCavity::MatchCavityDimensions(const scarab::param_node& aParam)
+    {
+
+        if( aParam.has( "cavity-radius" ) ) 
+        {   
+            fDim1_max = aParam["cavity-radius"]().as_double() ;
+        }   
+        else if( aParam.has( "cavity-x" ) )
+	{ 
+      	    fDim1_max = aParam["cavity-x"]().as_double();
+	}
+
+	if( aParam.has( "cavity-y" ) ) 
+        {   
+            fDim2_max = aParam["cavity-y"]().as_double() ;
+        }  	
+
+        if( aParam.has( "cavity-length" ) ) 
+        {   
+            fDim3_max = aParam["cavity-length"]().as_double() ;
+        }  
     }
 
 } /* namespace locust */

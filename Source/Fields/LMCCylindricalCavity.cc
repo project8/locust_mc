@@ -91,7 +91,7 @@ namespace locust
                 exit(-1);
             }
             scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-            if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string()))
+            if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string(), aParam))
             {
                 LERROR(lmclog,"There was a problem uploading the mode map.");
                 exit(-1);
