@@ -79,7 +79,7 @@ namespace locust
 
     bool ModeMapCavity::ReadModeMapTE_E(std::string aFilename, const scarab::param_node& aParam)
     {
-	std::fstream modeMapFile(aFilename.c_str(),std::ios::in);
+        std::fstream modeMapFile(aFilename.c_str(),std::ios::in);
         if (modeMapFile.fail())
         {
             LERROR(lmclog,"The mode map file \"" << aFilename <<"\" was not found.");
@@ -134,7 +134,7 @@ namespace locust
                     ++wordCount;
                 }
 
-                if (i>=fnPixel1 or j>=fnPixel2 or k>=fnPixel3)
+                if ((i>=fnPixel1) or (j>=fnPixel2) or (k>=fnPixel3))
                 {   
                     LERROR(lmclog,"Imported mode map dimensions don't agree with those in \"" << aFilename <<".\" Double check dim[1,2,3]-max.");
                     return false;
@@ -318,15 +318,14 @@ namespace locust
             fDim1_max = aParam["cavity-radius"]().as_double() ;
         }   
         else if( aParam.has( "cavity-x" ) )
-	{ 
+        {
       	    fDim1_max = aParam["cavity-x"]().as_double();
-	}
+        }
 
-	if( aParam.has( "cavity-y" ) ) 
+        if( aParam.has( "cavity-y" ) )
         {   
             fDim2_max = aParam["cavity-y"]().as_double() ;
         }  	
-
         if( aParam.has( "cavity-length" ) ) 
         {   
             fDim3_max = aParam["cavity-length"]().as_double() ;
