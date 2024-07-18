@@ -576,7 +576,7 @@ namespace locust
                                     }
                                     if ((!std::isnan(tE[1])))
                                     {
-                                        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE[1]);
+                                        hTEtheta->Fill(theta-LMCConst::Pi(),r,tE.back());
                                     }
                                     if ((!std::isnan(tE.front())))
                                     {
@@ -584,7 +584,7 @@ namespace locust
                                     }
                                     if ((!std::isnan(tH[1])))
                                     {
-                                        hTHtheta->Fill(theta-LMCConst::Pi(),r,tH[1]);
+                                        hTHtheta->Fill(theta-LMCConst::Pi(),r,tH.back());
                                     }
                                     if ((!std::isnan(tH.front())))
                                     {
