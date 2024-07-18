@@ -33,6 +33,7 @@ namespace locust
             double fLOFrequency;
             int fRandomSeed;
 
+            std::vector<double> fStartingEnergies_eV;
             std::vector<double> fOutputStartFrequencies;
             std::vector<double> fStartFrequencies;
             std::vector<double> fEndFrequencies;
