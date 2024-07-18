@@ -347,11 +347,10 @@ namespace locust
             if (!fToolbox.HasKey("waveguide_surfaces_project8"))
             {
                 fToolbox.Add(fSurface);
-
                 fLocustTermDeath = new Kassiopeia::KSTermDeath();
                 fLocustTermDeath->Initialize();
                 fToolbox.Add(fLocustTermDeath);
-
+                fLocustTermDeath->SetName("waveguide_death");
                 fCommand = fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->Command("add_terminator", fLocustTermDeath);
                 fKSSpace = GetKSWorldSpace();
                 fKSSpace->AddSurface(fSurface);
@@ -428,16 +427,43 @@ namespace locust
 
     bool RunPause::DeleteLocalKassObjects()
     {
+        // fMaxTimeTerminator
+        if (fToolbox.HasKey("ksmax-time-project8"))
+        {
+            fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMaxTimeTerminator);
+            fLocustMaxTimeTerminator = NULL;
+            LPROG(lmclog,"Removing fLocustMaxTimeTerminator from KSRoot ...");
+        }
 
-        fLocustMaxTimeTerminator = NULL;
-        fLocustMaxRTerminator = NULL;
-        fBox = NULL;
-        fKGSpace = NULL;
-        fSurface = NULL;
-        fLocustTermDeath = NULL;
-        fCommand = NULL;
-        fKSSpace = NULL;
-        fGenerator = NULL;
+        // fMaxRTerminator
+        if (fToolbox.HasKey("ksmax-r-project8"))
+        {
+            fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMaxRTerminator);
+            fLocustMaxRTerminator = NULL;
+            LPROG(lmclog,"Removing fLocustMaxRTerminator from KSRoot ...");
+        }
+
+        // fSurface
+        if (fToolbox.HasKey("waveguide_surfaces_project8"))
+        {
+            fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustTermDeath);
+            fLocustTermDeath = NULL;
+            fCommand = NULL;
+            fBox = NULL;
+            fKGSpace = NULL;
+            fKSSpace = NULL;
+            fSurface = NULL;
+            LPROG(lmclog,"Removing fSurface from KSRoot ...");
+        }
+
+        // fGenerator
+        if (fToolbox.HasKey("gen_project8"))
+        {
+            fKGSpace = NULL;
+            fKSSpace = NULL;
+            fGenerator = NULL;
+            LPROG(lmclog,"Leaving fGenerator in KSRoot, but setting LMC pointers to Kass objects to NULL ...");
+        }
 
     	return true;
     }
@@ -445,11 +471,8 @@ namespace locust
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
-//        fInterface->fRunInProgress = true;
-
 
     	DeleteLocalKassObjects();
-
 
         return true;
     }
