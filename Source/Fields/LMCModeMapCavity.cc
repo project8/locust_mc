@@ -164,7 +164,8 @@ namespace locust
         {
             // Found a near neighbor in the uploaded mode map:
             TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 0));  // r
-            TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 2));  // z
+//            TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 2));  // z
+            TE_E.push_back( 0. );  // temporary z for testing
             TE_E.push_back( InterpolateField(var1, var2, var3, TetrahedronVertices, 1));  // theta
 
             return TE_E;  // Return the near neighbor.
