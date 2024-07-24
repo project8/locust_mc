@@ -13,11 +13,12 @@ namespace locust
 
     LOGGER( lmclog, "CylindricalCavity" );
     CylindricalCavity::CylindricalCavity():
-    	fProbeGain( {1., 1.}),
-		fCavityProbeZ( {0., 0.} ),
-		fCavityProbeRFrac( {0.5, 0.5} ),
-		fCavityProbeTheta( {0.0, 0.0} )
-		{}
+        fIntermediateFile( false ),
+        fProbeGain( {1., 1.}),
+        fCavityProbeZ( {0., 0.} ),
+        fCavityProbeRFrac( {0.5, 0.5} ),
+        fCavityProbeTheta( {0.0, 0.0} )
+        {}
 
     CylindricalCavity::~CylindricalCavity() {}
 
@@ -80,6 +81,11 @@ namespace locust
         if ( aParam.has( "cavity-probe-theta1" ) )
         {
             SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
+        }
+
+        if (aParam.has( "intermediate-file" ))
+        {
+        	fIntermediateFile = aParam["intermediate-file"]().as_bool();
         }
 
         if( aParam.has( "upload-modemap-filename" ) )  // import "realistic" test mode map
@@ -376,13 +382,13 @@ namespace locust
     double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
     {
         std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
-        tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, 0) );  // unit velocity \dot unit theta
+        tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
         SetAvgDotProductFactor(tAvgDotProductFactor);
         return tAvgDotProductFactor[l][m][n];
     }
 
 
-    double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile)
+    double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool intermediateFile)
     {
         double tThetaParticle = tKassParticleXP[1];
         double tEtheta = 0.;
@@ -409,7 +415,7 @@ namespace locust
 
 
         //  Write trajectory points, dot product, and E-field mag to file for debugging etc.
-        if (IntermediateFile)
+        if (intermediateFile)
         {
             char buffer[60];
             int a = sprintf(buffer, "%s/dotProducts.txt", GetOutputPath().c_str());
@@ -418,8 +424,9 @@ namespace locust
             fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
             fclose(fp);
 
-            printf("unitJdotE is %g, r*cos(theta) is %g, r is %g, and theta is %g, eMag is %g\n",
-    			unitJdotE, tKassParticleXP[0]*cos(tKassParticleXP[1]), tKassParticleXP[0], tKassParticleXP[1], tEmag); getchar();
+            printf("|r|, theta, J dot E, |E| %g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
+            printf("\n Keep pressing ENTER to record to file output/dotProducts.txt .  Cntrl-C to quit.\n");
+            getchar();
         }
 
         return unitJdotE;

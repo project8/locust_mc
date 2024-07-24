@@ -37,7 +37,6 @@ namespace locust
         fOverrideAliasing( false ),
         fBypassTF( false ),
         fNormCheck( false ),
-        fIntermediateFile( false ),
         fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
 		fUnitTestRootFile( false ),
@@ -297,10 +296,6 @@ namespace locust
         if( aParam.has( "norm-check" ) )
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
-        }
-        if( aParam.has( "intermediate-file" ) )
-        {
-        	fIntermediateFile = aParam["intermediate-file"]().as_bool();
         }
         if( aParam.has( "unit-test-root-file" ) )
         {

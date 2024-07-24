@@ -82,6 +82,7 @@ namespace locust
 
 
         private:
+            bool fIntermediateFile;
             FieldCore* fFieldCore;
             std::vector<double> fCavityProbeZ;
             std::vector<double> fCavityProbeRFrac;
