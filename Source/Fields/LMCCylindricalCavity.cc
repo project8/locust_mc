@@ -608,7 +608,7 @@ namespace locust
         } // bTE
         aRootHistoWriter->CloseFile();
 
-        PrintModeMapsLongSlice(nModes, 0.);
+        PrintModeMapsLongSlice(nModes, thetaSlice);
 
         LPROG(lmclog, "\n\nTo plot a mode map:\n"
         		"> root file:output/ModemapOutput.root\n"
@@ -703,17 +703,17 @@ namespace locust
                                         tE = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
                                         tH = fFieldCore->TM_H(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,r,theta,z,0);
                                     }
-                                    if ((!std::isnan(tE[1])))
+                                    if ((!std::isnan(tE.back())))
                                     {
-                                        hTEtheta->Fill(z,r,tE[1]);
+                                        hTEtheta->Fill(z,r,tE.back());
                                     }
                                     if ((!std::isnan(tE.front())))
                                     {
                                         hTEr->Fill(z,r,tE.front());
                                     }
-                                    if ((!std::isnan(tH[1])))
+                                    if ((!std::isnan(tH.back())))
                                     {
-                                        hTHtheta->Fill(z,r,tH[1]);
+                                        hTHtheta->Fill(z,r,tH.back());
                                     }
                                     if ((!std::isnan(tH.front())))
                                     {
