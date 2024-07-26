@@ -153,12 +153,11 @@ namespace locust
         return true;
     }
 
-    std::vector<double> ModeMapCavity::TE_E(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2_shift, double zKass, bool includeOtherPols)
+    std::vector<double> ModeMapCavity::TE_E(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
     {
         std::vector<double> TE_E;
 
         double var3 = zKass + 0.5*dim3;
-	double var2 = var2_shift + LMCConst::Pi(); //Modemap defines theta from 0 to 2Pi while Locust uses -Pi to Pi, so shift included here. 
         std::vector< int > CoordinateIndices = FindClosestCoordinate(var1, var2, var3);
         std::vector< std::vector< int >> TetrahedronVertices = GetVerticesIndices(CoordinateIndices, var1, var2, var3);
         if(CoordinateIndices[0]!=0 or CoordinateIndices[1]!=0 or CoordinateIndices[2]!=0)
