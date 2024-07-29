@@ -19,7 +19,6 @@ namespace locust
             fSampleIndex( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
-    	Configure();
     }
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
@@ -32,7 +31,6 @@ namespace locust
             fSampleIndex( aCopy.fSampleIndex ),
             fInterface( aCopy.fInterface )
     {
-    	Configure();
     }
 
     CyclotronRadiationExtractor* CyclotronRadiationExtractor::Clone() const
@@ -61,6 +59,7 @@ namespace locust
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
         fInterface->fProject8Phase = P8Phase;
+        Configure();
     }
 
     bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
