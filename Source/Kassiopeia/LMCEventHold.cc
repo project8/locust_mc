@@ -87,6 +87,7 @@ namespace locust
         fInterface->anEvent->fRandomSeed = -99;
         fInterface->anEvent->fLOFrequency = -99.;
         fInterface->anEvent->fRandomSeed = -99;
+        fInterface->aTrack.Initialize();
 #endif
 
         return true;
@@ -111,6 +112,7 @@ namespace locust
         {
         	aRootTreeWriter->OpenFile("RECREATE");
         }
+        if (fInterface->anEvent->fNTracks == 0) fInterface->anEvent->AddTrack( fInterface->aTrack );
         aRootTreeWriter->WriteEvent( fInterface->anEvent );
         aRootTreeWriter->WriteRunParameters(fInterface->aRunParameter);
         aRootTreeWriter->CloseFile();

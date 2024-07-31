@@ -17,7 +17,10 @@ ClassImp(locust::Event);
 
 namespace locust
 {
-    Event::Event() {}
+    Event::Event() :
+        fNTracks( 0 )
+    {
+    }
     Event::~Event() {}
 
     void Event::AddTrack(const Track aTrack)
