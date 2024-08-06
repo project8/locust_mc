@@ -27,6 +27,7 @@ namespace locust
         StartTime = -99.;
         EndTime = -99.;
         TrackLength = -99.;
+        StartingEnergy_eV = -99.;
         OutputStartFrequency = -99.;
         StartFrequency = -99.;
         EndFrequency = -99.;

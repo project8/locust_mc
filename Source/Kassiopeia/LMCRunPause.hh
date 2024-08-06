@@ -83,6 +83,7 @@ namespace locust
             std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
             DistributionInterface fDistributionInterface;
             double fMinTrackLengthFraction;
+            bool fConfigurationComplete;
 
 
 

@@ -37,7 +37,6 @@ namespace locust
         fOverrideAliasing( false ),
         fBypassTF( false ),
         fNormCheck( false ),
-        fIntermediateFile( false ),
         fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
 		fUnitTestRootFile( false ),
@@ -74,7 +73,11 @@ namespace locust
         }
         else // Cavity
         {
-        	fInterface->fField = new CylindricalCavity;
+            if( tParam.has( "rectangular-cavity" ) )
+            {
+            	if ( tParam["rectangular-cavity"]().as_bool() ) fInterface->fField = new RectangularCavity;
+            }
+            else fInterface->fField = new CylindricalCavity;
         	fPowerCombiner = new CavityModes;
         }
 
@@ -293,10 +296,6 @@ namespace locust
         if( aParam.has( "norm-check" ) )
         {
         	fNormCheck = aParam["norm-check"]().as_bool();
-        }
-        if( aParam.has( "intermediate-file" ) )
-        {
-        	fIntermediateFile = aParam["intermediate-file"]().as_bool();
         }
         if( aParam.has( "unit-test-root-file" ) )
         {

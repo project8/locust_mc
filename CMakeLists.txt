@@ -41,6 +41,7 @@ set (LOCUST_MC_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/IO/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Distributions/
     ${CMAKE_CURRENT_SOURCE_DIR}/Source/Fields/
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source/eigen-3.4.0/Eigen/
 )
 
 
@@ -157,6 +158,13 @@ else (GSL_FOUND)
     message(FATAL "GSL not found")
 endif (GSL_FOUND)
 
+# eigen
+# versions earlier than 3.3 may work; the exact minimum version is not known for sure.
+find_package (Eigen3 3.3 REQUIRED)
+if (EIGEN3_FOUND)
+   message (STATUS "Eigen found.")
+   include_directories (${EIGEN3_INCLUDE_DIR})
+endif (EIGEN3_FOUND)
 
 # FFTW
 find_package(FFTW REQUIRED)
@@ -250,8 +258,6 @@ link_directories( ${LOCUST_MC_LINK_DIRECTORIES} )
 
 add_subdirectory( Source )
 add_subdirectory( Data )
-add_subdirectory( Data/TransferFunctions )
-add_subdirectory( Data/Math )
 
 #  Check root build.
 if (locust_mc_BUILD_WITH_ROOT)

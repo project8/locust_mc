@@ -19,7 +19,6 @@ namespace locust
             fSampleIndex( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
-    	Configure();
     }
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
@@ -32,7 +31,6 @@ namespace locust
             fSampleIndex( aCopy.fSampleIndex ),
             fInterface( aCopy.fInterface )
     {
-    	Configure();
     }
 
     CyclotronRadiationExtractor* CyclotronRadiationExtractor::Clone() const
@@ -45,19 +43,23 @@ namespace locust
 
     bool CyclotronRadiationExtractor::Configure()
     {
-    	fFieldCalculator = new FieldCalculator();
-    	if(!fFieldCalculator->ConfigureByInterface())
-    	{
-    	   LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
-    	   exit(-1);
-    	}
-    	return true;
+        fFieldCalculator = new FieldCalculator();
+        if (fInterface->fProject8Phase > 0)
+        {
+            if(!fFieldCalculator->ConfigureByInterface())
+            {
+                LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                exit(-1);
+            }
+        }
+        return true;
     }
 
 
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
         fInterface->fProject8Phase = P8Phase;
+        Configure();
     }
 
     bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
@@ -72,6 +74,7 @@ namespace locust
             double tY = aFinalParticle.GetPosition().Y();
             fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack.RadialPhase = calcOrbitPhase(tX, tY);
+            fInterface->aTrack.StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     	}
     	else
@@ -211,9 +214,9 @@ namespace locust
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
 
-            if ( aFinalParticle.GetParentTrackId() > fLMCTrackID )  // check for new track
+            if ( aFinalParticle.GetIndexNumber() > fLMCTrackID ) // check for new track
             {
-                fLMCTrackID = aFinalParticle.GetParentTrackId();
+                fLMCTrackID = aFinalParticle.GetIndexNumber();
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
                 double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );

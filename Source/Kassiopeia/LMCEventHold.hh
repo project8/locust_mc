@@ -28,6 +28,7 @@ namespace locust
             EventHold();
             EventHold( const EventHold& aOrig );
             bool OpenEvent();
+            bool OpenFile();
             bool WriteEvent();
             virtual ~EventHold();
 
@@ -45,6 +46,9 @@ namespace locust
 
         protected:
             kl_interface_ptr_t fInterface;
+
+        private:
+            bool fConfigurationComplete;
 
     };
 

@@ -1,20 +1,19 @@
 /*
- * LMCCylindricalCavity.hh
+ * LMCRectangularCavity.hh
  *
- *  Created on: Jun. 4, 2021
+ *  Created on: Nov. 16, 2023
  *      Author: pslocum
  */
 
-#ifndef LMCCYLINDRICALCAVITY_HH_
-#define LMCCYLINDRICALCAVITY_HH_
+#ifndef LMCRECTANGULARCAVITY_HH_
+#define LMCRECTANGULARCAVITY_HH_
 
 #include "param.hh"
 
 #include "logger.hh"
 #include "LMCField.hh"
-#include "LMCPozarCylindricalCavity.hh"
+#include "LMCPozarRectangularCavity.hh"
 #include "LMCModeMapCavity.hh"
-#include <boost/math/special_functions/bessel.hpp>
 
 #include <vector>
 
@@ -26,33 +25,23 @@
 namespace locust
 {
  /*!
- @class CylindricalCavity
+ @class RectangularCavity
  @author P. Slocum
- @brief Derived class to define CylindricalCavity fields.
+ @brief Derived class to define RectangularCavity fields.
  @details  This class calculates field values induced by a moving electron in a
-     cylindrical cavity.  The fields are calculated at either one probe location
+     rectangular cavity.  The fields are calculated at either one probe location
      if the simulation parameter n-channels = 1, or at two probe locations if
      n-channels = 2.
  Available configuration options:
-   - "cavity-radius" -- double [0.18] Radius of default cylindrical cavity, in meters.
-   - "cavity-length" -- double [3.0] Length of default cylindrical cavity, in meters.
-   - "cavity-probe-gain0" -- double [1.0] Gain of probe 0.
-   - "cavity-probe-gain1" -- double [1.0] Gain of probe 1.
-   - "cavity-probe-z0" -- double [0.0] Z location of probe 0, in meters.
-   - "cavity-probe-z1" -- double [0.0] Z location of probe 1, in meters.
-   - "cavity-probe-r-fraction0" -- double [0.5] Fractional radial position of probe 0 (unitless).
-   - "cavity-probe-r-fraction1" -- double [0.5] Fractional radial position of probe 1 (unitless).
-   - "cavity-probe-theta0" -- double [0.0] Azimuthal angle of probe 0 (radians).
-   - "cavity-probe-theta1" -- double [0.0] Azimuthal angle of probe 1 (radians).
  */
 
 
-    class CylindricalCavity : public Field
+    class RectangularCavity : public Field
     {
 
         public:
-            CylindricalCavity();
-            virtual ~CylindricalCavity();
+            RectangularCavity();
+            virtual ~RectangularCavity();
 
             virtual bool Configure( const scarab::param_node& aParam);
 
@@ -68,8 +57,8 @@ namespace locust
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool IntermediateFile);
             virtual bool InVolume(std::vector<double> tKassParticleXP);
             virtual void CheckNormalization(int nModes);
-            virtual void PrintModeMaps(int nModes, double zSlice, double thetaSlice);
-            void PrintModeMapsLongSlice(int nModes, double thetaSlice);
+            virtual void PrintModeMaps(int nModes, double zSlice);
+            void PrintModeMapsLongSlice(int nModes, double xSlice);
             virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode);
             std::vector<double> GetCavityProbeZ();
             void SetCavityProbeZ ( double aZ, unsigned index );
@@ -80,9 +69,7 @@ namespace locust
             std::vector<double> GetCavityProbeTheta();
             void SetCavityProbeGain( double aGain, unsigned index );
 
-
         private:
-            bool fIntermediateFile;
             FieldCore* fFieldCore;
             std::vector<double> fCavityProbeZ;
             std::vector<double> fCavityProbeRFrac;
@@ -95,4 +82,4 @@ namespace locust
 
 }; /* namespace locust */
 
-#endif /* LMCCYLINDRICALCAVITY_HH_ */
+#endif /* LMCRECTANGULARCAVITY_HH_ */

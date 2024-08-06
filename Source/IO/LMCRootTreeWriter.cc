@@ -56,6 +56,7 @@ namespace locust
         TTree *aTree = new TTree(treename,"Locust Tree");
         aTree->Branch("EventID", &anEvent->fEventID, "EventID/I");
         aTree->Branch("ntracks", &anEvent->fNTracks, "ntracks/I");
+        aTree->Branch("StartingEnergieseV", "std::vector<double>", &anEvent->fStartingEnergies_eV);
         aTree->Branch("OutputStartFrequencies", "std::vector<double>", &anEvent->fOutputStartFrequencies);
         aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
         aTree->Branch("EndFrequencies", "std::vector<double>", &anEvent->fEndFrequencies);

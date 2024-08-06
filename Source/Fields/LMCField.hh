@@ -39,24 +39,28 @@ namespace locust
     	    FieldCore();
     	    virtual ~FieldCore();
 
-	        // Cylindrical cavity:
-            virtual std::vector<double> TE_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
-            virtual std::vector<double> TE_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
-            virtual std::vector<double> TM_E(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
-            virtual std::vector<double> TM_H(double R, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
+	    virtual bool Configure( const scarab::param_node& aParam );
 
-            // Rectangular waveguide:
+	        // Cylindrical/rectangular Pozar cavities:
+    	    // dim1 = r, dim2 = theta, dim3 = z
+    	    // or
+    	    // dim1 = x, dim2 = y, dim3 = z
+            virtual std::vector<double> TE_E(double dim1, double dim2, double dim3, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
+            virtual std::vector<double> TE_H(double dim1, double dim2, double dim3, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
+            virtual std::vector<double> TM_E(double dim1, double dim2, double dim3, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
+            virtual std::vector<double> TM_H(double dim1, double dim2, double dim3, int l, int m, int n, double r, double theta, double z, bool includeOtherPols){return {0.};};
+
+            // Rectangular Pozar waveguide:
             virtual std::vector<double> TE_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
             virtual std::vector<double> TE_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
             virtual std::vector<double> TM_E(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
             virtual std::vector<double> TM_H(double dimX, double dimY, int m, int n, double xKass, double yKass, double fcyc){return {0.};};
 
             // Imported mode map:
-            virtual bool ReadModeMapTE_E(std::string aFilename){return 0;};
-            virtual bool ReadModeMapTE_H(std::string aFilename){return 0;};
-            virtual bool ReadModeMapTM_E(std::string aFilename){return 0;};
-            virtual bool ReadModeMapTM_H(std::string aFilename){return 0;};
-
+            virtual bool ReadModeMapTE_E(std::string aFilename, const scarab::param_node& aParam){return 0;};
+            virtual bool ReadModeMapTE_H(std::string aFilename, const scarab::param_node& aParam){return 0;};
+            virtual bool ReadModeMapTM_E(std::string aFilename, const scarab::param_node& aParam){return 0;};
+            virtual bool ReadModeMapTM_H(std::string aFilename, const scarab::param_node& aParam){return 0;};
 
             void ReadBesselZeroes(std::string filename, bool prime);
             double GetBesselNKZeros(int l, int m);
@@ -85,6 +89,7 @@ namespace locust
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode) {return {0.};};
             double NormalizedEFieldMag(std::vector<double> field);
             virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE) {return {{{0.}}};};
+            std::vector<std::vector<std::vector<double>>> SetUnityNormFactors(int nModes);
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, double tThisEventNSamples) {return {0.};};
