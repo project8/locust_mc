@@ -214,9 +214,9 @@ namespace locust
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
 
-            if ( aFinalParticle.GetParentTrackId() > fLMCTrackID )  // check for new track
+            if ( aFinalParticle.GetIndexNumber() > fLMCTrackID ) // check for new track
             {
-                fLMCTrackID = aFinalParticle.GetParentTrackId();
+                fLMCTrackID = aFinalParticle.GetIndexNumber();
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
                 double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );

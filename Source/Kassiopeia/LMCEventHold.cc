@@ -17,6 +17,7 @@ namespace locust
     EventHold::EventHold() :
             fTruthOutputFilename("LocustEventProperties.root"),
             fAccumulateTruthInfo( false ),
+            fConfigurationComplete( false ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -24,6 +25,7 @@ namespace locust
     EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
             fTruthOutputFilename("LocustEventProperties.root"),
             fAccumulateTruthInfo( false ),
+            fConfigurationComplete( false ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -41,20 +43,28 @@ namespace locust
     {
         OpenEvent();
 
-    	if (fInterface->fConfigureKass)
-    	{
-    	    const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
-    	    if (!this->Configure( *aParam ))
-    	    {
-                LERROR(lmclog,"Error configuring EventHold class");
-                return false;
-    	    }
-    	}
-    	else
-    	{
-            LPROG(lmclog,"EventHold class did not need to be configured.");
-            return true;
-    	}
+        if (!fConfigurationComplete)
+        {
+            if (fInterface->fConfigureKass)
+            {
+                const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+                if (!this->Configure( *aParam ))
+                {
+                    LERROR(lmclog,"Error configuring EventHold class");
+                    return false;
+                }
+            }
+            else
+            {
+                LPROG(lmclog,"EventHold class did not need to be configured.");
+                return true;
+            }
+
+            OpenFile();
+
+            fConfigurationComplete = true;
+
+        }
         return true;
     }
 
@@ -93,8 +103,7 @@ namespace locust
         return true;
     }
 
-
-    bool EventHold::WriteEvent()
+    bool EventHold::OpenFile()
     {
         std::string tOutputPath = TOSTRING(PB_OUTPUT_DIR);
         std::string sFileName = tOutputPath+"/"+fTruthOutputFilename;
@@ -104,7 +113,7 @@ namespace locust
         if (fAccumulateTruthInfo)
         {
         	// TO-DO:  This option should be used when running pileup.  We will need to
-        	// figure out how to explicitly increment the event ID, given that the
+        	// figure out how to explicitly increment the event structure ID, given that the
         	// same (identical) simulation is being run multiple times in this case.
         	aRootTreeWriter->OpenFile("UPDATE");
         }
@@ -112,7 +121,23 @@ namespace locust
         {
         	aRootTreeWriter->OpenFile("RECREATE");
         }
-        if (fInterface->anEvent->fNTracks == 0) fInterface->anEvent->AddTrack( fInterface->aTrack );
+        aRootTreeWriter->CloseFile();
+#endif
+        return true;
+
+    }
+
+
+    bool EventHold::WriteEvent()
+    {
+        std::string tOutputPath = TOSTRING(PB_OUTPUT_DIR);
+        std::string sFileName = tOutputPath+"/"+fTruthOutputFilename;
+#ifdef ROOT_FOUND
+        FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
+        aRootTreeWriter->SetFilename(sFileName);
+       	aRootTreeWriter->OpenFile("UPDATE");
+
+       	if (fInterface->anEvent->fNTracks == 0) fInterface->anEvent->AddTrack( fInterface->aTrack );
         aRootTreeWriter->WriteEvent( fInterface->anEvent );
         aRootTreeWriter->WriteRunParameters(fInterface->aRunParameter);
         aRootTreeWriter->CloseFile();
