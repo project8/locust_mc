@@ -477,11 +477,12 @@ namespace locust
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
-    	//  No interrupt has happened yet in KSRoot.  Run still in progress.
 
-    	// Do not delete anything, local or otherwise, that is used by the KToolbox, in particular
-    	// if running multiple events or multiple tracks.  Keep this next line commented out for now.
-//    	DeleteLocalKassObjects();
+
+       	//  No interrupt has happened yet in KSRoot.  Run still in progress.
+
+    	DeleteLocalKassObjects();
+    	fConfigurationComplete = false;
 
         return true;
     }
