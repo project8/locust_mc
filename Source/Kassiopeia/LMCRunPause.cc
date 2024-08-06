@@ -25,6 +25,7 @@ namespace locust
         fToolbox(KToolbox::GetInstance()),
         KSComponent(),
         fMinTrackLengthFraction(0.1),
+		fConfigurationComplete( false ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -33,6 +34,7 @@ namespace locust
         fToolbox(KToolbox::GetInstance()),
         KSComponent(),
         fMinTrackLengthFraction(0.1),
+		fConfigurationComplete( false ),
         fInterface( aCopy.fInterface )
     {
     }
@@ -48,25 +50,29 @@ namespace locust
 
     bool RunPause::ConfigureByInterface()
     {
-    	if (fInterface->fConfigureKass)
-    	{
-    	    const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
-    	    if (!this->Configure( *aParam ))
-    	    {
-                LERROR(lmclog,"Error configuring RunPause class");
-                return false;
-    	    }
-    	}
-    	else
-    	{
-            LPROG(lmclog,"RunPause class did not need to be configured.");
-            return true;
-    	}
+        if ( !fConfigurationComplete )
+        {
+            if (fInterface->fConfigureKass)
+            {
+                const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+                if (!this->Configure( *aParam ))
+                {
+                    LERROR(lmclog,"Error configuring RunPause class");
+                    return false;
+                }
+            }
+            else
+            {
+                LPROG(lmclog,"RunPause class did not need to be configured.");
+                return true;
+            }
+            fConfigurationComplete = true;
+        }
         return true;
     }
 
     bool RunPause::Configure( const scarab::param_node& aParam )
-     {
+    {
 
         if ( fToolbox.IsInitialized() )
         {
@@ -408,6 +414,7 @@ namespace locust
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
+
     	if ( !ConfigureByInterface() )
     	{
     	    return false;
@@ -472,7 +479,9 @@ namespace locust
     {
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
 
-    	DeleteLocalKassObjects();
+    	// Do not delete anything, local or otherwise, that is used by the KToolbox, in particular
+    	// if running multiple events or multiple tracks.  Keep this next line commented out for now.
+//    	DeleteLocalKassObjects();
 
         return true;
     }
