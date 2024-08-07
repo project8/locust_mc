@@ -464,19 +464,26 @@ namespace locust
         if (fToolbox.HasKey("ksmax-r-project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMaxRTerminator);
+            fToolbox.Remove(fLocustMaxRTerminator->GetName());
             fLocustMaxRTerminator = NULL;
-            LPROG(lmclog,"Removing fLocustMaxRTerminator from KSRoot ...");
+            LPROG(lmclog,"Removing fLocustMaxRTerminator from KToolbox ...");
         }
 
         // fSurface
         if (fToolbox.HasKey("waveguide_surfaces_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustTermDeath);
+            if (fToolbox.HasKey(fLocustTermDeath->GetName())) fToolbox.Remove(fLocustTermDeath->GetName());
             fLocustTermDeath = NULL;
+            if (fToolbox.HasKey(fCommand->GetName())) fToolbox.Remove(fCommand->GetName());
             fCommand = NULL;
+            if (fToolbox.HasKey(fBox->GetName())) fToolbox.Remove(fBox->GetName());
             fBox = NULL;
+            if (fToolbox.HasKey(fKGSpace->GetName())) fToolbox.Remove(fKGSpace->GetName());
             fKGSpace = NULL;
+            if (fToolbox.HasKey(fKSSpace->GetName())) fToolbox.Remove(fKSSpace->GetName());
             fKSSpace = NULL;
+            if (fToolbox.HasKey(fSurface->GetName())) fToolbox.Remove(fSurface->GetName());
             fSurface = NULL;
             LPROG(lmclog,"Removing fSurface from KSRoot ...");
         }
@@ -485,11 +492,9 @@ namespace locust
         if (fToolbox.HasKey("gen_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(fGenerator);
-            fToolbox.Remove(fGenerator->GetName());
-            fKGSpace = NULL;
-            fKSSpace = NULL;
+            if (fToolbox.HasKey(fGenerator->GetName())) fToolbox.Remove(fGenerator->GetName());
             fGenerator = NULL;
-            LPROG(lmclog,"Removing fGenerator from KSRoot, and setting LMC pointers to Kass objects to NULL ...");
+            LPROG(lmclog,"Removing fGenerator from KSRoot ... ");
         }
 
     	return true;
