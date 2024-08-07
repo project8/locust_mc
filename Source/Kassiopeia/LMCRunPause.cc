@@ -24,8 +24,17 @@ namespace locust
     RunPause::RunPause() :
         fToolbox(KToolbox::GetInstance()),
         KSComponent(),
+        fLocustMaxTimeTerminator( nullptr ),
+        fLocustMaxRTerminator( nullptr ),
+        fBox( nullptr ),
+        fKGSpace( nullptr ),
+        fSurface( nullptr ),
+        fLocustTermDeath( nullptr ),
+        fCommand( nullptr ),
+        fKSSpace( nullptr ),
+        fGenerator( nullptr ),
         fMinTrackLengthFraction(0.1),
-		fConfigurationComplete( false ),
+        fConfigurationComplete( false ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -33,8 +42,17 @@ namespace locust
     RunPause::RunPause( const RunPause& aCopy ) :
         fToolbox(KToolbox::GetInstance()),
         KSComponent(),
+        fLocustMaxTimeTerminator( nullptr ),
+        fLocustMaxRTerminator( nullptr ),
+        fBox( nullptr ),
+        fKGSpace( nullptr ),
+        fSurface( nullptr ),
+        fLocustTermDeath( nullptr ),
+        fCommand( nullptr ),
+        fKSSpace( nullptr ),
+        fGenerator( nullptr ),
         fMinTrackLengthFraction(0.1),
-		fConfigurationComplete( false ),
+        fConfigurationComplete( false ),
         fInterface( aCopy.fInterface )
     {
     }
@@ -466,10 +484,12 @@ namespace locust
         // fGenerator
         if (fToolbox.HasKey("gen_project8"))
         {
+            fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(fGenerator);
+            fToolbox.Remove(fGenerator->GetName());
             fKGSpace = NULL;
             fKSSpace = NULL;
             fGenerator = NULL;
-            LPROG(lmclog,"Leaving fGenerator in KSRoot, but setting LMC pointers to Kass objects to NULL ...");
+            LPROG(lmclog,"Removing fGenerator from KSRoot, and setting LMC pointers to Kass objects to NULL ...");
         }
 
     	return true;
