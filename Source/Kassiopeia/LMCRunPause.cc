@@ -35,6 +35,8 @@ namespace locust
         fGenerator( nullptr ),
         fMinTrackLengthFraction(0.1),
         fConfigurationComplete( false ),
+        fEventCounter( 0 ),
+        fMaxEvents( 1 ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -53,6 +55,8 @@ namespace locust
         fGenerator( nullptr ),
         fMinTrackLengthFraction(0.1),
         fConfigurationComplete( false ),
+        fEventCounter( 0 ),
+        fMaxEvents( 1 ),
         fInterface( aCopy.fInterface )
     {
     }
@@ -84,13 +88,19 @@ namespace locust
                 LPROG(lmclog,"RunPause class did not need to be configured.");
                 return true;
             }
+
             fConfigurationComplete = true;
         }
+
         return true;
     }
 
     bool RunPause::Configure( const scarab::param_node& aParam )
     {
+        if( aParam.has( "n-max-events" ) )
+        {
+            fMaxEvents = aParam["n-max-events"]().as_double();
+        }
 
         if ( fToolbox.IsInitialized() )
         {
@@ -151,9 +161,8 @@ namespace locust
             {
                 if ( (tGen[i]->IsActivated()) && (tGen[i]->GetName()!="root_generator") )
                 {
-                    LPROG(lmclog,"Clearing " << tGen[i]->GetName());
+                    LPROG(lmclog,"Clearing " << tGen[i]->GetName() << " from KSRoot ... ");
                     fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(tGen[i]);
-                    fToolbox.Remove(tGen[i]->GetName());
                 }
             }
 
@@ -444,11 +453,6 @@ namespace locust
     	    return true;
     	}
     }
-//.
-//.
-// Between these two functions there will be an nevents interrupt in KSRoot.
-//.
-//.
 
     bool RunPause::DeleteLocalKassObjects()
     {
@@ -464,26 +468,17 @@ namespace locust
         if (fToolbox.HasKey("ksmax-r-project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMaxRTerminator);
-            fToolbox.Remove(fLocustMaxRTerminator->GetName());
             fLocustMaxRTerminator = NULL;
-            LPROG(lmclog,"Removing fLocustMaxRTerminator from KToolbox ...");
+            LPROG(lmclog,"Removing fLocustMaxRTerminator from KSRoot ...");
         }
 
         // fSurface
         if (fToolbox.HasKey("waveguide_surfaces_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustTermDeath);
-            if (fToolbox.HasKey(fLocustTermDeath->GetName())) fToolbox.Remove(fLocustTermDeath->GetName());
             fLocustTermDeath = NULL;
-            if (fToolbox.HasKey(fCommand->GetName())) fToolbox.Remove(fCommand->GetName());
             fCommand = NULL;
-            if (fToolbox.HasKey(fBox->GetName())) fToolbox.Remove(fBox->GetName());
             fBox = NULL;
-            if (fToolbox.HasKey(fKGSpace->GetName())) fToolbox.Remove(fKGSpace->GetName());
-            fKGSpace = NULL;
-            if (fToolbox.HasKey(fKSSpace->GetName())) fToolbox.Remove(fKSSpace->GetName());
-            fKSSpace = NULL;
-            if (fToolbox.HasKey(fSurface->GetName())) fToolbox.Remove(fSurface->GetName());
             fSurface = NULL;
             LPROG(lmclog,"Removing fSurface from KSRoot ...");
         }
@@ -492,9 +487,20 @@ namespace locust
         if (fToolbox.HasKey("gen_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(fGenerator);
-            if (fToolbox.HasKey(fGenerator->GetName())) fToolbox.Remove(fGenerator->GetName());
+            fToolbox.Remove(fGenerator->GetName());
             fGenerator = NULL;
-            LPROG(lmclog,"Removing fGenerator from KSRoot ... ");
+            LPROG(lmclog,"Removing fGenerator from KToolbox ... ");
+
+            auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
+            for (unsigned i=0; i<tGen.size(); i++)
+            {
+                if ( (tGen[i]->IsActivated()) && (tGen[i]->GetName()!="root_generator") )
+                {
+                    LPROG(lmclog,"Replacing KSRoot generator with " << tGen[i]->GetName());
+                    fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->SetGenerator(tGen[i]);
+                }
+            }
+
         }
 
     	return true;
@@ -502,12 +508,14 @@ namespace locust
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
-
-
        	//  No interrupt has happened yet in KSRoot.  Run still in progress.
 
-    	DeleteLocalKassObjects();
-    	fConfigurationComplete = false;
+        fEventCounter += 1;
+        if (!(fEventCounter < fMaxEvents))
+        {
+            DeleteLocalKassObjects();
+            raise (SIGINT);
+        }
 
         return true;
     }

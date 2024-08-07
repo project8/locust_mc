@@ -84,6 +84,8 @@ namespace locust
             DistributionInterface fDistributionInterface;
             double fMinTrackLengthFraction;
             bool fConfigurationComplete;
+            int fEventCounter;
+            int fMaxEvents;
 
 
 
