@@ -29,6 +29,7 @@
 #include "LMCKassLocustInterface.hh"
 #include "KRandom.h"
 #include "LMCDistributionInterface.hh"
+#include "KSRoot.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -79,6 +80,18 @@ namespace locust
             Kassiopeia::KSCommand* fCommand;
             Kassiopeia::KSGeoSpace* fKSSpace;
             Kassiopeia::KSGenGeneratorComposite* fGenerator;
+            Kassiopeia::KSGenDirectionSphericalComposite* fGenDirectionComposite;
+			Kassiopeia::KSGenValueUniform* fThetaGenerator;
+			Kassiopeia::KSGenValueUniform* fPhiGenerator;
+			Kassiopeia::KSGenPositionRectangularComposite* fGenPositionComposite;
+			Kassiopeia::KSGenValueUniform* fPositionXGenerator;
+			Kassiopeia::KSGenValueUniform* fPositionYGenerator;
+			Kassiopeia::KSGenValueUniform* fPositionZGenerator;
+			Kassiopeia::KSGenValueUniform* fEnergyGenerator;
+			Kassiopeia::KSGenEnergyComposite* fGenEnergyComposite;
+			Kassiopeia::KSGenTimeComposite* fGenTimeComposite;
+			Kassiopeia::KSGenValueUniform* fTimeGenerator;
+			Kassiopeia::KSGenValueFix* fGenPidComposite;
 
             std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
             DistributionInterface fDistributionInterface;
