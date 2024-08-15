@@ -21,6 +21,7 @@
 #include "KSRootGenerator.h"
 #include "KSGenGeneratorComposite.h"
 #include "KSGenValueUniform.h"
+#include "KSGenValueAngleSpherical.h"
 #include "KSGenValueFix.h"
 #include "KSGenEnergyComposite.h"
 #include "KSGenPositionRectangularComposite.h"
@@ -29,7 +30,6 @@
 #include "LMCKassLocustInterface.hh"
 #include "KRandom.h"
 #include "LMCDistributionInterface.hh"
-#include "KSRoot.h"
 #include <stdlib.h>
 #include <time.h>
 
@@ -81,7 +81,7 @@ namespace locust
             Kassiopeia::KSGeoSpace* fKSSpace;
             Kassiopeia::KSGenGeneratorComposite* fGenerator;
             Kassiopeia::KSGenDirectionSphericalComposite* fGenDirectionComposite;
-			Kassiopeia::KSGenValueUniform* fThetaGenerator;
+			Kassiopeia::KSGenValueAngleSpherical* fThetaGenerator;
 			Kassiopeia::KSGenValueUniform* fPhiGenerator;
 			Kassiopeia::KSGenPositionRectangularComposite* fGenPositionComposite;
 			Kassiopeia::KSGenValueUniform* fPositionXGenerator;

@@ -238,9 +238,9 @@ namespace locust
                 fGenPositionComposite->SetZValue(fPositionZGenerator);
 
                 if ( fGenDirectionComposite == nullptr ) fGenDirectionComposite = new Kassiopeia::KSGenDirectionSphericalComposite();
-                if ( fThetaGenerator == nullptr ) fThetaGenerator = new Kassiopeia::KSGenValueUniform();
-                fThetaGenerator->SetValueMin( aParam["ks-starting-pitch-min"]().as_double() );
-                fThetaGenerator->SetValueMax( aParam["ks-starting-pitch-max"]().as_double() );
+                if ( fThetaGenerator == nullptr ) fThetaGenerator = new Kassiopeia::KSGenValueAngleSpherical();
+                fThetaGenerator->SetAngleMin( aParam["ks-starting-pitch-min"]().as_double() );
+                fThetaGenerator->SetAngleMax( aParam["ks-starting-pitch-max"]().as_double() );
                 if ( fPhiGenerator == nullptr ) fPhiGenerator = new Kassiopeia::KSGenValueUniform();
                 if ( aParam.has( "ks-starting-phi-min" ) && ( aParam.has( "ks-starting-phi-max" ) ) )
                 {
@@ -436,8 +436,6 @@ namespace locust
                 if ( fKSSpace == nullptr ) fKSSpace = GetKSWorldSpace();
                 fKSSpace->AddSurface(fSurface);
                 fSurface->AddCommand(fCommand);
-
-                return true;
             }
         }
         else
@@ -445,6 +443,8 @@ namespace locust
             LERROR(lmclog,"Waveguide dimensions waveguide-x, waveguide-y, and waveguide-z are needed.");
             return false;
         }
+
+        return true;
 
     }
 
