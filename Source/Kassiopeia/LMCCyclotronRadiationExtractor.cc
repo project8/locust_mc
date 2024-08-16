@@ -75,7 +75,6 @@ namespace locust
             fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack.RadialPhase = calcOrbitPhase(tX, tY);
             fInterface->aTrack.StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     	}
     	else
     	{
@@ -216,6 +215,7 @@ namespace locust
 
             if ( aFinalParticle.GetIndexNumber() > fLMCTrackID ) // check for new track
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 fLMCTrackID = aFinalParticle.GetIndexNumber();
                 fPitchAngle = -99.;  // new electron needs central pitch angle reset.
                 double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
