@@ -64,6 +64,7 @@ namespace locust
     bool TrackHold::ExecutePreTrackModification(Kassiopeia::KSTrack &aTrack)
     {
         fInterface->aTrack.Initialize();
+        fInterface->fNewTrackStarting = true;
         double tTime = aTrack.GetInitialParticle().GetTime();
 
         double tPitchAngle = aTrack.GetInitialParticle().GetPolarAngleToB();
@@ -73,11 +74,13 @@ namespace locust
 
     bool TrackHold::ExecutePostTrackModification(Kassiopeia::KSTrack &aTrack)
     {
-        fInterface->anEvent->AddTrack( fInterface->aTrack );
+        if ( aTrack.GetTotalSteps() > 0)
+        {
+            fInterface->anEvent->AddTrack( fInterface->aTrack );
+        }
 
-        double tPitchAngle = aTrack.GetFinalParticle().GetPolarAngleToB();
         double tTime = aTrack.GetFinalParticle().GetTime();
-        LWARN(lmclog,"LMCTrack " << fTrackCounter << " is complete at Kass time " << tTime << ", with instantaneous pitch angle " <<  tPitchAngle);
+        LWARN(lmclog,"LMCTrack " << fTrackCounter << " is complete at Kass time " << tTime << " with total steps " << aTrack.GetTotalSteps() );
         fTrackCounter += 1;
         return true;
     }

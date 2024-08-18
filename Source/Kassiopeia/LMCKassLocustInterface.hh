@@ -71,6 +71,7 @@ namespace locust
         unsigned fSampleIndex;
         int fTriggerConfirm;
         int fFastRecordLength;
+        bool fNewTrackStarting;
 
 #ifdef ROOT_FOUND
         Event* anEvent;
