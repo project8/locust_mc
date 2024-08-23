@@ -134,6 +134,10 @@ namespace locust
                     ++wordCount;
                 }
 
+		if ((i==fnPixel1) or (j==fnPixel2) or (k==fnPixel3))
+		{
+			continue;
+		}
                 if ((i>=fnPixel1) or (j>=fnPixel2) or (k>=fnPixel3))
                 {   
                     LERROR(lmclog,"Imported mode map dimensions don't agree with those in \"" << aFilename <<".\" Double check dim[1,2,3]-max.");
