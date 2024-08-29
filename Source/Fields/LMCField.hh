@@ -24,8 +24,6 @@ namespace locust
  @details
  Available configuration options:
  - "n-modes" : int -- [2] Range of l, m, and n indices used to configure available mode normalizations.
- Of the available normalized modes, modes to be included in the simulation itself are identified in the function
- LMCFieldCalculator::ModeSelect().
  - "n-pixels" : int -- [100] Number of pixels used in each dimension of the mode field definitions.
  - "plot-mode-maps": bool -- [false] Option to print all normalized (see n-modes above) mode maps to
  2D histograms in Root files, for inspection.
@@ -88,23 +86,20 @@ namespace locust
             virtual std::vector<double> GetDopplerFrequency(int l, int m, int n, std::vector<double> tKassParticleXP) {return {0.};};
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode) {return {0.};};
             double NormalizedEFieldMag(std::vector<double> field);
-            virtual std::vector<std::vector<std::vector<double>>> CalculateNormFactors(int nModes, bool bTE) {return {{{0.}}};};
-            std::vector<std::vector<std::vector<double>>> SetUnityNormFactors(int nModes);
+            std::vector<std::vector<std::vector<std::vector<double>>>> CalculateNormFactors(int nModes, bool bWaveguide);
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, double tThisEventNSamples) {return {0.};};
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
             virtual bool InVolume(std::vector<double> tKassParticleXP){return false;};
-            virtual void CheckNormalization(int nModes){};
+            void CheckNormalization(int nModes, bool bWaveguide);
             virtual void PrintModeMaps(int nModes, double zSlice, double thetaSlice){};
             virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode){return {0.};};
             virtual double ScaleEPoyntingVector(double fcyc){return 0.;};
             std::vector<std::vector<int>> ModeSelect(bool bWaveguide, bool bNormCheck);
 
-            std::vector<std::vector<std::vector<double>>> GetNormFactorsTE();
-            void SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor);
-            std::vector<std::vector<std::vector<double>>> GetNormFactorsTM();
-            void SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor);
+            std::vector<std::vector<std::vector<std::vector<double>>>> GetNormFactors();
+            void SetNormFactors(std::vector<std::vector<std::vector<std::vector<double>>>> aNormFactor);
             std::vector<std::vector<std::vector<double>>> GetAvgDotProductFactor();
             void SetAvgDotProductFactor(std::vector<std::vector<std::vector<double>>> aFactor);
             double GetCentralFrequency();
@@ -134,8 +129,7 @@ namespace locust
 
         private:
             int fNModes;
-            std::vector<std::vector<std::vector<double>>> fModeNormFactorTE;  // 3D vector [n-modes][n-modes][n-modes].
-            std::vector<std::vector<std::vector<double>>> fModeNormFactorTM;  // 3D vector [n-modes][n-modes][n-modes].
+            std::vector<std::vector<std::vector<std::vector<double>>>> fModeNormFactor;  // 4D vector [2][n-modes][n-modes][n-modes].
             double fCentralFrequency;
             int fnPixels;
             double fR;  // Cylindrical cavity dimenions.

@@ -59,10 +59,8 @@ namespace locust
 
         fFieldCore = new PozarRectangularWaveguide();
 
-        SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
-        SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
-
-        CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
+        SetNormFactors(CalculateNormFactors(GetNModes(), 1));
+        CheckNormalization(GetNModes(), 1);  // E fields integrate to 1.0 for both TE and TM modes.
 
         if( PlotModeMaps() )
         {
@@ -223,7 +221,7 @@ namespace locust
       	double tY = tKassParticleXP[0] * sin(tKassParticleXP[1]);
       	double fcyc = tKassParticleXP[7];
         std::vector<double> tTE_E_electron = fFieldCore->TE_E(GetDimX(),GetDimY(),m,n,tX,tY,fcyc);
-  		double normFactor = GetNormFactorsTE()[l][m][n];
+  		double normFactor = GetNormFactors()[bTE][l][m][n];
 
   		auto it = tTE_E_electron.begin();
   		while (it != tTE_E_electron.end())
@@ -282,100 +280,7 @@ namespace locust
     	return unitJdotE;
     }
 
-    std::vector<std::vector<std::vector<double>>> RectangularWaveguide::CalculateNormFactors(int nModes, bool bTE)
-    {
 
-        LPROG( lmclog, "Calculating mode normalization factors ... " );
-
-    	std::vector<std::vector<std::vector<double>>> aModeNormFactor;
-    	aModeNormFactor.resize(nModes);
-
-    	for (unsigned m=0; m<nModes; m++)
-    	{
-    		aModeNormFactor[m].resize(nModes);
-        	for (unsigned n=0; n<nModes; n++)
-        	{
-        		aModeNormFactor[m][n].resize(nModes);
-        	}
-    	}
-
-
-    	for (unsigned l=0; l<nModes; l++)
-    	{
-        	for (unsigned m=0; m<nModes; m++)
-        	{
-            	for (unsigned n=0; n<nModes; n++)
-            	{
-            		if (bTE)
-            		{
-            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,1,1),0.5);
-            		}
-            		else
-            		{
-            			aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,0,1),0.5);
-            		}
-
-            	}
-        	}
-    	}
-
-    	return aModeNormFactor;
-    }
-
-
-    void RectangularWaveguide::CheckNormalization(int nModes)
-    {
-
-        printf("\n|E_mn|^2 dA = 1.0.  |H_mn| can vary.  Index l is not used in the waveguide.\n");
-        printf("m is the index in the x-direction (widest).  n is the index in the y-direction (narrowest).\n");
-        printf("The waveguide calculations assume a signal frequency of 25.9e9 Hz. This can be changed "
-        		"by adjusting the parameter \"waveguide-central-frequency\" on the command line.\n\n");
-
-
-    	for (int l=0; l<nModes; l++)
-    	{
-    		for (int m=1; m<nModes; m++)
-    		{
-    			for (int n=0; n<nModes; n++)
-    			{
-    				double normFactor = pow(GetNormFactorsTE()[l][m][n],2.);
-    				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
-    				{
-    					printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
-        		    		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
-    				}
-    				else
-    				{
-    					printf("TE%d%d%d is undefined.\n", l, m, n);
-    				}
-
-    			}
-    		}
-    	}
-
-
-    	for (int l=0; l<nModes; l++)
-    	{
-    		for (int m=1; m<nModes; m++)
-    		{
-    			for (int n=1; n<nModes; n++)
-    			{
-    				double normFactor = pow(GetNormFactorsTM()[l][m][n],2.);
-    				if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
-    				{
-    					printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,0,1)*normFactor,
-    		    			LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,0,0)*normFactor);
-    				}
-    				else
-    				{
-    					printf("TM%d%d%d is undefined.\n", l, m, n);
-    				}
-    			}
-    		}
-    	}
-
-    	printf("\nThe modes normalized as above are available for use in the simulation.\n\n");
-    }
 
     bool RectangularWaveguide::InVolume(std::vector<double> tKassParticleXP)
     {
@@ -430,16 +335,9 @@ namespace locust
         			TH2D* hTEy = new TH2D(hname_y, haxis_y, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
         			TH2D* hTEx = new TH2D(hname_x, haxis_x, nbins, -GetDimX()/2., GetDimX()/2., nbins, -GetDimY()/2., GetDimY()/2.);
 
-        			double normFactor = 1.0;
+        			double normFactor = GetNormFactors()[bTE][l][m][n];
         			int a = 0;
-        			if (bTE)
-        			{
-        				normFactor = GetNormFactorsTE()[l][m][n];
-        			}
-        			else
-        			{
-        				normFactor = GetNormFactorsTM()[l][m][n];
-        			}
+
         			for (unsigned i=0; i<GetNPixels(); i++)
         			{
         				double x = ((double)i+0.5)/GetNPixels()*GetDimX() - GetDimX()/2.;
