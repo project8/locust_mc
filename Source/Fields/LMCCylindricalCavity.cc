@@ -103,16 +103,13 @@ namespace locust
                 LERROR(lmclog,"There was a problem uploading the mode map.");
                 exit(-1);
             }
+            SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }
         else // otherwise default to ideal Pozar mode map
         {
             fFieldCore = new PozarCylindricalCavity();
+            SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }
-
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
-        SetNormFactors(CalculateNormFactors(GetNModes(), 0));
-        CheckNormalization(GetNModes(), 0);  // E fields integration
 
         if( PlotModeMaps() )
         {
@@ -123,6 +120,11 @@ namespace locust
             LPROG( lmclog, "If ROOT is available, plotting mode maps to file output/ModemapOutput*.root... " );
             PrintModeMaps(GetNModes(), zSlice, thetaSlice);
         }
+
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+        SetNormFactors(CalculateNormFactors(GetNModes(), 0));  // Calculate the realistic normalization factors.
+        CheckNormalization(GetNModes(), 0);  // E fields integration over volume
 
         return true;
     }

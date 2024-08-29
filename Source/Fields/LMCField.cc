@@ -175,6 +175,33 @@ namespace locust
         return aModeNormFactor;
     }
 
+    std::vector<std::vector<std::vector<std::vector<double>>>> Field::SetUnityNormFactors(int nModes, bool bWaveguide)
+    {
+
+        std::vector<std::vector<std::vector<std::vector<double>>>> aModeNormFactor;
+        aModeNormFactor.resize(2);
+
+        for (int bTE=0; bTE<2; bTE++)
+        {
+            aModeNormFactor[bTE].resize(nModes);
+            for (unsigned l=0; l<nModes; l++)
+            {
+                aModeNormFactor[bTE][l].resize(nModes);
+                for (unsigned m=0; m<nModes; m++)
+                {
+                    aModeNormFactor[bTE][l][m].resize(nModes);
+                    for (unsigned n=0; n<nModes; n++)
+                    {
+                        aModeNormFactor[bTE][l][m][n] = 1.;
+                    }
+                }
+            }
+        }
+
+        return aModeNormFactor;
+    }
+
+
     void Field::CheckNormalization(int nModes, bool bWaveguide)
     {
 

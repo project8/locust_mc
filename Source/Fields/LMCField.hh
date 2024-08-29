@@ -87,6 +87,7 @@ namespace locust
             virtual std::vector<double> GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode) {return {0.};};
             double NormalizedEFieldMag(std::vector<double> field);
             std::vector<std::vector<std::vector<std::vector<double>>>> CalculateNormFactors(int nModes, bool bWaveguide);
+            std::vector<std::vector<std::vector<std::vector<double>>>> SetUnityNormFactors(int nModes, bool bWaveguide);
             virtual std::vector<double> GetTE_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, double tThisEventNSamples) {return {0.};};
