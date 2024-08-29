@@ -88,6 +88,8 @@ namespace locust
         	fIntermediateFile = aParam["intermediate-file"]().as_bool();
         }
 
+        scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
+
         if( aParam.has( "upload-modemap-filename" ) )  // import "realistic" test mode map
         {
             fFieldCore = new ModeMapCavity();
@@ -96,28 +98,18 @@ namespace locust
                 LERROR(lmclog,"There was a problem configuring the mode map.");
                 exit(-1);
             }
-            scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
             if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string(), aParam))
             {
                 LERROR(lmclog,"There was a problem uploading the mode map.");
                 exit(-1);
             }
-            fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-            fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
-            SetNormFactorsTE( SetUnityNormFactors(GetNModes()));
-            SetNormFactorsTM( SetUnityNormFactors(GetNModes()));
+            SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }
         else // otherwise default to ideal Pozar mode map
         {
             fFieldCore = new PozarCylindricalCavity();
-            scarab::path dataDir = aParam.get_value( "data-dir", ( TOSTRING(PB_DATA_INSTALL_DIR) ) );
-            fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-            fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
-            SetNormFactorsTE(CalculateNormFactors(GetNModes(),1));
-            SetNormFactorsTM(CalculateNormFactors(GetNModes(),0));
-            CheckNormalization(GetNModes());  // E fields integrate to 1.0 for both TE and TM modes.
+            SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }
-
 
         if( PlotModeMaps() )
         {
@@ -129,47 +121,12 @@ namespace locust
             PrintModeMaps(GetNModes(), zSlice, thetaSlice);
         }
 
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+        SetNormFactors(CalculateNormFactors(GetNModes(), 0));  // Calculate the realistic normalization factors.
+        CheckNormalization(GetNModes(), 0);  // E fields integration over volume
+
         return true;
-    }
-
-
-    std::vector<std::vector<std::vector<double>>> CylindricalCavity::CalculateNormFactors(int nModes, bool bTE)
-    {
-
-        LPROG(lmclog, "Calculating mode normalization factors ... " );
-
-        std::vector<std::vector<std::vector<double>>> aModeNormFactor;
-        aModeNormFactor.resize(nModes);
-
-        for (unsigned m=0; m<nModes; m++)
-        {
-            aModeNormFactor[m].resize(nModes);
-            for (unsigned n=0; n<nModes; n++)
-            {
-                aModeNormFactor[m][n].resize(nModes);
-            }
-        }
-
-
-        for (unsigned l=0; l<nModes; l++)
-        {
-            for (unsigned m=0; m<nModes; m++)
-            {
-                for (unsigned n=0; n<nModes; n++)
-                {
-                    if (bTE)
-                    {
-                        aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,1,1),0.5);
-                    }
-                    else
-                    {
-                        aModeNormFactor[l][m][n] = 1./pow(Integrate(l,m,n,0,1),0.5);
-                    }
-                }
-            }
-        }
-
-        return aModeNormFactor;
     }
 
 
@@ -345,23 +302,23 @@ namespace locust
 
     }
 
-    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool teMode)
+    std::vector<double> CylindricalCavity::GetNormalizedModeField(int l, int m, int n, std::vector<double> tKassParticleXP, bool includeOtherPols, bool bTE)
     {
         double tR = tKassParticleXP[0];
         double tTheta = tKassParticleXP[1];
         double tZ = tKassParticleXP[2];
         std::vector<double> tField;
-       	double normFactor;
-       	if(teMode)
+       	double normFactor = GetNormFactors()[bTE][l][m][n];
+
+       	if(bTE)
        	{
        	    tField = fFieldCore->TE_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
-            normFactor = GetNormFactorsTE()[l][m][n];
         }
        	else
        	{
        	    tField = fFieldCore->TM_E(GetDimR(),2.*LMCConst::Pi(),GetDimL(),l,m,n,tR,tTheta,tZ,includeOtherPols);
-            normFactor = GetNormFactorsTM()[l][m][n];
         }
+
        	auto it = tField.begin();
        	while (it != tField.end())
        	{
@@ -448,55 +405,6 @@ namespace locust
     }
 
 
-    void CylindricalCavity::CheckNormalization(int nModes)
-    {
-
-        printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
-
-        for (int l=0; l<nModes; l++)
-        {
-            for (int m=1; m<nModes; m++)
-            {
-                for (int n=0; n<nModes; n++)
-                {
-                    double normFactor = pow(GetNormFactorsTE()[l][m][n],2.);
-                    if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
-                    {
-                        printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
-                        		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
-                    }
-                    else
-                    {
-                        printf("TE%d%d%d is undefined.\n", l, m, n);
-                    }
-
-                }
-            }
-        }
-
-
-        for (int l=0; l<nModes; l++)
-        {
-            for (int m=1; m<nModes; m++)
-            {
-                for (int n=1; n<nModes; n++)
-                {
-                    double normFactor = pow(GetNormFactorsTM()[l][m][n],2.);
-                    if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
-                    {
-                        printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,0,1)*normFactor,
-                        		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,0,0)*normFactor);
-                    }
-                    else
-                    {
-                        printf("TM%d%d%d is undefined.\n", l, m, n);
-                    }
-                }
-            }
-        }
-
-        printf("\nThe modes normalized as above are available for use in the simulation.\n\n");
-    }
 
 
     void CylindricalCavity::PrintModeMaps(int nModes, double zSlice, double thetaSlice)
@@ -547,15 +455,8 @@ namespace locust
                         TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
                         TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";#theta;r(m)").c_str(), nbins, -LMCConst::Pi(), LMCConst::Pi(), nbins, 0., GetDimR());
 
-                        double normFactor = 1.0;
-                        if (bTE)
-                        {
-                            normFactor = GetNormFactorsTE()[l][m][n];
-                        }
-                        else
-                        {
-                            normFactor = GetNormFactorsTM()[l][m][n];
-                        }
+                        double normFactor = GetNormFactors()[bTE][l][m][n];
+
                         for (unsigned i=0; i<GetNPixels(); i++)
                         {
                             double r = ((double)i+0.5)/(GetNPixels())*GetDimR();
@@ -673,15 +574,8 @@ namespace locust
                         TH2D* hTHtheta = new TH2D(hname_Htheta, (std::string(hname_Htheta)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, 0., GetDimR());
                         TH2D* hTHr = new TH2D(hname_Hr, (std::string(hname_Hr)+";z(m);r(m)").c_str(), nbins, -GetDimL()/2., GetDimL()/2., nbins, 0., GetDimR());
 
-                        double normFactor = 1.0;
-                        if (bTE)
-                        {
-                            normFactor = GetNormFactorsTE()[l][m][n];
-                        }
-                        else
-                        {
-                            normFactor = GetNormFactorsTM()[l][m][n];
-                        }
+                        double normFactor = normFactor = GetNormFactors()[bTE][l][m][n];
+
                         for (unsigned i=0; i<GetNPixels(); i++)
                         {
                             double r = ((double)i+0.5)/(GetNPixels())*GetDimR();
