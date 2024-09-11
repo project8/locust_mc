@@ -103,6 +103,8 @@ namespace locust
     bool LowPassFilterFFTGenerator::DoGenerateTime( Signal* aSignal )
     {
 
+        LWARN(lmclog,"Calculating LPF-FFT ...\n");
+
         const unsigned nchannels = fNChannels;
 
         double CutoffFreq = fThreshold * fAcquisitionRate/2. * 1.e6; // Hz
@@ -120,8 +122,6 @@ namespace locust
 
                 if (variableWindowSize > 1)
                 {
-                    LWARN(lmclog,"Calculating LPF-FFT ...\n");
-
                     fftw_complex *SignalComplex;
                     SignalComplex = (fftw_complex*)fftw_malloc( sizeof(fftw_complex) * variableWindowSize );
                     fftw_complex *FFTComplex;

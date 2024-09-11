@@ -61,6 +61,7 @@ namespace locust
         aTree->Branch("StartFrequencies", "std::vector<double>", &anEvent->fStartFrequencies);
         aTree->Branch("EndFrequencies", "std::vector<double>", &anEvent->fEndFrequencies);
         aTree->Branch("AvgFrequencies", "std::vector<double>", &anEvent->fAvgFrequencies);
+        aTree->Branch("OutputAvgFrequencies", "std::vector<double>", &anEvent->fOutputAvgFrequencies);
         aTree->Branch("AvgAxialFrequencies", "std::vector<double>", &anEvent->fAvgAxialFrequencies);
         aTree->Branch("StartTimes", "std::vector<double>", &anEvent->fStartTimes);
         aTree->Branch("EndTimes", "std::vector<double>", &anEvent->fEndTimes);

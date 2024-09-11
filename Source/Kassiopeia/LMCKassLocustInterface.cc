@@ -39,7 +39,8 @@ namespace locust
             fbWaveguide( false ),
             fSampleIndex( 0 ),
             fTriggerConfirm( 100000 ),
-            fFastRecordLength( 0 )
+            fFastRecordLength( 0 ),
+            fNewTrackStarting( false )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :

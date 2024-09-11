@@ -13,7 +13,6 @@ namespace locust
             fNewParticleHistory(),
             fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
-            fLMCTrackID( -2 ),
             fT0trapMin( 0. ),
             fNCrossings( 0 ),
             fSampleIndex( 0 ),
@@ -25,7 +24,6 @@ namespace locust
             fNewParticleHistory(),
             fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
-            fLMCTrackID( aCopy.fLMCTrackID ),
             fT0trapMin( aCopy.fT0trapMin ),
             fNCrossings( aCopy.fNCrossings ),
             fSampleIndex( aCopy.fSampleIndex ),
@@ -64,7 +62,10 @@ namespace locust
 
     bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
     {
-    	double tTime = index / fInterface->aRunParameter->fSamplingRateMHz / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
+        double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
+        double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
+        double tOffset = -tLOfrequency + tSamplingRate * 1.e6 / 2.; // Hz
+        double tTime = index / tSamplingRate / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
 #ifdef ROOT_FOUND
     	if (bStart)
     	{
@@ -75,13 +76,13 @@ namespace locust
             fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack.RadialPhase = calcOrbitPhase(tX, tY);
             fInterface->aTrack.StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     	}
     	else
     	{
             fInterface->aTrack.EndTime = tTime;
             unsigned nElapsedSamples = index - fStartingIndex;
             fInterface->aTrack.AvgFrequency = ( fInterface->aTrack.AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
+            fInterface->aTrack.OutputAvgFrequency = fInterface->aTrack.AvgFrequency + tOffset;
             fInterface->aTrack.TrackLength = tTime - fInterface->aTrack.StartTime;
             fInterface->aTrack.Slope = (fInterface->aTrack.EndFrequency - fInterface->aTrack.StartFrequency) / (fInterface->aTrack.TrackLength);
     	}
@@ -213,11 +214,13 @@ namespace locust
 
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
-
-            if ( aFinalParticle.GetIndexNumber() > fLMCTrackID ) // check for new track
+            // Check for either a new track, or a new event:
+            if ( ( fInterface->fNewTrackStarting ) || ( aFinalParticle.GetParentTrackId() < 0 ) )
             {
-                fLMCTrackID = aFinalParticle.GetIndexNumber();
-                fPitchAngle = -99.;  // new electron needs central pitch angle reset.
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                fInterface->fNewTrackStarting = false;
+                aFinalParticle.SetParentTrackId( aFinalParticle.GetParentTrackId() + 1 );
+                fPitchAngle = -99.;  // new track needs central pitch angle reset.
                 double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );

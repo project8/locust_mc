@@ -135,58 +135,127 @@ namespace locust
     	return tModeSet;
     }
 
-
-    std::vector<std::vector<std::vector<double>>> Field::SetUnityNormFactors(int nModes)
+    std::vector<std::vector<std::vector<std::vector<double>>>> Field::CalculateNormFactors(int nModes, bool bWaveguide)
     {
-    	LPROG(lmclog, "Setting mode normalization factors to 1.0 ... " );
 
-     	std::vector<std::vector<std::vector<double>>> tNormFactor;
-    	tNormFactor.resize(nModes);
+        LPROG(lmclog, "Calculating mode normalization factors ... " );
 
-    	for (unsigned m=0; m<nModes; m++)
-    	{
-    		tNormFactor[m].resize(nModes);
-    		for (unsigned n=0; n<nModes; n++)
-    		{
-    			tNormFactor[m][n].resize(nModes);
-    		}
-    	}
+        std::vector<std::vector<std::vector<std::vector<double>>>> aModeNormFactor;
+        aModeNormFactor.resize(2);
 
-    	for (unsigned l=0; l<nModes; l++)
-    	{
-    		for (unsigned m=0; m<nModes; m++)
-    		{
-    			for (unsigned n=0; n<nModes; n++)
-    			{
-    				tNormFactor[l][m][n] = 1.;
-    			}
-    		}
-    	}
+        for (int bTE=0; bTE<2; bTE++)
+        {
+            aModeNormFactor[bTE].resize(nModes);
+            for (unsigned l=0; l<nModes; l++)
+            {
+                aModeNormFactor[bTE][l].resize(nModes);
+                for (unsigned m=0; m<nModes; m++)
+                {
+                    aModeNormFactor[bTE][l][m].resize(nModes);
+                    for (unsigned n=0; n<nModes; n++)
+                    {
+                        aModeNormFactor[bTE][l][m][n] = 0.;
+                    }
+                }
+            }
+        }
 
-    	return tNormFactor;
+        std::vector<std::vector<int>> tModeSet = ModeSelect(bWaveguide, 0);
 
+        for (int mu=0; mu<tModeSet.size(); mu++)
+        {
+            bool bTE = tModeSet[mu][0];
+            int l = tModeSet[mu][1];
+            int m = tModeSet[mu][2];
+            int n = tModeSet[mu][3];
+
+            aModeNormFactor[bTE][l][m][n] = 1./pow(Integrate(l,m,n,bTE,1),0.5);
+        }
+
+        return aModeNormFactor;
+    }
+
+    std::vector<std::vector<std::vector<std::vector<double>>>> Field::SetUnityNormFactors(int nModes, bool bWaveguide)
+    {
+
+        std::vector<std::vector<std::vector<std::vector<double>>>> aModeNormFactor;
+        aModeNormFactor.resize(2);
+
+        for (int bTE=0; bTE<2; bTE++)
+        {
+            aModeNormFactor[bTE].resize(nModes);
+            for (unsigned l=0; l<nModes; l++)
+            {
+                aModeNormFactor[bTE][l].resize(nModes);
+                for (unsigned m=0; m<nModes; m++)
+                {
+                    aModeNormFactor[bTE][l][m].resize(nModes);
+                    for (unsigned n=0; n<nModes; n++)
+                    {
+                        aModeNormFactor[bTE][l][m][n] = 1.;
+                    }
+                }
+            }
+        }
+
+        return aModeNormFactor;
     }
 
 
-
-    std::vector<std::vector<std::vector<double>>> Field::GetNormFactorsTE()
+    void Field::CheckNormalization(int nModes, bool bWaveguide)
     {
-    	return fModeNormFactorTE;
+
+        printf("\n \\int{|E_xlm|^2 dV} = \\mu / \\epsilon \\int{|H_xlm|^2 dV} ?\n\n");
+
+        std::vector<std::vector<int>> tModeSet = ModeSelect(bWaveguide, 0);
+
+        for (int mu=0; mu<tModeSet.size(); mu++)
+        {
+            bool bTE = tModeSet[mu][0];
+            int l = tModeSet[mu][1];
+            int m = tModeSet[mu][2];
+            int n = tModeSet[mu][3];
+            double normFactor = pow(GetNormFactors()[bTE][l][m][n],2.);
+
+            if (bTE)
+            {
+            	if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
+            	{
+            	    printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
+            	    		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
+            	}
+                else
+                {
+                    printf("TE%d%d%d is undefined.\n", l, m, n);
+                }
+            }
+            else
+            {
+                if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
+                {
+                    printf("TM%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,0,1)*normFactor,
+                    		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,0,0)*normFactor);
+                }
+                else
+                {
+                    printf("TM%d%d%d is undefined.\n", l, m, n);
+                }
+            }
+        }
+
+
+        printf("\nThe modes normalized as above are available for use in the simulation.\n\n");
     }
 
-    void Field::SetNormFactorsTE(std::vector<std::vector<std::vector<double>>> aNormFactor)
+
+    std::vector<std::vector<std::vector<std::vector<double>>>> Field::GetNormFactors()
     {
-    	fModeNormFactorTE = aNormFactor;
+    	return fModeNormFactor;
     }
 
-    std::vector<std::vector<std::vector<double>>> Field::GetNormFactorsTM()
+    void Field::SetNormFactors(std::vector<std::vector<std::vector<std::vector<double>>>> aNormFactor)
     {
-    	return fModeNormFactorTM;
-    }
-
-    void Field::SetNormFactorsTM(std::vector<std::vector<std::vector<double>>> aNormFactor)
-    {
-    	fModeNormFactorTM = aNormFactor;
+    	fModeNormFactor = aNormFactor;
     }
 
     std::vector<std::vector<std::vector<double>>> Field::GetAvgDotProductFactor()

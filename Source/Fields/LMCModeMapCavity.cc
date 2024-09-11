@@ -116,15 +116,29 @@ namespace locust
                 std::string token;
                 std::stringstream ss(lineContent);
                 int wordCount = 0;
+		double r, theta, z;
                 int i,j,k;
-                double Erho,Etheta,Ez;
+                double Erho,Etheta;
+                double Ex, Ey, Ez;
                 while (ss >> token)
                 {
-                    if (wordCount == 0) i = (int)((std::stod(token)-fDim1_min)/(fDim1_max-fDim1_min)*(fnPixel1)); // var1 position
-                    else if (wordCount == 1) j = (int)((std::stod(token)-fDim2_min)/(fDim2_max-fDim2_min)*(fnPixel2)); // var2 position
-                    else if (wordCount == 2) k = (int)((std::stod(token)-fDim3_min)/(fDim3_max-fDim3_min)*(fnPixel3)); // var3 position
-                    else if (wordCount == 3) Erho = std::stod(token); // mode E field value
-                    else if (wordCount == 4) Etheta = std::stod(token); // mode E field value
+                    if (wordCount == 0)
+                    {
+			r = std::stod(token);
+                        i = (int)((r-fDim1_min)/(fDim1_max-fDim1_min)*(fnPixel1)); // var1 position
+		    }
+                    else if (wordCount == 1) 
+		    {
+			theta = std::stod(token);
+			j = (int)((theta-fDim2_min)/(fDim2_max-fDim2_min)*(fnPixel2)); // var2 position
+		    }
+                    else if (wordCount == 2)
+		    {
+			z = std::stod(token);
+			k = (int)((z-fDim3_min)/(fDim3_max-fDim3_min)*(fnPixel3)); // var3 position
+		    }
+                    else if (wordCount == 3) Ex = std::stod(token); // mode E field value
+                    else if (wordCount == 4) Ey = std::stod(token); // mode E field value
                     else if (wordCount == 5) Ez = std::stod(token); // mode E field value
                     else
                     {
@@ -134,11 +148,28 @@ namespace locust
                     ++wordCount;
                 }
 
+		if ((i==fnPixel1) or (j==fnPixel2) or (k==fnPixel3))
+		{
+			continue;
+		}
                 if ((i>=fnPixel1) or (j>=fnPixel2) or (k>=fnPixel3))
                 {   
                     LERROR(lmclog,"Imported mode map dimensions don't agree with those in \"" << aFilename <<".\" Double check dim[1,2,3]-max.");
                     return false;
                 }   
+
+                //Must convert E field from cartesian coordinates to cylindrical coordinates
+		if(r<1.e-10)
+		{
+		    Erho = 0.;
+		    Etheta = 0.;
+		}
+		else
+		{
+                    Erho = ((Ex * r*cos(theta)) + Ey * r*sin(theta)) / r;
+		    Etheta = ((Ey * r*cos(theta)) - Ex * r*sin(theta)) / r;
+		}
+
                 std::vector E_input = {Erho,Etheta,Ez};
                 fModeMapTE_E[i][j][k] = E_input;
 //              printf("read var1 is %g, var2 is %g, E is %g\n", fModeMapTE_E.back()[0], fModeMapTE_E.back()[1], fModeMapTE_E.back()[2]);

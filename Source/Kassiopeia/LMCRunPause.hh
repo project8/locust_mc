@@ -21,6 +21,7 @@
 #include "KSRootGenerator.h"
 #include "KSGenGeneratorComposite.h"
 #include "KSGenValueUniform.h"
+#include "KSGenValueAngleSpherical.h"
 #include "KSGenValueFix.h"
 #include "KSGenEnergyComposite.h"
 #include "KSGenPositionRectangularComposite.h"
@@ -79,11 +80,25 @@ namespace locust
             Kassiopeia::KSCommand* fCommand;
             Kassiopeia::KSGeoSpace* fKSSpace;
             Kassiopeia::KSGenGeneratorComposite* fGenerator;
+            Kassiopeia::KSGenDirectionSphericalComposite* fGenDirectionComposite;
+			Kassiopeia::KSGenValueAngleSpherical* fThetaGenerator;
+			Kassiopeia::KSGenValueUniform* fPhiGenerator;
+			Kassiopeia::KSGenPositionRectangularComposite* fGenPositionComposite;
+			Kassiopeia::KSGenValueUniform* fPositionXGenerator;
+			Kassiopeia::KSGenValueUniform* fPositionYGenerator;
+			Kassiopeia::KSGenValueUniform* fPositionZGenerator;
+			Kassiopeia::KSGenValueUniform* fEnergyGenerator;
+			Kassiopeia::KSGenEnergyComposite* fGenEnergyComposite;
+			Kassiopeia::KSGenTimeComposite* fGenTimeComposite;
+			Kassiopeia::KSGenValueUniform* fTimeGenerator;
+			Kassiopeia::KSGenValueFix* fGenPidComposite;
 
             std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
             DistributionInterface fDistributionInterface;
             double fMinTrackLengthFraction;
             bool fConfigurationComplete;
+            int fEventCounter;
+            int fMaxEvents;
 
 
 

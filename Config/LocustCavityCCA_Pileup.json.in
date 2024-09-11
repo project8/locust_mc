@@ -1,0 +1,69 @@
+{
+    "generators":
+    [          
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "cavity-signal",
+       "lpf-fft",
+       "decimate-signal",
+       "digitizer"
+    ],
+
+    "cavity-signal":
+    {
+        "transmitter": "kass-current",
+        "accumulate-truth-info": true,
+        "cavity-radius": 0.007,
+        "cavity-length": 0.1,           
+        "back-reaction": "true",
+        "dho-cavity-frequency": 25.9e9,
+        "dho-time-resolution": 9.0e-11,
+        "dho-threshold-factor": 0.01,
+        "event-spacing-samples": 10,
+        "track-length": 0.5e-6,
+        "ks-starting-xpos-min": -0.005,
+        "ks-starting-xpos-max": 0.005,
+        "ks-starting-ypos-min": -0.005,
+        "ks-starting-ypos-max": 0.005,
+        "ks-starting-zpos-min": 0.0,
+        "ks-starting-zpos-max": 0.0,
+        "ks-starting-energy-min": 18600.0,
+        "ks-starting-energy-max": 18600.0,
+        "ks-starting-pitch-min": 87.0,
+        "ks-starting-pitch-max": 90.0, 
+        "rectangular-waveguide": false,        
+        "voltage-check": "false",
+        "lo-frequency": 25.9602e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA_Pileup.xml"
+    },
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 81920,
+        "acquisition-rate": 301,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+        "v-range":  0.08,
+        "v-offset": -0.04
+    }
+
+}
+

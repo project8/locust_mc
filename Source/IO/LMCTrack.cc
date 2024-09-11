@@ -31,7 +31,9 @@ namespace locust
         OutputStartFrequency = -99.;
         StartFrequency = -99.;
         EndFrequency = -99.;
-        AvgFrequency = -99.;
+        AvgFrequency = 0.;
+        OutputAvgFrequency = 0.;
+        AvgAxialFrequency = 0.;
         LOFrequency = -99.;
         TrackPower = -99.;
         Slope = -99.;
