@@ -46,7 +46,7 @@ namespace locust
     {
     	double phaseCorrection = 0.;
     	if (((phase < 0.)&&(vx < 0.)) || ((phase > 0.)&&(vx > 0.)))
-    		phaseCorrection = LMCConst::Pi();
+            phaseCorrection = LMCConst::Pi();
 
     	return phaseCorrection;
     }
@@ -54,11 +54,14 @@ namespace locust
 
     double KassCurrentTransmitter::quadrantPositionCorrection(double phase, double x)
     {
-    	double phaseCorrection = 0.;
-    	if (((phase < 0.)&&(x < 0.)) || ((phase > 0.)&&(x < 0.)))
-    		phaseCorrection = LMCConst::Pi();
+        double phaseCorrection = 0.;
 
-    	return phaseCorrection;
+        if (phase < 0.)
+            phaseCorrection = LMCConst::Pi() + (x > 0.) * LMCConst::Pi();
+       	else
+       	    phaseCorrection = (x < 0.) * LMCConst::Pi();
+
+        return phaseCorrection;
     }
 
 

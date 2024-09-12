@@ -41,7 +41,6 @@ set( LOCUST_MC_HEADER_FILES
     Transmitters/LMCFieldBuffer.hh
     Transmitters/LMCTransmitterInterface.hh
     Transmitters/LMCTransmitter.hh
-    Transmitters/LMCAntennaSignalTransmitter.hh
     Transmitters/LMCPlaneWaveTransmitter.hh
     Transmitters/LMCTransmitterHardware.hh
     Transmitters/LMCDipoleAntenna.hh
@@ -115,7 +114,6 @@ set( LOCUST_MC_SOURCE_FILES
     
 
     Transmitters/LMCTransmitter.cc
-    Transmitters/LMCAntennaSignalTransmitter.cc
     Transmitters/LMCPlaneWaveTransmitter.cc
     Transmitters/LMCFieldBuffer.cc
     Transmitters/LMCTransmitterHardware.cc
@@ -185,7 +183,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Fields/LMCField.hh
         Fields/LMCCylindricalCavity.hh
         Fields/LMCPozarCylindricalCavity.hh
-        Fields/LMCModeMapCylindricalCavity.hh
+        Fields/LMCRectangularCavity.hh
+        Fields/LMCPozarRectangularCavity.hh        
+        Fields/LMCModeMapCavity.hh
         Fields/LMCRectangularWaveguide.hh
         Fields/LMCPozarRectangularWaveguide.hh
     )
@@ -223,7 +223,9 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Fields/LMCField.cc
         Fields/LMCCylindricalCavity.cc
         Fields/LMCPozarCylindricalCavity.cc
-        Fields/LMCModeMapCylindricalCavity.cc
+        Fields/LMCRectangularCavity.cc
+        Fields/LMCPozarRectangularCavity.cc        
+        Fields/LMCModeMapCavity.cc
         Fields/LMCRectangularWaveguide.cc
         Fields/LMCPozarRectangularWaveguide.cc
     )

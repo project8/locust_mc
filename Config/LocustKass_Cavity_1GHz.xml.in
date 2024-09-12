@@ -346,6 +346,8 @@
     <cycl_rad_extr name="rad_extr" P8Phase="4" /> 
     <mod_run_pause name="run_pause"/>
     <mod_event_hold name="event_hold"/>
+    <mod_track_hold name="track_hold"/>
+    
 
     <!-- writers -->
 
@@ -461,6 +463,7 @@
         writer="write_root"
         add_static_run_modifier="run_pause"
         add_static_event_modifier="event_hold"
+        add_static_track_modifier="track_hold"
         add_static_step_modifier="rad_extr"
     />
 

@@ -20,6 +20,7 @@
 #include "LMCFieldCalculator.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
+#include "LMCRectangularCavity.hh" // : LMCField
 #include "LMCRectangularWaveguide.hh" // : LMCField
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
@@ -104,10 +105,10 @@ namespace locust
             double fphiLO; // voltage phase of LO in radians;
             bool fBypassTF;
             bool fNormCheck;
-            bool fIntermediateFile;
             bool fUseDirectKassPower;
             bool fAliasingIsChecked;
             bool fUnitTestRootFile;
+            std::vector<std::vector<int>> fModeSet;
 
 
 

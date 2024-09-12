@@ -18,7 +18,6 @@ namespace locust
             fSampleIndex( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
-    	Configure();
     }
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
@@ -30,7 +29,6 @@ namespace locust
             fSampleIndex( aCopy.fSampleIndex ),
             fInterface( aCopy.fInterface )
     {
-    	Configure();
     }
 
     CyclotronRadiationExtractor* CyclotronRadiationExtractor::Clone() const
@@ -43,24 +41,31 @@ namespace locust
 
     bool CyclotronRadiationExtractor::Configure()
     {
-    	fFieldCalculator = new FieldCalculator();
-    	if(!fFieldCalculator->ConfigureByInterface())
-    	{
-    	   LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
-    	   exit(-1);
-    	}
-    	return true;
+        fFieldCalculator = new FieldCalculator();
+        if (fInterface->fProject8Phase > 0)
+        {
+            if(!fFieldCalculator->ConfigureByInterface())
+            {
+                LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                exit(-1);
+            }
+        }
+        return true;
     }
 
 
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
         fInterface->fProject8Phase = P8Phase;
+        Configure();
     }
 
     bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
     {
-    	double tTime = index / fInterface->aRunParameter->fSamplingRateMHz / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
+        double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
+        double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
+        double tOffset = -tLOfrequency + tSamplingRate * 1.e6 / 2.; // Hz
+        double tTime = index / tSamplingRate / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
 #ifdef ROOT_FOUND
     	if (bStart)
     	{
@@ -70,13 +75,14 @@ namespace locust
             double tY = aFinalParticle.GetPosition().Y();
             fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack.RadialPhase = calcOrbitPhase(tX, tY);
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            fInterface->aTrack.StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
     	}
     	else
     	{
             fInterface->aTrack.EndTime = tTime;
             unsigned nElapsedSamples = index - fStartingIndex;
             fInterface->aTrack.AvgFrequency = ( fInterface->aTrack.AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
+            fInterface->aTrack.OutputAvgFrequency = fInterface->aTrack.AvgFrequency + tOffset;
             fInterface->aTrack.TrackLength = tTime - fInterface->aTrack.StartTime;
             fInterface->aTrack.Slope = (fInterface->aTrack.EndFrequency - fInterface->aTrack.StartFrequency) / (fInterface->aTrack.TrackLength);
     	}
@@ -206,16 +212,19 @@ namespace locust
         }
 
 
-
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
-            if (!(fInterface->fTOld > 0.))
+            // Check for either a new track, or a new event:
+            if ( ( fInterface->fNewTrackStarting ) || ( aFinalParticle.GetParentTrackId() < 0 ) )
             {
-            	fPitchAngle = -99.;  // new electron needs central pitch angle reset.
-            	double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                fInterface->fNewTrackStarting = false;
+                aFinalParticle.SetParentTrackId( aFinalParticle.GetParentTrackId() + 1 );
+                fPitchAngle = -99.;  // new track needs central pitch angle reset.
+                double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
-            	LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
+                LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
 
@@ -298,7 +307,6 @@ namespace locust
                         }
                     }
                 }
-
 
             }
         } // DoneWithSignalGeneration

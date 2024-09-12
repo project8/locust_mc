@@ -24,13 +24,30 @@ namespace locust
     
     bool FIRTransmitterHandler::Configure(const scarab::param_node& aParam)
     {
+	int fNModes = 2;
+	if( aParam.has( "n-modes" ) ) 
+        {   
+                fNModes = aParam["n-modes"]().as_int();
+        }  
         if( aParam.has( "fir-transmitter-filename" ) )
         {
             fHFSSFilename=aParam["fir-transmitter-filename"]().as_string();
         }
         if( aParam.has( "fir-transmitter-dt" ) )
         {
-            fResolution=aParam["fir-transmitter-dt"]().as_double();
+	    for(int bTE = 0; bTE<2; bTE++)
+	    {
+		for(int l = 0; l<fNModes; l++)
+		{
+			for(int m = 0; m<fNModes; m++)
+			{
+				for(int n = 0; n<fNModes; n++)
+				{
+            				fResolutionArray[bTE][l][m][n]=aParam["fir-transmitter-dt"]().as_double(); //Should eventually be implemented to read in specific values for different modes
+				}
+			}
+		}
+	    }
         }
         if( aParam.has( "fir-transmitter-nskips" ) )
         {
@@ -52,13 +69,30 @@ namespace locust
     
     bool FIRReceiverHandler::Configure(const scarab::param_node& aParam)
     {
+        int fNModes = 2;
+        if( aParam.has( "n-modes" ) ) 
+        {   
+                fNModes = aParam["n-modes"]().as_int();
+        }   
         if( aParam.has( "fir-receiver-filename" ) )
         {
             fHFSSFilename=aParam["fir-receiver-filename"]().as_string();
         }
         if( aParam.has( "fir-receiver-dt" ) )
         {
-            fResolution=aParam["fir-receiver-dt"]().as_double();
+            for(int bTE = 0; bTE<2; bTE++)
+            {   
+                for(int l = 0; l<fNModes; l++)
+                {   
+                        for(int m = 0; m<fNModes; m++)
+                        {   
+                                for(int n = 0; n<fNModes; n++)
+                                {   
+                                        fResolutionArray[bTE][l][m][n]=aParam["fir-receiver-dt"]().as_double(); //Should eventually be implemented to read in specific values for different modes
+                                }   
+                        }   
+                }   
+            }   
         }
         if( aParam.has( "fir-receiver-nskips" ) )
         {

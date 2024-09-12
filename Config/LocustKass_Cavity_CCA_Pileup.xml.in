@@ -454,7 +454,6 @@
         events="1"
         magnetic_field="total_magnetic_field"
         space="space_world"
-        generator="[generator]"
         trajectory="[trajectory]"
         space_navigator="nav_space"
         surface_navigator="nav_surface"

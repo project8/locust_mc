@@ -17,15 +17,20 @@ ClassImp(locust::Event);
 
 namespace locust
 {
-    Event::Event() {}
+    Event::Event() :
+        fNTracks( 0 )
+    {
+    }
     Event::~Event() {}
 
     void Event::AddTrack(const Track aTrack)
     {
-        fOutputStartFrequencies.push_back( aTrack.OutputStartFrequency );
+        fStartingEnergies_eV.push_back( aTrack.StartingEnergy_eV );
+    	fOutputStartFrequencies.push_back( aTrack.OutputStartFrequency );
         fStartFrequencies.push_back( aTrack.StartFrequency );
         fEndFrequencies.push_back( aTrack.EndFrequency );
         fAvgFrequencies.push_back( aTrack.AvgFrequency );
+        fOutputAvgFrequencies.push_back( aTrack.OutputAvgFrequency );
         fAvgAxialFrequencies.push_back( aTrack.AvgAxialFrequency );
         fTrackPowers.push_back( aTrack.TrackPower );
         fStartTimes.push_back( aTrack.StartTime );

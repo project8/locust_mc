@@ -28,15 +28,18 @@ namespace locust
         public:
             Track();
             virtual ~Track();
+            bool Initialize();
             int EventID = -99;
             int RandomSeed = -99.;
             double StartTime = -99.;
             double EndTime = -99.;
             double TrackLength = -99.;
+            double StartingEnergy_eV = -99.;
             double OutputStartFrequency = -99.;
             double StartFrequency = -99.;
             double EndFrequency = -99.;
             double AvgFrequency = -99.;
+            double OutputAvgFrequency = -99.;
             double AvgAxialFrequency = -99.;
             double LOFrequency = -99.;
             double TrackPower = -99.;
