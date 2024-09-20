@@ -100,8 +100,16 @@ namespace locust
             }
             if (!fFieldCore->ReadModeMapTE_E((dataDir / aParam["upload-modemap-filename"]().as_string()).string(), aParam))
             {
-                LERROR(lmclog,"There was a problem uploading the mode map.");
-                exit(-1);
+                LWARN(lmclog,"The mode map was not in the data/ subdirectory.  Trying another path ... ");
+                if (!fFieldCore->ReadModeMapTE_E(aParam["upload-modemap-filename"]().as_string(), aParam))
+                {
+                    LERROR(lmclog, "There was a problem uploading the mode map.");
+                    exit(-1);
+                }
+                else
+                {
+                    LPROG(lmclog, "Reading in the mode map now ...");
+                }
             }
             SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }

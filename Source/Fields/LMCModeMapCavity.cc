@@ -82,12 +82,12 @@ namespace locust
         std::fstream modeMapFile(aFilename.c_str(),std::ios::in);
         if (modeMapFile.fail())
         {
-            LERROR(lmclog,"The mode map file \"" << aFilename <<"\" was not found.");
+            LWARN(lmclog,"The mode map file \"" << aFilename <<"\" was not found.");
             return false;
         }
         else
         {
-            LWARN(lmclog,"Reading mode map file \"" << aFilename <<"\" .");
+            LPROG(lmclog,"Reading mode map file \"" << aFilename <<"\" .");
         }
 
         fModeMapTE_E.resize(fnPixel1);
