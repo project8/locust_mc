@@ -183,7 +183,17 @@ namespace locust
 		    &&   aParam.has( "ks-starting-energy-min" ) && aParam.has( "ks-starting-energy-max" )
 		    &&   aParam.has( "ks-starting-pitch-min" ) && aParam.has( "ks-starting-pitch-max" ) )
             {
-                KRandom::GetInstance().SetSeed(time(NULL));
+                int tSeed = 0;
+                if ( aParam.has( "random-track-seed" ) )
+                {
+                    tSeed = aParam["random-track-seed"]().as_int();
+                	KRandom::GetInstance().SetSeed(tSeed);
+                }
+                else
+                {
+                	KRandom::GetInstance().SetSeed(time(NULL));
+                }
+
                 auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
                 for (unsigned i=0; i<tGen.size(); i++)
                 {
