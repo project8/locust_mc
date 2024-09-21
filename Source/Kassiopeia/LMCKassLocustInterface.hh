@@ -75,7 +75,7 @@ namespace locust
 
 #ifdef ROOT_FOUND
         Event* anEvent;
-        Track aTrack;
+        Track* aTrack;
         RunParameters* aRunParameter;
 #endif
 

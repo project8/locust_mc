@@ -12,7 +12,8 @@ ClassImp(locust::Track);
 namespace locust
 {
 
-    Track::Track()
+    Track::Track() :
+        TrackID( -2 )
     {
     }
 
@@ -22,7 +23,7 @@ namespace locust
 
     bool Track::Initialize()
     {
-        EventID = -99;
+        TrackID += 1;
         RandomSeed = -99.;
         StartTime = -99.;
         EndTime = -99.;

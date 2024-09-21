@@ -16,6 +16,11 @@
 #include "TObject.h"
 #include "LMCTrack.hh"
 #include <vector>
+#include "time.h"
+#include <sys/time.h>
+
+
+
 
 namespace locust
 {
@@ -27,12 +32,15 @@ namespace locust
             Event();
             virtual ~Event();
 
+            bool Initialize();
+            void AddTrack(const Track* aTrack);
             void AddTrack(const Track aTrack);
 
-            int fEventID;
+            long int fEventID;
             double fLOFrequency;
             int fRandomSeed;
 
+            std::vector<int> fTrackIDs;
             std::vector<double> fStartingEnergies_eV;
             std::vector<double> fOutputStartFrequencies;
             std::vector<double> fStartFrequencies;

@@ -41,7 +41,6 @@ namespace locust
 
     bool EventHold::ConfigureByInterface()
     {
-        OpenEvent();
 
         if (!fConfigurationComplete)
         {
@@ -93,11 +92,9 @@ namespace locust
     {
 #ifdef ROOT_FOUND
         fInterface->anEvent = new Event();
-        fInterface->anEvent->fEventID = 0;
-        fInterface->anEvent->fRandomSeed = -99;
-        fInterface->anEvent->fLOFrequency = -99.;
-        fInterface->anEvent->fRandomSeed = -99;
-        fInterface->aTrack.Initialize();
+        fInterface->anEvent->Initialize();
+        fInterface->aTrack = new Track();
+        fInterface->aTrack->Initialize();
 #endif
 
         return true;
@@ -152,6 +149,8 @@ namespace locust
     	    return false;
     	}
 
+        OpenEvent(); // for recording event properties to file.
+
         LPROG( lmclog, "Kass is waiting for event trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
@@ -180,6 +179,8 @@ namespace locust
         fInterface->fEventInProgress = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
+        delete fInterface->anEvent;
+        delete fInterface->aTrack;
         return true;
     }
 
