@@ -32,13 +32,13 @@ namespace locust
             Event();
             virtual ~Event();
 
-            bool Initialize();
+            bool Initialize(long int aSeed);
             void AddTrack(const Track* aTrack);
             void AddTrack(const Track aTrack);
 
             long int fEventID;
             double fLOFrequency;
-            int fRandomSeed;
+            long int fRandomSeed;
 
             std::vector<int> fTrackIDs;
             std::vector<double> fStartingEnergies_eV;

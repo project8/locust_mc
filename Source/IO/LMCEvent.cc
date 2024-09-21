@@ -23,7 +23,7 @@ namespace locust
     }
     Event::~Event() {}
 
-    bool Event::Initialize()
+    bool Event::Initialize(long int aSeed)
     {
         time_t rawtime;
         struct tm * timeInfo;
@@ -39,9 +39,8 @@ namespace locust
         int tMicrosec = tv.tv_usec;
 
         fEventID = 1e12 + tDay*1e10 + tMonth*1e8 + tYear*1e6 + tMicrosec;
-        fRandomSeed = -99;
+        fRandomSeed = aSeed;
         fLOFrequency = -99.;
-        fRandomSeed = -99;
         return true;
     }
 
@@ -65,11 +64,8 @@ namespace locust
         fRadii.push_back( aTrack->Radius );
         fRadialPhases.push_back( aTrack->RadialPhase );
 
-        // Update size.  And, record fLOFrequency for compatibility with previous work.  The LO frequency is
-        // now also recorded in the RunParameters Tree.
+        // Update size.
         fNTracks = fStartFrequencies.size();
-        fLOFrequency = aTrack->LOFrequency;
-        fRandomSeed = aTrack->RandomSeed;
     }
 
     void Event::AddTrack(const Track aTrack)  // Phase II structure

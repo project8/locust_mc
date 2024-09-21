@@ -18,6 +18,7 @@ namespace locust
             fTruthOutputFilename("LocustEventProperties.root"),
             fAccumulateTruthInfo( false ),
             fConfigurationComplete( false ),
+            fEventSeed( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -26,6 +27,7 @@ namespace locust
             fTruthOutputFilename("LocustEventProperties.root"),
             fAccumulateTruthInfo( false ),
             fConfigurationComplete( false ),
+            fEventSeed( 0 ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -71,7 +73,11 @@ namespace locust
     {
 	    if ( aParam.has( "random-track-seed" ) )
 	    {
-	    	fInterface->anEvent->fRandomSeed = aParam["random-track-seed"]().as_int();
+	    	fEventSeed = aParam["random-track-seed"]().as_int();
+	    }
+	    else
+	    {
+	        fEventSeed = -99;
 	    }
 	    if ( aParam.has( "truth-output-filename" ) )
 	    {
@@ -92,7 +98,7 @@ namespace locust
     {
 #ifdef ROOT_FOUND
         fInterface->anEvent = new Event();
-        fInterface->anEvent->Initialize();
+        fInterface->anEvent->Initialize( fEventSeed );
         fInterface->aTrack = new Track();
         fInterface->aTrack->Initialize();
 #endif

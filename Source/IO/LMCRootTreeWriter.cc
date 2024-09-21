@@ -69,7 +69,7 @@ namespace locust
         aTree->Branch("TrackLengths", "std::vector<double>", &anEvent->fTrackLengths);
         aTree->Branch("Slopes", "std::vector<double>", &anEvent->fSlopes);
         aTree->Branch("LOFrequency", &anEvent->fLOFrequency, "LOFrequency/D");
-        aTree->Branch("RandomSeed", &anEvent->fRandomSeed, "RandomSeed/I");
+        aTree->Branch("RandomSeed", &anEvent->fRandomSeed, "RandomSeed/L");
         aTree->Branch("TrackPower", "std::vector<double>", &anEvent->fTrackPowers);
         aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->fPitchAngles);
         aTree->Branch("Radii", "std::vector<double>", &anEvent->fRadii);

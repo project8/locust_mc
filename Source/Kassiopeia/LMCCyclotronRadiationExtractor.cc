@@ -149,8 +149,6 @@ namespace locust
                 fInterface->aTrack->StartFrequency = aFinalParticle.GetCyclotronFrequency();
                 double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
                 double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
-                fInterface->aTrack->LOFrequency = tLOfrequency;
-                fInterface->aTrack->RandomSeed = fInterface->aRunParameter->fRandomSeed;
                 fInterface->aTrack->OutputStartFrequency = fInterface->aTrack->StartFrequency - tLOfrequency + tSamplingRate * 1.e6 / 2.;
 #endif
             }

@@ -24,7 +24,6 @@ namespace locust
     bool Track::Initialize()
     {
         TrackID += 1;
-        RandomSeed = -99.;
         StartTime = -99.;
         EndTime = -99.;
         TrackLength = -99.;
@@ -35,7 +34,6 @@ namespace locust
         AvgFrequency = 0.;
         OutputAvgFrequency = 0.;
         AvgAxialFrequency = 0.;
-        LOFrequency = -99.;
         TrackPower = -99.;
         Slope = -99.;
         PitchAngle = -99.;
