@@ -70,21 +70,21 @@ namespace locust
     	if (bStart)
     	{
             fStartingIndex = index;
-            fInterface->aTrack.StartTime = tTime;
+            fInterface->aTrack->StartTime = tTime;
             double tX = aFinalParticle.GetPosition().X();
             double tY = aFinalParticle.GetPosition().Y();
-            fInterface->aTrack.Radius = pow(tX*tX + tY*tY, 0.5);
-            fInterface->aTrack.RadialPhase = calcOrbitPhase(tX, tY);
-            fInterface->aTrack.StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
+            fInterface->aTrack->Radius = pow(tX*tX + tY*tY, 0.5);
+            fInterface->aTrack->RadialPhase = calcOrbitPhase(tX, tY);
+            fInterface->aTrack->StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
     	}
     	else
     	{
-            fInterface->aTrack.EndTime = tTime;
+            fInterface->aTrack->EndTime = tTime;
             unsigned nElapsedSamples = index - fStartingIndex;
-            fInterface->aTrack.AvgFrequency = ( fInterface->aTrack.AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
-            fInterface->aTrack.OutputAvgFrequency = fInterface->aTrack.AvgFrequency + tOffset;
-            fInterface->aTrack.TrackLength = tTime - fInterface->aTrack.StartTime;
-            fInterface->aTrack.Slope = (fInterface->aTrack.EndFrequency - fInterface->aTrack.StartFrequency) / (fInterface->aTrack.TrackLength);
+            fInterface->aTrack->AvgFrequency = ( fInterface->aTrack->AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
+            fInterface->aTrack->OutputAvgFrequency = fInterface->aTrack->AvgFrequency + tOffset;
+            fInterface->aTrack->TrackLength = tTime - fInterface->aTrack->StartTime;
+            fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
     	}
 #endif
 
@@ -145,20 +145,18 @@ namespace locust
                 fPitchAngle = aFinalParticle.GetPolarAngleToB();
                 fT0trapMin = aFinalParticle.GetTime();
 #ifdef ROOT_FOUND
-                fInterface->aTrack.PitchAngle = aFinalParticle.GetPolarAngleToB();
-                fInterface->aTrack.StartFrequency = aFinalParticle.GetCyclotronFrequency();
+                fInterface->aTrack->PitchAngle = aFinalParticle.GetPolarAngleToB();
+                fInterface->aTrack->StartFrequency = aFinalParticle.GetCyclotronFrequency();
                 double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
                 double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
-                fInterface->aTrack.LOFrequency = tLOfrequency;
-                fInterface->aTrack.RandomSeed = fInterface->aRunParameter->fRandomSeed;
-                fInterface->aTrack.OutputStartFrequency = fInterface->aTrack.StartFrequency - tLOfrequency + tSamplingRate * 1.e6 / 2.;
+                fInterface->aTrack->OutputStartFrequency = fInterface->aTrack->StartFrequency - tLOfrequency + tSamplingRate * 1.e6 / 2.;
 #endif
             }
             else
             {
 #ifdef ROOT_FOUND
-                fInterface->aTrack.EndFrequency = aFinalParticle.GetCyclotronFrequency();
-                fInterface->aTrack.AvgAxialFrequency = fNCrossings / 2. / ( aFinalParticle.GetTime() - fT0trapMin );
+                fInterface->aTrack->EndFrequency = aFinalParticle.GetCyclotronFrequency();
+                fInterface->aTrack->AvgAxialFrequency = fNCrossings / 2. / ( aFinalParticle.GetTime() - fT0trapMin );
 #endif
             }
         }

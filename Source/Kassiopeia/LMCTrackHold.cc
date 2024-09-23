@@ -63,7 +63,7 @@ namespace locust
 
     bool TrackHold::ExecutePreTrackModification(Kassiopeia::KSTrack &aTrack)
     {
-        fInterface->aTrack.Initialize();
+        fInterface->aTrack->Initialize();
         fInterface->fNewTrackStarting = true;
         double tTime = aTrack.GetInitialParticle().GetTime();
 

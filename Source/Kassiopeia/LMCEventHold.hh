@@ -11,6 +11,7 @@
 #include "KSEventModifier.h"
 #include "KSComponentTemplate.h"
 
+
 #include "LMCKassLocustInterface.hh"
 
 #ifdef ROOT_FOUND
@@ -49,6 +50,7 @@ namespace locust
 
         private:
             bool fConfigurationComplete;
+            long int fEventSeed;
 
     };
 
