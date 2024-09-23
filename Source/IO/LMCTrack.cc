@@ -12,7 +12,8 @@ ClassImp(locust::Track);
 namespace locust
 {
 
-    Track::Track()
+    Track::Track() :
+        TrackID( -2 )
     {
     }
 
@@ -22,8 +23,7 @@ namespace locust
 
     bool Track::Initialize()
     {
-        EventID = -99;
-        RandomSeed = -99.;
+        TrackID += 1;
         StartTime = -99.;
         EndTime = -99.;
         TrackLength = -99.;
@@ -34,7 +34,6 @@ namespace locust
         AvgFrequency = 0.;
         OutputAvgFrequency = 0.;
         AvgAxialFrequency = 0.;
-        LOFrequency = -99.;
         TrackPower = -99.;
         Slope = -99.;
         PitchAngle = -99.;

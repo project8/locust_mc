@@ -316,7 +316,6 @@ namespace locust
     	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
     	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
     	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
-    	fInterface->aRunParameter->fRandomSeed = fTrackDelaySeed;
 #endif
     	return true;
     }
