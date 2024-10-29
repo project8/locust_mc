@@ -49,6 +49,7 @@ namespace locust
 
         private:
             std::vector<std::vector<std::vector<std::vector<double>>>> fVoltagePhase;
+            std::vector<double> fChannelPhaseOffsetDeg;
             kl_interface_ptr_t fInterface;
 
 

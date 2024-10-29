@@ -15,7 +15,8 @@ namespace locust
 	LOGGER( lmclog, "CavityModes" );
 
     CavityModes::CavityModes():
-		fVoltagePhase( 0 ),
+		fVoltagePhase( {{{{0.0}}}} ),
+		fChannelPhaseOffsetDeg( {0.0} ),
 		fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -36,7 +37,20 @@ namespace locust
 
         SetNCavityModes(fInterface->fField->GetNModes());
 
-        SizeNChannels(GetNChannels());
+
+        fChannelPhaseOffsetDeg.resize(3);
+        if ( aParam.has( "channel0-phase-offset-deg" ) )
+        {
+            fChannelPhaseOffsetDeg[0] = LMCConst::Pi() / 180. * aParam["channel0-phase-offset-deg"]().as_double();
+        }
+        if ( aParam.has( "channel1-phase-offset-deg" ) )
+        {
+            fChannelPhaseOffsetDeg[1] = LMCConst::Pi() / 180. * aParam["channel1-phase-offset-deg"]().as_double();
+        }
+        if ( aParam.has( "channel2-phase-offset-deg" ) )
+        {
+            fChannelPhaseOffsetDeg[2] = LMCConst::Pi() / 180. * aParam["channel2-phase-offset-deg"]().as_double();
+        }
 
     	return true;
     }
@@ -68,7 +82,7 @@ namespace locust
 	bool CavityModes::AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
 	{
 		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
-		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
+		SetVoltagePhase( fChannelPhaseOffsetDeg[channelIndex] + GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
 		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n));
 
