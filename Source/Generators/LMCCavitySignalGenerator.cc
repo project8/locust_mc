@@ -592,10 +592,12 @@ namespace locust
         if (fRandomPreEventSamples) RandomizeStartDelay();
 
         fPowerCombiner->SizeNChannels(fNChannels);
- 	    if (fNChannels > 2)
+        fInterface->fField->SetNChannels(fNChannels);
+
+ 	    if (fNChannels > 3)
  	    {
-    		LERROR(lmclog,"The cavity simulation only supports up to 2 channels right now.");
-        	throw std::runtime_error("Only 1 or 2 channels is allowed.");
+    		LERROR(lmclog,"The cavity simulation only supports up to 3 channels right now.");
+        	throw std::runtime_error("Only 1, 2, or 3 channels is allowed.");
         	return false;
  	    }
 

@@ -80,9 +80,17 @@ namespace locust
         	}
     	}
 
-
     	return true;
 
+    }
+
+    int Field::GetNChannels()
+    {
+        return fNChannels;
+    }
+    void Field::SetNChannels( int aNumberOfChannels )
+    {
+     	fNChannels = aNumberOfChannels;
     }
 
     std::vector<std::vector<int>> Field::ModeSelect(bool bWaveguide, bool bNormCheck)

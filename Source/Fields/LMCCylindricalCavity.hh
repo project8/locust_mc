@@ -71,7 +71,7 @@ namespace locust
             virtual std::vector<double> GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode);
             std::vector<double> GetCavityProbeZ();
             void SetCavityProbeZ ( double aZ, unsigned index );
-            std::vector<double> GetCavityProbeRFrac();
+            std::vector<double> GetCavityProbeR();
             void SetCavityProbeRFrac ( double aFraction, unsigned index );
             std::vector<double> GetCavityProbeGain();
             void SetCavityProbeTheta( double aTheta, unsigned index );
