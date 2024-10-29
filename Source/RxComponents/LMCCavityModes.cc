@@ -82,9 +82,9 @@ namespace locust
 	bool CavityModes::AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
 	{
 		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
-		SetVoltagePhase( fChannelPhaseOffsetDeg[channelIndex] + GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
+		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
-		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n));
+		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n) + fChannelPhaseOffsetDeg[channelIndex] );
 
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
