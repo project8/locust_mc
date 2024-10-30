@@ -125,11 +125,15 @@ namespace locust
             void SetPlotModeMaps( bool aFlag );
             void SetOutputPath( std::string aPath );
             std::string GetOutputPath();
+            void SetNChannels( int aNumberOfChannels );
+            int GetNChannels();
+
 
 
 
         private:
             int fNModes;
+            int fNChannels;
             std::vector<std::vector<std::vector<std::vector<double>>>> fModeNormFactor;  // 4D vector [2][n-modes][n-modes][n-modes].
             double fCentralFrequency;
             int fnPixels;

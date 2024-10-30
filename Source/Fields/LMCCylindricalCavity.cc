@@ -14,10 +14,10 @@ namespace locust
     LOGGER( lmclog, "CylindricalCavity" );
     CylindricalCavity::CylindricalCavity():
         fIntermediateFile( false ),
-        fProbeGain( {1., 1.}),
-        fCavityProbeZ( {0., 0.} ),
-        fCavityProbeRFrac( {0.5, 0.5} ),
-        fCavityProbeTheta( {0.0, 0.0} )
+        fProbeGain( {1., 1., 1.}),
+        fCavityProbeZ( {0., 0., 0.} ),
+        fCavityProbeRFrac( {0.5, 0.5, 0.5} ),
+        fCavityProbeTheta( {0.0, 0.0, 0.0} )
         {}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -53,6 +53,11 @@ namespace locust
             SetCavityProbeGain(aParam["cavity-probe-gain1"]().as_double(), 1);
         }
 
+        if ( aParam.has( "cavity-probe-gain2" ) )
+        {
+            SetCavityProbeGain(aParam["cavity-probe-gain2"]().as_double(), 2);
+        }
+
         if ( aParam.has( "cavity-probe-z0" ) )
         {
             SetCavityProbeZ(aParam["cavity-probe-z0"]().as_double(), 0);
@@ -61,6 +66,11 @@ namespace locust
         if ( aParam.has( "cavity-probe-z1" ) )
         {
             SetCavityProbeZ(aParam["cavity-probe-z1"]().as_double(), 1);
+        }
+
+        if ( aParam.has( "cavity-probe-z2" ) )
+        {
+            SetCavityProbeZ(aParam["cavity-probe-z2"]().as_double(), 2);
         }
 
         if ( aParam.has( "cavity-probe-r-fraction0" ) )
@@ -73,6 +83,11 @@ namespace locust
             SetCavityProbeRFrac(aParam["cavity-probe-r-fraction1"]().as_double(), 1);
         }
 
+        if ( aParam.has( "cavity-probe-r-fraction2" ) )
+        {
+            SetCavityProbeRFrac(aParam["cavity-probe-r-fraction2"]().as_double(), 2);
+        }
+
         if ( aParam.has( "cavity-probe-theta0" ) )
         {
             SetCavityProbeTheta(aParam["cavity-probe-theta0"]().as_double(), 0);
@@ -81,6 +96,11 @@ namespace locust
         if ( aParam.has( "cavity-probe-theta1" ) )
         {
             SetCavityProbeTheta(aParam["cavity-probe-theta1"]().as_double(), 1);
+        }
+
+        if ( aParam.has( "cavity-probe-theta2" ) )
+        {
+            SetCavityProbeTheta(aParam["cavity-probe-theta2"]().as_double(), 2);
         }
 
         if (aParam.has( "intermediate-file" ))
@@ -276,11 +296,7 @@ namespace locust
 
     std::vector<double> CylindricalCavity::GetFieldAtProbe(int l, int m, int n, bool includeOtherPols, std::vector<double> tKassParticleXP, bool teMode)
     {
-
-        std::vector<double> rProbe;
-        rProbe.push_back(GetCavityProbeRFrac()[0] * GetDimR());
-        rProbe.push_back(GetCavityProbeRFrac()[1] * GetDimR());
-
+        std::vector<double> rProbe = GetCavityProbeR();
         std::vector<double> thetaProbe = GetCavityProbeTheta();
         std::vector<double> zProbe = GetCavityProbeZ();
         std::vector<double> thetaEffective;
@@ -289,24 +305,30 @@ namespace locust
         {
             //If mode has theta dependence, mode polarization is set by electron location. Probe coupling must be set relative to that angle
             double thetaElectron = tKassParticleXP[1];
-            thetaEffective.push_back(thetaProbe[0] - thetaElectron);
-            thetaEffective.push_back(thetaProbe[1] - thetaElectron);
+            for (unsigned index=0; index<GetNChannels(); index++)
+            {
+                thetaEffective.push_back(thetaProbe[index] - thetaElectron);
+            }
         }
         else
         {
-        	thetaEffective = thetaProbe;
+            thetaEffective = thetaProbe;
         }
 
         std::vector<std::vector<double>> tProbeLocation;
-        tProbeLocation.push_back({rProbe[0], thetaEffective[0], zProbe[0]});
-        tProbeLocation.push_back({rProbe[1], thetaEffective[1], zProbe[1]});
+        for (unsigned index=0; index<GetNChannels(); index++)
+        {
+            tProbeLocation.push_back({rProbe[index], thetaEffective[index], zProbe[index]});
+        }
 
         //Assumes probe couples to E of mode. If mode is polarized, transforms angle to reference frame of electron
         std::vector<double> tEFieldAtProbe;
-        tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[0],0,teMode)) );
-        tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[1],0,teMode)) );
+        for (unsigned index=0; index<GetNChannels(); index++)
+        {
+            tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[index],0,teMode)) );
+        }
 
-        return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1]};
+        return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1], fProbeGain[2] * tEFieldAtProbe[2]};
 
     }
 
@@ -655,9 +677,9 @@ namespace locust
     {
         fCavityProbeZ[index] = aZ;
     }
-    std::vector<double> CylindricalCavity::GetCavityProbeRFrac()
+    std::vector<double> CylindricalCavity::GetCavityProbeR()
     {
-        return fCavityProbeRFrac;
+        return { fCavityProbeRFrac[0] * GetDimR(), fCavityProbeRFrac[1] * GetDimR(), fCavityProbeRFrac[2] * GetDimR()};
     }
     void CylindricalCavity::SetCavityProbeRFrac ( double aFraction, unsigned index )
     {
