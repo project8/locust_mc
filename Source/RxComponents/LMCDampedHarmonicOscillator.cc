@@ -277,7 +277,7 @@ namespace locust
             }
         } // i
 
-        delete aSignal;
+        aSignal->Reset();
 
         return convolutionMag;
 
