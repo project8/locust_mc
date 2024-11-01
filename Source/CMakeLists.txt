@@ -34,8 +34,6 @@ set( LOCUST_MC_HEADER_FILES
     Generators/LMCTestSignalGenerator.hh
     Generators/LMCDecimateSignalGenerator.hh
     Generators/LMCLowPassFilterFFTGenerator.hh
-    Generators/LMCHighPassFilterFFTGenerator.hh
-    Generators/LMCLocalOscillatorGenerator.hh
     Generators/LMCButterworthLPFGenerator.hh
 
     Transmitters/LMCFieldBuffer.hh
@@ -108,8 +106,6 @@ set( LOCUST_MC_SOURCE_FILES
     Generators/LMCTestSignalGenerator.cc
     Generators/LMCDecimateSignalGenerator.cc
     Generators/LMCLowPassFilterFFTGenerator.cc
-    Generators/LMCHighPassFilterFFTGenerator.cc
-    Generators/LMCLocalOscillatorGenerator.cc
     Generators/LMCButterworthLPFGenerator.cc
     
 
