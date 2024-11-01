@@ -185,9 +185,11 @@ namespace locust
         fInterface->fEventInProgress = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
+#ifdef ROOT_FOUND
         delete fInterface->anEvent;
         delete fInterface->aTrack;
         return true;
+#endif
     }
 
 } /* namespace locust */
