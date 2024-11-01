@@ -19,7 +19,9 @@ namespace locust
 			fCavityFrequencyDefault( 1.067e9 ),
 			fCavityQDefault( 1000 ),
 			fThresholdFactorDefault ( 0.25 ),
-			fHannekePowerFactorDefault( 1. )
+			fHannekePowerFactorDefault( 1. ),
+			fNModes( 2 ),
+			fTFReceiverHandler( 0 )
 
     {}
     DampedHarmonicOscillator::~DampedHarmonicOscillator() {}
@@ -369,6 +371,7 @@ namespace locust
         }
 
         SetGFarray( tGFArray); // now normalized.
+        delete fTFReceiverHandler;
 
     	if ( tGFArray.size() < 1 ) return false;
     	else return true;

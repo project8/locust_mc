@@ -196,6 +196,8 @@ namespace locust
         aSignal->Reset();
         delete[] freqArray;
         delete[] gainArray;
+        delete fTFReceiverHandler;
+        delete fAnalyticResponseFunction;
 
         LPROG( testlog, "\nSummary:");
         LPROG( testlog, "dho-threshold-factor is " << dhoThresholdFactor );

@@ -73,6 +73,10 @@ double GetPower(bool bTime)
 		ptransform += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	}
 
+    fftw_destroy_plan( plan);
+    fftw_free( data );
+    data = NULL;
+
     if (bTime)
     {
     	LPROG(testlog, "power of original data time series is: " << pdata);
