@@ -46,6 +46,22 @@ namespace locust
 
     CavitySignalGenerator::~CavitySignalGenerator()
     {
+        if (fPowerCombiner != NULL)
+        {
+            delete fPowerCombiner;
+        }
+        if (fFieldCalculator != NULL)
+        {
+            delete fFieldCalculator;
+        }
+        if (fTFReceiverHandler != NULL)
+        {
+            delete fTFReceiverHandler;
+        }
+        if (fAnalyticResponseFunction != NULL)
+        {
+            delete fAnalyticResponseFunction;
+        }
     }
 
 

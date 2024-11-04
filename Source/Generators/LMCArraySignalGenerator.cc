@@ -55,6 +55,18 @@ namespace locust
 
     ArraySignalGenerator::~ArraySignalGenerator()
     {
+        if ( fAntennaElementPositioner != NULL )
+        {
+            delete fAntennaElementPositioner;
+        }
+        if ( fTransmitter != NULL )
+        {
+            delete fTransmitter;
+        }
+        if ( fPowerCombiner != NULL )
+        {
+            delete fPowerCombiner;
+        }
     }
 
     void ArraySignalGenerator::SetParameters( const scarab::param_node& aParam )
