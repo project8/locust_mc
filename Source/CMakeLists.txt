@@ -13,6 +13,7 @@ set( LOCUST_MC_HEADER_FILES
     Core/LMCHFSSResponseFileHandler.hh
     Core/LMCFIRFileHandler.hh
     Core/LMCTFFileHandler.hh	
+    Core/LMCMPIEnvironment.hh    
     
     Utilities/LMCUtility.hh
     Utilities/LMCCavityUtility.hh
@@ -142,16 +143,25 @@ set( LOCUST_MC_SOURCE_FILES
 
 )
 
+if (locust_mc_USE_MPI)
+    set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
+        Core/LMCMPIInterface.hh
+    )
+    
+    set( LOCUST_MC_SOURCE_FILES ${LOCUST_MC_SOURCE_FILES}
+        Core/LMCMPIInterface.cc
+    )
+endif (locust_mc_USE_MPI)
+
+
 if (locust_mc_BUILD_WITH_KASSIOPEIA)
     # Here we only need to add the Kassiopeia-dependent header/source files to the header/source-file lists
     
     set( LOCUST_MC_HEADER_FILES ${LOCUST_MC_HEADER_FILES}
-
         Generators/LMCFreeFieldSignalGenerator.hh
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCArraySignalGenerator.hh
-        Generators/LMCCavitySignalGenerator.hh
-
+        Generators/LMCCavitySignalGenerator.hh        
 
         Transmitters/LMCKassTransmitter.hh
         Transmitters/LMCKassCurrentTransmitter.hh
