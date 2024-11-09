@@ -30,6 +30,9 @@ namespace locust
             double fLOfrequency;
             double fSamplingRateMHz;
             double fDecimationFactor;
+            std::string fDataType;
+            std::string fSimulationType;
+            std::string fSimulationSubType;
 
             ClassDef(RunParameters,1)  // Root syntax.
 

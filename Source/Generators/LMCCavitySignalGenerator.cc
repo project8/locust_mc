@@ -123,7 +123,6 @@ namespace locust
         else if (!fInterface->fbWaveguide) // Cavity config follows
         {
         	// No HFSS file is present:  Cavity as damped harmonic oscillator
-
         	fAnalyticResponseFunction = new DampedHarmonicOscillator();
     		if ( !fAnalyticResponseFunction->Configure(tParam) || !(CrossCheckCavityConfig()) )
     		{
@@ -384,6 +383,17 @@ namespace locust
                 		"with the unit test as in bin/testLMCCavity [-h]");
                 return false;
             }
+#ifdef FIND_ROOT
+            fInterface->aRunParameter->fSimulationType = "cavity";
+            if ( cavityFrequency > 20.e9 )
+            {
+                fInterface->aRunParameter->fSimulationSubType = "cca";
+            }
+            else
+            {
+                fInterface->aRunParameter->fSimulationSubType = "lfa";
+            }
+#endif
         }
 
         return true;

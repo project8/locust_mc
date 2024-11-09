@@ -63,7 +63,9 @@ namespace locust
 
     bool TrackHold::ExecutePreTrackModification(Kassiopeia::KSTrack &aTrack)
     {
+#ifdef FIND_ROOT
         fInterface->aTrack->Initialize();
+#endif
         fInterface->fNewTrackStarting = true;
         double tTime = aTrack.GetInitialParticle().GetTime();
 
@@ -76,7 +78,9 @@ namespace locust
     {
         if ( aTrack.GetTotalSteps() > 0)
         {
+#ifdef FIND_ROOT
             fInterface->anEvent->AddTrack( fInterface->aTrack );
+#endif
         }
 
         double tTime = aTrack.GetFinalParticle().GetTime();

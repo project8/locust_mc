@@ -8,6 +8,8 @@
 #include "logger.hh"
 #include "LMCEventHold.hh"
 #include <csignal>
+#include <fstream>
+
 
 namespace locust
 {
@@ -110,6 +112,20 @@ namespace locust
     {
         std::string tOutputPath = TOSTRING(PB_OUTPUT_DIR);
         std::string sFileName = tOutputPath+"/"+fTruthOutputFilename;
+        std::string sJsonFileName = sFileName;
+        const std::string ext(".root");
+        if ( sFileName != ext &&
+             sFileName.size() > ext.size() &&
+             sFileName.substr(sFileName.size() - ext.size()) == ".root" )
+        {
+            // Remove .root and replace it with .json:
+            sJsonFileName = sFileName.substr(0, sFileName.size() - ext.size()) + ".json";
+        }
+        else
+        {
+            LERROR(lmclog,"The output file " << fTruthOutputFilename <<"doesn't end in .root");
+            exit(-1);
+        }
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename(sFileName);
@@ -126,6 +142,17 @@ namespace locust
         }
         aRootTreeWriter->CloseFile();
 #endif
+
+        // Open the json file:
+        if (fAccumulateTruthInfo)
+        {
+            std::ofstream ost {sJsonFileName, std::ios_base::app};
+        }
+        else
+        {
+            std::ofstream ost {sJsonFileName, std::ios_base::out};
+        }
+
         return true;
 
     }
@@ -185,8 +212,10 @@ namespace locust
         fInterface->fEventInProgress = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
+#ifdef FIND_ROOT
         delete fInterface->anEvent;
         delete fInterface->aTrack;
+#endif
         return true;
     }
 

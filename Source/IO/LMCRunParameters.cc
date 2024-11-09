@@ -17,7 +17,15 @@ ClassImp(locust::RunParameters);
 
 namespace locust
 {
-    RunParameters::RunParameters() {}
+    RunParameters::RunParameters() :
+        fNoise( 0. ),
+        fLOfrequency( 0. ),
+		fSamplingRateMHz( 0. ),
+		fDecimationFactor( 0. ),
+		fDataType( "simulation" ),
+		fSimulationType( "rectangular-waveguide" ),
+		fSimulationSubType( "none" )
+    {}
     RunParameters::~RunParameters() {}
 
 }
