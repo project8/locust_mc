@@ -31,12 +31,14 @@ namespace locust
             bool OpenEvent();
             bool OpenFile();
             bool WriteEvent();
+            bool WriteJsonFile();
             virtual ~EventHold();
 
             EventHold* Clone() const;
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
             std::string fTruthOutputFilename;
+            std::string fJsonFileName;
             bool fAccumulateTruthInfo;
 
 
