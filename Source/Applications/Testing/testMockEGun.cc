@@ -103,7 +103,10 @@ double GetPower()
 	}
 
 	LPROG(testlog, "E-gun transformed data sum is: " << ptransform/N0);
+
 	fftw_destroy_plan(plan);
+	fftw_free( data );
+	data = NULL;
 
     return ptransform/N0;
 

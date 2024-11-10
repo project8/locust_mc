@@ -113,6 +113,10 @@ class testLMCTestSignal
 	        ptransform += data[j][0]*data[j][0]+data[j][1]*data[j][1];
 	    }
 
+	    fftw_destroy_plan( plan);
+	    fftw_free( data );
+	    data = NULL;
+
 	    if (bTime)
 	    {
 	    	LPROG(testlog, "fft power of original data time series is: " << pdata);
@@ -161,6 +165,7 @@ TEST_CASE( "LMCTestSignal with default parameter values (pass)", "[single-file]"
 	double threshold = 1.e-4;
 	REQUIRE( fabs( aTestLMCTestSignal.GetPower(aSignal, N0, 1) - aTestLMCTestSignal.GetPower(aSignal, N0, 0) ) < threshold*aTestLMCTestSignal.GetPower(aSignal, N0, 1) );
 	REQUIRE( fabs( aTestLMCTestSignal.GetPower(aSignal, N0, 1)/N0/50. - pow(aTestLMCTestSignal.GetAmplitude(),2.) ) < threshold*aTestLMCTestSignal.GetPower(aSignal, N0, 1)/N0/50.);
+	aSignal->Reset();
 }
 
 

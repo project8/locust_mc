@@ -24,10 +24,10 @@ namespace locust
     
     bool FIRTransmitterHandler::Configure(const scarab::param_node& aParam)
     {
-	int fNModes = 2;
-	if( aParam.has( "n-modes" ) ) 
+        int fNModes = 2;
+        if( aParam.has( "n-modes" ) )
         {   
-                fNModes = aParam["n-modes"]().as_int();
+            fNModes = aParam["n-modes"]().as_int();
         }  
         if( aParam.has( "fir-transmitter-filename" ) )
         {

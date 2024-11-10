@@ -37,6 +37,10 @@ namespace locust
     }
     CyclotronRadiationExtractor::~CyclotronRadiationExtractor()
     {
+        if (fFieldCalculator != NULL)
+        {
+            delete fFieldCalculator;
+        }
     }
 
     bool CyclotronRadiationExtractor::Configure()

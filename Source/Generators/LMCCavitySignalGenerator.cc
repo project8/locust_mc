@@ -25,12 +25,12 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0. ),
-		fDeltaT( 0. ),
+        fDeltaT( 0. ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
         fNPreEventSamples( 150000 ),
         fRandomPreEventSamples( false ),
-		fTrackDelaySeed( 0 ),
+        fTrackDelaySeed( 0 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
@@ -46,6 +46,22 @@ namespace locust
 
     CavitySignalGenerator::~CavitySignalGenerator()
     {
+        if (fPowerCombiner != NULL)
+        {
+            delete fPowerCombiner;
+        }
+        if (fFieldCalculator != NULL)
+        {
+            delete fFieldCalculator;
+        }
+        if (fTFReceiverHandler != NULL)
+        {
+            delete fTFReceiverHandler;
+        }
+        if (fAnalyticResponseFunction != NULL)
+        {
+            delete fAnalyticResponseFunction;
+        }
     }
 
 

@@ -287,6 +287,7 @@ namespace locust
         delete fInterface->aRunParameter;
 #endif
         return true;
+#endif
     }
 
 } /* namespace locust */
