@@ -347,7 +347,7 @@ namespace locust
 
     bool ArraySignalGenerator::RecordRunParameters( Signal* aSignal )
     {
-#ifdef FIND_ROOT
+#ifdef ROOT_FOUND
     	fInterface->aRunParameter = new RunParameters();
     	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
     	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();

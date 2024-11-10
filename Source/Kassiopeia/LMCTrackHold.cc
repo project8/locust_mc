@@ -63,7 +63,7 @@ namespace locust
 
     bool TrackHold::ExecutePreTrackModification(Kassiopeia::KSTrack &aTrack)
     {
-#ifdef FIND_ROOT
+#ifdef ROOT_FOUND
         fInterface->aTrack->Initialize();
 #endif
         fInterface->fNewTrackStarting = true;
@@ -78,14 +78,15 @@ namespace locust
     {
         if ( aTrack.GetTotalSteps() > 0)
         {
-#ifdef FIND_ROOT
+#ifdef ROOT_FOUND
+        	fInterface->aTrack->TrackID = fTrackCounter;
             fInterface->anEvent->AddTrack( fInterface->aTrack );
 #endif
+            fTrackCounter += 1;
         }
 
         double tTime = aTrack.GetFinalParticle().GetTime();
         LWARN(lmclog,"LMCTrack " << fTrackCounter << " is complete at Kass time " << tTime << " with total steps " << aTrack.GetTotalSteps() );
-        fTrackCounter += 1;
         return true;
     }
 

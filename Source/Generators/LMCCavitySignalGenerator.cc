@@ -311,7 +311,6 @@ namespace locust
     bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
     {
 #ifdef ROOT_FOUND
-    	fInterface->aRunParameter = new RunParameters();
     	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
     	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
     	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
@@ -365,6 +364,11 @@ namespace locust
 
     	LPROG(lmclog,"Running some cavity cross-checks ...");
 
+        double timeResolution = 0.;
+        double thresholdFactor = 0.;
+        double cavityFrequency = 0.;
+        double qExpected = 0.;
+
         for (int mu=0; mu<fModeSet.size(); mu++)
         {
             bool bTE = fModeSet[mu][0];
@@ -372,10 +376,10 @@ namespace locust
             int m = fModeSet[mu][2];
             int n = fModeSet[mu][3];
             CavityUtility aCavityUtility;
-            double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE, l, m, n);
-            double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
-            double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
-            double qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
+            timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE, l, m, n);
+            thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
+            cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
+            qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
             aCavityUtility.SetOutputFile(fUnitTestRootFile);
             if (!aCavityUtility.CheckCavityQ( bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
             {
@@ -383,7 +387,10 @@ namespace locust
                 		"with the unit test as in bin/testLMCCavity [-h]");
                 return false;
             }
-#ifdef FIND_ROOT
+        }
+
+#ifdef ROOT_FOUND
+            fInterface->aRunParameter = new RunParameters();
             fInterface->aRunParameter->fSimulationType = "cavity";
             if ( cavityFrequency > 20.e9 )
             {
@@ -394,7 +401,6 @@ namespace locust
                 fInterface->aRunParameter->fSimulationSubType = "lfa";
             }
 #endif
-        }
 
         return true;
 	}

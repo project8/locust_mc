@@ -15,6 +15,8 @@
 
 #include "TObject.h"
 #include "LMCRunParameters.hh"
+#include "time.h"
+#include <sys/time.h>
 
 namespace locust
 {
@@ -33,6 +35,7 @@ namespace locust
             std::string fDataType;
             std::string fSimulationType;
             std::string fSimulationSubType;
+            long int fRunID;
 
             ClassDef(RunParameters,1)  // Root syntax.
 

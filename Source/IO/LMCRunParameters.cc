@@ -24,8 +24,25 @@ namespace locust
 		fDecimationFactor( 0. ),
 		fDataType( "simulation" ),
 		fSimulationType( "rectangular-waveguide" ),
-		fSimulationSubType( "none" )
-    {}
+		fSimulationSubType( "none" ),
+		fRunID( 0 )
+    {
+        time_t rawtime;
+        struct tm * timeInfo;
+        time (&rawtime);
+        timeInfo = localtime (&rawtime);
+
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+
+        int tDay = timeInfo->tm_mday;
+        int tMonth = timeInfo->tm_mon + 1;
+        int tYear = timeInfo->tm_year - 100;
+        int tMicrosec = tv.tv_usec;
+
+        fRunID = 1e12 + tDay*1e10 + tMonth*1e8 + tYear*1e6 + tMicrosec;
+
+    }
     RunParameters::~RunParameters() {}
 
 }
