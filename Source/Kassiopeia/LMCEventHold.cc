@@ -131,9 +131,6 @@ namespace locust
         aRootTreeWriter->SetFilename(sFileName);
         if (fAccumulateTruthInfo)
         {
-        	// TO-DO:  This option should be used when running pileup.  We will need to
-        	// figure out how to explicitly increment the event structure ID, given that the
-        	// same (identical) simulation is being run multiple times in this case.
         	aRootTreeWriter->OpenFile("UPDATE");
         }
         else
@@ -164,7 +161,7 @@ namespace locust
             std::string line;
             while (std::getline(jsonFile, line))
             {
-                std::cout << line << "\n";
+                LPROG( lmclog, line );
                 bNewRun = !line.find("run-id");
                 if (line != "}")  // Avoid saving the last "}".  It will be appended below.
                 {
@@ -185,38 +182,52 @@ namespace locust
         if (bNewRun)  // If there are no run parameters in the json file yet, write them now:
         {
             ost << "{\n";
-            ost << "    \"run-id:\": "<< "\"" << fInterface->aRunParameter->fRunID << "\",\n";
+            ost << "    \"run-id\": "<< "\"" << fInterface->aRunParameter->fRunID << "\",\n";
             ost << "    {\n";
-            ost << "        \"run-type:\": "<< "\"" << fInterface->aRunParameter->fDataType << "\",\n";
-            ost << "        \"simulation-type:\": "<< "\"" << fInterface->aRunParameter->fSimulationType << "\",\n";
-            ost << "        \"simulation-subtype:\": "<< "\"" << fInterface->aRunParameter->fSimulationSubType << "\",\n";
-            ost << "        \"sampling-freq-mega-hz:\": "<< "\"" << fInterface->aRunParameter->fSamplingRateMHz << "\"\n";
-            ost << "    }\n";
+            ost << "        \"run-type\": "<< "\"" << fInterface->aRunParameter->fDataType << "\",\n";
+            ost << "        \"simulation-type\": "<< "\"" << fInterface->aRunParameter->fSimulationType << "\",\n";
+            ost << "        \"simulation-subtype\": "<< "\"" << fInterface->aRunParameter->fSimulationSubType << "\",\n";
+            ost << "        \"sampling-freq-mega-hz\": "<< "\"" << fInterface->aRunParameter->fSamplingRateMHz << "\"\n";
+            ost << "    },\n";
         }
         else // otherwise re-write the file:
         {
             for (int i = 0; i < v.size(); i++)
             {
-                ost << v[i] << "\n";
+                if (i < v.size()-1)
+                {
+                    ost << v[i] << "\n";
+                }
+                else
+                {
+                    ost << v[i] << ",\n";
+                }
             }
         }
 
 
         // Write the latest event information here:
 
-        ost << "    \"event-id:\": "<< "\"" << fInterface->anEvent->fEventID << "\"\n";
+        ost << "    \"event-id\": "<< "\"" << fInterface->anEvent->fEventID << "\"\n";
         ost << "    {\n";
-        ost << "        \"ntracks:\": "<< "\"" << fInterface->anEvent->fNTracks << "\"\n";
+        ost << "        \"ntracks\": "<< "\"" << fInterface->anEvent->fNTracks << "\",\n";
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
-            ost << "        \"track-id:\": "<< "\"" << fInterface->anEvent->fTrackIDs[i] << "\"\n";
+            ost << "        \"track-id\": "<< "\"" << fInterface->anEvent->fTrackIDs[i] << "\"\n";
             ost << "         {\n";
-            ost << "             \"start-time:\": "<< "\"" << fInterface->anEvent->fStartTimes[i] << "\"\n";
-            ost << "             \"end-time:\": "<< "\"" << fInterface->anEvent->fEndTimes[i] << "\"\n";
-            ost << "             \"output-avg-frequency:\": "<< "\"" << fInterface->anEvent->fOutputAvgFrequencies[i] << "\"\n";
-            ost << "             \"pitch-angle:\": "<< "\"" << fInterface->anEvent->fPitchAngles[i] << "\"\n";
-            ost << "             \"avg-axial-frequency:\": "<< "\"" << fInterface->anEvent->fAvgAxialFrequencies[i] << "\"\n";
-            ost << "         }\n";
+            ost << "             \"start-time\": "<< "\"" << fInterface->anEvent->fStartTimes[i] << "\",\n";
+            ost << "             \"end-time\": "<< "\"" << fInterface->anEvent->fEndTimes[i] << "\",\n";
+            ost << "             \"output-avg-frequency\": "<< "\"" << fInterface->anEvent->fOutputAvgFrequencies[i] << "\",\n";
+            ost << "             \"pitch-angle\": "<< "\"" << fInterface->anEvent->fPitchAngles[i] << "\",\n";
+            ost << "             \"avg-axial-frequency\": "<< "\"" << fInterface->anEvent->fAvgAxialFrequencies[i] << "\"\n";
+            if (i < fInterface->anEvent->fNTracks-1)
+            {
+                ost << "         },\n";
+            }
+            else
+            {
+            	ost << "         }\n";
+            }
         }
         ost << "    }\n";
         ost << "}\n";
