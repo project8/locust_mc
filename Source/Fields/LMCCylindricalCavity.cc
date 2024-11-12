@@ -235,6 +235,7 @@ namespace locust
         double term2 = n * LMCConst::Pi() / GetDimL();
         if ( fCaterpillarCavity )
         {
+            // Assume n-channels is the same as the number of etalon sections:
             term2 *= GetNChannels();
         }
         double lambda = 1. / pow( 1. / 4. / LMCConst::Pi() / LMCConst::Pi() * ( term1*term1 + term2*term2 ), 0.5);
