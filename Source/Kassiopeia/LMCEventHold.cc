@@ -183,7 +183,7 @@ namespace locust
         {
             ost << "{\n";
             ost << "    \"run-id\": "<< "\"" << fInterface->aRunParameter->fRunID << "\",\n";
-            ost << "    {\n";
+            ost << "    \"run-parameters\": {\n";
             ost << "        \"run-type\": "<< "\"" << fInterface->aRunParameter->fDataType << "\",\n";
             ost << "        \"simulation-type\": "<< "\"" << fInterface->aRunParameter->fSimulationType << "\",\n";
             ost << "        \"simulation-subtype\": "<< "\"" << fInterface->aRunParameter->fSimulationSubType << "\",\n";
@@ -208,12 +208,11 @@ namespace locust
 
         // Write the latest event information here:
 
-        ost << "    \"event-id\": "<< "\"" << fInterface->anEvent->fEventID << "\"\n";
-        ost << "    {\n";
+        ost << "    \"" << fInterface->anEvent->fEventID << "\": {\n";
         ost << "        \"ntracks\": "<< "\"" << fInterface->anEvent->fNTracks << "\",\n";
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
-            ost << "        \"track-id\": "<< "\"" << fInterface->anEvent->fTrackIDs[i] << "\"\n";
+            ost << "        \"" << fInterface->anEvent->fTrackIDs[i] << "\":\n";
             ost << "         {\n";
             ost << "             \"start-time\": "<< "\"" << fInterface->anEvent->fStartTimes[i] << "\",\n";
             ost << "             \"end-time\": "<< "\"" << fInterface->anEvent->fEndTimes[i] << "\",\n";
