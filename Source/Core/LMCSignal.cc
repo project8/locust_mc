@@ -19,7 +19,7 @@ namespace locust
             fState( kNotInitialized ),
             fTimeSize( 0 ),
             fFreqSize( 0 ),
-            fDecimationFactor(10),
+            fDecimationFactor(1),
             fFreqSizeComplex( 0 ),
             fDigitalSize( 0 ),
             fSignalTime( NULL ),
