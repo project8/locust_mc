@@ -18,7 +18,8 @@ namespace locust
         fCavityProbeZ( {0., 0., 0.} ),
         fCavityProbeRFrac( {0.5, 0.5, 0.5} ),
         fCavityProbeTheta( {0.0, 0.0, 0.0} ),
-        fCaterpillarCavity( false )
+        fCaterpillarCavity( false ),
+        fApplyDopplerShift( true )
         {}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -37,6 +38,11 @@ namespace locust
         if( aParam.has( "caterpillar-cavity" ) )
         {
             fCaterpillarCavity = aParam["caterpillar-cavity"]().as_bool();
+        }
+
+        if( aParam.has( "apply-doppler-shift" ) )
+        {
+            fApplyDopplerShift = aParam["apply-doppler-shift"]().as_bool();
         }
 
         if( aParam.has( "cavity-radius" ) )
@@ -242,7 +248,7 @@ namespace locust
         double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
         double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
         double dopplerShift = 0.;
-        if (vp > 0.) dopplerShift = vz / vp;
+        if ((vp > 0.) && (fApplyDopplerShift)) dopplerShift = vz / vp;
 	    freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
         return freqPrime;
     }
