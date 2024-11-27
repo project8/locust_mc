@@ -151,6 +151,9 @@ namespace locust
             SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }
 
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+
         if( PlotModeMaps() )
         {
             double zSlice = 0.0;
@@ -161,8 +164,6 @@ namespace locust
             PrintModeMaps(GetNModes(), zSlice, thetaSlice);
         }
 
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
         SetNormFactors(CalculateNormFactors(GetNModes(), 0));  // Calculate the realistic normalization factors.
         CheckNormalization(GetNModes(), 0);  // E fields integration over volume
 
