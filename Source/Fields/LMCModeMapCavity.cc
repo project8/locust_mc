@@ -20,6 +20,7 @@ namespace locust
         fDim2_max(6.284),
         fDim3_min(0.),
         fDim3_max(0.1524),
+        fZshift(0.),
         fnPixel1(10),
         fnPixel2(10),
         fnPixel3(10)
@@ -73,6 +74,11 @@ namespace locust
         {
             fDim3_max =  aParam["dim3-max"]().as_double();
         }
+        if( aParam.has( "mode-map-z-shift" ) )
+        {
+            fZshift =  aParam["mode-map-z-shift"]().as_double();
+        }
+
 
 	return true;
     }
@@ -135,6 +141,7 @@ namespace locust
                     else if (wordCount == 2)
                     {
                         z = std::stod(token);
+                        z += fZshift;
                         k = (int)((z-fDim3_min)/(fDim3_max-fDim3_min)*(fnPixel3)); // var3 position
                     }
                     else if (wordCount == 3) Ex = std::stod(token); // mode E field value

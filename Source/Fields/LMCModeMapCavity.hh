@@ -62,6 +62,7 @@ namespace locust
             int fnPixel1, fnPixel2, fnPixel3;
             double fDim1_min, fDim2_min, fDim3_min;
             double fDim1_max, fDim2_max, fDim3_max;
+            double fZshift;
             std::vector< std::vector< std::vector< std::vector< double >>>> fModeMapTE_E;
 
     };
