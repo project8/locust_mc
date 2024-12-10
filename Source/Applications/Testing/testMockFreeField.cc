@@ -164,6 +164,8 @@ TEST_CASE( "Mock free space Larmor power. (pass)", "[single-file]" )
 
 
 	  fftw_destroy_plan(plan);
+	  fftw_free( data );
+	  data = NULL;
 
 
 	double threshold = 1.e-4;

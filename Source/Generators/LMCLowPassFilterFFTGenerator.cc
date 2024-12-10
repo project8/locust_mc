@@ -74,16 +74,19 @@ namespace locust
 // Count trailing zeroes in window.
     int LowPassFilterFFTGenerator::GetEndingMargin( Signal* aSignal, int windowsize, int nwin, int ch )
     {
-    	int endingMargin = 0;
-    	for (int i=0; i<windowsize; i++)
-    	{
-        	if (fabs(aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (nwin+1)*windowsize - i ][0]) > 0.)
-    		{
-    			endingMargin = i;
-    			break;
-    		}
-    	}
-    	return endingMargin;
+        int endingMargin = 0;
+   	    for (int i=0; i<windowsize; i++)
+        {
+            if (((nwin+1)*windowsize -i) < 0)
+            {
+                if (fabs(aSignal->LongSignalTimeComplex()[ ch*aSignal->TimeSize()*aSignal->DecimationFactor() + (nwin+1)*windowsize - i ][0]) > 0.)
+                {
+                    endingMargin = i;
+                    break;
+                }
+            }
+        }
+        return endingMargin;
     }
 
 
@@ -164,8 +167,10 @@ namespace locust
 
                     fftw_destroy_plan(ForwardPlan);
                     fftw_destroy_plan(ReversePlan);
-                    delete [] SignalComplex;
-                    delete [] FFTComplex;
+                    fftw_free( SignalComplex );
+                    fftw_free( FFTComplex );
+                    SignalComplex = NULL;
+                    FFTComplex = NULL;
                 }
                 else
                 {
@@ -174,7 +179,6 @@ namespace locust
 
             }  // nwin
         }  // NCHANNELS
-
 
         return true;
     }

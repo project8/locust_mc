@@ -8,6 +8,8 @@
 #include "logger.hh"
 #include "LMCEventHold.hh"
 #include <csignal>
+#include <fstream>
+
 
 namespace locust
 {
@@ -110,14 +112,25 @@ namespace locust
     {
         std::string tOutputPath = TOSTRING(PB_OUTPUT_DIR);
         std::string sFileName = tOutputPath+"/"+fTruthOutputFilename;
+        fJsonFileName = sFileName;
+        const std::string ext(".root");
+        if ( sFileName != ext &&
+             sFileName.size() > ext.size() &&
+             sFileName.substr(sFileName.size() - ext.size()) == ".root" )
+        {
+            // Remove .root and replace it with .json:
+            fJsonFileName = sFileName.substr(0, sFileName.size() - ext.size()) + ".json";
+        }
+        else
+        {
+            LERROR(lmclog,"The output file " << fTruthOutputFilename <<"doesn't end in .root");
+            exit(-1);
+        }
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename(sFileName);
         if (fAccumulateTruthInfo)
         {
-        	// TO-DO:  This option should be used when running pileup.  We will need to
-        	// figure out how to explicitly increment the event structure ID, given that the
-        	// same (identical) simulation is being run multiple times in this case.
         	aRootTreeWriter->OpenFile("UPDATE");
         }
         else
@@ -126,10 +139,102 @@ namespace locust
         }
         aRootTreeWriter->CloseFile();
 #endif
+
+        // Open the json file:
+        if (!fAccumulateTruthInfo)
+        {
+            std::ofstream ost {fJsonFileName, std::ios_base::out};
+        }
+
         return true;
 
     }
 
+
+    bool EventHold::WriteJsonFile()
+    {
+        std::ifstream jsonFile(fJsonFileName); // Open json file for inspection
+        bool bNewRun = true;
+        std::vector<std::string> v;
+        if (jsonFile.is_open())
+        {
+            std::string line;
+            while (std::getline(jsonFile, line))
+            {
+                LPROG( lmclog, line );
+                bNewRun = !line.find("run-id");
+                if (line != "}")  // Avoid saving the last "}".  It will be appended below.
+                {
+                    v.push_back(line);
+                }
+            }
+   	        jsonFile.close();
+        }
+        else
+        {
+            LPROG( lmclog, "A json file for meta-data was not found.  Opening a new one now." );
+        }
+
+        std::ofstream ost {fJsonFileName, std::ios_base::out};
+
+
+#ifdef ROOT_FOUND
+        if (bNewRun)  // If there are no run parameters in the json file yet, write them now:
+        {
+            ost << "{\n";
+            ost << "    \"run-id\": "<< "\"" << fInterface->aRunParameter->fRunID << "\",\n";
+            ost << "    \"run-parameters\": {\n";
+            ost << "        \"run-type\": "<< "\"" << fInterface->aRunParameter->fDataType << "\",\n";
+            ost << "        \"simulation-type\": "<< "\"" << fInterface->aRunParameter->fSimulationType << "\",\n";
+            ost << "        \"simulation-subtype\": "<< "\"" << fInterface->aRunParameter->fSimulationSubType << "\",\n";
+            ost << "        \"sampling-freq-mega-hz\": "<< "\"" << fInterface->aRunParameter->fSamplingRateMHz << "\"\n";
+            ost << "    },\n";
+        }
+        else // otherwise re-write the file:
+        {
+            for (int i = 0; i < v.size(); i++)
+            {
+                if (i < v.size()-1)
+                {
+                    ost << v[i] << "\n";
+                }
+                else
+                {
+                    ost << v[i] << ",\n";
+                }
+            }
+        }
+
+
+        // Write the latest event information here:
+
+        ost << "    \"" << fInterface->anEvent->fEventID << "\": {\n";
+        ost << "        \"ntracks\": "<< "\"" << fInterface->anEvent->fNTracks << "\",\n";
+        for (int i=0; i<fInterface->anEvent->fNTracks; i++)
+        {
+            ost << "        \"" << fInterface->anEvent->fTrackIDs[i] << "\":\n";
+            ost << "         {\n";
+            ost << "             \"start-time\": "<< "\"" << fInterface->anEvent->fStartTimes[i] << "\",\n";
+            ost << "             \"end-time\": "<< "\"" << fInterface->anEvent->fEndTimes[i] << "\",\n";
+            ost << "             \"output-avg-frequency\": "<< "\"" << fInterface->anEvent->fOutputAvgFrequencies[i] << "\",\n";
+            ost << "             \"pitch-angle\": "<< "\"" << fInterface->anEvent->fPitchAngles[i] << "\",\n";
+            ost << "             \"avg-axial-frequency\": "<< "\"" << fInterface->anEvent->fAvgAxialFrequencies[i] << "\"\n";
+            if (i < fInterface->anEvent->fNTracks-1)
+            {
+                ost << "         },\n";
+            }
+            else
+            {
+            	ost << "         }\n";
+            }
+        }
+        ost << "    }\n";
+        ost << "}\n";
+
+#endif
+
+        return true;
+    }
 
     bool EventHold::WriteEvent()
     {
@@ -145,6 +250,7 @@ namespace locust
         aRootTreeWriter->WriteRunParameters(fInterface->aRunParameter);
         aRootTreeWriter->CloseFile();
 #endif
+        WriteJsonFile();
         return true;
     }
 
@@ -185,8 +291,11 @@ namespace locust
         fInterface->fEventInProgress = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
+#ifdef ROOT_FOUND
         delete fInterface->anEvent;
         delete fInterface->aTrack;
+        delete fInterface->aRunParameter;
+#endif
         return true;
     }
 
