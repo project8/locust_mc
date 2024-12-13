@@ -37,6 +37,10 @@ namespace locust
     }
     CyclotronRadiationExtractor::~CyclotronRadiationExtractor()
     {
+        if (fFieldCalculator != NULL)
+        {
+            delete fFieldCalculator;
+        }
     }
 
     bool CyclotronRadiationExtractor::Configure()
@@ -62,11 +66,11 @@ namespace locust
 
     bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
     {
+#ifdef ROOT_FOUND
         double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
         double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
         double tOffset = -tLOfrequency + tSamplingRate * 1.e6 / 2.; // Hz
         double tTime = index / tSamplingRate / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
-#ifdef ROOT_FOUND
     	if (bStart)
     	{
             fStartingIndex = index;

@@ -193,9 +193,11 @@ namespace locust
 #ifdef ROOT_FOUND
         if (fWriteOutputFile) WriteRootHisto(nSteps, freqArray, gainArray);
 #endif
-        delete aSignal;
-        delete freqArray;
-        delete gainArray;
+        aSignal->Reset();
+        delete[] freqArray;
+        delete[] gainArray;
+        delete fTFReceiverHandler;
+        delete fAnalyticResponseFunction;
 
         LPROG( testlog, "\nSummary:");
         LPROG( testlog, "dho-threshold-factor is " << dhoThresholdFactor );

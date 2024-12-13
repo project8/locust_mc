@@ -35,6 +35,14 @@ namespace locust
     }
     FieldCalculator::~FieldCalculator()
     {
+        if (fTFReceiverHandler != NULL)
+        {
+            delete fTFReceiverHandler;
+        }
+        if (fAnalyticResponseFunction != NULL)
+        {
+            delete fAnalyticResponseFunction;
+        }
     }
 
     bool FieldCalculator::ConfigureByInterface()

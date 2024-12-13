@@ -17,7 +17,9 @@ namespace locust
         fProbeGain( {1., 1., 1.}),
         fCavityProbeZ( {0., 0., 0.} ),
         fCavityProbeRFrac( {0.5, 0.5, 0.5} ),
-        fCavityProbeTheta( {0.0, 0.0, 0.0} )
+        fCavityProbeTheta( {0.0, 0.0, 0.0} ),
+        fCaterpillarCavity( false ),
+        fApplyDopplerShift( true )
         {}
 
     CylindricalCavity::~CylindricalCavity() {}
@@ -31,6 +33,16 @@ namespace locust
         {
             LERROR(lmclog,"Error configuring Field class from CylindricalCavity subclass");
             return false;
+        }
+
+        if( aParam.has( "caterpillar-cavity" ) )
+        {
+            fCaterpillarCavity = aParam["caterpillar-cavity"]().as_bool();
+        }
+
+        if( aParam.has( "apply-doppler-shift" ) )
+        {
+            fApplyDopplerShift = aParam["apply-doppler-shift"]().as_bool();
         }
 
         if( aParam.has( "cavity-radius" ) )
@@ -139,6 +151,9 @@ namespace locust
             SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }
 
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
+        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
+
         if( PlotModeMaps() )
         {
             double zSlice = 0.0;
@@ -149,8 +164,6 @@ namespace locust
             PrintModeMaps(GetNModes(), zSlice, thetaSlice);
         }
 
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselZeros.txt").string(), 0 );
-        fFieldCore->ReadBesselZeroes((dataDir / "BesselPrimeZeros.txt").string(), 1 );
         SetNormFactors(CalculateNormFactors(GetNModes(), 0));  // Calculate the realistic normalization factors.
         CheckNormalization(GetNModes(), 0);  // E fields integration over volume
 
@@ -227,11 +240,16 @@ namespace locust
         double vz = tKassParticleXP[5];
         double term1 = fFieldCore->GetBesselNKPrimeZeros(l,m) / GetDimR();
         double term2 = n * LMCConst::Pi() / GetDimL();
+        if ( fCaterpillarCavity )
+        {
+            // Assume n-channels is the same as the number of etalon sections:
+            term2 *= GetNChannels();
+        }
         double lambda = 1. / pow( 1. / 4. / LMCConst::Pi() / LMCConst::Pi() * ( term1*term1 + term2*term2 ), 0.5);
         double lambda_c = 2 * LMCConst::Pi() * GetDimR() / fFieldCore->GetBesselNKPrimeZeros(l,m);
         double vp = LMCConst::C() / pow( 1. - lambda*lambda/lambda_c/lambda_c, 0.5 );
         double dopplerShift = 0.;
-        if (vp > 0.) dopplerShift = vz / vp;
+        if ((vp > 0.) && (fApplyDopplerShift)) dopplerShift = vz / vp;
 	    freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
         return freqPrime;
     }
@@ -325,7 +343,23 @@ namespace locust
         std::vector<double> tEFieldAtProbe;
         for (unsigned index=0; index<GetNChannels(); index++)
         {
-            tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[index],0,teMode)) );
+            if ( !fCaterpillarCavity )
+            {
+                tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[index],0,teMode)) );
+            }
+            else
+            {
+                // Assume 1 channel per etalon section:
+                int indexSubCavity = (int)(( tKassParticleXP[2] + GetDimL()/2. ) * GetNChannels() / GetDimL());
+                if ( indexSubCavity == index ) // If the electron is in the etalon section where the probe is:
+                {
+                    tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[index],0,teMode)) );
+                }
+                else
+                {
+                    tEFieldAtProbe.push_back( 0. );
+                }
+            }
         }
 
         return {fProbeGain[0] * tEFieldAtProbe[0], fProbeGain[1] * tEFieldAtProbe[1], fProbeGain[2] * tEFieldAtProbe[2]};

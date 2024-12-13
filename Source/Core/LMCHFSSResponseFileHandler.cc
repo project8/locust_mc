@@ -175,7 +175,24 @@ namespace locust
             fftw_free(fFIRComplex);
             fFIRComplex = NULL;
         }
+
+
+        for( int bTE=0; bTE<2; bTE++)
+        {
+            for(int l=0; l<fNModes; l++)
+            {
+                for(int m=0; m<fNModes; m++)
+                {
+                    for(int n=0; n<fNModes; n++)
+                    {
+                    	fftw_free(fFilterComplexArray[bTE][l][m][n]);
+                    	fFilterComplexArray[bTE][l][m][n] = NULL;
+                    }
+                }
+            }
+        }
     }
+
     bool TFFileHandlerCore::Configure(const scarab::param_node& aParam)
     {
         return true;

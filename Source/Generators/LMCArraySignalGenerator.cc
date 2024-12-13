@@ -55,6 +55,18 @@ namespace locust
 
     ArraySignalGenerator::~ArraySignalGenerator()
     {
+        if ( fAntennaElementPositioner != NULL )
+        {
+            delete fAntennaElementPositioner;
+        }
+        if ( fTransmitter != NULL )
+        {
+            delete fTransmitter;
+        }
+        if ( fPowerCombiner != NULL )
+        {
+            delete fPowerCombiner;
+        }
     }
 
     void ArraySignalGenerator::SetParameters( const scarab::param_node& aParam )
@@ -347,11 +359,12 @@ namespace locust
 
     bool ArraySignalGenerator::RecordRunParameters( Signal* aSignal )
     {
+#ifdef ROOT_FOUND
     	fInterface->aRunParameter = new RunParameters();
     	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
     	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
     	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
-
+#endif
     	return true;
     }
 

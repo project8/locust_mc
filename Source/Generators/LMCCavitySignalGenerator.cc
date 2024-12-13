@@ -25,12 +25,12 @@ namespace locust
         Generator( aName ),
         fDoGenerateFunc( &CavitySignalGenerator::DoGenerateTime ),
         fLO_Frequency( 0. ),
-		fDeltaT( 0. ),
+        fDeltaT( 0. ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
         fNPreEventSamples( 150000 ),
         fRandomPreEventSamples( false ),
-		fTrackDelaySeed( 0 ),
+        fTrackDelaySeed( 0 ),
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
@@ -46,6 +46,22 @@ namespace locust
 
     CavitySignalGenerator::~CavitySignalGenerator()
     {
+        if (fPowerCombiner != NULL)
+        {
+            delete fPowerCombiner;
+        }
+        if (fFieldCalculator != NULL)
+        {
+            delete fFieldCalculator;
+        }
+        if (fTFReceiverHandler != NULL)
+        {
+            delete fTFReceiverHandler;
+        }
+        if (fAnalyticResponseFunction != NULL)
+        {
+            delete fAnalyticResponseFunction;
+        }
     }
 
 
@@ -123,7 +139,6 @@ namespace locust
         else if (!fInterface->fbWaveguide) // Cavity config follows
         {
         	// No HFSS file is present:  Cavity as damped harmonic oscillator
-
         	fAnalyticResponseFunction = new DampedHarmonicOscillator();
     		if ( !fAnalyticResponseFunction->Configure(tParam) || !(CrossCheckCavityConfig()) )
     		{
@@ -312,7 +327,6 @@ namespace locust
     bool CavitySignalGenerator::RecordRunParameters( Signal* aSignal )
     {
 #ifdef ROOT_FOUND
-    	fInterface->aRunParameter = new RunParameters();
     	fInterface->aRunParameter->fSamplingRateMHz = fAcquisitionRate;
     	fInterface->aRunParameter->fDecimationFactor = aSignal->DecimationFactor();
     	fInterface->aRunParameter->fLOfrequency = fLO_Frequency;
@@ -366,6 +380,11 @@ namespace locust
 
     	LPROG(lmclog,"Running some cavity cross-checks ...");
 
+        double timeResolution = 0.;
+        double thresholdFactor = 0.;
+        double cavityFrequency = 0.;
+        double qExpected = 0.;
+
         for (int mu=0; mu<fModeSet.size(); mu++)
         {
             bool bTE = fModeSet[mu][0];
@@ -373,10 +392,10 @@ namespace locust
             int m = fModeSet[mu][2];
             int n = fModeSet[mu][3];
             CavityUtility aCavityUtility;
-            double timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE, l, m, n);
-            double thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
-            double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
-            double qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
+            timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE, l, m, n);
+            thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
+            cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
+            qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
             aCavityUtility.SetOutputFile(fUnitTestRootFile);
             if (!aCavityUtility.CheckCavityQ( bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
             {
@@ -385,6 +404,19 @@ namespace locust
                 return false;
             }
         }
+
+#ifdef ROOT_FOUND
+            fInterface->aRunParameter = new RunParameters();
+            fInterface->aRunParameter->fSimulationType = "cavity";
+            if ( cavityFrequency > 20.e9 )
+            {
+                fInterface->aRunParameter->fSimulationSubType = "cca";
+            }
+            else
+            {
+                fInterface->aRunParameter->fSimulationSubType = "lfa";
+            }
+#endif
 
         return true;
 	}
