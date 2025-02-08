@@ -232,19 +232,21 @@ namespace locust
         double norm = 0.;
         double coupling = 0.;
         double dimR = fInterface->fField->GetDimR(); // m
+        double dimZ = fInterface->fField->GetDimL(); // m
         double x = aFinalParticle.GetPosition().GetX();
         double y = aFinalParticle.GetPosition().GetY();
         double z = aFinalParticle.GetPosition().GetZ();
         double r = pow( x*x + y*y, 0.5 );
+        double tZ = dimZ/2. - dimZ/2./n;  // Normalize in an antinode along z
 
         if (bTE)
         {
-    	    norm = fInterface->fField->GetTE_E(l,m,n,dimR/2.,0.,0.,false).back(); // max value, TO-DO:  make more general?
+    	    norm = fInterface->fField->GetTE_E(l,m,n,dimR/2.,0.,tZ,false).back(); // max value, TO-DO:  make more general?
     	    coupling = tAvgDotProductFactor * fInterface->fField->GetTE_E(l,m,n,r,0.,z,false).back()/norm;
         }
         else
         {
-            norm = fInterface->fField->GetTM_E(l,m,n,dimR/2.,0.,0.,false).back(); // TO-DO:  decide coordinates
+            norm = fInterface->fField->GetTM_E(l,m,n,dimR/2.,0.,tZ,false).back(); // TO-DO:  decide coordinates
             coupling = tAvgDotProductFactor * fInterface->fField->GetTM_E(l,m,n,r,0.,z,false).back()/norm;
         }
 
