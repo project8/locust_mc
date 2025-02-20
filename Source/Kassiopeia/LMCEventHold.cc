@@ -216,6 +216,9 @@ namespace locust
             ost << "         {\n";
             ost << "             \"start-time\": "<< "\"" << fInterface->anEvent->fStartTimes[i] << "\",\n";
             ost << "             \"end-time\": "<< "\"" << fInterface->anEvent->fEndTimes[i] << "\",\n";
+            ost << "             \"energy-ev\": "<< "\"" << fInterface->anEvent->fStartingEnergies_eV[i] << "\",\n";
+            ost << "             \"start-radius\": "<< "\"" << fInterface->anEvent->fRadii[i] << "\",\n";
+            ost << "             \"start-radial-phase\": "<< "\"" << fInterface->anEvent->fRadialPhases[i] << "\",\n";
             ost << "             \"output-avg-frequency\": "<< "\"" << fInterface->anEvent->fOutputAvgFrequencies[i] << "\",\n";
             ost << "             \"pitch-angle\": "<< "\"" << fInterface->anEvent->fPitchAngles[i] << "\",\n";
             ost << "             \"avg-axial-frequency\": "<< "\"" << fInterface->anEvent->fAvgAxialFrequencies[i] << "\"\n";
