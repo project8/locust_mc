@@ -188,6 +188,7 @@ namespace locust
             ost << "        \"simulation-type\": "<< "\"" << fInterface->aRunParameter->fSimulationType << "\",\n";
             ost << "        \"simulation-subtype\": "<< "\"" << fInterface->aRunParameter->fSimulationSubType << "\",\n";
             ost << "        \"sampling-freq-mega-hz\": "<< "\"" << fInterface->aRunParameter->fSamplingRateMHz << "\"\n";
+            ost << "        \"random-seed\": "<< "\"" << fEventSeed << "\"\n";
             ost << "    },\n";
         }
         else // otherwise re-write the file:
