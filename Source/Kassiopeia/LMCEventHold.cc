@@ -21,6 +21,9 @@ namespace locust
             fAccumulateTruthInfo( false ),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
+            fConfiguredEMin( 0. ),
+            fConfiguredPitchMin( 0. ),
+            fConfiguredXMin( 0. ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -30,6 +33,9 @@ namespace locust
             fAccumulateTruthInfo( false ),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
+            fConfiguredEMin( 0. ),
+            fConfiguredPitchMin( 0. ),
+            fConfiguredXMin( 0. ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -88,6 +94,18 @@ namespace locust
 	    if ( aParam.has( "accumulate-truth-info" ) )
 	    {
 	    	fAccumulateTruthInfo = aParam["accumulate-truth-info"]().as_bool();
+	    }
+	    if ( aParam.has( "ks-starting-energy-min" ) )
+	    {
+	        fConfiguredEMin = aParam["ks-starting-energy-min"]().as_double();
+	    }
+	    if ( aParam.has( "ks-starting-pitch-min" ) )
+	    {
+	        fConfiguredPitchMin = aParam["ks-starting-pitch-min"]().as_double();
+	    }
+	    if ( aParam.has( "ks-starting-xpos-min" ) )
+	    {
+	    	fConfiguredXMin = aParam["ks-starting-xpos-min"]().as_double();
 	    }
 
 
@@ -175,20 +193,24 @@ namespace locust
             LPROG( lmclog, "A json file for meta-data was not found.  Opening a new one now." );
         }
 
-        std::ofstream ost {fJsonFileName, std::ios_base::out};
+        FILE *file = std::fopen(fJsonFileName.c_str(), "w");
 
 
 #ifdef ROOT_FOUND
         if (bNewRun)  // If there are no run parameters in the json file yet, write them now:
         {
-            ost << "{\n";
-            ost << "    \"run-id\": "<< "\"" << fInterface->aRunParameter->fRunID << "\",\n";
-            ost << "    \"run-parameters\": {\n";
-            ost << "        \"run-type\": "<< "\"" << fInterface->aRunParameter->fDataType << "\",\n";
-            ost << "        \"simulation-type\": "<< "\"" << fInterface->aRunParameter->fSimulationType << "\",\n";
-            ost << "        \"simulation-subtype\": "<< "\"" << fInterface->aRunParameter->fSimulationSubType << "\",\n";
-            ost << "        \"sampling-freq-mega-hz\": "<< "\"" << fInterface->aRunParameter->fSamplingRateMHz << "\"\n";
-            ost << "    },\n";
+            fprintf(file, "{\n");
+            fprintf(file, "    \"run-id\": \"%ld\",\n", fInterface->aRunParameter->fRunID);
+            fprintf(file, "    \"run-parameters\": {\n");
+            fprintf(file, "        \"run-type\": \"%s\",\n", fInterface->aRunParameter->fDataType.c_str());
+            fprintf(file, "        \"simulation-type\": \"%s\",\n", fInterface->aRunParameter->fSimulationType.c_str());
+            fprintf(file, "        \"simulation-subtype\": \"%s\",\n", fInterface->aRunParameter->fSimulationSubType.c_str());
+            fprintf(file, "        \"sampling-freq-mega-hz\": \"%.1f\",\n", fInterface->aRunParameter->fSamplingRateMHz);
+            fprintf(file, "        \"configured-e-min\": \"%12.6f\",\n", fConfiguredEMin);
+            fprintf(file, "        \"configured-pitch-min\": \"%10.7f\",\n", fConfiguredPitchMin);
+            fprintf(file, "        \"configured-x-min\": \"%9.7f\",\n", fConfiguredXMin);
+            fprintf(file, "        \"random-seed\": \"%ld\"\n", fEventSeed);
+            fprintf(file, "    },\n");
         }
         else // otherwise re-write the file:
         {
@@ -196,11 +218,11 @@ namespace locust
             {
                 if (i < v.size()-1)
                 {
-                    ost << v[i] << "\n";
+                    fprintf(file,"%s\n", v[i].c_str());
                 }
                 else
                 {
-                    ost << v[i] << ",\n";
+                    fprintf(file,"%s,\n", v[i].c_str());
                 }
             }
         }
@@ -208,30 +230,34 @@ namespace locust
 
         // Write the latest event information here:
 
-        ost << "    \"" << fInterface->anEvent->fEventID << "\": {\n";
-        ost << "        \"ntracks\": "<< "\"" << fInterface->anEvent->fNTracks << "\",\n";
+        fprintf(file,"    \"%ld\": {\n", fInterface->anEvent->fEventID);
+        fprintf(file,"        \"ntracks\": \"%d\",\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
-            ost << "        \"" << fInterface->anEvent->fTrackIDs[i] << "\":\n";
-            ost << "         {\n";
-            ost << "             \"start-time\": "<< "\"" << fInterface->anEvent->fStartTimes[i] << "\",\n";
-            ost << "             \"end-time\": "<< "\"" << fInterface->anEvent->fEndTimes[i] << "\",\n";
-            ost << "             \"output-avg-frequency\": "<< "\"" << fInterface->anEvent->fOutputAvgFrequencies[i] << "\",\n";
-            ost << "             \"pitch-angle\": "<< "\"" << fInterface->anEvent->fPitchAngles[i] << "\",\n";
-            ost << "             \"avg-axial-frequency\": "<< "\"" << fInterface->anEvent->fAvgAxialFrequencies[i] << "\"\n";
+            fprintf(file,"        \"%d\":\n", fInterface->anEvent->fTrackIDs[i]);
+            fprintf(file,"         {\n");
+            fprintf(file,"             \"start-time\": \"%g\",\n", fInterface->anEvent->fStartTimes[i]);
+            fprintf(file,"             \"end-time\": \"%g\",\n", fInterface->anEvent->fEndTimes[i]);
+            fprintf(file,"             \"energy-ev\": \"%g\",\n", fInterface->anEvent->fStartingEnergies_eV[i]);
+            fprintf(file,"             \"start-radius\": \"%g\",\n", fInterface->anEvent->fRadii[i]);
+            fprintf(file,"             \"start-radial-phase\": \"%g\",\n", fInterface->anEvent->fRadialPhases[i]);
+            fprintf(file,"             \"output-avg-frequency\": \"%g\",\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
+            fprintf(file,"             \"pitch-angle\": \"%.2f\",\n", fInterface->anEvent->fPitchAngles[i]);
+            fprintf(file,"             \"avg-axial-frequency\": \"%g\"\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
             if (i < fInterface->anEvent->fNTracks-1)
             {
-                ost << "         },\n";
+                fprintf(file,"         },\n");
             }
             else
             {
-            	ost << "         }\n";
+            	fprintf(file,"         }\n");
             }
         }
-        ost << "    }\n";
-        ost << "}\n";
+        fprintf(file,"    }\n");
+        fprintf(file,"}\n");
 
 #endif
+        std::fclose(file);
 
         return true;
     }
