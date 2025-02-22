@@ -53,6 +53,9 @@ namespace locust
         private:
             bool fConfigurationComplete;
             long int fEventSeed;
+            double fConfiguredEMin;
+            double fConfiguredPitchMin;
+            double fConfiguredXMin;
 
     };
 
