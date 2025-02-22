@@ -19,12 +19,10 @@ namespace locust
         fCavityProbeRFrac( {0.5, 0.5, 0.5} ),
         fCavityProbeTheta( {0.0, 0.0, 0.0} ),
         fCaterpillarCavity( false ),
-        fApplyDopplerShift( true )
+        fApplyDopplerShift( false )
         {}
 
     CylindricalCavity::~CylindricalCavity() {}
-
-
 
     bool CylindricalCavity::Configure( const scarab::param_node& aParam)
     {

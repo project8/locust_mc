@@ -145,8 +145,8 @@ namespace locust
             fBFactor[bTE].resize(nModes);
             fCavityDampingFactor[bTE].resize(nModes);
             fHannekePowerFactor[bTE].resize(nModes);
-            fCavityOmega[bTE].resize(2);
-            fCavityOmegaPrime[bTE].resize(2);
+            fCavityOmega[bTE].resize(nModes);
+            fCavityOmegaPrime[bTE].resize(nModes);
 
             for(int l=0; l<nModes; l++)
             {

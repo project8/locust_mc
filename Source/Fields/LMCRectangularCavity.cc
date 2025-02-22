@@ -13,10 +13,11 @@ namespace locust
 
     LOGGER( lmclog, "RectangularCavity" );
     RectangularCavity::RectangularCavity():
-    	fProbeGain( {1., 1.}),
-		fCavityProbeZ( {0., 0.} ),
-		fCavityProbeRFrac( {0.5, 0.5} ),
-		fCavityProbeTheta( {0.0, 0.0} )
+        fProbeGain( {1., 1.}),
+        fCavityProbeZ( {0., 0.} ),
+        fCavityProbeRFrac( {0.5, 0.5} ),
+        fCavityProbeTheta( {0.0, 0.0} ),
+        fApplyDopplerShift( false )
 		{}
 
     RectangularCavity::~RectangularCavity() {}
@@ -31,6 +32,11 @@ namespace locust
     		LERROR(lmclog,"Error configuring Field class from RectangularCavity subclass");
     		return false;
     	}
+
+        if( aParam.has( "apply-doppler-shift" ) )
+        {
+            fApplyDopplerShift = aParam["apply-doppler-shift"]().as_bool();
+        }
 
         if( aParam.has( "cavity-x" ) )
         {
@@ -196,7 +202,7 @@ namespace locust
     	double lambda = 1. / sqrt( 1. / lambda_c / lambda_c + n*n / 4. / GetDimL() / GetDimL() );
     	double vp = LMCConst::C() * sqrt( 1. - lambda*lambda / lambda_c/lambda_c );
     	double dopplerShift = 0.;
-    	if (vp > 0.) dopplerShift = vz / vp;
+    	if ((vp > 0.) && (fApplyDopplerShift)) dopplerShift = vz / vp;
 		freqPrime.push_back( ( 1. + dopplerShift ) * tKassParticleXP[7] );
 
     	return freqPrime;

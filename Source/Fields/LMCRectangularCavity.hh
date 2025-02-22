@@ -73,6 +73,8 @@ namespace locust
             std::vector<double> fCavityProbeRFrac;
             std::vector<double> fCavityProbeTheta;
             std::vector<double> fProbeGain;
+            bool fApplyDopplerShift;
+
 
     };
 

@@ -19,6 +19,7 @@ namespace locust
         fNChannels( 1 ),
         fbMultiMode( false ),
         fTM111( false ),
+        fTE012( false ),
         fR( 0.18 ),
         fL( 3.0 ),
         fX( 0.010668 ),
@@ -56,7 +57,20 @@ namespace locust
         	fTM111 = aParam["tm111-mode"]().as_bool();
         }
 
-    	if( aParam.has( "n-pixels" ) )
+        if( aParam.has( "te012-mode" ) )
+        {
+            LPROG(lmclog,"Running with TE012 only.  Set parameter n-modes = 3");
+            fTE012 = aParam["te012-mode"]().as_bool();
+        }
+
+        if( aParam.has( "te013-mode" ) )
+        {
+            LPROG(lmclog,"Running with TE013 only.  Set parameter n-modes = 4");
+            fTE013 = aParam["te013-mode"]().as_bool();
+        }
+
+
+        if( aParam.has( "n-pixels" ) )
     	{
     		SetNPixels(aParam["n-pixels"]().as_int());
     	}
@@ -111,6 +125,14 @@ namespace locust
     	    	    if ( fTM111 )
     	    	    {
     	    	        tModeSet.push_back( {0,1,1,1} );
+    	    	    }
+    	    	    else if ( fTE012 )
+    	    	    {
+    	    	        tModeSet.push_back( {1,0,1,2} );
+    	    	    }
+    	    	    else if ( fTE013 )
+    	    	    {
+    	    	    	tModeSet.push_back( {1,0,1,3} );
     	    	    }
     	    	    else
     	    	    {

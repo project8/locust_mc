@@ -148,6 +148,8 @@ namespace locust
             std::string fOutputPath;
             bool fbMultiMode;
             bool fTM111;
+            bool fTE012;
+            bool fTE013;
 
 
     };
