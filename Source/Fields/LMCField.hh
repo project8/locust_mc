@@ -149,6 +149,7 @@ namespace locust
             bool fbMultiMode;
             bool fTM111;
             bool fTE012;
+            bool fTE013;
 
 
     };

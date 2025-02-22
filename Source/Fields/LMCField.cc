@@ -59,9 +59,16 @@ namespace locust
 
         if( aParam.has( "te012-mode" ) )
         {
-            LPROG(lmclog,"Running with TE012 only.");
+            LPROG(lmclog,"Running with TE012 only.  Set parameter n-modes = 3");
             fTE012 = aParam["te012-mode"]().as_bool();
         }
+
+        if( aParam.has( "te013-mode" ) )
+        {
+            LPROG(lmclog,"Running with TE013 only.  Set parameter n-modes = 4");
+            fTE013 = aParam["te013-mode"]().as_bool();
+        }
+
 
         if( aParam.has( "n-pixels" ) )
     	{
@@ -122,6 +129,10 @@ namespace locust
     	    	    else if ( fTE012 )
     	    	    {
     	    	        tModeSet.push_back( {1,0,1,2} );
+    	    	    }
+    	    	    else if ( fTE013 )
+    	    	    {
+    	    	    	tModeSet.push_back( {1,0,1,3} );
     	    	    }
     	    	    else
     	    	    {
