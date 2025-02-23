@@ -20,6 +20,7 @@ namespace locust
         fbMultiMode( false ),
         fTM111( false ),
         fTE012( false ),
+        fTE013( false ),
         fR( 0.18 ),
         fL( 3.0 ),
         fX( 0.010668 ),
