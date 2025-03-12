@@ -14,6 +14,7 @@
 
 #include <csignal>
 
+
 using namespace katrin;
 namespace locust
 {
@@ -191,7 +192,7 @@ namespace locust
                 }
                 else
                 {
-                	KRandom::GetInstance().SetSeed(time(NULL));
+                    GetSeed( aParam );
                 }
 
                 auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
@@ -337,7 +338,9 @@ namespace locust
         }
         else
         {
-            tSeed = time(NULL);
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            tSeed = tv.tv_usec;
         }
         LPROG(lmclog,"Setting random seed for track length to " << tSeed);
         return tSeed;
