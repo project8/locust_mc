@@ -320,7 +320,6 @@ namespace locust
 #ifdef ROOT_FOUND
         delete fInterface->anEvent;
         delete fInterface->aTrack;
-        delete fInterface->aRunParameter;
 #endif
         return true;
     }
