@@ -192,7 +192,7 @@ namespace locust
                 }
                 else
                 {
-                    GetSeed( aParam );
+                	KRandom::GetInstance().SetSeed( GetSeed( aParam ));
                 }
 
                 auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
