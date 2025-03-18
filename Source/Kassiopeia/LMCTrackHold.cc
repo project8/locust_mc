@@ -65,10 +65,19 @@ namespace locust
     {
 #ifdef ROOT_FOUND
         fInterface->aTrack->Initialize();
+        if ( fInterface->anEvent->fNTracks > 0 )
+        {
+            // Ongoing event
+            fInterface->aTrack->TrackID = fTrackCounter;
+        }
+        else
+        {
+            // New event starting
+            fTrackCounter = 0;
+        }
 #endif
         fInterface->fNewTrackStarting = true;
         double tTime = aTrack.GetInitialParticle().GetTime();
-
         double tPitchAngle = aTrack.GetInitialParticle().GetPolarAngleToB();
         LWARN(lmclog,"LMCTrack " << fTrackCounter << " is starting at Kass time " << tTime << " with instantaneous pitch angle " <<  tPitchAngle);
         return true;
@@ -79,14 +88,13 @@ namespace locust
         if ( aTrack.GetTotalSteps() > 0)
         {
 #ifdef ROOT_FOUND
-        	fInterface->aTrack->TrackID = fTrackCounter;
             fInterface->anEvent->AddTrack( fInterface->aTrack );
-#endif
+            double tTime = aTrack.GetFinalParticle().GetTime();
+            LWARN(lmclog,"LMCTrack " << fTrackCounter << " is complete at Kass time " << tTime << " with total steps " << aTrack.GetTotalSteps() );
             fTrackCounter += 1;
+#endif
         }
 
-        double tTime = aTrack.GetFinalParticle().GetTime();
-        LWARN(lmclog,"LMCTrack " << fTrackCounter << " is complete at Kass time " << tTime << " with total steps " << aTrack.GetTotalSteps() );
         return true;
     }
 

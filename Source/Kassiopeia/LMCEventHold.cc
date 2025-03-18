@@ -24,6 +24,7 @@ namespace locust
             fConfiguredEMin( 0. ),
             fConfiguredPitchMin( 0. ),
             fConfiguredXMin( 0. ),
+            fEventCounter ( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -197,6 +198,7 @@ namespace locust
 
 
 #ifdef ROOT_FOUND
+        fEventCounter = 0;
         if (bNewRun)  // If there are no run parameters in the json file yet, write them now:
         {
             fprintf(file, "{\n");
@@ -216,6 +218,8 @@ namespace locust
         {
             for (int i = 0; i < v.size(); i++)
             {
+                //increment the event counter
+                if ( v[i].find("\"event-tag\"") != std::string::npos ) fEventCounter += 1;
                 if (i < v.size()-1)
                 {
                     fprintf(file,"%s\n", v[i].c_str());
@@ -230,7 +234,8 @@ namespace locust
 
         // Write the latest event information here:
 
-        fprintf(file,"    \"%ld\": {\n", fInterface->anEvent->fEventID);
+        fprintf(file,"    \"%d\": {\n", fEventCounter);
+        fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
         fprintf(file,"        \"ntracks\": \"%d\",\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
