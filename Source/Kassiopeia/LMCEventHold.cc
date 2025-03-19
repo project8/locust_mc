@@ -174,14 +174,16 @@ namespace locust
     {
         std::ifstream jsonFile(fJsonFileName); // Open json file for inspection
         bool bNewRun = true;
+        fEventCounter = 0;
         std::vector<std::string> v;
         if (jsonFile.is_open())
         {
             std::string line;
             while (std::getline(jsonFile, line))
             {
-                LPROG( lmclog, line );
                 bNewRun = !line.find("run-id");
+                //increment the event counter
+                if ( line.find("\"event-tag\"") != std::string::npos ) fEventCounter += 1;
                 if (line != "}")  // Avoid saving the last "}".  It will be appended below.
                 {
                     v.push_back(line);
@@ -198,7 +200,6 @@ namespace locust
 
 
 #ifdef ROOT_FOUND
-        fEventCounter = 0;
         if (bNewRun)  // If there are no run parameters in the json file yet, write them now:
         {
             fprintf(file, "{\n");
@@ -213,16 +214,22 @@ namespace locust
             fprintf(file, "        \"configured-x-min\": \"%9.7f\",\n", fConfiguredXMin);
             fprintf(file, "        \"random-seed\": \"%ld\"\n", fEventSeed);
             fprintf(file, "    },\n");
+            fprintf(file, "    \"nevents\": %d\n", fEventCounter);
         }
         else // otherwise re-write the file:
         {
             for (int i = 0; i < v.size(); i++)
             {
-                //increment the event counter
-                if ( v[i].find("\"event-tag\"") != std::string::npos ) fEventCounter += 1;
                 if (i < v.size()-1)
                 {
-                    fprintf(file,"%s\n", v[i].c_str());
+                    if ( v[i].find("\"nevents\"") != std::string::npos )
+                    {
+                    	fprintf(file, "    \"nevents\": %d,\n", fEventCounter+1);
+                    }
+                    else
+                    {
+                        fprintf(file,"%s\n", v[i].c_str());
+                    }
                 }
                 else
                 {
@@ -236,19 +243,19 @@ namespace locust
 
         fprintf(file,"    \"%d\": {\n", fEventCounter);
         fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
-        fprintf(file,"        \"ntracks\": \"%d\",\n", fInterface->anEvent->fNTracks);
+        fprintf(file,"        \"ntracks\": %d,\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
             fprintf(file,"        \"%d\":\n", fInterface->anEvent->fTrackIDs[i]);
             fprintf(file,"         {\n");
-            fprintf(file,"             \"start-time\": \"%g\",\n", fInterface->anEvent->fStartTimes[i]);
-            fprintf(file,"             \"end-time\": \"%g\",\n", fInterface->anEvent->fEndTimes[i]);
-            fprintf(file,"             \"energy-ev\": \"%g\",\n", fInterface->anEvent->fStartingEnergies_eV[i]);
-            fprintf(file,"             \"start-radius\": \"%g\",\n", fInterface->anEvent->fRadii[i]);
-            fprintf(file,"             \"start-radial-phase\": \"%g\",\n", fInterface->anEvent->fRadialPhases[i]);
-            fprintf(file,"             \"output-avg-frequency\": \"%g\",\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
-            fprintf(file,"             \"pitch-angle\": \"%.2f\",\n", fInterface->anEvent->fPitchAngles[i]);
-            fprintf(file,"             \"avg-axial-frequency\": \"%g\"\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
+            fprintf(file,"             \"start-time\": %g,\n", fInterface->anEvent->fStartTimes[i]);
+            fprintf(file,"             \"end-time\": %g,\n", fInterface->anEvent->fEndTimes[i]);
+            fprintf(file,"             \"energy-ev\": %g,\n", fInterface->anEvent->fStartingEnergies_eV[i]);
+            fprintf(file,"             \"start-radius\": %g,\n", fInterface->anEvent->fRadii[i]);
+            fprintf(file,"             \"start-radial-phase\": %g,\n", fInterface->anEvent->fRadialPhases[i]);
+            fprintf(file,"             \"output-avg-frequency\": %g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
+            fprintf(file,"             \"pitch-angle\": %.2f,\n", fInterface->anEvent->fPitchAngles[i]);
+            fprintf(file,"             \"avg-axial-frequency\": %g\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
             if (i < fInterface->anEvent->fNTracks-1)
             {
                 fprintf(file,"         },\n");
