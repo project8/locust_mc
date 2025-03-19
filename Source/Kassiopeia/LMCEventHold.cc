@@ -214,7 +214,7 @@ namespace locust
             fprintf(file, "        \"configured-x-min\": \"%9.7f\",\n", fConfiguredXMin);
             fprintf(file, "        \"random-seed\": \"%ld\"\n", fEventSeed);
             fprintf(file, "    },\n");
-            fprintf(file, "    \"nevents\": %d\n", fEventCounter);
+            fprintf(file, "    \"nevents\": %d\n", fEventCounter+1);
         }
         else // otherwise re-write the file:
         {
