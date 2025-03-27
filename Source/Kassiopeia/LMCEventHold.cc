@@ -24,6 +24,7 @@ namespace locust
             fConfiguredEMin( 0. ),
             fConfiguredPitchMin( 0. ),
             fConfiguredXMin( 0. ),
+            fConfiguredYMin( 0. ),
             fEventCounter ( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
@@ -37,6 +38,7 @@ namespace locust
             fConfiguredEMin( 0. ),
             fConfiguredPitchMin( 0. ),
             fConfiguredXMin( 0. ),
+            fConfiguredYMin( 0. ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -107,6 +109,10 @@ namespace locust
 	    if ( aParam.has( "ks-starting-xpos-min" ) )
 	    {
 	    	fConfiguredXMin = aParam["ks-starting-xpos-min"]().as_double();
+	    }
+	    if ( aParam.has( "ks-starting-ypos-min" ) )
+	    {
+	    	fConfiguredYMin = aParam["ks-starting-ypos-min"]().as_double();
 	    }
 
 
@@ -212,6 +218,7 @@ namespace locust
             fprintf(file, "        \"configured-e-min\": \"%12.6f\",\n", fConfiguredEMin);
             fprintf(file, "        \"configured-pitch-min\": \"%10.7f\",\n", fConfiguredPitchMin);
             fprintf(file, "        \"configured-x-min\": \"%9.7f\",\n", fConfiguredXMin);
+            fprintf(file, "        \"configured-y-min\": \"%9.7f\",\n", fConfiguredYMin);
             fprintf(file, "        \"random-seed\": \"%ld\"\n", fEventSeed);
             fprintf(file, "    },\n");
             fprintf(file, "    \"nevents\": %d\n", fEventCounter+1);
