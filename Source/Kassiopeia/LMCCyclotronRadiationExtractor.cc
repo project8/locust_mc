@@ -80,6 +80,7 @@ namespace locust
             fInterface->aTrack->Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack->RadialPhase = calcOrbitPhase(tX, tY);
             fInterface->aTrack->StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
+            fInterface->aTrack->OutputStartFrequency = aFinalParticle.GetCyclotronFrequency() + tOffset;
     	}
     	else
     	{
@@ -153,7 +154,6 @@ namespace locust
                 fInterface->aTrack->StartFrequency = aFinalParticle.GetCyclotronFrequency();
                 double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
                 double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
-                fInterface->aTrack->OutputStartFrequency = fInterface->aTrack->StartFrequency - tLOfrequency + tSamplingRate * 1.e6 / 2.;
 #endif
             }
             else
