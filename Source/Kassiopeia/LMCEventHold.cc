@@ -216,9 +216,9 @@ namespace locust
             fprintf(file, "        \"simulation-subtype\": \"%s\",\n", fInterface->aRunParameter->fSimulationSubType.c_str());
             fprintf(file, "        \"sampling-freq-mega-hz\": \"%.1f\",\n", fInterface->aRunParameter->fSamplingRateMHz);
             fprintf(file, "        \"configured-e-min\": \"%12.6f\",\n", fConfiguredEMin);
-            fprintf(file, "        \"configured-pitch-min\": \"%10.7f\",\n", fConfiguredPitchMin);
-            fprintf(file, "        \"configured-x-min\": \"%9.7f\",\n", fConfiguredXMin);
-            fprintf(file, "        \"configured-y-min\": \"%9.7f\",\n", fConfiguredYMin);
+            fprintf(file, "        \"configured-pitch-min\": \"%12.9f\",\n", fConfiguredPitchMin);
+            fprintf(file, "        \"configured-x-min\": \"%11.9f\",\n", fConfiguredXMin);
+            fprintf(file, "        \"configured-y-min\": \"%11.9f\",\n", fConfiguredYMin);
             fprintf(file, "        \"random-seed\": \"%ld\"\n", fEventSeed);
             fprintf(file, "    },\n");
             fprintf(file, "    \"nevents\": %d\n", fEventCounter+1);
@@ -261,7 +261,7 @@ namespace locust
             fprintf(file,"             \"start-radius\": %g,\n", fInterface->anEvent->fRadii[i]);
             fprintf(file,"             \"start-radial-phase\": %g,\n", fInterface->anEvent->fRadialPhases[i]);
             fprintf(file,"             \"output-avg-frequency\": %g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
-            fprintf(file,"             \"pitch-angle\": %.2f,\n", fInterface->anEvent->fPitchAngles[i]);
+            fprintf(file,"             \"pitch-angle\": %.6f,\n", fInterface->anEvent->fPitchAngles[i]);
             fprintf(file,"             \"avg-axial-frequency\": %g\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
             if (i < fInterface->anEvent->fNTracks-1)
             {
