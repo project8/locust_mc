@@ -25,7 +25,10 @@ namespace locust
 		fDataType( "simulation" ),
 		fSimulationType( "rectangular-waveguide" ),
 		fSimulationSubType( "none" ),
-		fRunID( 0 )
+		fRunID( 0 ),
+		fKassiopeiaSeed( 0 ),
+		fTrackLengthSeed( 0 ),
+		fTrackDelaySeed( 0 )
     {
         time_t rawtime;
         struct tm * timeInfo;

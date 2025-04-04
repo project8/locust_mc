@@ -24,6 +24,8 @@ namespace locust
             fConfiguredEMin( 0. ),
             fConfiguredPitchMin( 0. ),
             fConfiguredXMin( 0. ),
+            fConfiguredYMin( 0. ),
+            fEventCounter ( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -36,6 +38,7 @@ namespace locust
             fConfiguredEMin( 0. ),
             fConfiguredPitchMin( 0. ),
             fConfiguredXMin( 0. ),
+            fConfiguredYMin( 0. ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -107,6 +110,10 @@ namespace locust
 	    {
 	    	fConfiguredXMin = aParam["ks-starting-xpos-min"]().as_double();
 	    }
+	    if ( aParam.has( "ks-starting-ypos-min" ) )
+	    {
+	    	fConfiguredYMin = aParam["ks-starting-ypos-min"]().as_double();
+	    }
 
 
     	return true;
@@ -118,7 +125,7 @@ namespace locust
     {
 #ifdef ROOT_FOUND
         fInterface->anEvent = new Event();
-        fInterface->anEvent->Initialize( fEventSeed );
+        fInterface->anEvent->Initialize();
         fInterface->aTrack = new Track();
         fInterface->aTrack->Initialize();
 #endif
@@ -173,14 +180,16 @@ namespace locust
     {
         std::ifstream jsonFile(fJsonFileName); // Open json file for inspection
         bool bNewRun = true;
+        fEventCounter = 0;
         std::vector<std::string> v;
         if (jsonFile.is_open())
         {
             std::string line;
             while (std::getline(jsonFile, line))
             {
-                LPROG( lmclog, line );
                 bNewRun = !line.find("run-id");
+                //increment the event counter
+                if ( line.find("\"event-tag\"") != std::string::npos ) fEventCounter += 1;
                 if (line != "}")  // Avoid saving the last "}".  It will be appended below.
                 {
                     v.push_back(line);
@@ -207,10 +216,11 @@ namespace locust
             fprintf(file, "        \"simulation-subtype\": \"%s\",\n", fInterface->aRunParameter->fSimulationSubType.c_str());
             fprintf(file, "        \"sampling-freq-mega-hz\": \"%.1f\",\n", fInterface->aRunParameter->fSamplingRateMHz);
             fprintf(file, "        \"configured-e-min\": \"%12.6f\",\n", fConfiguredEMin);
-            fprintf(file, "        \"configured-pitch-min\": \"%10.7f\",\n", fConfiguredPitchMin);
-            fprintf(file, "        \"configured-x-min\": \"%9.7f\",\n", fConfiguredXMin);
-            fprintf(file, "        \"random-seed\": \"%ld\"\n", fEventSeed);
+            fprintf(file, "        \"configured-pitch-min\": \"%12.9f\",\n", fConfiguredPitchMin);
+            fprintf(file, "        \"configured-x-min\": \"%11.9f\",\n", fConfiguredXMin);
+            fprintf(file, "        \"configured-y-min\": \"%11.9f\",\n", fConfiguredYMin);
             fprintf(file, "    },\n");
+            fprintf(file, "    \"nevents\": %d\n", fEventCounter+1);
         }
         else // otherwise re-write the file:
         {
@@ -218,7 +228,14 @@ namespace locust
             {
                 if (i < v.size()-1)
                 {
-                    fprintf(file,"%s\n", v[i].c_str());
+                    if ( v[i].find("\"nevents\"") != std::string::npos )
+                    {
+                    	fprintf(file, "    \"nevents\": %d,\n", fEventCounter+1);
+                    }
+                    else
+                    {
+                        fprintf(file,"%s\n", v[i].c_str());
+                    }
                 }
                 else
                 {
@@ -230,20 +247,25 @@ namespace locust
 
         // Write the latest event information here:
 
-        fprintf(file,"    \"%ld\": {\n", fInterface->anEvent->fEventID);
-        fprintf(file,"        \"ntracks\": \"%d\",\n", fInterface->anEvent->fNTracks);
+        fprintf(file,"    \"%d\": {\n", fEventCounter);
+        fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
+        fprintf(file,"        \"kassiopeia-seed\": %d\n", fInterface->aRunParameter->fKassiopeiaSeed);
+        fprintf(file,"        \"track-length-seed\": %d\n", fInterface->aRunParameter->fTrackLengthSeed);
+        fprintf(file,"        \"track-delay-seed\": %d\n", fInterface->aRunParameter->fTrackDelaySeed);
+        fprintf(file,"        \"ntracks\": %d,\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
             fprintf(file,"        \"%d\":\n", fInterface->anEvent->fTrackIDs[i]);
             fprintf(file,"         {\n");
-            fprintf(file,"             \"start-time\": \"%g\",\n", fInterface->anEvent->fStartTimes[i]);
-            fprintf(file,"             \"end-time\": \"%g\",\n", fInterface->anEvent->fEndTimes[i]);
-            fprintf(file,"             \"energy-ev\": \"%g\",\n", fInterface->anEvent->fStartingEnergies_eV[i]);
-            fprintf(file,"             \"start-radius\": \"%g\",\n", fInterface->anEvent->fRadii[i]);
-            fprintf(file,"             \"start-radial-phase\": \"%g\",\n", fInterface->anEvent->fRadialPhases[i]);
-            fprintf(file,"             \"output-avg-frequency\": \"%g\",\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
-            fprintf(file,"             \"pitch-angle\": \"%.2f\",\n", fInterface->anEvent->fPitchAngles[i]);
-            fprintf(file,"             \"avg-axial-frequency\": \"%g\"\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
+            fprintf(file,"             \"start-time\": %g,\n", fInterface->anEvent->fStartTimes[i]);
+            fprintf(file,"             \"end-time\": %g,\n", fInterface->anEvent->fEndTimes[i]);
+            fprintf(file,"             \"energy-ev\": %g,\n", fInterface->anEvent->fStartingEnergies_eV[i]);
+            fprintf(file,"             \"start-radius\": %g,\n", fInterface->anEvent->fRadii[i]);
+            fprintf(file,"             \"start-radial-phase\": %g,\n", fInterface->anEvent->fRadialPhases[i]);
+            fprintf(file,"             \"output-avg-frequency\": %g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
+            fprintf(file,"             \"output-inst-start-frequency\": %g,\n", fInterface->anEvent->fOutputStartFrequencies[i]);
+            fprintf(file,"             \"pitch-angle\": %.6f,\n", fInterface->anEvent->fPitchAngles[i]);
+            fprintf(file,"             \"avg-axial-frequency\": %g\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
             if (i < fInterface->anEvent->fNTracks-1)
             {
                 fprintf(file,"         },\n");
@@ -320,7 +342,6 @@ namespace locust
 #ifdef ROOT_FOUND
         delete fInterface->anEvent;
         delete fInterface->aTrack;
-        delete fInterface->aRunParameter;
 #endif
         return true;
     }
