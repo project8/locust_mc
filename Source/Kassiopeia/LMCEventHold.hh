@@ -57,6 +57,7 @@ namespace locust
             double fConfiguredPitchMin;
             double fConfiguredXMin;
             double fConfiguredYMin;
+            double fConfiguredZMin;
             int fEventCounter;
 
     };
