@@ -25,6 +25,7 @@ namespace locust
             fConfiguredPitchMin( 0. ),
             fConfiguredXMin( 0. ),
             fConfiguredYMin( 0. ),
+            fConfiguredZMin( 0. ),
             fEventCounter ( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
@@ -39,6 +40,7 @@ namespace locust
             fConfiguredPitchMin( 0. ),
             fConfiguredXMin( 0. ),
             fConfiguredYMin( 0. ),
+            fConfiguredZMin( 0. ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -113,6 +115,10 @@ namespace locust
 	    if ( aParam.has( "ks-starting-ypos-min" ) )
 	    {
 	    	fConfiguredYMin = aParam["ks-starting-ypos-min"]().as_double();
+	    }
+	    if ( aParam.has( "ks-starting-zpos-min" ) )
+	    {
+	    	fConfiguredZMin = aParam["ks-starting-zpos-min"]().as_double();
 	    }
 
 
@@ -219,8 +225,9 @@ namespace locust
             fprintf(file, "        \"configured-pitch-min\": \"%12.9f\",\n", fConfiguredPitchMin);
             fprintf(file, "        \"configured-x-min\": \"%11.9f\",\n", fConfiguredXMin);
             fprintf(file, "        \"configured-y-min\": \"%11.9f\",\n", fConfiguredYMin);
+            fprintf(file, "        \"configured-z-min\": \"%11.9f\"\n", fConfiguredZMin);
             fprintf(file, "    },\n");
-            fprintf(file, "    \"nevents\": %d\n", fEventCounter+1);
+            fprintf(file, "    \"nevents\": %d,\n", fEventCounter+1);
         }
         else // otherwise re-write the file:
         {
@@ -249,9 +256,9 @@ namespace locust
 
         fprintf(file,"    \"%d\": {\n", fEventCounter);
         fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
-        fprintf(file,"        \"kassiopeia-seed\": %d\n", fInterface->aRunParameter->fKassiopeiaSeed);
-        fprintf(file,"        \"track-length-seed\": %d\n", fInterface->aRunParameter->fTrackLengthSeed);
-        fprintf(file,"        \"track-delay-seed\": %d\n", fInterface->aRunParameter->fTrackDelaySeed);
+        fprintf(file,"        \"kassiopeia-seed\": %d,\n", fInterface->aRunParameter->fKassiopeiaSeed);
+        fprintf(file,"        \"track-length-seed\": %d,\n", fInterface->aRunParameter->fTrackLengthSeed);
+        fprintf(file,"        \"track-delay-seed\": %d,\n", fInterface->aRunParameter->fTrackDelaySeed);
         fprintf(file,"        \"ntracks\": %d,\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
