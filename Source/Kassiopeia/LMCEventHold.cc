@@ -125,7 +125,7 @@ namespace locust
     {
 #ifdef ROOT_FOUND
         fInterface->anEvent = new Event();
-        fInterface->anEvent->Initialize( fEventSeed );
+        fInterface->anEvent->Initialize();
         fInterface->aTrack = new Track();
         fInterface->aTrack->Initialize();
 #endif
@@ -219,7 +219,6 @@ namespace locust
             fprintf(file, "        \"configured-pitch-min\": \"%12.9f\",\n", fConfiguredPitchMin);
             fprintf(file, "        \"configured-x-min\": \"%11.9f\",\n", fConfiguredXMin);
             fprintf(file, "        \"configured-y-min\": \"%11.9f\",\n", fConfiguredYMin);
-            fprintf(file, "        \"random-seed\": \"%ld\"\n", fEventSeed);
             fprintf(file, "    },\n");
             fprintf(file, "    \"nevents\": %d\n", fEventCounter+1);
         }
@@ -250,6 +249,9 @@ namespace locust
 
         fprintf(file,"    \"%d\": {\n", fEventCounter);
         fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
+        fprintf(file,"        \"kassiopeia-seed\": %d\n", fInterface->aRunParameter->fKassiopeiaSeed);
+        fprintf(file,"        \"track-length-seed\": %d\n", fInterface->aRunParameter->fTrackLengthSeed);
+        fprintf(file,"        \"track-delay-seed\": %d\n", fInterface->aRunParameter->fTrackDelaySeed);
         fprintf(file,"        \"ntracks\": %d,\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
