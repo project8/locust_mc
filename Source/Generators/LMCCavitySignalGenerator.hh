@@ -88,6 +88,7 @@ namespace locust
             const scarab::param_node* GetParameters();
             void SetParameters( const scarab::param_node& aNode );
             bool SetSeed(int aSeed);
+            int GetSeed();
 
 
 

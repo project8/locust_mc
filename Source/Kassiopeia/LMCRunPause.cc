@@ -14,6 +14,7 @@
 
 #include <csignal>
 
+
 using namespace katrin;
 namespace locust
 {
@@ -183,16 +184,14 @@ namespace locust
 		    &&   aParam.has( "ks-starting-energy-min" ) && aParam.has( "ks-starting-energy-max" )
 		    &&   aParam.has( "ks-starting-pitch-min" ) && aParam.has( "ks-starting-pitch-max" ) )
             {
-                int tSeed = 0;
-                if ( aParam.has( "random-track-seed" ) )
-                {
-                    tSeed = aParam["random-track-seed"]().as_int();
-                	KRandom::GetInstance().SetSeed(tSeed);
-                }
-                else
-                {
-                	KRandom::GetInstance().SetSeed(time(NULL));
-                }
+                int tSeed = GetSeed( aParam );
+                KRandom::GetInstance().SetSeed(tSeed);
+#ifdef ROOT_FOUND
+                fInterface->aRunParameter->fKassiopeiaSeed = tSeed;
+#endif
+
+                LPROG(lmclog,"Setting Kass random seed to " << tSeed);
+
 
                 auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
                 for (unsigned i=0; i<tGen.size(); i++)
@@ -337,9 +336,10 @@ namespace locust
         }
         else
         {
-            tSeed = time(NULL);
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            tSeed = tv.tv_usec;
         }
-        LPROG(lmclog,"Setting random seed for track length to " << tSeed);
         return tSeed;
     }
 
@@ -384,10 +384,15 @@ namespace locust
                     scarab::param_node default_setting;
                     default_setting.add("name","uniform");
                     fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
-                    fDistributionInterface.SetSeed( GetSeed(aParam) );
+                    int tSeed = GetSeed( aParam );
+                    fDistributionInterface.SetSeed( tSeed );
                     double tMinTrackLength = tMaxTrackLength * fMinTrackLengthFraction;
                     double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
                     fLocustMaxTimeTerminator->SetTime( tRandomTime );
+                    LPROG(lmclog,"Random seed for track length is " << tSeed);
+#ifdef ROOT_FOUND
+                    fInterface->aRunParameter->fTrackLengthSeed = tSeed;
+#endif
                     LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
                 }
             }

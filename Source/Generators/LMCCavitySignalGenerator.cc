@@ -282,22 +282,25 @@ namespace locust
                 {
                     fRandomPreEventSamples = true;
                 }
-        	    if ( aParam.has( "random-track-seed" ) )
-        	    {
-        	    	// Randomize seed for start time using seed for track length as input:
-        	        scarab::param_node default_setting;
-        	        default_setting.add("name","uniform");
-        	        std::shared_ptr< BaseDistribution> tSeedDistribution = fDistributionInterface.get_dist(default_setting);
-        	        fDistributionInterface.SetSeed( aParam["random-track-seed"]().as_int() );
-        	        int tSeed = 1.e8 * tSeedDistribution->Generate();
+                if ( aParam.has( "random-track-seed" ) )
+                {
+                    // Randomize seed for start time using seed for track length as input:
+                    scarab::param_node default_setting;
+                    default_setting.add("name","uniform");
+                    std::shared_ptr< BaseDistribution> tSeedDistribution = fDistributionInterface.get_dist(default_setting);
+                    fDistributionInterface.SetSeed( aParam["random-track-seed"]().as_int() );
+                    int tSeed = 1.e8 * tSeedDistribution->Generate();
+                    SetSeed( tSeed );
+                }
+                else
+                {
+                    // Delay SetSeed to allow time stamp to advance between randomized tracks.
+                    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+                    struct timeval tv;
+                    gettimeofday(&tv, NULL);
+                    int tSeed = tv.tv_usec;
         	        SetSeed( tSeed );
-        	    }
-        	    else
-        	    {
-        	    	// Delay SetSeed to allow time stamp to advance between randomized tracks.
-            		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        	    	SetSeed (time(NULL) );
-        	    }
+                }
             }
         }
         if( aParam.has( "override-aliasing" ) )
@@ -343,13 +346,16 @@ namespace locust
         return true;
     }
 
+    int CavitySignalGenerator::GetSeed()
+    {
+        return fTrackDelaySeed;
+    }
 
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
         scarab::param_node default_setting;
         default_setting.add("name","uniform");
         fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
-        fDistributionInterface.SetSeed( fTrackDelaySeed );
         int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
@@ -408,6 +414,7 @@ namespace locust
 
 #ifdef ROOT_FOUND
             fInterface->aRunParameter = new RunParameters();
+            fInterface->aRunParameter->fTrackDelaySeed = GetSeed();
             fInterface->aRunParameter->fSimulationType = "cavity";
             if ( cavityFrequency > 20.e9 )
             {

@@ -18,12 +18,13 @@ ClassImp(locust::Event);
 namespace locust
 {
     Event::Event() :
-        fNTracks( 0 )
+        fNTracks( 0 ),
+        fRandomSeed( 0 )
     {
     }
     Event::~Event() {}
 
-    bool Event::Initialize(long int aSeed)
+    bool Event::Initialize()
     {
         time_t rawtime;
         struct tm * timeInfo;
@@ -39,8 +40,30 @@ namespace locust
         int tMicrosec = tv.tv_usec;
 
         fEventID = 1e12 + tDay*1e10 + tMonth*1e8 + tYear*1e6 + tMicrosec;
-        fRandomSeed = aSeed;
         fLOFrequency = -99.;
+
+
+        fTrackIDs.resize(0);
+        fStartingEnergies_eV.resize(0);
+        fOutputStartFrequencies.resize(0);
+        fStartFrequencies.resize(0);
+        fEndFrequencies.resize(0);
+        fAvgFrequencies.resize(0);
+        fOutputAvgFrequencies.resize(0);
+        fAvgAxialFrequencies.resize(0);
+        fTrackPowers.resize(0);
+        fStartTimes.resize(0);
+        fTrackLengths.resize(0);
+        fEndTimes.resize(0);
+        fSlopes.resize(0);
+        fPitchAngles.resize(0);
+        fRadii.resize(0);
+        fRadialPhases.resize(0);
+
+        // Update size.
+        fNTracks = 0;
+
+
         return true;
     }
 
@@ -49,7 +72,7 @@ namespace locust
     {
         fTrackIDs.push_back( aTrack->TrackID );
         fStartingEnergies_eV.push_back( aTrack->StartingEnergy_eV );
-    	fOutputStartFrequencies.push_back( aTrack->OutputStartFrequency );
+        fOutputStartFrequencies.push_back( aTrack->OutputStartFrequency );
         fStartFrequencies.push_back( aTrack->StartFrequency );
         fEndFrequencies.push_back( aTrack->EndFrequency );
         fAvgFrequencies.push_back( aTrack->AvgFrequency );

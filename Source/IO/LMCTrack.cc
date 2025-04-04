@@ -23,7 +23,7 @@ namespace locust
 
     bool Track::Initialize()
     {
-        TrackID += 1;
+        TrackID = 0;
         StartTime = -99.;
         EndTime = -99.;
         TrackLength = -99.;
