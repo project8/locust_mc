@@ -32,7 +32,7 @@ namespace locust
             Event();
             virtual ~Event();
 
-            bool Initialize(long int aSeed);
+            bool Initialize();
             void AddTrack(const Track* aTrack);
             void AddTrack(const Track aTrack);
 

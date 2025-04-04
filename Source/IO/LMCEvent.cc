@@ -18,12 +18,13 @@ ClassImp(locust::Event);
 namespace locust
 {
     Event::Event() :
-        fNTracks( 0 )
+        fNTracks( 0 ),
+        fRandomSeed( 0 )
     {
     }
     Event::~Event() {}
 
-    bool Event::Initialize(long int aSeed)
+    bool Event::Initialize()
     {
         time_t rawtime;
         struct tm * timeInfo;
@@ -39,7 +40,6 @@ namespace locust
         int tMicrosec = tv.tv_usec;
 
         fEventID = 1e12 + tDay*1e10 + tMonth*1e8 + tYear*1e6 + tMicrosec;
-        fRandomSeed = aSeed;
         fLOFrequency = -99.;
 
 
