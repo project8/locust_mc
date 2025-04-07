@@ -272,6 +272,7 @@ namespace locust
             fprintf(file,"             \"output-avg-frequency\": %g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
             fprintf(file,"             \"output-inst-start-frequency\": %g,\n", fInterface->anEvent->fOutputStartFrequencies[i]);
             fprintf(file,"             \"pitch-angle\": %.6f,\n", fInterface->anEvent->fPitchAngles[i]);
+            fprintf(file,"             \"slope\": %g,\n", fInterface->anEvent->fSlopes[i]);
             fprintf(file,"             \"avg-axial-frequency\": %g\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
             if (i < fInterface->anEvent->fNTracks-1)
             {

@@ -356,6 +356,7 @@ namespace locust
         scarab::param_node default_setting;
         default_setting.add("name","uniform");
         fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
+        fDistributionInterface.SetSeed( GetSeed() );
         int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
