@@ -87,6 +87,10 @@ namespace locust
             unsigned nElapsedSamples = index - fStartingIndex;
             fInterface->aTrack->AvgFrequency = ( fInterface->aTrack->AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
             fInterface->aTrack->OutputAvgFrequency = fInterface->aTrack->AvgFrequency + tOffset;
+            if ((tTime - fInterface->aTrack->StartTime) < 2.e-5) // approx. post-processing time slice
+            {
+                fInterface->aTrack->TrackOutputStartFrequency = fInterface->aTrack->OutputAvgFrequency;
+            }
             fInterface->aTrack->TrackLength = tTime - fInterface->aTrack->StartTime;
             fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
     	}

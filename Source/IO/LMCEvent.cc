@@ -50,6 +50,7 @@ namespace locust
         fEndFrequencies.resize(0);
         fAvgFrequencies.resize(0);
         fOutputAvgFrequencies.resize(0);
+        fTrackOutputStartFrequencies.resize(0);
         fAvgAxialFrequencies.resize(0);
         fTrackPowers.resize(0);
         fStartTimes.resize(0);
@@ -74,6 +75,7 @@ namespace locust
         fStartingEnergies_eV.push_back( aTrack->StartingEnergy_eV );
         fOutputStartFrequencies.push_back( aTrack->OutputStartFrequency );
         fStartFrequencies.push_back( aTrack->StartFrequency );
+        fTrackOutputStartFrequencies.push_back( aTrack->TrackOutputStartFrequency );
         fEndFrequencies.push_back( aTrack->EndFrequency );
         fAvgFrequencies.push_back( aTrack->AvgFrequency );
         fOutputAvgFrequencies.push_back( aTrack->OutputAvgFrequency );
