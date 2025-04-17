@@ -18,6 +18,7 @@ namespace locust
 
     EventHold::EventHold() :
             fTruthOutputFilename("LocustEventProperties.root"),
+			fMetadataTag("none"),
             fAccumulateTruthInfo( false ),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
@@ -84,43 +85,46 @@ namespace locust
 
     bool EventHold::Configure( const scarab::param_node& aParam )
     {
+        if ( aParam.has( "metadata-tag" ) )
+        {
+            fMetadataTag = aParam["metadata-tag"]().as_string();
+        }
 	    if ( aParam.has( "random-track-seed" ) )
 	    {
-	    	fEventSeed = aParam["random-track-seed"]().as_int();
+            fEventSeed = aParam["random-track-seed"]().as_int();
 	    }
 	    else
 	    {
-	        fEventSeed = -99;
+            fEventSeed = -99;
 	    }
 	    if ( aParam.has( "truth-output-filename" ) )
 	    {
-	    	fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
+            fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
 	    }
 	    if ( aParam.has( "accumulate-truth-info" ) )
 	    {
-	    	fAccumulateTruthInfo = aParam["accumulate-truth-info"]().as_bool();
+            fAccumulateTruthInfo = aParam["accumulate-truth-info"]().as_bool();
 	    }
 	    if ( aParam.has( "ks-starting-energy-min" ) )
 	    {
-	        fConfiguredEMin = aParam["ks-starting-energy-min"]().as_double();
+            fConfiguredEMin = aParam["ks-starting-energy-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-pitch-min" ) )
 	    {
-	        fConfiguredPitchMin = aParam["ks-starting-pitch-min"]().as_double();
+            fConfiguredPitchMin = aParam["ks-starting-pitch-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-xpos-min" ) )
 	    {
-	    	fConfiguredXMin = aParam["ks-starting-xpos-min"]().as_double();
+            fConfiguredXMin = aParam["ks-starting-xpos-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-ypos-min" ) )
 	    {
-	    	fConfiguredYMin = aParam["ks-starting-ypos-min"]().as_double();
+            fConfiguredYMin = aParam["ks-starting-ypos-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-zpos-min" ) )
 	    {
-	    	fConfiguredZMin = aParam["ks-starting-zpos-min"]().as_double();
+            fConfiguredZMin = aParam["ks-starting-zpos-min"]().as_double();
 	    }
-
 
     	return true;
     }
@@ -220,6 +224,7 @@ namespace locust
             fprintf(file, "        \"run-type\": \"%s\",\n", fInterface->aRunParameter->fDataType.c_str());
             fprintf(file, "        \"simulation-type\": \"%s\",\n", fInterface->aRunParameter->fSimulationType.c_str());
             fprintf(file, "        \"simulation-subtype\": \"%s\",\n", fInterface->aRunParameter->fSimulationSubType.c_str());
+            fprintf(file, "        \"user-defined-tag\": \"%s\",\n", fMetadataTag.c_str());
             fprintf(file, "        \"sampling-freq-mega-hz\": \"%.1f\",\n", fInterface->aRunParameter->fSamplingRateMHz);
             fprintf(file, "        \"configured-e-min\": \"%12.6f\",\n", fConfiguredEMin);
             fprintf(file, "        \"configured-pitch-min\": \"%12.9f\",\n", fConfiguredPitchMin);
@@ -270,6 +275,7 @@ namespace locust
             fprintf(file,"             \"start-radius\": %g,\n", fInterface->anEvent->fRadii[i]);
             fprintf(file,"             \"start-radial-phase\": %g,\n", fInterface->anEvent->fRadialPhases[i]);
             fprintf(file,"             \"output-avg-frequency\": %g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
+            fprintf(file,"             \"output-track-start-frequency\": %g,\n", fInterface->anEvent->fTrackOutputStartFrequencies[i]);
             fprintf(file,"             \"output-inst-start-frequency\": %g,\n", fInterface->anEvent->fOutputStartFrequencies[i]);
             fprintf(file,"             \"pitch-angle\": %.6f,\n", fInterface->anEvent->fPitchAngles[i]);
             fprintf(file,"             \"slope\": %g,\n", fInterface->anEvent->fSlopes[i]);
