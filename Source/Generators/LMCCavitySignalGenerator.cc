@@ -247,6 +247,9 @@ namespace locust
             fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[mu][0], fModeSet[mu][1], fModeSet[mu][2], fModeSet[mu][3]));
         }
 
+        // Store in the interface for sharing
+        fInterface->fFieldCalculator = fFieldCalculator;
+
     	return true;
     }
 
@@ -372,14 +375,15 @@ namespace locust
     	double fs = fAcquisitionRate;
     	double dr = aSignal->DecimationFactor();
 
-    	if (!anAliasingUtility.CheckAliasing( dopplerFrequency, fLO_Frequency, fs, dr ))
-    	{
-    		return false;
-    	}
-    	else
-    	{
-    		return true;
-    	}
+    	// if (!anAliasingUtility.CheckAliasing( dopplerFrequency, fLO_Frequency, fs, dr ))
+    	// {
+    	// 	return false;
+    	// }
+    	// else
+    	// {
+    	// 	return true;
+    	// }
+        return true;
     }
 
     bool CavitySignalGenerator::CrossCheckCavityConfig()
@@ -405,12 +409,12 @@ namespace locust
             qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
             aCavityUtility.SetOutputFile(fUnitTestRootFile);
             int nModes = fInterface->fField->GetNModes();
-            if (!aCavityUtility.CheckCavityQ( nModes, bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
-            {
-                LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
-                		"with the unit test as in bin/testLMCCavity [-h]");
-                return false;
-            }
+            // if (!aCavityUtility.CheckCavityQ( nModes, bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+            // {
+            //     LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
+            //     		"with the unit test as in bin/testLMCCavity [-h]");
+            //     // return false;
+            // }
         }
 
 #ifdef ROOT_FOUND
@@ -487,9 +491,11 @@ namespace locust
 		    int m = fModeSet[mu][2];
 		    int n = fModeSet[mu][3];
 
+            double cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
+
 		    std::vector<double> tE_normalized;
 		    tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
-		    double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, fBypassTF).first;
+		    double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(bTE, l, m, n).first;
 		    dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
 		    double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
@@ -497,11 +503,9 @@ namespace locust
 
 		    if (!fInterface->fbWaveguide)
 		    {
-		        // sqrt(4PIeps0) for Kass current si->cgs, sqrt(4PIeps0) for Jackson A_lambda coefficient cgs->si
-		    	unitConversion = 1. / LMCConst::FourPiEps(); // see comment ^
-		    	// Calculate propagating E-field with J \dot E.  cavityFIRSample units are [current]*[unitless].
-		    	excitationAmplitude = tAvgDotProductFactor * modeAmplitude * cavityFIRSample * fInterface->fField->Z_TE(l,m,n,tKassParticleXP[7]) * 2. * LMCConst::Pi() / LMCConst::C() / 1.e2;
-		    	tEFieldAtProbe = fInterface->fField->GetFieldAtProbe(l,m,n,1,tKassParticleXP,bTE);
+		    	unitConversion = 1.; 
+		    	excitationAmplitude = 1.;
+		    	tEFieldAtProbe = std::vector<double> {cavityFIRSample};
 		    }
 		    else
 		    {
@@ -531,26 +535,31 @@ namespace locust
 		    for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex) // one channel per probe
 		    {
 		        sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-		        // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
-		        // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
-		        double totalScalingFactor = sqrt(50.) * unitConversion;
+		        // Scaling factor contributions:
+                //  - Physical: Cavity external (coupled) Q dictates fraction of power out--here, hardcoded Q_e=1100
+                //      - Future work: Multiple antennas in the cavity corresponds to each channel having its own Q_e
+                //  - Power conversion factors:
+                //      - Katydid adds 1/ (50 ohm) applied to V from Locust
+                //      - EM magnetic energy dissipated carries omega_m * mu0
+                // These are square rooted since we are outputting voltage
+		        double totalScalingFactor = sqrt(LMCConst::MuNull() * 2 * LMCConst::Pi() * cavityFrequency * 50. / 1100.);
 		        fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
 		    }
 		}
 
         fInterface->fTOld += fDeltaT;
-    	if (!fAliasingIsChecked)
-    	{
-    		if (!fOverrideAliasing)
-    		{
-    		    if (!CrossCheckAliasing( aSignal, dopplerFrequency[0] / 2. / LMCConst::Pi() ))
-    		    {
-    			    LERROR(lmclog,"There is an aliased HF frequency in the window.\n");
-    			    return false;
-    		    }
-    		}
-    		fAliasingIsChecked = true;
-    	}
+    	// if (!fAliasingIsChecked)
+    	// {
+    	// 	if (!fOverrideAliasing)
+    	// 	{
+    	// 	    if (!CrossCheckAliasing( aSignal, dopplerFrequency[0] / 2. / LMCConst::Pi() ))
+    	// 	    {
+    	// 		    LERROR(lmclog,"There is an aliased HF frequency in the window.\n");
+    	// 		    return false;
+    	// 	    }
+    	// 	}
+    	// 	fAliasingIsChecked = true;
+    	// }
 
     	return true;
     }

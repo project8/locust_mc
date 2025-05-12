@@ -45,14 +45,35 @@ namespace locust
 
     bool CyclotronRadiationExtractor::Configure()
     {
-        fFieldCalculator = new FieldCalculator();
-        if (fInterface->fProject8Phase > 0)
+        // Check if CavitySignalGenerator has already set the calculator in the interface
+        if (fInterface->fFieldCalculator != NULL)
         {
-            if(!fFieldCalculator->ConfigureByInterface())
+            fFieldCalculator = fInterface->fFieldCalculator;
+            LPROG(lmclog, "Using FieldCalculator from CavitySignalGenerator");
+
+            // Still apply CyclotronRadiationExtractor's specific configuration
+            if (fInterface->fProject8Phase > 0)
             {
-                LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
-                exit(-1);
+                if(!fFieldCalculator->ConfigureByInterface())
+                {
+                    LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                    exit(-1);
+                }
             }
+        }
+        else
+        {
+            fFieldCalculator = new FieldCalculator();
+            if (fInterface->fProject8Phase > 0)
+            {
+                if(!fFieldCalculator->ConfigureByInterface())
+                {
+                    LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                    exit(-1);
+                }
+            }
+            // Store our calculator in the interface for others to use
+            fInterface->fFieldCalculator = fFieldCalculator;
         }
         return true;
     }
@@ -202,11 +223,12 @@ namespace locust
             }
             else
             {
-            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle);
             }
             if (fInterface->fBackReaction)
             {
-            	aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
+            	aFinalParticle.SetKineticEnergy(anInitialParticle.GetKineticEnergy() + DeltaE);
+                // LPROG("Power e: <" << DeltaE*1e7 / 5.0e-13 / 100 << ">" << " Cyclotron Frequency: " << std::setprecision(10) << aFinalParticle.GetCyclotronFrequency()*1e-9 << " GHz");
             }
             else
             {

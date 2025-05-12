@@ -287,8 +287,9 @@
         <term_synchrotron/>
         <term_gyration/>
         <term_drift/>
+        <control_time name="stepsizetime" time="{1./301e6 / 1e2}" />
 <!--        <control_cyclotron name="control_cyclotron_arbitrary" fraction="0.0156250"/> -->
-   <control_cyclotron name="control_cyclotron_arbitrary" fraction="1.135"/>
+   <!-- <control_cyclotron name="control_cyclotron_arbitrary" fraction="1.135"/> -->
     </kstraj_trajectory_adiabatic>
 
     <kstraj_trajectory_magnetic name="traj_magnetic">

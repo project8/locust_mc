@@ -26,6 +26,7 @@
 
 namespace locust
 {
+    class FieldCalculator;
 
     struct KassLocustInterface
     {
@@ -33,6 +34,8 @@ namespace locust
 
         double fTOld;
         double fKassTimeStep; //Time step for sampling
+
+        FieldCalculator* fFieldCalculator = NULL;
 
         //running deque for saving previous few ns of particle history
         //in order to caluclate retarded fields

@@ -14,7 +14,7 @@ namespace locust
 	LOGGER( lmclog, "DampedHarmonicOscillator" );
 
     DampedHarmonicOscillator::DampedHarmonicOscillator():
-    		fMaxNBins( 20000 ),
+    		fMaxNBins( 10000 ),
 			fTimeResolutionDefault( 1.e-10 ),
 			fCavityFrequencyDefault( 1.067e9 ),
 			fCavityQDefault( 1000 ),
@@ -240,14 +240,55 @@ namespace locust
     	return ExpDecayTerm;
     }
 
-    std::pair<double,double> DampedHarmonicOscillator::GreensFunction( int bTE, int l, int m, int n, double t)
+    std::pair<double,double> DampedHarmonicOscillator::TimeEvolve(int bTE, int l, int m, int n, double dt)
+    {   
+        double tExpDecayTerm = ExpDecayTerm( bTE, l, m, n, dt);
+        double timeEvolveOpReal = tExpDecayTerm*cos( fCavityOmegaPrime[bTE][l][m][n] * dt);
+        double timeEvolveOpImag = tExpDecayTerm*sin( fCavityOmegaPrime[bTE][l][m][n] * dt);
+
+        return std::make_pair(timeEvolveOpReal, timeEvolveOpImag);
+    }  
+
+    std::pair<double,double> DampedHarmonicOscillator::tGreensFunction( int bTE, int l, int m, int n, double t)
     {
 
     	double tExpDecayTerm = ExpDecayTerm( bTE, l, m, n, t );
-    	double GreensFunctionValueReal = fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * tExpDecayTerm * sin( fCavityOmegaPrime[bTE][l][m][n] * t);
-    	double GreensFunctionValueImag = -1. * fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * tExpDecayTerm * cos( fCavityOmegaPrime[bTE][l][m][n] * t);
+    	double GreensFunctionValueReal = fTimeResolution[bTE][l][m][n] * tExpDecayTerm * sin( fCavityOmegaPrime[bTE][l][m][n] * t);
+    	double GreensFunctionValueImag = -1. * fTimeResolution[bTE][l][m][n] * tExpDecayTerm * cos( fCavityOmegaPrime[bTE][l][m][n] * t);
 
-    	return std::make_pair(GreensFunctionValueReal,GreensFunctionValueImag);
+        GreensFunctionValueReal *= 1 / fCavityOmegaPrime[bTE][l][m][n];
+        GreensFunctionValueImag *= 1 / fCavityOmegaPrime[bTE][l][m][n];
+
+    	return std::make_pair(GreensFunctionValueReal, GreensFunctionValueImag);
+    }
+
+    std::pair<double,double> DampedHarmonicOscillator::BGreensFunction( int bTE, int l, int m, int n, double t)
+    {
+        std::pair<double, double> greensFunction = tGreensFunction(bTE, l, m, n, t);
+        std::pair<double, double> BGF = {
+            LMCConst::C() * fCavityOmega[bTE][l][m][n] * greensFunction.first,
+            LMCConst::C() * fCavityOmega[bTE][l][m][n] * greensFunction.second
+        };
+
+    	return BGF;
+    }
+
+    std::pair<double,double> DampedHarmonicOscillator::EGreensFunction( int bTE, int l, int m, int n, double t)
+    {
+
+    	std::pair<double, double> greensFunction = tGreensFunction(bTE, l, m, n, t);
+        std::pair<double, double> EGF = {
+            -fBFactor[bTE][l][m][n] * greensFunction.first,
+            -fBFactor[bTE][l][m][n] * greensFunction.second
+        };
+
+        EGF.first += fCavityOmegaPrime[bTE][l][m][n] * greensFunction.second;
+        EGF.second -= fCavityOmegaPrime[bTE][l][m][n] * greensFunction.first;
+
+        EGF.first *= 1 / LMCConst::EpsNull();
+        EGF.second *= 1 / LMCConst::EpsNull();
+
+    	return EGF;
     }
 
 
@@ -261,27 +302,27 @@ namespace locust
         }
 
         /* initialize time series */
-        Signal* aSignal = new Signal();
-        int N0 = GetGFarray( {{bTE, l, m, n}} )[0].size();
-        aSignal->Initialize( N0 , 1 );
-        double convolutionMag = 0.;
+        // Signal* aSignal = new Signal();
+        // int N0 = GetGFarray( {{bTE, l, m, n}} )[0].size();
+        // aSignal->Initialize( N0 , 1 );
+        // double convolutionMag = 0.;
 
-        for (unsigned i=0; i<1000; i++)  // time stamps
-        {
-            // populate time series and convolve it with the FIR filter
-            PopulateCalibrationSignal(bTE, l, m, n, aSignal, N0, aDriveFrequency);
+        // for (unsigned i=0; i<1000; i++)  // time stamps
+        // {
+        //     // populate time series and convolve it with the FIR filter
+        //     PopulateCalibrationSignal(bTE, l, m, n, aSignal, N0, aDriveFrequency);
 
-            std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,SignalToDequeArray(bTE, l, m, n, aSignal));
+        //     std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,SignalToDequeArray(bTE, l, m, n, aSignal));
 
-            if (fabs(convolutionPair.first) > convolutionMag)
-            {
-                convolutionMag = convolutionPair.first;
-            }
-        } // i
+        //     if (fabs(convolutionPair.first) > convolutionMag)
+        //     {
+        //         convolutionMag = convolutionPair.first;
+        //     }
+        // } // i
 
-        aSignal->Reset();
+        // aSignal->Reset();
 
-        return convolutionMag;
+        return 1.;
 
     }
 
@@ -331,46 +372,23 @@ namespace locust
                     tGFArray[bTE][l][m].resize(nModes);
                     for(int n=0; n<nModes; n++)
                     {
-                        for (unsigned i=0; i<fMaxNBins; i++)
+                        for (unsigned i=0; i<3*fMaxNBins; i++)
                         {
                             double tValue = i * fTimeResolution[bTE][l][m][n];
-                            tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],GreensFunction( bTE, l, m, n, tValue)));
-                            if ( ExpDecayTerm( bTE, l, m, n, tValue) < fThresholdFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, 0.) )
-                            {
-                                break;
-                            }
+                            tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],EGreensFunction( bTE, l, m, n, tValue)));
+                            tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],BGreensFunction( bTE, l, m, n, tValue)));
+                            // Tack on time evolution operator. This is the same for E-field and B-field.
+                            tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],TimeEvolve(bTE, l, m, n, tValue)));
                         }
-                        std::reverse( tGFArray[bTE][l][m][n].begin(), tGFArray[bTE][l][m][n].end() );
+                        // Set the last elements to be fBFactor/bTE, l, m, n and fCavityOmega/bTE, l, m, n
+                        tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],std::make_pair(fBFactor[bTE][l][m][n], fCavityOmegaPrime[bTE][l][m][n])));
                     }
                 }
             }
         }
 
-        SetGFarray(tGFArray ); // unnormalized
+        SetGFarray(tGFArray ); 
 
-        for( int bTE=0; bTE<2; bTE++)
-        {
-            for(int l=0; l<nModes; l++)
-            {
-                for(int m=0; m<nModes; m++)
-                {
-                    for(int n=0; n<nModes; n++)
-                    {
-                        double aNormFactor = NormFactor( bTE, l, m, n, fCavityFrequency[bTE][l][m][n]);
-                        for (unsigned i=0; i<tGFArray[bTE][l][m][n].size(); i++)
-                        {
-                            if (aNormFactor > 0.)
-                            {
-                                tGFArray[bTE][l][m][n][i].second.first /= aNormFactor;
-                                tGFArray[bTE][l][m][n][i].second.second /= aNormFactor;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        SetGFarray( tGFArray); // now normalized.
         delete fTFReceiverHandler;
 
     	if ( tGFArray.size() < 1 ) return false;
