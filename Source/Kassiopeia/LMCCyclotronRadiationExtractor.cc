@@ -227,8 +227,8 @@ namespace locust
             }
             if (fInterface->fBackReaction)
             {
-            	aFinalParticle.SetKineticEnergy(anInitialParticle.GetKineticEnergy() + DeltaE);
-                // LPROG("Power e: <" << DeltaE*1e7 / 5.0e-13 / 100 << ">" << " Cyclotron Frequency: " << std::setprecision(10) << aFinalParticle.GetCyclotronFrequency()*1e-9 << " GHz");
+            	// aFinalParticle.SetKineticEnergy(anInitialParticle.GetKineticEnergy() + DeltaE);
+                // LPROG("Power e: <" << DeltaE*1e7 / (2./301e6 / 1e2) << ">" << " Cyclotron Frequency: " << std::setprecision(10) << aFinalParticle.GetCyclotronFrequency()*1e-9 << " GHz");
             }
             else
             {

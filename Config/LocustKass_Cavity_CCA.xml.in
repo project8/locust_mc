@@ -287,7 +287,7 @@
         <term_synchrotron/>
         <term_gyration/>
         <term_drift/>
-        <control_time name="stepsizetime" time="{1./301e6 / 1e2}" />
+        <control_time name="stepsizetime" time="{1./301e6 / 1e1}" />
 <!--        <control_cyclotron name="control_cyclotron_arbitrary" fraction="0.0156250"/> -->
    <!-- <control_cyclotron name="control_cyclotron_arbitrary" fraction="1.135"/> -->
     </kstraj_trajectory_adiabatic>
@@ -453,7 +453,7 @@
         run="1"
         seed="[seed]"
         events="1"
-        magnetic_field="total_magnetic_field"
+        magnetic_field="background_field"
         space="space_world"
         generator="[generator]"
         trajectory="[trajectory]"
