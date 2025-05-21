@@ -45,7 +45,7 @@ namespace locust
     	}
     	if( aParam.has( "dho-time-resolution" ) )
     	{
-    		SetDHOTimeResolution( aParam["dho-time-resolution"]().as_double() );
+    		SetDHOTimeResolution( 2. / aParam["dho-time-resolution"]().as_double() / 1e4 );
     	}
     	if( aParam.has( "dho-threshold-factor" ) )
     	{
@@ -372,7 +372,7 @@ namespace locust
                     tGFArray[bTE][l][m].resize(nModes);
                     for(int n=0; n<nModes; n++)
                     {
-                        for (unsigned i=0; i<3*fMaxNBins; i++)
+                        for (unsigned i=0; i<fMaxNBins; i++)
                         {
                             double tValue = i * fTimeResolution[bTE][l][m][n];
                             tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],EGreensFunction( bTE, l, m, n, tValue)));

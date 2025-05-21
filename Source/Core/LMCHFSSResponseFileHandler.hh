@@ -98,6 +98,7 @@ namespace locust
     {   
         return fResolutionArray[bTE][l][m][n];
     }   
+
     
     /*!
      @class TFFileHandlerCore

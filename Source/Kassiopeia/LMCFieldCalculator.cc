@@ -325,6 +325,8 @@ namespace locust
 
             const std::vector<std::array<double, 2>>& tEfield = fTFReceiverHandler->GetEfield()[bTE][l][m][n];
 
+            // LPROG("B field at set: " << fTFReceiverHandler->GetBfield()[bTE][l][m][n].back()[0]);
+
             int timestep = 0;
 
             double dt = fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
@@ -365,6 +367,7 @@ namespace locust
         // populate FIR filter with frequency for just this sample interval:
         // LPROG("tTime: " << tTime << "tTime - Nsteps*dt: " << tTime - Nsteps*dt << " dt: " << dt);
         // LPROG("Cyclotron frequency: " << tCyclotronFrequency);
+        // if (tTime > 4.e-10) exit(-1);
         for (int i=0; i < Nsteps; i++)
         {
             // Test
@@ -373,10 +376,10 @@ namespace locust
             // LPROG("JdotEBuffer[" << i << "]: " << fJdotEBuffer[i]);
 
             // Calculate interpolated velocity
-            KThreeVector interpolatedVelocity = InterpolateVelocity(-(Nsteps-i)*dt, tCyclotronFrequency, tCyclotronRadius, tVelocityParallel, tMagneticField, tAlpha, tBeta);
+            KThreeVector interpolatedVelocity = InterpolateVelocity(-static_cast<double>(Nsteps-i)*dt, tCyclotronFrequency, tCyclotronRadius, tVelocityParallel, tMagneticField, tAlpha, tBeta);
             
             // Calculate interpolated position
-            KThreeVector interpolatedPosition = InterpolatePosition(-(Nsteps-i)*dt, tCyclotronFrequency, tCyclotronRadius, tVelocityParallel, tMagneticField, tGuidingCenterPosition, tAlpha, tBeta);
+            KThreeVector interpolatedPosition = InterpolatePosition(-static_cast<double>(Nsteps-i)*dt, tCyclotronFrequency, tCyclotronRadius, tVelocityParallel, tMagneticField, tGuidingCenterPosition, tAlpha, tBeta);
             
             // Create and populate particle state vector
             double thisR = pow(interpolatedPosition.X()*interpolatedPosition.X() + interpolatedPosition.Y()*interpolatedPosition.Y(), 0.5);
@@ -399,11 +402,19 @@ namespace locust
                 // Add to buffer
                 fJdotEBuffer.push_back(tAvgDotProductFactor);
             }
+            // if (i==0)
+            // {
+            //     LPROG("tKassParticleXP: ");
+            //     for (size_t j = 0; j < tKassParticleXP.size(); ++j) {
+            //         LPROG("  Element " << j << std::setprecision(16) << ": " << tKassParticleXP[j]);
+            //     }
+            // }
             tKassParticleXP.clear();
 
             // LPROG("JdotEBuffer[" << i << "]: " << fJdotEBuffer[i]);
         }
         // LPROG("Nsteps: " << Nsteps);
+        // LPROG("Kass final time: " << std::setprecision(16) << tTime << " Sim time: " << tTime - Nsteps*dt);
         // LPROG("JdotEBuffer size: " << fJdotEBuffer.size());
         // LPROG("First JdotE: " << fJdotEBuffer[0]);
 

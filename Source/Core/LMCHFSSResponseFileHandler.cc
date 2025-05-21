@@ -13,6 +13,7 @@
 #include "logger.hh"
 
 #include<unistd.h>
+#include <iomanip> 
 
 namespace locust
 {
@@ -142,7 +143,7 @@ namespace locust
         else
         {
             Jm0 = inputBuffer[0];
-            LPROG("Jm0: " << Jm0);
+            LPROG("Jm0: " << std::setprecision(16) << Jm0);
         }
         // LPROG("lastEfield: " << lastEfield[0] << " + i*" << lastEfield[1]);
         // LPROG("lastBfield: " << lastBfield[0] << " + i*" << lastBfield[1]);
@@ -165,17 +166,17 @@ namespace locust
                 fEfield[bTE][l][m][n][i] = {0.0, 0.0};
                 fBfield[bTE][l][m][n][i] = {0.0, 0.0};
             }
-            // First field, initialization of last field
+            // First field, initialization of final field
             if (i==0)
             {
-                fEfield[bTE][l][m][n][0][0] += lastEfield[0]*fFilterComplexArray[bTE][l][m][n][3 + 2][0] 
-                                                        - lastEfield[1]*fFilterComplexArray[bTE][l][m][n][3 + 2][1];
-                fEfield[bTE][l][m][n][0][1] += lastEfield[0]*fFilterComplexArray[bTE][l][m][n][3 + 2][1]
-                                                        + lastEfield[1]*fFilterComplexArray[bTE][l][m][n][3 + 2][0];
-                fBfield[bTE][l][m][n][0][0] += lastBfield[0]*fFilterComplexArray[bTE][l][m][n][3 + 2][0]
-                                                        - lastBfield[1]*fFilterComplexArray[bTE][l][m][n][3 + 2][1];
-                fBfield[bTE][l][m][n][0][1] += lastBfield[0]*fFilterComplexArray[bTE][l][m][n][3 + 2][1]
-                                                        + lastBfield[1]*fFilterComplexArray[bTE][l][m][n][3 + 2][0];
+                fEfield[bTE][l][m][n][0][0] += lastEfield[0]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][0] 
+                                                        - lastEfield[1]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][1];
+                fEfield[bTE][l][m][n][0][1] += lastEfield[0]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][1]
+                                                        + lastEfield[1]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][0];
+                fBfield[bTE][l][m][n][0][0] += lastBfield[0]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][0]
+                                                        - lastBfield[1]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][1];
+                fBfield[bTE][l][m][n][0][1] += lastBfield[0]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][1]
+                                                        + lastBfield[1]*fFilterComplexArray[bTE][l][m][n][3*1 + 2][0];
 
                 // Last field gets initialized here at the start
                 fEfield[bTE][l][m][n][inputBufferSize-1][0] = lastEfield[0] * fFilterComplexArray[bTE][l][m][n][3*inputBufferSize + 2][0] 
@@ -225,7 +226,7 @@ namespace locust
             fEfield[bTE][l][m][n][i][1] += -Jm0 * exp( - fBFactor * (t + (i+1)*dt)) * cos( wprime * (t + (i+1)*dt)) / wprime / LMCConst::EpsNull();
 
             // LPROG(lmclog, "Efield[" << bTE << "][" << l << "][" << m << "][" << n << "] = " << fEfield[bTE][l][m][n][i][0] << " + i*" << fEfield[bTE][l][m][n][i][1]);
-            // LPROG(lmclog, "Bfield[" << bTE << "][" << l << "][" << m << "][" << n << "]" << "[" << i << "] = " << fBfield[bTE][l][m][n][i][0] << " + i*" << fBfield[bTE][l][m][n][i][1]);
+            // LPROG(lmclog, "Bfield[" << bTE << "][" << l << "][" << m << "][" << n << "]" << "[" << i << "] = " << std::setprecision(16) << fBfield[bTE][l][m][n][i][0] << " + i*" << fBfield[bTE][l][m][n][i][1]);
             // LPROG("JdotE" << i << ": " << inputBuffer[i]);
 
             // if (inputBuffer[i] * fEfield[bTE][l][m][n][i][0] > 1e-24)
@@ -314,6 +315,7 @@ namespace locust
     //     }
     //     return std::make_pair(fEfield[bTE][l][m][n].back()[0], fBfield[bTE][l][m][n].back()[0]);
     // }  
+    
 
     double HFSSResponseFileHandlerCore::QuadrantCorrection( double aRealValue, double aPhase)
     {

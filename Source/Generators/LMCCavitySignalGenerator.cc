@@ -475,7 +475,8 @@ namespace locust
 
         //Receiver Properties
         fDeltaT = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
-        fphiLO += 2. * LMCConst::Pi() * fLO_Frequency * fDeltaT;
+        double tCurrentTime = static_cast<double>(index - fNPreEventSamples) * fDeltaT; // time in seconds
+        fphiLO = 2. * LMCConst::Pi() * fLO_Frequency * tCurrentTime;
         double tThisEventNSamples = fInterface->fTOld / fDeltaT;
 
     	std::vector<double> tKassParticleXP = fInterface->fTransmitter->ExtractParticleXP(fInterface->fTOld, true, fDeltaT, fInterface->fbWaveguide);
@@ -497,6 +498,8 @@ namespace locust
 		    tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
 		    double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(bTE, l, m, n).first;
 		    dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
+
+            // LPROG("B field at get: " << cavityFIRSample);
 
 		    double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
 		    double modeAmplitude = fInterface->fField->NormalizedEFieldMag(tE_normalized);
@@ -547,7 +550,7 @@ namespace locust
 		    }
 		}
 
-        fInterface->fTOld += fDeltaT;
+        fInterface->fTOld = tCurrentTime; // helps potential swamping
     	// if (!fAliasingIsChecked)
     	// {
     	// 	if (!fOverrideAliasing)

@@ -2,6 +2,7 @@
 #include "KSModifiersMessage.h"
 #include <chrono>
 #include <thread>
+#include <iomanip> 
 
 
 namespace locust
@@ -37,10 +38,11 @@ namespace locust
     }
     CyclotronRadiationExtractor::~CyclotronRadiationExtractor()
     {
-        if (fFieldCalculator != NULL)
-        {
-            delete fFieldCalculator;
-        }
+        // if (fFieldCalculator != NULL)
+        // {
+        //     delete fFieldCalculator;
+        // }
+        // Let CavitySignalGenerator delete the FieldCalculator
     }
 
     bool CyclotronRadiationExtractor::Configure()
@@ -85,7 +87,7 @@ namespace locust
         Configure();
     }
 
-    bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
+    bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart , double dt)
     {
 #ifdef ROOT_FOUND
         double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
@@ -95,6 +97,8 @@ namespace locust
     	if (bStart)
     	{
             fStartingIndex = index;
+            fModdedIndex = 0;
+            fNStepsPerSample = std::round(1. / tSamplingRate / 1.e6 / fInterface->aRunParameter->fDecimationFactor / dt);
             fInterface->aTrack->StartTime = tTime;
             double tX = aFinalParticle.GetPosition().X();
             double tY = aFinalParticle.GetPosition().Y();
@@ -112,7 +116,6 @@ namespace locust
             fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
     	}
 #endif
-
         return true;
     }
 
@@ -223,7 +226,10 @@ namespace locust
             }
             else
             {
+                // std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
+                // tLock.lock();
             	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle);
+                // tLock.unlock();
             }
             if (fInterface->fBackReaction)
             {
@@ -248,7 +254,7 @@ namespace locust
                 fPitchAngle = -99.;  // new track needs central pitch angle reset.
                 double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
-                UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
+                UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 , dt);
                 LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
@@ -256,15 +262,20 @@ namespace locust
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
-            if (t_poststep - fInterface->fTOld >= fInterface->fKassTimeStep) //take a digitizer sample every KassTimeStep
+            fModdedIndex += 1;
+
+            // LPROG("Post step time: " << std::setprecision(16) << t_poststep << "  Prev time: " << anInitialParticle.GetTime());
+            // LPROG(std::setprecision(16) << fInterface->fTOld);
+
+            if (fModdedIndex >= fNStepsPerSample) //take a digitizer sample every KassTimeStep
             {
+                // LPROG("Post step time: " << std::setprecision(16) << t_poststep << "  Prev time? " << t_poststep - fInterface->fKassTimeStep);
 
                 fSampleIndex = fInterface->fSampleIndex; // record Locust sample index before locking
-                UpdateTrackProperties( aFinalParticle, fSampleIndex, 0 );  // Keep recording the track candidate end time.
+                UpdateTrackProperties( aFinalParticle, fSampleIndex, 0 , 0.);  // Keep recording the track candidate end time.
 
                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();
-
 
                 unsigned tHistoryMaxSize;
 
@@ -332,6 +343,9 @@ namespace locust
                         }
                     }
                 }
+                fModdedIndex = 0; // reset modded index for next sample
+
+                // fInterface->fTOld = t_poststep; // Re-sync Locust time
 
             }
         } // DoneWithSignalGeneration

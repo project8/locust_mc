@@ -90,7 +90,7 @@ namespace locust
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += voltageValue * totalScalingFactor * cos(phi_LO);
 
 		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
-			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
+			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << std::setprecision(16) << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 			// LPROG("Power: " << voltageValue * totalScalingFactor * voltageValue * totalScalingFactor / 50.);
 		return true;
 	}
