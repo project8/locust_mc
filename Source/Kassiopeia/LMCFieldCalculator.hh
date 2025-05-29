@@ -7,11 +7,14 @@
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
 
-
 #include "KSSpaceInteraction.h"
 #include "KSList.h"
-
 #include "KSStep.h"
+#include "KThreeVector.hh"
+using katrin::KThreeVector;
+
+
+
 
 namespace Kassiopeia
 {
@@ -44,6 +47,13 @@ namespace locust
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
             double GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
             std::pair<double,double> GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
+            void SetCavityFIRSample_norm(int bTE, int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle, bool BypassTF);
+            std::pair<double,double> GetCavityFIRSample_norm(int bTE, int l, int m, int n);
+
+            KThreeVector InterpolateVelocity(double dt, double tCyclotronFrequency, double tCyclotronRadius, KThreeVector tVelocityParallel, KThreeVector fMagneticField, KThreeVector tAlpha, KThreeVector tBeta);
+            KThreeVector InterpolatePosition(double dt, double tCyclotronFrequency, double tCyclotronRadius, KThreeVector tVelocityParallel, KThreeVector tMagneticField, KThreeVector tGuidingCenterPosition, KThreeVector tAlpha, KThreeVector tBeta);
+            double calcTheta(double x, double y);
+
             void SetNFilterBinsRequired( double dt );
             int GetNFilterBinsRequired();
             void SetFilterSize( int aFilterSize );
@@ -59,8 +69,11 @@ namespace locust
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
+            std::deque<double> fJdotEBuffer;
             int fNFilterBinsRequired;
             std::vector<std::vector<int>> fModeSet;
+            double fTime;
+
     };
 
 }
