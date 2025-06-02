@@ -24,6 +24,7 @@
 #include "KSGenValueAngleSpherical.h"
 #include "KSGenValueFix.h"
 #include "KSGenEnergyComposite.h"
+#include "KSGenEnergyKryptonEvent.h"
 #include "KSGenPositionRectangularComposite.h"
 #include "KSGenDirectionSphericalComposite.h"
 #include "KSGenTimeComposite.h"
@@ -87,8 +88,10 @@ namespace locust
 			Kassiopeia::KSGenValueUniform* fPositionXGenerator;
 			Kassiopeia::KSGenValueUniform* fPositionYGenerator;
 			Kassiopeia::KSGenValueUniform* fPositionZGenerator;
-			Kassiopeia::KSGenValueUniform* fEnergyGenerator;
+			Kassiopeia::KSGenValueUniform* fEnergyUniform;
+			Kassiopeia::KSGenEnergyKryptonEvent* fEnergyKrypton;
 			Kassiopeia::KSGenEnergyComposite* fGenEnergyComposite;
+			Kassiopeia::KSGenCreator* fGenEnergyCreator;
 			Kassiopeia::KSGenTimeComposite* fGenTimeComposite;
 			Kassiopeia::KSGenValueUniform* fTimeGenerator;
 			Kassiopeia::KSGenValueFix* fGenPidComposite;
