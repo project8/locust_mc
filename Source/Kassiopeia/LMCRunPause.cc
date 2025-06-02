@@ -41,7 +41,9 @@ namespace locust
 		fPositionYGenerator( nullptr ),
 		fPositionZGenerator( nullptr ),
 		fGenEnergyComposite( nullptr ),
-		fEnergyGenerator( nullptr ),
+		fEnergyUniform( nullptr ),
+		fEnergyKrypton( nullptr ),
+		fGenEnergyCreator( nullptr ),
 		fTimeGenerator( nullptr ),
 		fGenTimeComposite( nullptr ),
 		fGenPidComposite( nullptr ),
@@ -73,7 +75,9 @@ namespace locust
 		fPositionYGenerator( nullptr ),
 		fPositionZGenerator( nullptr ),
 		fGenEnergyComposite( nullptr ),
-		fEnergyGenerator( nullptr ),
+		fEnergyUniform( nullptr ),
+		fEnergyKrypton( nullptr ),
+		fGenEnergyCreator( nullptr ),
 		fTimeGenerator( nullptr ),
 		fGenTimeComposite( nullptr ),
 		fGenPidComposite( nullptr),
@@ -216,20 +220,38 @@ namespace locust
                 fTimeGenerator->SetValueMax(0.);
                 fGenTimeComposite->SetTimeValue(fTimeGenerator);
 
+
                 if ( fGenEnergyComposite == nullptr ) fGenEnergyComposite = new Kassiopeia::KSGenEnergyComposite();
-                if ( fEnergyGenerator == nullptr ) fEnergyGenerator = new Kassiopeia::KSGenValueUniform();
-                if ( aParam.has( "ks-starting-energy-min" ) && ( aParam.has( "ks-starting-energy-max" ) ) )
+                if ( aParam.has( "ks-generator" ) )
                 {
-                    fEnergyGenerator->SetValueMin( aParam["ks-starting-energy-min"]().as_double() ); // eV
-                    fEnergyGenerator->SetValueMax( aParam["ks-starting-energy-max"]().as_double() ); // eV
+                    if (aParam["ks-generator"]().as_string() == "ksgen-krypton")
+                    {
+                        if ( fGenEnergyCreator == nullptr ) fGenEnergyCreator = new Kassiopeia::KSGenEnergyComposite();
+                        if ( fEnergyKrypton == nullptr) fEnergyKrypton = new Kassiopeia::KSGenEnergyKryptonEvent();
+                        fGenEnergyCreator = fEnergyKrypton;
+                        LPROG(lmclog,"Running the krypton energy generator.");
+                    }
                 }
                 else
                 {
-                    fEnergyGenerator->SetValueMin( 18600. ); // eV
-                    fEnergyGenerator->SetValueMax( 18600. ); // eV
+                    if ( fGenEnergyCreator == nullptr ) fGenEnergyCreator = new Kassiopeia::KSGenEnergyComposite();
+                    if ( fEnergyUniform == nullptr ) fEnergyUniform = new Kassiopeia::KSGenValueUniform();
+                    if ( aParam.has( "ks-starting-energy-min" ) && ( aParam.has( "ks-starting-energy-max" ) ) )
+                    {
+                        fEnergyUniform->SetValueMin( aParam["ks-starting-energy-min"]().as_double() ); // eV
+                        fEnergyUniform->SetValueMax( aParam["ks-starting-energy-max"]().as_double() ); // eV
+                    }
+                    else
+                    {
+                        fEnergyUniform->SetValueMin( 18600. ); // eV
+                        fEnergyUniform->SetValueMax( 18600. ); // eV
+                    }
+                    fGenEnergyComposite->SetEnergyValue(fEnergyUniform);
+                    fGenEnergyCreator = fGenEnergyComposite;
+                    LPROG(lmclog,"Running the uniform energy generator.");
                 }
 
-                fGenEnergyComposite->SetEnergyValue(fEnergyGenerator);
+
 
                 if ( fGenPositionComposite == nullptr ) fGenPositionComposite = new Kassiopeia::KSGenPositionRectangularComposite();
                 fGenPositionComposite->SetOrigin(GetKGWorldSpace()->GetOrigin());
@@ -268,7 +290,7 @@ namespace locust
 
                 fGenerator->SetPid(fGenPidComposite);
                 fGenerator->AddCreator(fGenPositionComposite);
-                fGenerator->AddCreator(fGenEnergyComposite);
+                fGenerator->AddCreator(fGenEnergyCreator);
                 fGenerator->AddCreator(fGenDirectionComposite);
                 fGenerator->AddCreator(fGenTimeComposite);
                 fGenerator->SetName("gen_project8");
