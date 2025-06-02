@@ -231,6 +231,12 @@ namespace locust
                         fGenEnergyCreator = fEnergyKrypton;
                         LPROG(lmclog,"Running the krypton energy generator.");
                     }
+                    else
+                    {
+                    	LERROR(lmclog,"Kassiopeia generator not found.  "
+                    			"Remove \"ks-generator\" from the Locust config file to default to \"ksgen-uniform\"  ");
+                    	return false;
+                    }
                 }
                 else
                 {
