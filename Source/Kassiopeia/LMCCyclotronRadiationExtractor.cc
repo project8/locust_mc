@@ -92,7 +92,7 @@ namespace locust
                 fInterface->aTrack->TrackOutputStartFrequency = fInterface->aTrack->OutputAvgFrequency;
             }
             fInterface->aTrack->TrackLength = tTime - fInterface->aTrack->StartTime;
-            fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
+            if (fInterface->aTrack->TrackLength > 0.) fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
     	}
 #endif
 
