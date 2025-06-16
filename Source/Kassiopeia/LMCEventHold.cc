@@ -218,8 +218,12 @@ namespace locust
 #ifdef ROOT_FOUND
         if (bNewRun)  // If there are no run parameters in the json file yet, write them now:
         {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            int tMillisec = int( tv.tv_usec / 1000);
+
             fprintf(file, "{\n");
-            fprintf(file, "    \"run-id\": \"%ld\",\n", fInterface->aRunParameter->fRunID);
+            fprintf(file, "    \"run-id\": \"%ld-%03d\",\n", fInterface->aRunParameter->fRunID, tMillisec);
             fprintf(file, "    \"run-parameters\": {\n");
             fprintf(file, "        \"run-type\": \"%s\",\n", fInterface->aRunParameter->fDataType.c_str());
             fprintf(file, "        \"simulation-type\": \"%s\",\n", fInterface->aRunParameter->fSimulationType.c_str());
