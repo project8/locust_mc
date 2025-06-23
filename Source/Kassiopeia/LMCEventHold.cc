@@ -354,7 +354,7 @@ namespace locust
         }
         else
         {
-            printf("Raising sigint to cancel Kassiopeia");
+            LWARN( lmclog, "EventHold::PreEvent raising SIGINT to cancel Kassiopeia" );
             raise(SIGINT);
             return true;
         }
@@ -376,7 +376,10 @@ namespace locust
         if (( fMottScattering ) && ( fInterface->fScatteredEventInProgress ))
         {
             fInterface->fScatteredEventInProgress = false;
+            fInterface->fDoneWithSignalGeneration = true;
+            LWARN( lmclog, "EventHold::PostEvent raising SIGINT to interrupt Kassiopeia." );
             raise(SIGINT);
+            fInterface->fDigitizerCondition.notify_one();  // unlock if locked.
         }
 #ifdef ROOT_FOUND
         delete fInterface->anEvent;
