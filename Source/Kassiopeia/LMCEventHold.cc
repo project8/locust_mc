@@ -10,7 +10,6 @@
 #include <csignal>
 #include <fstream>
 
-
 namespace locust
 {
 
@@ -28,6 +27,7 @@ namespace locust
             fConfiguredYMin( 0. ),
             fConfiguredZMin( 0. ),
             fEventCounter ( 0 ),
+            fMottScattering( false ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -42,6 +42,7 @@ namespace locust
             fConfiguredXMin( 0. ),
             fConfiguredYMin( 0. ),
             fConfiguredZMin( 0. ),
+            fMottScattering( false ),
             fInterface( aOrig.fInterface )
     {
     }
@@ -125,6 +126,10 @@ namespace locust
 	    {
             fConfiguredZMin = aParam["ks-starting-zpos-min"]().as_double();
 	    }
+	    if( aParam.has( "mott-scattering" ) )
+	    {
+	        fMottScattering = true;
+	    }
 
     	return true;
     }
@@ -136,8 +141,6 @@ namespace locust
 #ifdef ROOT_FOUND
         fInterface->anEvent = new Event();
         fInterface->anEvent->Initialize();
-        fInterface->aTrack = new Track();
-        fInterface->aTrack->Initialize();
 #endif
 
         return true;
@@ -332,6 +335,11 @@ namespace locust
 
         OpenEvent(); // for recording event properties to file.
 
+        if (( fMottScattering ) && ( !fInterface->fScatteredEventInProgress ))
+        {
+            return true;
+        }
+
         LPROG( lmclog, "Kass is waiting for event trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
@@ -346,9 +354,9 @@ namespace locust
         }
         else
         {
-        	printf("Raising sigint to cancel Kassiopeia");
-        	raise(SIGINT);
-        	return true;
+            printf("Raising sigint to cancel Kassiopeia");
+            raise(SIGINT);
+            return true;
         }
         return true;
 
@@ -356,14 +364,24 @@ namespace locust
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
+        if (( fMottScattering ) && ( !fInterface->fScatteredEventInProgress ))
+        {
+            return true;
+        }
+
         WriteEvent();
         fInterface->fEventInProgress = false;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
+        if (( fMottScattering ) && ( fInterface->fScatteredEventInProgress ))
+        {
+            fInterface->fScatteredEventInProgress = false;
+            raise(SIGINT);
+        }
 #ifdef ROOT_FOUND
         delete fInterface->anEvent;
-        delete fInterface->aTrack;
 #endif
+
         return true;
     }
 

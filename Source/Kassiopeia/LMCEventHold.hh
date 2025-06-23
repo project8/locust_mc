@@ -41,6 +41,7 @@ namespace locust
             std::string fMetadataTag;
             std::string fJsonFileName;
             bool fAccumulateTruthInfo;
+            bool fMottScattering;
 
 
         public:
