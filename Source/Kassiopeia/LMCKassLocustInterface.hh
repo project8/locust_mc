@@ -45,16 +45,19 @@ namespace locust
         bool fPreEventInProgress;
         bool fFalseStartKassiopeia; // flag to avoid false start on some Macs.
         bool fDoneWithSignalGeneration;  // do not continue to generate voltages and advance digitizer time.
+        bool fScatteredEventInProgress;
 
 
         std::mutex fMutex;  // pls:  this mutex is used for pre and post event mods.
         std::mutex fKassReadyMutex;
         std::mutex fMutexDigitizer;
+        std::mutex fScatterMutex;
 
         std::condition_variable fPreEventCondition;
         std::condition_variable fPostEventCondition;
         std::condition_variable fDigitizerCondition;
         std::condition_variable fKassReadyCondition;
+        std::condition_variable fScatterCondition;
 
 
 
