@@ -45,6 +45,7 @@ namespace locust
         private:
 
         int fTrackCounter;
+        bool fMottScattering;
 
 
 };

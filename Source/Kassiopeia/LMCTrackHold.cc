@@ -16,12 +16,14 @@ namespace locust
 
     TrackHold::TrackHold() :
         fTrackCounter( 0 ),
+        fMottScattering( false ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
         {}
 
 
     TrackHold::TrackHold( const TrackHold& aOrig ) : KSComponent(),
         fTrackCounter( 0 ),
+        fMottScattering( false ),
         fInterface( aOrig.fInterface )
         {}
 
@@ -57,13 +59,35 @@ namespace locust
 
     bool TrackHold::Configure( const scarab::param_node& aParam )
     {
+        if( aParam.has( "mott-scattering" ) )
+        {
+            fMottScattering = true;
+        }
         return true;
     }
 
 
     bool TrackHold::ExecutePreTrackModification(Kassiopeia::KSTrack &aTrack)
     {
+        if ( !ConfigureByInterface() )
+        {
+            return false;
+        }
+
+        if ( fMottScattering )
+        {
+    	    if (aTrack.GetFinalParticle().GetParentTrackId() > 0)
+    	    {
+                fInterface->fScatteredEventInProgress = true;
+                fInterface->fScatterCondition.notify_one();
+    	    }
+    	    else
+    	    {
+    	        return true;
+    	    }
+        }
 #ifdef ROOT_FOUND
+        fInterface->aTrack = new Track();
         fInterface->aTrack->Initialize();
         if ( fInterface->anEvent->fNTracks > 0 )
         {
@@ -85,15 +109,21 @@ namespace locust
 
     bool TrackHold::ExecutePostTrackModification(Kassiopeia::KSTrack &aTrack)
     {
+        if (( fMottScattering ) && ( !fInterface->fScatteredEventInProgress ))
+        {
+            return true;
+        }
+
+#ifdef ROOT_FOUND
         if ( aTrack.GetTotalSteps() > 0)
         {
-#ifdef ROOT_FOUND
             fInterface->anEvent->AddTrack( fInterface->aTrack );
             double tTime = aTrack.GetFinalParticle().GetTime();
             LWARN(lmclog,"LMCTrack " << fTrackCounter << " is complete at Kass time " << tTime << " with total steps " << aTrack.GetTotalSteps() );
             fTrackCounter += 1;
-#endif
         }
+        delete fInterface->aTrack;
+#endif
 
         return true;
     }
