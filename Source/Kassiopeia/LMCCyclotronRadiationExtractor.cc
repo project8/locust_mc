@@ -79,6 +79,9 @@ namespace locust
             double tY = aFinalParticle.GetPosition().Y();
             fInterface->aTrack->Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack->RadialPhase = calcOrbitPhase(tX, tY);
+            fInterface->aTrack->StartGuidingCenterX = aFinalParticle.GetGuidingCenterPosition().X();
+            fInterface->aTrack->StartGuidingCenterY = aFinalParticle.GetGuidingCenterPosition().Y();
+            fInterface->aTrack->StartGuidingCenterZ = aFinalParticle.GetGuidingCenterPosition().Z();
             fInterface->aTrack->StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
     	}
     	else
