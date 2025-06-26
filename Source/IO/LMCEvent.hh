@@ -57,6 +57,9 @@ namespace locust
             std::vector<double> fPitchAngles;
             std::vector<double> fRadii;
             std::vector<double> fRadialPhases;
+            std::vector<double> fStartGuidingCentersX;
+            std::vector<double> fStartGuidingCentersY;
+            std::vector<double> fStartGuidingCentersZ;
 
             unsigned fNTracks;
 
