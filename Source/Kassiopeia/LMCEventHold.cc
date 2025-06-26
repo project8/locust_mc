@@ -281,9 +281,6 @@ namespace locust
             fprintf(file,"             \"energy-ev\": %g,\n", fInterface->anEvent->fStartingEnergies_eV[i]);
             fprintf(file,"             \"start-radius\": %g,\n", fInterface->anEvent->fRadii[i]);
             fprintf(file,"             \"start-radial-phase\": %g,\n", fInterface->anEvent->fRadialPhases[i]);
-            fprintf(file,"             \"start-guiding-center-x\": %g,\n", fInterface->anEvent->fStartGuidingCentersX[i]);
-            fprintf(file,"             \"start-guiding-center-y\": %g,\n", fInterface->anEvent->fStartGuidingCentersY[i]);
-            fprintf(file,"             \"start-guiding-center-z\": %g,\n", fInterface->anEvent->fStartGuidingCentersZ[i]);
             fprintf(file,"             \"output-avg-frequency\": %g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
             fprintf(file,"             \"output-track-start-frequency\": %g,\n", fInterface->anEvent->fTrackOutputStartFrequencies[i]);
             fprintf(file,"             \"output-inst-start-frequency\": %g,\n", fInterface->anEvent->fOutputStartFrequencies[i]);

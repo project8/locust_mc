@@ -47,9 +47,6 @@ namespace locust
             double PitchAngle = -99.;
             double Radius = -99.;
             double RadialPhase = -99.;
-            double StartGuidingCenterX = -99.;
-            double StartGuidingCenterY = -99.;
-            double StartGuidingCenterZ = -99.;
 
             ClassDef(Track,1)  // Root syntax.
 

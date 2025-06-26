@@ -40,9 +40,6 @@ namespace locust
         PitchAngle = -99.;
         Radius = -99.;
         RadialPhase = -99.;
-        StartGuidingCenterX = -99.;
-        StartGuidingCenterY = -99.;
-        StartGuidingCenterZ = -99.;
 
         return true;
 
