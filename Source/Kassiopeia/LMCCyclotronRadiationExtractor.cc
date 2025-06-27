@@ -11,7 +11,7 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor() :
             fNewParticleHistory(),
-            fFieldCalculator( NULL ),
+			fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
             fT0trapMin( 0. ),
             fNCrossings( 0 ),
@@ -22,7 +22,7 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
             fNewParticleHistory(),
-            fFieldCalculator( NULL ),
+			fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
             fT0trapMin( aCopy.fT0trapMin ),
             fNCrossings( aCopy.fNCrossings ),
@@ -45,7 +45,7 @@ namespace locust
 
     bool CyclotronRadiationExtractor::Configure()
     {
-        fFieldCalculator = new FieldCalculator();
+        fFieldCalculator = new PowerNormFieldCalculator();
         if (fInterface->fProject8Phase > 0)
         {
             if(!fFieldCalculator->ConfigureByInterface())

@@ -178,6 +178,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCParticle.hh
         Kassiopeia/LMCConfigureKass.hh
         Kassiopeia/LMCFieldCalculator.hh
+        Kassiopeia/LMCPowerNormFieldCalculator.hh        
         Kassiopeia/LMCEventHold.hh
         Kassiopeia/LMCEventHoldBuilder.hh
         Kassiopeia/LMCTrackHold.hh
@@ -219,6 +220,7 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Kassiopeia/LMCConfigureKass.cc
         Kassiopeia/LMCLienardWiechert.cc
         Kassiopeia/LMCFieldCalculator.cc
+        Kassiopeia/LMCPowerNormFieldCalculator.cc        
         Kassiopeia/LMCEventHold.cc
         Kassiopeia/LMCEventHoldBuilder.cc
         Kassiopeia/LMCTrackHold.cc
