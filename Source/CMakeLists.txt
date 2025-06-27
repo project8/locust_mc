@@ -162,7 +162,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCKassSignalGenerator.hh
         Generators/LMCArraySignalGenerator.hh
         Generators/LMCCavitySignalGenerator.hh        
-
+        Generators/LMCPowerNormCavitySignalGenerator.hh        
+        
         Transmitters/LMCKassTransmitter.hh
         Transmitters/LMCKassCurrentTransmitter.hh
         
@@ -200,7 +201,8 @@ if (locust_mc_BUILD_WITH_KASSIOPEIA)
         Generators/LMCFreeFieldSignalGenerator.cc
         Generators/LMCKassSignalGenerator.cc
         Generators/LMCArraySignalGenerator.cc   
-        Generators/LMCCavitySignalGenerator.cc   
+        Generators/LMCCavitySignalGenerator.cc
+        Generators/LMCPowerNormCavitySignalGenerator.cc           
         
         Transmitters/LMCKassTransmitter.cc
         Transmitters/LMCKassCurrentTransmitter.cc
