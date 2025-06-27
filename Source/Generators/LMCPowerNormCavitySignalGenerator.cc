@@ -236,7 +236,7 @@ namespace locust
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( tParam );
 
-        fFieldCalculator = new FieldCalculator();
+        fFieldCalculator = new PowerNormFieldCalculator();
         if(!fFieldCalculator->Configure(tParam))
         {
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from PowerNormCavitySignal.");

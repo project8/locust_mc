@@ -17,7 +17,7 @@
 #include "LMCDampedHarmonicOscillator.hh" // : LMCAnalyticResponseFunction
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
-#include "LMCFieldCalculator.hh"
+#include "LMCPowerNormFieldCalculator.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
 #include "LMCRectangularCavity.hh" // : LMCField
