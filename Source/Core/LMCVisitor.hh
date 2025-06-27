@@ -23,6 +23,7 @@ namespace locust
     class FreeFieldSignalGenerator;
     class ArraySignalGenerator;
     class CavitySignalGenerator;
+    class PowerNormCavitySignalGenerator;
     class LocalOscillatorGenerator;
     class DecimateSignalGenerator;
 
