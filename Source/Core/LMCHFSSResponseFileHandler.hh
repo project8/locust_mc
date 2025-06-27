@@ -2,7 +2,6 @@
 #define LMCHFSSRESPONSEFILEHANDLER_HH_
 
 #include <fftw3.h>
-#include <array>
 
 #include "param.hh"
 #include "LMCComplexFFT.hh"
@@ -32,7 +31,7 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode);
         virtual bool ReadHFSSFile(int bTE, int l, int m, int n);
-        virtual std::pair<double,double> ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t);
+        virtual std::pair<double,double> ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer);
         int GetFilterSizeArray(int bTE, int l, int m, int n) const;//Number of entries in the filter
         int GetNModes() const;
         double GetFilterResolutionArray(int bTE, int l, int m, int n) const;//Get the resolution of the filter
@@ -41,9 +40,6 @@ namespace locust
         void PrintFIR( fftw_complex* aFilter, int nBins, std::string filename );
         bool WriteRootHisto( std::vector<double> aFilter, int nBins, bool bIQ );
         double QuadrantCorrection( double aRealValue, double aPhase);
-
-        const auto& GetEfield() const { return fEfield; }
-        const auto& GetBfield() const { return fBfield; }
 
     protected:
         
@@ -57,11 +53,6 @@ namespace locust
         std::vector < std::vector < std::vector < std::vector < int >>>> fFIRNBinsArray;
         std::vector < std::vector < std::vector < std::vector < double >>>> fResolutionArray;
         std::vector < std::vector < std::vector < std::vector < bool >>>> fIsFIRCreatedArray;
-
-        std::vector< std::vector< std::vector < std::vector< std::vector< std::array<double, 2> > > > > > fEfield;
-        std::vector< std::vector< std::vector < std::vector< std::vector< std::array<double, 2> > > > > > fBfield;
-
-        double Jm0; // Initial JdotE, J_m(0). Used to account for initial phase
 
         bool fIsFIRCreated;
         double fCharacteristicImpedance;
@@ -98,7 +89,6 @@ namespace locust
     {   
         return fResolutionArray[bTE][l][m][n];
     }   
-
     
     /*!
      @class TFFileHandlerCore

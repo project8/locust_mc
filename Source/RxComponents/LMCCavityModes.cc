@@ -81,17 +81,16 @@ namespace locust
 
 	bool CavityModes::AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
 	{
-		double dopplerFrequency = 0.; //cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
-		// SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
+		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
+		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
-		// voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n) + fChannelPhaseOffset[channelIndex] );
+		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n) + fChannelPhaseOffset[channelIndex] );
 
-		aSignal->LongSignalTimeComplex()[sampleIndex][0] += voltageValue * totalScalingFactor * sin(phi_LO);
-		aSignal->LongSignalTimeComplex()[sampleIndex][1] += voltageValue * totalScalingFactor * cos(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
+		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
 
 		if ( GetVoltageCheck() && (sampleIndex%100 < 1) )
-			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << std::setprecision(16) << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
-			// LPROG("Power: " << voltageValue * totalScalingFactor * voltageValue * totalScalingFactor / 50.);
+			LPROG( lmclog, "Voltage " << sampleIndex << " is <" << aSignal->LongSignalTimeComplex()[sampleIndex][1] << ">" );
 		return true;
 	}
 

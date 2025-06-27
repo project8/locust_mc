@@ -2,7 +2,6 @@
 #include "KSModifiersMessage.h"
 #include <chrono>
 #include <thread>
-#include <iomanip> 
 
 
 namespace locust
@@ -38,44 +37,22 @@ namespace locust
     }
     CyclotronRadiationExtractor::~CyclotronRadiationExtractor()
     {
-        // if (fFieldCalculator != NULL)
-        // {
-        //     delete fFieldCalculator;
-        // }
-        // Let CavitySignalGenerator delete the FieldCalculator
+        if (fFieldCalculator != NULL)
+        {
+            delete fFieldCalculator;
+        }
     }
 
     bool CyclotronRadiationExtractor::Configure()
     {
-        // Check if CavitySignalGenerator has already set the calculator in the interface
-        if (fInterface->fPowerNormFieldCalculator != NULL)
+        fFieldCalculator = new PowerNormFieldCalculator();
+        if (fInterface->fProject8Phase > 0)
         {
-            fFieldCalculator = fInterface->fPowerNormFieldCalculator;
-            LPROG(lmclog, "Using PowerNormFieldCalculator from CavitySignalGenerator");
-
-            // Still apply CyclotronRadiationExtractor's specific configuration
-            if (fInterface->fProject8Phase > 0)
+            if(!fFieldCalculator->ConfigureByInterface())
             {
-                if(!fFieldCalculator->ConfigureByInterface())
-                {
-                    LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
-                    exit(-1);
-                }
+                LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                exit(-1);
             }
-        }
-        else
-        {
-            fFieldCalculator = new PowerNormFieldCalculator();
-            if (fInterface->fProject8Phase > 0)
-            {
-                if(!fFieldCalculator->ConfigureByInterface())
-                {
-                    LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
-                    exit(-1);
-                }
-            }
-            // Store our calculator in the interface for others to use
-            fInterface->fPowerNormFieldCalculator = fFieldCalculator;
         }
         return true;
     }
@@ -87,7 +64,7 @@ namespace locust
         Configure();
     }
 
-    bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart , double dt)
+    bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
     {
 #ifdef ROOT_FOUND
         double tLOfrequency = fInterface->aRunParameter->fLOfrequency; // Hz
@@ -97,8 +74,6 @@ namespace locust
     	if (bStart)
     	{
             fStartingIndex = index;
-            fModdedIndex = 0;
-            fNStepsPerSample = std::round(1. / tSamplingRate / 1.e6 / fInterface->aRunParameter->fDecimationFactor / dt);
             fInterface->aTrack->StartTime = tTime;
             double tX = aFinalParticle.GetPosition().X();
             double tY = aFinalParticle.GetPosition().Y();
@@ -123,6 +98,7 @@ namespace locust
             if (fInterface->aTrack->TrackLength > 0.) fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
     	}
 #endif
+
         return true;
     }
 
@@ -233,15 +209,11 @@ namespace locust
             }
             else
             {
-                // std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
-                // tLock.lock();
-            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle);
-                // tLock.unlock();
+            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
             }
             if (fInterface->fBackReaction)
             {
-            	// aFinalParticle.SetKineticEnergy(anInitialParticle.GetKineticEnergy() + DeltaE);
-                // LPROG("Power e: <" << DeltaE*1e7 / (2./301e6 / 1e2) << ">" << " Cyclotron Frequency: " << std::setprecision(10) << aFinalParticle.GetCyclotronFrequency()*1e-9 << " GHz");
+            	aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
             }
             else
             {
@@ -261,7 +233,7 @@ namespace locust
                 fPitchAngle = -99.;  // new track needs central pitch angle reset.
                 double dt = aFinalParticle.GetTime() - anInitialParticle.GetTime();
                 fFieldCalculator->SetNFilterBinsRequired( dt );
-                UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 , dt);
+                UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
                 LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
             }
 
@@ -269,20 +241,15 @@ namespace locust
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
 
-            fModdedIndex += 1;
-
-            // LPROG("Post step time: " << std::setprecision(16) << t_poststep << "  Prev time: " << anInitialParticle.GetTime());
-            // LPROG(std::setprecision(16) << fInterface->fTOld);
-
-            if (fModdedIndex >= fNStepsPerSample) //take a digitizer sample every KassTimeStep
+            if (t_poststep - fInterface->fTOld >= fInterface->fKassTimeStep) //take a digitizer sample every KassTimeStep
             {
-                // LPROG("Post step time: " << std::setprecision(16) << t_poststep << "  Prev time? " << t_poststep - fInterface->fKassTimeStep);
 
                 fSampleIndex = fInterface->fSampleIndex; // record Locust sample index before locking
-                UpdateTrackProperties( aFinalParticle, fSampleIndex, 0 , 0.);  // Keep recording the track candidate end time.
+                UpdateTrackProperties( aFinalParticle, fSampleIndex, 0 );  // Keep recording the track candidate end time.
 
                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 tLock.lock();
+
 
                 unsigned tHistoryMaxSize;
 
@@ -350,9 +317,6 @@ namespace locust
                         }
                     }
                 }
-                fModdedIndex = 0; // reset modded index for next sample
-
-                // fInterface->fTOld = t_poststep; // Re-sync Locust time
 
             }
         } // DoneWithSignalGeneration

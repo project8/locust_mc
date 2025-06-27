@@ -38,13 +38,12 @@ namespace locust
 
     	double k1 = x_lm / R;
     	double k3 = n * LMCConst::Pi() / L;
-    	double k = 1.0; //pow(k1*k1+k3*k3,0.5);
-    	double eta = 1.0; //sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
-    	double jl_of_k1r_by_k1r = 1./2. * (boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r));
-
-    	double jPrime = jl_of_k1r_by_k1r;
-    	double tEr = l * k/k1/k1 * eta * boost::math::cyl_bessel_j(l, k1*r) * sin(l*theta) * sin(k3*z) / (r + 1e-17);
-    	double tEtheta = k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+    	double k = pow(k1*k1+k3*k3,0.5);
+    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
+    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
+    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	double tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
 
     	if ((includeOtherPols)&&(l>0))
     	{
@@ -55,17 +54,9 @@ namespace locust
     		tEtheta = tEtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
     	}
 
-		double norm = R * sqrt(LMCConst::Pi() * L) / 2 / k1;
-		norm *= sqrt(1 - l*l / x_lm / x_lm) * boost::math::cyl_bessel_j(l, x_lm);
+    	TE_E.push_back(tEr);
+    	TE_E.push_back(tEtheta);
 
-		if (l == 0)
-		{
-			norm *= sqrt(2);
-		}
-
-    	TE_E.push_back(tEr / norm);
-    	TE_E.push_back(tEtheta / norm);
-		
         return TE_E;
     	}
     }

@@ -2,7 +2,7 @@
 <external_define name="fieldX" value="0.0"/>
 <external_define name="fieldY" value="0.0"/>
 <external_define name="fieldZ" value="0.958709"/>
-<external_define name="current" value="0.000000"/>
+<external_define name="current" value="1.000000"/>
 <external_define name="coil_length" value="0.001"/>
 <external_define name="radial_width" value="0.001"/>
 
@@ -63,14 +63,14 @@
 
 
 <!-- electromagnets -->
-<!-- <electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_000" current="{-1*-400.000000*[current] }"/>
-<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_001" current="{-1*-400.000000*[current] }"/> -->
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_000" current="{-1*-400.000000*[current] }"/>
+<electromagnet name="electromagnet_solenoid" spaces="world/project8/@coil_tag_001" current="{-1*-400.000000*[current] }"/>
 
 </geometry>
 
 <kemfield>
 
-    <!-- <electromagnet_field
+    <electromagnet_field
         name="field_electromagnet"
         file="Project8Magnets.kbd"
         system="world"
@@ -89,7 +89,7 @@
             remote_sourcepoint_start="-1.e-1"
             remote_sourcepoint_end="1.e-1"
         />
-    </electromagnet_field> -->
+    </electromagnet_field>
 
 
 
@@ -100,13 +100,13 @@
 
 
 
-    <!-- <magnetic_superposition_field
+    <magnetic_superposition_field
         name="total_magnetic_field"
         use_caching="false"
             >
         <add_field name="background_field" enhancement="1.0" /> 
         <add_field name="field_electromagnet" enhancement="1.0" />
-    </magnetic_superposition_field> -->
+    </magnetic_superposition_field>
 
  
 
