@@ -12,7 +12,7 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor() :
             fNewParticleHistory(),
-            fFieldCalculator( NULL ),
+			fFieldCalculator( NULL ),
             fPitchAngle( -99. ),
             fT0trapMin( 0. ),
             fNCrossings( 0 ),
@@ -23,7 +23,7 @@ namespace locust
 
     CyclotronRadiationExtractor::CyclotronRadiationExtractor(const CyclotronRadiationExtractor &aCopy) : KSComponent(),
             fNewParticleHistory(),
-            fFieldCalculator( NULL ),
+			fFieldCalculator( NULL ),
             fPitchAngle( aCopy.fPitchAngle ),
             fT0trapMin( aCopy.fT0trapMin ),
             fNCrossings( aCopy.fNCrossings ),
@@ -47,8 +47,13 @@ namespace locust
 
     bool CyclotronRadiationExtractor::Configure()
     {
+<<<<<<< HEAD
         // Check if CavitySignalGenerator has already set the calculator in the interface
         if (fInterface->fFieldCalculator != NULL)
+=======
+        fFieldCalculator = new PowerNormFieldCalculator();
+        if (fInterface->fProject8Phase > 0)
+>>>>>>> 8287d73 (Add new class LMCPowerNormFieldCalculator that inherits from LMCFieldCalculator.)
         {
             fFieldCalculator = fInterface->fFieldCalculator;
             LPROG(lmclog, "Using FieldCalculator from CavitySignalGenerator");

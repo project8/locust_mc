@@ -6,6 +6,7 @@
 #include "KSTrajectory.h"
 
 #include "LMCFieldCalculator.hh"
+#include "LMCPowerNormFieldCalculator.hh"
 #include "LMCKassLocustInterface.hh"
 #include "LMCParticle.hh"
 #include "LMCException.hh"
