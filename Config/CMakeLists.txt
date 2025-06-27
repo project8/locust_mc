@@ -9,6 +9,7 @@ configure_file( LocustKass_Cavity_CCA_Pileup.xml.in LocustKass_Cavity_CCA_Pileup
 configure_file( LocustKass_Cavity_1GHz.xml.in LocustKass_Cavity_1GHz.xml )
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
 configure_file( LocustCavityCCA.json.in LocustCavityCCA.json )
+configure_file( LocustCavityCCA.json.in LocustCavityPowerNormCCA.json )
 configure_file( LocustCavityCCA_Pileup.json.in LocustCavityCCA_Pileup.json )
 configure_file( LocustCavityCCA_ModeMapTest.json.in LocustCavityCCA_ModeMapTest.json )
 configure_file( LocustCavityRectangular.json.in LocustCavityRectangular.json )
@@ -36,6 +37,7 @@ set (EXAMPLE_CONFIGFILES
 	CavityGeometry_V00_00_00.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityPowerNormCCA.json    
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA_ModeMapTest.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA_Pileup.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityRectangular.json
