@@ -3,11 +3,13 @@
 #include "logger.hh"
 #include "KSParticleFactory.h"
 #include <algorithm>
+#include "KThreeVector.hh"
 
 #include "KSInteractionsMessage.h"
 #include <limits>
 
 using std::numeric_limits;
+using katrin::KThreeVector;
 
 using namespace Kassiopeia;
 namespace locust
@@ -93,7 +95,10 @@ namespace locust
         } // aParam.has( "tf-receiver-filename" )
 
         // Size the electron information buffers to be similar to the Green's functions:
-        SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[0][0],fModeSet[0][1],fModeSet[0][2],fModeSet[0][3]));
+        SetFilterSize( 100 );
+        // Set the initial time to zero. TODO: this should be set to the time the particle is emitted
+        fTime = 0.0;
+        
         return true;
     }
 
@@ -112,14 +117,13 @@ namespace locust
 
     void FieldCalculator::SetFilterSize( int aFilterSize )
     {
-        // These contain histories of the electron's orbit phase and cyclotron frequency:
-        fFIRBuffer.resize( aFilterSize );
-        fFrequencyBuffer.resize( aFilterSize );
+        // History of electron JdotE:
+        fJdotEBuffer.resize( aFilterSize );
     }
 
     int FieldCalculator::GetFilterSize()
     {
-        return fFIRBuffer.size();
+        return fJdotEBuffer.size();
     }
 
     double FieldCalculator::GetGroupVelocityTM01(Kassiopeia::KSParticle& aFinalParticle)
@@ -274,7 +278,7 @@ namespace locust
 
         double vMag = pow(tVx*tVx + tVy*tVy,0.5);
 
-        std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, 0);
+        std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE, l, m, n);
 
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
@@ -309,7 +313,7 @@ namespace locust
 
     double FieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
-        double DampingFactorCavity = 0.;
+        double deltaE = 0.;
         for (int mu=0; mu<fModeSet.size(); mu++)
         {
             bool bTE = fModeSet[mu][0];
@@ -317,73 +321,115 @@ namespace locust
             int m = fModeSet[mu][2];
             int n = fModeSet[mu][3];
 
-            double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
-            double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
-            double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
-            DampingFactorCavity += DampingFactorTXlmnCavity - 1.; // (P'/P)_{lmn} - 1
+            SetCavityFIRSample(bTE, l, m, n, aFinalParticle, 0);
+
+            const std::vector<std::array<double, 2>>& tEfield = fTFReceiverHandler->GetEfield()[bTE][l][m][n];
+
+            // LPROG("B field at set: " << fTFReceiverHandler->GetBfield()[bTE][l][m][n].back()[0]);
+
+            int timestep = 0;
+
+            double dt = fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
+
+            for (auto it = fJdotEBuffer.begin();it!=fJdotEBuffer.end(); ++it)
+            {
+                deltaE += (*it) * tEfield[timestep][0] * dt;
+                timestep++;
+            }
         }
-    	if (fabs(DampingFactorCavity) > 0.)
-    		return DampingFactorCavity + 1.0;
-    	else
-    		return 1.0;  // No feedback
+        return deltaE / 1e7;
     }
 
-    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF)
+    void FieldCalculator::SetCavityFIRSample(int bTE, int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle, bool BypassTF)
     {
-        double convolutionMag = 0.0;
-        double convolutionPhase = 0.0;
-        double tVx = tKassParticleXP[3];
-        double tVy = tKassParticleXP[4];
-        double vMag = pow(tVx*tVx + tVy*tVy,0.5);
-        double orbitPhase = tKassParticleXP[6];  // radians
-        double cycFrequency = tKassParticleXP[7];
-        double tTime = tKassParticleXP[9];
-        double amplitude = 0.;
-        if ( fInterface->fField->InVolume(tKassParticleXP))
-        {
-            amplitude = 1.;
-        }
+        KThreeVector tPosition = aFinalParticle.GetPosition();
+        KThreeVector tVelocity = aFinalParticle.GetVelocity();
+        KThreeVector tGuidingCenterPosition = aFinalParticle.GetGuidingCenterPosition();
+        KThreeVector tMagneticField = aFinalParticle.GetMagneticField();
+        double tCyclotronFrequency = - aFinalParticle.GetCyclotronFrequency(); // - sign for electrons only
 
+        KThreeVector tVelocityParallel = tVelocity.Dot(tMagneticField.Unit()) * tMagneticField.Unit();
+        KThreeVector vPerp = tVelocity - tVelocityParallel;
 
-        if ( !BypassTF )
+        double tCyclotronRadius = - vPerp.Magnitude() / tCyclotronFrequency / 2 / LMCConst::Pi();
+
+        KThreeVector tBeta = vPerp.Unit();
+        KThreeVector tAlpha = tPosition - tGuidingCenterPosition;
+        tAlpha = tAlpha.Unit();
+
+        double tTime = aFinalParticle.GetTime();
+
+        // Number of time steps between tTime and fTime
+        double dt = fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
+        int Nsteps = std::round((tTime - fTime) / dt);
+
+        fJdotEBuffer.clear();
+        // populate FIR filter with frequency for just this sample interval:
+        // LPROG("tTime: " << tTime << "tTime - Nsteps*dt: " << tTime - Nsteps*dt << " dt: " << dt);
+        // LPROG("Cyclotron frequency: " << tCyclotronFrequency);
+        // if (tTime > 4.e-10) exit(-1);
+        for (int i=0; i < Nsteps; i++)
         {
-            // populate FIR filter with frequency for just this sample interval:
-            for (int i=0; i < fNFilterBinsRequired; i++)
+            // Test
+            // fJdotEBuffer.push_back(LMCConst::Q() * LMCConst::C() * sin(2 * LMCConst::Pi() * tCyclotronFrequency * (fTime + dt*i)) * 1000);
+            // fJdotEBuffer.push_back(LMCConst::Q() * LMCConst::C() * sin(2 * LMCConst::Pi() * 25.9e9 * (fTime + dt*i)) * 100);
+            // LPROG("JdotEBuffer[" << i << "]: " << fJdotEBuffer[i]);
+
+            // Calculate interpolated velocity
+            KThreeVector interpolatedVelocity = InterpolateVelocity(-static_cast<double>(Nsteps-i)*dt, tCyclotronFrequency, tCyclotronRadius, tVelocityParallel, tMagneticField, tAlpha, tBeta);
+            
+            // Calculate interpolated position
+            KThreeVector interpolatedPosition = InterpolatePosition(-static_cast<double>(Nsteps-i)*dt, tCyclotronFrequency, tCyclotronRadius, tVelocityParallel, tMagneticField, tGuidingCenterPosition, tAlpha, tBeta);
+            
+            // Create and populate particle state vector
+            double thisR = pow(interpolatedPosition.X()*interpolatedPosition.X() + interpolatedPosition.Y()*interpolatedPosition.Y(), 0.5);
+            // double thisTheta = calcTheta(interpolatedPosition.X(), interpolatedPosition.Y());
+            double thisTheta = atan2(interpolatedPosition.X(), interpolatedPosition.Y());
+            std::vector<double> tKassParticleXP;
+            tKassParticleXP.push_back(thisR);
+            tKassParticleXP.push_back(thisTheta);
+            tKassParticleXP.push_back(interpolatedPosition.Z());
+            tKassParticleXP.push_back(interpolatedVelocity.X());
+            tKassParticleXP.push_back(interpolatedVelocity.Y());
+            tKassParticleXP.push_back(interpolatedVelocity.Z());
+            
+            if ( !BypassTF && fInterface->fField->InVolume(tKassParticleXP))
             {
-                fFrequencyBuffer.push_back(cycFrequency);  // rad/s
-                fFrequencyBuffer.pop_front();
+                // Calculate JdotE
+                std::vector<double> tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
+                double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, 0);
+
+                // Add to buffer
+                fJdotEBuffer.push_back(tAvgDotProductFactor);
             }
+            // if (i==0)
+            // {
+            //     LPROG("tKassParticleXP: ");
+            //     for (size_t j = 0; j < tKassParticleXP.size(); ++j) {
+            //         LPROG("  Element " << j << std::setprecision(16) << ": " << tKassParticleXP[j]);
+            //     }
+            // }
+            tKassParticleXP.clear();
 
-            std::deque<double>::iterator it = fFrequencyBuffer.begin();
-            while (it != fFrequencyBuffer.end())
-            {
-                orbitPhase += (*it)*fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
-
-                if (*it != 0.)
-                {
-                    fFIRBuffer.push_back(amplitude * cos(orbitPhase));
-                }
-                else
-                {
-                    fFIRBuffer.push_back(0.);
-                }
-                fFIRBuffer.pop_front();
-
-                *it++;
-            }
-
-            std::pair<double,double> convolution = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n, fFIRBuffer);
-
-            convolutionMag = convolution.first;
-            convolutionPhase = convolution.second;
+            // LPROG("JdotEBuffer[" << i << "]: " << fJdotEBuffer[i]);
         }
-        else
-        {
-            convolutionMag = 1.0;
-            convolutionPhase = 0.;
-        }
+        // LPROG("Nsteps: " << Nsteps);
+        // LPROG("Kass final time: " << std::setprecision(16) << tTime << " Sim time: " << tTime - Nsteps*dt);
+        // LPROG("JdotEBuffer size: " << fJdotEBuffer.size());
+        // LPROG("First JdotE: " << fJdotEBuffer[0]);
 
-        return std::make_pair(convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
+        fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n, fJdotEBuffer, fTime);
+
+        // t_off = ; // insure that there is a time step dt between function calls
+        fTime = tTime; // update the time
+    }
+
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int bTE, int l, int m, int n)
+    {
+        double Ereal = fTFReceiverHandler->GetEfield()[bTE][l][m][n].back()[0];
+        double Breal = fTFReceiverHandler->GetBfield()[bTE][l][m][n].back()[0];
+
+        return std::make_pair(Breal, Ereal);
 
     }
 
@@ -408,6 +454,27 @@ namespace locust
         return phaseCorrection;
     }
 
+    KThreeVector FieldCalculator::InterpolateVelocity(double dt, double tCyclotronFrequency, double tCyclotronRadius, KThreeVector tVelocityParallel, KThreeVector fMagneticField, KThreeVector tAlpha, KThreeVector tBeta)
+    {
+        KThreeVector tNewVelocity = tVelocityParallel + 2 * LMCConst::Pi() * tCyclotronRadius * tCyclotronFrequency *( - sin(2 * LMCConst::Pi() * tCyclotronFrequency * dt) * tAlpha + cos( 2 * LMCConst::Pi() * tCyclotronFrequency * dt ) * tBeta );
 
+        return tNewVelocity;
+    }
+
+    KThreeVector FieldCalculator::InterpolatePosition(double dt, double tCyclotronFrequency, double tCyclotronRadius, KThreeVector tVelocityParallel, KThreeVector tMagneticField, KThreeVector tGuidingCenterPosition, KThreeVector tAlpha, KThreeVector tBeta)
+    {
+        KThreeVector tNewPosition = tGuidingCenterPosition + tVelocityParallel * dt + tCyclotronRadius * ( cos( 2 * LMCConst::Pi() * tCyclotronFrequency * dt) * tAlpha + sin( 2 * LMCConst::Pi() * tCyclotronFrequency * dt) * tBeta);
+
+        return tNewPosition;
+    }
+
+    double FieldCalculator::calcTheta(double x, double y)
+    {
+    	double phase = 0.;
+    	if (fabs(x) > 0.)
+    		phase = atan(y/x);
+    	phase += quadrantOrbitCorrection(phase, x);
+    	return phase;
+    }
 
 }

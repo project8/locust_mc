@@ -43,7 +43,10 @@ namespace locust
             virtual bool GenerateGreensFunction();
             bool Initialize( int nModes, const scarab::param_node& aParam );
             bool ConfigureModes( int bTE, int l, int m, int n, const scarab::param_node& aParam);
-            std::pair<double,double> GreensFunction(int bTE, int l, int m, int n, double t);
+            std::pair<double,double> TimeEvolve(int bTE, int l, int m, int n, double dt);
+            std::pair<double,double> tGreensFunction(int bTE, int l, int m, int n, double t);
+            std::pair<double,double> EGreensFunction(int bTE, int l, int m, int n, double t);
+            std::pair<double,double> BGreensFunction(int bTE, int l, int m, int n, double t);
             double ExpDecayTerm( int bTE, int l, int m, int n, double t);
             virtual void SetCavityQ( double aQ );
             virtual double GetCavityQ(int bTE, int l, int m, int n);

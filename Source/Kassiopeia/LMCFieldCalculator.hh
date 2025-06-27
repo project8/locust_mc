@@ -6,6 +6,8 @@
 #include "LMCDampedHarmonicOscillator.hh" // : LMCAnalyticResponseFunction
 #include "LMCFIRFileHandler.hh"
 #include "LMCTFFileHandler.hh"
+#include "KThreeVector.hh"
+using katrin::KThreeVector;
 
 
 #include "KSSpaceInteraction.h"
@@ -43,7 +45,14 @@ namespace locust
             double GetTM01FieldWithTerminator(Kassiopeia::KSParticle& aFinalParticle);
             double GetTE10FieldAfterOneBounce(Kassiopeia::KSParticle& aFinalParticle);
             double GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);
-            std::pair<double,double> GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF);
+
+            void SetCavityFIRSample(int bTE, int l, int m, int n, Kassiopeia::KSParticle& aFinalParticle, bool BypassTF);
+            std::pair<double,double> GetCavityFIRSample(int bTE, int l, int m, int n);
+
+            KThreeVector InterpolateVelocity(double dt, double tCyclotronFrequency, double tCyclotronRadius, KThreeVector tVelocityParallel, KThreeVector fMagneticField, KThreeVector tAlpha, KThreeVector tBeta);
+            KThreeVector InterpolatePosition(double dt, double tCyclotronFrequency, double tCyclotronRadius, KThreeVector tVelocityParallel, KThreeVector tMagneticField, KThreeVector tGuidingCenterPosition, KThreeVector tAlpha, KThreeVector tBeta);
+            double calcTheta(double x, double y);
+
             void SetNFilterBinsRequired( double dt );
             int GetNFilterBinsRequired();
             void SetFilterSize( int aFilterSize );
@@ -57,10 +66,11 @@ namespace locust
             double quadrantOrbitCorrection(double phase, double vx);
             TFReceiverHandler* fTFReceiverHandler;
             AnalyticResponseFunction* fAnalyticResponseFunction;
-            std::deque<double> fFIRBuffer;
-            std::deque<double> fFrequencyBuffer;
+            std::deque<double> fJdotEBuffer;
             int fNFilterBinsRequired;
             std::vector<std::vector<int>> fModeSet;
+            double fTime;
+
     };
 
 }
