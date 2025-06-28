@@ -1,7 +1,7 @@
 /*
  * LMCPowerNormCavitySignalGenerator.hh
  *
- *  Created on: Jun 27, 2025
+ *  Created on: Jun 27, 2027
  *      Author: rmueller
  */
 
@@ -17,7 +17,7 @@
 #include "LMCDampedHarmonicOscillator.hh" // : LMCAnalyticResponseFunction
 #include "LMCKassLocustInterface.hh"
 #include "LMCKassCurrentTransmitter.hh"
-#include "LMCFieldCalculator.hh"
+#include "LMCPowerNormFieldCalculator.hh"
 #include "LMCField.hh"
 #include "LMCCylindricalCavity.hh" // : LMCField
 #include "LMCRectangularCavity.hh" // : LMCField
@@ -41,7 +41,7 @@ namespace locust
 {
 
     /*!
-     @class PowerNormCavitySignalGenerator
+     @class CavitySignalGenerator
      @author P. L. Slocum
 
      @brief Generate signal in cavity and detect it with antennas.
@@ -128,7 +128,7 @@ namespace locust
             bool (PowerNormCavitySignalGenerator::*fDoGenerateFunc)( Signal* aSignal );
 
             PowerCombiner* fPowerCombiner;
-            FieldCalculator* fFieldCalculator;
+            PowerNormFieldCalculator* fFieldCalculator;
             TFReceiverHandler* fTFReceiverHandler;
             AnalyticResponseFunction* fAnalyticResponseFunction;
 
