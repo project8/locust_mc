@@ -35,7 +35,7 @@ namespace locust
         double fTOld;
         double fKassTimeStep; //Time step for sampling
 
-        FieldCalculator* fFieldCalculator = NULL;
+        FieldCalculator* fPowerNormFieldCalculator = NULL;
 
         //running deque for saving previous few ns of particle history
         //in order to caluclate retarded fields
