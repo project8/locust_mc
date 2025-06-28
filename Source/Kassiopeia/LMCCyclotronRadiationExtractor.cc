@@ -17,6 +17,7 @@ namespace locust
             fT0trapMin( 0. ),
             fNCrossings( 0 ),
             fSampleIndex( 0 ),
+            fPowerNorm( true ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -28,6 +29,7 @@ namespace locust
             fT0trapMin( aCopy.fT0trapMin ),
             fNCrossings( aCopy.fNCrossings ),
             fSampleIndex( aCopy.fSampleIndex ),
+            fPowerNorm( aCopy.fPowerNorm ),
             fInterface( aCopy.fInterface )
     {
     }
@@ -38,34 +40,48 @@ namespace locust
     }
     CyclotronRadiationExtractor::~CyclotronRadiationExtractor()
     {
-        // if (fFieldCalculator != NULL)
-        // {
-        //     delete fFieldCalculator;
-        // }
-        // Let CavitySignalGenerator delete the FieldCalculator
+        if (!fPowerNorm )
+        {
+            if (fFieldCalculator != NULL)
+            {
+                delete fFieldCalculator;
+            }
+        }
     }
 
     bool CyclotronRadiationExtractor::Configure()
     {
-<<<<<<< HEAD
-        // Check if CavitySignalGenerator has already set the calculator in the interface
-        if (fInterface->fFieldCalculator != NULL)
-=======
-        fFieldCalculator = new PowerNormFieldCalculator();
-        if (fInterface->fProject8Phase > 0)
->>>>>>> 8287d73 (Add new class LMCPowerNormFieldCalculator that inherits from LMCFieldCalculator.)
+        if ( fPowerNorm )
         {
-            fFieldCalculator = fInterface->fFieldCalculator;
-            LPROG(lmclog, "Using FieldCalculator from CavitySignalGenerator");
-
-            // Still apply CyclotronRadiationExtractor's specific configuration
-            if (fInterface->fProject8Phase > 0)
+            // Check if CavitySignalGenerator has already set the calculator in the interface
+            if (fInterface->fPowerNormFieldCalculator != NULL)
             {
-                if(!fFieldCalculator->ConfigureByInterface())
+                fFieldCalculator = fInterface->fPowerNormFieldCalculator;
+                LPROG(lmclog, "Using FieldCalculator from PowerNormCavitySignalGenerator");
+
+                // Still apply CyclotronRadiationExtractor's specific configuration
+                if (fInterface->fProject8Phase > 0)
                 {
-                    LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
-                    exit(-1);
+                    if(!fFieldCalculator->ConfigureByInterface())
+                    {
+                        LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                        exit(-1);
+                    }
                 }
+            }
+            else
+            {
+                fFieldCalculator = new PowerNormFieldCalculator();
+                if (fInterface->fProject8Phase > 0)
+                {
+                    if(!fFieldCalculator->ConfigureByInterface())
+                    {
+                        LERROR(lmclog,"Error configuring receiver FieldCalculator class from CyclotronRadiationExtractor.");
+                        exit(-1);
+                    }
+                }
+                // Store the calculator in the interface for others to use
+                fInterface->fPowerNormFieldCalculator = fFieldCalculator;
             }
         }
         else
@@ -79,8 +95,6 @@ namespace locust
                     exit(-1);
                 }
             }
-            // Store our calculator in the interface for others to use
-            fInterface->fFieldCalculator = fFieldCalculator;
         }
         return true;
     }
