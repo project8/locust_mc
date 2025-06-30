@@ -32,7 +32,8 @@ namespace locust
         // Member functions
         virtual bool Configure( const scarab::param_node& aNode);
         virtual bool ReadHFSSFile(int bTE, int l, int m, int n);
-        virtual std::pair<double,double> ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t);
+        virtual std::pair<double,double> ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer);
+        virtual std::pair<double,double> ComputeFields(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t);
         int GetFilterSizeArray(int bTE, int l, int m, int n) const;//Number of entries in the filter
         int GetNModes() const;
         double GetFilterResolutionArray(int bTE, int l, int m, int n) const;//Get the resolution of the filter

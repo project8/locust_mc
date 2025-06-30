@@ -125,8 +125,35 @@ namespace locust
         return true;
     }
 
+    std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer)
+    {   
+        double convolutionMag = 0.0;
+        double convolutionValueReal = 0.0;
+        double convolutionValueImag = 0.0;
+
+        if(fFIRNBinsArray[bTE][l][m][n]<=0)
+        {   
+            LERROR(lmclog,"Number of bins in the complex array filter should be positive");
+        }   
+        int firBinNumber=0;
+
+        int inputBufferSize = inputBuffer.size();    
+        for (auto it = inputBuffer.begin();it!=inputBuffer.end(); ++it)
+        {
+            convolutionValueReal += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][0];
+            convolutionValueImag += *(it)*fFilterComplexArray[bTE][l][m][n][firBinNumber][1];
+            firBinNumber++;
+        }
+        double complexPhase = 0.;
+    	if (fabs(convolutionValueReal) > 0.) complexPhase = atan(convolutionValueImag/convolutionValueReal);
+    	complexPhase += QuadrantCorrection( convolutionValueReal, complexPhase);
+
+        double complexMag = pow(convolutionValueReal*convolutionValueReal + convolutionValueImag*convolutionValueImag, 0.5);
+        return std::make_pair(complexMag, complexPhase);
+    }  
+
     // OPTION B (DO NOT DELETE)
-    std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t)
+    std::pair<double,double> HFSSResponseFileHandlerCore::ComputeFields(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t)
     {   
         std::array<double, 2> lastEfield = {0.0, 0.0};
         std::array<double, 2> lastBfield = {0.0, 0.0};
@@ -240,7 +267,7 @@ namespace locust
     }  
 
     // OPTION A (DO NOT DELETE)
-    // std::pair<double,double> HFSSResponseFileHandlerCore::ConvolveWithComplexFIRFilterArray(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t)
+    // std::pair<double,double> HFSSResponseFileHandlerCore::ComputeFields(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t)
     // {   
     //     std::array<double, 2> lastEfield = {0.0, 0.0};
     //     std::array<double, 2> lastBfield = {0.0, 0.0};
