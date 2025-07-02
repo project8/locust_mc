@@ -203,7 +203,7 @@ namespace locust
         // LPROG("JdotEBuffer size: " << fJdotEBuffer.size());
         // LPROG("First JdotE: " << fJdotEBuffer[0]);
 
-        fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n, fJdotEBuffer, fTime);
+        fTFReceiverHandler->ComputeFields(bTE, l, m, n, fJdotEBuffer, fTime);
 
         // t_off = ; // insure that there is a time step dt between function calls
         fTime = tTime; // update the time
