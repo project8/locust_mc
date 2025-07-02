@@ -41,6 +41,7 @@ namespace locust
     		virtual ~DampedHarmonicOscillator();
     		virtual bool Configure( const scarab::param_node& aNode );
             virtual bool GenerateGreensFunction();
+            virtual bool GenerateNormGreensFunction();
             bool Initialize( int nModes, const scarab::param_node& aParam );
             bool ConfigureModes( int bTE, int l, int m, int n, const scarab::param_node& aParam);
             std::pair<double,double> TimeEvolve(int bTE, int l, int m, int n, double dt);

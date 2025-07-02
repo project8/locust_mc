@@ -88,7 +88,7 @@ namespace locust
 
         for( unsigned index = 0; index < N0; ++index )
         {
-            voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index * fFilterRate;
+            voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/fFilterRate;
 
             aSignal->LongSignalTimeComplex()[index][0] = cos(voltage_phase);
             aSignal->LongSignalTimeComplex()[index][1] = cos(-LMCConst::Pi()/2. + voltage_phase);
@@ -151,7 +151,7 @@ namespace locust
         /* initialize time series */
         Signal* aSignal = new Signal();
         int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n);
-        fFilterRate = (fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
+        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
         aSignal->Initialize( N0 , 1 );
 
         double qInferred = 0.;

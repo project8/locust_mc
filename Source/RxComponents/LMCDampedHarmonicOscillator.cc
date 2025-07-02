@@ -302,25 +302,25 @@ namespace locust
         }
 
         /* initialize time series */
-        // Signal* aSignal = new Signal();
-        // int N0 = GetGFarray( {{bTE, l, m, n}} )[0].size();
-        // aSignal->Initialize( N0 , 1 );
-        // double convolutionMag = 0.;
+        Signal* aSignal = new Signal();
+        int N0 = GetGFarray( {{bTE, l, m, n}} )[0].size();
+        aSignal->Initialize( N0 , 1 );
+        double convolutionMag = 0.;
 
-        // for (unsigned i=0; i<1000; i++)  // time stamps
-        // {
-        //     // populate time series and convolve it with the FIR filter
-        //     PopulateCalibrationSignal(bTE, l, m, n, aSignal, N0, aDriveFrequency);
+        for (unsigned i=0; i<1000; i++)  // time stamps
+        {
+            // populate time series and convolve it with the FIR filter
+            PopulateCalibrationSignal(bTE, l, m, n, aSignal, N0, aDriveFrequency);
 
-        //     std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,SignalToDequeArray(bTE, l, m, n, aSignal));
+            std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE,l,m,n,SignalToDequeArray(bTE, l, m, n, aSignal));
 
-        //     if (fabs(convolutionPair.first) > convolutionMag)
-        //     {
-        //         convolutionMag = convolutionPair.first;
-        //     }
-        // } // i
+            if (fabs(convolutionPair.first) > convolutionMag)
+            {
+                convolutionMag = convolutionPair.first;
+            }
+        } // i
 
-        // aSignal->Reset();
+        aSignal->Reset();
 
         return 1.;
 
@@ -353,7 +353,7 @@ namespace locust
 	}
 
 
-    bool DampedHarmonicOscillator::GenerateGreensFunction()
+    bool DampedHarmonicOscillator::GenerateNormGreensFunction()
     {
         int nModes = GetNModes();
 
@@ -389,6 +389,72 @@ namespace locust
 
         SetGFarray(tGFArray ); 
 
+        delete fTFReceiverHandler;
+
+    	if ( tGFArray.size() < 1 ) return false;
+    	else return true;
+
+    }
+
+    bool DampedHarmonicOscillator::GenerateGreensFunction()
+    {
+        int nModes = GetNModes();
+
+        std::vector <std::vector< std::vector< std::vector< std::vector<std::pair<double,std::pair<double,double> > > > > > > tGFArray;
+        tGFArray.resize(2); // TE/TM
+
+        for( int bTE=0; bTE<2; bTE++)
+        {
+            tGFArray[bTE].resize(nModes);
+
+            for(int l=0; l<nModes; l++)
+            {
+                tGFArray[bTE][l].resize(nModes);
+                for(int m=0; m<nModes; m++)
+                {
+                    tGFArray[bTE][l][m].resize(nModes);
+                    for(int n=0; n<nModes; n++)
+                    {
+                        for (unsigned i=0; i<fMaxNBins; i++)
+                        {
+                            double tValue = i * fTimeResolution[bTE][l][m][n];
+                            tGFArray[bTE][l][m][n].push_back(std::make_pair(fTimeResolution[bTE][l][m][n],GreensFunction( bTE, l, m, n, tValue)));
+                            if ( ExpDecayTerm( bTE, l, m, n, tValue) < fThresholdFactor[bTE][l][m][n] * ExpDecayTerm(bTE, l, m, n, 0.) )
+                            {
+                                break;
+                            }
+                        }
+                        std::reverse( tGFArray[bTE][l][m][n].begin(), tGFArray[bTE][l][m][n].end() );
+                    }
+                }
+            }
+        }
+
+        SetGFarray(tGFArray ); // unnormalized
+
+        for( int bTE=0; bTE<2; bTE++)
+        {
+            for(int l=0; l<nModes; l++)
+            {
+                for(int m=0; m<nModes; m++)
+                {
+                    for(int n=0; n<nModes; n++)
+                    {
+                        double aNormFactor = NormFactor( bTE, l, m, n, fCavityFrequency[bTE][l][m][n]);
+                        for (unsigned i=0; i<tGFArray[bTE][l][m][n].size(); i++)
+                        {
+                            if (aNormFactor > 0.)
+                            {
+                                tGFArray[bTE][l][m][n][i].second.first /= aNormFactor;
+                                tGFArray[bTE][l][m][n][i].second.second /= aNormFactor;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        SetGFarray( tGFArray); // now normalized.
         delete fTFReceiverHandler;
 
     	if ( tGFArray.size() < 1 ) return false;
