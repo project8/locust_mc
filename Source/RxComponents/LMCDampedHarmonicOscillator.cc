@@ -240,6 +240,16 @@ namespace locust
     	return ExpDecayTerm;
     }
 
+    std::pair<double,double> DampedHarmonicOscillator::GreensFunction( int bTE, int l, int m, int n, double t)
+    {
+
+    	double tExpDecayTerm = ExpDecayTerm( bTE, l, m, n, t );
+    	double GreensFunctionValueReal = fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * tExpDecayTerm * sin( fCavityOmegaPrime[bTE][l][m][n] * t);
+    	double GreensFunctionValueImag = -1. * fTimeResolution[bTE][l][m][n] * fHannekePowerFactor[bTE][l][m][n] * tExpDecayTerm * cos( fCavityOmegaPrime[bTE][l][m][n] * t);
+
+    	return std::make_pair(GreensFunctionValueReal,GreensFunctionValueImag);
+    }
+
     std::pair<double,double> DampedHarmonicOscillator::TimeEvolve(int bTE, int l, int m, int n, double dt)
     {   
         double tExpDecayTerm = ExpDecayTerm( bTE, l, m, n, dt);
