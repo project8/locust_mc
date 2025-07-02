@@ -484,8 +484,8 @@ namespace locust
     			*it++;
     		}
 
-    		double convolutionMag = fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element],0.).first;
-    		double convolutionCosPhase = cos(fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element],0.).second);
+    		double convolutionMag = fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element]).first;
+    		double convolutionCosPhase = cos(fTFReceiverHandler.ConvolveWithComplexFIRFilterArray(0,0,0,0,ElementFIRBuffer[channel*fNElementsPerStrip+element]).second);
 
 
     		return convolutionMag * convolutionCosPhase;
