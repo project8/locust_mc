@@ -57,7 +57,7 @@ namespace locust
 
             void SetNFilterBinsRequired( double dt );
 //            int GetNFilterBinsRequired();
-            void SetFilterSize( int aFilterSize );
+            // void SetFilterSize( int aFilterSize );
             int GetFilterSize();
 
 
