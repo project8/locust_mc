@@ -96,6 +96,13 @@ namespace locust
         }
     }
 
+    void FieldCalculator::SetFilterSize( int aFilterSize )
+    {
+        // These contain histories of the electron's orbit phase and cyclotron frequency:
+        fFIRBuffer.resize( aFilterSize );
+        fFrequencyBuffer.resize( aFilterSize );
+    }
+
     double PowerNormFieldCalculator::GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle)
     {
         double deltaE = 0.;
