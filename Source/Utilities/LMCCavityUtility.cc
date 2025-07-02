@@ -151,7 +151,7 @@ namespace locust
         /* initialize time series */
         Signal* aSignal = new Signal();
         int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n);
-        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
+        fFilterRate = (fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
         aSignal->Initialize( N0 , 1 );
 
         double qInferred = 0.;
