@@ -88,7 +88,7 @@ namespace locust
 
         for( unsigned index = 0; index < N0; ++index )
         {
-            voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index*fFilterRate;
+            voltage_phase = 2.*LMCConst::Pi()*fRF_frequency*(double)index/fFilterRate;
 
             aSignal->LongSignalTimeComplex()[index][0] = cos(voltage_phase);
             aSignal->LongSignalTimeComplex()[index][1] = cos(-LMCConst::Pi()/2. + voltage_phase);
