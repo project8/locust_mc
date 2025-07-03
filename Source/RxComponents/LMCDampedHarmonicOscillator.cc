@@ -14,7 +14,7 @@ namespace locust
 	LOGGER( lmclog, "DampedHarmonicOscillator" );
 
     DampedHarmonicOscillator::DampedHarmonicOscillator():
-    		fMaxNBins( 20000 ),
+    		fMaxNBins( 10000 ),
 			fTimeResolutionDefault( 1.e-10 ),
 			fCavityFrequencyDefault( 1.067e9 ),
 			fCavityQDefault( 1000 ),
