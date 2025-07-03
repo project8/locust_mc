@@ -332,7 +332,7 @@ namespace locust
 
         aSignal->Reset();
 
-        return 1.;
+        return convolutionMag;
 
     }
 
