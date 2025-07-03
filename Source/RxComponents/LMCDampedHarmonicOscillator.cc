@@ -43,9 +43,13 @@ namespace locust
     	{
     		fMaxNBins = aParam["dho-max-nbins"]().as_int();
     	}
-    	if( aParam.has( "dho-time-resolution" ) )
+    	// if( aParam.has( "dho-time-resolution" ) )
+    	// {
+    	// 	SetDHOTimeResolution( 2. / aParam["dho-time-resolution"]().as_double() / 1e4 );
+    	// }
+        if( aParam.has( "dho-time-resolution" ) )
     	{
-    		SetDHOTimeResolution( 2. / aParam["dho-time-resolution"]().as_double() / 1e4 );
+    		SetDHOTimeResolution( aParam["dho-time-resolution"]().as_double() );
     	}
     	if( aParam.has( "dho-threshold-factor" ) )
     	{
