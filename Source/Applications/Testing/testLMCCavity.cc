@@ -64,7 +64,7 @@ class testCavity_app : public main_app
     public:
         testCavity_app() :
         main_app(),
-        fDHOTimeResolution(1.e-8),
+        fDHOTimeResolution(1.e-11),
         fDHOThresholdFactor(0.01),
         fCavityFrequency(1.067e9),
         fCavityQ(1000.),
@@ -175,6 +175,7 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 	int nModes = 2;
 	bool bTE = the_main.GetbTE();
 	bool checkCavityQ;
+    bool checkCavityQNorm;
 
 	if ( (l<2) && (m<2) && (n<2) )
 	{
@@ -187,6 +188,16 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 	    LERROR(lmclog,"This unit test presently only supports mode indices lmn < 2.");
 	    REQUIRE( false );
 	}
+    if ( (l<2) && (m<2) && (n<2) )
+    {
+        checkCavityQNorm = aCavityUtility.CheckCavityQNorm( nModes, bTE, l, m, n, the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+        REQUIRE( checkCavityQNorm );
+    }
+    else
+    {
+        LERROR(lmclog,"(norm) This unit test presently only supports mode indices lmn < 2.");
+        REQUIRE( false );
+    }
 
 }
 

@@ -170,7 +170,7 @@ namespace locust
         else
         {
             Jm0 = inputBuffer[0];
-            LPROG("Jm0: " << std::setprecision(16) << Jm0);
+            // LPROG("Jm0: " << std::setprecision(16) << Jm0);
         }
         // LPROG("lastEfield: " << lastEfield[0] << " + i*" << lastEfield[1]);
         // LPROG("lastBfield: " << lastBfield[0] << " + i*" << lastBfield[1]);

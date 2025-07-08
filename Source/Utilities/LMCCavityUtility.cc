@@ -220,5 +220,90 @@ namespace locust
         }
     }
 
+	bool CavityUtility::CheckCavityQNorm( int nModes, int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
+    {
+    	AddParam( "dho-time-resolution", dhoTimeResolution );
+    	AddParam( "dho-threshold-factor", dhoThresholdFactor );
+    	AddParam( "dho-cavity-frequency", dhoCavityFrequency );
+    	AddParam( "dho-cavity-Q", dhoCavityQ );
+    	AddParam( "n-modes", nModes );
+    	if (!Configure(bTE, l, m, n))
+    	{
+    		LERROR(testlog,"Cavity was not configured correctly.");
+    	    exit(-1);
+    	}
+
+        /* initialize time series */
+        Signal* aSignal = new Signal();
+        int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n);
+        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
+        aSignal->Initialize( N0 , 1 );
+
+        double qInferred = 0.;
+        double maxGain = 0.;
+        double rfSpanSweep = 3. * dhoCavityFrequency / dhoCavityQ;
+        double rfStepSize = 0.00005 * dhoCavityFrequency;
+        int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
+        double* freqArray = new double[nSteps];
+        double* gainArray = new double[nSteps];
+
+        for (int i=0; i<nSteps; i++) // frequency sweep
+        {
+        	int rfStep = -nSteps/2/fExpandFactor + i;
+        	fRF_frequency = dhoCavityFrequency + rfStepSize * rfStep;
+        	double convolutionMag = 0.;
+        	// populate time series and convolve it with the FIR filter
+        	PopulateSignal(aSignal, N0);
+        	std::pair<double,double> convolutionPair = fTFReceiverHandler->Computefields(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal), 0.);
+
+        	if (fabs(convolutionPair.first) > convolutionMag)
+        	{
+        	    convolutionMag = convolutionPair.first*convolutionPair.first + convolutionPair.second*convolutionPair.second;
+        	}
+
+        	freqArray[i] = fRF_frequency;
+        	gainArray[i] = convolutionMag*convolutionMag;
+
+        	if (convolutionMag*convolutionMag > maxGain)
+        	{
+        		maxGain = convolutionMag*convolutionMag;
+        		qInferred = 0.;
+        	}
+        	else if ((convolutionMag*convolutionMag < 0.5*maxGain) && (qInferred == 0.))
+        	{
+        		qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
+        	}
+        	LPROG( testlog, "(norm) Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
+        }
+
+#ifdef ROOT_FOUND
+        if (fWriteOutputFile) WriteRootHisto(nSteps, freqArray, gainArray);
+#endif
+        aSignal->Reset();
+        delete[] freqArray;
+        delete[] gainArray;
+        delete fTFReceiverHandler;
+        delete fAnalyticResponseFunction;
+
+        LPROG( testlog, "\nSummary:");
+        LPROG( testlog, "(norm) dho-threshold-factor is " << dhoThresholdFactor );
+        LPROG( testlog, "(norm) dho-time-resolution is " << dhoTimeResolution );
+        LPROG( testlog, "(norm) dho-cavity-frequency is " << dhoCavityFrequency );
+        LPROG( testlog, "(norm) dho-cavity-Q is " << dhoCavityQ );
+        LPROG( testlog, "(norm) Estimated Q is " << qInferred );
+        LPROG( testlog, "(norm) Expected Q is " << dhoCavityQ );
+
+        if ( fabs( 1. - qInferred / dhoCavityQ ) < 0.05 )
+        {
+            LPROG( testlog, "(norm) The cavity Q has been configured correctly." );
+        	return true;
+        }
+        else
+        {
+        	LERROR( testlog, "(norm) The Q value is " << qInferred << " but was supposed to be " << dhoCavityQ);
+        	return false;
+        }
+    }
+
 
 } /* namespace locust */

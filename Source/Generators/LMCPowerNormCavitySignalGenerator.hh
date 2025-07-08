@@ -70,7 +70,7 @@ namespace locust
     {
         public:
 
-            PowerNormCavitySignalGenerator( const std::string& aName = "cavity-signal" );
+            PowerNormCavitySignalGenerator( const std::string& aName = "powernorm-cavity-signal" );
             virtual ~PowerNormCavitySignalGenerator();
 
             bool Configure( const scarab::param_node& aNode );

@@ -44,6 +44,7 @@ namespace locust
 
         bool Configure(int bTE, int l, int m, int n);
         bool CheckCavityQ( int nModes, int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
+        bool CheckCavityQNorm( int nModes, int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
         void SetExpandFactor(double aFactor);
     	void SetOutputFile(bool aFlag);
         void AddParam(std::string aString, double aValue);
