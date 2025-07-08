@@ -64,7 +64,7 @@ class testCavity_app : public main_app
     public:
         testCavity_app() :
         main_app(),
-        fDHOTimeResolution(1.e-11),
+        fDHOTimeResolution(1.e-10),
         fDHOThresholdFactor(0.01),
         fCavityFrequency(1.067e9),
         fCavityQ(1000.),
