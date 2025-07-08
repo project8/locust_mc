@@ -45,11 +45,21 @@ namespace locust
     	}
         if( aParam.has( "dho-time-resolution" ) )
     	{
-    		if (aParam["dho-time-resolution"]().is_fraction()) {
-    		    SetDHOTimeResolution(aParam["dho-time-resolution"]().numerator() / aParam["dho-time-resolution"]().denominator());
-    		} else {
-    		    SetDHOTimeResolution(aParam["dho-time-resolution"]().as_double());
-    		}
+    		auto timeResolutionParam = aParam["dho-time-resolution"]();
+            if (timeResolutionParam.is_string()) {
+                // Parse fraction manually if it's provided as a string (e.g., "1/10")
+                std::string fraction = timeResolutionParam.as_string();
+                size_t delimiterPos = fraction.find('/');
+                if (delimiterPos != std::string::npos) {
+                    double numerator = std::stod(fraction.substr(0, delimiterPos));
+                    double denominator = std::stod(fraction.substr(delimiterPos + 1));
+                    SetDHOTimeResolution(numerator / denominator);
+                } else {
+                    LERROR(lmclog, "Invalid fraction format for dho-time-resolution: " << fraction);
+                }
+            } else {
+                SetDHOTimeResolution(timeResolutionParam.as_double());
+            }
     	}
     	if( aParam.has( "dho-threshold-factor" ) )
     	{
