@@ -14,7 +14,7 @@ namespace locust
 	LOGGER( lmclog, "DampedHarmonicOscillator" );
 
     DampedHarmonicOscillator::DampedHarmonicOscillator():
-    		fMaxNBins( 20000 ),
+    		fMaxNBins( 30000 ),
 			fTimeResolutionDefault( 1.e-10 ),
 			fCavityFrequencyDefault( 1.067e9 ),
 			fCavityQDefault( 1000 ),
@@ -59,7 +59,7 @@ namespace locust
                 } else {
                     LERROR(lmclog, "Invalid fraction format for dho-time-resolution: " << fraction);
                 }
-                LPROG("DHO time res with dipole=False: " << fTimeResolutionDefault);
+                LPROG(lmclog, "DHO time res with dipole=False: " << fTimeResolutionDefault);
             } else {
                 SetDHOTimeResolution(timeResolutionParam.as_double());
             }

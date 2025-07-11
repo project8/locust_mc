@@ -243,7 +243,7 @@ namespace locust
 
         /* initialize time series */
         Signal* aSignal = new Signal();
-        int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n);
+        int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n) - 1; // -1 to avoid the last elements which are unrelated to the GF
         fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
         aSignal->Initialize( N0 , 1 );
 
