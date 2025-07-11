@@ -65,7 +65,7 @@ class testCavity_app : public main_app
         testCavity_app() :
         main_app(),
         fDHOTimeResolution(1.e-8),
-        sDHOTimeResolutionNorm("1./301e11"),
+        sDHOTimeResolutionNorm("1e-2/1.067e9"),
         fDHOThresholdFactor(0.01),
         fCavityFrequency(1.067e9),
         fCavityQ(1000.),

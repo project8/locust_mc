@@ -267,7 +267,7 @@ namespace locust
 
         	if (fabs(convolutionPair.first) > convolutionMag)
         	{
-        	    convolutionMag = convolutionPair.first*convolutionPair.first + convolutionPair.second*convolutionPair.second;
+        	    convolutionMag = LMCConst::EpsNull() * convolutionPair.first*convolutionPair.first + LMCConst::MuNull() * convolutionPair.second*convolutionPair.second;
         	}
 
         	freqArray[i] = fRF_frequency;
