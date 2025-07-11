@@ -57,7 +57,7 @@
 using namespace scarab;
 using namespace locust;
 
-LOGGER( lmclog, "testLMCCavityNorm" );
+LOGGER( lmclog, "testLMCCavity" );
 
 class testCavity_appnorm : public main_app
 {
