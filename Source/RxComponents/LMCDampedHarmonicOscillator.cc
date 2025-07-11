@@ -84,7 +84,7 @@ namespace locust
     		return false;
     	}
 
-    	if ( !Initialize( GetNModes(), aParam , dipoleMode) )
+    	if ( !Initialize( GetNModes(), aParam , bdipoleMode) )
     	{
     	    LERROR(lmclog,"Error while initializing DampedHarmonicOscillator.");
     	}
