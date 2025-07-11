@@ -59,7 +59,7 @@ using namespace locust;
 
 LOGGER( lmclog, "testLMCCavity" );
 
-class testCavity_appnorm : public main_app
+class testCavity_app : public main_app
 {
     public:
         testCavity_app() :
@@ -89,7 +89,7 @@ class testCavity_appnorm : public main_app
             add_option("-o, --output-path", fOutputPath, "[PB_OUTPUT_DIR]");
         }
 
-        virtual ~testCavity_appmpr,() {}
+        virtual ~testCavity_app() {}
 
         double GetDHOTimeResolution()
         {
@@ -157,7 +157,7 @@ class testCavity_appnorm : public main_app
 };
 
 
-bool parseCavity(testCavity_appnorm& the_main)
+bool parseCavity(testCavity_app& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
 	CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
@@ -167,7 +167,7 @@ bool parseCavity(testCavity_appnorm& the_main)
 
 TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]" )
 {
-	testCavity_appnorm the_main;
+	testCavity_app the_main;
 	if (!parseCavity(the_main)) exit(-1);
 
 	CavityUtility aCavityUtility;
