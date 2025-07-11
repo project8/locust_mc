@@ -97,7 +97,7 @@ class testCavity_appnorm : public main_app
         }
         std::string GetDHOTimeResolutionNorm()
         {
-        	return fDHOTimeResolutionNorm;
+        	return sDHOTimeResolutionNorm;
         }
         double GetDHOThresholdFactor()
         {
