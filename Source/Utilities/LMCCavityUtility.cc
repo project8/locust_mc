@@ -220,7 +220,7 @@ namespace locust
         }
     }
 
-	bool CavityUtility::CheckCavityQNorm( int nModes, int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
+	bool CavityUtility::CheckCavityQNorm( int nModes, int bTE, int l, int m, int n, std::string dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ)
     {
     	AddParam( "dho-time-resolution", dhoTimeResolution );
     	AddParam( "dho-threshold-factor", dhoThresholdFactor );

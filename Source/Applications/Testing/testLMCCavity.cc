@@ -57,14 +57,15 @@
 using namespace scarab;
 using namespace locust;
 
-LOGGER( lmclog, "testLMCCavity" );
+LOGGER( lmclog, "testLMCCavityNorm" );
 
-class testCavity_app : public main_app
+class testCavity_appnorm : public main_app
 {
     public:
         testCavity_app() :
         main_app(),
-        fDHOTimeResolution(1.e-10),
+        fDHOTimeResolution(1.e-8),
+        fDHOTimeResolutioNorm("1./301e11"),
         fDHOThresholdFactor(0.01),
         fCavityFrequency(1.067e9),
         fCavityQ(1000.),
@@ -88,11 +89,15 @@ class testCavity_app : public main_app
             add_option("-o, --output-path", fOutputPath, "[PB_OUTPUT_DIR]");
         }
 
-        virtual ~testCavity_app() {}
+        virtual ~testCavity_appmpr,() {}
 
         double GetDHOTimeResolution()
         {
         	return fDHOTimeResolution;
+        }
+        std::string GetDHOTimeResolutionNorm()
+        {
+        	return fDHOTimeResolutionNorm;
         }
         double GetDHOThresholdFactor()
         {
@@ -138,6 +143,7 @@ class testCavity_app : public main_app
 
     private:
         double fDHOTimeResolution;
+        std::string fDHOTimeResolutionNorm;
         double fDHOThresholdFactor;
         double fCavityFrequency;
         double fCavityQ;
@@ -151,7 +157,7 @@ class testCavity_app : public main_app
 };
 
 
-bool parseCavity(testCavity_app& the_main)
+bool parseCavity(testCavity_appnorm& the_main)
 {
 	TestParameterHandler* p1 = TestParameterHandler::getInstance();
 	CLI11_PARSE( the_main, p1->GetArgc(), p1->GetArgv() );
@@ -161,7 +167,7 @@ bool parseCavity(testCavity_app& the_main)
 
 TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]" )
 {
-	testCavity_app the_main;
+	testCavity_appnorm the_main;
 	if (!parseCavity(the_main)) exit(-1);
 
 	CavityUtility aCavityUtility;
@@ -190,7 +196,7 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 	}
     if ( (l<2) && (m<2) && (n<2) )
     {
-        checkCavityQNorm = aCavityUtility.CheckCavityQNorm( nModes, bTE, l, m, n, the_main.GetDHOTimeResolution(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+        checkCavityQNorm = aCavityUtility.CheckCavityQNorm( nModes, bTE, l, m, n, the_main.GetDHOTimeResolutionNorm(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
         REQUIRE( checkCavityQNorm );
     }
     else

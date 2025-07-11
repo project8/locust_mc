@@ -47,7 +47,10 @@
     target_link_libraries( testLMCPlaneWaveFIR ${lib_dependencies})
     
     add_executable( testLMCCavity testLMCCavity.cc testCatch.cc)
-    target_link_libraries( testLMCCavity ${lib_dependencies})    
+    target_link_libraries( testLMCCavity ${lib_dependencies}) 
+
+    add_executable( testLMCCavitynorm testLMCCavitynorm.cc testCatch.cc)
+    target_link_libraries( testLMCCavitynorm ${lib_dependencies})    
             
     add_executable( testAliasingHF testAliasingHF.cc testCatch.cc)
     target_link_libraries( testAliasingHF ${lib_dependencies})    

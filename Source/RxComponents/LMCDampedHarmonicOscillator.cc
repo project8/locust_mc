@@ -21,7 +21,8 @@ namespace locust
 			fThresholdFactorDefault ( 0.25 ),
 			fHannekePowerFactorDefault( 1. ),
 			fNModes( 2 ),
-			fTFReceiverHandler( 0 )
+			fTFReceiverHandler( 0 ),
+            bDipoleMode( true )
 
     {}
     DampedHarmonicOscillator::~DampedHarmonicOscillator() {}
@@ -48,6 +49,7 @@ namespace locust
     		auto timeResolutionParam = aParam["dho-time-resolution"]();
             if (timeResolutionParam.is_string()) {
                 // Parse fraction manually if it's provided as a string (e.g., "1/10")
+                bDipoleMode = true;
                 std::string fraction = timeResolutionParam.as_string();
                 size_t delimiterPos = fraction.find('/');
                 if (delimiterPos != std::string::npos) {
@@ -82,7 +84,7 @@ namespace locust
     		return false;
     	}
 
-    	if ( !Initialize( GetNModes(), aParam ) )
+    	if ( !Initialize( GetNModes(), aParam , dipoleMode) )
     	{
     	    LERROR(lmclog,"Error while initializing DampedHarmonicOscillator.");
     	}
@@ -136,7 +138,7 @@ namespace locust
         return true;
     }
 
-    bool DampedHarmonicOscillator::Initialize( int nModes, const scarab::param_node& aParam )
+    bool DampedHarmonicOscillator::Initialize( int nModes, const scarab::param_node& aParam, bool dipoleMode)
     {
 
         fCavityFrequency.resize(2);
@@ -208,8 +210,11 @@ namespace locust
                 }
             }
         }
-
-        if (!GenerateGreensFunction()) return false;
+        if (dipoleMode) {
+            if (!GenerateGreensFunction()) return false;
+        } else {
+            if (!GenerateNormGreensFunction()) return false;
+        }
 
         return true;
     }

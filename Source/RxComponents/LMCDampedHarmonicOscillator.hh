@@ -42,7 +42,7 @@ namespace locust
     		virtual bool Configure( const scarab::param_node& aNode );
             virtual bool GenerateGreensFunction();
             virtual bool GenerateNormGreensFunction();
-            bool Initialize( int nModes, const scarab::param_node& aParam );
+            bool Initialize( int nModes, const scarab::param_node& aParam, bool dipoleMode );
             bool ConfigureModes( int bTE, int l, int m, int n, const scarab::param_node& aParam);
             std::pair<double,double> GreensFunction(int bTE, int l, int m, int n, double t);
             std::pair<double,double> TimeEvolve(int bTE, int l, int m, int n, double dt);
@@ -71,6 +71,7 @@ namespace locust
             double fTimeResolutionDefault;
             double fThresholdFactorDefault;
             double fHannekePowerFactorDefault;
+            bool bDipoleMode;
 
             std::vector<std::vector<std::vector<std::vector<double>>>> fCavityFrequency; // Hz
             std::vector<std::vector<std::vector<std::vector<double>>>> fCavityOmega; // radians/s
