@@ -59,7 +59,7 @@ namespace locust
                 } else {
                     LERROR(lmclog, "Invalid fraction format for dho-time-resolution: " << fraction);
                 }
-                LPROG("DHO time res with dipole=False: " << GetDHOTimeResolution());
+                LPROG("DHO time res with dipole=False: " << fTimeResolutionDefault);
             } else {
                 SetDHOTimeResolution(timeResolutionParam.as_double());
             }
