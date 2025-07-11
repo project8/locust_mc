@@ -66,6 +66,14 @@ namespace locust
 		}
 	}
 
+	void CavityUtility::AddParam(std::string aString, std::string aValue)
+	{
+	    if (!aValue.empty())
+	    {
+	        fparam_0->add(aString.c_str(), aValue.c_str());
+	    }
+	}
+
 	const scarab::param_node* CavityUtility::GetParams()
 	{
 	    return fparam_0;

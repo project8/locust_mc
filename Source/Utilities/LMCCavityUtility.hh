@@ -48,6 +48,7 @@ namespace locust
         void SetExpandFactor(double aFactor);
     	void SetOutputFile(bool aFlag);
         void AddParam(std::string aString, double aValue);
+        void AddParam(std::string aString, std::string aValue);
         std::deque<double> SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal);
         bool WriteRootHisto(int npoints, double* freqArray, double* gainArray);
         bool PopulateSignal(Signal* aSignal, int N0);
