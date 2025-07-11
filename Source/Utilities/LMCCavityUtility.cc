@@ -262,7 +262,6 @@ namespace locust
         	double convolutionMag = 0.;
         	// populate time series and convolve it with the FIR filter
         	PopulateSignal(aSignal, N0);
-			fTFReceiverHandler->SetLastElementToZero(bTE, l, m, n); // Set last element to zero
 
         	std::pair<double,double> convolutionPair = fTFReceiverHandler->ComputeFields(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal), 0.);
 
@@ -284,6 +283,8 @@ namespace locust
         		qInferred = dhoCavityFrequency /  (2.* rfStepSize * (rfStep-1));
         	}
         	LPROG( testlog, "(norm) Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
+
+			fTFReceiverHandler->SetLastElementToZero(bTE, l, m, n);
         }
 
 #ifdef ROOT_FOUND

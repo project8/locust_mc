@@ -46,7 +46,7 @@ namespace locust
         const auto& GetEfield() const { return fEfield; }
         const auto& GetBfield() const { return fBfield; }
 
-        // Set last element of fileds to zero
+        // Set last element of fields to zero
         void SetLastElementToZero(int bTE, int l, int m, int n);
 
     protected:
@@ -103,7 +103,7 @@ namespace locust
         return fResolutionArray[bTE][l][m][n];
     }   
 
-    void HFSSResponseFileHandlerCore::SetLastElementToZero(int bTE, int l, int m, int n)
+    inline void HFSSResponseFileHandlerCore::SetLastElementToZero(int bTE, int l, int m, int n)
     {
         fEfield[bTE][l][m][n].back() = {0.0, 0.0};
         fBfield[bTE][l][m][n].back() = {0.0, 0.0};
