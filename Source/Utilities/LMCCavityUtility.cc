@@ -262,7 +262,7 @@ namespace locust
         	double convolutionMag = 0.;
         	// populate time series and convolve it with the FIR filter
         	PopulateSignal(aSignal, N0);
-			fTFReceiverHandler->SetLastElementsToZero(bTE, l, m, n); // Set last element to zero
+			fTFReceiverHandler->SetLastElementToZero(bTE, l, m, n); // Set last element to zero
 
         	std::pair<double,double> convolutionPair = fTFReceiverHandler->ComputeFields(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal), 0.);
 
