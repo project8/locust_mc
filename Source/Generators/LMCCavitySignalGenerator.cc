@@ -34,7 +34,7 @@ namespace locust
         fThreadCheckTime(100),
         fKassNeverStarted( false ),
         fAliasedFrequencies( false ),
-        fOverrideAliasing( false ),
+        fOverrideAliasing( true ),
         fBypassTF( false ),
         fNormCheck( false ),
         fUseDirectKassPower( true ),
