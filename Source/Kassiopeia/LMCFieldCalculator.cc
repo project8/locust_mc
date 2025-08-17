@@ -339,6 +339,7 @@ namespace locust
         double cycFrequency = tKassParticleXP[7];
         double tTime = tKassParticleXP[9];
         double amplitude = 0.;
+        int modeSignThetaComp = 1 - 2 * ( fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,0,bTE)[1] < 0. );
         if ( fInterface->fField->InVolume(tKassParticleXP))
         {
             amplitude = 1.;
@@ -383,7 +384,9 @@ namespace locust
             convolutionPhase = 0.;
         }
 
-        return std::make_pair(convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
+        // Select sign of driven mode amplitude with modeSignThetaComp factor.
+        // This affects modes with n > 1, such as TE012.  It doesn't affect TE011.
+        return std::make_pair(modeSignThetaComp * convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
 
     }
 
