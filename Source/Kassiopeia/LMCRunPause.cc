@@ -227,7 +227,13 @@ namespace locust
                     if (aParam["ks-generator"]().as_string() == "ksgen-krypton")
                     {
                         if ( fGenEnergyCreator == nullptr ) fGenEnergyCreator = new Kassiopeia::KSGenEnergyComposite();
-                        if ( fEnergyKrypton == nullptr) fEnergyKrypton = new Kassiopeia::KSGenEnergyKryptonEvent();
+                        if ( fEnergyKrypton == nullptr)
+                        {
+                            fEnergyKrypton = new Kassiopeia::KSGenEnergyKryptonEvent();
+                            fEnergyKrypton->SetDoAuger(false);
+                            fEnergyKrypton->SetForceConversion(true);
+                            fEnergyKrypton->SetDoConversion(true);
+                        }
                         fGenEnergyCreator = fEnergyKrypton;
                         LPROG(lmclog,"Running the krypton energy generator.");
                     }
