@@ -188,7 +188,7 @@ namespace locust
 		    &&   aParam.has( "ks-starting-energy-min" ) && aParam.has( "ks-starting-energy-max" )
 		    &&   aParam.has( "ks-starting-pitch-min" ) && aParam.has( "ks-starting-pitch-max" ) )
             {
-                int tSeed = GetSeed( aParam );
+                long int tSeed = GetSeed( aParam );
                 KRandom::GetInstance().SetSeed(tSeed);
 #ifdef ROOT_FOUND
                 fInterface->aRunParameter->fKassiopeiaSeed = tSeed;
@@ -355,18 +355,26 @@ namespace locust
     }
 
 
-    int RunPause::GetSeed( const scarab::param_node& aParam )
+    long int RunPause::GetSeed( const scarab::param_node& aParam )
     {
-        int tSeed = 0;
+        long int tSeed1 = 0;
+        long int tSeed2 = 0;
+        long int tSeed = 0;
         if ( aParam.has( "random-track-seed" ) )
         {
             tSeed = aParam["random-track-seed"]().as_int();
         }
         else
         {
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            tSeed = tv.tv_usec;
+            struct timeval tv1;
+            gettimeofday(&tv1, NULL);
+            tSeed1 = tv1.tv_usec;
+
+            struct timeval tv2;
+            gettimeofday(&tv2, NULL);
+            tSeed2 = tv2.tv_usec;
+
+            tSeed = tSeed1 + 1e7*tSeed2;
         }
         return tSeed;
     }
@@ -412,7 +420,7 @@ namespace locust
                     scarab::param_node default_setting;
                     default_setting.add("name","uniform");
                     fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
-                    int tSeed = GetSeed( aParam );
+                    int tSeed = abs(GetSeed( aParam ));
                     fDistributionInterface.SetSeed( tSeed );
                     double tMinTrackLength = tMaxTrackLength * fMinTrackLengthFraction;
                     double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
