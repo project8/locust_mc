@@ -22,10 +22,12 @@
 #include "KSGenGeneratorComposite.h"
 #include "KSGenValueUniform.h"
 #include "KSGenValueAngleSpherical.h"
+#include "KSGenValueRadiusCylindrical.h"
 #include "KSGenValueFix.h"
 #include "KSGenEnergyComposite.h"
 #include "KSGenEnergyKryptonEvent.h"
 #include "KSGenPositionRectangularComposite.h"
+#include "KSGenPositionCylindricalComposite.h"
 #include "KSGenDirectionSphericalComposite.h"
 #include "KSGenTimeComposite.h"
 #include "LMCKassLocustInterface.hh"
@@ -62,6 +64,10 @@ namespace locust
             bool AddMaxTimeTerminator( const scarab::param_node& aParam );
             bool AddMaxRTerminator( const scarab::param_node& aParam );
             bool AddGenerator( const scarab::param_node& aParam );
+            bool HaveStartingPositions( const scarab::param_node& aParam );
+            bool HaveGenConfigParams( const scarab::param_node& aParam );
+            bool SetupGenerator( const scarab::param_node& aParam );
+            bool SetupDirection( const scarab::param_node& aParam );
             long int GetSeed( const scarab::param_node& aParam );
 
 
@@ -82,19 +88,22 @@ namespace locust
             Kassiopeia::KSGeoSpace* fKSSpace;
             Kassiopeia::KSGenGeneratorComposite* fGenerator;
             Kassiopeia::KSGenDirectionSphericalComposite* fGenDirectionComposite;
-			Kassiopeia::KSGenValueAngleSpherical* fThetaGenerator;
-			Kassiopeia::KSGenValueUniform* fPhiGenerator;
-			Kassiopeia::KSGenPositionRectangularComposite* fGenPositionComposite;
-			Kassiopeia::KSGenValueUniform* fPositionXGenerator;
-			Kassiopeia::KSGenValueUniform* fPositionYGenerator;
-			Kassiopeia::KSGenValueUniform* fPositionZGenerator;
-			Kassiopeia::KSGenValueUniform* fEnergyUniform;
-			Kassiopeia::KSGenEnergyKryptonEvent* fEnergyKrypton;
-			Kassiopeia::KSGenEnergyComposite* fGenEnergyComposite;
-			Kassiopeia::KSGenCreator* fGenEnergyCreator;
-			Kassiopeia::KSGenTimeComposite* fGenTimeComposite;
-			Kassiopeia::KSGenValueUniform* fTimeGenerator;
-			Kassiopeia::KSGenValueFix* fGenPidComposite;
+            Kassiopeia::KSGenValueAngleSpherical* fThetaGenerator; // pitch angle
+            Kassiopeia::KSGenValueUniform* fPhiGenerator; // orbit phase
+            Kassiopeia::KSGenPositionRectangularComposite* fGenPositionRectangularComposite;
+            Kassiopeia::KSGenPositionCylindricalComposite* fGenPositionCylindricalComposite;
+            Kassiopeia::KSGenValueUniform* fPositionPhiGenerator;
+            Kassiopeia::KSGenValueRadiusCylindrical* fPositionRadiusGenerator;
+            Kassiopeia::KSGenValueUniform* fPositionXGenerator;
+            Kassiopeia::KSGenValueUniform* fPositionYGenerator;
+            Kassiopeia::KSGenValueUniform* fPositionZGenerator;
+            Kassiopeia::KSGenValueUniform* fEnergyUniform;
+            Kassiopeia::KSGenEnergyKryptonEvent* fEnergyKrypton;
+            Kassiopeia::KSGenEnergyComposite* fGenEnergyComposite;
+            Kassiopeia::KSGenCreator* fGenEnergyCreator;
+            Kassiopeia::KSGenTimeComposite* fGenTimeComposite;
+            Kassiopeia::KSGenValueUniform* fTimeGenerator;
+            Kassiopeia::KSGenValueFix* fGenPidComposite;
 
             std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
             DistributionInterface fDistributionInterface;
