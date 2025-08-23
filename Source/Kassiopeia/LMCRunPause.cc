@@ -27,6 +27,8 @@ namespace locust
         KSComponent(),
         fLocustMaxTimeTerminator( nullptr ),
         fLocustMaxRTerminator( nullptr ),
+        fLocustMaxEnergyTerminator( nullptr ),
+        fLocustMinEnergyTerminator( nullptr ),
         fBox( nullptr ),
         fKGSpace( nullptr ),
         fSurface( nullptr ),
@@ -64,6 +66,8 @@ namespace locust
         KSComponent(),
         fLocustMaxTimeTerminator( nullptr ),
         fLocustMaxRTerminator( nullptr ),
+        fLocustMaxEnergyTerminator( nullptr ),
+        fLocustMinEnergyTerminator( nullptr ),
         fBox( nullptr ),
         fKGSpace( nullptr ),
         fSurface( nullptr ),
@@ -316,7 +320,13 @@ namespace locust
                     fEnergyKrypton->SetDoConversion(true);
                 }
                 fGenEnergyCreator = fEnergyKrypton;
+                AddEnergyTerminators( aParam );
                 LPROG(lmclog,"Running the krypton energy generator.");
+            }
+            else
+            {
+                LERROR(lmclog,"Generator name isn't being parsed correctly.");
+                return false;
             }
         }
 
@@ -402,6 +412,60 @@ namespace locust
     	return true;
     }
 
+    bool RunPause::AddEnergyTerminators( const scarab::param_node& aParam )
+    {
+        if (!fToolbox.HasKey("ksmax-energy-project8"))
+        {
+            /* Remove any existing KSTermMaxEnergy objects */
+            auto tMaxEnergy = fToolbox.GetAll<Kassiopeia::KSTermMaxEnergy>();
+            for (unsigned i=0; i<tMaxEnergy.size(); i++)
+            {
+                fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxEnergy[i]);
+                fToolbox.Remove(tMaxEnergy[i]->GetName());
+            }
+
+            if ( fLocustMaxEnergyTerminator == nullptr ) fLocustMaxEnergyTerminator = new Kassiopeia::KSTermMaxEnergy();
+            fLocustMaxEnergyTerminator->SetName("ksmax-energy-project8");
+            fLocustMaxEnergyTerminator->SetMaxEnergy( aParam["ks-starting-energy-max"]().as_double() );
+            fLocustMaxEnergyTerminator->Initialize();
+            fLocustMaxEnergyTerminator->Activate();
+            fToolbox.Add(fLocustMaxEnergyTerminator);
+            fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMaxEnergyTerminator);
+            LPROG(lmclog,"\"ksmax-energy-project8\" has just been added to the KToolbox.");
+        }
+        else
+        {
+            LPROG(lmclog,"\"ksmax-energy-project8\" is already in the KToolbox.");
+        }
+
+        if (!fToolbox.HasKey("ksmin-energy-project8"))
+        {
+            /* Remove any existing KSTermMaxEnergy objects */
+            auto tMinEnergy = fToolbox.GetAll<Kassiopeia::KSTermMinEnergy>();
+            for (unsigned i=0; i<tMinEnergy.size(); i++)
+            {
+                fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMinEnergy[i]);
+                fToolbox.Remove(tMinEnergy[i]->GetName());
+            }
+
+            if ( fLocustMinEnergyTerminator == nullptr ) fLocustMinEnergyTerminator = new Kassiopeia::KSTermMinEnergy();
+            fLocustMinEnergyTerminator->SetName("ksmin-energy-project8");
+            fLocustMinEnergyTerminator->SetMinEnergy( aParam["ks-starting-energy-min"]().as_double() );
+            fLocustMinEnergyTerminator->Initialize();
+            fLocustMinEnergyTerminator->Activate();
+            fToolbox.Add(fLocustMinEnergyTerminator);
+            fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMinEnergyTerminator);
+            LPROG(lmclog,"\"ksmin-energy-project8\" has just been added to the KToolbox.");
+        }
+        else
+        {
+            LPROG(lmclog,"\"ksmin-energy-project8\" is already in the KToolbox.");
+        }
+
+
+        return true;
+    }
+
 
     bool RunPause::AddMaxRTerminator( const scarab::param_node& aParam )
     {
@@ -411,8 +475,8 @@ namespace locust
             auto tMaxR = fToolbox.GetAll<Kassiopeia::KSTermMaxR>();
             for (unsigned i=0; i<tMaxR.size(); i++)
             {
-        	    fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxR[i]);
-        	    fToolbox.Remove(tMaxR[i]->GetName());
+                fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(tMaxR[i]);
+                fToolbox.Remove(tMaxR[i]->GetName());
             }
 
             if ( fLocustMaxRTerminator == nullptr ) fLocustMaxRTerminator = new Kassiopeia::KSTermMaxR();

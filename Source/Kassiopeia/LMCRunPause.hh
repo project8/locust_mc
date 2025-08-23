@@ -11,6 +11,8 @@
 #include "KSRunModifier.h"
 #include "KToolbox.h"
 #include "KSTermMaxR.h"
+#include "KSTermMaxEnergy.h"
+#include "KSTermMinEnergy.h"
 #include "KSTermMaxTime.h"
 #include "KSTermDeath.h"
 #include "KSRootTerminator.h"
@@ -62,6 +64,7 @@ namespace locust
             bool DeleteLocalKassObjects();
             bool AddWaveguideTerminator( const scarab::param_node& aParam );
             bool AddMaxTimeTerminator( const scarab::param_node& aParam );
+            bool AddEnergyTerminators( const scarab::param_node& aParam );
             bool AddMaxRTerminator( const scarab::param_node& aParam );
             bool AddGenerator( const scarab::param_node& aParam );
             bool HaveStartingPositions( const scarab::param_node& aParam );
@@ -80,6 +83,8 @@ namespace locust
             katrin::KToolbox& fToolbox;
             Kassiopeia::KSTermMaxTime* fLocustMaxTimeTerminator;
             Kassiopeia::KSTermMaxR* fLocustMaxRTerminator;
+            Kassiopeia::KSTermMaxEnergy* fLocustMaxEnergyTerminator;
+            Kassiopeia::KSTermMinEnergy* fLocustMinEnergyTerminator;
             KGeoBag::KGBoxSpace* fBox;
             KGeoBag::KGSpace* fKGSpace;
             Kassiopeia::KSGeoSurface* fSurface;
