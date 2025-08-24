@@ -109,6 +109,7 @@ namespace locust
             bool fUseDirectKassPower;
             bool fAliasingIsChecked;
             bool fUnitTestRootFile;
+            bool fMottScattering;
             std::vector<std::vector<int>> fModeSet;
 
 
@@ -118,6 +119,7 @@ namespace locust
             void WakeBeforeEvent();
             bool TryWakeAgain();
             bool ReceivedKassReady();
+            bool ReceivedScatterCondition(Signal* aSignal);
             bool DriveMode(Signal* aSignal, unsigned index);
             bool RandomizeStartDelay();
 

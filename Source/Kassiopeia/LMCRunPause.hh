@@ -102,6 +102,7 @@ namespace locust
             bool fConfigurationComplete;
             int fEventCounter;
             int fMaxEvents;
+            bool fMottScattering;
 
 
 

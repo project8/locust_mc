@@ -52,6 +52,7 @@ namespace locust
         fConfigurationComplete( false ),
         fEventCounter( 0 ),
         fMaxEvents( 1 ),
+        fMottScattering( false ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -86,6 +87,7 @@ namespace locust
         fConfigurationComplete( false ),
         fEventCounter( 0 ),
         fMaxEvents( 1 ),
+        fMottScattering( false ),
         fInterface( aCopy.fInterface )
     {
     }
@@ -127,9 +129,14 @@ namespace locust
 
     bool RunPause::Configure( const scarab::param_node& aParam )
     {
-        if( aParam.has( "n-max-events" ) )
+        if( aParam.has( "mott-scattering" ) )
         {
-            fMaxEvents = aParam["n-max-events"]().as_double();
+            fMottScattering = true;
+            scarab::param_node aScatteringNode = aParam["mott-scattering"].as_node();
+            if ( aScatteringNode.has("n-max-events") )
+            {
+                fMaxEvents = aScatteringNode.get_value<int>( "n-max-events", fMaxEvents );
+            }
         }
 
         if ( fToolbox.IsInitialized() )
@@ -533,7 +540,6 @@ namespace locust
 
     bool RunPause::ExecutePreRunModification(Kassiopeia::KSRun &)
     {
-
     	if ( !ConfigureByInterface() )
     	{
     	    return false;
@@ -601,6 +607,14 @@ namespace locust
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
        	//  No interrupt has happened yet in KSRoot.  Run still in progress.
+        if (( fMottScattering ) && ( aRun.GetTotalEvents() > fMaxEvents-1 )) // Mott
+        {
+            LWARN(lmclog,"SIGINT raised by RunPause:PostRun");
+            raise(SIGINT);
+            fInterface->fDoneWithSignalGeneration = true;
+            fInterface->fScatterCondition.notify_one();
+            return false;
+        }
         return true;
     }
 

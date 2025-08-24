@@ -16,6 +16,7 @@ namespace locust
             fT0trapMin( 0. ),
             fNCrossings( 0 ),
             fSampleIndex( 0 ),
+            fMottScattering( false ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -27,6 +28,7 @@ namespace locust
             fT0trapMin( aCopy.fT0trapMin ),
             fNCrossings( aCopy.fNCrossings ),
             fSampleIndex( aCopy.fSampleIndex ),
+            fMottScattering( false ),
             fInterface( aCopy.fInterface )
     {
     }
@@ -43,8 +45,27 @@ namespace locust
         }
     }
 
-    bool CyclotronRadiationExtractor::Configure()
+    bool CyclotronRadiationExtractor::ConfigureByInterface()
     {
+        if (fInterface->fConfigureKass)
+        {
+            const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+            if (!this->Configure( *aParam ))
+            {
+                LERROR(lmclog,"Error configuring FieldInterface class");
+                exit(-1);
+            }
+        }
+        return true;
+    }
+
+    bool CyclotronRadiationExtractor::Configure( const scarab::param_node& aParam )
+    {
+        if( aParam.has( "mott-scattering" ) )
+        {
+            fMottScattering = true;
+        }
+
         fFieldCalculator = new FieldCalculator();
         if (fInterface->fProject8Phase > 0)
         {
@@ -61,7 +82,7 @@ namespace locust
     void CyclotronRadiationExtractor::SetP8Phase (int P8Phase )
     {
         fInterface->fProject8Phase = P8Phase;
-        Configure();
+        ConfigureByInterface();
     }
 
     bool CyclotronRadiationExtractor::UpdateTrackProperties( Kassiopeia::KSParticle &aFinalParticle, unsigned index, bool bStart )
@@ -71,8 +92,9 @@ namespace locust
         double tSamplingRate = fInterface->aRunParameter->fSamplingRateMHz; // MHz
         double tOffset = -tLOfrequency + tSamplingRate * 1.e6 / 2.; // Hz
         double tTime = index / tSamplingRate / 1.e6 / fInterface->aRunParameter->fDecimationFactor;
-    	if (bStart)
-    	{
+
+        if (bStart)
+        {
             fStartingIndex = index;
             fInterface->aTrack->StartTime = tTime;
             double tX = aFinalParticle.GetPosition().X();
@@ -83,9 +105,9 @@ namespace locust
             fInterface->aTrack->StartGuidingCenterY = aFinalParticle.GetGuidingCenterPosition().Y();
             fInterface->aTrack->StartGuidingCenterZ = aFinalParticle.GetGuidingCenterPosition().Z();
             fInterface->aTrack->StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
-    	}
-    	else
-    	{
+        }
+        else
+        {
             fInterface->aTrack->EndTime = tTime;
             unsigned nElapsedSamples = index - fStartingIndex;
             fInterface->aTrack->AvgFrequency = ( fInterface->aTrack->AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
@@ -96,7 +118,7 @@ namespace locust
             }
             fInterface->aTrack->TrackLength = tTime - fInterface->aTrack->StartTime;
             if (fInterface->aTrack->TrackLength > 0.) fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
-    	}
+        }
 #endif
 
         return true;
@@ -188,6 +210,14 @@ namespace locust
                                                                    Kassiopeia::KSParticleQueue& aParticleQueue )
     {
 
+        if (fMottScattering )
+        {
+            if ( !fInterface->fScatteredEventInProgress )
+            {
+                return false;
+            }
+        }
+
         double DeltaE=0.;
 
         if(fInterface->fProject8Phase==1)
@@ -221,12 +251,13 @@ namespace locust
             }
         }
 
-
         if (!fInterface->fDoneWithSignalGeneration)  // if Locust is still acquiring voltages.
         {
             // Check for either a new track, or a new event:
             if ( ( fInterface->fNewTrackStarting ) || ( aFinalParticle.GetParentTrackId() < 0 ) )
             {
+//                printf("check -2\n");
+
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 fInterface->fNewTrackStarting = false;
                 aFinalParticle.SetParentTrackId( aFinalParticle.GetParentTrackId() + 1 );
@@ -236,7 +267,6 @@ namespace locust
                 UpdateTrackProperties( aFinalParticle, fInterface->fSampleIndex, 1 );
                 LPROG(lmclog,"Updated recorded track properties at sample " << fInterface->fSampleIndex );
             }
-
 
             double t_poststep = aFinalParticle.GetTime();
             fNewParticleHistory.push_back(ExtractKassiopeiaParticle(anInitialParticle, aFinalParticle));
@@ -248,8 +278,8 @@ namespace locust
                 UpdateTrackProperties( aFinalParticle, fSampleIndex, 0 );  // Keep recording the track candidate end time.
 
                 std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
-                tLock.lock();
 
+                tLock.lock();
 
                 unsigned tHistoryMaxSize;
 

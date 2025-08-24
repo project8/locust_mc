@@ -31,7 +31,8 @@ namespace locust
             CyclotronRadiationExtractor( const CyclotronRadiationExtractor& aCopy );
             CyclotronRadiationExtractor* Clone() const;
             virtual ~CyclotronRadiationExtractor();
-            bool Configure();
+            bool Configure( const scarab::param_node& aParam );
+            bool ConfigureByInterface();
 
 
             //**********
@@ -63,6 +64,7 @@ namespace locust
             kl_interface_ptr_t fInterface;
             unsigned fSampleIndex;
             unsigned fStartingIndex;
+            bool fMottScattering;
     };
 
 

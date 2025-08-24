@@ -39,7 +39,8 @@ namespace locust
         fNormCheck( false ),
         fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
-		fUnitTestRootFile( false ),
+        fUnitTestRootFile( false ),
+        fMottScattering( false ),
         fInterface( nullptr )  // Initialize fInterface to (nullptr) instead of to (new KassLocustInterface())
     {
     }
@@ -323,6 +324,10 @@ namespace locust
         {
             gxml_filename = aParam["xml-filename"]().as_string();
         }
+        if( aParam.has( "mott-scattering" ) )
+        {
+            fMottScattering = true;
+        }
 
         return true;
     }
@@ -589,7 +594,7 @@ namespace locust
     }
 
 
-     bool CavitySignalGenerator::ReceivedKassReady()
+    bool CavitySignalGenerator::ReceivedKassReady()
     {
 
     	std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -611,6 +616,20 @@ namespace locust
             return true;
         }
 
+    }
+
+    bool CavitySignalGenerator::ReceivedScatterCondition( Signal* aSignal )
+    {
+        if ( fMottScattering )
+        {
+            std::unique_lock< std::mutex >tLock( fInterface->fScatterMutex, std::defer_lock );
+            tLock.lock();
+            fInterface->fScatterCondition.wait( tLock );
+            tLock.unlock();
+            fInterface->fKassEventReady = false;
+            return true;
+        }
+        else return false;
     }
 
 
@@ -649,17 +668,26 @@ namespace locust
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
             std::thread tKassiopeia (&CavitySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
+            if ( ReceivedScatterCondition( aSignal ) )
+            {
+                LWARN(lmclog,"Received scatter condition.");
+            }
+
+
+            if ( !fInterface->fDoneWithSignalGeneration )
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
-
                 if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
                 {
-                	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
-                	else
-                	{
-                		printf("breaking\n");
-                		break;
-                	}
+                    if (fInterface->fScatteredEventInProgress || ReceivedKassReady())
+                    {
+                        fInterface->fPreEventInProgress = true;
+                    }
+                    else
+                    {
+                        printf("breaking\n");
+                        break;
+                    }
                 	LPROG( lmclog, "LMC ReceivedKassReady" );
                 }
 
@@ -680,8 +708,6 @@ namespace locust
 
                     std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );
 
-
-
                     if (!fInterface->fKassEventReady)  // Kass confirms event is underway.
                     {
 
@@ -689,7 +715,6 @@ namespace locust
                     	tLock.lock();
 
                     	fInterface->fDigitizerCondition.wait( tLock );
-
 
                         if (fInterface->fEventInProgress)
                         {
@@ -704,6 +729,7 @@ namespace locust
                     			break;
                     		}
                         }
+
                         fInterface->fSampleIndex = index; // 2-way trigger confirmation for Kass.
 
                         tLock.unlock();
