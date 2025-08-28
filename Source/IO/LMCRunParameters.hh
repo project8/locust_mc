@@ -36,7 +36,7 @@ namespace locust
             std::string fSimulationType;
             std::string fSimulationSubType;
             long int fRunID;
-            int fKassiopeiaSeed;
+            long int fKassiopeiaSeed;
             int fTrackLengthSeed;
             int fTrackDelaySeed;
 

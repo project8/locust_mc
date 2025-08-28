@@ -265,7 +265,7 @@ namespace locust
 
         fprintf(file,"    \"%d\": {\n", fEventCounter);
         fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
-        fprintf(file,"        \"kassiopeia-seed\": %d,\n", fInterface->aRunParameter->fKassiopeiaSeed);
+        fprintf(file,"        \"kassiopeia-seed\": %ld,\n", fInterface->aRunParameter->fKassiopeiaSeed);
         fprintf(file,"        \"track-length-seed\": %d,\n", fInterface->aRunParameter->fTrackLengthSeed);
         fprintf(file,"        \"track-delay-seed\": %d,\n", fInterface->aRunParameter->fTrackDelaySeed);
         fprintf(file,"        \"ntracks\": %d,\n", fInterface->anEvent->fNTracks);
