@@ -804,7 +804,7 @@ namespace locust
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
-        DeleteLocalKassObjects();
+        if ( aRun.GetTotalEvents() > fInterface->fNPileupEvents ) DeleteLocalKassObjects();
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
         return true;
     }
