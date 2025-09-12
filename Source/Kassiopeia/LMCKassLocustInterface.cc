@@ -21,6 +21,8 @@ namespace locust
             fWaitAfterEvent( true ),
             fKassEventReady( false ),
             fEventInProgress( false ),
+            fEventCompleted( false ),
+            fNPileupEvents( 5 ),
             fPreEventInProgress( false ),
             fFalseStartKassiopeia( true ),
             fDoneWithSignalGeneration( false ),

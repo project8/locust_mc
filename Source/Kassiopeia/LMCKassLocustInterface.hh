@@ -42,6 +42,8 @@ namespace locust
         bool fWaitAfterEvent;
         bool fKassEventReady;
         bool fEventInProgress;
+        bool fEventCompleted;
+        int fNPileupEvents;
         bool fPreEventInProgress;
         bool fFalseStartKassiopeia; // flag to avoid false start on some Macs.
         bool fDoneWithSignalGeneration;  // do not continue to generate voltages and advance digitizer time.
