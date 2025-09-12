@@ -630,8 +630,6 @@ namespace locust
         ConfigureInterface( aSignal );
         RecordRunParameters( aSignal );
 
-        if (fRandomPreEventSamples) RandomizeStartDelay();
-
         fPowerCombiner->SizeNChannels(fNChannels);
         fInterface->fField->SetNChannels(fNChannels);
 
@@ -642,17 +640,20 @@ namespace locust
         	return false;
  	    }
 
-        int PreEventCounter = 0;
-
         if (fInterface->fTransmitter->IsKassiopeia())
         {
             fInterface->fKassTimeStep = 1./(fAcquisitionRate*1.e6*aSignal->DecimationFactor());
             std::thread tKassiopeia (&CavitySignalGenerator::KassiopeiaInit, this, gxml_filename); // spawn new thread
 
+            for( unsigned iEventCounter = 0; iEventCounter < fInterface->fNPileupEvents; iEventCounter ++)
+            {
+                if (fRandomPreEventSamples) RandomizeStartDelay();
+                int PreEventCounter = 0;
+
             for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
             {
 
-                if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress))
+                if ((!fInterface->fEventInProgress) && (!fInterface->fPreEventInProgress) && (!fInterface->fEventCompleted))
                 {
                 	if (ReceivedKassReady()) fInterface->fPreEventInProgress = true;
                 	else
@@ -749,15 +750,19 @@ namespace locust
                  		}
                  	} // diagnose Kass
 
-
                 } // if fEventInProgress
 
-            }  // for loop
+            }  // sampling for loop
+
+            LWARN( lmclog, "Completed LMCEvent " << iEventCounter );
+            fInterface->fEventCompleted = false;
+
+            } // iEventCounter loop
 
             fInterface->fDoneWithSignalGeneration = true;
             LPROG( lmclog, "Finished signal loop." );
             fInterface->fWaitBeforeEvent = false;
-            WakeBeforeEvent();
+//            WakeBeforeEvent();
             tKassiopeia.join();  // finish thread
 
             if (fKassNeverStarted == true)
