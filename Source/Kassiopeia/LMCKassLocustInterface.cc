@@ -22,7 +22,7 @@ namespace locust
             fKassEventReady( false ),
             fEventInProgress( false ),
             fEventCompleted( false ),
-            fNPileupEvents( 5 ),
+            fNPileupEvents( 1 ),
             fPreEventInProgress( false ),
             fFalseStartKassiopeia( true ),
             fDoneWithSignalGeneration( false ),

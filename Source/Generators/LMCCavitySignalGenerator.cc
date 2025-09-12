@@ -247,6 +247,12 @@ namespace locust
             fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[mu][0], fModeSet[mu][1], fModeSet[mu][2], fModeSet[mu][3]));
         }
 
+        if (tParam.has( "n-pileup-events" ) )
+        {
+            fInterface->fNPileupEvents = tParam["n-pileup-events"]().as_int();
+        }
+
+
         return true;
     }
 
