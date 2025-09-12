@@ -190,7 +190,6 @@ namespace locust
     {
         std::ifstream jsonFile(fJsonFileName); // Open json file for inspection
         bool bNewRun = true;
-        fEventCounter = 0;
         std::vector<std::string> v;
         if (jsonFile.is_open())
         {
@@ -198,8 +197,6 @@ namespace locust
             while (std::getline(jsonFile, line))
             {
                 bNewRun = !line.find("run-id");
-                //increment the event counter
-                if ( line.find("\"event-tag\"") != std::string::npos ) fEventCounter += 1;
                 if (line != "}")  // Avoid saving the last "}".  It will be appended below.
                 {
                     v.push_back(line);
@@ -332,10 +329,10 @@ namespace locust
 
         OpenEvent(); // for recording event properties to file.
 
-        LPROG( lmclog, "Kass is waiting for event trigger" );
+        LPROG( lmclog, "Kass is waiting for event " << fEventCounter << " trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
-        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration))
+        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration) && (fEventCounter < fInterface->fNPileupEvents))
         {
             fInterface->fKassReadyCondition.notify_one();
             std::unique_lock< std::mutex >tLock( fInterface->fMutex );
@@ -356,8 +353,11 @@ namespace locust
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
-        WriteEvent();
+        if (fEventCounter < fInterface->fNPileupEvents ) WriteEvent();
+        fEventCounter += 1;
         fInterface->fEventInProgress = false;
+        fInterface->fEventCompleted = true;
+        fInterface->fKassEventReady = true;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
 #ifdef ROOT_FOUND
