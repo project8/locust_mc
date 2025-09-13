@@ -458,7 +458,7 @@ namespace locust
             fLocustMinEnergyTerminator->SetName("ksmin-energy-project8");
             fLocustMinEnergyTerminator->SetMinEnergy( aParam["ks-starting-energy-min"]().as_double() );
             fLocustMinEnergyTerminator->Initialize();
-//            fLocustMinEnergyTerminator->Activate();
+            fLocustMinEnergyTerminator->Activate();
             fToolbox.Add(fLocustMinEnergyTerminator);
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->AddTerminator(fLocustMinEnergyTerminator);
             LPROG(lmclog,"\"ksmin-energy-project8\" has just been added to the KToolbox.");
