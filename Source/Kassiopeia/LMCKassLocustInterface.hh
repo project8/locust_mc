@@ -71,6 +71,7 @@ namespace locust
         bool fBackReaction;
         bool fbWaveguide;
         unsigned fSampleIndex;
+        unsigned fEventIndex;
         int fTriggerConfirm;
         int fFastRecordLength;
         bool fNewTrackStarting;

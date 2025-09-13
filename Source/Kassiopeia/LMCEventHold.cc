@@ -339,7 +339,7 @@ namespace locust
             fInterface->fPreEventCondition.wait( tLock );
             fInterface->fKassEventReady = false;
             fInterface->fTOld = 0.;  // reset time on event clock
-            LPROG( lmclog, "Kass got the event trigger" );
+            LPROG( lmclog, "Kass got the event trigger for event " << fEventCounter );
         }
         else
         {
@@ -355,6 +355,7 @@ namespace locust
     {
         if (fEventCounter < fInterface->fNPileupEvents ) WriteEvent();
         fEventCounter += 1;
+        fInterface->fEventIndex = fEventCounter;
         fInterface->fEventInProgress = false;
         fInterface->fEventCompleted = true;
         fInterface->fKassEventReady = true;

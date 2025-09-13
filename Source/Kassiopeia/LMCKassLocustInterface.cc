@@ -40,6 +40,7 @@ namespace locust
             fBackReaction( true ),
             fbWaveguide( false ),
             fSampleIndex( 0 ),
+            fEventIndex( 0 ),
             fTriggerConfirm( 100000 ),
             fFastRecordLength( 0 ),
             fNewTrackStarting( false )

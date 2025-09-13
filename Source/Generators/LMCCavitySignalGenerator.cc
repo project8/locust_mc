@@ -717,7 +717,7 @@ namespace locust
 
 
                         }
-                        else  // diagnose Kass
+                        else if ( iEventCounter < fInterface->fEventIndex +1 )  // diagnose Kass
                         {
                             tLock.lock();
                             std::this_thread::sleep_for(std::chrono::milliseconds(fThreadCheckTime));
