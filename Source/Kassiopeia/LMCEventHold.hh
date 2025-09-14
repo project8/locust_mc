@@ -40,7 +40,6 @@ namespace locust
             std::string fTruthOutputFilename;
             std::string fMetadataTag;
             std::string fJsonFileName;
-            bool fAccumulateTruthInfo;
 
 
         public:

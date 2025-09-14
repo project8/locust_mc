@@ -18,8 +18,7 @@ namespace locust
 
     EventHold::EventHold() :
             fTruthOutputFilename("LocustEventProperties.root"),
-			fMetadataTag("none"),
-            fAccumulateTruthInfo( false ),
+            fMetadataTag("none"),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
             fConfiguredEMin( 0. ),
@@ -34,7 +33,7 @@ namespace locust
 
     EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
             fTruthOutputFilename("LocustEventProperties.root"),
-            fAccumulateTruthInfo( false ),
+            fMetadataTag("none"),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
             fConfiguredEMin( 0. ),
@@ -101,10 +100,6 @@ namespace locust
 	    {
             fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
 	    }
-	    if ( aParam.has( "accumulate-truth-info" ) )
-	    {
-            fAccumulateTruthInfo = aParam["accumulate-truth-info"]().as_bool();
-	    }
 	    if ( aParam.has( "ks-starting-energy-min" ) )
 	    {
             fConfiguredEMin = aParam["ks-starting-energy-min"]().as_double();
@@ -164,22 +159,13 @@ namespace locust
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename(sFileName);
-        if (fAccumulateTruthInfo)
-        {
-        	aRootTreeWriter->OpenFile("UPDATE");
-        }
-        else
-        {
-        	aRootTreeWriter->OpenFile("RECREATE");
-        }
+        aRootTreeWriter->OpenFile("RECREATE");
         aRootTreeWriter->CloseFile();
 #endif
 
         // Open the json file:
-        if (!fAccumulateTruthInfo)
-        {
-            std::ofstream ost {fJsonFileName, std::ios_base::out};
-        }
+        std::ofstream ost {fJsonFileName, std::ios_base::out};
+
 
         return true;
 
