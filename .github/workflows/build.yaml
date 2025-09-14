@@ -3,7 +3,7 @@ name: Build and Test Locust
 on:
   pull_request:
   push:
-    branches: [master, develop, feature/pileupDev]
+    branches: [master, develop]
     tags: ['*']
   workflow_dispatch:
 
