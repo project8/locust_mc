@@ -70,6 +70,7 @@ namespace locust
             bool HaveStartingPositions( const scarab::param_node& aParam );
             bool HaveGenConfigParams( const scarab::param_node& aParam );
             bool SetupGenerator( const scarab::param_node& aParam );
+            bool ConfigureUniformGenerator( const scarab::param_node& aParam );
             bool SetupDirection( const scarab::param_node& aParam );
             long int GetSeed( const scarab::param_node& aParam );
 
@@ -86,11 +87,9 @@ namespace locust
             Kassiopeia::KSTermMaxEnergy* fLocustMaxEnergyTerminator;
             Kassiopeia::KSTermMinEnergy* fLocustMinEnergyTerminator;
             KGeoBag::KGBoxSpace* fBox;
-            KGeoBag::KGSpace* fKGSpace;
             Kassiopeia::KSGeoSurface* fSurface;
             Kassiopeia::KSTermDeath* fLocustTermDeath;
             Kassiopeia::KSCommand* fCommand;
-            Kassiopeia::KSGeoSpace* fKSSpace;
             Kassiopeia::KSGenGeneratorComposite* fGenerator;
             Kassiopeia::KSGenDirectionSphericalComposite* fGenDirectionComposite;
             Kassiopeia::KSGenValueAngleSpherical* fThetaGenerator; // pitch angle

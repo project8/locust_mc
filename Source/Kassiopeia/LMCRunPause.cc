@@ -30,24 +30,22 @@ namespace locust
         fLocustMaxEnergyTerminator( nullptr ),
         fLocustMinEnergyTerminator( nullptr ),
         fBox( nullptr ),
-        fKGSpace( nullptr ),
         fSurface( nullptr ),
         fLocustTermDeath( nullptr ),
         fCommand( nullptr ),
-        fKSSpace( nullptr ),
-		fGenDirectionComposite( nullptr ),
-		fThetaGenerator( nullptr ),
-		fPhiGenerator( nullptr ),
-		fGenPositionRectangularComposite( nullptr ),
-		fGenPositionCylindricalComposite( nullptr ),
-		fPositionXGenerator( nullptr ),
-		fPositionYGenerator( nullptr ),
-		fPositionZGenerator( nullptr ),
-		fPositionRadiusGenerator( nullptr ),
-		fPositionPhiGenerator( nullptr ),
-		fGenEnergyComposite( nullptr ),
-		fEnergyUniform( nullptr ),
-		fEnergyKrypton( nullptr ),
+        fGenDirectionComposite( nullptr ),
+        fThetaGenerator( nullptr ),
+        fPhiGenerator( nullptr ),
+        fGenPositionRectangularComposite( nullptr ),
+        fGenPositionCylindricalComposite( nullptr ),
+        fPositionXGenerator( nullptr ),
+        fPositionYGenerator( nullptr ),
+        fPositionZGenerator( nullptr ),
+        fPositionRadiusGenerator( nullptr ),
+        fPositionPhiGenerator( nullptr ),
+        fGenEnergyComposite( nullptr ),
+        fEnergyUniform( nullptr ),
+        fEnergyKrypton( nullptr ),
 		fGenEnergyCreator( nullptr ),
 		fTimeGenerator( nullptr ),
 		fGenTimeComposite( nullptr ),
@@ -69,29 +67,27 @@ namespace locust
         fLocustMaxEnergyTerminator( nullptr ),
         fLocustMinEnergyTerminator( nullptr ),
         fBox( nullptr ),
-        fKGSpace( nullptr ),
         fSurface( nullptr ),
         fLocustTermDeath( nullptr ),
         fCommand( nullptr ),
-        fKSSpace( nullptr ),
-		fGenDirectionComposite( nullptr ),
-		fThetaGenerator( nullptr ),
-		fPhiGenerator( nullptr ),
-		fGenPositionRectangularComposite( nullptr ),
-		fGenPositionCylindricalComposite( nullptr ),
-		fPositionXGenerator( nullptr ),
-		fPositionYGenerator( nullptr ),
-		fPositionZGenerator( nullptr ),
-		fPositionRadiusGenerator( nullptr ),
-		fPositionPhiGenerator( nullptr ),
-		fGenEnergyComposite( nullptr ),
-		fEnergyUniform( nullptr ),
-		fEnergyKrypton( nullptr ),
-		fGenEnergyCreator( nullptr ),
-		fTimeGenerator( nullptr ),
-		fGenTimeComposite( nullptr ),
-		fGenPidComposite( nullptr),
-		fGenerator( nullptr ),
+        fGenDirectionComposite( nullptr ),
+        fThetaGenerator( nullptr ),
+        fPhiGenerator( nullptr ),
+        fGenPositionRectangularComposite( nullptr ),
+        fGenPositionCylindricalComposite( nullptr ),
+        fPositionXGenerator( nullptr ),
+        fPositionYGenerator( nullptr ),
+        fPositionZGenerator( nullptr ),
+        fPositionRadiusGenerator( nullptr ),
+        fPositionPhiGenerator( nullptr ),
+        fGenEnergyComposite( nullptr ),
+        fEnergyUniform( nullptr ),
+        fEnergyKrypton( nullptr ),
+        fGenEnergyCreator( nullptr ),
+        fTimeGenerator( nullptr ),
+        fGenTimeComposite( nullptr ),
+        fGenPidComposite( nullptr),
+        fGenerator( nullptr ),
         fMinTrackLengthFraction(0.1),
         fConfigurationComplete( false ),
         fEventCounter( 0 ),
@@ -260,6 +256,28 @@ namespace locust
         }
     }
 
+    bool RunPause::ConfigureUniformGenerator( const scarab::param_node& aParam )
+    {
+        if ( fGenEnergyComposite == nullptr ) fGenEnergyComposite = new Kassiopeia::KSGenEnergyComposite();
+
+        if ( fEnergyUniform == nullptr ) fEnergyUniform = new Kassiopeia::KSGenValueUniform();
+        if ( aParam.has( "ks-starting-energy-min" ) && ( aParam.has( "ks-starting-energy-max" ) ) )
+        {
+            fEnergyUniform->SetValueMin( aParam["ks-starting-energy-min"]().as_double() ); // eV
+            fEnergyUniform->SetValueMax( aParam["ks-starting-energy-max"]().as_double() ); // eV
+        }
+        else
+        {
+            fEnergyUniform->SetValueMin( 18600. ); // eV
+            fEnergyUniform->SetValueMax( 18600. ); // eV
+        }
+        fGenEnergyComposite->SetEnergyValue(fEnergyUniform);
+        fGenEnergyCreator = fGenEnergyComposite;
+        LPROG(lmclog,"Running the uniform energy generator.");
+
+        return true;
+    }
+
     bool RunPause::SetupGenerator( const scarab::param_node& aParam )
     {
         auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
@@ -285,32 +303,15 @@ namespace locust
         fTimeGenerator->SetValueMax(0.);
         fGenTimeComposite->SetTimeValue(fTimeGenerator);
 
-        if ( fGenEnergyComposite == nullptr ) fGenEnergyComposite = new Kassiopeia::KSGenEnergyComposite();
-        if ( fEnergyUniform == nullptr ) fEnergyUniform = new Kassiopeia::KSGenValueUniform();
-        if ( aParam.has( "ks-starting-energy-min" ) && ( aParam.has( "ks-starting-energy-max" ) ) )
-        {
-            fEnergyUniform->SetValueMin( aParam["ks-starting-energy-min"]().as_double() ); // eV
-            fEnergyUniform->SetValueMax( aParam["ks-starting-energy-max"]().as_double() ); // eV
-        }
-        else
-        {
-            fEnergyUniform->SetValueMin( 18600. ); // eV
-            fEnergyUniform->SetValueMax( 18600. ); // eV
-        }
-        fGenEnergyComposite->SetEnergyValue(fEnergyUniform);
-        fGenEnergyCreator = fGenEnergyComposite;
-        LPROG(lmclog,"Running the uniform energy generator.");
-
         if ( aParam.has( "ks-generator" ) )
         {
             if (aParam["ks-generator"]().as_string() == "ksgen-uniform")
             {
-                LPROG(lmclog,"Confirming default uniform energy generator.");
+                ConfigureUniformGenerator( aParam );
             }
 
             else if (aParam["ks-generator"]().as_string() == "ksgen-krypton")
             {
-                fGenEnergyCreator = nullptr;
                 if ( fGenEnergyCreator == nullptr ) fGenEnergyCreator = new Kassiopeia::KSGenEnergyComposite();
                 if ( fEnergyKrypton == nullptr)
                 {
@@ -328,6 +329,10 @@ namespace locust
                 LERROR(lmclog,"Generator name isn't being parsed correctly.");
                 return false;
             }
+        }
+        else
+        {
+            ConfigureUniformGenerator( aParam );
         }
 
         return true;
@@ -379,6 +384,7 @@ namespace locust
                 if ( fGenerator == nullptr ) fGenerator = new Kassiopeia::KSGenGeneratorComposite();
 
                 fGenerator->SetPid(fGenPidComposite);
+
                 if ( aParam.has( "ks-starting-xpos-min" ) )
                 {
                     fGenerator->AddCreator(fGenPositionRectangularComposite);
@@ -604,10 +610,9 @@ namespace locust
                 fBox->ZB(aParam["waveguide-z"]().as_double()/2.);
                 fBox->SetTag("waveguide_box");
 
-                if ( fKGSpace == nullptr ) fKGSpace = GetKGWorldSpace();
                 KGeoBag::KGSpace* tKGSpace = new KGeoBag::KGSpace();
                 tKGSpace->Volume(std::shared_ptr<KGeoBag::KGVolume>(fBox));
-                fKGSpace->GetChildSpaces()->at(0)->AddChildSpace(tKGSpace);
+                GetKGWorldSpace()->GetChildSpaces()->at(0)->AddChildSpace(tKGSpace);
 
                 if ( fSurface == nullptr ) fSurface = new Kassiopeia::KSGeoSurface();
                 fSurface->SetName("waveguide_surfaces_project8");
@@ -625,8 +630,7 @@ namespace locust
                 fToolbox.Add(fLocustTermDeath);
                 fLocustTermDeath->SetName("waveguide_death");
                 fCommand = fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->Command("add_terminator", fLocustTermDeath);
-                if ( fKSSpace == nullptr ) fKSSpace = GetKSWorldSpace();
-                fKSSpace->AddSurface(fSurface);
+                GetKSWorldSpace()->AddSurface(fSurface);
                 fSurface->AddCommand(fCommand);
             }
         }
@@ -643,10 +647,10 @@ namespace locust
 
     Kassiopeia::KSGeoSpace* RunPause::GetKSWorldSpace()
     {
-    	std::vector<Kassiopeia::KSGeoSpace*> tKSSpaces = fToolbox.GetAll<Kassiopeia::KSGeoSpace>();
-        if ( tKSSpaces.size() == 1 )
+        if ( fToolbox.GetAll<Kassiopeia::KSGeoSpace>().size() == 1 )
         {
-            LPROG(lmclog,"LMCRunPause found the KSGeoSpace named <" << tKSSpaces[0]->GetName() << ">");
+            LPROG(lmclog,"LMCRunPause found the KSGeoSpace named <" <<
+            		fToolbox.GetAll<Kassiopeia::KSGeoSpace>()[0]->GetName() << ">");
         }
         else
         {
@@ -655,16 +659,17 @@ namespace locust
             exit(-1);
         }
 
-        return tKSSpaces[0];
+        return fToolbox.GetAll<Kassiopeia::KSGeoSpace>()[0];
     }
 
     KGeoBag::KGSpace* RunPause::GetKGWorldSpace()
     {
-    	Kassiopeia::KSGeoSpace* tKSSpace = GetKSWorldSpace();
-    	std::vector<KGeoBag::KGSpace*> tKGSpaces = tKSSpace->GetContent();
-        if (( tKGSpaces.size() == 1 ) && (tKGSpaces[0]->GetChildSpaces()->at(0)->GetName()=="project8"))
-        {
-            LPROG(lmclog,"LMCRunPause found the KGSpace named <" << tKGSpaces[0]->GetName() << "/project8>");
+        if (( GetKSWorldSpace()->GetContent().size() == 1 ) &&
+            ( GetKSWorldSpace()->GetContent()[0]->GetChildSpaces()->at(0)->GetName()=="project8"))
+
+    	{
+            LPROG(lmclog,"LMCRunPause found the KGSpace named <" <<
+            		GetKSWorldSpace()->GetContent()[0]->GetName() << "/project8>");
         }
         else
         {
@@ -674,9 +679,7 @@ namespace locust
             exit(-1);
         }
 
-        const KGeoBag::KGSpace* test = tKGSpaces[0];
-
-        return tKGSpaces[0];
+        return GetKSWorldSpace()->GetContent()[0];
     }
 
 
@@ -697,11 +700,41 @@ namespace locust
 
     bool RunPause::DeleteLocalKassObjects()
     {
+
+
+        /* Local objects that were added to the KToolbox will be destroyed by the KToolbox. */
+
+
+        // fMaxEnergyTerminator
+        if (fToolbox.HasKey("ksmax-energy-project8"))
+        {
+            fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMaxEnergyTerminator);
+            fLocustMaxEnergyTerminator->Deactivate();
+            fLocustMaxEnergyTerminator->Deinitialize();
+            fToolbox.Remove(fLocustMaxEnergyTerminator->GetName()).reset();
+            fLocustMaxEnergyTerminator = nullptr;
+            LPROG(lmclog,"Removing fLocustMaxEnergyTerminator from KSRoot ...");
+        }
+
+        // fMinEnergyTerminator
+        if (fToolbox.HasKey("ksmin-energy-project8"))
+        {
+            fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMinEnergyTerminator);
+            fLocustMinEnergyTerminator->Deactivate();
+            fLocustMinEnergyTerminator->Deinitialize();
+            fToolbox.Remove(fLocustMinEnergyTerminator->GetName()).reset();
+            fLocustMinEnergyTerminator = nullptr;
+            LPROG(lmclog,"Removing fLocustMinEnergyTerminator from KSRoot ...");
+        }
+
         // fMaxTimeTerminator
         if (fToolbox.HasKey("ksmax-time-project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMaxTimeTerminator);
-            fLocustMaxTimeTerminator = NULL;
+            fLocustMaxTimeTerminator->Deactivate();
+            fLocustMaxTimeTerminator->Deinitialize();
+            fToolbox.Remove(fLocustMaxTimeTerminator->GetName()).reset();
+            fLocustMaxTimeTerminator = nullptr;
             LPROG(lmclog,"Removing fLocustMaxTimeTerminator from KSRoot ...");
         }
 
@@ -709,7 +742,10 @@ namespace locust
         if (fToolbox.HasKey("ksmax-r-project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustMaxRTerminator);
-            fLocustMaxRTerminator = NULL;
+            fLocustMaxRTerminator->Deactivate();
+            fLocustMaxRTerminator->Deinitialize();
+            fToolbox.Remove(fLocustMaxRTerminator->GetName()).reset();
+            fLocustMaxRTerminator = nullptr;
             LPROG(lmclog,"Removing fLocustMaxRTerminator from KSRoot ...");
         }
 
@@ -717,10 +753,10 @@ namespace locust
         if (fToolbox.HasKey("waveguide_surfaces_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootTerminator>("root_terminator")->RemoveTerminator(fLocustTermDeath);
-            fLocustTermDeath = NULL;
-            fCommand = NULL;
-            fBox = NULL;
-            fSurface = NULL;
+            fLocustTermDeath->Deactivate();
+            fLocustTermDeath->Deinitialize();
+            fToolbox.Remove(fLocustTermDeath->GetName()).reset();
+            fLocustTermDeath = nullptr;
             LPROG(lmclog,"Removing fSurface from KSRoot ...");
         }
 
@@ -728,28 +764,48 @@ namespace locust
         if (fToolbox.HasKey("gen_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(fGenerator);
-            fToolbox.Remove(fGenerator->GetName());
-            fGenerator = NULL;
+            fGenerator->Deactivate();
+            fGenerator->Deinitialize();
+            if (fGenPositionRectangularComposite != nullptr) fGenerator->RemoveCreator(fGenPositionRectangularComposite);
+            if (fGenPositionCylindricalComposite != nullptr) fGenerator->RemoveCreator(fGenPositionCylindricalComposite);
+            fGenerator->RemoveCreator(fGenEnergyCreator);
+            fGenerator->RemoveCreator(fGenDirectionComposite);
+            fGenerator->RemoveCreator(fGenTimeComposite);
+            fToolbox.Remove(fGenerator->GetName()).reset();
+            fGenerator = nullptr;
             LPROG(lmclog,"Removing fGenerator from KToolbox ... ");
-
-            auto tGen = fToolbox.GetAll<Kassiopeia::KSGenerator>();
-            for (unsigned i=0; i<tGen.size(); i++)
-            {
-                if ( (tGen[i]->IsActivated()) && (tGen[i]->GetName()!="root_generator") )
-                {
-                    LPROG(lmclog,"Replacing KSRoot generator with " << tGen[i]->GetName());
-                    fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->SetGenerator(tGen[i]);
-                }
-            }
-
         }
+
+
+        // Local objects that were not added to the KToolbox should be addressed here: */
+
+        if (fBox != nullptr) {fBox = nullptr;}
+        if (fCommand != nullptr) {fCommand = nullptr;}
+        if (fGenDirectionComposite != nullptr) {fGenDirectionComposite = nullptr;}
+        if (fThetaGenerator != nullptr) {fThetaGenerator = nullptr;}
+        if (fPhiGenerator != fPhiGenerator) {fPhiGenerator = nullptr;}
+        if (fGenPositionRectangularComposite != nullptr) {fGenPositionRectangularComposite = nullptr;}
+        if (fGenPositionCylindricalComposite != nullptr) {fGenPositionCylindricalComposite = nullptr;}
+        if (fPositionPhiGenerator != nullptr) {fPositionPhiGenerator = nullptr;}
+        if (fPositionRadiusGenerator != nullptr) {fPositionRadiusGenerator = nullptr;}
+        if (fPositionXGenerator != nullptr) {fPositionXGenerator = nullptr;}
+        if (fPositionYGenerator != nullptr) {fPositionYGenerator = nullptr;}
+        if (fPositionZGenerator != nullptr) {fPositionZGenerator = nullptr;}
+        if (fGenEnergyComposite != nullptr) {fGenEnergyComposite = nullptr;}
+        if (fGenEnergyCreator != nullptr) {fGenEnergyCreator = nullptr;}
+        if (fEnergyUniform != nullptr) {fEnergyUniform = nullptr;}
+        if (fEnergyKrypton != nullptr) {fEnergyKrypton = nullptr;}
+        if (fGenTimeComposite != nullptr) {fGenTimeComposite = nullptr;}
+        if (fTimeGenerator != nullptr) {fTimeGenerator = nullptr;}
+        if (fGenPidComposite != nullptr) {fGenPidComposite = nullptr;}
 
     	return true;
     }
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
-       	//  No interrupt has happened yet in KSRoot.  Run still in progress.
+        if ( aRun.GetTotalEvents() > fInterface->fNPileupEvents ) DeleteLocalKassObjects();
+    	//  No interrupt has happened yet in KSRoot.  Run still in progress.
         return true;
     }
 

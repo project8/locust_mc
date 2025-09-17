@@ -18,8 +18,7 @@ namespace locust
 
     EventHold::EventHold() :
             fTruthOutputFilename("LocustEventProperties.root"),
-			fMetadataTag("none"),
-            fAccumulateTruthInfo( false ),
+            fMetadataTag("none"),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
             fConfiguredEMin( 0. ),
@@ -34,7 +33,7 @@ namespace locust
 
     EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
             fTruthOutputFilename("LocustEventProperties.root"),
-            fAccumulateTruthInfo( false ),
+            fMetadataTag("none"),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
             fConfiguredEMin( 0. ),
@@ -101,10 +100,6 @@ namespace locust
 	    {
             fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
 	    }
-	    if ( aParam.has( "accumulate-truth-info" ) )
-	    {
-            fAccumulateTruthInfo = aParam["accumulate-truth-info"]().as_bool();
-	    }
 	    if ( aParam.has( "ks-starting-energy-min" ) )
 	    {
             fConfiguredEMin = aParam["ks-starting-energy-min"]().as_double();
@@ -164,22 +159,13 @@ namespace locust
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename(sFileName);
-        if (fAccumulateTruthInfo)
-        {
-        	aRootTreeWriter->OpenFile("UPDATE");
-        }
-        else
-        {
-        	aRootTreeWriter->OpenFile("RECREATE");
-        }
+        aRootTreeWriter->OpenFile("RECREATE");
         aRootTreeWriter->CloseFile();
 #endif
 
         // Open the json file:
-        if (!fAccumulateTruthInfo)
-        {
-            std::ofstream ost {fJsonFileName, std::ios_base::out};
-        }
+        std::ofstream ost {fJsonFileName, std::ios_base::out};
+
 
         return true;
 
@@ -190,7 +176,6 @@ namespace locust
     {
         std::ifstream jsonFile(fJsonFileName); // Open json file for inspection
         bool bNewRun = true;
-        fEventCounter = 0;
         std::vector<std::string> v;
         if (jsonFile.is_open())
         {
@@ -198,8 +183,6 @@ namespace locust
             while (std::getline(jsonFile, line))
             {
                 bNewRun = !line.find("run-id");
-                //increment the event counter
-                if ( line.find("\"event-tag\"") != std::string::npos ) fEventCounter += 1;
                 if (line != "}")  // Avoid saving the last "}".  It will be appended below.
                 {
                     v.push_back(line);
@@ -332,17 +315,17 @@ namespace locust
 
         OpenEvent(); // for recording event properties to file.
 
-        LPROG( lmclog, "Kass is waiting for event trigger" );
+        LPROG( lmclog, "Kass is waiting for event " << fEventCounter << " trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
-        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration))
+        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration) && (fEventCounter < fInterface->fNPileupEvents))
         {
             fInterface->fKassReadyCondition.notify_one();
             std::unique_lock< std::mutex >tLock( fInterface->fMutex );
             fInterface->fPreEventCondition.wait( tLock );
             fInterface->fKassEventReady = false;
             fInterface->fTOld = 0.;  // reset time on event clock
-            LPROG( lmclog, "Kass got the event trigger" );
+            LPROG( lmclog, "Kass got the event trigger for event " << fEventCounter );
         }
         else
         {
@@ -356,8 +339,12 @@ namespace locust
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
-        WriteEvent();
+        if (fEventCounter < fInterface->fNPileupEvents ) WriteEvent();
+        fEventCounter += 1;
+        fInterface->fEventIndex = fEventCounter;
         fInterface->fEventInProgress = false;
+        fInterface->fEventCompleted = true;
+        fInterface->fKassEventReady = true;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
 #ifdef ROOT_FOUND
