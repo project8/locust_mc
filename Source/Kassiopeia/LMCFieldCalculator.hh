@@ -60,6 +60,7 @@ namespace locust
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
             int fNFilterBinsRequired;
+            bool fModeMap;
             std::vector<std::vector<int>> fModeSet;
     };
 
