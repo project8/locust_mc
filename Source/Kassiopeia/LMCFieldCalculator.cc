@@ -260,10 +260,14 @@ namespace locust
 
         double tVx = aFinalParticle.GetVelocity().X();
         double tVy = aFinalParticle.GetVelocity().Y();
+        double tposX = aFinalParticle.GetPosition().X();
+        double tposY = aFinalParticle.GetPosition().Y();
+        double tRadius = pow( tposX*tposX + tposY*tposY, 0.5);
+        double tTheta = calcTheta(tposX, tposY);
 
         std::vector<double> tKassParticleXP;
-        tKassParticleXP.push_back(aFinalParticle.GetPosition().X());
-        tKassParticleXP.push_back(aFinalParticle.GetPosition().Y());
+        tKassParticleXP.push_back( tRadius );
+        tKassParticleXP.push_back( tTheta );
         tKassParticleXP.push_back(aFinalParticle.GetPosition().Z());
         tKassParticleXP.push_back(aFinalParticle.GetVelocity().X());
         tKassParticleXP.push_back(aFinalParticle.GetVelocity().Y());
@@ -411,6 +415,25 @@ namespace locust
         return phaseCorrection;
     }
 
+    double FieldCalculator::calcTheta(double x, double y)
+    {
+        double phase = 0.;
+        if (fabs(x) > 0.)
+            phase = atan(y/x);
+        phase += quadrantPositionCorrection(phase, x);
+        return phase;
+    }
 
+    double FieldCalculator::quadrantPositionCorrection(double phase, double x)
+    {
+        double phaseCorrection = 0.;
+
+        if (phase < 0.)
+            phaseCorrection = LMCConst::Pi() + (x > 0.) * LMCConst::Pi();
+        else
+            phaseCorrection = (x < 0.) * LMCConst::Pi();
+
+        return phaseCorrection;
+    }
 
 }
