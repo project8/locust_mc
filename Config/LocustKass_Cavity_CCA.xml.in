@@ -491,6 +491,7 @@
             path="[output_path]"            
             file="geometry_painter.vtp"
             surfaces="world/project8/@magnet_tag/#"
+            surfaces="world/project8/@cavity_tag/#"
         />
 
         <vtk_track_painter
