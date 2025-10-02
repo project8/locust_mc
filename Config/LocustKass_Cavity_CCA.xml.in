@@ -451,7 +451,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="1"
+        events="10"
         magnetic_field="total_magnetic_field"
         space="space_world"
         generator="[generator]"
