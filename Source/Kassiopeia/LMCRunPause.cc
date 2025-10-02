@@ -567,7 +567,7 @@ namespace locust
                     scarab::param_node default_setting;
                     default_setting.add("name","uniform");
                     fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
-                    int tSeed = abs(GetSeed( aParam ));
+                    long int tSeed = abs(GetSeed( aParam ));
                     fDistributionInterface.SetSeed( tSeed );
                     double tMinTrackLength = tMaxTrackLength * fMinTrackLengthFraction;
                     double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
@@ -761,6 +761,8 @@ namespace locust
         }
 
         // fGenerator
+        // Avoid destroying the fGenerator here, and instead let the KToolbox handle it later.
+/*
         if (fToolbox.HasKey("gen_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(fGenerator);
@@ -775,7 +777,7 @@ namespace locust
             fGenerator = nullptr;
             LPROG(lmclog,"Removing fGenerator from KToolbox ... ");
         }
-
+*/
 
         // Local objects that were not added to the KToolbox should be addressed here: */
 

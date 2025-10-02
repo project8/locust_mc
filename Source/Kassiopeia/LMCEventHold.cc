@@ -246,10 +246,14 @@ namespace locust
 
         // Write the latest event information here:
 
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        int tMillisec = int( tv.tv_usec / 1000);
+
         fprintf(file,"    \"%d\": {\n", fEventCounter);
-        fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
+        fprintf(file,"        \"event-tag\": \"%ld-%03d\",\n", fInterface->anEvent->fEventID, tMillisec);
         fprintf(file,"        \"kassiopeia-seed\": %ld,\n", fInterface->aRunParameter->fKassiopeiaSeed);
-        fprintf(file,"        \"track-length-seed\": %d,\n", fInterface->aRunParameter->fTrackLengthSeed);
+        fprintf(file,"        \"track-length-seed\": %ld,\n", fInterface->aRunParameter->fTrackLengthSeed);
         fprintf(file,"        \"track-delay-seed\": %d,\n", fInterface->aRunParameter->fTrackDelaySeed);
         fprintf(file,"        \"ntracks\": %d,\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
