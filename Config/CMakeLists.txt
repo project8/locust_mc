@@ -35,7 +35,6 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA_ModeMapTest.json
-    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA_Pileup.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityRectangular.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavity1GHz.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json
