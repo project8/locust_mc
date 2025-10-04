@@ -17,6 +17,7 @@ namespace locust
 
     FieldCalculator::FieldCalculator() :
         fNFilterBinsRequired( 0 ),
+        fModeMap( false ),
         fTFReceiverHandler( NULL ),
         fAnalyticResponseFunction( 0 ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
@@ -24,6 +25,7 @@ namespace locust
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
         fNFilterBinsRequired( 0 ),
+        fModeMap( false ),
         fTFReceiverHandler( NULL ),
         fAnalyticResponseFunction( 0 ),
         fInterface( aCopy.fInterface )
@@ -94,6 +96,12 @@ namespace locust
 
         // Size the electron information buffers to be similar to the Green's functions:
         SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[0][0],fModeSet[0][1],fModeSet[0][2],fModeSet[0][3]));
+
+        if( aParam.has( "upload-modemap-filename" ) )
+        {
+            fModeMap = true;
+        }
+
         return true;
     }
 
@@ -343,7 +351,12 @@ namespace locust
         double cycFrequency = tKassParticleXP[7];
         double tTime = tKassParticleXP[9];
         double amplitude = 0.;
-        int modeSignThetaComp = 1 - 2 * ( fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,0,bTE)[1] < 0. );
+        int modeSignThetaComp = 1;
+        if ( !fModeMap )
+        {
+            modeSignThetaComp = 1 - 2 * ( fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,0,bTE)[1] < 0. );
+        }
+
         if ( fInterface->fField->InVolume(tKassParticleXP))
         {
             amplitude = 1.;
