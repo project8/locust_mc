@@ -72,7 +72,7 @@ namespace locust
             bool SetupGenerator( const scarab::param_node& aParam );
             bool ConfigureUniformGenerator( const scarab::param_node& aParam );
             bool SetupDirection( const scarab::param_node& aParam );
-            long int GetSeed( const scarab::param_node& aParam );
+            unsigned GetSeed( const scarab::param_node& aParam );
 
 
 
