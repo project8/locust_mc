@@ -87,8 +87,8 @@ namespace locust
 
             const scarab::param_node* GetParameters();
             void SetParameters( const scarab::param_node& aNode );
-            bool SetSeed(int aSeed);
-            int GetSeed();
+            bool SetSeed(unsigned aSeed);
+            unsigned GetSeed();
 
 
 
@@ -96,7 +96,7 @@ namespace locust
             double fLO_Frequency;
             double fDeltaT;
             int fNPreEventSamples;  // spacing between events.
-            int fTrackDelaySeed; // Seed to randomize fNPreEventSamples
+            unsigned fTrackDelaySeed; // Seed to randomize fNPreEventSamples
             bool fRandomPreEventSamples;
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.
             std::string gxml_filename;

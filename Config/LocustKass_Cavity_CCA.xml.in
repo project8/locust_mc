@@ -426,7 +426,7 @@
 
 <!--        <command parent="trajectory_exact" field="add_control" child="control_cyclotron_1_16"/> -->
         <command parent="write_root" field="add_track_output" child="component_track_world"/>
-<!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> --> 
+<!--        <command parent="write_root" field="add_step_output" child="component_step_world"/> -->
 
 
 
@@ -451,7 +451,7 @@
         name="project8_simulation"
         run="1"
         seed="[seed]"
-        events="1"
+        events="10"
         magnetic_field="total_magnetic_field"
         space="space_world"
         generator="[generator]"
@@ -473,7 +473,7 @@
 <!--
     <vtk_window
         name="vtk_window"
-        enable_display="true"
+        enable_display="false"
         enable_write="true"
         frame_title="KGeoBag Visualization"
         frame_size_x="1024"
@@ -488,10 +488,11 @@
     >
         <vtk_geometry_painter 
             name="project8_painter" 
-            file="Project8.vtp"
-            surfaces="world/project8/#"
+            path="[output_path]"            
+            file="geometry_painter.vtp"
+            surfaces="world/project8/@magnet_tag/#"
+            surfaces="world/project8/@cavity_tag/#"
         />
-
 
         <vtk_track_painter
             name="track_painter"
@@ -504,10 +505,4 @@
         /> 
 
     </vtk_window> 
--->
-
-
-
-<!--
-
 -->

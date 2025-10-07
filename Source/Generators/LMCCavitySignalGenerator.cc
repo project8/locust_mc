@@ -294,8 +294,8 @@ namespace locust
                     scarab::param_node default_setting;
                     default_setting.add("name","uniform");
                     std::shared_ptr< BaseDistribution> tSeedDistribution = fDistributionInterface.get_dist(default_setting);
-                    fDistributionInterface.SetSeed( aParam["random-track-seed"]().as_int() );
-                    int tSeed = 1.e8 * tSeedDistribution->Generate();
+                    fDistributionInterface.SetSeed( static_cast<unsigned int>(aParam["random-track-seed"]().as_int()) );
+                    unsigned tSeed = 1.e9 * tSeedDistribution->Generate();
                     SetSeed( tSeed );
                 }
                 else
@@ -304,7 +304,7 @@ namespace locust
                     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
                     struct timeval tv;
                     gettimeofday(&tv, NULL);
-                    int tSeed = tv.tv_usec;
+                    unsigned tSeed = tv.tv_usec;
                     SetSeed( tSeed );
                 }
             }
@@ -345,14 +345,14 @@ namespace locust
 
 
 
-    bool CavitySignalGenerator::SetSeed(int aSeed)
+    bool CavitySignalGenerator::SetSeed(unsigned aSeed)
     {
         LPROG(lmclog,"Setting random seed for track delay to " << aSeed);
         fTrackDelaySeed = aSeed;
         return true;
     }
 
-    int CavitySignalGenerator::GetSeed()
+    unsigned CavitySignalGenerator::GetSeed()
     {
         return fTrackDelaySeed;
     }

@@ -370,7 +370,7 @@ namespace locust
 
             if ( HaveStartingPositions( aParam ) && HaveGenConfigParams( aParam ) )
             {
-                long int tSeed = GetSeed( aParam );
+                unsigned tSeed = GetSeed( aParam );
                 KRandom::GetInstance().SetSeed(tSeed);
 #ifdef ROOT_FOUND
                 fInterface->aRunParameter->fKassiopeiaSeed = tSeed;
@@ -502,14 +502,14 @@ namespace locust
     }
 
 
-    long int RunPause::GetSeed( const scarab::param_node& aParam )
+    unsigned RunPause::GetSeed( const scarab::param_node& aParam )
     {
-        long int tSeed1 = 0;
-        long int tSeed2 = 0;
-        long int tSeed = 0;
+        int tSeed1 = 0;
+        int tSeed2 = 0;
+        unsigned tSeed = 0;
         if ( aParam.has( "random-track-seed" ) )
         {
-            tSeed = aParam["random-track-seed"]().as_int();
+            tSeed = static_cast<unsigned int>( aParam["random-track-seed"]().as_int() );
         }
         else
         {
@@ -517,11 +517,14 @@ namespace locust
             gettimeofday(&tv1, NULL);
             tSeed1 = tv1.tv_usec;
 
+            clock_t start_time = clock();
+            while ((clock() - start_time) * 1000 / CLOCKS_PER_SEC < 100) {}
+
             struct timeval tv2;
             gettimeofday(&tv2, NULL);
             tSeed2 = tv2.tv_usec;
 
-            tSeed = tSeed1 + 1e7*tSeed2;
+            tSeed = static_cast<unsigned int>( tSeed1 + 1.e3*tSeed2 );
         }
         return tSeed;
     }
@@ -567,7 +570,7 @@ namespace locust
                     scarab::param_node default_setting;
                     default_setting.add("name","uniform");
                     fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
-                    int tSeed = abs(GetSeed( aParam ));
+                    unsigned tSeed = GetSeed( aParam );
                     fDistributionInterface.SetSeed( tSeed );
                     double tMinTrackLength = tMaxTrackLength * fMinTrackLengthFraction;
                     double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
@@ -761,6 +764,8 @@ namespace locust
         }
 
         // fGenerator
+        // Avoid destroying the fGenerator here, and instead let the KToolbox handle it later.
+/*
         if (fToolbox.HasKey("gen_project8"))
         {
             fToolbox.Get<Kassiopeia::KSRootGenerator>("root_generator")->ClearGenerator(fGenerator);
@@ -775,7 +780,7 @@ namespace locust
             fGenerator = nullptr;
             LPROG(lmclog,"Removing fGenerator from KToolbox ... ");
         }
-
+*/
 
         // Local objects that were not added to the KToolbox should be addressed here: */
 
