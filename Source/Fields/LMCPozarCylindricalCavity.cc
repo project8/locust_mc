@@ -18,12 +18,23 @@ namespace locust
 
     PozarCylindricalCavity::~PozarCylindricalCavity(){}
 
+    bool PozarCylindricalCavity::Configure( const scarab::param_node& aParam)
+    {
+        if( aParam.has( "cavity-position-shift" ) )
+        {
+            SetCavityPositionShift( aParam["cavity-position-shift"]().as_double() );
+        }
+
+        return true;
+    }
+
+
 
 
     std::vector<double> PozarCylindricalCavity::TE_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
-    	double z = zKass + L/2.;
+    	double z = zKass + L/2. - GetCavityPositionShift();
 
     	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{
@@ -64,7 +75,7 @@ namespace locust
     std::vector<double> PozarCylindricalCavity::TE_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
-    	double z = zKass + L/2.;
+    	double z = zKass + L/2. - GetCavityPositionShift();
 
     	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{
@@ -103,7 +114,7 @@ namespace locust
 
     std::vector<double> PozarCylindricalCavity::TM_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
-    	double z = zKass + L/2.;
+    	double z = zKass + L/2. - GetCavityPositionShift();
 
     	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{
@@ -143,7 +154,7 @@ namespace locust
 
     std::vector<double> PozarCylindricalCavity::TM_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
-    	double z = zKass + L/2.;
+    	double z = zKass + L/2. - GetCavityPositionShift();
 
     	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{

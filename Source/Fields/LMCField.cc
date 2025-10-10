@@ -33,10 +33,15 @@ namespace locust
     {}
     Field::~Field() {}
 
-    FieldCore::FieldCore()
+    FieldCore::FieldCore():
+        fCavityPositionShift( 0. )
     {}
     FieldCore::~FieldCore() {}
 
+    bool FieldCore::Configure( const scarab::param_node& aParam )
+    {
+        return true;
+    }
 
 
     bool Field::Configure( const scarab::param_node& aParam )
@@ -329,9 +334,14 @@ namespace locust
     	return sqrt(norm);
     }
 
-     bool FieldCore::Configure( const scarab::param_node& aParam )
+     void FieldCore::SetCavityPositionShift( double aDim )
      {
-	return true;
+         fCavityPositionShift = aDim;
+     }
+
+     double FieldCore::GetCavityPositionShift() const
+     {
+         return fCavityPositionShift;
      }
 
      double FieldCore::GetBesselNKZeros(int l, int m)
