@@ -18,6 +18,7 @@ namespace locust
         fNModes( 2 ),
         fNChannels( 1 ),
         fbMultiMode( false ),
+        fbThreeModes( false ),
         fTM111( false ),
         fTE012( false ),
         fTE013( false ),
@@ -50,6 +51,12 @@ namespace locust
         {
             LPROG(lmclog,"Running in multimode configuration.");
             fbMultiMode = aParam["multi-mode"]().as_bool();
+        }
+
+        if( aParam.has( "three-modes" ) )
+        {
+            LPROG(lmclog,"Running with TE011, TE012, TE013.  Set parameter n-modes = 4");
+            fbThreeModes = aParam["three-modes"]().as_bool();
         }
 
         if( aParam.has( "tm111-mode" ) )
@@ -120,7 +127,7 @@ namespace locust
             }
             else
             {
-                if ( !fbMultiMode )
+                if ( ( !fbMultiMode ) && ( !fbThreeModes ) )
                 {
                     if ( fTM111 )
     	    	    {
@@ -139,10 +146,21 @@ namespace locust
                         tModeSet.push_back( {1,0,1,1} ); // default.
                     }
                 }
+                else if ( fbMultiMode )
+                {
+                    tModeSet.push_back( {0,1,1,1} );
+                    tModeSet.push_back( {1,0,1,1} );
+                }
+                else if ( fbThreeModes )
+                {
+                    tModeSet.push_back( {1,0,1,1} );
+                    tModeSet.push_back( {1,0,1,2} );
+                    tModeSet.push_back( {1,0,1,3} );
+                }
                 else
                 {
-    	            tModeSet.push_back( {0,1,1,1} );
-                    tModeSet.push_back( {1,0,1,1} );
+                    LERROR(lmclog, "Modes have not been specified correctly." );
+                    exit(-1);
                 }
             }
         }

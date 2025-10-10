@@ -147,6 +147,7 @@ namespace locust
             bool fPlotModeMaps;
             std::string fOutputPath;
             bool fbMultiMode;
+            bool fbThreeModes;
             bool fTM111;
             bool fTE012;
             bool fTE013;
