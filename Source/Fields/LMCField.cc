@@ -14,7 +14,7 @@ namespace locust
     Field::Field():
         fnPixels( 100 ),
         fCentralFrequency(1.63e11),
-		fAvgDotProductFactor( 0. ),
+        fAvgDotProductFactor( 0. ),
         fNModes( 2 ),
         fNChannels( 1 ),
         fbMultiMode( false ),
@@ -43,19 +43,19 @@ namespace locust
 
         if( aParam.has( "n-modes" ) )
         {
-        	fNModes = aParam["n-modes"]().as_int();
+            fNModes = aParam["n-modes"]().as_int();
         }
 
         if( aParam.has( "multi-mode" ) )
         {
-    		LPROG(lmclog,"Running in multimode configuration.");
-        	fbMultiMode = aParam["multi-mode"]().as_bool();
+            LPROG(lmclog,"Running in multimode configuration.");
+            fbMultiMode = aParam["multi-mode"]().as_bool();
         }
 
         if( aParam.has( "tm111-mode" ) )
         {
-    		LPROG(lmclog,"Running with TM111 only.");
-        	fTM111 = aParam["tm111-mode"]().as_bool();
+            LPROG(lmclog,"Running with TM111 only.");
+            fTM111 = aParam["tm111-mode"]().as_bool();
         }
 
         if( aParam.has( "te012-mode" ) )
@@ -70,33 +70,32 @@ namespace locust
             fTE013 = aParam["te013-mode"]().as_bool();
         }
 
-
         if( aParam.has( "n-pixels" ) )
-    	{
-    		SetNPixels(aParam["n-pixels"]().as_int());
-    	}
+        {
+            SetNPixels(aParam["n-pixels"]().as_int());
+        }
 
-    	if( aParam.has( "plot-mode-maps" ) )
-    	{
-    		SetPlotModeMaps(aParam["plot-mode-maps"]().as_bool());
-    	}
+        if( aParam.has( "plot-mode-maps" ) )
+        {
+            SetPlotModeMaps(aParam["plot-mode-maps"]().as_bool());
+        }
 
-    	if ( aParam.has( "output-path" ) )
-    	{
-    		fOutputPath = aParam["output-path"]().as_string();
-    	}
+        if ( aParam.has( "output-path" ) )
+        {
+            fOutputPath = aParam["output-path"]().as_string();
+        }
 
-    	fAvgDotProductFactor.resize(fNModes);
-    	for (unsigned m=0; m<fNModes; m++)
-    	{
-    		fAvgDotProductFactor[m].resize(fNModes);
-        	for (unsigned n=0; n<fNModes; n++)
-        	{
-        		fAvgDotProductFactor[m][n].resize(fNModes);
-        	}
-    	}
+        fAvgDotProductFactor.resize(fNModes);
+        for (unsigned m=0; m<fNModes; m++)
+        {
+            fAvgDotProductFactor[m].resize(fNModes);
+            for (unsigned n=0; n<fNModes; n++)
+            {
+                fAvgDotProductFactor[m][n].resize(fNModes);
+            }
+        }
 
-    	return true;
+        return true;
 
     }
 
@@ -106,49 +105,49 @@ namespace locust
     }
     void Field::SetNChannels( int aNumberOfChannels )
     {
-     	fNChannels = aNumberOfChannels;
+        fNChannels = aNumberOfChannels;
     }
 
     std::vector<std::vector<int>> Field::ModeSelect(bool bWaveguide, bool bNormCheck)
     {
-    	int nModes = fNModes;
-    	std::vector<std::vector<int>> tModeSet;
-    	if ( !bNormCheck )
-    	{
-    	    if ( bWaveguide )
-    	    {
-    	    	tModeSet.push_back( {1,0,1,0} );
-    	    }
-    	    else
-    	    {
-    	    	if ( !fbMultiMode )
-    	    	{
-    	    	    if ( fTM111 )
+        int nModes = fNModes;
+        std::vector<std::vector<int>> tModeSet;
+        if ( !bNormCheck )
+        {
+            if ( bWaveguide )
+            {
+                tModeSet.push_back( {1,0,1,0} );
+            }
+            else
+            {
+                if ( !fbMultiMode )
+                {
+                    if ( fTM111 )
     	    	    {
-    	    	        tModeSet.push_back( {0,1,1,1} );
-    	    	    }
-    	    	    else if ( fTE012 )
-    	    	    {
-    	    	        tModeSet.push_back( {1,0,1,2} );
-    	    	    }
-    	    	    else if ( fTE013 )
-    	    	    {
-    	    	    	tModeSet.push_back( {1,0,1,3} );
-    	    	    }
-    	    	    else
-    	    	    {
-    	    	        tModeSet.push_back( {1,0,1,1} ); // default.
-    	    	    }
-    	    	}
-    	    	else
-    	    	{
-    	    		tModeSet.push_back( {0,1,1,1} );
-    	    		tModeSet.push_back( {1,0,1,1} );
-    	    	}
-    	    }
-    	}
-    	else
-    	{
+                        tModeSet.push_back( {0,1,1,1} );
+                    }
+                    else if ( fTE012 )
+                    {
+                        tModeSet.push_back( {1,0,1,2} );
+                    }
+                    else if ( fTE013 )
+                    {
+                        tModeSet.push_back( {1,0,1,3} );
+                    }
+                    else
+                    {
+                        tModeSet.push_back( {1,0,1,1} ); // default.
+                    }
+                }
+                else
+                {
+    	            tModeSet.push_back( {0,1,1,1} );
+                    tModeSet.push_back( {1,0,1,1} );
+                }
+            }
+        }
+        else
+        {
             for (int bTE=0; bTE<2; bTE++)
             {
                 for (int l=0; l<nModes; l++)
@@ -157,7 +156,7 @@ namespace locust
                     {
                         for (int n=0; n<nModes; n++)
                         {
-                        	tModeSet.push_back( {bTE,l,m,n} );
+                            tModeSet.push_back( {bTE,l,m,n} );
                         }
                     }
                 }
@@ -306,8 +305,8 @@ namespace locust
     	auto it = field.begin();
     	while (it != field.end())
     	{
-    		if (std::isfinite(*it)) norm += (*it)*(*it);
-    		*it++;
+            if (std::isfinite(*it)) norm += (*it)*(*it);
+            *it++;
     	}
     	return sqrt(norm);
     }
