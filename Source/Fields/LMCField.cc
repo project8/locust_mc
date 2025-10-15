@@ -54,32 +54,52 @@ namespace locust
 
         if( aParam.has( "multi-mode" ) )
         {
-            LPROG(lmclog,"Running in multimode configuration.");
             fbMultiMode = aParam["multi-mode"]().as_bool();
+            if ( ( fNModes < 3 ) && ( fbMultiMode ) )
+            {
+                LERROR(lmclog,"Set parameter n-modes >= 3.");
+                exit(-1);
+            }
+            LPROG(lmclog,"Running with TE011 and TM111.");
         }
 
         if( aParam.has( "three-modes" ) )
         {
-            LPROG(lmclog,"Running with TE011, TE012, TE013.  Set parameter n-modes = 4");
             fbThreeModes = aParam["three-modes"]().as_bool();
+            if ( ( fNModes < 4 ) && ( fbThreeModes ) )
+            {
+                LERROR(lmclog,"Set parameter n-modes >= 4.");
+                exit(-1);
+            }
+            if ( fbThreeModes ) LPROG(lmclog,"Running with TE011, TE012, TE013.");
         }
 
         if( aParam.has( "tm111-mode" ) )
         {
-            LPROG(lmclog,"Running with TM111 only.");
             fTM111 = aParam["tm111-mode"]().as_bool();
+            if ( fTM111 ) LPROG(lmclog,"Running with TM111 only.");
         }
 
         if( aParam.has( "te012-mode" ) )
         {
-            LPROG(lmclog,"Running with TE012 only.  Set parameter n-modes = 3");
             fTE012 = aParam["te012-mode"]().as_bool();
+            if ( ( fNModes < 3 ) && ( fTE012 ) )
+            {
+                LERROR(lmclog,"Set parameter n-modes >= 3.");
+                exit(-1);
+            }
+            if ( fTE012 ) LPROG(lmclog,"Running with TE012 only.");
         }
 
         if( aParam.has( "te013-mode" ) )
         {
-            LPROG(lmclog,"Running with TE013 only.  Set parameter n-modes = 4");
             fTE013 = aParam["te013-mode"]().as_bool();
+            if ( ( fNModes < 4 ) && ( fTE013 ) )
+            {
+                LERROR(lmclog,"Set parameter n-modes >= 4.");
+                exit(-1);
+            }
+            if ( fTE013 ) LPROG(lmclog,"Running with TE013 only.");
         }
 
         if( aParam.has( "n-pixels" ) )
@@ -148,6 +168,7 @@ namespace locust
                     }
                     else
                     {
+                        LPROG(lmclog,"Running with TE011 only.");
                         tModeSet.push_back( {1,0,1,1} ); // default.
                     }
                 }

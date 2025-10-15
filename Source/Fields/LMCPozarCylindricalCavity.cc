@@ -20,6 +20,12 @@ namespace locust
 
     bool PozarCylindricalCavity::Configure( const scarab::param_node& aParam)
     {
+        if (!FieldCore::Configure(aParam))
+        {
+            LERROR(lmclog,"There was a problem configuring the Pozar cylindrical cavity.");
+            exit(-1);
+        }
+
         if( aParam.has( "cavity-position-shift" ) )
         {
             SetCavityPositionShift( aParam["cavity-position-shift"]().as_double() );
