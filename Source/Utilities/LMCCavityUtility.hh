@@ -46,6 +46,7 @@ namespace locust
         bool CheckCavityQ( int nModes, int bTE, int l, int m, int n, double dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
         void SetExpandFactor(double aFactor);
     	void SetOutputFile(bool aFlag);
+    	void SetOutputFilename( std::string aName);
         void AddParam(std::string aString, double aValue);
         std::deque<double> SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal);
         bool WriteRootHisto(int npoints, double* freqArray, double* gainArray);
@@ -64,6 +65,7 @@ namespace locust
         double fFilterRate;
         double fExpandFactor;
         bool fWriteOutputFile;
+        std::string fOutputFilename;
         std::string fOutputPath;
 
 

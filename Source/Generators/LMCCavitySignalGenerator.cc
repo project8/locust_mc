@@ -409,6 +409,14 @@ namespace locust
             thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
             cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
             qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
+            if (bTE)
+            {
+                aCavityUtility.SetOutputFilename( "UnitTestOutput-TE" + std::to_string(l) + std::to_string(m) + std::to_string(n) + ".root" );
+            }
+            else
+            {
+                aCavityUtility.SetOutputFilename( "UnitTestOutput-TM" + std::to_string(l) + std::to_string(m) + std::to_string(n) + ".root" );
+            }
             aCavityUtility.SetOutputFile(fUnitTestRootFile);
             int nModes = fInterface->fField->GetNModes();
             if (!aCavityUtility.CheckCavityQ( nModes, bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
