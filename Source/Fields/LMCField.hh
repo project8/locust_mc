@@ -62,12 +62,9 @@ namespace locust
             void ReadBesselZeroes(std::string filename, bool prime);
             double GetBesselNKZeros(int l, int m);
             double GetBesselNKPrimeZeros(int l, int m);
-            double GetCavityPositionShift() const;
-            void SetCavityPositionShift( double aDim );
 
         private:
             std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
-            double fCavityPositionShift;
 
 
     };
