@@ -52,9 +52,9 @@ namespace locust
 		fGenPidComposite( nullptr ),
         fGenerator( nullptr ),
         fMinTrackLengthFraction(0.1),
+        fMaxTrackLength(0.0),
         fConfigurationComplete( false ),
-        fEventCounter( 0 ),
-        fMaxEvents( 1 ),
+        fMaxEvents( false ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -89,9 +89,9 @@ namespace locust
         fGenPidComposite( nullptr),
         fGenerator( nullptr ),
         fMinTrackLengthFraction(0.1),
+        fMaxTrackLength(0.0),
         fConfigurationComplete( false ),
-        fEventCounter( 0 ),
-        fMaxEvents( 1 ),
+        fMaxEvents( false ),
         fInterface( aCopy.fInterface )
     {
     }
@@ -126,6 +126,15 @@ namespace locust
 
             fConfigurationComplete = true;
             LPROG(lmclog,"RunPause has been configured.");
+        }
+        else if ( !fMaxEvents )
+        {
+            if (fInterface->fConfigureKass)
+            {
+                const scarab::param_node* aParam = fInterface->fConfigureKass->GetParameters();
+                RandomizeKassSeed( *aParam );
+                RandomizeTrackLength( *aParam );
+            }
         }
 
         return true;
@@ -370,13 +379,7 @@ namespace locust
 
             if ( HaveStartingPositions( aParam ) && HaveGenConfigParams( aParam ) )
             {
-                unsigned tSeed = GetSeed( aParam );
-                KRandom::GetInstance().SetSeed(tSeed);
-#ifdef ROOT_FOUND
-                fInterface->aRunParameter->fKassiopeiaSeed = tSeed;
-#endif
-
-                LPROG(lmclog,"Setting Kass random seed to " << tSeed);
+                RandomizeKassSeed( aParam );
 
                 SetupGenerator( aParam );
                 SetupDirection( aParam );
@@ -501,6 +504,45 @@ namespace locust
         return true;
     }
 
+    bool RunPause::RandomizeKassSeed( const scarab::param_node& aParam )
+    {
+
+        unsigned tSeed = GetSeed( aParam );
+
+        KRandom::GetInstance().SetSeed(tSeed);
+#ifdef ROOT_FOUND
+        fInterface->aRunParameter->fKassiopeiaSeed = tSeed;
+#endif
+        LPROG(lmclog,"Setting Kass random seed to " << tSeed);
+
+        return true;
+    }
+
+    bool RunPause::RandomizeTrackLength( const scarab::param_node& aParam )
+    {
+        if ( aParam.has( "random-track-length" ) )
+        {
+            if ( aParam["random-track-length"]().as_bool() == true)
+            {
+                scarab::param_node default_setting;
+                default_setting.add("name","uniform");
+                fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
+                unsigned tSeed = GetSeed( aParam );
+                fDistributionInterface.SetSeed( tSeed );
+                double tMinTrackLength = fMaxTrackLength * fMinTrackLengthFraction;
+                double tRandomTime = tMinTrackLength + (fMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
+                fLocustMaxTimeTerminator->SetTime( tRandomTime );
+                LPROG(lmclog,"Random seed for track length is " << tSeed);
+#ifdef ROOT_FOUND
+                fInterface->aRunParameter->fTrackLengthSeed = tSeed;
+#endif
+                LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
+            }
+        }
+
+        return true;
+    }
+
 
     unsigned RunPause::GetSeed( const scarab::param_node& aParam )
     {
@@ -543,19 +585,18 @@ namespace locust
                 fToolbox.Remove(tMaxTime[i]->GetName());
             }
 
-            double tMaxTrackLength = 0.;
             if ( fLocustMaxTimeTerminator == nullptr ) fLocustMaxTimeTerminator = new Kassiopeia::KSTermMaxTime();
 
-    	    if ( aParam.has( "min-track-length-fraction" ) )
+            if ( aParam.has( "min-track-length-fraction" ) )
             {
                 fMinTrackLengthFraction = aParam["min-track-length-fraction"]().as_double();
                 LPROG(lmclog,"Setting minimum track length fraction to " << fMinTrackLengthFraction);
-    	    }
+            }
 
-    	    if ( aParam.has( "track-length" ) )
+            if ( aParam.has( "track-length" ) )
             {
-                tMaxTrackLength = aParam["track-length"]().as_double();
-                fLocustMaxTimeTerminator->SetTime( tMaxTrackLength );
+                fMaxTrackLength = aParam["track-length"]().as_double();
+                fLocustMaxTimeTerminator->SetTime( fMaxTrackLength );
             }
             else
             {
@@ -567,19 +608,7 @@ namespace locust
             {
                 if ( aParam["random-track-length"]().as_bool() == true)
                 {
-                    scarab::param_node default_setting;
-                    default_setting.add("name","uniform");
-                    fTrackLengthDistribution = fDistributionInterface.get_dist(default_setting);
-                    unsigned tSeed = GetSeed( aParam );
-                    fDistributionInterface.SetSeed( tSeed );
-                    double tMinTrackLength = tMaxTrackLength * fMinTrackLengthFraction;
-                    double tRandomTime = tMinTrackLength + (tMaxTrackLength - tMinTrackLength) * fTrackLengthDistribution->Generate();
-                    fLocustMaxTimeTerminator->SetTime( tRandomTime );
-                    LPROG(lmclog,"Random seed for track length is " << tSeed);
-#ifdef ROOT_FOUND
-                    fInterface->aRunParameter->fTrackLengthSeed = tSeed;
-#endif
-                    LPROG(lmclog,"Randomizing the track length to " << tRandomTime);
+                    RandomizeTrackLength( aParam );
                 }
             }
 
@@ -699,11 +728,11 @@ namespace locust
     	    fInterface->fKassEventReady = true;
     	    return true;
     	}
+
     }
 
     bool RunPause::DeleteLocalKassObjects()
     {
-
 
         /* Local objects that were added to the KToolbox will be destroyed by the KToolbox. */
 
@@ -809,7 +838,11 @@ namespace locust
 
     bool RunPause::ExecutePostRunModification(Kassiopeia::KSRun & aRun)
     {
-        if ( aRun.GetTotalEvents() > fInterface->fNPileupEvents ) DeleteLocalKassObjects();
+        if ( aRun.GetTotalEvents() > fInterface->fNPileupEvents )
+        {
+            DeleteLocalKassObjects();
+            fMaxEvents = true;
+        }
     	//  No interrupt has happened yet in KSRoot.  Run still in progress.
         return true;
     }
