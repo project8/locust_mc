@@ -300,12 +300,7 @@ namespace locust
                 }
                 else
                 {
-                    // Delay SetSeed to allow time stamp to advance between randomized tracks.
-                    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-                    struct timeval tv;
-                    gettimeofday(&tv, NULL);
-                    unsigned tSeed = tv.tv_usec;
-                    SetSeed( tSeed );
+                    LPROG(lmclog,"Running with random track start times ...");
                 }
             }
         }
@@ -359,6 +354,28 @@ namespace locust
 
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
+        // Delay SetSeed to allow time stamp to advance between randomized tracks.
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+        int tSeed1 = 0;
+        int tSeed2 = 0;
+        unsigned tSeed = 0;
+
+        struct timeval tv1;
+        gettimeofday(&tv1, NULL);
+        tSeed1 = tv1.tv_usec;
+
+        clock_t start_time = clock();
+        while ((clock() - start_time) * 1000 / CLOCKS_PER_SEC < 100) {}
+
+        struct timeval tv2;
+        gettimeofday(&tv2, NULL);
+        tSeed2 = tv2.tv_usec;
+
+        tSeed = static_cast<unsigned int>( tSeed1 + 1.e3*tSeed2 );
+
+        SetSeed( tSeed );
+
         scarab::param_node default_setting;
         default_setting.add("name","uniform");
         fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
@@ -366,6 +383,11 @@ namespace locust
         int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
+#ifdef ROOT_FOUND
+        if ( fInterface->aRunParameter == nullptr ) fInterface->aRunParameter = new RunParameters();
+        fInterface->aRunParameter->fTrackDelaySeed = GetSeed();
+#endif
+
 
         return true;
     }
@@ -428,7 +450,7 @@ namespace locust
         }
 
 #ifdef ROOT_FOUND
-            fInterface->aRunParameter = new RunParameters();
+            if (fInterface->aRunParameter == nullptr) fInterface->aRunParameter = new RunParameters();
             fInterface->aRunParameter->fTrackDelaySeed = GetSeed();
             fInterface->aRunParameter->fSimulationType = "cavity";
             if ( cavityFrequency > 20.e9 )

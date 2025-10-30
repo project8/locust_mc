@@ -43,7 +43,8 @@ namespace locust
             fEventIndex( 0 ),
             fTriggerConfirm( 100000 ),
             fFastRecordLength( 0 ),
-            fNewTrackStarting( false )
+            fNewTrackStarting( false ),
+            aRunParameter( nullptr )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :
