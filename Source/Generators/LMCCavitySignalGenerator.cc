@@ -28,6 +28,7 @@ namespace locust
         fDeltaT( 0. ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
+        fMaxPreEventSamples( 150000 ),
         fNPreEventSamples( 150000 ),
         fRandomPreEventSamples( false ),
         fTrackDelaySeed( 0 ),
@@ -281,7 +282,7 @@ namespace locust
         }
         if( aParam.has( "event-spacing-samples" ) )
         {
-            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+            fMaxPreEventSamples = aParam["event-spacing-samples"]().as_int();
             if (aParam.has( "random-spacing-samples" ))
             {
                 if (aParam["random-spacing-samples"]().as_bool() == true)
@@ -380,7 +381,7 @@ namespace locust
         default_setting.add("name","uniform");
         fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
         fDistributionInterface.SetSeed( GetSeed() );
-        int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
+        int tNPreEventSamples = fMaxPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
 #ifdef ROOT_FOUND
