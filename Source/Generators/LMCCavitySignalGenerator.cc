@@ -565,14 +565,15 @@ namespace locust
                 }
             } // Finished mode set.
 
-            for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex) // one channel per probe
-            {
-                sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+//            for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex) // one channel per probe
+//            {
+	        // Use mode index "mu" as a proxy for the channel index:
+                sampleIndex = mu*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
                 // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
                 // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
                 double totalScalingFactor = sqrt(50.) * unitConversion;
-                fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
-            }
+                fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, mu, !(fInterface->fTOld > 0.) );
+//            }
         }
 
         fInterface->fTOld += fDeltaT;
@@ -670,9 +671,10 @@ namespace locust
         fPowerCombiner->SizeNChannels(fNChannels);
         fInterface->fField->SetNChannels(fNChannels);
 
- 	    if (fNChannels > 3)
+ 	    if (( fNChannels > 3 ) || ( fModeSet.size() != fNChannels ))
  	    {
-    	    LERROR(lmclog,"The cavity simulation only supports up to 3 channels right now.");
+    	    LERROR(lmclog,"The cavity simulation only supports up to 3 channels right now, and the"
+    	    		"number of channels has to be the same as the number of modes.");
             throw std::runtime_error("Only 1, 2, or 3 channels is allowed.");
             return false;
  	    }
