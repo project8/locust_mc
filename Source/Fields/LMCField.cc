@@ -58,7 +58,7 @@ namespace locust
                 LERROR(lmclog,"Set parameter n-modes >= 3.");
                 exit(-1);
             }
-            LPROG(lmclog,"Running with TE011 and TM111.");
+            if (fbMultiMode) LPROG(lmclog,"Running with TE011 and TM111.");
         }
 
         if( aParam.has( "three-modes" ) )
