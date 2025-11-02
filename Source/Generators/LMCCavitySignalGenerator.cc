@@ -283,6 +283,7 @@ namespace locust
         if( aParam.has( "event-spacing-samples" ) )
         {
             fMaxPreEventSamples = aParam["event-spacing-samples"]().as_int();
+            fNPreEventSamples = fMaxPreEventSamples;
             if (aParam.has( "random-spacing-samples" ))
             {
                 if (aParam["random-spacing-samples"]().as_bool() == true)
