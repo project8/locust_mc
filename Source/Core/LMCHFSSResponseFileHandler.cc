@@ -365,13 +365,24 @@ namespace locust
 
     bool TFFileHandlerCore::ConvertAnalyticGFtoFIR( std::vector<std::vector<int>> aModeSet, std::vector<std::vector<std::pair<double,std::pair<double,double>>>> gfArray)
     {
+
+        // Enforce identical array sizes in Green's functions across selected set of modes:
+        int tMinFIRBinsArray = gfArray[0].size();
+        for (int mu=0; mu < aModeSet.size(); mu++)
+        {
+            if ( gfArray[mu].size() < tMinFIRBinsArray )
+            {
+                tMinFIRBinsArray = gfArray[mu].size();
+            }
+        }
+
         for (int mu=0; mu < aModeSet.size(); mu++)
         {
             bool bTE = aModeSet[mu][0];
             int l = aModeSet[mu][1];
             int m = aModeSet[mu][2];
             int n = aModeSet[mu][3];
-            fFIRNBinsArray[bTE][l][m][n] = gfArray[mu].size();
+            fFIRNBinsArray[bTE][l][m][n] = tMinFIRBinsArray;
             fResolutionArray[bTE][l][m][n] = gfArray[mu][0].first;
             fFilterComplexArray[bTE][l][m][n]=(fftw_complex*)fftw_malloc(sizeof(fftw_complex) * fFIRNBinsArray[bTE][l][m][n]);
             for (int i = 0; i < fFIRNBinsArray[bTE][l][m][n]; i++)
