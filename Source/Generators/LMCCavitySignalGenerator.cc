@@ -566,15 +566,12 @@ namespace locust
                 }
             } // Finished mode set.
 
-//            for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex) // one channel per probe
-//            {
 	        // Use mode index "mu" as a proxy for the channel index:
-                sampleIndex = mu*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-                // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
-                // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
-                double totalScalingFactor = sqrt(50.) * unitConversion;
-                fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, mu, !(fInterface->fTOld > 0.) );
-//            }
+            sampleIndex = mu*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+            // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
+            // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
+            double totalScalingFactor = sqrt(50.) * unitConversion;
+            fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, mu, !(fInterface->fTOld > 0.) );
         }
 
         fInterface->fTOld += fDeltaT;
