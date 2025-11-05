@@ -19,6 +19,7 @@ namespace locust
 			fFilterRate(0.),
 			fExpandFactor( 1.0 ),
 			fWriteOutputFile( false ),
+			fOutputFilename( "UnitTestOutput.root" ),
 			fTFReceiverHandler( 0 ),
 			fAnalyticResponseFunction( 0 ),
 			fparam_0( new param_node() ),
@@ -114,11 +115,16 @@ namespace locust
 		fOutputPath = aPath;
 	}
 
+	void CavityUtility::SetOutputFilename( std::string aName)
+	{
+	    fOutputFilename = aName;
+	}
+
 	bool CavityUtility::WriteRootHisto(int npoints, double* freqArray, double* gainArray)
 	{
 	#ifdef ROOT_FOUND
 		char cBufferFileName[60];
-		int n = sprintf(cBufferFileName, "%s/UnitTestOutput.root", fOutputPath.c_str());
+		int n = sprintf(cBufferFileName, "%s/%s", fOutputPath.c_str(), fOutputFilename.c_str());
 		const char *cFileName = cBufferFileName;
 		FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
 		aRootHistoWriter->SetFilename(cFileName);

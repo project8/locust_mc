@@ -18,6 +18,18 @@ namespace locust
 
     PozarCylindricalCavity::~PozarCylindricalCavity(){}
 
+    bool PozarCylindricalCavity::Configure( const scarab::param_node& aParam)
+    {
+        if (!FieldCore::Configure(aParam))
+        {
+            LERROR(lmclog,"There was a problem configuring the Pozar cylindrical cavity.");
+            exit(-1);
+        }
+
+        return true;
+    }
+
+
 
 
     std::vector<double> PozarCylindricalCavity::TE_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
@@ -64,7 +76,7 @@ namespace locust
     std::vector<double> PozarCylindricalCavity::TE_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double zKass, bool includeOtherPols)
     {
 
-    	double z = zKass + L/2.;
+    	double z = zKass + L/2;
 
     	if ((r > R) || (fabs(zKass) > L/2.))  // outside the cavity
     	{

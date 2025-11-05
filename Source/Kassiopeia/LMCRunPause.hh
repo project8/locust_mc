@@ -72,6 +72,8 @@ namespace locust
             bool SetupGenerator( const scarab::param_node& aParam );
             bool ConfigureUniformGenerator( const scarab::param_node& aParam );
             bool SetupDirection( const scarab::param_node& aParam );
+            bool RandomizeKassSeed( const scarab::param_node& aParam );
+            bool RandomizeTrackLength( const scarab::param_node& aParam );
             unsigned GetSeed( const scarab::param_node& aParam );
 
 
@@ -112,9 +114,9 @@ namespace locust
             std::shared_ptr< BaseDistribution> fTrackLengthDistribution;
             DistributionInterface fDistributionInterface;
             double fMinTrackLengthFraction;
+            double fMaxTrackLength;
             bool fConfigurationComplete;
-            int fEventCounter;
-            int fMaxEvents;
+            bool fMaxEvents;
 
 
 

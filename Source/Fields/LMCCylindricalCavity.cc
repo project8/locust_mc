@@ -146,6 +146,11 @@ namespace locust
         else // otherwise default to ideal Pozar mode map
         {
             fFieldCore = new PozarCylindricalCavity();
+            if(!fFieldCore->Configure(aParam))
+            {
+                LERROR(lmclog,"There was a problem configuring the Pozar map.");
+                exit(-1);
+            }
             SetNormFactors(SetUnityNormFactors(GetNModes(), 0)); // Temporary quick normalization factors of 1.0
         }
 

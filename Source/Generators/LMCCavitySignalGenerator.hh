@@ -96,6 +96,7 @@ namespace locust
             double fLO_Frequency;
             double fDeltaT;
             int fNPreEventSamples;  // spacing between events.
+            int fMaxPreEventSamples;  // spacing between events.
             unsigned fTrackDelaySeed; // Seed to randomize fNPreEventSamples
             bool fRandomPreEventSamples;
             int fThreadCheckTime;  // time (ms) to check for response from Kass thread.

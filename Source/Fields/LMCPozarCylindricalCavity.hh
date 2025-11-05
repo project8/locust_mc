@@ -32,8 +32,9 @@ namespace locust
     {
         public:
 
-    	    PozarCylindricalCavity();
-		    virtual ~PozarCylindricalCavity();
+            PozarCylindricalCavity();
+	        virtual ~PozarCylindricalCavity();
+            virtual bool Configure(const scarab::param_node& aParam);
 
             virtual std::vector<double> TE_E(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);
             virtual std::vector<double> TE_H(double R, double twoPi, double L, int l, int m, int n, double r, double theta, double z, bool includeOtherPols);

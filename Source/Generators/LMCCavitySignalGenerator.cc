@@ -28,6 +28,7 @@ namespace locust
         fDeltaT( 0. ),
         gxml_filename("blank.xml"),
         fphiLO(0.),
+        fMaxPreEventSamples( 150000 ),
         fNPreEventSamples( 150000 ),
         fRandomPreEventSamples( false ),
         fTrackDelaySeed( 0 ),
@@ -281,7 +282,8 @@ namespace locust
         }
         if( aParam.has( "event-spacing-samples" ) )
         {
-            fNPreEventSamples = aParam["event-spacing-samples"]().as_int();
+            fMaxPreEventSamples = aParam["event-spacing-samples"]().as_int();
+            fNPreEventSamples = fMaxPreEventSamples;
             if (aParam.has( "random-spacing-samples" ))
             {
                 if (aParam["random-spacing-samples"]().as_bool() == true)
@@ -300,12 +302,7 @@ namespace locust
                 }
                 else
                 {
-                    // Delay SetSeed to allow time stamp to advance between randomized tracks.
-                    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-                    struct timeval tv;
-                    gettimeofday(&tv, NULL);
-                    unsigned tSeed = tv.tv_usec;
-                    SetSeed( tSeed );
+                    LPROG(lmclog,"Running with random track start times ...");
                 }
             }
         }
@@ -359,13 +356,40 @@ namespace locust
 
     bool CavitySignalGenerator::RandomizeStartDelay()
     {
+        // Delay SetSeed to allow time stamp to advance between randomized tracks.
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+        int tSeed1 = 0;
+        int tSeed2 = 0;
+        unsigned tSeed = 0;
+
+        struct timeval tv1;
+        gettimeofday(&tv1, NULL);
+        tSeed1 = tv1.tv_usec;
+
+        clock_t start_time = clock();
+        while ((clock() - start_time) * 1000 / CLOCKS_PER_SEC < 100) {}
+
+        struct timeval tv2;
+        gettimeofday(&tv2, NULL);
+        tSeed2 = tv2.tv_usec;
+
+        tSeed = static_cast<unsigned int>( tSeed1 + 1.e3*tSeed2 );
+
+        SetSeed( tSeed );
+
         scarab::param_node default_setting;
         default_setting.add("name","uniform");
         fStartDelayDistribution = fDistributionInterface.get_dist(default_setting);
         fDistributionInterface.SetSeed( GetSeed() );
-        int tNPreEventSamples = fNPreEventSamples * fStartDelayDistribution->Generate();
+        int tNPreEventSamples = fMaxPreEventSamples * fStartDelayDistribution->Generate();
         LPROG(lmclog,"Randomizing the start delay to " << tNPreEventSamples << " fast samples.");
         fNPreEventSamples = tNPreEventSamples;
+#ifdef ROOT_FOUND
+        if ( fInterface->aRunParameter == nullptr ) fInterface->aRunParameter = new RunParameters();
+        fInterface->aRunParameter->fTrackDelaySeed = GetSeed();
+#endif
+
 
         return true;
     }
@@ -409,6 +433,14 @@ namespace locust
             thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
             cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
             qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
+            if (bTE)
+            {
+                aCavityUtility.SetOutputFilename( "UnitTestOutput-TE" + std::to_string(l) + std::to_string(m) + std::to_string(n) + ".root" );
+            }
+            else
+            {
+                aCavityUtility.SetOutputFilename( "UnitTestOutput-TM" + std::to_string(l) + std::to_string(m) + std::to_string(n) + ".root" );
+            }
             aCavityUtility.SetOutputFile(fUnitTestRootFile);
             int nModes = fInterface->fField->GetNModes();
             if (!aCavityUtility.CheckCavityQ( nModes, bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
@@ -420,7 +452,7 @@ namespace locust
         }
 
 #ifdef ROOT_FOUND
-            fInterface->aRunParameter = new RunParameters();
+            if (fInterface->aRunParameter == nullptr) fInterface->aRunParameter = new RunParameters();
             fInterface->aRunParameter->fTrackDelaySeed = GetSeed();
             fInterface->aRunParameter->fSimulationType = "cavity";
             if ( cavityFrequency > 20.e9 )
@@ -534,14 +566,12 @@ namespace locust
                 }
             } // Finished mode set.
 
-            for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex) // one channel per probe
-            {
-                sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-                // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
-                // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
-                double totalScalingFactor = sqrt(50.) * unitConversion;
-                fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
-            }
+	        // Use mode index "mu" as a proxy for the channel index:
+            sampleIndex = mu*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+            // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
+            // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
+            double totalScalingFactor = sqrt(50.) * unitConversion;
+            fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, mu, !(fInterface->fTOld > 0.) );
         }
 
         fInterface->fTOld += fDeltaT;
@@ -639,9 +669,10 @@ namespace locust
         fPowerCombiner->SizeNChannels(fNChannels);
         fInterface->fField->SetNChannels(fNChannels);
 
- 	    if (fNChannels > 3)
+ 	    if (( fNChannels > 3 ) || ( fModeSet.size() != fNChannels ))
  	    {
-    	    LERROR(lmclog,"The cavity simulation only supports up to 3 channels right now.");
+    	    LERROR(lmclog,"The cavity simulation only supports up to 3 channels right now, and the"
+    	    		"number of channels has to be the same as the number of modes.");
             throw std::runtime_error("Only 1, 2, or 3 channels is allowed.");
             return false;
  	    }
