@@ -123,7 +123,7 @@ namespace locust
 	bool CavityUtility::WriteRootHisto(int npoints, double* freqArray, double* gainArray)
 	{
 	#ifdef ROOT_FOUND
-		char cBufferFileName[60];
+		char cBufferFileName[500];
 		int n = sprintf(cBufferFileName, "%s/%s", fOutputPath.c_str(), fOutputFilename.c_str());
 		const char *cFileName = cBufferFileName;
 		FileWriter* aRootHistoWriter = RootHistoWriter::get_instance();
