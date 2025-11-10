@@ -123,6 +123,11 @@ namespace locust
         // These contain histories of the electron's orbit phase and cyclotron frequency:
         fFIRBuffer.resize( aFilterSize );
         fFrequencyBuffer.resize( aFilterSize );
+        for (int i = 0; i < aFilterSize; i++)
+        {
+            fFrequencyBuffer.push_back(0.0);
+            fFrequencyBuffer.pop_front();
+        }
     }
 
     int FieldCalculator::GetFilterSize()

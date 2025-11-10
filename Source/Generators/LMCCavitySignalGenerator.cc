@@ -685,6 +685,7 @@ namespace locust
             for( unsigned iEventCounter = 0; iEventCounter < fInterface->fNPileupEvents; iEventCounter ++)
             {
                 if (fRandomPreEventSamples) RandomizeStartDelay();
+                fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[0][0], fModeSet[0][1], fModeSet[0][2], fModeSet[0][3]));
                 int PreEventCounter = 0;
 
                 for( unsigned index = 0; index < aSignal->DecimationFactor()*aSignal->TimeSize(); ++index )
