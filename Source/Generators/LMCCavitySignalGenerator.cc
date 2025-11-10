@@ -527,7 +527,7 @@ namespace locust
 
 	        std::vector<double> tE_normalized;
 	        tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
-	        double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, fBypassTF).first;
+	        double cavityFIRSample = fFieldCalculator->GetCavityFIRSample(mu, tKassParticleXP, fBypassTF).first;
 	        dopplerFrequency = fInterface->fField->GetDopplerFrequency(l, m, n, tKassParticleXP);
 
 	        double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);

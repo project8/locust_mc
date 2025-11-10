@@ -234,8 +234,12 @@ namespace locust
         return DampingFactorTM01;
     }
 
-    double FieldCalculator::GetCouplingFactorTXlmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetCouplingFactorTXlmnCavity(int mu, Kassiopeia::KSParticle& aFinalParticle)
     {
+        int bTE = fModeSet[mu][0];
+        int l = fModeSet[mu][1];
+        int m = fModeSet[mu][2];
+        int n = fModeSet[mu][3];
         double tAvgDotProductFactor = fInterface->fField->GetAvgDotProductFactor()[l][m][n];
         double norm = 0.;
         double coupling = 0.;
@@ -261,10 +265,10 @@ namespace locust
         return coupling*coupling;
     }
 
-    double FieldCalculator::GetTXlmnFieldCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle)
+    double FieldCalculator::GetTXlmnFieldCavity(int mu, Kassiopeia::KSParticle& aFinalParticle)
     {
 
-        // l, m, & n are needed for selecting the resonant frequency and Q.  (Still TO-DO).
+        // l, m, & n are needed for selecting the resonant frequency and Q.  This happens in GetCavityFIRSample().
 
         double tVx = aFinalParticle.GetVelocity().X();
         double tVy = aFinalParticle.GetVelocity().Y();
@@ -286,7 +290,7 @@ namespace locust
 
         double vMag = pow(tVx*tVx + tVy*tVy,0.5);
 
-        std::pair<double,double> complexConvolution = GetCavityFIRSample(bTE, l, m, n, tKassParticleXP, 0);
+        std::pair<double,double> complexConvolution = GetCavityFIRSample(mu, tKassParticleXP, 0);
 
         // The excitation amplitude A_\lambda should be calculated the same way here
         // as in the signal generator.
@@ -329,8 +333,8 @@ namespace locust
             int m = fModeSet[mu][2];
             int n = fModeSet[mu][3];
 
-            double TXlmnFieldFromCavity = GetTXlmnFieldCavity(l,m,n,bTE,aFinalParticle);
-            double Almnsqu = GetCouplingFactorTXlmnCavity(l,m,n,bTE,aFinalParticle);
+            double TXlmnFieldFromCavity = GetTXlmnFieldCavity(mu,aFinalParticle);
+            double Almnsqu = GetCouplingFactorTXlmnCavity(mu,aFinalParticle);
             double DampingFactorTXlmnCavity = 1. - Almnsqu + Almnsqu*TXlmnFieldFromCavity*TXlmnFieldFromCavity;  // = (P'/P)_{lmn}
             DampingFactorCavity += DampingFactorTXlmnCavity - 1.; // (P'/P)_{lmn} - 1
         }
@@ -340,8 +344,12 @@ namespace locust
     		return 1.0;  // No feedback
     }
 
-    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int bTE, int l, int m, int n, std::vector<double> tKassParticleXP, bool BypassTF)
+    std::pair<double,double> FieldCalculator::GetCavityFIRSample(int mu, std::vector<double> tKassParticleXP, bool BypassTF)
     {
+        int bTE = fModeSet[mu][0];
+        int l = fModeSet[mu][1];
+        int m = fModeSet[mu][2];
+        int n = fModeSet[mu][3];
         double convolutionMag = 0.0;
         double convolutionPhase = 0.0;
         double tVx = tKassParticleXP[3];
@@ -366,10 +374,13 @@ namespace locust
         if ( !BypassTF )
         {
             // populate FIR filter with frequency for just this sample interval:
-            for (int i=0; i < fNFilterBinsRequired; i++)
+            if (mu < 1)  // This applies to all modes in the set, so it's done only if mu = 0:
             {
-                fFrequencyBuffer.push_back(cycFrequency);  // rad/s
-                fFrequencyBuffer.pop_front();
+                for (int i=0; i < fNFilterBinsRequired; i++)
+                {
+                    fFrequencyBuffer.push_back(cycFrequency);  // rad/s
+                    fFrequencyBuffer.pop_front();
+                }
             }
 
             std::deque<double>::iterator it = fFrequencyBuffer.begin();
