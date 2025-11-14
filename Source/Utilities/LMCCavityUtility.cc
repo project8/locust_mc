@@ -263,7 +263,7 @@ namespace locust
         double qInferred = 0.;
         double maxGain = 0.;
         double rfSpanSweep = 3. * dhoCavityFrequency / dhoCavityQ;
-        double rfStepSize = 0.00005 * dhoCavityFrequency;
+        double rfStepSize = 0.000005 * dhoCavityFrequency;
         int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
         double* freqArray = new double[nSteps];
         double* gainArray = new double[nSteps];
