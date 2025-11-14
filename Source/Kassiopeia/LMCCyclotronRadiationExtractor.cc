@@ -17,8 +17,8 @@ namespace locust
             fT0trapMin( 0. ),
             fNCrossings( 0 ),
             fSampleIndex( 0 ),
-            fPowerNorm( true ),
-            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+            fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() ),
+            fPowerNorm( fInterface->fPowerNorm )
     {
     }
 
@@ -40,7 +40,7 @@ namespace locust
     }
     CyclotronRadiationExtractor::~CyclotronRadiationExtractor()
     {
-        if (!fPowerNorm )
+        if (!fPowerNorm)
         {
             if (fFieldCalculator != NULL)
             {
@@ -54,9 +54,11 @@ namespace locust
         if ( fPowerNorm )
         {
             // Check if CavitySignalGenerator has already set the calculator in the interface
-            if (fInterface->fPowerNormFieldCalculator != NULL)
+            if (fInterface->fFieldCalculator != NULL)
             {
-                fFieldCalculator = fInterface->fPowerNormFieldCalculator;
+                // delete fFieldCalculator; // Delete any existing calculator
+                // PowerNormFieldCalculator* fFieldCalculator;
+                fFieldCalculator = fInterface->fFieldCalculator;
                 LPROG(lmclog, "Using FieldCalculator from PowerNormCavitySignalGenerator");
 
                 // Still apply CyclotronRadiationExtractor's specific configuration
@@ -81,7 +83,7 @@ namespace locust
                     }
                 }
                 // Store the calculator in the interface for others to use
-                fInterface->fPowerNormFieldCalculator = fFieldCalculator;
+                fInterface->fFieldCalculator = fFieldCalculator;
             }
         }
         else
@@ -252,7 +254,7 @@ namespace locust
             }
             if (fInterface->fBackReaction)
             {
-            	// aFinalParticle.SetKineticEnergy(anInitialParticle.GetKineticEnergy() + DeltaE);
+            	aFinalParticle.SetKineticEnergy(anInitialParticle.GetKineticEnergy() + DeltaE);
                 // LPROG("Power e: <" << DeltaE*1e7 / (2./301e6 / 1e2) << ">" << " Cyclotron Frequency: " << std::setprecision(10) << aFinalParticle.GetCyclotronFrequency()*1e-9 << " GHz");
             }
             else
@@ -305,7 +307,6 @@ namespace locust
                     fInterface->fParticleHistory.clear();
                 }
                 //                else {printf("history is empty at t_old %g\n", t_old); getchar();}
-
 
                 //Put in new entries in global ParticleHistory
                 fInterface->fParticleHistory.insert(fInterface->fParticleHistory.end(),fNewParticleHistory.begin(),fNewParticleHistory.end());

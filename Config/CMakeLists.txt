@@ -9,7 +9,7 @@ configure_file( LocustKass_Cavity_CCA_Pileup.xml.in LocustKass_Cavity_CCA_Pileup
 configure_file( LocustKass_Cavity_1GHz.xml.in LocustKass_Cavity_1GHz.xml )
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
 configure_file( LocustCavityCCA.json.in LocustCavityCCA.json )
-configure_file( LocustCavityCCA.json.in LocustCavityPowerNormCCA.json )
+configure_file( LocustCavityPowerNormCCA.json.in LocustCavityPowerNormCCA.json )
 configure_file( LocustCavityCCA_Pileup.json.in LocustCavityCCA_Pileup.json )
 configure_file( LocustCavityCCA_ModeMapTest.json.in LocustCavityCCA_ModeMapTest.json )
 configure_file( LocustCavityRectangular.json.in LocustCavityRectangular.json )

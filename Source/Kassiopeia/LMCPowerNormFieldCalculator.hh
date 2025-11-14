@@ -40,7 +40,7 @@ namespace locust
 //            double GetGroupVelocityTE10(Kassiopeia::KSParticle& aFinalParticle);
 //            double GetDampingFactorPhase2(Kassiopeia::KSParticle& aFinalParticle);
 //            double GetDampingFactorPhase1(Kassiopeia::KSParticle& aFinalParticle);
-            double GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle);
+            double GetDampingFactorCavity(Kassiopeia::KSParticle& aFinalParticle) override;
 //            double GetCouplingFactorTM01(Kassiopeia::KSParticle& aFinalParticle);
 //            double GetCouplingFactorTE10(Kassiopeia::KSParticle& aFinalParticle);
             double GetCouplingFactorTXlmnCavity(int l, int m, int n, bool bTE, Kassiopeia::KSParticle& aFinalParticle);

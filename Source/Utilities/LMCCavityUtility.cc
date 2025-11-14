@@ -40,6 +40,7 @@ namespace locust
 		    return false;
 		}
 
+		LPROG(testlog, "Configuring DHO in cavity utitlity.");
 		fAnalyticResponseFunction = new DampedHarmonicOscillator();
 		if ( !fAnalyticResponseFunction->Configure(*GetParams()) )
 		{
@@ -106,10 +107,10 @@ namespace locust
 
 
 
-	std::deque<double> CavityUtility::SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal)
+	std::deque<double> CavityUtility::SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal, int startIdx, int endIdx)
 	{
 	    std::deque<double> incidentSignal;
-	    for (unsigned i=0; i<fTFReceiverHandler->GetFilterSizeArray(bTE,l,m,n); i++)
+	    for (unsigned i=startIdx; i<endIdx; i++)
 	    {
 	    	incidentSignal.push_back(aSignal->LongSignalTimeComplex()[i][0]);
 	    }
@@ -177,7 +178,7 @@ namespace locust
         	double convolutionMag = 0.;
         	// populate time series and convolve it with the FIR filter
         	PopulateSignal(aSignal, N0);
-        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal));
+        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ConvolveWithComplexFIRFilterArray(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal, 0, N0));
 
         	if (fabs(convolutionPair.first) > convolutionMag)
         	{
@@ -241,11 +242,23 @@ namespace locust
     	    exit(-1);
     	}
 
+		// Magic to convert power-norm-specific dho string to float
+		double ddhoTimeResolution;
+		std::string fraction = dhoTimeResolution;
+		size_t delimiterPos = fraction.find('/');
+		if (delimiterPos != std::string::npos) {
+			double numerator = std::stod(fraction.substr(0, delimiterPos));
+			double denominator = std::stod(fraction.substr(delimiterPos + 1));
+			ddhoTimeResolution = numerator / denominator;
+		}
+
         /* initialize time series */
         Signal* aSignal = new Signal();
-        int N0 = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n) - 1; // -1 to avoid the last elements which are unrelated to the GF
+        int N0 = 3 * dhoCavityQ/dhoCavityFrequency / ddhoTimeResolution; // Calculate E field for x ring-up times
         fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
         aSignal->Initialize( N0 , 1 );
+
+		LPROG( testlog, "(norm) N0 is " << N0 );
 
         double qInferred = 0.;
         double maxGain = 0.;
@@ -255,6 +268,10 @@ namespace locust
         double* freqArray = new double[nSteps];
         double* gainArray = new double[nSteps];
 
+		// Size of GF in DHO is finite. May need to propagate in large steps
+		int numGFBins = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n) - 1; // -1 subtracts wprime, fBfactor bins
+		int nLargeSteps = 1 + std::floor( (N0-1) / numGFBins);
+
         for (int i=0; i<nSteps; i++) // frequency sweep
         {
         	int rfStep = -nSteps/2/fExpandFactor + i;
@@ -262,12 +279,30 @@ namespace locust
         	double convolutionMag = 0.;
         	// populate time series and convolve it with the FIR filter
         	PopulateSignal(aSignal, N0);
+			// Size of GF in DHO is finite. May need to propagate in large steps
+			for (int j=0; j<nLargeSteps; j++)
+			{
+				int startIdx = j*numGFBins;
+				int endIdx;
+				if (std::floor((N0 - startIdx) / numGFBins)) // if there is another large step after this
+				{
+					endIdx = (j+1)*numGFBins;
+				}
+				else // if this is the last large step
+				{
+					endIdx = startIdx + (N0 % numGFBins);
+				}
+				double tProp = startIdx * fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
 
-        	std::pair<double,double> convolutionPair = fTFReceiverHandler->ComputeFields(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal), 0.);
+				fTFReceiverHandler->ComputeFields(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal, startIdx, endIdx), tProp);
+			}
+			// Grab the last computed complex E field
+        	const auto& convolutionPair = (fTFReceiverHandler->GetEfield()[bTE][l][m][n]).back();
+			double eFieldAbs = sqrt( convolutionPair[0]*convolutionPair[0] + convolutionPair[1]*convolutionPair[1] );
 
-        	if (fabs(convolutionPair.first) > convolutionMag)
+        	if (eFieldAbs > convolutionMag)
         	{
-        	    convolutionMag = LMCConst::EpsNull() * convolutionPair.first*convolutionPair.first + LMCConst::MuNull() * convolutionPair.second*convolutionPair.second;
+        	    convolutionMag = eFieldAbs;
         	}
 
         	freqArray[i] = fRF_frequency;
@@ -284,6 +319,7 @@ namespace locust
         	}
         	LPROG( testlog, "(norm) Cavity GF gain at frequency " << fRF_frequency << " is " << convolutionMag );
 
+			// Reset the field in the cavity to zero.
 			fTFReceiverHandler->SetLastElementToZero(bTE, l, m, n);
         }
 
@@ -298,7 +334,7 @@ namespace locust
 
         LPROG( testlog, "\nSummary:");
         LPROG( testlog, "(norm) dho-threshold-factor is " << dhoThresholdFactor );
-        LPROG( testlog, "(norm) dho-time-resolution is " << dhoTimeResolution );
+        LPROG( testlog, "(norm) dho-time-resolution is " << ddhoTimeResolution );
         LPROG( testlog, "(norm) dho-cavity-frequency is " << dhoCavityFrequency );
         LPROG( testlog, "(norm) dho-cavity-Q is " << dhoCavityQ );
         LPROG( testlog, "(norm) Estimated Q is " << qInferred );

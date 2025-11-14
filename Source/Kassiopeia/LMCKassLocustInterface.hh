@@ -35,7 +35,7 @@ namespace locust
         double fTOld;
         double fKassTimeStep; //Time step for sampling
 
-        FieldCalculator* fPowerNormFieldCalculator = NULL;
+        FieldCalculator* fFieldCalculator;
 
         //running deque for saving previous few ns of particle history
         //in order to caluclate retarded fields
@@ -75,6 +75,10 @@ namespace locust
         int fTriggerConfirm;
         int fFastRecordLength;
         bool fNewTrackStarting;
+        bool fPowerNorm;
+
+
+        // void SetFieldCalculator( FieldCalculator* aFieldCalculator );
 
 #ifdef ROOT_FOUND
         Event* anEvent;

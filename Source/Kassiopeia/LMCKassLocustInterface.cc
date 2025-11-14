@@ -40,7 +40,8 @@ namespace locust
             fSampleIndex( 0 ),
             fTriggerConfirm( 100000 ),
             fFastRecordLength( 0 ),
-            fNewTrackStarting( false )
+            fNewTrackStarting( false ),
+            fPowerNorm( false )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :
@@ -65,5 +66,21 @@ namespace locust
         fInterface = aInterface;
         return;
     }
+
+    // void KassLocustInterface::SetFieldCalculator(FieldCalculator* aFieldCalculator)
+    // {
+    //     delete fFieldCalculator;
+    //     if (fPowerNorm)
+    //     {
+    //         PowerNormFieldCalculator* fFieldCalculator;
+    //         fFieldCalculator = aFieldCalculator;
+    //     }
+    //     else
+    //     {
+    //         FieldCalculator* fFieldCalculator;
+    //         fFieldCalculator = aFieldCalculator;
+    //     }
+    //     return;
+    // }
 
 } /* namespace locust */

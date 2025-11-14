@@ -14,13 +14,13 @@ namespace locust
 	LOGGER( lmclog, "DampedHarmonicOscillator" );
 
     DampedHarmonicOscillator::DampedHarmonicOscillator():
-    		fMaxNBins( 30000 ),
+    		fMaxNBins( 60000 ),
 			fTimeResolutionDefault( 1.e-10 ),
 			fCavityFrequencyDefault( 1.067e9 ),
 			fCavityQDefault( 1000 ),
 			fThresholdFactorDefault ( 0.25 ),
 			fHannekePowerFactorDefault( 1. ),
-			fNModes( 2 ),
+			fNModes( 1 ),
 			fTFReceiverHandler( 0 ),
             bDipoleMode( true )
 
@@ -49,7 +49,7 @@ namespace locust
     		auto timeResolutionParam = aParam["dho-time-resolution"]();
             if (timeResolutionParam.is_string()) {
                 // Parse fraction manually if it's provided as a string (e.g., "1/10")
-                bDipoleMode = true;
+                bDipoleMode = false;
                 std::string fraction = timeResolutionParam.as_string();
                 size_t delimiterPos = fraction.find('/');
                 if (delimiterPos != std::string::npos) {
@@ -402,6 +402,7 @@ namespace locust
                     tGFArray[bTE][l][m].resize(nModes);
                     for(int n=0; n<nModes; n++)
                     {
+                        // LPROG( lmclog, "wprime: " << fCavityOmegaPrime[bTE][l][m][n] << ", bfactor: " << fBFactor[bTE][l][m][n] << " for mode " << l << m << n);
                         for (unsigned i=0; i<fMaxNBins; i++)
                         {
                             double tValue = i * fTimeResolution[bTE][l][m][n];

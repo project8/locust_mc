@@ -236,7 +236,7 @@ namespace locust
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( tParam );
 
-        fFieldCalculator = new PowerNormFieldCalculator();
+                fFieldCalculator = new PowerNormFieldCalculator();
         if(!fFieldCalculator->Configure(tParam))
         {
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from PowerNormCavitySignal.");
@@ -248,7 +248,10 @@ namespace locust
         }
 
         // Store in the interface for sharing
-        fInterface->fPowerNormFieldCalculator = fFieldCalculator;
+        // Specify that this is a power norm simulation
+        fInterface->fPowerNorm = true;
+        // fInterface->SetFieldCalculator( fFieldCalculator );
+        fInterface->fFieldCalculator = fFieldCalculator;
 
     	return true;
     }
@@ -391,7 +394,7 @@ namespace locust
 
     	LPROG(lmclog,"Running some cavity cross-checks ...");
 
-        double timeResolution = 0.;
+        std::string timeResolution;
         double thresholdFactor = 0.;
         double cavityFrequency = 0.;
         double qExpected = 0.;
@@ -403,18 +406,23 @@ namespace locust
             int m = fModeSet[mu][2];
             int n = fModeSet[mu][3];
             CavityUtility aCavityUtility;
-            timeResolution = fAnalyticResponseFunction->GetDHOTimeResolution(bTE, l, m, n);
+
+            const scarab::param_node& tParam2 = *GetParameters();
+            if( tParam2.has( "dho-time-resolution" ) )
+            {
+                timeResolution = tParam2["dho-time-resolution"].to_string();
+            }
             thresholdFactor = fAnalyticResponseFunction->GetDHOThresholdFactor(bTE, l, m, n);
             cavityFrequency = fAnalyticResponseFunction->GetCavityFrequency(bTE, l, m, n);
             qExpected = fAnalyticResponseFunction->GetCavityQ(bTE, l, m, n);
             aCavityUtility.SetOutputFile(fUnitTestRootFile);
             int nModes = fInterface->fField->GetNModes();
-            // if (!aCavityUtility.CheckCavityQ( nModes, bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
-            // {
-            //     LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
-            //     		"with the unit test as in bin/testLMCCavity [-h]");
-            //     // return false;
-            // }
+            if (!aCavityUtility.CheckCavityQNorm( nModes, bTE, l, m, n, timeResolution, thresholdFactor, cavityFrequency, qExpected ))
+            {
+                LERROR(lmclog,"The cavity Q does not look quite right.  Please tune the configuration "
+                		"with the unit test as in bin/testLMCCavity [-h]");
+                return false;
+            }
         }
 
 #ifdef ROOT_FOUND

@@ -162,6 +162,8 @@ namespace locust
         double wprime = fFilterComplexArray[bTE][l][m][n][fFIRNBinsArray[bTE][l][m][n] - 1][1];
         double dt = fResolutionArray[bTE][l][m][n];
 
+        // LPROG( lmclog, "fBFactor: " << fBFactor << ", wprime: " << wprime << ", dt: " << dt );
+
         if (fEfield[bTE][l][m][n].size() > 2)
         {
             lastEfield = fEfield[bTE][l][m][n].back();

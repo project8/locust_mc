@@ -211,6 +211,7 @@ namespace locust
 
     std::pair<double,double> PowerNormFieldCalculator::GetCavityFIRSample(int bTE, int l, int m, int n)
     {
+        // Print the size of the E field array
         double Ereal = fTFReceiverHandler->GetEfield()[bTE][l][m][n].back()[0];
         double Breal = fTFReceiverHandler->GetBfield()[bTE][l][m][n].back()[0];
 

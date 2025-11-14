@@ -18,6 +18,9 @@
     #include "LMCRootHistoWriter.hh"
 #endif
 
+#include <string>
+#include <cmath>
+
 namespace locust
 {
 
@@ -49,7 +52,7 @@ namespace locust
     	void SetOutputFile(bool aFlag);
         void AddParam(std::string aString, double aValue);
         void AddParam(std::string aString, std::string aValue);
-        std::deque<double> SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal);
+        std::deque<double> SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal, int startIdx, int endIdx);
         bool WriteRootHisto(int npoints, double* freqArray, double* gainArray);
         bool PopulateSignal(Signal* aSignal, int N0);
         const scarab::param_node* GetParams();

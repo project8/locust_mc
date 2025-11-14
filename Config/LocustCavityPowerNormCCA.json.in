@@ -1,7 +1,7 @@
 {
     "generators":
     [          
-       "cavity-signal",
+       "powernorm-cavity-signal",
        "lpf-fft",
        "decimate-signal",
        "digitizer"
@@ -12,14 +12,14 @@
         "transmitter": "kass-current",
         "cavity-radius": 0.007,
         "cavity-length": 0.1,           
-        "back-reaction": "true",
+        "back-reaction": "false",
         "dho-cavity-frequency": 25.9e9,
-        "dho-time-resolution": "2./301e10",
+        "dho-time-resolution": "1./301e9",
         "dho-threshold-factor": 0.01,
         "event-spacing-samples": 10,
-        "track-length": 0.5e-4,
+        "track-length": 3e-5,
         "rectangular-waveguide": false,        
-        "voltage-check": "false",
+        "voltage-check": "true",
         "lo-frequency": 25.9602e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA.xml"
     },
@@ -41,8 +41,8 @@
 
     "digitizer":
     {
-        "v-range":  0.08,
-        "v-offset": -0.04
+        "v-range": 2.5e-6,
+        "v-offset": -1.25e-6
     }
 
 }
