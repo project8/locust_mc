@@ -171,10 +171,15 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 	if (!parseCavity(the_main)) exit(-1);
 
 	CavityUtility aCavityUtility;
+    CavityUtility aCavityUtilityNorm;
 
 	aCavityUtility.SetOutputPath(the_main.GetOutputPath());
 	aCavityUtility.SetExpandFactor(the_main.GetExpandSweep());
 	aCavityUtility.SetOutputFile(the_main.UnitTestOutputFile());
+
+    aCavityUtilityNorm.SetOutputPath(the_main.GetOutputPath());
+    aCavityUtilityNorm.SetExpandFactor(the_main.GetExpandSweep());
+    aCavityUtilityNorm.SetOutputFile(the_main.UnitTestOutputFile());
 	int l = the_main.GetL();
 	int m = the_main.GetM();
 	int n = the_main.GetN();
@@ -196,7 +201,7 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 	}
     if ( (l<2) && (m<2) && (n<2) )
     {
-        checkCavityQNorm = aCavityUtility.CheckCavityQNorm( nModes, bTE, l, m, n, the_main.GetDHOTimeResolutionNorm(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+        checkCavityQNorm = aCavityUtilityNorm.CheckCavityQNorm( nModes, bTE, l, m, n, the_main.GetDHOTimeResolutionNorm(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
         REQUIRE( checkCavityQNorm );
     }
     else
