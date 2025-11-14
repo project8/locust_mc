@@ -65,7 +65,7 @@ class testCavity_app : public main_app
         testCavity_app() :
         main_app(),
         fDHOTimeResolution(1.e-8),
-        sDHOTimeResolutionNorm("1e-2/1.067e9"),
+        sDHOTimeResolutionNorm("0.05/1.067e9"),
         fDHOThresholdFactor(0.01),
         fCavityFrequency(1.067e9),
         fCavityQ(1000.),
@@ -196,8 +196,7 @@ TEST_CASE( "testLMCCavity with default parameter values (pass)", "[single-file]"
 	}
     if ( (l<2) && (m<2) && (n<2) )
     {
-        double dhoNorm = 1. / the_main.GetCavityFrequency() / 20.;
-        checkCavityQNorm = aCavityUtility.CheckCavityQNorm( nModes, bTE, l, m, n, dhoNorm, the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
+        checkCavityQNorm = aCavityUtility.CheckCavityQNorm( nModes, bTE, l, m, n, the_main.GetDHOTimeResolutionNorm(), the_main.GetDHOThresholdFactor(), the_main.GetCavityFrequency(), the_main.GetCavityQ() );
         REQUIRE( checkCavityQNorm );
     }
     else
