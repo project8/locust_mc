@@ -125,6 +125,9 @@ namespace locust
             double tY = aFinalParticle.GetPosition().Y();
             fInterface->aTrack->Radius = pow(tX*tX + tY*tY, 0.5);
             fInterface->aTrack->RadialPhase = calcOrbitPhase(tX, tY);
+            fInterface->aTrack->StartGuidingCenterX = aFinalParticle.GetGuidingCenterPosition().X();
+            fInterface->aTrack->StartGuidingCenterY = aFinalParticle.GetGuidingCenterPosition().Y();
+            fInterface->aTrack->StartGuidingCenterZ = aFinalParticle.GetGuidingCenterPosition().Z();
             fInterface->aTrack->StartingEnergy_eV = LMCConst::kB_eV() / LMCConst::kB() * aFinalParticle.GetKineticEnergy();
     	}
     	else
@@ -133,8 +136,12 @@ namespace locust
             unsigned nElapsedSamples = index - fStartingIndex;
             fInterface->aTrack->AvgFrequency = ( fInterface->aTrack->AvgFrequency * nElapsedSamples + aFinalParticle.GetCyclotronFrequency() ) / ( nElapsedSamples + 1);
             fInterface->aTrack->OutputAvgFrequency = fInterface->aTrack->AvgFrequency + tOffset;
+            if ((tTime - fInterface->aTrack->StartTime) < 2.e-5) // approx. post-processing time slice
+            {
+                fInterface->aTrack->TrackOutputStartFrequency = fInterface->aTrack->OutputAvgFrequency;
+            }
             fInterface->aTrack->TrackLength = tTime - fInterface->aTrack->StartTime;
-            fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
+            if (fInterface->aTrack->TrackLength > 0.) fInterface->aTrack->Slope = (fInterface->aTrack->EndFrequency - fInterface->aTrack->StartFrequency) / (fInterface->aTrack->TrackLength);
     	}
 #endif
         return true;

@@ -34,10 +34,9 @@ namespace locust
 
 	    public:
 
-    	    FieldCore();
-    	    virtual ~FieldCore();
-
-	    virtual bool Configure( const scarab::param_node& aParam );
+            FieldCore();
+            virtual ~FieldCore();
+            virtual bool Configure( const scarab::param_node& aParam );
 
 	        // Cylindrical/rectangular Pozar cavities:
     	    // dim1 = r, dim2 = theta, dim3 = z
@@ -64,9 +63,9 @@ namespace locust
             double GetBesselNKZeros(int l, int m);
             double GetBesselNKPrimeZeros(int l, int m);
 
-
         private:
             std::vector<std::vector<double> > fBesselNKZeros, fBesselNKPrimeZeros;
+
 
     };
 
@@ -147,6 +146,7 @@ namespace locust
             bool fPlotModeMaps;
             std::string fOutputPath;
             bool fbMultiMode;
+            bool fbThreeModes;
             bool fTM111;
             bool fTE012;
             bool fTE013;

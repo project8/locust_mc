@@ -47,6 +47,7 @@ namespace locust
             std::vector<double> fEndFrequencies;
             std::vector<double> fAvgFrequencies;
             std::vector<double> fOutputAvgFrequencies;
+            std::vector<double> fTrackOutputStartFrequencies;
             std::vector<double> fAvgAxialFrequencies;
             std::vector<double> fTrackPowers;
             std::vector<double> fStartTimes;
@@ -56,6 +57,9 @@ namespace locust
             std::vector<double> fPitchAngles;
             std::vector<double> fRadii;
             std::vector<double> fRadialPhases;
+            std::vector<double> fStartGuidingCentersX;
+            std::vector<double> fStartGuidingCentersY;
+            std::vector<double> fStartGuidingCentersZ;
 
             unsigned fNTracks;
 

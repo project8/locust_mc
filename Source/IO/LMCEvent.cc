@@ -50,6 +50,7 @@ namespace locust
         fEndFrequencies.resize(0);
         fAvgFrequencies.resize(0);
         fOutputAvgFrequencies.resize(0);
+        fTrackOutputStartFrequencies.resize(0);
         fAvgAxialFrequencies.resize(0);
         fTrackPowers.resize(0);
         fStartTimes.resize(0);
@@ -59,6 +60,9 @@ namespace locust
         fPitchAngles.resize(0);
         fRadii.resize(0);
         fRadialPhases.resize(0);
+        fStartGuidingCentersX.resize(0);
+        fStartGuidingCentersY.resize(0);
+        fStartGuidingCentersZ.resize(0);
 
         // Update size.
         fNTracks = 0;
@@ -74,6 +78,7 @@ namespace locust
         fStartingEnergies_eV.push_back( aTrack->StartingEnergy_eV );
         fOutputStartFrequencies.push_back( aTrack->OutputStartFrequency );
         fStartFrequencies.push_back( aTrack->StartFrequency );
+        fTrackOutputStartFrequencies.push_back( aTrack->TrackOutputStartFrequency );
         fEndFrequencies.push_back( aTrack->EndFrequency );
         fAvgFrequencies.push_back( aTrack->AvgFrequency );
         fOutputAvgFrequencies.push_back( aTrack->OutputAvgFrequency );
@@ -86,6 +91,9 @@ namespace locust
         fPitchAngles.push_back( aTrack->PitchAngle );
         fRadii.push_back( aTrack->Radius );
         fRadialPhases.push_back( aTrack->RadialPhase );
+        fStartGuidingCentersX.push_back( aTrack->StartGuidingCenterX);
+        fStartGuidingCentersY.push_back( aTrack->StartGuidingCenterY);
+        fStartGuidingCentersZ.push_back( aTrack->StartGuidingCenterZ);
 
         // Update size.
         fNTracks = fStartFrequencies.size();

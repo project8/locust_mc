@@ -38,8 +38,8 @@ namespace locust
             bool ConfigureByInterface();
             bool Configure( const scarab::param_node& aParam );
             std::string fTruthOutputFilename;
+            std::string fMetadataTag;
             std::string fJsonFileName;
-            bool fAccumulateTruthInfo;
 
 
         public:

@@ -50,6 +50,7 @@ namespace locust
         bool CheckCavityQNorm( int nModes, int bTE, int l, int m, int n, std::string dhoTimeResolution, double dhoThresholdFactor, double dhoCavityFrequency, double dhoCavityQ);
         void SetExpandFactor(double aFactor);
     	void SetOutputFile(bool aFlag);
+    	void SetOutputFilename( std::string aName);
         void AddParam(std::string aString, double aValue);
         void AddParam(std::string aString, std::string aValue);
         std::deque<double> SignalToDeque(int bTE, int l, int m, int n, Signal* aSignal, int startIdx, int endIdx);
@@ -69,6 +70,7 @@ namespace locust
         double fFilterRate;
         double fExpandFactor;
         bool fWriteOutputFile;
+        std::string fOutputFilename;
         std::string fOutputPath;
 
 

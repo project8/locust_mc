@@ -9,6 +9,12 @@
 
 <geometry>
 
+<tag name="cavity_tag">    
+    <cylinder_tube_space name="cavity_tube_space" z1="-0.05" z2="0.05" r1="0.007" r2="0.0072" radial_mesh_count="30"/>    
+</tag>
+
+
+
 <tag name="magnet_tag" name="coil_tag_000">
   <cylinder_tube_space
     name="coil_space_000"
@@ -40,6 +46,11 @@
 
 <!-- assembly -->
 <space name="project8_assembly">
+
+<space name="cavity_space" node="cavity_tube_space">
+  <transformation rotation_euler="0. 0. 0."/> 
+  <transformation displacement="{0.} {0.} {0.}"/>
+</space>
 
 <space name="coil_000" node="coil_space_000">
   <transformation rotation_euler="0. 0. 0."/> 

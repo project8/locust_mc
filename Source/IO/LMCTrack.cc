@@ -33,12 +33,16 @@ namespace locust
         EndFrequency = -99.;
         AvgFrequency = 0.;
         OutputAvgFrequency = 0.;
+        TrackOutputStartFrequency = -99.;
         AvgAxialFrequency = 0.;
         TrackPower = -99.;
         Slope = -99.;
         PitchAngle = -99.;
         Radius = -99.;
         RadialPhase = -99.;
+        StartGuidingCenterX = -99.;
+        StartGuidingCenterY = -99.;
+        StartGuidingCenterZ = -99.;
 
         return true;
 

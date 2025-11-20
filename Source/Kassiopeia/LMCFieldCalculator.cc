@@ -17,6 +17,7 @@ namespace locust
 
     FieldCalculator::FieldCalculator() :
         fNFilterBinsRequired( 0 ),
+        fModeMap( false ),
         fTFReceiverHandler( NULL ),
         fAnalyticResponseFunction( 0 ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
@@ -24,6 +25,7 @@ namespace locust
     }
     FieldCalculator::FieldCalculator( const FieldCalculator& aCopy ) :
         fNFilterBinsRequired( 0 ),
+        fModeMap( false ),
         fTFReceiverHandler( NULL ),
         fAnalyticResponseFunction( 0 ),
         fInterface( aCopy.fInterface )
@@ -94,6 +96,12 @@ namespace locust
 
         // Size the electron information buffers to be similar to the Green's functions:
         SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[0][0],fModeSet[0][1],fModeSet[0][2],fModeSet[0][3]));
+
+        if( aParam.has( "upload-modemap-filename" ) )
+        {
+            fModeMap = true;
+        }
+
         return true;
     }
 
@@ -260,10 +268,14 @@ namespace locust
 
         double tVx = aFinalParticle.GetVelocity().X();
         double tVy = aFinalParticle.GetVelocity().Y();
+        double tposX = aFinalParticle.GetPosition().X();
+        double tposY = aFinalParticle.GetPosition().Y();
+        double tRadius = pow( tposX*tposX + tposY*tposY, 0.5);
+        double tTheta = calcTheta(tposX, tposY);
 
         std::vector<double> tKassParticleXP;
-        tKassParticleXP.push_back(aFinalParticle.GetPosition().X());
-        tKassParticleXP.push_back(aFinalParticle.GetPosition().Y());
+        tKassParticleXP.push_back( tRadius );
+        tKassParticleXP.push_back( tTheta );
         tKassParticleXP.push_back(aFinalParticle.GetPosition().Z());
         tKassParticleXP.push_back(aFinalParticle.GetVelocity().X());
         tKassParticleXP.push_back(aFinalParticle.GetVelocity().Y());
@@ -339,6 +351,12 @@ namespace locust
         double cycFrequency = tKassParticleXP[7];
         double tTime = tKassParticleXP[9];
         double amplitude = 0.;
+        int modeSignThetaComp = 1;
+        if ( !fModeMap )
+        {
+            modeSignThetaComp = 1 - 2 * ( fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,0,bTE)[1] < 0. );
+        }
+
         if ( fInterface->fField->InVolume(tKassParticleXP))
         {
             amplitude = 1.;
@@ -383,7 +401,9 @@ namespace locust
             convolutionPhase = 0.;
         }
 
-        return std::make_pair(convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
+        // Select sign of driven mode amplitude with modeSignThetaComp factor.
+        // This affects modes with n > 1, such as TE012.  It doesn't affect TE011.
+        return std::make_pair(modeSignThetaComp * convolutionMag*LMCConst::Q()*vMag, convolutionPhase);
 
     }
 
@@ -408,6 +428,25 @@ namespace locust
         return phaseCorrection;
     }
 
+    double FieldCalculator::calcTheta(double x, double y)
+    {
+        double phase = 0.;
+        if (fabs(x) > 0.)
+            phase = atan(y/x);
+        phase += quadrantPositionCorrection(phase, x);
+        return phase;
+    }
 
+    double FieldCalculator::quadrantPositionCorrection(double phase, double x)
+    {
+        double phaseCorrection = 0.;
+
+        if (phase < 0.)
+            phaseCorrection = LMCConst::Pi() + (x > 0.) * LMCConst::Pi();
+        else
+            phaseCorrection = (x < 0.) * LMCConst::Pi();
+
+        return phaseCorrection;
+    }
 
 }

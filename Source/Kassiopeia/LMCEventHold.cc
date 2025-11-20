@@ -18,7 +18,7 @@ namespace locust
 
     EventHold::EventHold() :
             fTruthOutputFilename("LocustEventProperties.root"),
-            fAccumulateTruthInfo( false ),
+            fMetadataTag("none"),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
             fConfiguredEMin( 0. ),
@@ -33,7 +33,7 @@ namespace locust
 
     EventHold::EventHold( const EventHold& aOrig ) : KSComponent(),
             fTruthOutputFilename("LocustEventProperties.root"),
-            fAccumulateTruthInfo( false ),
+            fMetadataTag("none"),
             fConfigurationComplete( false ),
             fEventSeed( 0 ),
             fConfiguredEMin( 0. ),
@@ -84,43 +84,42 @@ namespace locust
 
     bool EventHold::Configure( const scarab::param_node& aParam )
     {
+        if ( aParam.has( "metadata-tag" ) )
+        {
+            fMetadataTag = aParam["metadata-tag"]().as_string();
+        }
 	    if ( aParam.has( "random-track-seed" ) )
 	    {
-	    	fEventSeed = aParam["random-track-seed"]().as_int();
+            fEventSeed = aParam["random-track-seed"]().as_int();
 	    }
 	    else
 	    {
-	        fEventSeed = -99;
+            fEventSeed = -99;
 	    }
 	    if ( aParam.has( "truth-output-filename" ) )
 	    {
-	    	fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
-	    }
-	    if ( aParam.has( "accumulate-truth-info" ) )
-	    {
-	    	fAccumulateTruthInfo = aParam["accumulate-truth-info"]().as_bool();
+            fTruthOutputFilename = aParam["truth-output-filename"]().as_string();
 	    }
 	    if ( aParam.has( "ks-starting-energy-min" ) )
 	    {
-	        fConfiguredEMin = aParam["ks-starting-energy-min"]().as_double();
+            fConfiguredEMin = aParam["ks-starting-energy-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-pitch-min" ) )
 	    {
-	        fConfiguredPitchMin = aParam["ks-starting-pitch-min"]().as_double();
+            fConfiguredPitchMin = aParam["ks-starting-pitch-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-xpos-min" ) )
 	    {
-	    	fConfiguredXMin = aParam["ks-starting-xpos-min"]().as_double();
+            fConfiguredXMin = aParam["ks-starting-xpos-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-ypos-min" ) )
 	    {
-	    	fConfiguredYMin = aParam["ks-starting-ypos-min"]().as_double();
+            fConfiguredYMin = aParam["ks-starting-ypos-min"]().as_double();
 	    }
 	    if ( aParam.has( "ks-starting-zpos-min" ) )
 	    {
-	    	fConfiguredZMin = aParam["ks-starting-zpos-min"]().as_double();
+            fConfiguredZMin = aParam["ks-starting-zpos-min"]().as_double();
 	    }
-
 
     	return true;
     }
@@ -160,22 +159,13 @@ namespace locust
 #ifdef ROOT_FOUND
         FileWriter* aRootTreeWriter = RootTreeWriter::get_instance();
         aRootTreeWriter->SetFilename(sFileName);
-        if (fAccumulateTruthInfo)
-        {
-        	aRootTreeWriter->OpenFile("UPDATE");
-        }
-        else
-        {
-        	aRootTreeWriter->OpenFile("RECREATE");
-        }
+        aRootTreeWriter->OpenFile("RECREATE");
         aRootTreeWriter->CloseFile();
 #endif
 
         // Open the json file:
-        if (!fAccumulateTruthInfo)
-        {
-            std::ofstream ost {fJsonFileName, std::ios_base::out};
-        }
+        std::ofstream ost {fJsonFileName, std::ios_base::out};
+
 
         return true;
 
@@ -186,7 +176,6 @@ namespace locust
     {
         std::ifstream jsonFile(fJsonFileName); // Open json file for inspection
         bool bNewRun = true;
-        fEventCounter = 0;
         std::vector<std::string> v;
         if (jsonFile.is_open())
         {
@@ -194,8 +183,6 @@ namespace locust
             while (std::getline(jsonFile, line))
             {
                 bNewRun = !line.find("run-id");
-                //increment the event counter
-                if ( line.find("\"event-tag\"") != std::string::npos ) fEventCounter += 1;
                 if (line != "}")  // Avoid saving the last "}".  It will be appended below.
                 {
                     v.push_back(line);
@@ -214,12 +201,17 @@ namespace locust
 #ifdef ROOT_FOUND
         if (bNewRun)  // If there are no run parameters in the json file yet, write them now:
         {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            int tMillisec = int( tv.tv_usec / 1000);
+
             fprintf(file, "{\n");
-            fprintf(file, "    \"run-id\": \"%ld\",\n", fInterface->aRunParameter->fRunID);
+            fprintf(file, "    \"run-id\": \"%ld-%03d\",\n", fInterface->aRunParameter->fRunID, tMillisec);
             fprintf(file, "    \"run-parameters\": {\n");
             fprintf(file, "        \"run-type\": \"%s\",\n", fInterface->aRunParameter->fDataType.c_str());
             fprintf(file, "        \"simulation-type\": \"%s\",\n", fInterface->aRunParameter->fSimulationType.c_str());
             fprintf(file, "        \"simulation-subtype\": \"%s\",\n", fInterface->aRunParameter->fSimulationSubType.c_str());
+            fprintf(file, "        \"user-defined-tag\": \"%s\",\n", fMetadataTag.c_str());
             fprintf(file, "        \"sampling-freq-mega-hz\": \"%.1f\",\n", fInterface->aRunParameter->fSamplingRateMHz);
             fprintf(file, "        \"configured-e-min\": \"%12.6f\",\n", fConfiguredEMin);
             fprintf(file, "        \"configured-pitch-min\": \"%12.9f\",\n", fConfiguredPitchMin);
@@ -254,11 +246,15 @@ namespace locust
 
         // Write the latest event information here:
 
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        int tMillisec = int( tv.tv_usec / 1000);
+
         fprintf(file,"    \"%d\": {\n", fEventCounter);
-        fprintf(file,"        \"event-tag\": \"%ld\",\n", fInterface->anEvent->fEventID);
-        fprintf(file,"        \"kassiopeia-seed\": %d,\n", fInterface->aRunParameter->fKassiopeiaSeed);
-        fprintf(file,"        \"track-length-seed\": %d,\n", fInterface->aRunParameter->fTrackLengthSeed);
-        fprintf(file,"        \"track-delay-seed\": %d,\n", fInterface->aRunParameter->fTrackDelaySeed);
+        fprintf(file,"        \"event-tag\": \"%ld-%03d\",\n", fInterface->anEvent->fEventID, tMillisec);
+        fprintf(file,"        \"kassiopeia-seed\": %u,\n", fInterface->aRunParameter->fKassiopeiaSeed);
+        fprintf(file,"        \"track-length-seed\": %u,\n", fInterface->aRunParameter->fTrackLengthSeed);
+        fprintf(file,"        \"track-delay-seed\": %u,\n", fInterface->aRunParameter->fTrackDelaySeed);
         fprintf(file,"        \"ntracks\": %d,\n", fInterface->anEvent->fNTracks);
         for (int i=0; i<fInterface->anEvent->fNTracks; i++)
         {
@@ -266,11 +262,15 @@ namespace locust
             fprintf(file,"         {\n");
             fprintf(file,"             \"start-time\": %g,\n", fInterface->anEvent->fStartTimes[i]);
             fprintf(file,"             \"end-time\": %g,\n", fInterface->anEvent->fEndTimes[i]);
-            fprintf(file,"             \"energy-ev\": %g,\n", fInterface->anEvent->fStartingEnergies_eV[i]);
-            fprintf(file,"             \"start-radius\": %g,\n", fInterface->anEvent->fRadii[i]);
-            fprintf(file,"             \"start-radial-phase\": %g,\n", fInterface->anEvent->fRadialPhases[i]);
-            fprintf(file,"             \"output-avg-frequency\": %g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
-            fprintf(file,"             \"output-inst-start-frequency\": %g,\n", fInterface->anEvent->fOutputStartFrequencies[i]);
+            fprintf(file,"             \"energy-ev\": %12.10g,\n", fInterface->anEvent->fStartingEnergies_eV[i]);
+            fprintf(file,"             \"start-radius\": %12.10g,\n", fInterface->anEvent->fRadii[i]);
+            fprintf(file,"             \"start-radial-phase\": %12.10g,\n", fInterface->anEvent->fRadialPhases[i]);
+            fprintf(file,"             \"start-guiding-center-x\": %12.10g,\n", fInterface->anEvent->fStartGuidingCentersX[i]);
+            fprintf(file,"             \"start-guiding-center-y\": %12.10g,\n", fInterface->anEvent->fStartGuidingCentersY[i]);
+            fprintf(file,"             \"start-guiding-center-z\": %12.10g,\n", fInterface->anEvent->fStartGuidingCentersZ[i]);
+            fprintf(file,"             \"output-avg-frequency\": %12.10g,\n", fInterface->anEvent->fOutputAvgFrequencies[i]);
+            fprintf(file,"             \"output-track-start-frequency\": %12.10g,\n", fInterface->anEvent->fTrackOutputStartFrequencies[i]);
+            fprintf(file,"             \"output-inst-start-frequency\": %12.10g,\n", fInterface->anEvent->fOutputStartFrequencies[i]);
             fprintf(file,"             \"pitch-angle\": %.6f,\n", fInterface->anEvent->fPitchAngles[i]);
             fprintf(file,"             \"slope\": %g,\n", fInterface->anEvent->fSlopes[i]);
             fprintf(file,"             \"avg-axial-frequency\": %g\n", fInterface->anEvent->fAvgAxialFrequencies[i]);
@@ -319,17 +319,17 @@ namespace locust
 
         OpenEvent(); // for recording event properties to file.
 
-        LPROG( lmclog, "Kass is waiting for event trigger" );
+        LPROG( lmclog, "Kass is waiting for event " << fEventCounter << " trigger" );
 
         fInterface->fDigitizerCondition.notify_one();  // unlock if still locked.
-        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration))
+        if(( fInterface->fWaitBeforeEvent ) && (!fInterface->fDoneWithSignalGeneration) && (fEventCounter < fInterface->fNPileupEvents))
         {
             fInterface->fKassReadyCondition.notify_one();
             std::unique_lock< std::mutex >tLock( fInterface->fMutex );
             fInterface->fPreEventCondition.wait( tLock );
             fInterface->fKassEventReady = false;
             fInterface->fTOld = 0.;  // reset time on event clock
-            LPROG( lmclog, "Kass got the event trigger" );
+            LPROG( lmclog, "Kass got the event trigger for event " << fEventCounter );
         }
         else
         {
@@ -343,8 +343,12 @@ namespace locust
 
     bool EventHold::ExecutePostEventModification(Kassiopeia::KSEvent &anEvent)
     {
-        WriteEvent();
+        if (fEventCounter < fInterface->fNPileupEvents ) WriteEvent();
+        fEventCounter += 1;
+        fInterface->fEventIndex = fEventCounter;
         fInterface->fEventInProgress = false;
+        fInterface->fEventCompleted = true;
+        fInterface->fKassEventReady = true;
         fInterface->fDigitizerCondition.notify_one();  // unlock
         LPROG( lmclog, "Kass is waking after event" );
 #ifdef ROOT_FOUND

@@ -54,12 +54,15 @@ namespace locust
 
         private:
             double calcOrbitPhase(double vx, double vy);
+            double calcTheta(double x, double y);
             double quadrantOrbitCorrection(double phase, double vx);
+            double quadrantPositionCorrection(double phase, double x);
             TFReceiverHandler* fTFReceiverHandler;
             AnalyticResponseFunction* fAnalyticResponseFunction;
             std::deque<double> fFIRBuffer;
             std::deque<double> fFrequencyBuffer;
             int fNFilterBinsRequired;
+            bool fModeMap;
             std::vector<std::vector<int>> fModeSet;
     };
 

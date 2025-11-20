@@ -21,6 +21,8 @@ namespace locust
             fWaitAfterEvent( true ),
             fKassEventReady( false ),
             fEventInProgress( false ),
+            fEventCompleted( false ),
+            fNPileupEvents( 1 ),
             fPreEventInProgress( false ),
             fFalseStartKassiopeia( true ),
             fDoneWithSignalGeneration( false ),
@@ -38,10 +40,12 @@ namespace locust
             fBackReaction( true ),
             fbWaveguide( false ),
             fSampleIndex( 0 ),
+            fEventIndex( 0 ),
             fTriggerConfirm( 100000 ),
             fFastRecordLength( 0 ),
             fNewTrackStarting( false ),
             fPowerNorm( false )
+            aRunParameter( nullptr )
     {}
 
     KLInterfaceBootstrapper::KLInterfaceBootstrapper() :

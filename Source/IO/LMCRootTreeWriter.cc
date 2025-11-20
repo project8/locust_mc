@@ -74,6 +74,9 @@ namespace locust
         aTree->Branch("PitchAngles", "std::vector<double>", &anEvent->fPitchAngles);
         aTree->Branch("Radii", "std::vector<double>", &anEvent->fRadii);
         aTree->Branch("RadialPhases", "std::vector<double>", &anEvent->fRadialPhases);
+        aTree->Branch("StartGuidingCentersX", "std::vector<double>", &anEvent->fStartGuidingCentersX);
+        aTree->Branch("StartGuidingCentersY", "std::vector<double>", &anEvent->fStartGuidingCentersY);
+        aTree->Branch("StartGuidingCentersZ", "std::vector<double>", &anEvent->fStartGuidingCentersZ);
         aTree->Fill();
         aTree->Write();
         delete aTree;
