@@ -1,0 +1,56 @@
+{
+    "generators":
+    [          
+       "powernorm-cavity-signal",
+       "lpf-fft",
+       "decimate-signal",
+       "digitizer"
+    ],
+
+    "powernorm-cavity-signal":
+    {
+        "transmitter": "kass-current",
+        "cavity-radius": 0.007,
+        "cavity-length": 0.12992,
+        "back-reaction": "false",
+        "dho-cavity-frequency": 25.9e9,
+        "dho-time-resolution": "1./301e9",
+        "dho-threshold-factor": 0.01,
+        "upload-modemap-filename": "TE011_onRes_EVev_FieldMap_5_7apLength_QL400_coarse.fld",
+        "event-spacing-samples": 10,
+        "n-pixel1": 29,
+        "n-pixel2": 61,
+        "n-pixel3": 33,
+        "dim1-max": 0.007,
+        "dim3-max": 0.128,
+        "mode-map-z-shift": 0.064,
+        "track-length": 3e-5,
+        "rectangular-waveguide": false,
+        "voltage-check": "true",
+        "lo-frequency": 25.9602e9,
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA.xml"
+    },
+
+    "simulation":
+    {
+        "egg-filename": "${CMAKE_INSTALL_PREFIX}/output/locust_mc.egg",
+        "n-records": 1,
+        "record-size": 81920,
+        "acquisition-rate": 301,
+        "n-channels": 1
+    },
+  
+    "gaussian-noise":
+    {
+    	"noise-floor-psd": 2.76e-22,
+    	"domain": "time"
+    },
+
+    "digitizer":
+    {
+        "v-range": 4e-5,
+        "v-offset": -2e-5
+    }
+
+}
+

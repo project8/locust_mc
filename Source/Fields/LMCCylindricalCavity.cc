@@ -422,12 +422,14 @@ namespace locust
         }
         double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
         double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
+        double tEz = anE_normalized[1];
         // double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
         double tVx = tKassParticleXP[3];
         double tVy = tKassParticleXP[4];
+        double tVz = tKassParticleXP[5];
         // double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
 
-        double unitJdotE = -LMCConst::Q() * (tEx*tVx + tEy*tVy); 
+        double unitJdotE = -LMCConst::Q() * (tEx*tVx + tEy*tVy + tEz*tVz); 
 
         //  Write trajectory points, dot product, and E-field mag to file for debugging etc.
         if (intermediateFile)
