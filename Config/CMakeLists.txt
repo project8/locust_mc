@@ -5,11 +5,13 @@ configure_file( JustKass.xml.in JustKass.xml )
 configure_file( JustKassFieldMap.xml.in JustKassFieldMap.xml )
 configure_file( LocustKass_FreeSpace_Template.xml.in LocustKass_FreeSpace_Template.xml )
 configure_file( LocustKass_Cavity_CCA.xml.in LocustKass_Cavity_CCA.xml )
+configure_file( LocustKass_Cavity_CCA_PowerNorm.xml.in LocustKass_Cavity_CCA_PowerNorm.xml )
 configure_file( LocustKass_Cavity_1GHz.xml.in LocustKass_Cavity_1GHz.xml )
 configure_file( LocustWaveguideTemplate.json.in LocustWaveguideTemplate.json )
 configure_file( LocustCavityCCA.json.in LocustCavityCCA.json )
 configure_file( LocustCavityPowerNormCCA.json.in LocustCavityPowerNormCCA.json )
 configure_file( LocustCavityCCA_ModeMapTest.json.in LocustCavityCCA_ModeMapTest.json )
+configure_file( LocustCavityPowerNormCCA_ModeMapTest.json.in LocustCavityPowerNormCCA_ModeMapTest.json )
 configure_file( LocustCavityRectangular.json.in LocustCavityRectangular.json )
 configure_file( LocustCavity1GHz.json.in LocustCavity1GHz.json )
 configure_file( LocustSignalPlusNoise.json.in LocustSignalPlusNoise.json )
@@ -31,6 +33,7 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_1GHz.xml
     FreeSpaceGeometry.xml
 	CavityGeometry_VTinyCoil.xml
+    CavityGeometry_VTinyCoil_PowerNorm.xml
 	CavityGeometry_V00_00_00.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustWaveguideTemplate.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json

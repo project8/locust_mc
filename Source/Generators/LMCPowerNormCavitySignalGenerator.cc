@@ -236,7 +236,7 @@ namespace locust
         fInterface->fConfigureKass = new ConfigureKass();
         fInterface->fConfigureKass->SetParameters( tParam );
 
-                fFieldCalculator = new PowerNormFieldCalculator();
+        fFieldCalculator = new PowerNormFieldCalculator();
         if(!fFieldCalculator->Configure(tParam))
         {
             LERROR(lmclog,"Error configuring receiver FieldCalculator class from PowerNormCavitySignal.");
@@ -252,6 +252,8 @@ namespace locust
         fInterface->fPowerNorm = true;
         // fInterface->SetFieldCalculator( fFieldCalculator );
         fInterface->fFieldCalculator = fFieldCalculator;
+
+        // LPROG("Back-reaction is set to " << fInterface->fBackReaction );
 
     	return true;
     }

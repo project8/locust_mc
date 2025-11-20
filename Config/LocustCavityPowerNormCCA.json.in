@@ -21,7 +21,7 @@
         "rectangular-waveguide": false,        
         "voltage-check": "true",
         "lo-frequency": 25.9602e9,
-        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA.xml"
+        "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA_PowerNorm.xml"
     },
 
     "simulation":
