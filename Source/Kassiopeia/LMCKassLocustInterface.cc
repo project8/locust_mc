@@ -44,7 +44,7 @@ namespace locust
             fTriggerConfirm( 100000 ),
             fFastRecordLength( 0 ),
             fNewTrackStarting( false ),
-            fPowerNorm( false )
+            fPowerNorm( false ),
             aRunParameter( nullptr )
     {}
 
