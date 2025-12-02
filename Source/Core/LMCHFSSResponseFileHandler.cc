@@ -155,6 +155,15 @@ namespace locust
     // OPTION B (DO NOT DELETE)
     std::pair<double,double> HFSSResponseFileHandlerCore::ComputeFields(int bTE, int l, int m, int n, std::deque<double> inputBuffer, double t)
     {   
+        int inputBufferSize = inputBuffer.size(); 
+
+        // If the input buffer is larger than the number of bins, re-initialize the DHO with more bins
+        if (inputBufferSize > fFIRNBinsArray[bTE][l][m][n])
+        {
+            LERROR( lmclog, "Input buffer size " << inputBufferSize << " is larger than the current FIR size " << fFIRNBinsArray[bTE][l][m][n] << ". Re-initialize DHO with more bins.");
+            
+        }
+
         std::array<double, 2> lastEfield = {0.0, 0.0};
         std::array<double, 2> lastBfield = {0.0, 0.0};
 
@@ -181,8 +190,6 @@ namespace locust
         {   
             LERROR(lmclog,"Number of bins in the complex array filter should be positive");
         }   
-
-        int inputBufferSize = inputBuffer.size(); 
         
         fEfield[bTE][l][m][n].resize(inputBufferSize,std::array<double, 2>{0.0, 0.0});
         fBfield[bTE][l][m][n].resize(inputBufferSize,std::array<double, 2>{0.0, 0.0});

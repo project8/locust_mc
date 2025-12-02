@@ -44,7 +44,7 @@ namespace locust
             fTriggerConfirm( 100000 ),
             fFastRecordLength( 0 ),
             fNewTrackStarting( false ),
-            fPowerNorm( false ),
+            bPowerNorm( false ),
             aRunParameter( nullptr )
     {}
 
@@ -74,7 +74,7 @@ namespace locust
     // void KassLocustInterface::SetFieldCalculator(FieldCalculator* aFieldCalculator)
     // {
     //     delete fFieldCalculator;
-    //     if (fPowerNorm)
+    //     if (bPowerNorm)
     //     {
     //         PowerNormFieldCalculator* fFieldCalculator;
     //         fFieldCalculator = aFieldCalculator;

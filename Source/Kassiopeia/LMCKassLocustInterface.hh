@@ -78,7 +78,7 @@ namespace locust
         int fTriggerConfirm;
         int fFastRecordLength;
         bool fNewTrackStarting;
-        bool fPowerNorm;
+        bool bPowerNorm;
 
 
         // void SetFieldCalculator( FieldCalculator* aFieldCalculator );

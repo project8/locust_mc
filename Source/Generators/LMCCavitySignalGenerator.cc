@@ -570,8 +570,7 @@ namespace locust
             sampleIndex = mu*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
             // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
             // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
-                // I'm moving the voltage scaling factor of 2.0 here from the PowerCombiner - RM
-            double totalScalingFactor = sqrt(50.) * unitConversion * 2.0;
+            double totalScalingFactor = sqrt(50.) * unitConversion;
             fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, mu, !(fInterface->fTOld > 0.) );
         }
 

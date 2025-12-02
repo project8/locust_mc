@@ -66,7 +66,7 @@ namespace locust
             unsigned fStartingIndex;
             unsigned fModdedIndex;
             unsigned fNStepsPerSample;
-            bool fPowerNorm;
+            bool bPowerNorm;
     };
 
 

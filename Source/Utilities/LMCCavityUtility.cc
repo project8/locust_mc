@@ -257,11 +257,12 @@ namespace locust
 			double denominator = std::stod(fraction.substr(delimiterPos + 1));
 			ddhoTimeResolution = numerator / denominator;
 		}
+		// ddhoTimeResolution = fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
 
         /* initialize time series */
         Signal* aSignal = new Signal();
         int N0 = 3 * dhoCavityQ/dhoCavityFrequency / ddhoTimeResolution; // Calculate E field for x ring-up times
-        fFilterRate = (1./fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n));
+        fFilterRate = (1./ddhoTimeResolution);
         aSignal->Initialize( N0 , 1 );
 
 		LPROG( testlog, "(norm) N0 is " << N0 );
@@ -269,13 +270,14 @@ namespace locust
         double qInferred = 0.;
         double maxGain = 0.;
         double rfSpanSweep = 3. * dhoCavityFrequency / dhoCavityQ;
-        double rfStepSize = 0.000005 * dhoCavityFrequency;
+        double rfStepSize = 0.00001 * dhoCavityFrequency;
         int nSteps = fExpandFactor * rfSpanSweep / rfStepSize;
         double* freqArray = new double[nSteps];
         double* gainArray = new double[nSteps];
 
 		// Size of GF in DHO is finite. May need to propagate in large steps
-		int numGFBins = fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n) - 1; // -1 subtracts wprime, fBfactor bins
+		int numGFBins = (fTFReceiverHandler->GetFilterSizeArray(bTE, l, m, n) - 1) / 3; // -1 subtracts wprime, fBfactor bins
+		LPROG( testlog, "(norm) numGFBins is " << numGFBins );
 		int nLargeSteps = 1 + std::floor( (N0-1) / numGFBins);
 
         for (int i=0; i<nSteps; i++) // frequency sweep
@@ -289,15 +291,7 @@ namespace locust
 			for (int j=0; j<nLargeSteps; j++)
 			{
 				int startIdx = j*numGFBins;
-				int endIdx;
-				if (std::floor((N0 - startIdx) / numGFBins)) // if there is another large step after this
-				{
-					endIdx = (j+1)*numGFBins;
-				}
-				else // if this is the last large step
-				{
-					endIdx = startIdx + (N0 % numGFBins);
-				}
+				int endIdx = std::min(startIdx + numGFBins, N0);
 				double tProp = startIdx * fTFReceiverHandler->GetFilterResolutionArray(bTE, l, m, n);
 
 				fTFReceiverHandler->ComputeFields(bTE, l, m, n,SignalToDeque(bTE, l, m, n, aSignal, startIdx, endIdx), tProp);

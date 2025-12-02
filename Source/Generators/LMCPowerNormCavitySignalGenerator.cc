@@ -249,7 +249,7 @@ namespace locust
 
         // Store in the interface for sharing
         // Specify that this is a power norm simulation
-        fInterface->fPowerNorm = true;
+        fInterface->bPowerNorm = true;
         // fInterface->SetFieldCalculator( fFieldCalculator );
         fInterface->fFieldCalculator = fFieldCalculator;
 
@@ -556,7 +556,7 @@ namespace locust
                 //      - EM magnetic energy dissipated carries omega_m * mu0
                 // These are square rooted since we are outputting voltage
 		        double totalScalingFactor = sqrt(LMCConst::MuNull() * 2 * LMCConst::Pi() * cavityFrequency * 50. / 1100.);
-		        fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
+		        fPowerCombiner->AddOneModeToCavityProbeNorm(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
 		    }
 		}
 

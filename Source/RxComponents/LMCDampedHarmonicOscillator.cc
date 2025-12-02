@@ -14,13 +14,13 @@ namespace locust
 	LOGGER( lmclog, "DampedHarmonicOscillator" );
 
     DampedHarmonicOscillator::DampedHarmonicOscillator():
-    		fMaxNBins( 60000 ),
+    		fMaxNBins( 20000 ),
 			fTimeResolutionDefault( 1.e-10 ),
 			fCavityFrequencyDefault( 1.067e9 ),
 			fCavityQDefault( 1000 ),
 			fThresholdFactorDefault ( 0.25 ),
 			fHannekePowerFactorDefault( 1. ),
-			fNModes( 1 ),
+			fNModes( 2 ),
 			fTFReceiverHandler( 0 ),
             bDipoleMode( true )
 
@@ -216,6 +216,7 @@ namespace locust
         } else {
             if (!GenerateNormGreensFunction()) return false;
         }
+        LPROG(lmclog, "DampedHarmonicOscillator initialized with " << bDipoleMode << " bDipoleMode.");
 
         return true;
     }

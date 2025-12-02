@@ -18,7 +18,7 @@ namespace locust
             fNCrossings( 0 ),
             fSampleIndex( 0 ),
             fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() ),
-            fPowerNorm( fInterface->fPowerNorm )
+            bPowerNorm( fInterface->bPowerNorm )
     {
     }
 
@@ -29,7 +29,7 @@ namespace locust
             fT0trapMin( aCopy.fT0trapMin ),
             fNCrossings( aCopy.fNCrossings ),
             fSampleIndex( aCopy.fSampleIndex ),
-            fPowerNorm( aCopy.fPowerNorm ),
+            bPowerNorm( aCopy.bPowerNorm ),
             fInterface( aCopy.fInterface )
     {
     }
@@ -40,7 +40,7 @@ namespace locust
     }
     CyclotronRadiationExtractor::~CyclotronRadiationExtractor()
     {
-        if (!fPowerNorm)
+        if (!bPowerNorm)
         {
             if (fFieldCalculator != NULL)
             {
@@ -51,7 +51,7 @@ namespace locust
 
     bool CyclotronRadiationExtractor::Configure()
     {
-        if ( fPowerNorm )
+        if ( bPowerNorm )
         {
             // Check if CavitySignalGenerator has already set the calculator in the interface
             if (fInterface->fFieldCalculator != NULL)
@@ -256,7 +256,7 @@ namespace locust
             {
                 // std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 // tLock.lock();
-                if (fPowerNorm)
+                if (bPowerNorm)
                 {
                     DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle);
                 }
@@ -268,7 +268,7 @@ namespace locust
             }
             if (fInterface->fBackReaction)
             {
-            	aFinalParticle.SetKineticEnergy(anInitialParticle.GetKineticEnergy() + DeltaE);
+            	aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy() + DeltaE));
                 // LPROG("Power e: <" << DeltaE*1e7 / (2./301e6 / 1e2) << ">" << " Cyclotron Frequency: " << std::setprecision(10) << aFinalParticle.GetCyclotronFrequency()*1e-9 << " GHz");
             }
             else
@@ -303,7 +303,7 @@ namespace locust
             // LPROG(std::setprecision(16) << fInterface->fTOld);
 
             bool conditionToTakeSample = false;
-            if (fPowerNorm)
+            if (bPowerNorm)
             {
                 conditionToTakeSample = ( fModdedIndex >= fNStepsPerSample );
             }
