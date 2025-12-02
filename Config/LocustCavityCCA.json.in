@@ -31,7 +31,7 @@
         "ks-starting-pitch-min": 90.0,
         "ks-starting-pitch-max": 90.0, 
         "rectangular-waveguide": false,        
-        "voltage-check": "false",
+        "voltage-check": "true",
         "lo-frequency": 25.9602e9,
         "xml-filename": "${CMAKE_INSTALL_PREFIX}/config/LocustKass_Cavity_CCA.xml"
     },

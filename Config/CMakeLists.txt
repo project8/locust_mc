@@ -30,6 +30,7 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/JustKassFieldMap.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_FreeSpace_Template.xml 
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_CCA.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_CCA_PowerNorm.xml
     ${CMAKE_CURRENT_BINARY_DIR}/LocustKass_Cavity_1GHz.xml
     FreeSpaceGeometry.xml
 	CavityGeometry_VTinyCoil.xml
@@ -39,6 +40,7 @@ set (EXAMPLE_CONFIGFILES
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityPowerNormCCA.json    
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityCCA_ModeMapTest.json
+    ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityPowerNormCCA_ModeMapTest.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavityRectangular.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustCavity1GHz.json
     ${CMAKE_CURRENT_BINARY_DIR}/LocustFreeSpaceTemplate.json

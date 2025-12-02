@@ -91,6 +91,8 @@ namespace locust
             virtual std::vector<double> GetTM_E(int l, int m, int n, double r, double theta, double z, bool includeOtherPols) {return {0.};};
             virtual double CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, double tThisEventNSamples) {return {0.};};
             virtual double GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> aTE_E_normalized, bool IntermediateFile) {return {0.};};
+            virtual double CalculateDotProductFactorPN(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples){return {0.};};
+            virtual double GetDotProductFactorPN(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool intermediateFile){return {0.};};
             virtual bool InVolume(std::vector<double> tKassParticleXP){return false;};
             void CheckNormalization(int nModes, bool bWaveguide);
             virtual void PrintModeMaps(int nModes, double zSlice, double thetaSlice){};

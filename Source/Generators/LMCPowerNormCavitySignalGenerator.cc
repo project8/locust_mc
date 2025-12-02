@@ -511,7 +511,7 @@ namespace locust
 
             // LPROG("B field at get: " << cavityFIRSample);
 
-		    double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
+		    double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactorPN(l, m, n, tKassParticleXP, tE_normalized, tThisEventNSamples);
 		    double modeAmplitude = fInterface->fField->NormalizedEFieldMag(tE_normalized);
 
 		    if (!fInterface->fbWaveguide)

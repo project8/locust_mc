@@ -167,7 +167,7 @@ namespace locust
             PrintModeMaps(GetNModes(), zSlice, thetaSlice);
         }
 
-        // SetNormFactors(CalculateNormFactors(GetNModes(), 0));  // Calculate the realistic normalization factors.
+        SetNormFactors(CalculateNormFactors(GetNModes(), 0));  // Calculate the realistic normalization factors.
         CheckNormalization(GetNModes(), 0);  // E fields integration over volume
 
         return true;
@@ -403,16 +403,16 @@ namespace locust
         return tField;  // return normalized field.
     }
 
-    double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+    double CylindricalCavity::CalculateDotProductFactorPN(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
     {
         std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
-        tAvgDotProductFactor[l][m][n] = GetDotProductFactor(tKassParticleXP, anE_normalized, fIntermediateFile);
+        tAvgDotProductFactor[l][m][n] = GetDotProductFactorPN(tKassParticleXP, anE_normalized, fIntermediateFile);
         SetAvgDotProductFactor(tAvgDotProductFactor);
         return tAvgDotProductFactor[l][m][n];
     }
 
 
-    double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool intermediateFile)
+    double CylindricalCavity::GetDotProductFactorPN(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool intermediateFile)
     {
         double tThetaParticle = tKassParticleXP[1];
         double tEtheta = 0.;
@@ -447,6 +447,59 @@ namespace locust
             fclose(fp);
 
             printf("|r|, theta, J dot E, |E| %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE);
+            printf("\n Keep pressing ENTER to record to file output/dotProducts.txt .  Cntrl-C to quit.\n");
+            getchar();
+        }
+
+        return unitJdotE;
+    }
+
+    double CylindricalCavity::CalculateDotProductFactor(int l, int m, int n, std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, double tThisEventNSamples)
+    {
+        std::vector<std::vector<std::vector<double>>> tAvgDotProductFactor = GetAvgDotProductFactor();
+        tAvgDotProductFactor[l][m][n] = 1. / ( tThisEventNSamples + 1 ) * ( tAvgDotProductFactor[l][m][n] * tThisEventNSamples + GetDotProductFactor(tKassParticleXP, anE_normalized, fIntermediateFile) );  // unit velocity \dot unit theta
+        SetAvgDotProductFactor(tAvgDotProductFactor);
+        return tAvgDotProductFactor[l][m][n];
+    }
+
+
+    double CylindricalCavity::GetDotProductFactor(std::vector<double> tKassParticleXP, std::vector<double> anE_normalized, bool intermediateFile)
+    {
+        double tThetaParticle = tKassParticleXP[1];
+        double tEtheta = 0.;
+        double tEr = 0.;
+        if (!isnan(anE_normalized.back()))
+        {
+            tEtheta = anE_normalized.back();
+        }
+        if (!isnan(anE_normalized.front()))
+        {
+            tEr = anE_normalized.front();
+        }
+        double tEx = -sin(tThetaParticle) * tEtheta + cos(tThetaParticle) * tEr;
+        double tEy = cos(tThetaParticle) * tEtheta + sin(tThetaParticle) * tEr;
+        double tEmag = pow(tEtheta*tEtheta + tEr*tEr, 0.5);
+        double tVx = tKassParticleXP[3];
+        double tVy = tKassParticleXP[4];
+        double tVmag = pow(tVx*tVx + tVy*tVy, 0.5);
+        double unitJdotE = 0.;
+        if ( (tEmag > 0.) && (tVmag > 0.) )
+        {
+            unitJdotE = fabs(tEx*tVx + tEy*tVy)/tEmag/tVmag;
+        }
+
+
+        //  Write trajectory points, dot product, and E-field mag to file for debugging etc.
+        if (intermediateFile)
+        {
+            char buffer[60];
+            int a = sprintf(buffer, "%s/dotProducts.txt", GetOutputPath().c_str());
+            const char *fpname = buffer;
+            FILE *fp = fopen(fpname, "a");
+            fprintf(fp, "%g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
+            fclose(fp);
+
+            printf("|r|, theta, J dot E, |E| %g %g %g %g\n", tKassParticleXP[0], tKassParticleXP[1], unitJdotE, tEmag);
             printf("\n Keep pressing ENTER to record to file output/dotProducts.txt .  Cntrl-C to quit.\n");
             getchar();
         }

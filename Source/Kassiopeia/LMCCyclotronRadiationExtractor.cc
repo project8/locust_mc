@@ -256,7 +256,14 @@ namespace locust
             {
                 // std::unique_lock< std::mutex >tLock( fInterface->fMutexDigitizer, std::defer_lock );  // lock access to mutex before writing to globals.
                 // tLock.lock();
-            	DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle);
+                if (fPowerNorm)
+                {
+                    DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle);
+                }
+                else
+                {
+                    DeltaE = fFieldCalculator->GetDampingFactorCavity(aFinalParticle)*(aFinalParticle.GetKineticEnergy() - anInitialParticle.GetKineticEnergy());
+                }
                 // tLock.unlock();
             }
             if (fInterface->fBackReaction)
@@ -295,7 +302,17 @@ namespace locust
             // LPROG("Post step time: " << std::setprecision(16) << t_poststep << "  Prev time: " << anInitialParticle.GetTime());
             // LPROG(std::setprecision(16) << fInterface->fTOld);
 
-            if (fModdedIndex >= fNStepsPerSample) //take a digitizer sample every KassTimeStep
+            bool conditionToTakeSample = false;
+            if (fPowerNorm)
+            {
+                conditionToTakeSample = ( fModdedIndex >= fNStepsPerSample );
+            }
+            else
+            {
+                conditionToTakeSample = (t_poststep - fInterface->fTOld >= fInterface->fKassTimeStep);
+            }
+
+            if (conditionToTakeSample) //take a digitizer sample every KassTimeStep
             {
                 // LPROG("Post step time: " << std::setprecision(16) << t_poststep << "  Prev time? " << t_poststep - fInterface->fKassTimeStep);
 

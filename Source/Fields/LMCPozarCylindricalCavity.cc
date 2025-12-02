@@ -48,15 +48,43 @@ namespace locust
     	std::vector<double> TE_E;
     	double x_lm = GetBesselNKPrimeZeros(l,m);
 
-    	double k1 = x_lm / R;
-    	double k3 = n * LMCConst::Pi() / L;
-    	double k = 1.0; //pow(k1*k1+k3*k3,0.5);
-    	double eta = 1.0; //sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
-    	double jl_of_k1r_by_k1r = 1./2. * (boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r));
+    	// double k1 = x_lm / R;
+    	// double k3 = n * LMCConst::Pi() / L;
+    	// double k = 1.0; //pow(k1*k1+k3*k3,0.5);
+    	// double eta = 1.0; //sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
+    	// double jl_of_k1r_by_k1r = 1./2. * (boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r));
 
-    	double jPrime = jl_of_k1r_by_k1r;
-    	double tEr = l * k/k1/k1 * eta * boost::math::cyl_bessel_j(l, k1*r) * sin(l*theta) * sin(k3*z) / (r + 1e-17);
-    	double tEtheta = k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+    	// double jPrime = jl_of_k1r_by_k1r;
+    	// double tEr = l * k/k1/k1 * eta * boost::math::cyl_bessel_j(l, k1*r) * sin(l*theta) * sin(k3*z) / (r + 1e-17);
+    	// double tEtheta = k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
+
+    	// if ((includeOtherPols)&&(l>0))
+    	// {
+    	// 	//modifies both r and theta components of TE field.
+    	// 	double dTheta = LMCConst::Pi() / 2.0 / (double)l;
+    	// 	std::vector<double> tPolarization = this->TE_E(R,2.*LMCConst::Pi(),L,l,m,n,r,theta+dTheta,zKass,0);
+    	// 	tEr = tEr*sin((double)l*theta) + tPolarization[0]*cos((double)l*theta) ;
+    	// 	tEtheta = tEtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
+    	// }
+
+		// double norm = R * sqrt(LMCConst::Pi() * L) / 2 / k1;
+		// norm *= sqrt(1 - l*l / x_lm / x_lm) * boost::math::cyl_bessel_j(l, x_lm);
+
+		// if (l == 0)
+		// {
+		// 	norm *= sqrt(2);
+		// }
+
+    	// TE_E.push_back(tEr / norm);
+    	// TE_E.push_back(tEtheta / norm);
+		double k1 = x_lm / R;
+    	double k3 = n * LMCConst::Pi() / L;
+    	double k = pow(k1*k1+k3*k3,0.5);
+    	double eta = sqrt( LMCConst::MuNull() / LMCConst::EpsNull() );  // Pozar p. 291.
+    	double jl_of_k1r_by_k1r = 1./(2.*l) * (boost::math::cyl_bessel_j(l-1, k1*r) + boost::math::cyl_bessel_j(l+1, k1*r));
+    	double jPrime = 1./2. * ( boost::math::cyl_bessel_j(l-1, k1*r) - boost::math::cyl_bessel_j(l+1, k1*r) );
+    	double tEr = -l * k/k1 * eta * jl_of_k1r_by_k1r * sin(l*theta) * sin(k3*z);
+    	double tEtheta = -k/k1 * eta * jPrime * cos(l*theta) * sin(k3*z);
 
     	if ((includeOtherPols)&&(l>0))
     	{
@@ -67,16 +95,8 @@ namespace locust
     		tEtheta = tEtheta*sin((double)l*(theta+dTheta)) + tPolarization[1]*cos((double)l*(theta+dTheta)) ;
     	}
 
-		double norm = R * sqrt(LMCConst::Pi() * L) / 2 / k1;
-		norm *= sqrt(1 - l*l / x_lm / x_lm) * boost::math::cyl_bessel_j(l, x_lm);
-
-		if (l == 0)
-		{
-			norm *= sqrt(2);
-		}
-
-    	TE_E.push_back(tEr / norm);
-    	TE_E.push_back(tEtheta / norm);
+    	TE_E.push_back(tEr);
+    	TE_E.push_back(tEtheta);
 		
         return TE_E;
     	}
