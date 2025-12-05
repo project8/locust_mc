@@ -153,6 +153,9 @@ namespace locust
         // LPROG("tTime: " << tTime << "tTime - Nsteps*dt: " << tTime - Nsteps*dt << " dt: " << dt);
         // LPROG("Cyclotron frequency: " << tCyclotronFrequency);
         // if (tTime > 4.e-10) exit(-1);
+
+        std::vector<double> tKassParticleXP;
+        
         for (int i=0; i < Nsteps; i++)
         {
             // Test
@@ -169,8 +172,7 @@ namespace locust
             // Create and populate particle state vector
             double thisR = pow(interpolatedPosition.X()*interpolatedPosition.X() + interpolatedPosition.Y()*interpolatedPosition.Y(), 0.5);
             // double thisTheta = calcTheta(interpolatedPosition.X(), interpolatedPosition.Y());
-            double thisTheta = atan2(interpolatedPosition.X(), interpolatedPosition.Y());
-            std::vector<double> tKassParticleXP;
+            double thisTheta = calcTheta(interpolatedPosition.X(), interpolatedPosition.Y());
             tKassParticleXP.push_back(thisR);
             tKassParticleXP.push_back(thisTheta);
             tKassParticleXP.push_back(interpolatedPosition.Z());
@@ -182,10 +184,19 @@ namespace locust
             {
                 // Calculate JdotE
                 std::vector<double> tE_normalized = fInterface->fField->GetNormalizedModeField(l,m,n,tKassParticleXP,1,bTE);
-                double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactor(l, m, n, tKassParticleXP, tE_normalized, 0);
+                double tAvgDotProductFactor = fInterface->fField->CalculateDotProductFactorPN(l, m, n, tKassParticleXP, tE_normalized, 0);
 
                 // Add to buffer
                 fJdotEBuffer.push_back(tAvgDotProductFactor);
+
+                // Print the electron's position
+                // LPROG("Position at step " << i << ": " << std::setprecision(16) << interpolatedPosition.X() << ", " << interpolatedPosition.Y() << ", " << interpolatedPosition.Z());
+                // // Now print the position in cylindrical coordinates
+                // LPROG("Cylindrical Position at step " << i << ": r = " << std::setprecision(16) << thisR << ", theta = " << thisTheta << ", z = " << interpolatedPosition.Z());
+                // // Print each component of the mode field in a single line
+                // LPROG("E field at step " << i << ": " << std::setprecision(16) << tE_normalized[0] << ", " << tE_normalized[1] << ", " << tE_normalized[2]);
+                // // Print the velocity vector
+                // LPROG("Velocity at step " << i << ": " << std::setprecision(16) << interpolatedVelocity.X() << ", " << interpolatedVelocity.Y() << ", " << interpolatedVelocity.Z());
             }
             // if (i==0)
             // {

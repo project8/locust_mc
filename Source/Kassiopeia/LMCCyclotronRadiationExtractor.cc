@@ -274,6 +274,11 @@ namespace locust
             else
             {
             	// Do not apply any power correction, even though it was calculated above.
+                // Unless powernorm branch, where this option is used to compare to theory
+                if (bPowerNorm)
+                {
+                    aFinalParticle.SetKineticEnergy((anInitialParticle.GetKineticEnergy()));
+                }
             }
         }
 

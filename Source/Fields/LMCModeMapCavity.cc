@@ -110,78 +110,67 @@ namespace locust
             }
         }
 
-        while (!modeMapFile.eof())
+        std::string lineContent;
+        while(std::getline(modeMapFile,lineContent))
         {
-            std::string lineContent;
-            while(std::getline(modeMapFile,lineContent))
+            if(lineContent[0]=='#')
             {
-                if(lineContent[0]=='#')
+                continue; //skips any comments
+            }
+            std::string token;
+            std::stringstream ss(lineContent);
+            int wordCount = 0;
+            double r, theta, z;
+            int i,j,k;
+            double Erho,Etheta;
+            double Ex, Ey, Ez;
+            while (ss >> token)
+            {
+                if (wordCount == 0)
                 {
-                    continue; //skips any comments
+                    r = std::stod(token);
+                    i = (int)((r-fDim1_min)/(fDim1_max-fDim1_min)*(fnPixel1)); // var1 position
                 }
-                std::string token;
-                std::stringstream ss(lineContent);
-                int wordCount = 0;
-                double r, theta, z;
-                int i,j,k;
-                double Erho,Etheta;
-                double Ex, Ey, Ez;
-                while (ss >> token)
+                else if (wordCount == 1) 
                 {
-                    if (wordCount == 0)
-                    {
-                        r = std::stod(token);
-                        i = (int)((r-fDim1_min)/(fDim1_max-fDim1_min)*(fnPixel1)); // var1 position
-                    }
-                    else if (wordCount == 1) 
-                    {
-                        theta = std::stod(token);
-                        j = (int)((theta-fDim2_min)/(fDim2_max-fDim2_min)*(fnPixel2)); // var2 position
-                    }
-                    else if (wordCount == 2)
-                    {
-                        z = std::stod(token);
-                        z += fZshift;
-                        k = (int)((z-fDim3_min)/(fDim3_max-fDim3_min)*(fnPixel3)); // var3 position
-                    }
-                    else if (wordCount == 3) Ex = std::stod(token); // mode E field value
-                    else if (wordCount == 4) Ey = std::stod(token); // mode E field value
-                    else if (wordCount == 5) Ez = std::stod(token); // mode E field value
-                    else
-                    {
-                        LERROR(lmclog, "There are more columns than expected in the uploaded mode map file.");
-                        return false;
-                    }
-                    ++wordCount;
+                    theta = std::stod(token);
+                    j = (int)((theta-fDim2_min)/(fDim2_max-fDim2_min)*(fnPixel2)); // var2 position
                 }
-
-                if ((i==fnPixel1) or (j==fnPixel2) or (k==fnPixel3))
+                else if (wordCount == 2)
                 {
-                    continue;
+                    z = std::stod(token);
+                    z += fZshift;
+                    k = (int)((z-fDim3_min)/(fDim3_max-fDim3_min)*(fnPixel3)); // var3 position
                 }
-                if ((i>=fnPixel1) or (j>=fnPixel2) or (k>=fnPixel3))
-                {   
-                    LERROR(lmclog,"Imported mode map dimensions don't agree with those in \"" << aFilename <<".\" Double check dim[1,2,3]-max.");
-                    return false;
-                }   
-
-                //Must convert E field from cartesian coordinates to cylindrical coordinates
-                if(r<1.e-10)
-                {
-                    Erho = 0.;
-                    Etheta = 0.;
-                }
+                else if (wordCount == 3) Ex = std::stod(token); // mode E field value
+                else if (wordCount == 4) Ey = std::stod(token); // mode E field value
+                else if (wordCount == 5) Ez = std::stod(token); // mode E field value
                 else
                 {
-                    Erho = ((Ex * r*cos(theta)) + Ey * r*sin(theta)) / r;
-                    Etheta = ((Ey * r*cos(theta)) - Ex * r*sin(theta)) / r;
+                    LERROR(lmclog, "There are more columns than expected in the uploaded mode map file.");
+                    return false;
                 }
-
-                std::vector E_input = {Erho,Etheta,Ez};
-                fModeMapTE_E[i][j][k] = E_input;
-                //printf("read var1 is %g, var2 is %g, E is %g\n", fModeMapTE_E.back()[0], fModeMapTE_E.back()[1], fModeMapTE_E.back()[2]);
-
+                ++wordCount;
             }
+
+            if ((i==fnPixel1) or (j==fnPixel2) or (k==fnPixel3))
+            {
+                continue;
+            }
+            if ((i>=fnPixel1) or (j>=fnPixel2) or (k>=fnPixel3))
+            {   
+                LERROR(lmclog,"Imported mode map dimensions don't agree with those in \"" << aFilename <<".\" Double check dim[1,2,3]-max.");
+                return false;
+            }   
+
+            //Must convert E field from cartesian coordinates to cylindrical coordinates
+            Erho = ((Ex * cos(theta)) + Ey * sin(theta));
+            Etheta = ((Ey * cos(theta)) - Ex * sin(theta));
+
+            std::vector E_input = {Erho,Etheta,Ez};
+            fModeMapTE_E[i][j][k] = E_input;
+            //printf("read var1 is %g, var2 is %g, E is %g\n", fModeMapTE_E.back()[0], fModeMapTE_E.back()[1], fModeMapTE_E.back()[2]);
+
         }
 
         modeMapFile.close();
@@ -195,6 +184,9 @@ namespace locust
     std::vector<double> ModeMapCavity::TE_E(double dim1, double dim2, double dim3, int l, int m, int n, double var1, double var2, double zKass, bool includeOtherPols)
     {
         std::vector<double> TE_E;
+
+        // Adjust varr2 for [-pi, pi] atan2 output
+        // var2 = fmod(var2 + 2.*LMCConst::Pi(), 2.*LMCConst::Pi());
 
         double var3 = zKass + 0.5*dim3;
         std::vector< int > CoordinateIndices = FindClosestCoordinate(var1, var2, var3);
@@ -245,6 +237,7 @@ namespace locust
     {
         //Finds coordinate indices with the floor of the index closest to that input variable for each dimension. Assumes a uniform grid in each of the 3 dimensions.
         std::vector< int > Coordinates(3);
+
         if( var1<fDim1_min or var1>fDim1_max or var2<fDim2_min or var2>fDim2_max or var3<fDim3_min or var3>fDim3_max )
         {
             Coordinates[0] = 0;
@@ -334,7 +327,7 @@ namespace locust
             {1., x2, y2, z2},
             {1., x3, y3, z3}};
 
-        Eigen::VectorXd v {{ fModeMapTE_E[TetrahedronVertices[0][0]][TetrahedronVertices[0][1]][TetrahedronVertices[0][2]][component], fModeMapTE_E[TetrahedronVertices[1][0]][TetrahedronVertices[1][1]][TetrahedronVertices[2][2]][component], fModeMapTE_E[TetrahedronVertices[2][0]][TetrahedronVertices[2][1]][TetrahedronVertices[2][2]][component], fModeMapTE_E[TetrahedronVertices[3][0]][TetrahedronVertices[3][1]][TetrahedronVertices[3][2]][component]}};
+        Eigen::VectorXd v {{ fModeMapTE_E[TetrahedronVertices[0][0]][TetrahedronVertices[0][1]][TetrahedronVertices[0][2]][component], fModeMapTE_E[TetrahedronVertices[1][0]][TetrahedronVertices[1][1]][TetrahedronVertices[1][2]][component], fModeMapTE_E[TetrahedronVertices[2][0]][TetrahedronVertices[2][1]][TetrahedronVertices[2][2]][component], fModeMapTE_E[TetrahedronVertices[3][0]][TetrahedronVertices[3][1]][TetrahedronVertices[3][2]][component]}};
 
         Eigen::VectorXd Coef = m.inverse() * v;
 

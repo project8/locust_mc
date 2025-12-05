@@ -189,6 +189,7 @@ namespace locust
     		else
     		{
     			// default is true in the cavity
+                LPROG(lmclog, "Cavity back-reaction is enabled by default.");
     			fInterface->fBackReaction = true;
     		}
     	}

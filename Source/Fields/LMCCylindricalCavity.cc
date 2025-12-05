@@ -518,6 +518,7 @@ namespace locust
         }
         else
         {
+            // LPROG(lmclog, "Particle is outside of cavity volume: r = " << rLocation << " (max " << GetDimR() << "), z = " << zLocation << " (max " << GetDimL()/2. << ")" );
             return false;
         }
     }

@@ -294,8 +294,8 @@ namespace locust
             {
             	if (!std::isnan(normFactor)&&(std::isfinite(normFactor)))
             	{
-            	    printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
-            	    		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
+            	    // printf("TE%d%d%d E %.4g H %.4g\n", l, m, n, Integrate(l,m,n,1,1)*normFactor,
+            	    // 		LMCConst::MuNull()/LMCConst::EpsNull()*Integrate(l,m,n,1,0)*normFactor);
             	}
                 else
                 {
