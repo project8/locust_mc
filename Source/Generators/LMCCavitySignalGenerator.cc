@@ -326,6 +326,14 @@ namespace locust
         if( aParam.has( "one-mode-per-channel" ) )
         {
             fOneModePerChannel = aParam["one-mode-per-channel"]().as_bool();
+            if (fOneModePerChannel)
+            {
+                LPROG(lmclog,"\"one-mode-per-channel\" = true -> Restricting one mode per readout channel (default).");
+            }
+            else
+            {
+                LPROG(lmclog,"\"one-mode-per-channel\" = false -> All modes will be read out by all channels.");
+            }
         }
         if( aParam.has( "xml-filename" ) )
         {
