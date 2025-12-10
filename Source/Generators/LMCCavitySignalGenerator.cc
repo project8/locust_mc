@@ -41,6 +41,7 @@ namespace locust
         fUseDirectKassPower( true ),
         fAliasingIsChecked( false ),
         fUnitTestRootFile( false ),
+        fOneModePerChannel( true ),
         fInterface( nullptr )  // Initialize fInterface to (nullptr) instead of to (new KassLocustInterface())
     {
     }
@@ -322,6 +323,10 @@ namespace locust
         {
             fUnitTestRootFile = aParam["unit-test-root-file"]().as_bool();
         }
+        if( aParam.has( "one-mode-per-channel" ) )
+        {
+            fOneModePerChannel = aParam["one-mode-per-channel"]().as_bool();
+        }
         if( aParam.has( "xml-filename" ) )
         {
             gxml_filename = aParam["xml-filename"]().as_string();
@@ -564,15 +569,28 @@ namespace locust
                     excitationAmplitude *= fInterface->fField->ScaleEPoyntingVector(tKassParticleXP[7]);
                     tEFieldAtProbe = std::vector<double> {excitationAmplitude};
                 }
-            } // Finished mode set.
+            }
 
-	        // Use mode index "mu" as a proxy for the channel index:
-            sampleIndex = mu*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
-            // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
-            // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
-            double totalScalingFactor = sqrt(50.) * unitConversion;
-            fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, mu, !(fInterface->fTOld > 0.) );
-        }
+            for(int channelIndex = 0; channelIndex < fNChannels; ++channelIndex) // one channel per probe
+            {
+                // Use mode index "mu" as a proxy for the channel index:
+                sampleIndex = channelIndex*signalSize*aSignal->DecimationFactor() + index;  // which channel and which sample
+                // This scaling factor includes a 50 ohm impedance that is applied in signal processing, as well
+                // as other factors as defined above, e.g. 1/4PiEps0 if converting to/from c.g.s amplitudes.
+                double totalScalingFactor = sqrt(50.) * unitConversion;
+                if ( !fOneModePerChannel )
+                {
+                    // If fOneModePerChannel==false, all modes drive all channels, each with a uniquely positioned probe.
+                    fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
+                }
+                else if ( channelIndex == mu )
+                {
+                    // if fOneModePerchannel==true, mode mu drives channel channelIndex=mu, which has a uniquely positioned probe.
+                    fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[mu], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
+                }
+            } // channelIndex
+
+        } // Finished mode set.
 
         fInterface->fTOld += fDeltaT;
         if (!fAliasingIsChecked)
