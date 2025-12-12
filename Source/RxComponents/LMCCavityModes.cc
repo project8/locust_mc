@@ -17,7 +17,6 @@ namespace locust
     CavityModes::CavityModes():
         fVoltagePhase( {{{{0.0}}}} ),
         fModeMap( false ),
-        fChannelPhaseOffset( {0.0} ),
         fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
@@ -37,21 +36,6 @@ namespace locust
     	}
 
         SetNCavityModes(fInterface->fField->GetNModes());
-
-
-        fChannelPhaseOffset.resize(3);
-        if ( aParam.has( "channel0-phase-offset-deg" ) )
-        {
-            fChannelPhaseOffset[0] = LMCConst::Pi() / 180. * aParam["channel0-phase-offset-deg"]().as_double();
-        }
-        if ( aParam.has( "channel1-phase-offset-deg" ) )
-        {
-            fChannelPhaseOffset[1] = LMCConst::Pi() / 180. * aParam["channel1-phase-offset-deg"]().as_double();
-        }
-        if ( aParam.has( "channel2-phase-offset-deg" ) )
-        {
-            fChannelPhaseOffset[2] = LMCConst::Pi() / 180. * aParam["channel2-phase-offset-deg"]().as_double();
-        }
 
         if( aParam.has( "upload-modemap-filename" ) )
         {
