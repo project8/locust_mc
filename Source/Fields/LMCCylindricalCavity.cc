@@ -348,7 +348,8 @@ namespace locust
         {
             if ( !fCaterpillarCavity )
             {
-                tEFieldAtProbe.push_back( NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[index],0,teMode)) );
+                int fieldSign = 1 - 2 * ( GetNormalizedModeField(l,m,n,tProbeLocation[index],0,teMode)[1] < 0. );
+                tEFieldAtProbe.push_back( fieldSign * NormalizedEFieldMag(GetNormalizedModeField(l,m,n,tProbeLocation[index],0,teMode)) );
             }
             else
             {

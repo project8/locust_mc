@@ -76,7 +76,7 @@ namespace locust
         double signalPhaseShift = 0.;
         if ( !fModeMap )
         {
-            modeSignThetaComp = 1 - 1 * ( fInterface->fField->GetFieldAtProbe(l,m,n,0,particleXP,0)[channelIndex] < 0. );
+            modeSignThetaComp = ( fInterface->fField->GetFieldAtProbe(l,m,n,0,particleXP,1)[channelIndex] < 0. );
             signalPhaseShift = LMCConst::Pi() * ( modeSignThetaComp ); // phase shift of PI for negative mode field at probe.
         }
 
