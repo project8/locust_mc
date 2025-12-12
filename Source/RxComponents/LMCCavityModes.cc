@@ -15,9 +15,10 @@ namespace locust
 	LOGGER( lmclog, "CavityModes" );
 
     CavityModes::CavityModes():
-		fVoltagePhase( {{{{0.0}}}} ),
-		fChannelPhaseOffset( {0.0} ),
-		fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
+        fVoltagePhase( {{{{0.0}}}} ),
+        fModeMap( false ),
+        fChannelPhaseOffset( {0.0} ),
+        fInterface( KLInterfaceBootstrapper::get_instance()->GetInterface() )
     {
     }
 
@@ -52,6 +53,12 @@ namespace locust
             fChannelPhaseOffset[2] = LMCConst::Pi() / 180. * aParam["channel2-phase-offset-deg"]().as_double();
         }
 
+        if( aParam.has( "upload-modemap-filename" ) )
+        {
+            fModeMap = true;
+        }
+
+
     	return true;
     }
 
@@ -81,10 +88,18 @@ namespace locust
 
 	bool CavityModes::AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
 	{
+        int modeSignThetaComp = 1;
+        double signalPhaseShift = 0.;
+        if ( !fModeMap )
+        {
+            modeSignThetaComp = 1 - 1 * ( fInterface->fField->GetFieldAtProbe(l,m,n,0,particleXP,0)[channelIndex] < 0. );
+            signalPhaseShift = LMCConst::Pi() * ( modeSignThetaComp ); // phase shift of PI for negative mode field at probe.
+        }
+
 		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
 		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
-		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n) + fChannelPhaseOffset[channelIndex] );
+		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n) + signalPhaseShift );
 
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
