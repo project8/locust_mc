@@ -589,12 +589,12 @@ namespace locust
                 if ( !fOneModePerChannel )
                 {
                     // If fOneModePerChannel==false, all modes drive all channels, each with a uniquely positioned probe.
-                    fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
+                    fPowerCombiner->AddOneModeToCavityProbe(mu, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
                 }
                 else if ( channelIndex == mu )
                 {
                     // if fOneModePerchannel==true, mode mu drives channel channelIndex=mu, which has a uniquely positioned probe.
-                    fPowerCombiner->AddOneModeToCavityProbe(l, m, n, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
+                    fPowerCombiner->AddOneModeToCavityProbe(mu, aSignal, tKassParticleXP, excitationAmplitude, tEFieldAtProbe[channelIndex], dopplerFrequency, fDeltaT, fphiLO, totalScalingFactor, sampleIndex, channelIndex, !(fInterface->fTOld > 0.) );
                 }
             } // channelIndex
 
@@ -692,7 +692,6 @@ namespace locust
         ConfigureInterface( aSignal );
         RecordRunParameters( aSignal );
 
-        fPowerCombiner->SizeNChannels(fNChannels);
         fInterface->fField->SetNChannels(fNChannels);
 
  	    if (( fNChannels > 3 ) || ( fModeSet.size() != fNChannels ))
@@ -710,6 +709,7 @@ namespace locust
 
             for( unsigned iEventCounter = 0; iEventCounter < fInterface->fNPileupEvents; iEventCounter ++)
             {
+                fPowerCombiner->SizeNChannels(fNChannels);
                 if (fRandomPreEventSamples) RandomizeStartDelay();
                 fFieldCalculator->SetFilterSize( fTFReceiverHandler->GetFilterSizeArray(fModeSet[0][0], fModeSet[0][1], fModeSet[0][2], fModeSet[0][3]));
                 int PreEventCounter = 0;
