@@ -42,48 +42,81 @@ namespace locust
             fModeMap = true;
         }
 
+        fModeSet = fInterface->fField->ModeSelect(fInterface->fbWaveguide, 0);
 
     	return true;
     }
+
+    bool CavityModes::SetChannelPhaseShifts()
+    {
+        if (( GetNChannels() > 3 ) || ( fModeSet.size() != GetNChannels() ) || GetNChannels() != fInterface->fField->GetNChannels())
+        {
+            LERROR(lmclog,"LMCCavityModes sees " << GetNChannels() << " channels and " << fModeSet.size() << " modes.");
+            LERROR(lmclog,"The cavity simulation only supports up to 3 channels right now, and the "
+    	    		"number of channels has to be the same as the number of modes.");
+            exit(-1);
+        }
+
+        fChannelPhaseShifts.resize(GetNChannels());
+        for (int channelIndex = 0; channelIndex < GetNChannels(); channelIndex++)
+        {
+            fChannelPhaseShifts[channelIndex].resize(fModeSet.size());
+            for (int mu = 0; mu < fModeSet.size(); mu++)
+            {
+                int modeSignThetaComp = 1;
+                double signalPhaseShift = 0.;
+                if ( !fModeMap )
+                {
+                    bool bTE = fModeSet[mu][0];
+                    int l = fModeSet[mu][1];
+                    int m = fModeSet[mu][2];
+                    int n = fModeSet[mu][3];
+
+                    std::vector<double> emptyPositionVector = {0., 0., 0.};
+                    modeSignThetaComp = ( fInterface->fField->GetFieldAtProbe(l,m,n,0,emptyPositionVector,1)[channelIndex] < 0. );
+                    // phase shift of PI for negative mode field at probe:
+                    fChannelPhaseShifts[channelIndex][mu] = LMCConst::Pi() * ( modeSignThetaComp );
+                    LPROG(lmclog,"Channel "<< channelIndex << " phase shift for mode " <<bTE<<l<<m<<n<< " is " << fChannelPhaseShifts[channelIndex][mu]);
+                }
+            }
+        }
+
+        LPROG( lmclog, "Channel phase offsets have been calculated." );
+
+        return true;
+    }
+
 
     bool CavityModes::SizeNChannels(int aNumberOfChannels)
     {
-    	SetNChannels(aNumberOfChannels);
+        SetNChannels(aNumberOfChannels);
+        SetChannelPhaseShifts();
 
-    	std::vector<std::vector<std::vector<std::vector<double>>>> tZeroVector;
-    	fVoltagePhase.swap(tZeroVector);
-    	fVoltagePhase.resize(aNumberOfChannels);
+        std::vector<std::vector<double>> tZeroVector = {{0.}};
+        fVoltagePhase.swap(tZeroVector);
+        fVoltagePhase.resize(aNumberOfChannels);
 
-    	for (int n = 0; n < GetNChannels(); n++)
-    	{
-    		fVoltagePhase[n].resize(GetNCavityModes());
-    		for (int i = 0; i < GetNCavityModes(); i++)
-    		{
-    			fVoltagePhase[n][i].resize(GetNCavityModes());
-    			for (int j = 0; j < GetNCavityModes(); j++)
-    			{
-    				fVoltagePhase[n][i][j].resize(GetNCavityModes());
-    			}
-    		}
-    	}
-
-    	return true;
-    }
-
-	bool CavityModes::AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
-	{
-        int modeSignThetaComp = 1;
-        double signalPhaseShift = 0.;
-        if ( !fModeMap )
+        for (int channelIndex = 0; channelIndex < GetNChannels(); channelIndex++)
         {
-            modeSignThetaComp = ( fInterface->fField->GetFieldAtProbe(l,m,n,0,particleXP,1)[channelIndex] < 0. );
-            signalPhaseShift = LMCConst::Pi() * ( modeSignThetaComp ); // phase shift of PI for negative mode field at probe.
+            fVoltagePhase[channelIndex].resize(fModeSet.size());
+            for (int mu = 0; mu < fModeSet.size(); mu++)
+            {
+    	        fVoltagePhase[channelIndex][mu] = fChannelPhaseShifts[channelIndex][mu];
+            }
         }
 
+        LPROG( lmclog, "Channel phase offsets have been applied." );
+
+        return true;
+    }
+
+	bool CavityModes::AddOneModeToCavityProbe(int mu, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> cavityDopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle)
+	{
+
 		double dopplerFrequency = cavityDopplerFrequency[0];  // Only one shift, unlike in waveguide.
-		SetVoltagePhase( GetVoltagePhase(channelIndex, l, m, n) + dopplerFrequency * dt, channelIndex, l, m, n ) ;
+		SetVoltagePhase( GetVoltagePhase(channelIndex, mu) + dopplerFrequency * dt, channelIndex, mu ) ;
 		double voltageValue = excitationAmplitude * EFieldAtProbe;
-		voltageValue *= cos(GetVoltagePhase(channelIndex, l, m, n) + signalPhaseShift );
+		voltageValue *= cos(GetVoltagePhase(channelIndex, mu) + fChannelPhaseShifts[channelIndex][mu] );
 
 		aSignal->LongSignalTimeComplex()[sampleIndex][0] += 2. * voltageValue * totalScalingFactor * sin(phi_LO);
 		aSignal->LongSignalTimeComplex()[sampleIndex][1] += 2. * voltageValue * totalScalingFactor * cos(phi_LO);
@@ -93,15 +126,14 @@ namespace locust
 		return true;
 	}
 
-    double CavityModes::GetVoltagePhase(int aChannel, int l, int m, int n)
+    double CavityModes::GetVoltagePhase(int aChannel, int mu)
     {
-    	return fVoltagePhase[aChannel][l][m][n];
+    	return fVoltagePhase[aChannel][mu];
     }
 
-    void CavityModes::SetVoltagePhase ( double aPhase, int aChannel, int l, int m, int n )
+    void CavityModes::SetVoltagePhase ( double aPhase, int aChannel, int mu )
     {
-        fVoltagePhase[aChannel][l][m][n] = aPhase;
+        fVoltagePhase[aChannel][mu] = aPhase;
     }
-
 
 } /* namespace locust */

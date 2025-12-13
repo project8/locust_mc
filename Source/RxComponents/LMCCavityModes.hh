@@ -40,16 +40,19 @@ namespace locust
             CavityModes();
             virtual ~CavityModes();
             virtual bool Configure( const scarab::param_node& aNode );
-        	virtual bool AddOneModeToCavityProbe(int l, int m, int n, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle);
-            double GetVoltagePhase(int aChannel, int l, int m, int n);
-            void SetVoltagePhase( double aPhase, int aChannel, int l, int m, int n);
+            virtual bool AddOneModeToCavityProbe(int mu, Signal* aSignal, std::vector<double> particleXP, double excitationAmplitude, double EFieldAtProbe, std::vector<double> dopplerFrequency, double dt, double phi_LO, double totalScalingFactor, unsigned sampleIndex, int channelIndex, bool initParticle);
+            double GetVoltagePhase(int aChannel, int mu);
+            void SetVoltagePhase( double aPhase, int aChannel, int mu);
+            bool SetChannelPhaseShifts();
             virtual bool SizeNChannels(int aNumberOfChannels);
 
 
 
         private:
-            std::vector<std::vector<std::vector<std::vector<double>>>> fVoltagePhase;
+            std::vector<std::vector<double>> fVoltagePhase;
             bool fModeMap;
+            std::vector<std::vector<int>> fModeSet;
+            std::vector<std::vector<double>> fChannelPhaseShifts;
             kl_interface_ptr_t fInterface;
 
 
