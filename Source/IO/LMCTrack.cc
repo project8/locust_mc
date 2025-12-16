@@ -43,6 +43,8 @@ namespace locust
         StartGuidingCenterX = -99.;
         StartGuidingCenterY = -99.;
         StartGuidingCenterZ = -99.;
+        NCrossings = 0;
+        T0trapMin = 0.;
 
         return true;
 
