@@ -50,6 +50,8 @@ namespace locust
             double StartGuidingCenterX = -99.;
             double StartGuidingCenterY = -99.;
             double StartGuidingCenterZ = -99.;
+            int NCrossings = 0;
+            double T0trapMin = 0.;
 
             ClassDef(Track,1)  // Root syntax.
 
